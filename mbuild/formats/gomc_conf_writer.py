@@ -18,9 +18,7 @@ def dict_keys_to_list(dict):
     list : list
         list of keys from the provided dictionary
     """
-    list = [key for key in dict.keys()]
-
-    return list
+    return [key for key in dict.keys()]
 
 def print_valid_required_input_variables(description=False):
     """

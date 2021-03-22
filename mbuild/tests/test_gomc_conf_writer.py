@@ -149,279 +149,280 @@ class TestGOMCControlFileWriter(BaseTest):
         gomc_control.write_gomc_control_file(charmm, 'test_save_basic_NVT.conf', 'NVT', 10, 300,
                                              )
 
-        out_gomc = open('test_save_basic_NVT.conf', 'r').readlines()
-        for i, line in enumerate(out_gomc):
-            if line.startswith('Restart '):
-                split_line = line.split()
-                assert split_line[1] == 'False'
+        with open('test_save_basic_NVT.conf', 'r') as fp:
+            out_gomc = fp.readlines()
+            for i, line in enumerate(out_gomc):
+                if line.startswith('Restart '):
+                    split_line = line.split()
+                    assert split_line[1] == 'False'
 
-            elif line.startswith('PRNG '):
-                split_line = line.split()
-                assert split_line[1] == 'RANDOM'
+                elif line.startswith('PRNG '):
+                    split_line = line.split()
+                    assert split_line[1] == 'RANDOM'
 
-            elif line.startswith('ParaTypeCHARMM '):
-                split_line = line.split()
-                assert split_line[1] == 'True'
+                elif line.startswith('ParaTypeCHARMM '):
+                    split_line = line.split()
+                    assert split_line[1] == 'True'
 
-            elif line.startswith('Parameters '):
-                split_line = line.split()
-                assert split_line[1] == 'ethane.inp'
+                elif line.startswith('Parameters '):
+                    split_line = line.split()
+                    assert split_line[1] == 'ethane.inp'
 
-            elif line.startswith('Coordinates '):
-                split_line = line.split()
-                assert split_line[1] == '0'
-                assert split_line[2] == 'ethane.pdb'
+                elif line.startswith('Coordinates '):
+                    split_line = line.split()
+                    assert split_line[1] == '0'
+                    assert split_line[2] == 'ethane.pdb'
 
-            elif line.startswith('Structure '):
-                split_line = line.split()
-                assert split_line[1] == '0'
-                assert split_line[2] == 'ethane.psf'
+                elif line.startswith('Structure '):
+                    split_line = line.split()
+                    assert split_line[1] == '0'
+                    assert split_line[2] == 'ethane.psf'
 
-            elif line.startswith('Temperature '):
-                split_line = line.split()
-                assert split_line[1] == '300'
+                elif line.startswith('Temperature '):
+                    split_line = line.split()
+                    assert split_line[1] == '300'
 
-            elif line.startswith('Potential '):
-                split_line = line.split()
-                assert split_line[1] == 'VDW'
+                elif line.startswith('Potential '):
+                    split_line = line.split()
+                    assert split_line[1] == 'VDW'
 
-            elif line.startswith('LRC '):
-                split_line = line.split()
-                assert split_line[1] == 'True'
+                elif line.startswith('LRC '):
+                    split_line = line.split()
+                    assert split_line[1] == 'True'
 
-            elif line.startswith('Rcut '):
-                split_line = line.split()
-                assert split_line[1] == '10'
+                elif line.startswith('Rcut '):
+                    split_line = line.split()
+                    assert split_line[1] == '10'
 
-            elif line.startswith('RcutLow '):
-                split_line = line.split()
-                assert split_line[1] == '1'
+                elif line.startswith('RcutLow '):
+                    split_line = line.split()
+                    assert split_line[1] == '1'
 
-            elif line.startswith('VDWGeometricSigma '):
-                split_line = line.split()
-                assert split_line[1] == 'False'
+                elif line.startswith('VDWGeometricSigma '):
+                    split_line = line.split()
+                    assert split_line[1] == 'False'
 
-            elif line.startswith('Exclude '):
-                split_line = line.split()
-                assert split_line[1] == '1-3'
+                elif line.startswith('Exclude '):
+                    split_line = line.split()
+                    assert split_line[1] == '1-3'
 
-            elif line.startswith('Ewald '):
-                split_line = line.split()
-                assert split_line[1] == 'True'
+                elif line.startswith('Ewald '):
+                    split_line = line.split()
+                    assert split_line[1] == 'True'
 
-            elif line.startswith('ElectroStatic '):
-                split_line = line.split()
-                assert split_line[1] == 'True'
+                elif line.startswith('ElectroStatic '):
+                    split_line = line.split()
+                    assert split_line[1] == 'True'
 
-            elif line.startswith('CachedFourier '):
-                split_line = line.split()
-                assert split_line[1] == 'False'
+                elif line.startswith('CachedFourier '):
+                    split_line = line.split()
+                    assert split_line[1] == 'False'
 
-            elif line.startswith('Tolerance '):
-                split_line = line.split()
-                assert split_line[1] == '0.000010000000'
+                elif line.startswith('Tolerance '):
+                    split_line = line.split()
+                    assert split_line[1] == '0.000010000000'
 
-            elif line.startswith('1-4scaling '):
-                split_line = line.split()
-                assert split_line[1] == '0.5'
+                elif line.startswith('1-4scaling '):
+                    split_line = line.split()
+                    assert split_line[1] == '0.5'
 
-            elif line.startswith('PressureCalc '):
-                split_line = line.split()
-                assert split_line[1] == 'True'
-                assert split_line[2] == '1'
+                elif line.startswith('PressureCalc '):
+                    split_line = line.split()
+                    assert split_line[1] == 'True'
+                    assert split_line[2] == '1'
 
-            elif line.startswith('RunSteps '):
-                split_line = line.split()
-                assert split_line[1] == '10'
+                elif line.startswith('RunSteps '):
+                    split_line = line.split()
+                    assert split_line[1] == '10'
 
-            elif line.startswith('EqSteps '):
-                split_line = line.split()
-                assert split_line[1] == '1'
+                elif line.startswith('EqSteps '):
+                    split_line = line.split()
+                    assert split_line[1] == '1'
 
-            elif line.startswith('AdjSteps '):
-                split_line = line.split()
-                assert split_line[1] == '1'
+                elif line.startswith('AdjSteps '):
+                    split_line = line.split()
+                    assert split_line[1] == '1'
 
-            elif line.startswith('DisFreq '):
-                split_line = line.split()
-                assert split_line[1] == '0.15'
+                elif line.startswith('DisFreq '):
+                    split_line = line.split()
+                    assert split_line[1] == '0.15'
 
-            elif line.startswith('RotFreq '):
-                split_line = line.split()
-                assert split_line[1] == '0.15'
+                elif line.startswith('RotFreq '):
+                    split_line = line.split()
+                    assert split_line[1] == '0.15'
 
-            elif line.startswith('IntraSwapFreq '):
-                split_line = line.split()
-                assert split_line[1] == '0.3'
+                elif line.startswith('IntraSwapFreq '):
+                    split_line = line.split()
+                    assert split_line[1] == '0.3'
 
-            elif line.startswith('SwapFreq '):
-                split_line = line.split()
-                assert split_line[1] == '0.0'
+                elif line.startswith('SwapFreq '):
+                    split_line = line.split()
+                    assert split_line[1] == '0.0'
 
-            elif line.startswith('RegrowthFreq '):
-                split_line = line.split()
-                assert split_line[1] == '0.3'
+                elif line.startswith('RegrowthFreq '):
+                    split_line = line.split()
+                    assert split_line[1] == '0.3'
 
-            elif line.startswith('CrankShaftFreq '):
-                split_line = line.split()
-                assert split_line[1] == '0.1'
+                elif line.startswith('CrankShaftFreq '):
+                    split_line = line.split()
+                    assert split_line[1] == '0.1'
 
-            elif line.startswith('VolFreq '):
-                split_line = line.split()
-                assert split_line[1] == '0.0'
+                elif line.startswith('VolFreq '):
+                    split_line = line.split()
+                    assert split_line[1] == '0.0'
 
-            elif line.startswith('MultiParticleFreq '):
-                split_line = line.split()
-                assert split_line[1] == '0.0'
+                elif line.startswith('MultiParticleFreq '):
+                    split_line = line.split()
+                    assert split_line[1] == '0.0'
 
-            elif line.startswith('IntraMEMC-1Freq '):
-                split_line = line.split()
-                assert split_line[1] == '0.0'
+                elif line.startswith('IntraMEMC-1Freq '):
+                    split_line = line.split()
+                    assert split_line[1] == '0.0'
 
-            elif line.startswith('MEMC-1Freq '):
-                split_line = line.split()
-                assert split_line[1] == '0.0'
+                elif line.startswith('MEMC-1Freq '):
+                    split_line = line.split()
+                    assert split_line[1] == '0.0'
 
-            elif line.startswith('IntraMEMC-2Freq '):
-                split_line = line.split()
-                assert split_line[1] == '0.0'
+                elif line.startswith('IntraMEMC-2Freq '):
+                    split_line = line.split()
+                    assert split_line[1] == '0.0'
 
-            elif line.startswith('MEMC-2Freq '):
-                split_line = line.split()
-                assert split_line[1] == '0.0'
+                elif line.startswith('MEMC-2Freq '):
+                    split_line = line.split()
+                    assert split_line[1] == '0.0'
 
-            elif line.startswith('IntraMEMC-3Freq '):
-                split_line = line.split()
-                assert split_line[1] == '0.0'
+                elif line.startswith('IntraMEMC-3Freq '):
+                    split_line = line.split()
+                    assert split_line[1] == '0.0'
 
-            elif line.startswith('MEMC-3Freq '):
-                split_line = line.split()
-                assert split_line[1] == '0.0'
+                elif line.startswith('MEMC-3Freq '):
+                    split_line = line.split()
+                    assert split_line[1] == '0.0'
 
-            elif line.startswith('CellBasisVector1 '):
-                split_line = line.split()
-                assert split_line[1] == '0'
-                print('split_line[2] = ' + str(split_line[2]))
-                assert split_line[2] == '10.0'
-                assert split_line[3] == '0.00'
-                assert split_line[4] == '0.00'
+                elif line.startswith('CellBasisVector1 '):
+                    split_line = line.split()
+                    assert split_line[1] == '0'
+                    print('split_line[2] = ' + str(split_line[2]))
+                    assert split_line[2] == '10.0'
+                    assert split_line[3] == '0.00'
+                    assert split_line[4] == '0.00'
 
-            elif line.startswith('CellBasisVector2 '):
-                split_line = line.split()
-                assert split_line[1] == '0'
-                assert split_line[2] == '0.00'
-                assert split_line[3] == '10.0'
-                assert split_line[4] == '0.00'
+                elif line.startswith('CellBasisVector2 '):
+                    split_line = line.split()
+                    assert split_line[1] == '0'
+                    assert split_line[2] == '0.00'
+                    assert split_line[3] == '10.0'
+                    assert split_line[4] == '0.00'
 
-            elif line.startswith('CellBasisVector3 '):
-                split_line = line.split()
-                assert split_line[1] == '0'
-                assert split_line[2] == '0.00'
-                assert split_line[3] == '0.00'
-                assert split_line[4] == '10.0'
+                elif line.startswith('CellBasisVector3 '):
+                    split_line = line.split()
+                    assert split_line[1] == '0'
+                    assert split_line[2] == '0.00'
+                    assert split_line[3] == '0.00'
+                    assert split_line[4] == '10.0'
 
-            elif line.startswith('CBMC_First '):
-                split_line = line.split()
-                assert split_line[1] == '12'
+                elif line.startswith('CBMC_First '):
+                    split_line = line.split()
+                    assert split_line[1] == '12'
 
-            elif line.startswith('CBMC_Nth'):
-                split_line = line.split()
-                assert split_line[1] == '10'
+                elif line.startswith('CBMC_Nth'):
+                    split_line = line.split()
+                    assert split_line[1] == '10'
 
-            elif line.startswith('CBMC_Ang '):
-                split_line = line.split()
-                assert split_line[1] == '50'
+                elif line.startswith('CBMC_Ang '):
+                    split_line = line.split()
+                    assert split_line[1] == '50'
 
-            elif line.startswith('CBMC_Dih '):
-                split_line = line.split()
-                assert split_line[1] == '50'
+                elif line.startswith('CBMC_Dih '):
+                    split_line = line.split()
+                    assert split_line[1] == '50'
 
-            elif line.startswith('OutputName '):
-                split_line = line.split()
-                assert split_line[1] == 'Output_data'
+                elif line.startswith('OutputName '):
+                    split_line = line.split()
+                    assert split_line[1] == 'Output_data'
 
-            elif line.startswith('RestartFreq '):
-                split_line = line.split()
-                assert split_line[1] == 'True'
-                assert split_line[2] == '1'
+                elif line.startswith('RestartFreq '):
+                    split_line = line.split()
+                    assert split_line[1] == 'True'
+                    assert split_line[2] == '1'
 
-            elif line.startswith('CheckpointFreq '):
-                split_line = line.split()
-                assert split_line[1] == 'True'
-                assert split_line[2] == '1'
+                elif line.startswith('CheckpointFreq '):
+                    split_line = line.split()
+                    assert split_line[1] == 'True'
+                    assert split_line[2] == '1'
 
-            elif line.startswith('CoordinatesFreq '):
-                split_line = line.split()
-                assert split_line[1] == 'True'
-                assert split_line[2] == '1'
+                elif line.startswith('CoordinatesFreq '):
+                    split_line = line.split()
+                    assert split_line[1] == 'True'
+                    assert split_line[2] == '1'
 
-            elif line.startswith('ConsoleFreq '):
-                split_line = line.split()
-                assert split_line[1] == 'True'
-                assert split_line[2] == '1'
+                elif line.startswith('ConsoleFreq '):
+                    split_line = line.split()
+                    assert split_line[1] == 'True'
+                    assert split_line[2] == '1'
 
-            elif line.startswith('BlockAverageFreq '):
-                split_line = line.split()
-                assert split_line[1] == 'True'
-                assert split_line[2] == '1'
+                elif line.startswith('BlockAverageFreq '):
+                    split_line = line.split()
+                    assert split_line[1] == 'True'
+                    assert split_line[2] == '1'
 
-            elif line.startswith('HistogramFreq '):
-                split_line = line.split()
-                assert split_line[1] == 'True'
-                assert split_line[2] == '1'
+                elif line.startswith('HistogramFreq '):
+                    split_line = line.split()
+                    assert split_line[1] == 'True'
+                    assert split_line[2] == '1'
 
-            elif line.startswith('DistName '):
-                split_line = line.split()
-                assert split_line[1] == 'dis'
+                elif line.startswith('DistName '):
+                    split_line = line.split()
+                    assert split_line[1] == 'dis'
 
-            elif line.startswith('HistName '):
-                split_line = line.split()
-                assert split_line[1] == 'his'
+                elif line.startswith('HistName '):
+                    split_line = line.split()
+                    assert split_line[1] == 'his'
 
-            elif line.startswith('RunNumber '):
-                split_line = line.split()
-                assert split_line[1] == '1'
+                elif line.startswith('RunNumber '):
+                    split_line = line.split()
+                    assert split_line[1] == '1'
 
-            elif line.startswith('RunLetter '):
-                split_line = line.split()
-                assert split_line[1] == 'a'
+                elif line.startswith('RunLetter '):
+                    split_line = line.split()
+                    assert split_line[1] == 'a'
 
-            elif line.startswith('SampleFreq '):
-                split_line = line.split()
-                assert split_line[1] == '1'
+                elif line.startswith('SampleFreq '):
+                    split_line = line.split()
+                    assert split_line[1] == '1'
 
-            elif line.startswith('OutEnergy '):
-                split_line = line.split()
-                assert split_line[1] == 'True'
-                assert split_line[2] == 'True'
+                elif line.startswith('OutEnergy '):
+                    split_line = line.split()
+                    assert split_line[1] == 'True'
+                    assert split_line[2] == 'True'
 
-            elif line.startswith('OutPressure '):
-                split_line = line.split()
-                assert split_line[1] == 'True'
-                assert split_line[2] == 'True'
+                elif line.startswith('OutPressure '):
+                    split_line = line.split()
+                    assert split_line[1] == 'True'
+                    assert split_line[2] == 'True'
 
-            elif line.startswith('OutMolNumber '):
-                split_line = line.split()
-                assert split_line[1] == 'True'
-                assert split_line[2] == 'True'
+                elif line.startswith('OutMolNumber '):
+                    split_line = line.split()
+                    assert split_line[1] == 'True'
+                    assert split_line[2] == 'True'
 
-            elif line.startswith('OutDensity '):
-                split_line = line.split()
-                assert split_line[1] == 'True'
-                assert split_line[2] == 'True'
+                elif line.startswith('OutDensity '):
+                    split_line = line.split()
+                    assert split_line[1] == 'True'
+                    assert split_line[2] == 'True'
 
-            elif line.startswith('OutVolume '):
-                split_line = line.split()
-                assert split_line[1] == 'True'
-                assert split_line[2] == 'True'
+                elif line.startswith('OutVolume '):
+                    split_line = line.split()
+                    assert split_line[1] == 'True'
+                    assert split_line[2] == 'True'
 
-            elif line.startswith('OutSurfaceTension '):
-                split_line = line.split()
-                assert split_line[1] == 'False'
-                assert split_line[2] == 'False'
+                elif line.startswith('OutSurfaceTension '):
+                    split_line = line.split()
+                    assert split_line[1] == 'False'
+                    assert split_line[2] == 'False'
 
-            else:
-                pass
+                else:
+                    pass
 
     def test_save_basic_NPT(self, ethane_gomc):
         charmm = Charmm(ethane_gomc, 'ethane', ff_filename='ethane',
@@ -430,155 +431,155 @@ class TestGOMCControlFileWriter(BaseTest):
                         )
         gomc_control.write_gomc_control_file(charmm, 'test_save_basic_NPT.conf', 'NPT', 1000, 500)
 
-        out_gomc = open('test_save_basic_NPT.conf', 'r').readlines()
-        for i, line in enumerate(out_gomc):
+        with open('test_save_basic_NPT.conf', 'r') as fp:
+            out_gomc = fp.readlines()
+            for i, line in enumerate(out_gomc):
+                if line.startswith('Pressure '):
+                    split_line = line.split()
+                    assert split_line[1] == '1.01325'
 
-            if line.startswith('Pressure '):
-                split_line = line.split()
-                assert split_line[1] == '1.01325'
+                elif line.startswith('Temperature '):
+                    split_line = line.split()
+                    assert split_line[1] == '500'
 
-            elif line.startswith('Temperature '):
-                split_line = line.split()
-                assert split_line[1] == '500'
+                elif line.startswith('PressureCalc '):
+                    split_line = line.split()
+                    assert split_line[1] == 'True'
+                    assert split_line[2] == '100'
 
-            elif line.startswith('PressureCalc '):
-                split_line = line.split()
-                assert split_line[1] == 'True'
-                assert split_line[2] == '100'
+                elif line.startswith('RunSteps '):
+                    split_line = line.split()
+                    assert split_line[1] == '1000'
 
-            elif line.startswith('RunSteps '):
-                split_line = line.split()
-                assert split_line[1] == '1000'
+                elif line.startswith('EqSteps '):
+                    split_line = line.split()
+                    assert split_line[1] == '100'
 
-            elif line.startswith('EqSteps '):
-                split_line = line.split()
-                assert split_line[1] == '100'
+                elif line.startswith('AdjSteps '):
+                    split_line = line.split()
+                    assert split_line[1] == '100'
 
-            elif line.startswith('AdjSteps '):
-                split_line = line.split()
-                assert split_line[1] == '100'
+                elif line.startswith('DisFreq '):
+                    split_line = line.split()
+                    assert split_line[1] == '0.15'
 
-            elif line.startswith('DisFreq '):
-                split_line = line.split()
-                assert split_line[1] == '0.15'
+                elif line.startswith('RotFreq '):
+                    split_line = line.split()
+                    assert split_line[1] == '0.15'
 
-            elif line.startswith('RotFreq '):
-                split_line = line.split()
-                assert split_line[1] == '0.15'
+                elif line.startswith('IntraSwapFreq '):
+                    split_line = line.split()
+                    assert split_line[1] == '0.29'
 
-            elif line.startswith('IntraSwapFreq '):
-                split_line = line.split()
-                assert split_line[1] == '0.29'
+                elif line.startswith('SwapFreq '):
+                    split_line = line.split()
+                    assert split_line[1] == '0.0'
 
-            elif line.startswith('SwapFreq '):
-                split_line = line.split()
-                assert split_line[1] == '0.0'
+                elif line.startswith('RegrowthFreq '):
+                    split_line = line.split()
+                    assert split_line[1] == '0.3'
 
-            elif line.startswith('RegrowthFreq '):
-                split_line = line.split()
-                assert split_line[1] == '0.3'
+                elif line.startswith('CrankShaftFreq '):
+                    split_line = line.split()
+                    assert split_line[1] == '0.1'
 
-            elif line.startswith('CrankShaftFreq '):
-                split_line = line.split()
-                assert split_line[1] == '0.1'
+                elif line.startswith('VolFreq '):
+                    split_line = line.split()
+                    assert split_line[1] == '0.01'
 
-            elif line.startswith('VolFreq '):
-                split_line = line.split()
-                assert split_line[1] == '0.01'
+                elif line.startswith('MultiParticleFreq '):
+                    split_line = line.split()
+                    assert split_line[1] == '0.0'
 
-            elif line.startswith('MultiParticleFreq '):
-                split_line = line.split()
-                assert split_line[1] == '0.0'
+                elif line.startswith('IntraMEMC-1Freq '):
+                    split_line = line.split()
+                    assert split_line[1] == '0.0'
 
-            elif line.startswith('IntraMEMC-1Freq '):
-                split_line = line.split()
-                assert split_line[1] == '0.0'
+                elif line.startswith('MEMC-1Freq '):
+                    split_line = line.split()
+                    assert split_line[1] == '0.0'
 
-            elif line.startswith('MEMC-1Freq '):
-                split_line = line.split()
-                assert split_line[1] == '0.0'
+                elif line.startswith('IntraMEMC-2Freq '):
+                    split_line = line.split()
+                    assert split_line[1] == '0.0'
 
-            elif line.startswith('IntraMEMC-2Freq '):
-                split_line = line.split()
-                assert split_line[1] == '0.0'
+                elif line.startswith('MEMC-2Freq '):
+                    split_line = line.split()
+                    assert split_line[1] == '0.0'
 
-            elif line.startswith('MEMC-2Freq '):
-                split_line = line.split()
-                assert split_line[1] == '0.0'
+                elif line.startswith('IntraMEMC-3Freq '):
+                    split_line = line.split()
+                    assert split_line[1] == '0.0'
 
-            elif line.startswith('IntraMEMC-3Freq '):
-                split_line = line.split()
-                assert split_line[1] == '0.0'
+                elif line.startswith('MEMC-3Freq '):
+                    split_line = line.split()
+                    assert split_line[1] == '0.0'
 
-            elif line.startswith('MEMC-3Freq '):
-                split_line = line.split()
-                assert split_line[1] == '0.0'
+                elif line.startswith('CellBasisVector1 '):
+                    split_line = line.split()
+                    assert split_line[1] == '0'
+                    assert split_line[2] == '20.0'
+                    assert split_line[3] == '0.00'
+                    assert split_line[4] == '0.00'
 
-            elif line.startswith('CellBasisVector1 '):
-                split_line = line.split()
-                assert split_line[1] == '0'
-                assert split_line[2] == '20.0'
-                assert split_line[3] == '0.00'
-                assert split_line[4] == '0.00'
+                elif line.startswith('CellBasisVector2 '):
+                    split_line = line.split()
+                    assert split_line[1] == '0'
+                    assert split_line[2] == '0.00'
+                    assert split_line[3] == '20.0'
+                    assert split_line[4] == '0.00'
 
-            elif line.startswith('CellBasisVector2 '):
-                split_line = line.split()
-                assert split_line[1] == '0'
-                assert split_line[2] == '0.00'
-                assert split_line[3] == '20.0'
-                assert split_line[4] == '0.00'
+                elif line.startswith('CellBasisVector3 '):
+                    split_line = line.split()
+                    assert split_line[1] == '0'
+                    assert split_line[2] == '0.00'
+                    assert split_line[3] == '0.00'
+                    assert split_line[4] == '20.0'
 
-            elif line.startswith('CellBasisVector3 '):
-                split_line = line.split()
-                assert split_line[1] == '0'
-                assert split_line[2] == '0.00'
-                assert split_line[3] == '0.00'
-                assert split_line[4] == '20.0'
+                elif line.startswith('RestartFreq '):
+                    split_line = line.split()
+                    assert split_line[1] == 'True'
+                    assert split_line[2] == '100'
 
-            elif line.startswith('RestartFreq '):
-                split_line = line.split()
-                assert split_line[1] == 'True'
-                assert split_line[2] == '100'
+                elif line.startswith('CheckpointFreq '):
+                    split_line = line.split()
+                    assert split_line[1] == 'True'
+                    assert split_line[2] == '100'
 
-            elif line.startswith('CheckpointFreq '):
-                split_line = line.split()
-                assert split_line[1] == 'True'
-                assert split_line[2] == '100'
+                elif line.startswith('CoordinatesFreq '):
+                    split_line = line.split()
+                    assert split_line[1] == 'True'
+                    assert split_line[2] == '100'
 
-            elif line.startswith('CoordinatesFreq '):
-                split_line = line.split()
-                assert split_line[1] == 'True'
-                assert split_line[2] == '100'
+                elif line.startswith('ConsoleFreq '):
+                    split_line = line.split()
+                    assert split_line[1] == 'True'
+                    assert split_line[2] == '100'
 
-            elif line.startswith('ConsoleFreq '):
-                split_line = line.split()
-                assert split_line[1] == 'True'
-                assert split_line[2] == '100'
+                elif line.startswith('BlockAverageFreq '):
+                    split_line = line.split()
+                    assert split_line[1] == 'True'
+                    assert split_line[2] == '100'
 
-            elif line.startswith('BlockAverageFreq '):
-                split_line = line.split()
-                assert split_line[1] == 'True'
-                assert split_line[2] == '100'
+                elif line.startswith('HistogramFreq '):
+                    split_line = line.split()
+                    assert split_line[1] == 'True'
+                    assert split_line[2] == '100'
 
-            elif line.startswith('HistogramFreq '):
-                split_line = line.split()
-                assert split_line[1] == 'True'
-                assert split_line[2] == '100'
+                elif line.startswith('SampleFreq '):
+                    split_line = line.split()
+                    assert split_line[1] == '100'
 
-            elif line.startswith('SampleFreq '):
-                split_line = line.split()
-                assert split_line[1] == '100'
+                elif line.startswith('VDWGeometricSigma '):
+                    split_line = line.split()
+                    assert split_line[1] == 'False'
 
-            elif line.startswith('VDWGeometricSigma '):
-                split_line = line.split()
-                assert split_line[1] == 'False'
+                elif line.startswith('useConstantArea '):
+                    split_line = line.split()
+                    assert split_line[1] == 'False'
 
-            elif line.startswith('useConstantArea '):
-                split_line = line.split()
-                assert split_line[1] == 'False'
-
-            else:
-                pass
+                else:
+                    pass
 
     def test_save_basic_GCMC(self, ethane_gomc):
         charmm = Charmm(ethane_gomc, 'ethane_box_0',
@@ -593,197 +594,197 @@ class TestGOMCControlFileWriter(BaseTest):
                                                                    }
                                              )
 
-        out_gomc = open('test_save_basic_GCMC.conf', 'r').readlines()
-        for i, line in enumerate(out_gomc):
+        with open('test_save_basic_GCMC.conf', 'r') as fp:
+            out_gomc = fp.readlines()
+            for i, line in enumerate(out_gomc):
+                if line.startswith('Parameters '):
+                    split_line = line.split()
+                    assert split_line[1] == 'ethane_FF.inp'
 
-            if line.startswith('Parameters '):
-                split_line = line.split()
-                assert split_line[1] == 'ethane_FF.inp'
+                elif line.startswith('Coordinates 0'):
+                    split_line = line.split()
+                    assert split_line[1] == '0'
+                    assert split_line[2] == 'ethane_box_0.pdb'
 
-            elif line.startswith('Coordinates 0'):
-                split_line = line.split()
-                assert split_line[1] == '0'
-                assert split_line[2] == 'ethane_box_0.pdb'
+                elif line.startswith('Coordinates 1'):
+                    split_line = line.split()
+                    assert split_line[1] == '1'
+                    assert split_line[2] == 'ethane_box_1.pdb'
 
-            elif line.startswith('Coordinates 1'):
-                split_line = line.split()
-                assert split_line[1] == '1'
-                assert split_line[2] == 'ethane_box_1.pdb'
+                elif line.startswith('Structure 0'):
+                    split_line = line.split()
+                    assert split_line[1] == '0'
+                    assert split_line[2] == 'ethane_box_0.psf'
 
-            elif line.startswith('Structure 0'):
-                split_line = line.split()
-                assert split_line[1] == '0'
-                assert split_line[2] == 'ethane_box_0.psf'
+                elif line.startswith('Structure 1'):
+                    split_line = line.split()
+                    assert split_line[1] == '1'
+                    assert split_line[2] == 'ethane_box_1.psf'
 
-            elif line.startswith('Structure 1'):
-                split_line = line.split()
-                assert split_line[1] == '1'
-                assert split_line[2] == 'ethane_box_1.psf'
+                elif line.startswith('Temperature '):
+                    split_line = line.split()
+                    assert split_line[1] == '500'
 
-            elif line.startswith('Temperature '):
-                split_line = line.split()
-                assert split_line[1] == '500'
+                elif line.startswith('ChemPot '):
+                    split_line = line.split()
+                    assert split_line[1] == 'ETH'
+                    assert split_line[2] == '-4000'
 
-            elif line.startswith('ChemPot '):
-                split_line = line.split()
-                assert split_line[1] == 'ETH'
-                assert split_line[2] == '-4000'
+                elif line.startswith('PressureCalc '):
+                    split_line = line.split()
+                    assert split_line[1] == 'True'
+                    assert split_line[2] == '10000'
 
-            elif line.startswith('PressureCalc '):
-                split_line = line.split()
-                assert split_line[1] == 'True'
-                assert split_line[2] == '10000'
+                elif line.startswith('RunSteps '):
+                    split_line = line.split()
+                    assert split_line[1] == '100000'
 
-            elif line.startswith('RunSteps '):
-                split_line = line.split()
-                assert split_line[1] == '100000'
+                elif line.startswith('EqSteps '):
+                    split_line = line.split()
+                    assert split_line[1] == '10000'
 
-            elif line.startswith('EqSteps '):
-                split_line = line.split()
-                assert split_line[1] == '10000'
+                elif line.startswith('AdjSteps '):
+                    split_line = line.split()
+                    assert split_line[1] == '1000'
 
-            elif line.startswith('AdjSteps '):
-                split_line = line.split()
-                assert split_line[1] == '1000'
+                elif line.startswith('DisFreq '):
+                    split_line = line.split()
+                    assert split_line[1] == '0.15'
 
-            elif line.startswith('DisFreq '):
-                split_line = line.split()
-                assert split_line[1] == '0.15'
+                elif line.startswith('RotFreq '):
+                    split_line = line.split()
+                    assert split_line[1] == '0.15'
 
-            elif line.startswith('RotFreq '):
-                split_line = line.split()
-                assert split_line[1] == '0.15'
+                elif line.startswith('IntraSwapFreq '):
+                    split_line = line.split()
+                    assert split_line[1] == '0.1'
 
-            elif line.startswith('IntraSwapFreq '):
-                split_line = line.split()
-                assert split_line[1] == '0.1'
+                elif line.startswith('SwapFreq '):
+                    split_line = line.split()
+                    assert split_line[1] == '0.35'
 
-            elif line.startswith('SwapFreq '):
-                split_line = line.split()
-                assert split_line[1] == '0.35'
+                elif line.startswith('RegrowthFreq '):
+                    split_line = line.split()
+                    assert split_line[1] == '0.15'
 
-            elif line.startswith('RegrowthFreq '):
-                split_line = line.split()
-                assert split_line[1] == '0.15'
+                elif line.startswith('CrankShaftFreq '):
+                    split_line = line.split()
+                    assert split_line[1] == '0.1'
 
-            elif line.startswith('CrankShaftFreq '):
-                split_line = line.split()
-                assert split_line[1] == '0.1'
+                elif line.startswith('VolFreq '):
+                    split_line = line.split()
+                    assert split_line[1] == '0.0'
 
-            elif line.startswith('VolFreq '):
-                split_line = line.split()
-                assert split_line[1] == '0.0'
+                elif line.startswith('MultiParticleFreq '):
+                    split_line = line.split()
+                    assert split_line[1] == '0.0'
 
-            elif line.startswith('MultiParticleFreq '):
-                split_line = line.split()
-                assert split_line[1] == '0.0'
+                elif line.startswith('IntraMEMC-1Freq '):
+                    split_line = line.split()
+                    assert split_line[1] == '0.0'
 
-            elif line.startswith('IntraMEMC-1Freq '):
-                split_line = line.split()
-                assert split_line[1] == '0.0'
+                elif line.startswith('MEMC-1Freq '):
+                    split_line = line.split()
+                    assert split_line[1] == '0.0'
 
-            elif line.startswith('MEMC-1Freq '):
-                split_line = line.split()
-                assert split_line[1] == '0.0'
+                elif line.startswith('IntraMEMC-2Freq '):
+                    split_line = line.split()
+                    assert split_line[1] == '0.0'
 
-            elif line.startswith('IntraMEMC-2Freq '):
-                split_line = line.split()
-                assert split_line[1] == '0.0'
+                elif line.startswith('MEMC-2Freq '):
+                    split_line = line.split()
+                    assert split_line[1] == '0.0'
 
-            elif line.startswith('MEMC-2Freq '):
-                split_line = line.split()
-                assert split_line[1] == '0.0'
+                elif line.startswith('IntraMEMC-3Freq '):
+                    split_line = line.split()
+                    assert split_line[1] == '0.0'
 
-            elif line.startswith('IntraMEMC-3Freq '):
-                split_line = line.split()
-                assert split_line[1] == '0.0'
+                elif line.startswith('MEMC-3Freq '):
+                    split_line = line.split()
+                    assert split_line[1] == '0.0'
 
-            elif line.startswith('MEMC-3Freq '):
-                split_line = line.split()
-                assert split_line[1] == '0.0'
+                elif line.startswith('CellBasisVector1 0'):
+                    split_line = line.split()
+                    assert split_line[1] == '0'
+                    assert split_line[2] == '20.0'
+                    assert split_line[3] == '0.00'
+                    assert split_line[4] == '0.00'
 
-            elif line.startswith('CellBasisVector1 0'):
-                split_line = line.split()
-                assert split_line[1] == '0'
-                assert split_line[2] == '20.0'
-                assert split_line[3] == '0.00'
-                assert split_line[4] == '0.00'
+                elif line.startswith('CellBasisVector2 0'):
+                    split_line = line.split()
+                    assert split_line[1] == '0'
+                    assert split_line[2] == '0.00'
+                    assert split_line[3] == '20.0'
+                    assert split_line[4] == '0.00'
 
-            elif line.startswith('CellBasisVector2 0'):
-                split_line = line.split()
-                assert split_line[1] == '0'
-                assert split_line[2] == '0.00'
-                assert split_line[3] == '20.0'
-                assert split_line[4] == '0.00'
+                elif line.startswith('CellBasisVector3 0'):
+                    split_line = line.split()
+                    assert split_line[1] == '0'
+                    assert split_line[2] == '0.00'
+                    assert split_line[3] == '0.00'
+                    assert split_line[4] == '20.0'
 
-            elif line.startswith('CellBasisVector3 0'):
-                split_line = line.split()
-                assert split_line[1] == '0'
-                assert split_line[2] == '0.00'
-                assert split_line[3] == '0.00'
-                assert split_line[4] == '20.0'
+                elif line.startswith('CellBasisVector1 1'):
+                    split_line = line.split()
+                    assert split_line[1] == '1'
+                    assert split_line[2] == '20.0'
+                    assert split_line[3] == '0.00'
+                    assert split_line[4] == '0.00'
 
-            elif line.startswith('CellBasisVector1 1'):
-                split_line = line.split()
-                assert split_line[1] == '1'
-                assert split_line[2] == '20.0'
-                assert split_line[3] == '0.00'
-                assert split_line[4] == '0.00'
+                elif line.startswith('CellBasisVector2 1'):
+                    split_line = line.split()
+                    assert split_line[1] == '1'
+                    assert split_line[2] == '0.00'
+                    assert split_line[3] == '20.0'
+                    assert split_line[4] == '0.00'
 
-            elif line.startswith('CellBasisVector2 1'):
-                split_line = line.split()
-                assert split_line[1] == '1'
-                assert split_line[2] == '0.00'
-                assert split_line[3] == '20.0'
-                assert split_line[4] == '0.00'
+                elif line.startswith('CellBasisVector3 1'):
+                    split_line = line.split()
+                    assert split_line[1] == '1'
+                    assert split_line[2] == '0.00'
+                    assert split_line[3] == '0.00'
+                    assert split_line[4] == '20.0'
 
-            elif line.startswith('CellBasisVector3 1'):
-                split_line = line.split()
-                assert split_line[1] == '1'
-                assert split_line[2] == '0.00'
-                assert split_line[3] == '0.00'
-                assert split_line[4] == '20.0'
+                elif line.startswith('RestartFreq '):
+                    split_line = line.split()
+                    assert split_line[1] == 'True'
+                    assert split_line[2] == '10000'
 
-            elif line.startswith('RestartFreq '):
-                split_line = line.split()
-                assert split_line[1] == 'True'
-                assert split_line[2] == '10000'
+                elif line.startswith('CheckpointFreq '):
+                    split_line = line.split()
+                    assert split_line[1] == 'True'
+                    assert split_line[2] == '10000'
 
-            elif line.startswith('CheckpointFreq '):
-                split_line = line.split()
-                assert split_line[1] == 'True'
-                assert split_line[2] == '10000'
+                elif line.startswith('CoordinatesFreq '):
+                    split_line = line.split()
+                    assert split_line[1] == 'True'
+                    assert split_line[2] == '10000'
 
-            elif line.startswith('CoordinatesFreq '):
-                split_line = line.split()
-                assert split_line[1] == 'True'
-                assert split_line[2] == '10000'
+                elif line.startswith('ConsoleFreq '):
+                    split_line = line.split()
+                    assert split_line[1] == 'True'
+                    assert split_line[2] == '10000'
 
-            elif line.startswith('ConsoleFreq '):
-                split_line = line.split()
-                assert split_line[1] == 'True'
-                assert split_line[2] == '10000'
+                elif line.startswith('BlockAverageFreq '):
+                    split_line = line.split()
+                    assert split_line[1] == 'True'
+                    assert split_line[2] == '10000'
 
-            elif line.startswith('BlockAverageFreq '):
-                split_line = line.split()
-                assert split_line[1] == 'True'
-                assert split_line[2] == '10000'
+                elif line.startswith('HistogramFreq '):
+                    split_line = line.split()
+                    assert split_line[1] == 'True'
+                    assert split_line[2] == '10000'
 
-            elif line.startswith('HistogramFreq '):
-                split_line = line.split()
-                assert split_line[1] == 'True'
-                assert split_line[2] == '10000'
+                elif line.startswith('SampleFreq '):
+                    split_line = line.split()
+                    assert split_line[1] == '500'
 
-            elif line.startswith('SampleFreq '):
-                split_line = line.split()
-                assert split_line[1] == '500'
+                elif line.startswith('VDWGeometricSigma '):
+                    split_line = line.split()
+                    assert split_line[1] == 'True'
 
-            elif line.startswith('VDWGeometricSigma '):
-                split_line = line.split()
-                assert split_line[1] == 'True'
-
-            else:
-                pass
+                else:
+                    pass
 
     def test_save_basic_GEMC_NVT(self, ethane_gomc):
         charmm = Charmm(ethane_gomc, 'ethane_box_0',
@@ -795,67 +796,67 @@ class TestGOMCControlFileWriter(BaseTest):
         gomc_control.write_gomc_control_file(charmm, 'test_save_basic_GEMC_NVT.conf', 'GEMC_NVT', 1000000, 500,
                                              )
 
-        out_gomc = open('test_save_basic_GEMC_NVT.conf', 'r').readlines()
-        for i, line in enumerate(out_gomc):
+        with open('test_save_basic_GEMC_NVT.conf', 'r') as fp:
+            out_gomc = fp.readlines()
+            for i, line in enumerate(out_gomc):
+                if line.startswith('DisFreq '):
+                    split_line = line.split()
+                    assert split_line[1] == '0.2'
 
-            if line.startswith('DisFreq '):
-                split_line = line.split()
-                assert split_line[1] == '0.2'
+                elif line.startswith('RotFreq '):
+                    split_line = line.split()
+                    assert split_line[1] == '0.2'
 
-            elif line.startswith('RotFreq '):
-                split_line = line.split()
-                assert split_line[1] == '0.2'
+                elif line.startswith('IntraSwapFreq '):
+                    split_line = line.split()
+                    assert split_line[1] == '0.1'
 
-            elif line.startswith('IntraSwapFreq '):
-                split_line = line.split()
-                assert split_line[1] == '0.1'
+                elif line.startswith('SwapFreq '):
+                    split_line = line.split()
+                    assert split_line[1] == '0.2'
 
-            elif line.startswith('SwapFreq '):
-                split_line = line.split()
-                assert split_line[1] == '0.2'
+                elif line.startswith('RegrowthFreq '):
+                    split_line = line.split()
+                    assert split_line[1] == '0.2'
 
-            elif line.startswith('RegrowthFreq '):
-                split_line = line.split()
-                assert split_line[1] == '0.2'
+                elif line.startswith('CrankShaftFreq '):
+                    split_line = line.split()
+                    assert split_line[1] == '0.1'
 
-            elif line.startswith('CrankShaftFreq '):
-                split_line = line.split()
-                assert split_line[1] == '0.1'
+                elif line.startswith('VolFreq '):
+                    split_line = line.split()
+                    assert split_line[1] == '0.0'
 
-            elif line.startswith('VolFreq '):
-                split_line = line.split()
-                assert split_line[1] == '0.0'
+                elif line.startswith('MultiParticleFreq '):
+                    split_line = line.split()
+                    assert split_line[1] == '0.0'
 
-            elif line.startswith('MultiParticleFreq '):
-                split_line = line.split()
-                assert split_line[1] == '0.0'
+                elif line.startswith('IntraMEMC-1Freq '):
+                    split_line = line.split()
+                    assert split_line[1] == '0.0'
 
-            elif line.startswith('IntraMEMC-1Freq '):
-                split_line = line.split()
-                assert split_line[1] == '0.0'
+                elif line.startswith('MEMC-1Freq '):
+                    split_line = line.split()
+                    assert split_line[1] == '0.0'
 
-            elif line.startswith('MEMC-1Freq '):
-                split_line = line.split()
-                assert split_line[1] == '0.0'
+                elif line.startswith('IntraMEMC-2Freq '):
+                    split_line = line.split()
+                    assert split_line[1] == '0.0'
 
-            elif line.startswith('IntraMEMC-2Freq '):
-                split_line = line.split()
-                assert split_line[1] == '0.0'
+                elif line.startswith('MEMC-2Freq '):
+                    split_line = line.split()
+                    assert split_line[1] == '0.0'
 
-            elif line.startswith('MEMC-2Freq '):
-                split_line = line.split()
-                assert split_line[1] == '0.0'
+                elif line.startswith('IntraMEMC-3Freq '):
+                    split_line = line.split()
+                    assert split_line[1] == '0.0'
 
-            elif line.startswith('IntraMEMC-3Freq '):
-                split_line = line.split()
-                assert split_line[1] == '0.0'
+                elif line.startswith('MEMC-3Freq '):
+                    split_line = line.split()
+                    assert split_line[1] == '0.0'
 
-            elif line.startswith('MEMC-3Freq '):
-                split_line = line.split()
-                assert split_line[1] == '0.0'
-
-            else:
-                pass
+                else:
+                    pass
 
     def test_save_basic_GEMC_NPT(self, ethane_gomc):
         charmm = Charmm(ethane_gomc, 'ethane_box_0',
@@ -871,78 +872,79 @@ class TestGOMCControlFileWriter(BaseTest):
                                                                    }
                                              )
 
-        out_gomc = open('test_save_basic_GEMC_NPT.conf', 'r').readlines()
-        for i, line in enumerate(out_gomc):
-            if line.startswith('Pressure '):
-                split_line = line.split()
-                assert split_line[1] == '10'
+        with open('test_save_basic_GEMC_NPT.conf', 'r') as fp:
+            out_gomc = fp.readlines()
+            for i, line in enumerate(out_gomc):
+                if line.startswith('Pressure '):
+                    split_line = line.split()
+                    assert split_line[1] == '10'
 
-            elif line.startswith('DisFreq '):
-                split_line = line.split()
-                assert split_line[1] == '0.19'
+                elif line.startswith('DisFreq '):
+                    split_line = line.split()
+                    assert split_line[1] == '0.19'
 
-            elif line.startswith('RotFreq '):
-                split_line = line.split()
-                assert split_line[1] == '0.2'
+                elif line.startswith('RotFreq '):
+                    split_line = line.split()
+                    assert split_line[1] == '0.2'
 
-            elif line.startswith('IntraSwapFreq '):
-                split_line = line.split()
-                assert split_line[1] == '0.1'
+                elif line.startswith('IntraSwapFreq '):
+                    split_line = line.split()
+                    assert split_line[1] == '0.1'
 
-            elif line.startswith('SwapFreq '):
-                split_line = line.split()
-                assert split_line[1] == '0.2'
+                elif line.startswith('SwapFreq '):
+                    split_line = line.split()
+                    assert split_line[1] == '0.2'
 
-            elif line.startswith('RegrowthFreq '):
-                split_line = line.split()
-                assert split_line[1] == '0.2'
+                elif line.startswith('RegrowthFreq '):
+                    split_line = line.split()
+                    assert split_line[1] == '0.2'
 
-            elif line.startswith('CrankShaftFreq '):
-                split_line = line.split()
-                assert split_line[1] == '0.1'
+                elif line.startswith('CrankShaftFreq '):
+                    split_line = line.split()
+                    assert split_line[1] == '0.1'
 
-            elif line.startswith('VolFreq '):
-                split_line = line.split()
-                assert split_line[1] == '0.01'
+                elif line.startswith('VolFreq '):
+                    split_line = line.split()
+                    assert split_line[1] == '0.01'
 
-            elif line.startswith('MultiParticleFreq '):
-                split_line = line.split()
-                assert split_line[1] == '0.0'
+                elif line.startswith('MultiParticleFreq '):
+                    split_line = line.split()
+                    assert split_line[1] == '0.0'
 
-            elif line.startswith('IntraMEMC-1Freq '):
-                split_line = line.split()
-                assert split_line[1] == '0.0'
+                elif line.startswith('IntraMEMC-1Freq '):
+                    split_line = line.split()
+                    assert split_line[1] == '0.0'
 
-            elif line.startswith('MEMC-1Freq '):
-                split_line = line.split()
-                assert split_line[1] == '0.0'
+                elif line.startswith('MEMC-1Freq '):
+                    split_line = line.split()
+                    assert split_line[1] == '0.0'
 
-            elif line.startswith('IntraMEMC-2Freq '):
-                split_line = line.split()
-                assert split_line[1] == '0.0'
+                elif line.startswith('IntraMEMC-2Freq '):
+                    split_line = line.split()
+                    assert split_line[1] == '0.0'
 
-            elif line.startswith('MEMC-2Freq '):
-                split_line = line.split()
-                assert split_line[1] == '0.0'
+                elif line.startswith('MEMC-2Freq '):
+                    split_line = line.split()
+                    assert split_line[1] == '0.0'
 
-            elif line.startswith('IntraMEMC-3Freq '):
-                split_line = line.split()
-                assert split_line[1] == '0.0'
+                elif line.startswith('IntraMEMC-3Freq '):
+                    split_line = line.split()
+                    assert split_line[1] == '0.0'
 
-            elif line.startswith('MEMC-3Freq '):
-                split_line = line.split()
-                assert split_line[1] == '0.0'
+                elif line.startswith('MEMC-3Freq '):
+                    split_line = line.split()
+                    assert split_line[1] == '0.0'
 
-            elif line.startswith('useConstantArea '):
-                split_line = line.split()
-                assert split_line[1] == 'True'
+                elif line.startswith('useConstantArea '):
+                    split_line = line.split()
+                    assert split_line[1] == 'True'
 
-            elif line.startswith('FixVolBox0 '):
-                split_line = line.split()
-                assert split_line[1] == 'True'
+                elif line.startswith('FixVolBox0 '):
+                    split_line = line.split()
+                    assert split_line[1] == 'True'
 
-            else:
-                pass
+                else:
+                    pass
 
     def test_save_change_most_variable_NVT(self, ethane_gomc, ethanol_gomc):
         test_box_ethane_ethanol = mb.fill_box(compound=[ethane_gomc, ethanol_gomc],
@@ -1010,334 +1012,335 @@ class TestGOMCControlFileWriter(BaseTest):
                                                                    }
                                              )
 
-        out_gomc = open('test_save_change_most_variable_NVT.conf', 'r').readlines()
-        for i, line in enumerate(out_gomc):
-            if line.startswith('Restart '):
-                split_line = line.split()
-                assert split_line[1] == 'True'
-
-            elif line.startswith('PRNG '):
-                split_line = line.split()
-                assert split_line[1] == 'INTSEED'
-
-            elif line.startswith('Random_Seed '):
-                split_line = line.split()
-                assert split_line[1] == '123'
-
-            elif line.startswith('ParaTypeCHARMM '):
-                split_line = line.split()
-                assert split_line[1] == 'True'
-
-            elif line.startswith('Parameters '):
-                split_line = line.split()
-                assert split_line[1] == 'ethane_ethanol.inp'
-
-            elif line.startswith('Coordinates '):
-                split_line = line.split()
-                assert split_line[1] == '0'
-                assert split_line[2] == 'ethane_ethanol.pdb'
-
-            elif line.startswith('Structure '):
-                split_line = line.split()
-                assert split_line[1] == '0'
-                assert split_line[2] == 'ethane_ethanol.psf'
-
-            elif line.startswith('Temperature '):
-                split_line = line.split()
-                assert split_line[1] == '300'
-
-            elif line.startswith('Potential '):
-                split_line = line.split()
-                assert split_line[1] == 'VDW'
-
-            elif line.startswith('LRC '):
-                split_line = line.split()
-                assert split_line[1] == 'False'
-
-            elif line.startswith('Rcut '):
-                split_line = line.split()
-                assert split_line[1] == '12'
-
-            elif line.startswith('RcutLow '):
-                split_line = line.split()
-                assert split_line[1] == '8'
-
-            elif line.startswith('Exclude '):
-                split_line = line.split()
-                assert split_line[1] == '1-4'
-
-            elif line.startswith('Ewald '):
-                split_line = line.split()
-                assert split_line[1] == 'False'
-
-            elif line.startswith('ElectroStatic '):
-                split_line = line.split()
-                assert split_line[1] == 'False'
-
-            elif line.startswith('CachedFourier '):
-                split_line = line.split()
-                assert split_line[1] == 'True'
-
-            elif line.startswith('Tolerance '):
-                split_line = line.split()
-                assert split_line[1] == '0.010000000000'
-
-            elif line.startswith('1-4scaling '):
-                split_line = line.split()
-                assert split_line[1] == '0.5'
-
-            elif line.startswith('RcutCoulomb 0 '):
-                split_line = line.split()
-                assert split_line[1] == '0'
-                assert split_line[2] == '14'
-
-            elif line.startswith('PressureCalc '):
-                split_line = line.split()
-                assert split_line[1] == 'False'
-                assert split_line[2] == '4'
-
-            elif line.startswith('RunSteps '):
-                split_line = line.split()
-                assert split_line[1] == '100000'
-
-            elif line.startswith('EqSteps '):
-                split_line = line.split()
-                assert split_line[1] == '10000'
-
-            elif line.startswith('AdjSteps '):
-                split_line = line.split()
-                assert split_line[1] == '1000'
-
-            elif line.startswith('DisFreq '):
-                split_line = line.split()
-                assert split_line[1] == '0.2'
-
-            elif line.startswith('RotFreq '):
-                split_line = line.split()
-                assert split_line[1] == '0.2'
-
-            elif line.startswith('IntraSwapFreq '):
-                split_line = line.split()
-                assert split_line[1] == '0.1'
-
-            elif line.startswith('SwapFreq '):
-                split_line = line.split()
-                assert split_line[1] == '0.0'
-
-            elif line.startswith('RegrowthFreq '):
-                split_line = line.split()
-                assert split_line[1] == '0.1'
-
-            elif line.startswith('CrankShaftFreq '):
-                split_line = line.split()
-                assert split_line[1] == '0.2'
-
-            elif line.startswith('VolFreq '):
-                split_line = line.split()
-                assert split_line[1] == '0.0'
-
-            elif line.startswith('MultiParticleFreq '):
-                split_line = line.split()
-                assert split_line[1] == '0.05'
-
-            elif line.startswith('IntraMEMC-1Freq '):
-                split_line = line.split()
-                assert split_line[1] == '0.05'
-
-            elif line.startswith('MEMC-1Freq '):
-                split_line = line.split()
-                assert split_line[1] == '0.0'
-
-            elif line.startswith('IntraMEMC-2Freq '):
-                split_line = line.split()
-                assert split_line[1] == '0.05'
-
-            elif line.startswith('MEMC-2Freq '):
-                split_line = line.split()
-                assert split_line[1] == '0.0'
-
-            elif line.startswith('IntraMEMC-3Freq '):
-                split_line = line.split()
-                assert split_line[1] == '0.05'
-
-            elif line.startswith('MEMC-3Freq '):
-                split_line = line.split()
-                assert split_line[1] == '0.0'
-
-            elif line.startswith('CellBasisVector1 '):
-                split_line = line.split()
-                assert split_line[1] == '0'
-                assert split_line[2] == '40.0'
-                assert split_line[3] == '0.00'
-                assert split_line[4] == '0.00'
-
-            elif line.startswith('CellBasisVector2 '):
-                split_line = line.split()
-                assert split_line[1] == '0'
-                assert split_line[2] == '0.00'
-                assert split_line[3] == '40.0'
-                assert split_line[4] == '0.00'
-
-            elif line.startswith('CellBasisVector3 '):
-                split_line = line.split()
-                assert split_line[1] == '0'
-                assert split_line[2] == '0.00'
-                assert split_line[3] == '0.00'
-                assert split_line[4] == '40.0'
-
-            elif line.startswith('FreeEnergyCalc '):
-                split_line = line.split()
-                assert split_line[1] == 'True'
-                assert split_line[2] == '50'
-
-            elif line.startswith('MoleculeType '):
-                split_line = line.split()
-                assert split_line[1] == 'ETH'
-                assert split_line[2] == '1'
-
-            elif line.startswith('InitialState '):
-                split_line = line.split()
-                assert split_line[1] == '3'
-
-            elif line.startswith('ScalePower '):
-                split_line = line.split()
-                assert split_line[1] == '2'
-
-            elif line.startswith('ScaleAlpha '):
-                split_line = line.split()
-                assert split_line[1] == '0.5'
-
-            elif line.startswith('MinSigma '):
-                split_line = line.split()
-                assert split_line[1] == '3'
-
-            elif line.startswith('ScaleCoulomb '):
-                split_line = line.split()
-                assert split_line[1] == 'False'
-
-            elif line.startswith('# States '):
-                split_line = line.split()
-                assert split_line[2] == '0'
-                assert split_line[3] == '1'
-                assert split_line[4] == '2'
-                assert split_line[5] == '3'
-
-            elif line.startswith('LambdaVDW '):
-                split_line = line.split()
-                assert split_line[1] == '0.1'
-                assert split_line[2] == '0.2'
-                assert split_line[3] == '0.4'
-                assert split_line[4] == '0.9'
-
-            elif line.startswith('LambdaCoulomb '):
-                split_line = line.split()
-                assert split_line[1] == '0.1'
-                assert split_line[2] == '0.3'
-                assert split_line[3] == '0.8'
-                assert split_line[4] == '0.8'
-
-            elif line.startswith('CBMC_First '):
-                split_line = line.split()
-                assert split_line[1] == '55'
-
-            elif line.startswith('CBMC_Nth '):
-                split_line = line.split()
-                assert split_line[1] == '66'
-
-            elif line.startswith('CBMC_Ang '):
-                split_line = line.split()
-                assert split_line[1] == '33'
-
-            elif line.startswith('CBMC_Dih '):
-                split_line = line.split()
-                assert split_line[1] == '22'
-
-            elif line.startswith('OutputName '):
-                split_line = line.split()
-                assert split_line[1] == 'test_out'
-
-            elif line.startswith('RestartFreq '):
-                split_line = line.split()
-                assert split_line[1] == 'False'
-                assert split_line[2] == '50'
-
-            elif line.startswith('CheckpointFreq '):
-                split_line = line.split()
-                assert split_line[1] == 'False'
-                assert split_line[2] == '50'
-
-            elif line.startswith('CoordinatesFreq '):
-                split_line = line.split()
-                assert split_line[1] == 'False'
-                assert split_line[2] == '50'
-
-            elif line.startswith('ConsoleFreq '):
-                split_line = line.split()
-                assert split_line[1] == 'False'
-                assert split_line[2] == '500'
-
-            elif line.startswith('BlockAverageFreq '):
-                split_line = line.split()
-                assert split_line[1] == 'False'
-                assert split_line[2] == '50'
-
-            elif line.startswith('HistogramFreq '):
-                split_line = line.split()
-                assert split_line[1] == 'False'
-                assert split_line[2] == '50'
-
-            elif line.startswith('DistName '):
-                split_line = line.split()
-                assert split_line[1] == 'dist'
-
-            elif line.startswith('HistName '):
-                split_line = line.split()
-                assert split_line[1] == 'hist'
-
-            elif line.startswith('RunNumber '):
-                split_line = line.split()
-                assert split_line[1] == '4'
-
-            elif line.startswith('RunLetter '):
-                split_line = line.split()
-                assert split_line[1] == 'c'
-
-            elif line.startswith('SampleFreq '):
-                split_line = line.split()
-                assert split_line[1] == '25'
-
-            elif line.startswith('OutEnergy '):
-                split_line = line.split()
-                assert split_line[1] == 'False'
-                assert split_line[2] == 'False'
-
-            elif line.startswith('OutPressure '):
-                split_line = line.split()
-                assert split_line[1] == 'False'
-                assert split_line[2] == 'False'
-
-            elif line.startswith('OutMolNumber '):
-                split_line = line.split()
-                assert split_line[1] == 'False'
-                assert split_line[2] == 'False'
-
-            elif line.startswith('OutDensity '):
-                split_line = line.split()
-                assert split_line[1] == 'False'
-                assert split_line[2] == 'False'
-
-            elif line.startswith('OutVolume '):
-                split_line = line.split()
-                assert split_line[1] == 'False'
-                assert split_line[2] == 'False'
-
-            elif line.startswith('OutSurfaceTension '):
-                split_line = line.split()
-                assert split_line[1] == 'True'
-                assert split_line[2] == 'True'
-
-            else:
-                pass
+        with open('test_save_change_most_variable_NVT.conf', 'r') as fp:
+            out_gomc = fp.readlines()
+            for i, line in enumerate(out_gomc):
+                if line.startswith('Restart '):
+                    split_line = line.split()
+                    assert split_line[1] == 'True'
+
+                elif line.startswith('PRNG '):
+                    split_line = line.split()
+                    assert split_line[1] == 'INTSEED'
+
+                elif line.startswith('Random_Seed '):
+                    split_line = line.split()
+                    assert split_line[1] == '123'
+
+                elif line.startswith('ParaTypeCHARMM '):
+                    split_line = line.split()
+                    assert split_line[1] == 'True'
+
+                elif line.startswith('Parameters '):
+                    split_line = line.split()
+                    assert split_line[1] == 'ethane_ethanol.inp'
+
+                elif line.startswith('Coordinates '):
+                    split_line = line.split()
+                    assert split_line[1] == '0'
+                    assert split_line[2] == 'ethane_ethanol.pdb'
+
+                elif line.startswith('Structure '):
+                    split_line = line.split()
+                    assert split_line[1] == '0'
+                    assert split_line[2] == 'ethane_ethanol.psf'
+
+                elif line.startswith('Temperature '):
+                    split_line = line.split()
+                    assert split_line[1] == '300'
+
+                elif line.startswith('Potential '):
+                    split_line = line.split()
+                    assert split_line[1] == 'VDW'
+
+                elif line.startswith('LRC '):
+                    split_line = line.split()
+                    assert split_line[1] == 'False'
+
+                elif line.startswith('Rcut '):
+                    split_line = line.split()
+                    assert split_line[1] == '12'
+
+                elif line.startswith('RcutLow '):
+                    split_line = line.split()
+                    assert split_line[1] == '8'
+
+                elif line.startswith('Exclude '):
+                    split_line = line.split()
+                    assert split_line[1] == '1-4'
+
+                elif line.startswith('Ewald '):
+                    split_line = line.split()
+                    assert split_line[1] == 'False'
+
+                elif line.startswith('ElectroStatic '):
+                    split_line = line.split()
+                    assert split_line[1] == 'False'
+
+                elif line.startswith('CachedFourier '):
+                    split_line = line.split()
+                    assert split_line[1] == 'True'
+
+                elif line.startswith('Tolerance '):
+                    split_line = line.split()
+                    assert split_line[1] == '0.010000000000'
+
+                elif line.startswith('1-4scaling '):
+                    split_line = line.split()
+                    assert split_line[1] == '0.5'
+
+                elif line.startswith('RcutCoulomb 0 '):
+                    split_line = line.split()
+                    assert split_line[1] == '0'
+                    assert split_line[2] == '14'
+
+                elif line.startswith('PressureCalc '):
+                    split_line = line.split()
+                    assert split_line[1] == 'False'
+                    assert split_line[2] == '4'
+
+                elif line.startswith('RunSteps '):
+                    split_line = line.split()
+                    assert split_line[1] == '100000'
+
+                elif line.startswith('EqSteps '):
+                    split_line = line.split()
+                    assert split_line[1] == '10000'
+
+                elif line.startswith('AdjSteps '):
+                    split_line = line.split()
+                    assert split_line[1] == '1000'
+
+                elif line.startswith('DisFreq '):
+                    split_line = line.split()
+                    assert split_line[1] == '0.2'
+
+                elif line.startswith('RotFreq '):
+                    split_line = line.split()
+                    assert split_line[1] == '0.2'
+
+                elif line.startswith('IntraSwapFreq '):
+                    split_line = line.split()
+                    assert split_line[1] == '0.1'
+
+                elif line.startswith('SwapFreq '):
+                    split_line = line.split()
+                    assert split_line[1] == '0.0'
+
+                elif line.startswith('RegrowthFreq '):
+                    split_line = line.split()
+                    assert split_line[1] == '0.1'
+
+                elif line.startswith('CrankShaftFreq '):
+                    split_line = line.split()
+                    assert split_line[1] == '0.2'
+
+                elif line.startswith('VolFreq '):
+                    split_line = line.split()
+                    assert split_line[1] == '0.0'
+
+                elif line.startswith('MultiParticleFreq '):
+                    split_line = line.split()
+                    assert split_line[1] == '0.05'
+
+                elif line.startswith('IntraMEMC-1Freq '):
+                    split_line = line.split()
+                    assert split_line[1] == '0.05'
+
+                elif line.startswith('MEMC-1Freq '):
+                    split_line = line.split()
+                    assert split_line[1] == '0.0'
+
+                elif line.startswith('IntraMEMC-2Freq '):
+                    split_line = line.split()
+                    assert split_line[1] == '0.05'
+
+                elif line.startswith('MEMC-2Freq '):
+                    split_line = line.split()
+                    assert split_line[1] == '0.0'
+
+                elif line.startswith('IntraMEMC-3Freq '):
+                    split_line = line.split()
+                    assert split_line[1] == '0.05'
+
+                elif line.startswith('MEMC-3Freq '):
+                    split_line = line.split()
+                    assert split_line[1] == '0.0'
+
+                elif line.startswith('CellBasisVector1 '):
+                    split_line = line.split()
+                    assert split_line[1] == '0'
+                    assert split_line[2] == '40.0'
+                    assert split_line[3] == '0.00'
+                    assert split_line[4] == '0.00'
+
+                elif line.startswith('CellBasisVector2 '):
+                    split_line = line.split()
+                    assert split_line[1] == '0'
+                    assert split_line[2] == '0.00'
+                    assert split_line[3] == '40.0'
+                    assert split_line[4] == '0.00'
+
+                elif line.startswith('CellBasisVector3 '):
+                    split_line = line.split()
+                    assert split_line[1] == '0'
+                    assert split_line[2] == '0.00'
+                    assert split_line[3] == '0.00'
+                    assert split_line[4] == '40.0'
+
+                elif line.startswith('FreeEnergyCalc '):
+                    split_line = line.split()
+                    assert split_line[1] == 'True'
+                    assert split_line[2] == '50'
+
+                elif line.startswith('MoleculeType '):
+                    split_line = line.split()
+                    assert split_line[1] == 'ETH'
+                    assert split_line[2] == '1'
+
+                elif line.startswith('InitialState '):
+                    split_line = line.split()
+                    assert split_line[1] == '3'
+
+                elif line.startswith('ScalePower '):
+                    split_line = line.split()
+                    assert split_line[1] == '2'
+
+                elif line.startswith('ScaleAlpha '):
+                    split_line = line.split()
+                    assert split_line[1] == '0.5'
+
+                elif line.startswith('MinSigma '):
+                    split_line = line.split()
+                    assert split_line[1] == '3'
+
+                elif line.startswith('ScaleCoulomb '):
+                    split_line = line.split()
+                    assert split_line[1] == 'False'
+
+                elif line.startswith('# States '):
+                    split_line = line.split()
+                    assert split_line[2] == '0'
+                    assert split_line[3] == '1'
+                    assert split_line[4] == '2'
+                    assert split_line[5] == '3'
+
+                elif line.startswith('LambdaVDW '):
+                    split_line = line.split()
+                    assert split_line[1] == '0.1'
+                    assert split_line[2] == '0.2'
+                    assert split_line[3] == '0.4'
+                    assert split_line[4] == '0.9'
+
+                elif line.startswith('LambdaCoulomb '):
+                    split_line = line.split()
+                    assert split_line[1] == '0.1'
+                    assert split_line[2] == '0.3'
+                    assert split_line[3] == '0.8'
+                    assert split_line[4] == '0.8'
+
+                elif line.startswith('CBMC_First '):
+                    split_line = line.split()
+                    assert split_line[1] == '55'
+
+                elif line.startswith('CBMC_Nth '):
+                    split_line = line.split()
+                    assert split_line[1] == '66'
+
+                elif line.startswith('CBMC_Ang '):
+                    split_line = line.split()
+                    assert split_line[1] == '33'
+
+                elif line.startswith('CBMC_Dih '):
+                    split_line = line.split()
+                    assert split_line[1] == '22'
+
+                elif line.startswith('OutputName '):
+                    split_line = line.split()
+                    assert split_line[1] == 'test_out'
+
+                elif line.startswith('RestartFreq '):
+                    split_line = line.split()
+                    assert split_line[1] == 'False'
+                    assert split_line[2] == '50'
+
+                elif line.startswith('CheckpointFreq '):
+                    split_line = line.split()
+                    assert split_line[1] == 'False'
+                    assert split_line[2] == '50'
+
+                elif line.startswith('CoordinatesFreq '):
+                    split_line = line.split()
+                    assert split_line[1] == 'False'
+                    assert split_line[2] == '50'
+
+                elif line.startswith('ConsoleFreq '):
+                    split_line = line.split()
+                    assert split_line[1] == 'False'
+                    assert split_line[2] == '500'
+
+                elif line.startswith('BlockAverageFreq '):
+                    split_line = line.split()
+                    assert split_line[1] == 'False'
+                    assert split_line[2] == '50'
+
+                elif line.startswith('HistogramFreq '):
+                    split_line = line.split()
+                    assert split_line[1] == 'False'
+                    assert split_line[2] == '50'
+
+                elif line.startswith('DistName '):
+                    split_line = line.split()
+                    assert split_line[1] == 'dist'
+
+                elif line.startswith('HistName '):
+                    split_line = line.split()
+                    assert split_line[1] == 'hist'
+
+                elif line.startswith('RunNumber '):
+                    split_line = line.split()
+                    assert split_line[1] == '4'
+
+                elif line.startswith('RunLetter '):
+                    split_line = line.split()
+                    assert split_line[1] == 'c'
+
+                elif line.startswith('SampleFreq '):
+                    split_line = line.split()
+                    assert split_line[1] == '25'
+
+                elif line.startswith('OutEnergy '):
+                    split_line = line.split()
+                    assert split_line[1] == 'False'
+                    assert split_line[2] == 'False'
+
+                elif line.startswith('OutPressure '):
+                    split_line = line.split()
+                    assert split_line[1] == 'False'
+                    assert split_line[2] == 'False'
+
+                elif line.startswith('OutMolNumber '):
+                    split_line = line.split()
+                    assert split_line[1] == 'False'
+                    assert split_line[2] == 'False'
+
+                elif line.startswith('OutDensity '):
+                    split_line = line.split()
+                    assert split_line[1] == 'False'
+                    assert split_line[2] == 'False'
+
+                elif line.startswith('OutVolume '):
+                    split_line = line.split()
+                    assert split_line[1] == 'False'
+                    assert split_line[2] == 'False'
+
+                elif line.startswith('OutSurfaceTension '):
+                    split_line = line.split()
+                    assert split_line[1] == 'True'
+                    assert split_line[2] == 'True'
+
+                else:
+                    pass
 
     def test_save_NVT_bad_variables_part_1(self, ethane_gomc, ethanol_gomc):
         test_box_ethane_ethanol = mb.fill_box(compound=[ethane_gomc, ethanol_gomc],

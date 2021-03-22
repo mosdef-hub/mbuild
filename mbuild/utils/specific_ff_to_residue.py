@@ -134,7 +134,7 @@ def specific_ff_to_residue(structure,
         if box_length != 3:
             print_error_message = 'Please enter all 3 values, and only 3 values for the box dimensions.'
             raise ValueError(print_error_message)
-        print_error_message_box_positive_values = 'Please enter all positive intergers > 0 for the box dimensions.'
+        print_error_message_box_positive_values = 'Please enter positive ( > 0) integers for the box dimensions.'
         for box_iter in box:
             if not isinstance(box_iter, int) and not isinstance(box_iter, float):
                 raise TypeError(print_error_message_box_positive_values)
@@ -162,7 +162,7 @@ def specific_ff_to_residue(structure,
         raise ValueError(print_error_message)
 
     elif forcefield_keys_list != [] and len(residues) == 0:
-        print_error_message = 'The residues variable is and empty list but there are ' \
+        print_error_message = 'The residues variable is an empty list but there are ' \
                                'forcefield_selection variables provided.'
         raise ValueError(print_error_message)
 
@@ -175,7 +175,7 @@ def specific_ff_to_residue(structure,
                 elif os.path.splitext(ff_data[forcefield_keys_list[z]])[1] == '' and len(residues) != 0:
                     user_entered_ff_with_path_dict.update({residues[res_i]: False})
                 else:
-                    print_error_message = r'Please make sure are entering the correct '\
+                    print_error_message = r'Please make sure you are entering the correct '\
                                           'foyer FF name and not a path to a FF file. '\
                                           'If you are entering a path to a FF file, '\
                                           'please use the forcefield_files variable with the '\
@@ -193,7 +193,7 @@ def specific_ff_to_residue(structure,
                 read_xlm_iteration = minidom.parse(ff_for_residue_iteration)
 
             except:
-                print_error_message = 'Please make sure are entering the correct foyer FF path, ' \
+                print_error_message = 'Please make sure you are entering the correct foyer FF path, ' \
                                       'including the FF file name.xml '\
                                       'If you are using the pre-build FF files in foyer, ' \
                                       'please us the forcefield_names variable.'
@@ -204,8 +204,8 @@ def specific_ff_to_residue(structure,
             try:
                 read_xlm_iteration = minidom.parse(ff_names_path_iteration)
             except:
-                print_error_message = 'Please make sure are entering the correct foyer FF name, or the ' \
-                                      'correct file extention (i.e., .xml, if required).'
+                print_error_message = 'Please make sure you are entering the correct foyer FF name, or the ' \
+                                      'correct file extension (i.e., .xml, if required).'
                 raise ValueError(print_error_message)
         lj_coul_1_4_values = read_xlm_iteration.getElementsByTagName("NonbondedForce")
 
@@ -218,7 +218,7 @@ def specific_ff_to_residue(structure,
     if isinstance(structure, Compound):
         if len(structure.children) == 0:
             # there are no real atoms in the Compound so the test fails. User should use mbuild.Box
-            print_error_message = 'ERROR: If you are not providing and empty box, '\
+            print_error_message = 'ERROR: If you are not providing an empty box, '\
                                   'you need to specify the atoms/beads as children in the mb.Compound. '\
                                   'If you are providing and empty box, please do so by specifying and ' \
                                   'mbuild Box ({})'.format(type(mb.Box(lengths=[1, 1, 1])))
@@ -374,7 +374,7 @@ def specific_ff_to_residue(structure,
     final_no_atoms = len(structure.atoms)
 
     if final_no_atoms != initial_no_atoms:
-        print_error_message = 'ERROR: The initial number of atoms send to the force field analysis is ' \
+        print_error_message = 'ERROR: The initial number of atoms sent to the force field analysis is ' \
                               'not the same as the final number of atoms analyzed. ' \
                               'The intial number of atoms was {} and the final number of atoms was {}. ' \
                               'Please ensure that all the residues names that are in the initial ' \

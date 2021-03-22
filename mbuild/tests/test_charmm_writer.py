@@ -29,115 +29,118 @@ class TestCharmmWriterData(BaseTest):
                         residues=[ethane_gomc.name], forcefield_selection='oplsaa')
         charmm.write_inp()
 
-        out_gomc = open('charmm_data.inp', 'r').readlines()
-        for i, line in enumerate(out_gomc):
-            if '! atom_types 	mass 		  atomTypeForceFieldName_ResidueName' \
-               ' (i.e., atoms_type_per_utilized_FF)' in line:
-                assert len(out_gomc[i + 1].split('!')[0].split()) == 3
-                assert out_gomc[i + 1].split('!')[0].split()[0:3] == ['*', 'A', '12.010780']
-                assert len(out_gomc[i + 2].split('!')[0].split()) == 3
-                assert out_gomc[i + 2].split('!')[0].split()[0:3] == ['*', 'B', '1.007947']
-                assert out_gomc[i + 1].split()[4:5] == ['opls_135_ETH']
-                assert out_gomc[i + 2].split()[4:5] == ['opls_140_ETH']
+        with open('charmm_data.inp', 'r') as fp:
+            out_gomc = fp.readlines()
+            for i, line in enumerate(out_gomc):
 
-            elif '!atom_types 	 Kb	b0 		  atoms_types_per_utilized_FF' in line:
-                bond_types = [['A', 'B', '340.0', '1.09'], ['A', 'A', '268.0', '1.529']]
-                assert len(out_gomc[i + 1].split('!')[0].split()) == 4
-                assert len(out_gomc[i + 2].split('!')[0].split()) == 4
-                if out_gomc[i + 1].split('!')[0].split()[0:4] == bond_types[0]:
-                    assert out_gomc[i + 1].split('!')[0].split()[0:4] == bond_types[0]
-                    assert out_gomc[i + 2].split('!')[0].split()[0:4] == bond_types[1]
-                elif out_gomc[i + 1].split('!')[0].split()[0:4] == bond_types[1]:
-                    assert out_gomc[i + 1].split('!')[0].split()[0:4] == bond_types[1]
-                    assert out_gomc[i + 2].split('!')[0].split()[0:4] == bond_types[0]
+                if '! atom_types 	mass 		  atomTypeForceFieldName_ResidueName' \
+                   ' (i.e., atoms_type_per_utilized_FF)' in line:
+                    assert len(out_gomc[i + 1].split('!')[0].split()) == 3
+                    assert out_gomc[i + 1].split('!')[0].split()[0:3] == ['*', 'A', '12.010780']
+                    assert len(out_gomc[i + 2].split('!')[0].split()) == 3
+                    assert out_gomc[i + 2].split('!')[0].split()[0:3] == ['*', 'B', '1.007947']
+                    assert out_gomc[i + 1].split()[4:5] == ['opls_135_ETH']
+                    assert out_gomc[i + 2].split()[4:5] == ['opls_140_ETH']
 
-            elif '!atom_types 		Ktheta	Theta0			  atoms_types_per_utilized_FF' in line:
-                angle_types = [['A', 'A', 'B', '37.5', '110.70000'], ['B', 'A', 'B', '33.0', '107.80000']]
-                assert len(out_gomc[i + 1].split('!')[0].split()) == 5
-                assert len(out_gomc[i + 2].split('!')[0].split()) == 5
-                if out_gomc[i + 1].split('!')[0].split()[0:5] == angle_types[0]:
-                    assert out_gomc[i + 1].split('!')[0].split()[0:5] == angle_types[0]
-                    assert out_gomc[i + 2].split('!')[0].split()[0:5] == angle_types[1]
-                elif out_gomc[i + 1].split('!')[0].split()[0:4] == angle_types[1]:
-                    assert out_gomc[i + 1].split('!')[0].split()[0:5] == angle_types[1]
-                    assert out_gomc[i + 2].split('!')[0].split()[0:5] == angle_types[0]
+                elif '!atom_types 	 Kb	b0 		  atoms_types_per_utilized_FF' in line:
+                    bond_types = [['A', 'B', '340.0', '1.09'], ['A', 'A', '268.0', '1.529']]
+                    assert len(out_gomc[i + 1].split('!')[0].split()) == 4
+                    assert len(out_gomc[i + 2].split('!')[0].split()) == 4
+                    if out_gomc[i + 1].split('!')[0].split()[0:4] == bond_types[0]:
+                        assert out_gomc[i + 1].split('!')[0].split()[0:4] == bond_types[0]
+                        assert out_gomc[i + 2].split('!')[0].split()[0:4] == bond_types[1]
+                    elif out_gomc[i + 1].split('!')[0].split()[0:4] == bond_types[1]:
+                        assert out_gomc[i + 1].split('!')[0].split()[0:4] == bond_types[1]
+                        assert out_gomc[i + 2].split('!')[0].split()[0:4] == bond_types[0]
 
-            elif '!atom_types 			Kchi		n	delta		  atoms_types_per_utilized_FF' in line:
-                dihed_types = [['B', 'A', 'A', 'B', '0.300000', '0', '90.0'],
-                               ['B', 'A', 'A', 'B', '0.000000', '1', '180.0'],
-                               ['B', 'A', 'A', 'B', '0.000000', '2', '0.0'],
-                               ['B', 'A', 'A', 'B', '-0.150000', '3', '180.0'],
-                               ['B', 'A', 'A', 'B', '0.000000', '4', '0.0'],
-                               ['B', 'A', 'A', 'B', '0.000000', '5', '180.0']
-                               ]
-                for j in range(0, len(dihed_types)):
-                    assert len(out_gomc[i + 1 + j].split('!')[0].split()) == 7
-                    assert out_gomc[i + 1 + j].split('!')[0].split()[0:7] == dihed_types[j]
+                elif '!atom_types 		Ktheta	Theta0			  atoms_types_per_utilized_FF' in line:
+                    angle_types = [['A', 'A', 'B', '37.5', '110.70000'], ['B', 'A', 'B', '33.0', '107.80000']]
+                    assert len(out_gomc[i + 1].split('!')[0].split()) == 5
+                    assert len(out_gomc[i + 2].split('!')[0].split()) == 5
+                    if out_gomc[i + 1].split('!')[0].split()[0:5] == angle_types[0]:
+                        assert out_gomc[i + 1].split('!')[0].split()[0:5] == angle_types[0]
+                        assert out_gomc[i + 2].split('!')[0].split()[0:5] == angle_types[1]
+                    elif out_gomc[i + 1].split('!')[0].split()[0:4] == angle_types[1]:
+                        assert out_gomc[i + 1].split('!')[0].split()[0:5] == angle_types[1]
+                        assert out_gomc[i + 2].split('!')[0].split()[0:5] == angle_types[0]
 
-            elif '!atype 	ignored	epsilon 	Rmin/2 		ignored	eps,1-4		Rmin/2,1-4' \
-                 '		  atom_type_per_utilized_FF' in line:
-                nb_types = [['A', '0.00', '-0.066000000', '1.96430858454', '0.00', '-0.033000000', '1.96430858454'],
-                            ['B', '0.00', '-0.030000000', '1.40307756039', '0.00', '-0.015000000', '1.40307756039']]
+                elif '!atom_types 			Kchi		n	delta		  atoms_types_per_utilized_FF' in line:
+                    dihed_types = [['B', 'A', 'A', 'B', '0.300000', '0', '90.0'],
+                                   ['B', 'A', 'A', 'B', '0.000000', '1', '180.0'],
+                                   ['B', 'A', 'A', 'B', '0.000000', '2', '0.0'],
+                                   ['B', 'A', 'A', 'B', '-0.150000', '3', '180.0'],
+                                   ['B', 'A', 'A', 'B', '0.000000', '4', '0.0'],
+                                   ['B', 'A', 'A', 'B', '0.000000', '5', '180.0']
+                                   ]
+                    for j in range(0, len(dihed_types)):
+                        assert len(out_gomc[i + 1 + j].split('!')[0].split()) == 7
+                        assert out_gomc[i + 1 + j].split('!')[0].split()[0:7] == dihed_types[j]
 
-                for j in range(0, len(nb_types)):
-                    assert len(out_gomc[i + 1 + j].split('!')[0].split()) == 7
-                    assert out_gomc[i + 1 + j].split('!')[0].split()[0:7] == nb_types[j]
+                elif '!atype 	ignored	epsilon 	Rmin/2 		ignored	eps,1-4		Rmin/2,1-4' \
+                     '		  atom_type_per_utilized_FF' in line:
+                    nb_types = [['A', '0.00', '-0.066000000', '1.96430858454', '0.00', '-0.033000000', '1.96430858454'],
+                                ['B', '0.00', '-0.030000000', '1.40307756039', '0.00', '-0.015000000', '1.40307756039']]
 
-            else:
-                pass
+                    for j in range(0, len(nb_types)):
+                        assert len(out_gomc[i + 1 + j].split('!')[0].split()) == 7
+                        assert out_gomc[i + 1 + j].split('!')[0].split()[0:7] == nb_types[j]
+
+                else:
+                    pass
 
     def test_save_charmm_psf(self, ethane_gomc):
         charmm = Charmm(ethane_gomc, 'charmm_data', ff_filename='charmm_data',
                         residues=[ethane_gomc.name], forcefield_selection='oplsaa')
         charmm.write_psf()
 
-        out_gomc = open('charmm_data.psf', 'r').readlines()
-        for i, line in enumerate(out_gomc):
-            if '8 !NATOM' in line:
-                atom_type_charge_etc_list = [['1', 'SYS', '1', 'ETH', 'C1', 'A', '-0.180000', '12.0108'],
-                                             ['2', 'SYS', '1', 'ETH', 'C2', 'A', '-0.180000', '12.0108'],
-                                             ['3', 'SYS', '1', 'ETH', 'H1', 'B', '0.060000', '1.0079'],
-                                             ['4', 'SYS', '1', 'ETH', 'H2', 'B', '0.060000', '1.0079'],
-                                             ['5', 'SYS', '1', 'ETH', 'H3', 'B', '0.060000', '1.0079'],
-                                             ['6', 'SYS', '1', 'ETH', 'H4', 'B', '0.060000', '1.0079'],
-                                             ['7', 'SYS', '1', 'ETH', 'H5', 'B', '0.060000', '1.0079'],
-                                             ['8', 'SYS', '1', 'ETH', 'H6', 'B', '0.060000', '1.0079']
-                                             ]
-                for j in range(0, len(atom_type_charge_etc_list)):
-                    assert out_gomc[i + 1 + j].split()[0:8] == atom_type_charge_etc_list[j]
+        with open('charmm_data.psf', 'r') as fp:
+            out_gomc = fp.readlines()
+            for i, line in enumerate(out_gomc):
+                if '8 !NATOM' in line:
+                    atom_type_charge_etc_list = [['1', 'SYS', '1', 'ETH', 'C1', 'A', '-0.180000', '12.0108'],
+                                                 ['2', 'SYS', '1', 'ETH', 'C2', 'A', '-0.180000', '12.0108'],
+                                                 ['3', 'SYS', '1', 'ETH', 'H1', 'B', '0.060000', '1.0079'],
+                                                 ['4', 'SYS', '1', 'ETH', 'H2', 'B', '0.060000', '1.0079'],
+                                                 ['5', 'SYS', '1', 'ETH', 'H3', 'B', '0.060000', '1.0079'],
+                                                 ['6', 'SYS', '1', 'ETH', 'H4', 'B', '0.060000', '1.0079'],
+                                                 ['7', 'SYS', '1', 'ETH', 'H5', 'B', '0.060000', '1.0079'],
+                                                 ['8', 'SYS', '1', 'ETH', 'H6', 'B', '0.060000', '1.0079']
+                                                 ]
+                    for j in range(0, len(atom_type_charge_etc_list)):
+                        assert out_gomc[i + 1 + j].split()[0:8] == atom_type_charge_etc_list[j]
 
-            else:
-                pass
+                else:
+                    pass
 
     def test_save_charmm_pdb(self, ethane_gomc):
         charmm = Charmm(ethane_gomc, 'charmm_data', ff_filename='charmm_data',
                         residues=[ethane_gomc.name], forcefield_selection='oplsaa')
         charmm.write_pdb()
 
-        out_gomc = open('charmm_data.pdb', 'r').readlines()
+        with open('charmm_data.pdb', 'r') as fp:
+            out_gomc = fp.readlines()
+            for i, line in enumerate(out_gomc):
+                if 'CRYST1' in line:
+                    atom_type_res_part_1_list = [['ATOM', '1', 'C1', 'ETH', 'A', '1'],
+                                                 ['ATOM', '2', 'C2', 'ETH', 'A', '1'],
+                                                 ['ATOM', '3', 'H1', 'ETH', 'A', '1'],
+                                                 ['ATOM', '4', 'H2', 'ETH', 'A', '1'],
+                                                 ['ATOM', '5', 'H3', 'ETH', 'A', '1'],
+                                                 ['ATOM', '6', 'H4', 'ETH', 'A', '1'],
+                                                 ['ATOM', '7', 'H5', 'ETH', 'A', '1'],
+                                                 ['ATOM', '8', 'H6', 'ETH', 'A', '1']
+                                                 ]
+                    atom_type_res_part_2_list = [['1.00', '0.00', 'C'], ['1.00', '0.00', 'C'], ['1.00', '0.00', 'H'],
+                                                 ['1.00', '0.00', 'H'], ['1.00', '0.00', 'H'], ['1.00', '0.00', 'H'],
+                                                 ['1.00', '0.00', 'H'], ['1.00', '0.00', 'H'],
+                                                 ]
 
-        for i, line in enumerate(out_gomc):
-            if 'CRYST1' in line:
-                atom_type_res_part_1_list = [['ATOM', '1', 'C1', 'ETH', 'A', '1'],
-                                             ['ATOM', '2', 'C2', 'ETH', 'A', '1'],
-                                             ['ATOM', '3', 'H1', 'ETH', 'A', '1'],
-                                             ['ATOM', '4', 'H2', 'ETH', 'A', '1'],
-                                             ['ATOM', '5', 'H3', 'ETH', 'A', '1'],
-                                             ['ATOM', '6', 'H4', 'ETH', 'A', '1'],
-                                             ['ATOM', '7', 'H5', 'ETH', 'A', '1'],
-                                             ['ATOM', '8', 'H6', 'ETH', 'A', '1']
-                                             ]
-                atom_type_res_part_2_list = [['1.00', '0.00', 'C'], ['1.00', '0.00', 'C'], ['1.00', '0.00', 'H'],
-                                             ['1.00', '0.00', 'H'], ['1.00', '0.00', 'H'], ['1.00', '0.00', 'H'],
-                                             ['1.00', '0.00', 'H'], ['1.00', '0.00', 'H'],
-                                             ]
+                    for j in range(0, len(atom_type_res_part_1_list)):
+                        assert out_gomc[i + 1 + j].split()[0:6] == atom_type_res_part_1_list[j]
+                        assert out_gomc[i + 1 + j].split()[9:12] == atom_type_res_part_2_list[j]
 
-                for j in range(0, len(atom_type_res_part_1_list)):
-                    assert out_gomc[i + 1 + j].split()[0:6] == atom_type_res_part_1_list[j]
-                    assert out_gomc[i + 1 + j].split()[9:12] == atom_type_res_part_2_list[j]
-
-            else:
-                pass
+                else:
+                    pass
 
     def test_save_charmm_ua_gomc_ff(self, two_propanol_ua):
         charmm = Charmm(two_propanol_ua, 'charmm_data_UA', ff_filename='charmm_data_UA',
@@ -145,77 +148,78 @@ class TestCharmmWriterData(BaseTest):
                         bead_to_atom_name_dict={'_CH3': 'C'})
         charmm.write_inp()
 
-        out_gomc = open('charmm_data_UA.inp', 'r').readlines()
-        for i, line in enumerate(out_gomc):
-            if '! atom_types 	mass 		  atomTypeForceFieldName_ResidueName ' \
-               '(i.e., atoms_type_per_utilized_FF)' in line:
-                atom_types_1 = [['*', 'A', '15.035000'], ['*', 'B', '13.019000'],
-                                ['*', 'D', '15.999430'], ['*', 'C', '1.007947']
+        with open('charmm_data_UA.inp', 'r') as fp:
+            out_gomc = fp.readlines()
+            for i, line in enumerate(out_gomc):
+                if '! atom_types 	mass 		  atomTypeForceFieldName_ResidueName ' \
+                   '(i.e., atoms_type_per_utilized_FF)' in line:
+                    atom_types_1 = [['*', 'A', '15.035000'], ['*', 'B', '13.019000'],
+                                    ['*', 'D', '15.999430'], ['*', 'C', '1.007947']
+                                    ]
+                    atom_types_2 = [['CH3_sp3_POL'], ['CH_O_POL'], ['O_POL'], ['H_POL']
+                                    ]
+
+                    for j in range(0, len(atom_types_1)):
+                        assert len(out_gomc[i + 1 + j].split('!')[0].split()) == 3
+                        assert out_gomc[i + 1 + j].split('!')[0].split()[0:3] == atom_types_1[j]
+                        assert out_gomc[i + 1 + j].split()[4:5] == atom_types_2[j]
+
+                elif '!atom_types 	 Kb	b0 		  atoms_types_per_utilized_FF' in line:
+                    bond_types = [['C', 'D', '600.40152964', '0.945'], ['B', 'D', '600.40152964', '1.43'],
+                                  ['A', 'B', '600.40152964', '1.54']]
+                    total_bonds_evaluated = []
+                    total_bonds_evaluated_reorg = []
+                    for j in range(0, len(bond_types)):
+                        assert len(out_gomc[i + 1 + j].split('!')[0].split()) == 4
+                        if out_gomc[i + 1 + j].split('!')[0].split()[0:4] == bond_types[0] or bond_types[1] or \
+                                bond_types[2]:
+                            total_bonds_evaluated.append(out_gomc[i + 1 + j].split('!')[0].split()[0:4])
+                    for k in range(0, len(bond_types)):
+                        if bond_types[k] in total_bonds_evaluated:
+                            total_bonds_evaluated_reorg.append(bond_types[k])
+                    assert total_bonds_evaluated_reorg == bond_types
+
+                elif '!atom_types 		Ktheta	Theta0			  atoms_types_per_utilized_FF' in line:
+                    angle_types = [['A', 'B', 'A', '62.10013026', '112.00007'], ['A', 'B', 'D', '50.0775', '109.46989'],
+                                   ['B', 'D', 'C', '55.04555449', '108.49987']]
+                    total_angles_evaluated = []
+                    total_angles_evaluated_reorg = []
+                    for j in range(0, len(angle_types)):
+                        assert len(out_gomc[i + 1 + j].split('!')[0].split()) == 5
+                        if out_gomc[i + 1 + j].split('!')[0].split()[0:5] == angle_types[0] or angle_types[1] \
+                                or angle_types[2]:
+                            total_angles_evaluated.append(out_gomc[i + 1 + j].split('!')[0].split()[0:5])
+                    for k in range(0, len(angle_types)):
+                        if angle_types[k] in total_angles_evaluated:
+                            total_angles_evaluated_reorg.append(angle_types[k])
+                    assert total_angles_evaluated_reorg == angle_types
+
+                elif '!atom_types 			Kchi		n	delta		  atoms_types_per_utilized_FF' in line:
+                    dihedral_types = [['A', 'B', 'D', 'C', '0.647232', '0', '90.0'],
+                                      ['A', 'B', 'D', 'C', '-0.392135', '1', '180.0'],
+                                      ['A', 'B', 'D', 'C', '-0.062518', '2', '0.0'],
+                                      ['A', 'B', 'D', 'C', '0.345615', '3', '180.0'],
+                                      ['A', 'B', 'D', 'C', '0.000000', '4', '0.0'],
+                                      ['A', 'B', 'D', 'C', '0.000000', '5', '180.0']
+                                      ]
+                    for j in range(0, len(dihedral_types)):
+                        assert len(out_gomc[i + 1 + j].split('!')[0].split()) == 7
+                        assert out_gomc[i + 1 + j].split('!')[0].split()[0:7] == dihedral_types[j]
+
+                elif '!atype 	ignored	epsilon 	Rmin/2 		ignored	eps,1-4		Rmin/2,1-4		  ' \
+                     'atom_type_per_utilized_FF' in line:
+                    nb_types = [['A', '0.00', '-0.194745937', '2.10461634058', '0.00', '-0.000000000', '2.10461634058'],
+                                ['B', '0.00', '-0.019872012', '2.43013033459', '0.00', '-0.000000000', '2.43013033459'],
+                                ['D', '0.00', '-0.184809990', '1.69491769295', '0.00', '-0.000000000', '1.69491769295'],
+                                ['C', '0.00', '-0.000000000', '5.61231024155', '0.00', '-0.000000000', '5.61231024155'],
                                 ]
-                atom_types_2 = [['CH3_sp3_POL'], ['CH_O_POL'], ['O_POL'], ['H_POL']
-                                ]
 
-                for j in range(0, len(atom_types_1)):
-                    assert len(out_gomc[i + 1 + j].split('!')[0].split()) == 3
-                    assert out_gomc[i + 1 + j].split('!')[0].split()[0:3] == atom_types_1[j]
-                    assert out_gomc[i + 1 + j].split()[4:5] == atom_types_2[j]
+                    for j in range(0, len(nb_types)):
+                        assert len(out_gomc[i + 1 + j].split('!')[0].split()) == 7
+                        assert out_gomc[i + 1 + j].split('!')[0].split()[0:7] == nb_types[j]
 
-            elif '!atom_types 	 Kb	b0 		  atoms_types_per_utilized_FF' in line:
-                bond_types = [['C', 'D', '600.40152964', '0.945'], ['B', 'D', '600.40152964', '1.43'],
-                              ['A', 'B', '600.40152964', '1.54']]
-                total_bonds_evaluated = []
-                total_bonds_evaluated_reorg = []
-                for j in range(0, len(bond_types)):
-                    assert len(out_gomc[i + 1 + j].split('!')[0].split()) == 4
-                    if out_gomc[i + 1 + j].split('!')[0].split()[0:4] == bond_types[0] or bond_types[1] or \
-                            bond_types[2]:
-                        total_bonds_evaluated.append(out_gomc[i + 1 + j].split('!')[0].split()[0:4])
-                for k in range(0, len(bond_types)):
-                    if bond_types[k] in total_bonds_evaluated:
-                        total_bonds_evaluated_reorg.append(bond_types[k])
-                assert total_bonds_evaluated_reorg == bond_types
-
-            elif '!atom_types 		Ktheta	Theta0			  atoms_types_per_utilized_FF' in line:
-                angle_types = [['A', 'B', 'A', '62.10013026', '112.00007'], ['A', 'B', 'D', '50.0775', '109.46989'],
-                               ['B', 'D', 'C', '55.04555449', '108.49987']]
-                total_angles_evaluated = []
-                total_angles_evaluated_reorg = []
-                for j in range(0, len(angle_types)):
-                    assert len(out_gomc[i + 1 + j].split('!')[0].split()) == 5
-                    if out_gomc[i + 1 + j].split('!')[0].split()[0:5] == angle_types[0] or angle_types[1] \
-                            or angle_types[2]:
-                        total_angles_evaluated.append(out_gomc[i + 1 + j].split('!')[0].split()[0:5])
-                for k in range(0, len(angle_types)):
-                    if angle_types[k] in total_angles_evaluated:
-                        total_angles_evaluated_reorg.append(angle_types[k])
-                assert total_angles_evaluated_reorg == angle_types
-
-            elif '!atom_types 			Kchi		n	delta		  atoms_types_per_utilized_FF' in line:
-                dihedral_types = [['A', 'B', 'D', 'C', '0.647232', '0', '90.0'],
-                                  ['A', 'B', 'D', 'C', '-0.392135', '1', '180.0'],
-                                  ['A', 'B', 'D', 'C', '-0.062518', '2', '0.0'],
-                                  ['A', 'B', 'D', 'C', '0.345615', '3', '180.0'],
-                                  ['A', 'B', 'D', 'C', '0.000000', '4', '0.0'],
-                                  ['A', 'B', 'D', 'C', '0.000000', '5', '180.0']
-                                  ]
-                for j in range(0, len(dihedral_types)):
-                    assert len(out_gomc[i + 1 + j].split('!')[0].split()) == 7
-                    assert out_gomc[i + 1 + j].split('!')[0].split()[0:7] == dihedral_types[j]
-
-            elif '!atype 	ignored	epsilon 	Rmin/2 		ignored	eps,1-4		Rmin/2,1-4		  ' \
-                 'atom_type_per_utilized_FF' in line:
-                nb_types = [['A', '0.00', '-0.194745937', '2.10461634058', '0.00', '-0.000000000', '2.10461634058'],
-                            ['B', '0.00', '-0.019872012', '2.43013033459', '0.00', '-0.000000000', '2.43013033459'],
-                            ['D', '0.00', '-0.184809990', '1.69491769295', '0.00', '-0.000000000', '1.69491769295'],
-                            ['C', '0.00', '-0.000000000', '5.61231024155', '0.00', '-0.000000000', '5.61231024155'],
-                            ]
-
-                for j in range(0, len(nb_types)):
-                    assert len(out_gomc[i + 1 + j].split('!')[0].split()) == 7
-                    assert out_gomc[i + 1 + j].split('!')[0].split()[0:7] == nb_types[j]
-
-            else:
-                pass
+                else:
+                    pass
 
     def test_save_charmm_ua_psf(self, two_propanol_ua):
         charmm = Charmm(two_propanol_ua, 'charmm_data_UA', ff_filename='charmm_data_UA',
@@ -223,21 +227,22 @@ class TestCharmmWriterData(BaseTest):
                         bead_to_atom_name_dict={'_CH3': 'C'})
         charmm.write_psf()
 
-        out_gomc = open('charmm_data_UA.psf', 'r').readlines()
-        for i, line in enumerate(out_gomc):
-            if '5 !NATOM' in line:
-                atom_type_charge_etc_list = [['1', 'SYS', '1', 'POL', 'C1', 'A', '0.000000', '15.0350'],
-                                             ['2', 'SYS', '1', 'POL', 'BD1', 'B', '0.265000', '13.0190'],
-                                             ['3', 'SYS', '1', 'POL', 'O1', 'D', '-0.700000', '15.9994'],
-                                             ['4', 'SYS', '1', 'POL', 'H1', 'C', '0.435000', '1.0079'],
-                                             ['5', 'SYS', '1', 'POL', 'C2', 'A', '0.000000', '15.0350'],
-                                             ]
+        with open('charmm_data_UA.psf', 'r') as fp:
+            out_gomc = fp.readlines()
+            for i, line in enumerate(out_gomc):
+                if '5 !NATOM' in line:
+                    atom_type_charge_etc_list = [['1', 'SYS', '1', 'POL', 'C1', 'A', '0.000000', '15.0350'],
+                                                 ['2', 'SYS', '1', 'POL', 'BD1', 'B', '0.265000', '13.0190'],
+                                                 ['3', 'SYS', '1', 'POL', 'O1', 'D', '-0.700000', '15.9994'],
+                                                 ['4', 'SYS', '1', 'POL', 'H1', 'C', '0.435000', '1.0079'],
+                                                 ['5', 'SYS', '1', 'POL', 'C2', 'A', '0.000000', '15.0350'],
+                                                 ]
 
-                for j in range(0, len(atom_type_charge_etc_list)):
-                    assert out_gomc[i + 1 + j].split()[0:8] == atom_type_charge_etc_list[j]
+                    for j in range(0, len(atom_type_charge_etc_list)):
+                        assert out_gomc[i + 1 + j].split()[0:8] == atom_type_charge_etc_list[j]
 
-            else:
-                pass
+                else:
+                    pass
 
     def test_save_charmm_ua_pdb(self, two_propanol_ua):
         charmm = Charmm(two_propanol_ua, 'charmm_data_UA', ff_filename='charmm_data_UA',
@@ -245,25 +250,26 @@ class TestCharmmWriterData(BaseTest):
                         bead_to_atom_name_dict={'_CH3': 'C'})
         charmm.write_pdb()
 
-        out_gomc = open('charmm_data_UA.pdb', 'r').readlines()
-        for i, line in enumerate(out_gomc):
-            if 'CRYST1' in line:
-                atom_type_res_part_1_list = [['ATOM', '1', 'C1', 'POL', 'A', '1'],
-                                             ['ATOM', '2', 'BD1', 'POL', 'A', '1'],
-                                             ['ATOM', '3', 'O1', 'POL', 'A', '1'],
-                                             ['ATOM', '4', 'H1', 'POL', 'A', '1'],
-                                             ['ATOM', '5', 'C2', 'POL', 'A', '1'],
-                                             ]
-                atom_type_res_part_2_list = [['1.00', '0.00', 'EP'], ['1.00', '0.00', 'EP'], ['1.00', '0.00', 'O'],
-                                             ['1.00', '0.00', 'H'], ['1.00', '0.00', 'EP']
-                                             ]
+        with open('charmm_data_UA.pdb', 'r') as fp:
+            out_gomc = fp.readlines()
+            for i, line in enumerate(out_gomc):
+                if 'CRYST1' in line:
+                    atom_type_res_part_1_list = [['ATOM', '1', 'C1', 'POL', 'A', '1'],
+                                                 ['ATOM', '2', 'BD1', 'POL', 'A', '1'],
+                                                 ['ATOM', '3', 'O1', 'POL', 'A', '1'],
+                                                 ['ATOM', '4', 'H1', 'POL', 'A', '1'],
+                                                 ['ATOM', '5', 'C2', 'POL', 'A', '1'],
+                                                 ]
+                    atom_type_res_part_2_list = [['1.00', '0.00', 'EP'], ['1.00', '0.00', 'EP'], ['1.00', '0.00', 'O'],
+                                                 ['1.00', '0.00', 'H'], ['1.00', '0.00', 'EP']
+                                                 ]
 
-                for j in range(0, len(atom_type_res_part_1_list)):
-                    assert out_gomc[i + 1 + j].split()[0:6] == atom_type_res_part_1_list[j]
-                    assert out_gomc[i + 1 + j].split()[9:12] == atom_type_res_part_2_list[j]
+                    for j in range(0, len(atom_type_res_part_1_list)):
+                        assert out_gomc[i + 1 + j].split()[0:6] == atom_type_res_part_1_list[j]
+                        assert out_gomc[i + 1 + j].split()[9:12] == atom_type_res_part_2_list[j]
 
-            else:
-                pass
+                else:
+                    pass
 
     def test_charmm_pdb_fix_angle_bond_fix_atoms(self, ethane_gomc, ethanol_gomc):
         test_box_ethane_propane = mb.fill_box(compound=[ethane_gomc, ethanol_gomc],
@@ -281,94 +287,96 @@ class TestCharmmWriterData(BaseTest):
         charmm.write_inp()
         charmm.write_pdb()
 
-        out_gomc = open('Test_fixes_angle_bond_atoms.inp', 'r').readlines()
-        for i, line in enumerate(out_gomc):
-            if '! atom_types 	mass 		  atomTypeForceFieldName_ResidueName ' \
-               '(i.e., atoms_type_per_utilized_FF)' in line:
-                mass_type_1 = [['*', 'A', '12.010780'], ['*', 'C', '1.007947'], ['*', 'B', '12.010780'],
-                               ['*', 'G', '12.010780'], ['*', 'E', '15.999430'], ['*', 'D', '1.007947'],
-                               ['*', 'F', '1.007947']
-                               ]
-                mass_type_2 = [['opls_135_ETH'], ['opls_140_ETH'], ['opls_135_ETO'], ['opls_157_ETO'],
-                               ['opls_154_ETO'], ['opls_140_ETO'], ['opls_155_ETO']
-                               ]
+        with open('Test_fixes_angle_bond_atoms.inp', 'r') as fp:
+            out_gomc = fp.readlines()
+            for i, line in enumerate(out_gomc):
+                if '! atom_types 	mass 		  atomTypeForceFieldName_ResidueName ' \
+                   '(i.e., atoms_type_per_utilized_FF)' in line:
+                    mass_type_1 = [['*', 'A', '12.010780'], ['*', 'C', '1.007947'], ['*', 'B', '12.010780'],
+                                   ['*', 'G', '12.010780'], ['*', 'E', '15.999430'], ['*', 'D', '1.007947'],
+                                   ['*', 'F', '1.007947']
+                                   ]
+                    mass_type_2 = [['opls_135_ETH'], ['opls_140_ETH'], ['opls_135_ETO'], ['opls_157_ETO'],
+                                   ['opls_154_ETO'], ['opls_140_ETO'], ['opls_155_ETO']
+                                   ]
 
-                for j in range(0, len(mass_type_1)):
-                    assert len(out_gomc[i + 1 + j].split('!')[0].split()) == 3
-                    assert out_gomc[i + 1 + j].split('!')[0].split()[0:3] == mass_type_1[j]
-                    assert out_gomc[i + 1 + j].split()[4:5] == mass_type_2[j]
+                    for j in range(0, len(mass_type_1)):
+                        assert len(out_gomc[i + 1 + j].split('!')[0].split()) == 3
+                        assert out_gomc[i + 1 + j].split('!')[0].split()[0:3] == mass_type_1[j]
+                        assert out_gomc[i + 1 + j].split()[4:5] == mass_type_2[j]
 
-            elif '!atom_types 	 Kb	b0 		  atoms_types_per_utilized_FF' in line:
-                bond_types = [['D', 'G', '340.0', '1.09'], ['E', 'G', '320.0', '1.41'],
-                              ['E', 'F', '553.0', '0.945'], ['A', 'C', '999999999999', '1.09'],
-                              ['B', 'D', '340.0', '1.09'], ['A', 'A', '999999999999', '1.529'],
-                              ['B', 'G', '268.0', '1.529']
-                              ]
-                total_bonds_evaluated = []
-                total_fixed_bonds = []
-                for j in range(0, 7):
-                    total_bonds_evaluated.append(out_gomc[i + 1 + j].split('!')[0].split()[0:4])
-                    if out_gomc[i + 1 + j].split('!')[0].split()[2:3] == ['999999999999']:
-                        total_fixed_bonds.append(out_gomc[i + 1 + j].split('!')[0].split()[0:4])
-                assert total_bonds_evaluated.sort() == bond_types.sort()
-                assert len(total_fixed_bonds) == 2
+                elif '!atom_types 	 Kb	b0 		  atoms_types_per_utilized_FF' in line:
+                    bond_types = [['D', 'G', '340.0', '1.09'], ['E', 'G', '320.0', '1.41'],
+                                  ['E', 'F', '553.0', '0.945'], ['A', 'C', '999999999999', '1.09'],
+                                  ['B', 'D', '340.0', '1.09'], ['A', 'A', '999999999999', '1.529'],
+                                  ['B', 'G', '268.0', '1.529']
+                                  ]
+                    total_bonds_evaluated = []
+                    total_fixed_bonds = []
+                    for j in range(0, 7):
+                        total_bonds_evaluated.append(out_gomc[i + 1 + j].split('!')[0].split()[0:4])
+                        if out_gomc[i + 1 + j].split('!')[0].split()[2:3] == ['999999999999']:
+                            total_fixed_bonds.append(out_gomc[i + 1 + j].split('!')[0].split()[0:4])
+                    assert total_bonds_evaluated.sort() == bond_types.sort()
+                    assert len(total_fixed_bonds) == 2
 
-            elif '!atom_types 		Ktheta	Theta0			  atoms_types_per_utilized_FF' in line:
-                fixed_angle_types = [['A', 'A', 'C', '999999999999', '110.70000'],
-                                     ['C', 'A', 'C', '999999999999', '107.80000']
-                                     ]
-                total_angles_evaluated = []
-                total_fixed_angles = []
-                for j in range(0, 9):
-                    if out_gomc[i + 1 + j].split('!')[0].split()[0:4] == (fixed_angle_types[0] or fixed_angle_types[1]):
-                        total_angles_evaluated.append(out_gomc[i + 1 + j].split('!')[0].split()[0:4])
-                    if out_gomc[i + 1 + j].split('!')[0].split()[3:4] == ['999999999999']:
-                        total_fixed_angles.append(out_gomc[i + 1 + j].split('!')[0].split()[0:4])
-                assert total_angles_evaluated.sort() == total_angles_evaluated.sort()
-                assert len(total_fixed_angles) == len(fixed_angle_types)
+                elif '!atom_types 		Ktheta	Theta0			  atoms_types_per_utilized_FF' in line:
+                    fixed_angle_types = [['A', 'A', 'C', '999999999999', '110.70000'],
+                                         ['C', 'A', 'C', '999999999999', '107.80000']
+                                         ]
+                    total_angles_evaluated = []
+                    total_fixed_angles = []
+                    for j in range(0, 9):
+                        if out_gomc[i + 1 + j].split('!')[0].split()[0:4] == (
+                                fixed_angle_types[0] or fixed_angle_types[1]):
+                            total_angles_evaluated.append(out_gomc[i + 1 + j].split('!')[0].split()[0:4])
+                        if out_gomc[i + 1 + j].split('!')[0].split()[3:4] == ['999999999999']:
+                            total_fixed_angles.append(out_gomc[i + 1 + j].split('!')[0].split()[0:4])
+                    assert total_angles_evaluated.sort() == total_angles_evaluated.sort()
+                    assert len(total_fixed_angles) == len(fixed_angle_types)
 
-            else:
-                pass
+                else:
+                    pass
 
-        out_gomc = open('Test_fixes_angle_bond_atoms.pdb', 'r').readlines()
-        for i, line in enumerate(out_gomc):
-            if 'CRYST1' in line:
-                assert out_gomc[i].split()[0:7] == ['CRYST1', '20.000', '20.000', '20.000',
-                                                    '90.00', '90.00', '90.00']
+        with open('Test_fixes_angle_bond_atoms.pdb', 'r') as fp:
+            out_gomc = fp.readlines()
+            for i, line in enumerate(out_gomc):
+                if 'CRYST1' in line:
+                    assert out_gomc[i].split()[0:7] == ['CRYST1', '20.000', '20.000', '20.000',
+                                                        '90.00', '90.00', '90.00']
 
-        for i, line in enumerate(out_gomc):
-            if 'CRYST1' in line:
-                atom_type_res_part_1_list = [['ATOM', '1', 'C1', 'ETH', 'A', '1'],
-                                             ['ATOM', '2', 'C2', 'ETH', 'A', '1'],
-                                             ['ATOM', '3', 'H1', 'ETH', 'A', '1'],
-                                             ['ATOM', '4', 'H2', 'ETH', 'A', '1'],
-                                             ['ATOM', '5', 'H3', 'ETH', 'A', '1'],
-                                             ['ATOM', '6', 'H4', 'ETH', 'A', '1'],
-                                             ['ATOM', '7', 'H5', 'ETH', 'A', '1'],
-                                             ['ATOM', '8', 'H6', 'ETH', 'A', '1'],
-                                             ['ATOM', '9', 'C1', 'ETO', 'A', '2'],
-                                             ['ATOM', '10', 'C2', 'ETO', 'A', '2'],
-                                             ['ATOM', '11', 'O1', 'ETO', 'A', '2'],
-                                             ['ATOM', '12', 'H1', 'ETO', 'A', '2'],
-                                             ['ATOM', '13', 'H2', 'ETO', 'A', '2'],
-                                             ['ATOM', '14', 'H3', 'ETO', 'A', '2'],
-                                             ['ATOM', '15', 'H4', 'ETO', 'A', '2'],
-                                             ['ATOM', '16', 'H5', 'ETO', 'A', '2'],
-                                             ['ATOM', '17', 'H6', 'ETO', 'A', '2'],
-                                             ]
-                atom_type_res_part_2_list = [['1.00', '1.00', 'C'], ['1.00', '1.00', 'C'], ['1.00', '1.00', 'H'],
-                                             ['1.00', '1.00', 'H'], ['1.00', '1.00', 'H'], ['1.00', '1.00', 'H'],
-                                             ['1.00', '1.00', 'H'], ['1.00', '1.00', 'H'],
-                                             ['1.00', '2.00', 'C'], ['1.00', '2.00', 'C'], ['1.00', '2.00', 'O'],
-                                             ['1.00', '2.00', 'H'], ['1.00', '2.00', 'H'], ['1.00', '2.00', 'H'],
-                                             ['1.00', '2.00', 'H'], ['1.00', '2.00', 'H'], ['1.00', '2.00', 'H']]
+                if 'CRYST1' in line:
+                    atom_type_res_part_1_list = [['ATOM', '1', 'C1', 'ETH', 'A', '1'],
+                                                 ['ATOM', '2', 'C2', 'ETH', 'A', '1'],
+                                                 ['ATOM', '3', 'H1', 'ETH', 'A', '1'],
+                                                 ['ATOM', '4', 'H2', 'ETH', 'A', '1'],
+                                                 ['ATOM', '5', 'H3', 'ETH', 'A', '1'],
+                                                 ['ATOM', '6', 'H4', 'ETH', 'A', '1'],
+                                                 ['ATOM', '7', 'H5', 'ETH', 'A', '1'],
+                                                 ['ATOM', '8', 'H6', 'ETH', 'A', '1'],
+                                                 ['ATOM', '9', 'C1', 'ETO', 'A', '2'],
+                                                 ['ATOM', '10', 'C2', 'ETO', 'A', '2'],
+                                                 ['ATOM', '11', 'O1', 'ETO', 'A', '2'],
+                                                 ['ATOM', '12', 'H1', 'ETO', 'A', '2'],
+                                                 ['ATOM', '13', 'H2', 'ETO', 'A', '2'],
+                                                 ['ATOM', '14', 'H3', 'ETO', 'A', '2'],
+                                                 ['ATOM', '15', 'H4', 'ETO', 'A', '2'],
+                                                 ['ATOM', '16', 'H5', 'ETO', 'A', '2'],
+                                                 ['ATOM', '17', 'H6', 'ETO', 'A', '2'],
+                                                 ]
+                    atom_type_res_part_2_list = [['1.00', '1.00', 'C'], ['1.00', '1.00', 'C'], ['1.00', '1.00', 'H'],
+                                                 ['1.00', '1.00', 'H'], ['1.00', '1.00', 'H'], ['1.00', '1.00', 'H'],
+                                                 ['1.00', '1.00', 'H'], ['1.00', '1.00', 'H'],
+                                                 ['1.00', '2.00', 'C'], ['1.00', '2.00', 'C'], ['1.00', '2.00', 'O'],
+                                                 ['1.00', '2.00', 'H'], ['1.00', '2.00', 'H'], ['1.00', '2.00', 'H'],
+                                                 ['1.00', '2.00', 'H'], ['1.00', '2.00', 'H'], ['1.00', '2.00', 'H']]
 
-                for j in range(0, len(atom_type_res_part_1_list)):
-                    assert out_gomc[i + 1 + j].split()[0:6] == atom_type_res_part_1_list[j]
-                    assert out_gomc[i + 1 + j].split()[9:12] == atom_type_res_part_2_list[j]
+                    for j in range(0, len(atom_type_res_part_1_list)):
+                        assert out_gomc[i + 1 + j].split()[0:6] == atom_type_res_part_1_list[j]
+                        assert out_gomc[i + 1 + j].split()[9:12] == atom_type_res_part_2_list[j]
 
-            else:
-                pass
+                else:
+                    pass
 
     def test_charmm_pdb_no_differenc_1_4_coul_scalars(self, two_propanol_ua, ethane_gomc):
         test_box_ethane_two_propanol_ua = mb.fill_box(compound=[two_propanol_ua, ethane_gomc],
@@ -413,54 +421,56 @@ class TestCharmmWriterData(BaseTest):
                         )
         charmm.write_pdb()
 
-        out_gomc = open('residue_reorder_box_sizing_box_0.pdb', 'r').readlines()
-        for i, line in enumerate(out_gomc):
-            if 'CRYST1' in line:
-                assert out_gomc[i].split()[0:7] == ['CRYST1', '30.000', '30.000', '30.000',
-                                                    '90.00', '90.00', '90.00'
-                                                    ]
-            if 'CRYST1' in line:
-                atom_type_res_part_1_list = [['ATOM', '1', 'C1', 'ETH', 'A', '1'],
-                                             ['ATOM', '2', 'C2', 'ETH', 'A', '1'],
-                                             ['ATOM', '3', 'H1', 'ETH', 'A', '1'],
-                                             ['ATOM', '4', 'H2', 'ETH', 'A', '1'],
-                                             ['ATOM', '5', 'H3', 'ETH', 'A', '1'],
-                                             ['ATOM', '6', 'H4', 'ETH', 'A', '1'],
-                                             ['ATOM', '7', 'H5', 'ETH', 'A', '1'],
-                                             ['ATOM', '8', 'H6', 'ETH', 'A', '1'],
-                                             ['ATOM', '9', 'C1', 'ETO', 'A', '2'],
-                                             ['ATOM', '10', 'C2', 'ETO', 'A', '2'],
-                                             ['ATOM', '11', 'O1', 'ETO', 'A', '2'],
-                                             ['ATOM', '12', 'H1', 'ETO', 'A', '2'],
-                                             ['ATOM', '13', 'H2', 'ETO', 'A', '2'],
-                                             ['ATOM', '14', 'H3', 'ETO', 'A', '2'],
-                                             ['ATOM', '15', 'H4', 'ETO', 'A', '2'],
-                                             ['ATOM', '16', 'H5', 'ETO', 'A', '2'],
-                                             ['ATOM', '17', 'H6', 'ETO', 'A', '2']
-                                             ]
+        with open('residue_reorder_box_sizing_box_0.pdb', 'r') as fp:
+            out_gomc = fp.readlines()
+            for i, line in enumerate(out_gomc):
+                if 'CRYST1' in line:
+                    assert out_gomc[i].split()[0:7] == ['CRYST1', '30.000', '30.000', '30.000',
+                                                        '90.00', '90.00', '90.00'
+                                                        ]
+                if 'CRYST1' in line:
+                    atom_type_res_part_1_list = [['ATOM', '1', 'C1', 'ETH', 'A', '1'],
+                                                 ['ATOM', '2', 'C2', 'ETH', 'A', '1'],
+                                                 ['ATOM', '3', 'H1', 'ETH', 'A', '1'],
+                                                 ['ATOM', '4', 'H2', 'ETH', 'A', '1'],
+                                                 ['ATOM', '5', 'H3', 'ETH', 'A', '1'],
+                                                 ['ATOM', '6', 'H4', 'ETH', 'A', '1'],
+                                                 ['ATOM', '7', 'H5', 'ETH', 'A', '1'],
+                                                 ['ATOM', '8', 'H6', 'ETH', 'A', '1'],
+                                                 ['ATOM', '9', 'C1', 'ETO', 'A', '2'],
+                                                 ['ATOM', '10', 'C2', 'ETO', 'A', '2'],
+                                                 ['ATOM', '11', 'O1', 'ETO', 'A', '2'],
+                                                 ['ATOM', '12', 'H1', 'ETO', 'A', '2'],
+                                                 ['ATOM', '13', 'H2', 'ETO', 'A', '2'],
+                                                 ['ATOM', '14', 'H3', 'ETO', 'A', '2'],
+                                                 ['ATOM', '15', 'H4', 'ETO', 'A', '2'],
+                                                 ['ATOM', '16', 'H5', 'ETO', 'A', '2'],
+                                                 ['ATOM', '17', 'H6', 'ETO', 'A', '2']
+                                                 ]
 
-                atom_type_res_part_2_list = [['1.00', '0.00', 'C'], ['1.00', '0.00', 'C'], ['1.00', '0.00', 'H'],
-                                             ['1.00', '0.00', 'H'], ['1.00', '0.00', 'H'], ['1.00', '0.00', 'H'],
-                                             ['1.00', '0.00', 'H'], ['1.00', '0.00', 'H'],
-                                             ['1.00', '0.00', 'C'], ['1.00', '0.00', 'C'], ['1.00', '0.00', 'O'],
-                                             ['1.00', '0.00', 'H'], ['1.00', '0.00', 'H'],
-                                             ['1.00', '0.00', 'H'], ['1.00', '0.00', 'H'],
-                                             ['1.00', '0.00', 'H'], ['1.00', '0.00', 'H']
-                                             ]
-                for j in range(0, len(atom_type_res_part_1_list)):
-                    assert out_gomc[i + 1 + j].split()[0:6] == atom_type_res_part_1_list[j]
-                    assert out_gomc[i + 1 + j].split()[9:12] == atom_type_res_part_2_list[j]
+                    atom_type_res_part_2_list = [['1.00', '0.00', 'C'], ['1.00', '0.00', 'C'], ['1.00', '0.00', 'H'],
+                                                 ['1.00', '0.00', 'H'], ['1.00', '0.00', 'H'], ['1.00', '0.00', 'H'],
+                                                 ['1.00', '0.00', 'H'], ['1.00', '0.00', 'H'],
+                                                 ['1.00', '0.00', 'C'], ['1.00', '0.00', 'C'], ['1.00', '0.00', 'O'],
+                                                 ['1.00', '0.00', 'H'], ['1.00', '0.00', 'H'],
+                                                 ['1.00', '0.00', 'H'], ['1.00', '0.00', 'H'],
+                                                 ['1.00', '0.00', 'H'], ['1.00', '0.00', 'H']
+                                                 ]
+                    for j in range(0, len(atom_type_res_part_1_list)):
+                        assert out_gomc[i + 1 + j].split()[0:6] == atom_type_res_part_1_list[j]
+                        assert out_gomc[i + 1 + j].split()[9:12] == atom_type_res_part_2_list[j]
 
-            else:
-                pass
+                else:
+                    pass
 
-        out_gomc = open('residue_reorder_box_sizing_box_1.pdb', 'r').readlines()
-        for i, line in enumerate(out_gomc):
-            if 'CRYST1' in line:
-                assert out_gomc[i].split()[0:7] == ['CRYST1', '40.000', '40.000', '40.000',
-                                                    '90.00', '90.00', '90.00']
-            else:
-                pass
+        with open('residue_reorder_box_sizing_box_1.pdb', 'r') as fp:
+            out_gomc = fp.readlines()
+            for i, line in enumerate(out_gomc):
+                if 'CRYST1' in line:
+                    assert out_gomc[i].split()[0:7] == ['CRYST1', '40.000', '40.000', '40.000',
+                                                        '90.00', '90.00', '90.00']
+                else:
+                    pass
 
     # test utils base 10 to base 16 converter
     def test_base_10_to_base_16(self):
@@ -563,7 +573,7 @@ class TestCharmmWriterData(BaseTest):
 
     # Tests for the mbuild.utils.specific_FF_to_residue.Specific_FF_to_residue() function
     def test_specific_ff_to_box_value_negative(self, ethane_gomc):
-        with pytest.raises(ValueError, match=r'Please enter all positive intergers > 0 for the box dimensions.'):
+        with pytest.raises(ValueError, match=r'Please enter positive \( > 0\) integers for the box dimensions.'):
             specific_ff_to_residue(ethane_gomc,
                                    forcefield_selection={ethane_gomc.name: 'oplsaa'},
                                    residues=[ethane_gomc.name],
@@ -573,7 +583,7 @@ class TestCharmmWriterData(BaseTest):
                                    )
 
     def test_specific_ff_to_box_value_str(self, ethane_gomc):
-        with pytest.raises(TypeError, match=r'Please enter all positive intergers > 0 for the box dimensions.'):
+        with pytest.raises(TypeError, match=r'Please enter positive \( > 0\) integers for the box dimensions.'):
             specific_ff_to_residue(ethane_gomc,
                                    forcefield_selection={ethane_gomc.name: 'oplsaa'},
                                    residues=[ethane_gomc.name],
@@ -598,7 +608,7 @@ class TestCharmmWriterData(BaseTest):
                                    )
 
     def test_specific_ff_wrong_ff_extention(self, ethane_gomc):
-        with pytest.raises(ValueError, match=r'Please make sure are entering the correct '
+        with pytest.raises(ValueError, match=r'Please make sure you are entering the correct '
                                              r'foyer FF name and not a path to a FF file. '
                                              r'If you are entering a path to a FF file, '
                                              r'please use the forcefield_files variable with the '
@@ -613,7 +623,7 @@ class TestCharmmWriterData(BaseTest):
                                    )
 
     def test_specific_all_residue_not_input(self, ethane_gomc, ethanol_gomc):
-        with pytest.raises(ValueError, match=r'ERROR: The initial number of atoms send to the force field analysis is '
+        with pytest.raises(ValueError, match=r'ERROR: The initial number of atoms sent to the force field analysis is '
                                              r'not the same as the final number of atoms analyzed. '
                                              r'The intial number of atoms was 17 and the final number of atoms was 8. '
                                              r'Please ensure that all the residues names that are in the initial '
@@ -699,7 +709,7 @@ class TestCharmmWriterData(BaseTest):
                                    )
 
     def test_specific_ff_to_residue_ffselection_wrong_path(self, ethane_gomc):
-        with pytest.raises(ValueError, match=r'Please make sure are entering the correct foyer FF path, '
+        with pytest.raises(ValueError, match=r'Please make sure you are entering the correct foyer FF path, '
                                              r'including the FF file name.xml If you are using the pre-build FF '
                                              r'files in foyer, please us the forcefield_names variable.'):
             specific_ff_to_residue(ethane_gomc,
@@ -745,7 +755,7 @@ class TestCharmmWriterData(BaseTest):
                                    )
 
     def test_specific_ff_to_no_residues(self, ethane_gomc):
-        with pytest.raises(ValueError, match=r'The residues variable is and empty list but there are '
+        with pytest.raises(ValueError, match=r'The residues variable is an empty list but there are '
                                              'forcefield_selection variables provided.'):
             specific_ff_to_residue(ethane_gomc,
                                    forcefield_selection={ethane_gomc.name: 'oplsaa'},
@@ -756,7 +766,7 @@ class TestCharmmWriterData(BaseTest):
                                    )
 
     def test_specific_ff_wrong_path(self, ethane_gomc):
-        with pytest.raises(ValueError, match=r'Please make sure are entering the correct foyer FF path, including '
+        with pytest.raises(ValueError, match=r'Please make sure you are entering the correct foyer FF path, including '
                                              r'the FF file name.xml If you are using the pre-build FF files in '
                                              r'foyer, please us the forcefield_names variable.'):
             specific_ff_to_residue(ethane_gomc,
@@ -768,8 +778,8 @@ class TestCharmmWriterData(BaseTest):
                                    )
 
     def test_specific_ff_wrong_foyer_name(self, ethane_gomc):
-        with pytest.raises(ValueError, match=r'Please make sure are entering the correct foyer FF name, '
-                                             r'or the correct file extention \(i.e., .xml, if required\).'):
+        with pytest.raises(ValueError, match=r'Please make sure you are entering the correct foyer FF name, '
+                                             r'or the correct file extension \(i.e., .xml, if required\).'):
             specific_ff_to_residue(ethane_gomc,
                                    forcefield_selection={ethane_gomc.name: 'xxx'},
                                    residues=[ethane_gomc.name],
@@ -819,7 +829,7 @@ class TestCharmmWriterData(BaseTest):
                                    )
 
     def test_specific_ff_to_no_atoms_in_residue(self):
-        with pytest.raises(ValueError, match=r'The residues variable is and empty list but there '
+        with pytest.raises(ValueError, match=r'The residues variable is an empty list but there '
                                              r'are forcefield_selection variables provided.'):
             empty_compound = mb.Compound()
 
@@ -832,7 +842,7 @@ class TestCharmmWriterData(BaseTest):
                                    )
 
     def test_charmm_methane_test_no_children(self, methane_ua_gomc):
-        with pytest.raises(TypeError, match=r'ERROR: If you are not providing and empty box, '
+        with pytest.raises(TypeError, match=r'ERROR: If you are not providing an empty box, '
                                             r'you need to specify the atoms/beads as children in the mb.Compound. '
                                             r'If you are providing and empty box, please do so by specifying and '
                                             r'mbuild Box \({}\)'.format(type(Box(lengths=[1, 1, 1])))
@@ -1029,25 +1039,26 @@ class TestCharmmWriterData(BaseTest):
                         bead_to_atom_name_dict={'_CH3': 'C'})
         charmm.write_pdb()
 
-        out_gomc = open('ffselection_string.pdb', 'r').readlines()
-        for i, line in enumerate(out_gomc):
-            if 'CRYST1' in line:
-                atom_type_res_part_1_list = [['ATOM', '1', 'C1', 'POL', 'A', '1'],
-                                             ['ATOM', '2', 'BD1', 'POL', 'A', '1'],
-                                             ['ATOM', '3', 'O1', 'POL', 'A', '1'],
-                                             ['ATOM', '4', 'H1', 'POL', 'A', '1'],
-                                             ['ATOM', '5', 'C2', 'POL', 'A', '1'],
-                                             ]
-                atom_type_res_part_2_list = [['1.00', '0.00', 'EP'], ['1.00', '0.00', 'EP'], ['1.00', '0.00', 'O'],
-                                             ['1.00', '0.00', 'H'], ['1.00', '0.00', 'EP']
-                                             ]
+        with open('ffselection_string.pdb', 'r') as fp:
+            out_gomc = fp.readlines()
+            for i, line in enumerate(out_gomc):
+                if 'CRYST1' in line:
+                    atom_type_res_part_1_list = [['ATOM', '1', 'C1', 'POL', 'A', '1'],
+                                                 ['ATOM', '2', 'BD1', 'POL', 'A', '1'],
+                                                 ['ATOM', '3', 'O1', 'POL', 'A', '1'],
+                                                 ['ATOM', '4', 'H1', 'POL', 'A', '1'],
+                                                 ['ATOM', '5', 'C2', 'POL', 'A', '1'],
+                                                 ]
+                    atom_type_res_part_2_list = [['1.00', '0.00', 'EP'], ['1.00', '0.00', 'EP'], ['1.00', '0.00', 'O'],
+                                                 ['1.00', '0.00', 'H'], ['1.00', '0.00', 'EP']
+                                                 ]
 
-                for j in range(0, len(atom_type_res_part_1_list)):
-                    assert out_gomc[i + 1 + j].split()[0:6] == atom_type_res_part_1_list[j]
-                    assert out_gomc[i + 1 + j].split()[9:12] == atom_type_res_part_2_list[j]
+                    for j in range(0, len(atom_type_res_part_1_list)):
+                        assert out_gomc[i + 1 + j].split()[0:6] == atom_type_res_part_1_list[j]
+                        assert out_gomc[i + 1 + j].split()[9:12] == atom_type_res_part_2_list[j]
 
-            else:
-                pass
+                else:
+                    pass
 
     def test_ff_selection_list(self, two_propanol_ua):
         with pytest.raises(TypeError, match=r'ERROR: The force field selection \(forcefield_selection\) '
@@ -1446,35 +1457,38 @@ class TestCharmmWriterData(BaseTest):
                         )
         charmm.write_pdb()
         charmm.write_psf()
-        out_gomc = open('charmm_empty_box.pdb', 'r').readlines()
-        for i, line in enumerate(out_gomc):
-            if 'CRYST1' in line:
-                assert out_gomc[i].split()[0:7] == ['CRYST1', '20.000', '20.000', '20.000',
-                                                    '90.00', '90.00', '90.00']
-                assert out_gomc[i + 1].split() == ['END']
 
-            else:
-                pass
+        with open('charmm_empty_box.pdb', 'r') as fp:
+            out_gomc = fp.readlines()
+            for i, line in enumerate(out_gomc):
+                if 'CRYST1' in line:
+                    assert out_gomc[i].split()[0:7] == ['CRYST1', '20.000', '20.000', '20.000',
+                                                        '90.00', '90.00', '90.00']
+                    assert out_gomc[i + 1].split() == ['END']
 
-        out_gomc = open('charmm_filled_box.pdb', 'r').readlines()
-        for i, line in enumerate(out_gomc):
-            if 'CRYST1' in line:
-                atom_type_res_part_1_list = [['ATOM', '1', 'C1', 'POL', 'A', '1'],
-                                             ['ATOM', '2', 'BD1', 'POL', 'A', '1'],
-                                             ['ATOM', '3', 'O1', 'POL', 'A', '1'],
-                                             ['ATOM', '4', 'H1', 'POL', 'A', '1'],
-                                             ['ATOM', '5', 'C2', 'POL', 'A', '1'],
-                                             ]
-                atom_type_res_part_2_list = [['1.00', '0.00', 'EP'], ['1.00', '0.00', 'EP'], ['1.00', '0.00', 'O'],
-                                             ['1.00', '0.00', 'H'], ['1.00', '0.00', 'EP']
-                                             ]
+                else:
+                    pass
 
-                for j in range(0, len(atom_type_res_part_1_list)):
-                    assert out_gomc[i + 1 + j].split()[0:6] == atom_type_res_part_1_list[j]
-                    assert out_gomc[i + 1 + j].split()[9:12] == atom_type_res_part_2_list[j]
+        with open('charmm_filled_box.pdb', 'r') as fp:
+            out_gomc = fp.readlines()
+            for i, line in enumerate(out_gomc):
+                if 'CRYST1' in line:
+                    atom_type_res_part_1_list = [['ATOM', '1', 'C1', 'POL', 'A', '1'],
+                                                 ['ATOM', '2', 'BD1', 'POL', 'A', '1'],
+                                                 ['ATOM', '3', 'O1', 'POL', 'A', '1'],
+                                                 ['ATOM', '4', 'H1', 'POL', 'A', '1'],
+                                                 ['ATOM', '5', 'C2', 'POL', 'A', '1'],
+                                                 ]
+                    atom_type_res_part_2_list = [['1.00', '0.00', 'EP'], ['1.00', '0.00', 'EP'], ['1.00', '0.00', 'O'],
+                                                 ['1.00', '0.00', 'H'], ['1.00', '0.00', 'EP']
+                                                 ]
 
-            else:
-                pass
+                    for j in range(0, len(atom_type_res_part_1_list)):
+                        assert out_gomc[i + 1 + j].split()[0:6] == atom_type_res_part_1_list[j]
+                        assert out_gomc[i + 1 + j].split()[9:12] == atom_type_res_part_2_list[j]
+
+                else:
+                    pass
 
     def test_box_1_empty_test_2(self, two_propanol_ua):
         empty_compound = Box(mins=[1, 1, 1], maxs=[4, 4, 4])
@@ -1488,35 +1502,38 @@ class TestCharmmWriterData(BaseTest):
                         )
         charmm.write_pdb()
         charmm.write_psf()
-        out_gomc = open('charmm_empty_box.pdb', 'r').readlines()
-        for i, line in enumerate(out_gomc):
-            if 'CRYST1' in line:
-                assert out_gomc[i].split()[0:7] == ['CRYST1', '30.000', '30.000', '30.000',
-                                                    '90.00', '90.00', '90.00']
-                assert out_gomc[i + 1].split() == ['END']
 
-            else:
-                pass
+        with open('charmm_empty_box.pdb', 'r') as fp:
+            out_gomc = fp.readlines()
+            for i, line in enumerate(out_gomc):
+                if 'CRYST1' in line:
+                    assert out_gomc[i].split()[0:7] == ['CRYST1', '30.000', '30.000', '30.000',
+                                                        '90.00', '90.00', '90.00']
+                    assert out_gomc[i + 1].split() == ['END']
 
-        out_gomc = open('charmm_filled_box.pdb', 'r').readlines()
-        for i, line in enumerate(out_gomc):
-            if 'CRYST1' in line:
-                atom_type_res_part_1_list = [['ATOM', '1', 'C1', 'POL', 'A', '1'],
-                                             ['ATOM', '2', 'BD1', 'POL', 'A', '1'],
-                                             ['ATOM', '3', 'O1', 'POL', 'A', '1'],
-                                             ['ATOM', '4', 'H1', 'POL', 'A', '1'],
-                                             ['ATOM', '5', 'C2', 'POL', 'A', '1'],
-                                             ]
-                atom_type_res_part_2_list = [['1.00', '0.00', 'EP'], ['1.00', '0.00', 'EP'], ['1.00', '0.00', 'O'],
-                                             ['1.00', '0.00', 'H'], ['1.00', '0.00', 'EP']
-                                             ]
+                else:
+                    pass
 
-                for j in range(0, len(atom_type_res_part_1_list)):
-                    assert out_gomc[i + 1 + j].split()[0:6] == atom_type_res_part_1_list[j]
-                    assert out_gomc[i + 1 + j].split()[9:12] == atom_type_res_part_2_list[j]
+        with open('charmm_filled_box.pdb', 'r') as fp:
+            out_gomc = fp.readlines()
+            for i, line in enumerate(out_gomc):
+                if 'CRYST1' in line:
+                    atom_type_res_part_1_list = [['ATOM', '1', 'C1', 'POL', 'A', '1'],
+                                                 ['ATOM', '2', 'BD1', 'POL', 'A', '1'],
+                                                 ['ATOM', '3', 'O1', 'POL', 'A', '1'],
+                                                 ['ATOM', '4', 'H1', 'POL', 'A', '1'],
+                                                 ['ATOM', '5', 'C2', 'POL', 'A', '1'],
+                                                 ]
+                    atom_type_res_part_2_list = [['1.00', '0.00', 'EP'], ['1.00', '0.00', 'EP'], ['1.00', '0.00', 'O'],
+                                                 ['1.00', '0.00', 'H'], ['1.00', '0.00', 'EP']
+                                                 ]
 
-            else:
-                pass
+                    for j in range(0, len(atom_type_res_part_1_list)):
+                        assert out_gomc[i + 1 + j].split()[0:6] == atom_type_res_part_1_list[j]
+                        assert out_gomc[i + 1 + j].split()[9:12] == atom_type_res_part_2_list[j]
+
+                else:
+                    pass
 
     def test_box_1_empty_test_3(self, two_propanol_ua):
         empty_compound = Box(lengths=[2, 2, 2])
@@ -1530,35 +1547,38 @@ class TestCharmmWriterData(BaseTest):
                         )
         charmm.write_pdb()
         charmm.write_psf()
-        out_gomc = open('charmm_empty_box.pdb', 'r').readlines()
-        for i, line in enumerate(out_gomc):
-            if 'CRYST1' in line:
-                assert out_gomc[i].split()[0:7] == ['CRYST1', '40.000', '50.000', '60.000',
-                                                    '90.00', '90.00', '90.00']
-                assert out_gomc[i + 1].split() == ['END']
 
-            else:
-                pass
+        with open('charmm_empty_box.pdb', 'r') as fp:
+            out_gomc = fp.readlines()
+            for i, line in enumerate(out_gomc):
+                if 'CRYST1' in line:
+                    assert out_gomc[i].split()[0:7] == ['CRYST1', '40.000', '50.000', '60.000',
+                                                        '90.00', '90.00', '90.00']
+                    assert out_gomc[i + 1].split() == ['END']
 
-        out_gomc = open('charmm_filled_box.pdb', 'r').readlines()
-        for i, line in enumerate(out_gomc):
-            if 'CRYST1' in line:
-                atom_type_res_part_1_list = [['ATOM', '1', 'C1', 'POL', 'A', '1'],
-                                             ['ATOM', '2', 'BD1', 'POL', 'A', '1'],
-                                             ['ATOM', '3', 'O1', 'POL', 'A', '1'],
-                                             ['ATOM', '4', 'H1', 'POL', 'A', '1'],
-                                             ['ATOM', '5', 'C2', 'POL', 'A', '1'],
-                                             ]
-                atom_type_res_part_2_list = [['1.00', '0.00', 'EP'], ['1.00', '0.00', 'EP'], ['1.00', '0.00', 'O'],
-                                             ['1.00', '0.00', 'H'], ['1.00', '0.00', 'EP']
-                                             ]
+                else:
+                    pass
 
-                for j in range(0, len(atom_type_res_part_1_list)):
-                    assert out_gomc[i + 1 + j].split()[0:6] == atom_type_res_part_1_list[j]
-                    assert out_gomc[i + 1 + j].split()[9:12] == atom_type_res_part_2_list[j]
+        with open('charmm_filled_box.pdb', 'r') as fp:
+            out_gomc = fp.readlines()
+            for i, line in enumerate(out_gomc):
+                if 'CRYST1' in line:
+                    atom_type_res_part_1_list = [['ATOM', '1', 'C1', 'POL', 'A', '1'],
+                                                 ['ATOM', '2', 'BD1', 'POL', 'A', '1'],
+                                                 ['ATOM', '3', 'O1', 'POL', 'A', '1'],
+                                                 ['ATOM', '4', 'H1', 'POL', 'A', '1'],
+                                                 ['ATOM', '5', 'C2', 'POL', 'A', '1'],
+                                                 ]
+                    atom_type_res_part_2_list = [['1.00', '0.00', 'EP'], ['1.00', '0.00', 'EP'], ['1.00', '0.00', 'O'],
+                                                 ['1.00', '0.00', 'H'], ['1.00', '0.00', 'EP']
+                                                 ]
 
-            else:
-                pass
+                    for j in range(0, len(atom_type_res_part_1_list)):
+                        assert out_gomc[i + 1 + j].split()[0:6] == atom_type_res_part_1_list[j]
+                        assert out_gomc[i + 1 + j].split()[9:12] == atom_type_res_part_2_list[j]
+
+                else:
+                    pass
 
     def test_box_1_empty_test_4(self):
         empty_compound_box_0 = Box(lengths=[2, 2, 2])
@@ -1589,7 +1609,7 @@ class TestCharmmWriterData(BaseTest):
                    )
 
     def test_box_1_empty_test_6(self, two_propanol_ua):
-        with pytest.raises(TypeError, match=r'ERROR: If you are not providing and empty box, '
+        with pytest.raises(TypeError, match=r'ERROR: If you are not providing an empty box, '
                                             r'you need to specify the atoms/beads as children in the mb.Compound. '
                                             r'If you are providing and empty box, please do so by specifying and '
                                             r'mbuild Box \({}\)'.format(type(Box(lengths=[1, 1, 1])))
@@ -1689,15 +1709,16 @@ class TestCharmmWriterData(BaseTest):
                         )
         charmm.write_inp()
 
-        out_gomc = open('charmm_data.inp', 'r').readlines()
-        for i, line in enumerate(out_gomc):
-            if '! atom_types 	mass 		  atomTypeForceFieldName_ResidueName ' \
-               '(i.e., atoms_type_per_utilized_FF)' in line:
-                mass_type_1 = [['*', 'A', '12.010780'], ['*', 'B', '1.007947']
-                               ]
-                mass_type_2 = [['opls_135_ETH'], ['opls_140_ETH']
-                               ]
-                for j in range(0, len(mass_type_1)):
-                    assert len(out_gomc[i + 1 + j].split('!')[0].split()) == 3
-                    assert out_gomc[i + 1 + j].split('!')[0].split()[0:3] == mass_type_1[j]
-                    assert out_gomc[i + 1 + j].split()[4:5] == mass_type_2[j]
+        with open('charmm_data.inp', 'r') as fp:
+            out_gomc = fp.readlines()
+            for i, line in enumerate(out_gomc):
+                if '! atom_types 	mass 		  atomTypeForceFieldName_ResidueName ' \
+                   '(i.e., atoms_type_per_utilized_FF)' in line:
+                    mass_type_1 = [['*', 'A', '12.010780'], ['*', 'B', '1.007947']
+                                   ]
+                    mass_type_2 = [['opls_135_ETH'], ['opls_140_ETH']
+                                   ]
+                    for j in range(0, len(mass_type_1)):
+                        assert len(out_gomc[i + 1 + j].split('!')[0].split()) == 3
+                        assert out_gomc[i + 1 + j].split('!')[0].split()[0:3] == mass_type_1[j]
+                        assert out_gomc[i + 1 + j].split()[4:5] == mass_type_2[j]
