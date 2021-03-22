@@ -40,29 +40,26 @@ class Polymer(Compound):
         self.end_groups = []
 
     def build(self, n, sequence='A'):
-    """Connect one or more components in a specified sequence.
+        """Connect one or more components in a specified sequence.
 
-    Parameters
-    ----------
-    monomers : mb.Compound or list of mb.Compound
-        The compound(s) to replicate.
-    n : int
-        The number of times to replicate the sequence.
-    sequence : str, optional, default='A'
-        A string of characters where each unique character represents one
-        repetition of a monomer. Characters in `sequence` are assigned to
-        monomers in the order assigned by the built-in `sorted()`.
-    """
+        Parameters
+        ----------
+        monomers : mb.Compound or list of mb.Compound
+            The compound(s) to replicate.
+        n : int
+            The number of times to replicate the sequence.
+        sequence : str, optional, default='A'
+            A string of characters where each unique character represents one
+            repetition of a monomer. Characters in `sequence` are assigned to
+            monomers in the order assigned by the built-in `sorted()`."""
         if n < 1:
             raise ValueError('n must be 1 or more')
         n_monomers = n*len(sequence)
 
-        if isinstance(self.monomers, Compound):
-            self.monomers = (self.monomers,)
         for monomer in self.monomers:
             for label in self.port_labels:
                 assert_port_exists(label, monomer)
-
+                
         unique_seq_ids = sorted(set(sequence))
         if len(self.monomers) != len(unique_seq_ids):
             raise ValueError('Number of monomers passed to `Polymer` class must'
@@ -105,7 +102,7 @@ class Polymer(Compound):
 
         if not self.end_groups: # Cap each end with Hydrogens
             hydrogen = H()
-            hydrogen['up'].update_separation(0.0547)
+            hydrogen['up'].update_separation(0.0547) # Defaut to H-C bond len
             hydrogen_2 = clone(hydrogen)
             self.end_groups.extend([hydrogen, hydrogen_2])
             head_port.update_separation(0.0547)
@@ -126,8 +123,8 @@ class Polymer(Compound):
                      tail_port
                      )
         
-    def add_monomer(self, monomer, bonding_indices, separation,
-                    port_labels=['A', 'B'], orientation=None,
+    def add_monomer(self, compound, bonding_indices, separation,
+                    port_labels=['A', 'B'], orientation=[None, None],
                     replace=True):
         """
         Add an mBuild compound to self.monomers which will be used to build the polymer.
@@ -135,8 +132,8 @@ class Polymer(Compound):
         
         Parameters
         ----------
-        monomer : mb.Compound
-            A compound of an individual monomer
+        compound : mb.Compound
+            A compound of the individual monomer
         bonding_indices : list of int of length 2
             The particle indicies of monomer that represent the polymer
             bonding sites. You can specify the indices of particles that will
@@ -174,15 +171,15 @@ class Polymer(Compound):
         else:
             self.port_labels.extend(port_labels)
 
-        for idx, label in zip(bonding_indices, port_labels):
-            _add_port(monomer, label, idx, separation, orientation, replace)
+        for idx, label, orientation in zip(bonding_indices, port_labels, orientation):
+            _add_port(compound, label, idx, separation, orientation, replace)
         if replace:
-            remove_atom1 = monomer[bonding_indices[0]]
-            remove_atom2 = monomer[bonding_indices[1]]
-            monomer.remove(remove_atom1)
-            monomer.remove(remove_atom2)
+            remove_atom1 = compound[bonding_indices[0]]
+            remove_atom2 = compound[bonding_indices[1]]
+            compound.remove(remove_atom1)
+            compound.remove(remove_atom2)
 
-        self.monomers.append(monomer)
+        self.monomers.append(compound)
 
     def add_end_groups(self, compound, bond_index, separation, orientation=None, replace=True):
         """
