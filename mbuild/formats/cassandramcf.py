@@ -104,7 +104,12 @@ def write_mcf(structure, filename, angle_style,
             if (structure.combining_rule == 'geometric' or
                     structure.combining_rule == 'lorentz'):
                 combined_eps = sqrt(type1_eps*type2_eps)
-                lj14 = scaled_eps/combined_eps
+                if combined_eps == 0:
+                    lj14 = 0.0
+                    warnings.warn('Unable to infer LJ 1-4 scaling'
+                        'factor. Setting to {:.1f}'.format(lj14))
+                else:
+                    lj14 = scaled_eps/combined_eps
             else:
                 lj14 = 0.0
                 warnings.warn('Unable to infer LJ 1-4 scaling'
