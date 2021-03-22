@@ -114,7 +114,7 @@ class Port(Compound):
             warn("This port is already being used and changing its orientation"
                     " will have no effect on the direction between particles.")
 
-        orientation = np.asarray(orientation)
+        orientation = np.asarray(orientation).reshape(3,)
         down = self.labels['down']
         up = self.labels['up']
 
