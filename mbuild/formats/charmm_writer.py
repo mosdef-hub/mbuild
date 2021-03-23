@@ -1181,7 +1181,7 @@ class Charmm:
         # value to check for errors, with  self.input_error = True or False. Set to False initally
         self.input_error = False
 
-        if not isinstance(self.structure_box_0, Compound) and not isinstance(self.structure_box_0, Box):
+        if not isinstance(self.structure_box_0, (Compound, Box)):
             self.input_error = True
             print_error_message = 'ERROR: The structure_box_0 expected to be of type: ' \
                                   '{} or {}, received: {}'.format(type(Compound()),
@@ -1189,8 +1189,7 @@ class Charmm:
                                                                   type(structure_box_0))
             raise TypeError(print_error_message)
 
-        if self.structure_box_1 is not None and not isinstance(self.structure_box_1, Compound) \
-                and not isinstance(self.structure_box_1, Box):
+        if self.structure_box_1 is not None and not isinstance(self.structure_box_1, (Compound, Box)):
             self.input_error = True
             print_error_message = 'ERROR: The structure_box_1 expected to be of type: ' \
                                   '{} or {}, received: {}'.format(type(Compound()),

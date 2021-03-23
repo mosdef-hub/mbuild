@@ -94,7 +94,7 @@ def specific_ff_to_residue(structure,
                               'Please install it using conda install -c conda-forge foyer'
         raise ImportError(print_error_message)
 
-    if not isinstance(structure, Compound) and not isinstance(structure, mb.Box):
+    if not isinstance(structure, (Compound, mb.Box)):
         print_error_message = 'ERROR: The structure expected to be of type: ' \
                               '{} or {}, received: {}'.format(type(Compound()),
                                                               type(mb.Box(lengths=[1, 1, 1])),
