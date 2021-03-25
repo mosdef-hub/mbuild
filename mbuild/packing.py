@@ -259,7 +259,6 @@ def fill_box(
             filled_xyz.name, update_port_locations=update_port_locations
         )
         filled.box = box
-        filled.periodicity = np.asarray(box.lengths, dtype=np.float32)
 
     # ensure that the temporary files are removed from the machine after filling
     finally:
