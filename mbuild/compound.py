@@ -166,7 +166,8 @@ class Compound(object):
                 " and 'box'. Since periodicity is deprecated, "
                 "you should specify 'box'."
             )
-        self.box = box
+        self._box = None
+        self._box = box
         if periodicity is not None:
             self.periodicity = periodicity
 
@@ -1016,7 +1017,7 @@ class Compound(object):
     @periodicity.setter
     def periodicity(self, periods):
         if self.box is None:
-            self.box = Box.from_lengths_angles(lengths=periods, angles=[90.0, 90.0, 90.0])
+            self.box = self.get_boundingbox()
         else:
             angles = self.box.angles
             self.box = Box.from_lengths_angles(lengths=periods, angles=angles)
@@ -1027,7 +1028,7 @@ class Compound(object):
 
     @box.setter
     def box(self, box):
-        if box is not None and type(box) != Box:
+        if not isinstance(box, Box):
             raise TypeError("box must be specified as an mbuild.Box")
         if self.port_particle and box is not None:
             raise ValueError("Ports cannot have a box")
@@ -2323,10 +2324,10 @@ class Compound(object):
 
         newone.name = deepcopy(self.name)
         newone._element = deepcopy(self.element)
-        newone.periodicity = deepcopy(self.periodicity)
         newone._pos = deepcopy(self._pos)
         newone.port_particle = deepcopy(self.port_particle)
-        newone.box = deepcopy(self.box)
+        newone._box = deepcopy(self._box)
+        newone.periodicity = deepcopy(self.periodicity)
         newone._check_if_contains_rigid_bodies = deepcopy(
             self._check_if_contains_rigid_bodies)
         newone._contains_rigid = deepcopy(self._contains_rigid)
