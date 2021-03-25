@@ -1274,7 +1274,7 @@ class Charmm:
             print('write_gomcdata: forcefield_selection = ' + str(self.forcefield_selection) 
                   + ', ' + 'residues = ' + str(self.residues)
                   )
-            if not isinstance(self.forcefield_selection, dict) and not isinstance(self.forcefield_selection, str):
+            if not isinstance(self.forcefield_selection, (dict, str)):
                 self.input_error = True
                 print_error_message = 'ERROR: The force field selection (forcefield_selection) '\
                                       'is not a string or a dictionary with all the residues specified ' \
