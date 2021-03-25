@@ -23,6 +23,7 @@ from mbuild.periodic_kdtree import PeriodicCKDTree
 from mbuild.utils.io import run_from_ipython, import_
 from mbuild.utils.jsutils import overwrite_nglview_default
 from mbuild.utils.exceptions import RemovedFuncError
+from mbuild.utils.decorators import deprecated_property
 from mbuild.coordinate_transform import _translate, _rotate
 
 
@@ -1015,10 +1016,10 @@ class Compound(object):
     @periodicity.setter
     def periodicity(self, periods):
         if self.box is None:
-            self.box = Box(lengths=periods)
+            self.box = Box.from_lengths_angles(lengths=periods, angles=[90.0, 90.0, 90.0])
         else:
             angles = self.box.angles
-            self.box = Box(lengths=periods, angles=angles)
+            self.box = Box.from_lengths_angles(lengths=periods, angles=angles)
 
     @property
     def box(self):
@@ -2235,67 +2236,6 @@ class Compound(object):
         return conversion.from_pybel(pybel_mol=pybel_mol, compound=self,
             use_element=use_element, coords_only=coords_only,
             ignore_box_warn=ignore_box_warn)
-=======
-        openbabel = import_("openbabel")
-        self.name = pybel_mol.title.split('.')[0]
-        resindex_to_cmpd = {}
-
-        if coords_only:
-            raise Warning('coords_only=True not yet implemented for '
-                    'conversion from pybel')
-        # Iterating through pybel_mol for atom/residue information
-        # This could just as easily be implemented by
-        # an OBMolAtomIter from the openbabel library,
-        # but this seemed more convenient at time of writing
-        # pybel atoms are 1-indexed, coordinates in Angstrom
-        for atom in pybel_mol.atoms:
-            xyz = np.array(atom.coords)/10
-            if use_element:
-                try:
-                    temp_name = Element[atom.atomicnum]
-                except KeyError:
-                    warn("No element detected for atom at index "
-                            "{} with number {}, type {}".format(
-                                atom.idx, atom.atomicnum, atom.type))
-                    temp_name = atom.type
-            else:
-                temp_name = atom.type
-            temp = Particle(name=temp_name, pos=xyz)
-            if infer_hierarchy and hasattr(atom, 'residue'): 
-                # Is there a safer way to check for res?
-                if atom.residue.idx not in resindex_to_cmpd:
-                    res_cmpd = Compound(name=atom.residue.name)
-                    resindex_to_cmpd[atom.residue.idx] = res_cmpd
-                    self.add(res_cmpd)
-                resindex_to_cmpd[atom.residue.idx].add(temp)
-            else:
-                self.add(temp)
-
-        # Iterating through pybel_mol.OBMol for bond information
-        # Bonds are 0-indexed, but the atoms are 1-indexed
-        # Bond information doesn't appear stored in pybel_mol,
-        # so we need to look into the OBMol object,
-        # using an iterator from the openbabel library
-        for bond in openbabel.OBMolBondIter(pybel_mol.OBMol):
-            self.add_bond([self[bond.GetBeginAtomIdx()-1],
-                            self[bond.GetEndAtomIdx()-1]])
-
-        if hasattr(pybel_mol, 'unitcell'):
-            self.box = Box(
-                lengths=[pybel_mol.unitcell.GetA()/10,
-                         pybel_mol.unitcell.GetB()/10,
-                         pybel_mol.unitcell.GetC()/10],
-                angles=[pybel_mol.unitcell.GetAlpha(),
-                        pybel_mol.unitcell.GetBeta(),
-                        pybel_mol.unitcell.GetGamma()]
-            )
-        else:
-            if not ignore_box_warn:
-                warn("No unitcell detected for pybel.Molecule {}".format(pybel_mol))
-#       TODO: Decide how to gather PBC information from openbabel. Options may
-#             include storing it in .periodicity or writing a separate function
-#             that returns the box.
->>>>>>> rsdefever/add/box-pr2
 
     def to_intermol(self, molecule_types=None): # pragma: no cover
         """Create an InterMol system from a Compound.
@@ -2382,11 +2322,8 @@ class Compound(object):
         clone_of[self] = newone
 
         newone.name = deepcopy(self.name)
-<<<<<<< HEAD
         newone._element = deepcopy(self.element)
         newone.periodicity = deepcopy(self.periodicity)
-=======
->>>>>>> rsdefever/add/box-pr2
         newone._pos = deepcopy(self._pos)
         newone.port_particle = deepcopy(self.port_particle)
         newone.box = deepcopy(self.box)
