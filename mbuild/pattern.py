@@ -118,7 +118,7 @@ class Pattern(object):
             The name of the port located on `backfill` to attach to the host
         scale : bool, optional, default=True
             Scale the points in the pattern to the lengths of the `host`'s
-            `boundingbox` and shift them by the `boundingbox`'s mins
+            `boundingbox` and shift them by the hosts mins
 
         Returns
         -------

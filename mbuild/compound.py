@@ -166,7 +166,7 @@ class Compound(object):
                 " and 'box'. Since periodicity is deprecated, "
                 "you should specify 'box'."
             )
-        self._box = None
+        #self._box = None
         self._box = box
         if periodicity is not None:
             self.periodicity = periodicity
@@ -682,37 +682,9 @@ class Compound(object):
                         "compound box with that of Compound being added."
                     )
 
-
-        # If parent has no box --> inherit child box
-        # If parent has box --> keep unless inherit_box == True
-        # If inherit_box == True, parent box != None, child_box == None,
-        # keep parent box anyway and warn
-        # If inherit_box == False, child.box != None, warn
-        if self.box is None:
-            if new_child.box is not None:
-                self.box = new_child.box
-        else:
-            if inherit_box:
-                if new_child.box is None:
-                    warn(
-                        "The Compound you are adding has no box but "
-                        "inherit_box=True. The box of the original "
-                        "Compound will remain unchanged."
-                    )
-                else:
-                    self.box = new_child.box
-            else:
-                if new_child.box is not None:
-                    warn(
-                        "The Compound you are adding has a box. "
-                        "The box of the parent compound will be used. Use "
-                        "inherit_box = True if you wish to replace the parent "
-                        "compound box with that of Compound being added."
-                    )
-
         # Check that bounding box is within box after adding compound
         if self.box:
-            if (self.box.lengths < self.get_boundingbox().lengths).any():
+            if (np.array(self.box.lengths) < np.array(self.get_boundingbox().lengths)).any():
                 warn(
                     "After adding new Compound, Compound.box.lengths < "
                     "Compound.boundingbox.lengths. There may be particles "
@@ -1010,38 +982,23 @@ class Compound(object):
     @deprecated_property(warning_message)
     def periodicity(self):
         if self.box is None:
-            return np.array([0.,0.,0.])
+            return np.array([0.0, 0.0, 0.0])
         else:
             return self.box.lengths
 
     @periodicity.setter
     def periodicity(self, periods):
-        if self.box is None:
-            self.box = self.get_boundingbox()
+        # This handles the conversion from the old "standard"
+        # where compound.periodicity = [0,0,0] meant non-periodic
+        # to the new standard, where compound.box = None means
+        # non-periodic
+        if (np.array(periods) == [0, 0, 0]).any():
+            self.box = None
         else:
+            if self.box is None:
+                self.box = self.get_boundingbox()
             angles = self.box.angles
             self.box = Box.from_lengths_angles(lengths=periods, angles=angles)
-
-    @property
-    def box(self):
-        return self._box
-
-    @box.setter
-    def box(self, box):
-        if not isinstance(box, Box):
-            raise TypeError("box must be specified as an mbuild.Box")
-        if self.port_particle and box is not None:
-            raise ValueError("Ports cannot have a box")
-        self._box = box
-
-    @property
-    def mins(self):
-        return self.xyz.min(axis=0)
-
-    @property
-    def maxs(self):
-        return self.xyz.max(axis=0)
-
 
     @property
     def box(self):
@@ -1176,6 +1133,18 @@ class Compound(object):
         if np.all(np.isfinite(self.xyz)):
             return np.mean(self.xyz, axis=0)
 
+
+    @property
+    def mins(self):
+        """Return the mimimum x, y, z coordinate of any particle in this compound."""
+        return self.xyz.min(axis=0)
+
+    @property
+    def maxs(self):
+        """Return the maximum x, y, z coordinate of any particle in this compound."""
+        return self.xyz.max(axis=0)
+
+
     def get_boundingbox(self):
         """Compute the bounding box of the compound.
 
@@ -1193,8 +1162,6 @@ class Compound(object):
         mb.Lattice.get_populated_box method.
 
         """
-        mins = self.mins
-        maxs = self.maxs
 
         # case where only 1 particle exists
         is_one_particle = False
@@ -1218,9 +1185,9 @@ class Compound(object):
             v2 = np.asarray([[0.0, 1.0, 0.0]])
             v3 = np.asarray([[0.0, 0.0, 1.0]])
         else:
-            v1 = np.asarray((maxs[0] - mins[0], 0.0, 0.0))
-            v2 = np.asarray((0.0, maxs[1] - mins[1], 0.0))
-            v3 = np.asarray((0.0, 0.0, maxs[2] - mins[2]))
+            v1 = np.asarray((self.maxs[0] - self.mins[0], 0.0, 0.0))
+            v2 = np.asarray((0.0, self.maxs[1] - self.mins[1], 0.0))
+            v3 = np.asarray((0.0, 0.0, self.maxs[2] - self.mins[2]))
         vecs = [v1, v2, v3]
 
         # handle any missing dimensions (planar molecules)
@@ -1251,7 +1218,7 @@ class Compound(object):
         d = np.abs(xyz0 - xyz1)
         if self.box is not None:
             if np.allclose(self.box.angles, 90.0):
-                d = np.where(d > 0.5 * self.box.lengths, self.box.lengths - d, d)
+                d = np.where(d > 0.5 * np.array(self.box.lengths), np.array(self.box.lengths) - d, d)
             else:
                 raise NotImplementedError(
                     "Periodic distance calculation is not implemented "
@@ -2327,7 +2294,6 @@ class Compound(object):
         newone._pos = deepcopy(self._pos)
         newone.port_particle = deepcopy(self.port_particle)
         newone._box = deepcopy(self._box)
-        newone.periodicity = deepcopy(self.periodicity)
         newone._check_if_contains_rigid_bodies = deepcopy(
             self._check_if_contains_rigid_bodies)
         newone._contains_rigid = deepcopy(self._contains_rigid)
@@ -2370,7 +2336,6 @@ class Compound(object):
                         # Referrers must have been handled already, or the will
                         # be handled
 
-        newone.box = deepcopy(self.box)
         return newone
 
     def _clone_bonds(self, clone_of=None):

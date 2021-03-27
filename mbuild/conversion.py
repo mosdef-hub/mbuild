@@ -1022,39 +1022,24 @@ def to_parmed(compound,
     for atom1, atom2 in compound.bonds():
         bond = pmd.Bond(atom_mapping[atom1], atom_mapping[atom2])
         structure.bonds.append(bond)
-    # pad box with .25nm buffers
+
+    # If a box is not explicitly provided:
+    # (1) Grab from compound.box
+    # (2) Grab from compound.get_boundingbox()
     if box is None:
         if compound.box is not None:
             box = deepcopy(compound.box)
         else:
             box = compound.get_boundingbox()
-            compound_max = compound.maxs.tolist()
-            compound_min = compound.mins.tolist()
-            for dim, val in enumerate(compound.periodicity):
-                if val:
-                    compound_max[dim] = val
-                    compound_min[dim] = 0.0
-                else:
-                    compound_max[dim] += 0.25
-                    compound_min[dim] -= 0.25
-            box = Box.from_mins_maxs_angles(mins=compound_min, maxs=compound_max, angles=box.angles)
-    else:
-        # if periodicty is set, use it before bounding box
-        lengths = [box.Lx, box.Ly, box.Lz]
-        # if periodicity not defined, pad edge with .25nm buffer
-        for dim, val in enumerate(compound.periodicity):
-            if val:
-                lengths[dim] = val
-            else:
-                lengths[dim] += 0.25
-
-        box = Box.from_lengths_angles(lengths=lengths, angles=box.angles)
+            # Pad by an extra 0.5 nm (0.25 on each side) from bounding box
+            box = Box.from_lengths_angles(lengths=np.array(box.lengths)+0.5, angles=box.angles)
 
     box_vector = np.empty(6)
     box_vector[3:6] = box.angles
     for dim in range(3):
         box_vector[dim] = box.lengths[dim] * 10
     structure.box = box_vector
+
     return structure
 
 

@@ -576,28 +576,28 @@ class TestCompound(BaseTest):
 
     @pytest.mark.skipif(not has_mdtraj, reason="MDTraj not installed")
     def test_box_mdtraj(self, ethane):
-        box = mb.Box(lengths=[4.0, 5.0, 6.0])
+        box = mb.Box.from_lengths_angles(lengths=[4.0, 5.0, 6.0], angles=[90, 90, 90])
         assert ethane.box is None
         # (1) Specify box
         traj = ethane.to_trajectory(box=box)
         assert np.allclose(
-            traj_boundingbox.unitcell_lengths,
-            np.asarray(ethane.get_boundingbox().lengths) + 0.5
+            traj.unitcell_lengths,
+            [4.0, 5.0, 6.0]
         )
-        
         # (2) Extract from bounding box
         assert ethane.box is None
         traj = ethane.to_trajectory()
         assert np.allclose(
             # Comparison in nm
             traj.unitcell_lengths,
-            ethane.boundingbox.lengths + 0.5
+            np.array(ethane.get_boundingbox().lengths) + 0.5
         )
-        box = mb.Box.from_mins_maxs_angles(mins=np.zeros(3), maxs=8.0*np.ones(3), angles=[90.0, 90.0, 90.0])
-        traj_box = ethane.to_trajectory(box=box)
+        # (3) Box as part of compound
+        ethane.box = mb.Box.from_mins_maxs_angles(mins=np.zeros(3), maxs=8.0*np.ones(3), angles=[90.0, 90.0, 90.0])
+        traj = ethane.to_trajectory()
         assert np.allclose(
-            traj_box.unitcell_lengths,
-            np.asarray(box.lengths)
+            traj.unitcell_lengths,
+            np.asarray([8, 8, 8])
         )
 
     @pytest.mark.skipif(not has_mdtraj, reason="MDTraj not installed")
@@ -722,7 +722,7 @@ class TestCompound(BaseTest):
         assert np.allclose(compound2.xyz, compound3.xyz)
 
     def test_box_parmed(self, ethane):
-        box = mb.Box(lengths=[4.0, 5.0, 6.0])
+        box = mb.Box.from_lengths_angles(lengths=[4.0, 5.0, 6.0], angles=[90, 90, 90])
         assert ethane.box is None
         # (1) Specify box
         pmd = ethane.to_parmed(box=box)
@@ -738,7 +738,7 @@ class TestCompound(BaseTest):
         assert np.allclose(
             # Comparison in nm
             0.1 * pmd.box[0:3],
-            ethane.boundingbox.lengths + 0.5
+            np.array(ethane.get_boundingbox().lengths) + 0.5
         )
  
         # (3) Extract from self.box
@@ -804,22 +804,20 @@ class TestCompound(BaseTest):
         compound.add(h2o)
         tilted_box = mb.Box.from_lengths_angles(lengths=[2.0, 2.0, 2.0], angles=[90.0, 90.0, 120.0])
         structure = compound.to_parmed(box=tilted_box)
-        assert np.all(np.isclose(structure.box, [22.5, 22.5, 22.5, 90.0, 90.0, 120.0]))
+        assert np.all(np.isclose(structure.box, [20, 20, 20, 90.0, 90.0, 120.0]))
 
     def test_parmed_box_with_periodicity(self, h2o):
         compound = mb.Compound()
         compound.add(h2o)
-        tilted_box = mb.Box.from_lengths_angles(lengths=[2.0, 2.0, 2.0], angles=[90.0, 90.0, 120.0])
-        for i,val in enumerate(compound.periodicity):
-            compound.periodicity[i] = 2.0
-        structure = compound.to_parmed(box=tilted_box)
-        assert np.all(np.isclose(structure.box, [20.0, 20.0, 20.0, 90.0, 90.0, 120.0]))
+        compound.box = mb.Box.from_lengths_angles(lengths=[2.0, 2.0, 2.0], angles=[90.0, 90.0, 120.0])
+        structure = compound.to_parmed()
+        assert np.all(np.isclose(structure.box, [20, 20, 20, 90.0, 90.0, 120.0]))
 
     def test_min_periodic_dist(self, ethane):
         compound = mb.Compound(ethane)
         C_pos = np.array([atom.pos for atom in list(compound.particles_by_name('C'))])
         assert round(compound.min_periodic_distance(C_pos[0], C_pos[1]), 2) == 0.14
-        compound.box = mb.Box(lengths=[0.2, 0.2, 0.2])
+        compound.box = mb.Box.from_lengths_angles(lengths=[0.2, 0.2, 0.2], angles=[90, 90, 90])
         assert round(compound.min_periodic_distance(C_pos[0], C_pos[1]), 2) == 0.06
 
     def test_bond_graph(self, ch3):
@@ -1346,3 +1344,7 @@ class TestCompound(BaseTest):
         mol = mb.load("COC", smiles=True)
         for particle in mol.particles():
             assert particle.element is not None
+
+    def test_mins_maxs(self, benzene):
+        assert np.allclose(benzene.mins, [-0.2267, -0.15422, 0.])
+        assert np.allclose(benzene.maxs, [0.20318, 0.34207, 0.])

@@ -260,7 +260,7 @@ def _validate_box_vectors(box_vectors):
     If the three vectors are not following conventions 3-5, the matrix will
     be transformed to comply with them, and will also raise a warning.
     """
-    vecs = np.asarray(box_vectors, dtype=np.float)
+    vecs = np.asarray(box_vectors, dtype=np.float64)
     vecs.reshape(3, 3)
 
     return _normalize_box(vecs)
