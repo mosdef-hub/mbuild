@@ -72,7 +72,6 @@ stages:
 
           - bash: |
               source activate test-environment
-              python -m pip install pytest-azurepipelines
               python -m pytest -v --cov=mbuild --cov-report=html --pyargs mbuild
             displayName: Run Tests
 
@@ -127,7 +126,6 @@ stages:
 
           - script: |
               call activate test-environment
-              python -m pip install pytest-azurepipelines
               python -m pytest -v --cov=mbuild --cov-report=html --pyargs mbuild
             displayName: Run Tests
 
@@ -162,7 +160,6 @@ stages:
 
           - bash: |
               source activate bleeding-test-env
-              python -m pip install pytest-azurepipelines
               python -m pytest -v --cov=mbuild --cov-report=html --pyargs mbuild
             displayName: Run Tests
 
