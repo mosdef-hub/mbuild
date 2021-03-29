@@ -65,6 +65,10 @@ def create_hoomd_simulation(
     restart : str, optional, default=None
         Path to the gsd file from which to restart the simulation.
         https://hoomd-blue.readthedocs.io/en/v2.9.4/restartable-jobs.html
+        Note: It is assumed that the ParmEd structure and the system in
+        restart.gsd contain the same types. The ParmEd structure is still used
+        to initialize the forces, but restart.gsd is used to initialize the
+        system state (e.g., particle positions, momenta, etc).
 
     Returns
     ------
