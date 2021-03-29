@@ -4775,3 +4775,33 @@ class TestGOMCControlFileWriter(BaseTest):
             value = "TEST_FAILED"
 
         assert value == "GOMC_CONTROL_FILE_WRITTEN"
+
+        # try all case unspecific values
+        try:
+            value = gomc_control.write_gomc_control_file(charmm, 'test_save_NVT_bad_variables_part_8.conf',
+                                                         'GCMC', 10, 300,
+                                                         input_variables_dict={"MEMC_DataInput":
+                                                                                   [[1, 'ETH', ['C1', 'C2'],
+                                                                                     'ETO', ['C1', 'C2']]
+                                                                                    ],
+                                                                               "ChEmPot": {'ETH': -4000, "ETO": -8000},
+                                                                               "DisFreQ": 0.05,
+                                                                               "RotFreq": 0.05,
+                                                                               "InTraSwapFreq": 0.05,
+                                                                               "SwaPFreq": 0.00,
+                                                                               "ReGrowthFreq": 0.10,
+                                                                               "crankshaftfreq": 0.05,
+                                                                               "VolFrEQ": 0.0,
+                                                                               "MULtiParticleFreq": 0.1,
+                                                                               "IntRAMEMC-1Freq": 0.10,
+                                                                               "MEMC-1FREQ": 0.00,
+                                                                               "IntrAMEMC-2Freq": 0.20,
+                                                                               "MEMC-2FReq": 0.00,
+                                                                               "intramemc-3Freq": 0.20,
+                                                                               "memc-3Freq": 0.10,
+                                                                               }
+                                                         )
+        except:
+            value = "TEST_FAILED"
+
+        assert value == "GOMC_CONTROL_FILE_WRITTEN"
