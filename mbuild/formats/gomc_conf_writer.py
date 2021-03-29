@@ -2950,7 +2950,9 @@ class GOMCControl():
             bad_input_variables_values_set = set(bad_input_variables_values_list)
             bad_unique_input_variables_values_list = list(bad_input_variables_values_set)
             print_error_message = 'ERROR: The following input variables have ' \
-                                  'bad values: {}'.format(bad_unique_input_variables_values_list)
+                                  'bad values (check spelling and for empty spaces in the keys or that ' \
+                                  'the values are in the correct form with the acceptable values): ' \
+                                  '{}'.format(bad_unique_input_variables_values_list)
             raise ValueError(print_error_message)
 
         else:

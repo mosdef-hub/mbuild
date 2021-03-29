@@ -1352,50 +1352,64 @@ class TestGOMCControlFileWriter(BaseTest):
                         box_0=[1, 1, 1]
                         )
 
-        with pytest.raises(ValueError, match=r"ERROR: The following input variables have bad "
-                                             r"values: \['Restart'\]"):
+        with pytest.raises(ValueError, match=r"ERROR: The following input variables have "
+                                             r"bad values \(check spelling and for empty spaces in the keys or that "
+                                             r"the values are in the correct form with the acceptable values\)"
+                                             r": \['Restart'\]"):
             gomc_control.write_gomc_control_file(charmm, 'test_save_NVT_bad_variables_part_1.conf',
                                                  'NVT', 10, 300,
                                                  input_variables_dict={'Restart': 's', }
                                                  )
 
-        with pytest.raises(ValueError, match=r"ERROR: The following input variables have bad "
-                                             r"values: \['RestartCheckpoint'\]"):
+        with pytest.raises(ValueError, match=r"ERROR: The following input variables have "
+                                             r"bad values \(check spelling and for empty spaces in the keys or that "
+                                             r"the values are in the correct form with the acceptable values\)"
+                                             r": \['RestartCheckpoint'\]"):
             gomc_control.write_gomc_control_file(charmm, 'test_save_NVT_bad_variables_part_1.conf',
                                                  'NVT', 10, 300,
                                                  input_variables_dict={'RestartCheckpoint': 's', }
                                                  )
 
-        with pytest.raises(ValueError, match=r"ERROR: The following input variables have bad "
-                                             r"values: \['PRNG'\]"):
+        with pytest.raises(ValueError, match=r"ERROR: The following input variables have "
+                                             r"bad values \(check spelling and for empty spaces in the keys or that "
+                                             r"the values are in the correct form with the acceptable values\)"
+                                             r": \['PRNG'\]"):
             gomc_control.write_gomc_control_file(charmm, 'test_save_NVT_bad_variables_part_1.conf',
                                                  'NVT', 10, 300,
                                                  input_variables_dict={'PRNG': [1], }
                                                  )
 
-        with pytest.raises(ValueError, match=r"ERROR: The following input variables have bad "
-                                             r"values: \['ParaTypeCHARMM'\]"):
+        with pytest.raises(ValueError, match=r"ERROR: The following input variables have "
+                                             r"bad values \(check spelling and for empty spaces in the keys or that "
+                                             r"the values are in the correct form with the acceptable values\)"
+                                             r": \['ParaTypeCHARMM'\]"):
             gomc_control.write_gomc_control_file(charmm, 'test_save_NVT_bad_variables_part_1.conf',
                                                  'NVT', 10, 300,
                                                  input_variables_dict={'ParaTypeCHARMM': 's', }
                                                  )
 
-        with pytest.raises(ValueError, match=r"ERROR: The following input variables have bad "
-                                             r"values: \['ParaTypeMie'\]"):
+        with pytest.raises(ValueError, match=r"ERROR: The following input variables have "
+                                             r"bad values \(check spelling and for empty spaces in the keys or that "
+                                             r"the values are in the correct form with the acceptable values\)"
+                                             r": \['ParaTypeMie'\]"):
             gomc_control.write_gomc_control_file(charmm, 'test_save_NVT_bad_variables_part_1.conf',
                                                  'NVT', 10, 300,
                                                  input_variables_dict={'ParaTypeMie': 's', }
                                                  )
 
-        with pytest.raises(ValueError, match=r"ERROR: The following input variables have bad "
-                                             r"values: \['ParaTypeMARTINI'\]"):
+        with pytest.raises(ValueError, match=r"ERROR: The following input variables have "
+                                             r"bad values \(check spelling and for empty spaces in the keys or that "
+                                             r"the values are in the correct form with the acceptable values\)"
+                                             r": \['ParaTypeMARTINI'\]"):
             gomc_control.write_gomc_control_file(charmm, 'test_save_NVT_bad_variables_part_1.conf',
                                                  'NVT', 10, 300,
                                                  input_variables_dict={'ParaTypeMARTINI': 's', }
                                                  )
 
-        with pytest.raises(ValueError, match=r"ERROR: The following input variables have bad "
-                                             r"values: \['RcutCoulomb_box_0'\]"):
+        with pytest.raises(ValueError, match=r"ERROR: The following input variables have "
+                                             r"bad values \(check spelling and for empty spaces in the keys or that "
+                                             r"the values are in the correct form with the acceptable values\)"
+                                             r": \['RcutCoulomb_box_0'\]"):
             gomc_control.write_gomc_control_file(charmm, 'test_save_NVT_bad_variables_part_1.conf',
                                                  'NVT', 10, 300,
                                                  input_variables_dict={'RcutCoulomb_box_0': 's', }
@@ -1412,113 +1426,145 @@ class TestGOMCControlFileWriter(BaseTest):
                                                  input_variables_dict={'RcutCoulomb_box_1': 's', }
                                                  )
 
-        with pytest.raises(ValueError, match=r"ERROR: The following input variables have bad "
-                                             r"values: \['Pressure'\]"):
+        with pytest.raises(ValueError, match=r"ERROR: The following input variables have "
+                                             r"bad values \(check spelling and for empty spaces in the keys or that "
+                                             r"the values are in the correct form with the acceptable values\)"
+                                             r": \['Pressure'\]"):
             gomc_control.write_gomc_control_file(charmm, 'test_save_NVT_bad_variables_part_1.conf',
                                                  'NVT', 10, 300,
                                                  input_variables_dict={'Pressure': 's', }
                                                  )
 
-        with pytest.raises(ValueError, match=r"ERROR: The following input variables have bad "
-                                             r"values: \['Rcut'\]"):
+        with pytest.raises(ValueError, match=r"ERROR: The following input variables have "
+                                             r"bad values \(check spelling and for empty spaces in the keys or that "
+                                             r"the values are in the correct form with the acceptable values\)"
+                                             r": \['Rcut'\]"):
             gomc_control.write_gomc_control_file(charmm, 'test_save_NVT_bad_variables_part_1.conf',
                                                  'NVT', 10, 300,
                                                  input_variables_dict={'Rcut': 's', }
                                                  )
 
-        with pytest.raises(ValueError, match=r"ERROR: The following input variables have bad "
-                                             r"values: \['RcutLow'\]"):
+        with pytest.raises(ValueError, match=r"ERROR: The following input variables have "
+                                             r"bad values \(check spelling and for empty spaces in the keys or that "
+                                             r"the values are in the correct form with the acceptable values\)"
+                                             r": \['RcutLow'\]"):
             gomc_control.write_gomc_control_file(charmm, 'test_save_NVT_bad_variables_part_1.conf',
                                                  'NVT', 10, 300,
                                                  input_variables_dict={'RcutLow': 's', }
                                                  )
 
-        with pytest.raises(ValueError, match=r"ERROR: The following input variables have bad "
-                                             r"values: \['LRC'\]"):
+        with pytest.raises(ValueError, match=r"ERROR: The following input variables have "
+                                             r"bad values \(check spelling and for empty spaces in the keys or that "
+                                             r"the values are in the correct form with the acceptable values\)"
+                                             r": \['LRC'\]"):
             gomc_control.write_gomc_control_file(charmm, 'test_save_NVT_bad_variables_part_1.conf',
                                                  'NVT', 10, 300,
                                                  input_variables_dict={'LRC': 's', }
                                                  )
 
-        with pytest.raises(ValueError, match=r"ERROR: The following input variables have bad "
-                                             r"values: \['Exclude'\]"):
+        with pytest.raises(ValueError, match=r"ERROR: The following input variables have "
+                                             r"bad values \(check spelling and for empty spaces in the keys or that "
+                                             r"the values are in the correct form with the acceptable values\)"
+                                             r": \['Exclude'\]"):
             gomc_control.write_gomc_control_file(charmm, 'test_save_NVT_bad_variables_part_1.conf',
                                                  'NVT', 10, 300,
                                                  input_variables_dict={'Exclude': 's', }
                                                  )
 
-        with pytest.raises(ValueError, match=r"ERROR: The following input variables have bad "
-                                             r"values: \['Potential'\]"):
+        with pytest.raises(ValueError, match=r"ERROR: The following input variables have "
+                                             r"bad values \(check spelling and for empty spaces in the keys or that "
+                                             r"the values are in the correct form with the acceptable values\)"
+                                             r": \['Potential'\]"):
             gomc_control.write_gomc_control_file(charmm, 'test_save_NVT_bad_variables_part_1.conf',
                                                  'NVT', 10, 300,
                                                  input_variables_dict={'Potential': 's', }
                                                  )
 
-        with pytest.raises(ValueError, match=r"ERROR: The following input variables have bad "
-                                             r"values: \['Rswitch'\]"):
+        with pytest.raises(ValueError, match=r"ERROR: The following input variables have "
+                                             r"bad values \(check spelling and for empty spaces in the keys or that "
+                                             r"the values are in the correct form with the acceptable values\)"
+                                             r": \['Rswitch'\]"):
             gomc_control.write_gomc_control_file(charmm, 'test_save_NVT_bad_variables_part_1.conf',
                                                  'NVT', 10, 300,
                                                  input_variables_dict={'Rswitch': 's', }
                                                  )
 
-        with pytest.raises(ValueError, match=r"ERROR: The following input variables have bad "
-                                             r"values: \['ElectroStatic'\]"):
+        with pytest.raises(ValueError, match=r"ERROR: The following input variables have "
+                                             r"bad values \(check spelling and for empty spaces in the keys or that "
+                                             r"the values are in the correct form with the acceptable values\)"
+                                             r": \['ElectroStatic'\]"):
             gomc_control.write_gomc_control_file(charmm, 'test_save_NVT_bad_variables_part_1.conf',
                                                  'NVT', 10, 300,
                                                  input_variables_dict={'ElectroStatic': 's', }
                                                  )
 
-        with pytest.raises(ValueError, match=r"ERROR: The following input variables have bad "
-                                             r"values: \['Ewald'\]"):
+        with pytest.raises(ValueError, match=r"ERROR: The following input variables have "
+                                             r"bad values \(check spelling and for empty spaces in the keys or that "
+                                             r"the values are in the correct form with the acceptable values\)"
+                                             r": \['Ewald'\]"):
             gomc_control.write_gomc_control_file(charmm, 'test_save_NVT_bad_variables_part_1.conf',
                                                  'NVT', 10, 300,
                                                  input_variables_dict={'Ewald': 's', }
                                                  )
 
-        with pytest.raises(ValueError, match=r"ERROR: The following input variables have bad "
-                                             r"values: \['CachedFourier'\]"):
+        with pytest.raises(ValueError, match=r"ERROR: The following input variables have "
+                                             r"bad values \(check spelling and for empty spaces in the keys or that "
+                                             r"the values are in the correct form with the acceptable values\)"
+                                             r": \['CachedFourier'\]"):
             gomc_control.write_gomc_control_file(charmm, 'test_save_NVT_bad_variables_part_1.conf',
                                                  'NVT', 10, 300,
                                                  input_variables_dict={'CachedFourier': 's', }
                                                  )
 
-        with pytest.raises(ValueError, match=r"ERROR: The following input variables have bad "
-                                             r"values: \['Tolerance'\]"):
+        with pytest.raises(ValueError, match=r"ERROR: The following input variables have "
+                                             r"bad values \(check spelling and for empty spaces in the keys or that "
+                                             r"the values are in the correct form with the acceptable values\)"
+                                             r": \['Tolerance'\]"):
             gomc_control.write_gomc_control_file(charmm, 'test_save_NVT_bad_variables_part_1.conf',
                                                  'NVT', 10, 300,
                                                  input_variables_dict={'Tolerance': 's', }
                                                  )
 
-        with pytest.raises(ValueError, match=r"ERROR: The following input variables have bad "
-                                             r"values: \['Dielectric'\]"):
+        with pytest.raises(ValueError, match=r"ERROR: The following input variables have "
+                                             r"bad values \(check spelling and for empty spaces in the keys or that "
+                                             r"the values are in the correct form with the acceptable values\)"
+                                             r": \['Dielectric'\]"):
             gomc_control.write_gomc_control_file(charmm, 'test_save_NVT_bad_variables_part_1.conf',
                                                  'NVT', 10, 300,
                                                  input_variables_dict={'Dielectric': 's', }
                                                  )
 
-        with pytest.raises(ValueError, match=r"ERROR: The following input variables have bad "
-                                             r"values: \['PressureCalc'\]"):
+        with pytest.raises(ValueError, match=r"ERROR: The following input variables have "
+                                             r"bad values \(check spelling and for empty spaces in the keys or that "
+                                             r"the values are in the correct form with the acceptable values\)"
+                                             r": \['PressureCalc'\]"):
             gomc_control.write_gomc_control_file(charmm, 'test_save_NVT_bad_variables_part_1.conf',
                                                  'NVT', 10, 300,
                                                  input_variables_dict={'PressureCalc': 's', }
                                                  )
 
-        with pytest.raises(ValueError, match=r"ERROR: The following input variables have bad "
-                                             r"values: \['EqSteps'\]"):
+        with pytest.raises(ValueError, match=r"ERROR: The following input variables have "
+                                             r"bad values \(check spelling and for empty spaces in the keys or that "
+                                             r"the values are in the correct form with the acceptable values\)"
+                                             r": \['EqSteps'\]"):
             gomc_control.write_gomc_control_file(charmm, 'test_save_NVT_bad_variables_part_1.conf',
                                                  'NVT', 10, 300,
                                                  input_variables_dict={'EqSteps': 's', }
                                                  )
 
-        with pytest.raises(ValueError, match=r"ERROR: The following input variables have bad "
-                                             r"values: \['EqSteps'\]"):
+        with pytest.raises(ValueError, match=r"ERROR: The following input variables have "
+                                             r"bad values \(check spelling and for empty spaces in the keys or that "
+                                             r"the values are in the correct form with the acceptable values\)"
+                                             r": \['EqSteps'\]"):
             gomc_control.write_gomc_control_file(charmm, 'test_save_NVT_bad_variables_part_1.conf',
                                                  'NVT', 10, 300,
                                                  input_variables_dict={'EqSteps': 's', }
                                                  )
 
-        with pytest.raises(ValueError, match=r"ERROR: The following input variables have bad "
-                                             r"values: \['useConstantArea'\]"):
+        with pytest.raises(ValueError, match=r"ERROR: The following input variables have "
+                                             r"bad values \(check spelling and for empty spaces in the keys or that "
+                                             r"the values are in the correct form with the acceptable values\)"
+                                             r": \['useConstantArea'\]"):
             gomc_control.write_gomc_control_file(charmm, 'test_save_NVT_bad_variables_part_1.conf',
                                                  'NPT', 10, 300,
                                                  input_variables_dict={'useConstantArea': 's', }
@@ -1546,162 +1592,208 @@ class TestGOMCControlFileWriter(BaseTest):
                                                  input_variables_dict={'Fugacity': 's', }
                                                  )
 
-        with pytest.raises(ValueError, match=r"ERROR: The following input variables have bad "
-                                             r"values: \['CBMC_First'\]"):
+        with pytest.raises(ValueError, match=r"ERROR: The following input variables have "
+                                             r"bad values \(check spelling and for empty spaces in the keys or that "
+                                             r"the values are in the correct form with the acceptable values\)"
+                                             r": \['CBMC_First'\]"):
             gomc_control.write_gomc_control_file(charmm, 'test_save_NVT_bad_variables_part_1.conf',
                                                  'NVT', 10, 300,
                                                  input_variables_dict={'CBMC_First': 's', }
                                                  )
 
-        with pytest.raises(ValueError, match=r"ERROR: The following input variables have bad "
-                                             r"values: \['CBMC_Nth'\]"):
+        with pytest.raises(ValueError, match=r"ERROR: The following input variables have "
+                                             r"bad values \(check spelling and for empty spaces in the keys or that "
+                                             r"the values are in the correct form with the acceptable values\)"
+                                             r": \['CBMC_Nth'\]"):
             gomc_control.write_gomc_control_file(charmm, 'test_save_NVT_bad_variables_part_1.conf',
                                                  'NVT', 10, 300,
                                                  input_variables_dict={'CBMC_Nth': 's', }
                                                  )
 
-        with pytest.raises(ValueError, match=r"ERROR: The following input variables have bad "
-                                             r"values: \['CBMC_Ang'\]"):
+        with pytest.raises(ValueError, match=r"ERROR: The following input variables have "
+                                             r"bad values \(check spelling and for empty spaces in the keys or that "
+                                             r"the values are in the correct form with the acceptable values\)"
+                                             r": \['CBMC_Ang'\]"):
             gomc_control.write_gomc_control_file(charmm, 'test_save_NVT_bad_variables_part_1.conf',
                                                  'NVT', 10, 300,
                                                  input_variables_dict={'CBMC_Ang': 's', }
                                                  )
 
-        with pytest.raises(ValueError, match=r"ERROR: The following input variables have bad "
-                                             r"values: \['CBMC_Dih'\]"):
+        with pytest.raises(ValueError, match=r"ERROR: The following input variables have "
+                                             r"bad values \(check spelling and for empty spaces in the keys or that "
+                                             r"the values are in the correct form with the acceptable values\)"
+                                             r": \['CBMC_Dih'\]"):
             gomc_control.write_gomc_control_file(charmm, 'test_save_NVT_bad_variables_part_1.conf',
                                                  'NVT', 10, 300,
                                                  input_variables_dict={'CBMC_Dih': 's', }
                                                  )
 
-        with pytest.raises(ValueError, match=r"ERROR: The following input variables have bad "
-                                             r"values: \['OutputName'\]"):
+        with pytest.raises(ValueError, match=r"ERROR: The following input variables have "
+                                             r"bad values \(check spelling and for empty spaces in the keys or that "
+                                             r"the values are in the correct form with the acceptable values\)"
+                                             r": \['OutputName'\]"):
             gomc_control.write_gomc_control_file(charmm, 'test_save_NVT_bad_variables_part_1.conf',
                                                  'NVT', 10, 300,
                                                  input_variables_dict={'OutputName': 1, }
                                                  )
 
-        with pytest.raises(ValueError, match=r"ERROR: The following input variables have bad "
-                                             r"values: \['CoordinatesFreq'\]"):
+        with pytest.raises(ValueError, match=r"ERROR: The following input variables have "
+                                             r"bad values \(check spelling and for empty spaces in the keys or that "
+                                             r"the values are in the correct form with the acceptable values\)"
+                                             r": \['CoordinatesFreq'\]"):
             gomc_control.write_gomc_control_file(charmm, 'test_save_NVT_bad_variables_part_1.conf',
                                                  'NVT', 10, 300,
                                                  input_variables_dict={'CoordinatesFreq': 's', }
                                                  )
 
-        with pytest.raises(ValueError, match=r"ERROR: The following input variables have bad "
-                                             r"values: \['RestartFreq'\]"):
+        with pytest.raises(ValueError, match=r"ERROR: The following input variables have "
+                                             r"bad values \(check spelling and for empty spaces in the keys or that "
+                                             r"the values are in the correct form with the acceptable values\)"
+                                             r": \['RestartFreq'\]"):
             gomc_control.write_gomc_control_file(charmm, 'test_save_NVT_bad_variables_part_1.conf',
                                                  'NVT', 10, 300,
                                                  input_variables_dict={'RestartFreq': 's', }
                                                  )
 
-        with pytest.raises(ValueError, match=r"ERROR: The following input variables have bad "
-                                             r"values: \['CheckpointFreq'\]"):
+        with pytest.raises(ValueError, match=r"ERROR: The following input variables have "
+                                             r"bad values \(check spelling and for empty spaces in the keys or that "
+                                             r"the values are in the correct form with the acceptable values\)"
+                                             r": \['CheckpointFreq'\]"):
             gomc_control.write_gomc_control_file(charmm, 'test_save_NVT_bad_variables_part_1.conf',
                                                  'NVT', 10, 300,
                                                  input_variables_dict={'CheckpointFreq': 's', }
                                                  )
 
-        with pytest.raises(ValueError, match=r"ERROR: The following input variables have bad "
-                                             r"values: \['ConsoleFreq'\]"):
+        with pytest.raises(ValueError, match=r"ERROR: The following input variables have "
+                                             r"bad values \(check spelling and for empty spaces in the keys or that "
+                                             r"the values are in the correct form with the acceptable values\)"
+                                             r": \['ConsoleFreq'\]"):
             gomc_control.write_gomc_control_file(charmm, 'test_save_NVT_bad_variables_part_1.conf',
                                                  'NVT', 10, 300,
                                                  input_variables_dict={'ConsoleFreq': 's', }
                                                  )
 
-        with pytest.raises(ValueError, match=r"ERROR: The following input variables have bad "
-                                             r"values: \['BlockAverageFreq'\]"):
+        with pytest.raises(ValueError, match=r"ERROR: The following input variables have "
+                                             r"bad values \(check spelling and for empty spaces in the keys or that "
+                                             r"the values are in the correct form with the acceptable values\)"
+                                             r": \['BlockAverageFreq'\]"):
             gomc_control.write_gomc_control_file(charmm, 'test_save_NVT_bad_variables_part_1.conf',
                                                  'NVT', 10, 300,
                                                  input_variables_dict={'BlockAverageFreq': 's', }
                                                  )
 
-        with pytest.raises(ValueError, match=r"ERROR: The following input variables have bad "
-                                             r"values: \['HistogramFreq'\]"):
+        with pytest.raises(ValueError, match=r"ERROR: The following input variables have "
+                                             r"bad values \(check spelling and for empty spaces in the keys or that "
+                                             r"the values are in the correct form with the acceptable values\)"
+                                             r": \['HistogramFreq'\]"):
             gomc_control.write_gomc_control_file(charmm, 'test_save_NVT_bad_variables_part_1.conf',
                                                  'NVT', 10, 300,
                                                  input_variables_dict={'HistogramFreq': 's', }
                                                  )
 
-        with pytest.raises(ValueError, match=r"ERROR: The following input variables have bad "
-                                             r"values: \['DistName'\]"):
+        with pytest.raises(ValueError, match=r"ERROR: The following input variables have "
+                                             r"bad values \(check spelling and for empty spaces in the keys or that "
+                                             r"the values are in the correct form with the acceptable values\)"
+                                             r": \['DistName'\]"):
             gomc_control.write_gomc_control_file(charmm, 'test_save_NVT_bad_variables_part_1.conf',
                                                  'NVT', 10, 300,
                                                  input_variables_dict={'DistName': 1, }
                                                  )
 
-        with pytest.raises(ValueError, match=r"ERROR: The following input variables have bad "
-                                             r"values: \['HistName'\]"):
+        with pytest.raises(ValueError, match=r"ERROR: The following input variables have "
+                                             r"bad values \(check spelling and for empty spaces in the keys or that "
+                                             r"the values are in the correct form with the acceptable values\)"
+                                             r": \['HistName'\]"):
             gomc_control.write_gomc_control_file(charmm, 'test_save_NVT_bad_variables_part_1.conf',
                                                  'NVT', 10, 300,
                                                  input_variables_dict={'HistName': 1, }
                                                  )
 
-        with pytest.raises(ValueError, match=r"ERROR: The following input variables have bad "
-                                             r"values: \['RunNumber'\]"):
+        with pytest.raises(ValueError, match=r"ERROR: The following input variables have "
+                                             r"bad values \(check spelling and for empty spaces in the keys or that "
+                                             r"the values are in the correct form with the acceptable values\)"
+                                             r": \['RunNumber'\]"):
             gomc_control.write_gomc_control_file(charmm, 'test_save_NVT_bad_variables_part_1.conf',
                                                  'NVT', 10, 300,
                                                  input_variables_dict={'RunNumber': 's', }
                                                  )
 
-        with pytest.raises(ValueError, match=r"ERROR: The following input variables have bad "
-                                             r"values: \['RunLetter'\]"):
+        with pytest.raises(ValueError, match=r"ERROR: The following input variables have "
+                                             r"bad values \(check spelling and for empty spaces in the keys or that "
+                                             r"the values are in the correct form with the acceptable values\)"
+                                             r": \['RunLetter'\]"):
             gomc_control.write_gomc_control_file(charmm, 'test_save_NVT_bad_variables_part_1.conf',
                                                  'NVT', 10, 300,
                                                  input_variables_dict={'RunLetter': 1, }
                                                  )
 
-        with pytest.raises(ValueError, match=r"ERROR: The following input variables have bad "
-                                             r"values: \['SampleFreq'\]"):
+        with pytest.raises(ValueError, match=r"ERROR: The following input variables have "
+                                             r"bad values \(check spelling and for empty spaces in the keys or that "
+                                             r"the values are in the correct form with the acceptable values\)"
+                                             r": \['SampleFreq'\]"):
             gomc_control.write_gomc_control_file(charmm, 'test_save_NVT_bad_variables_part_1.conf',
                                                  'NVT', 10, 300,
                                                  input_variables_dict={'SampleFreq': 's', }
                                                  )
 
-        with pytest.raises(ValueError, match=r"ERROR: The following input variables have bad "
-                                             r"values: \['OutEnergy'\]"):
+        with pytest.raises(ValueError, match=r"ERROR: The following input variables have "
+                                             r"bad values \(check spelling and for empty spaces in the keys or that "
+                                             r"the values are in the correct form with the acceptable values\)"
+                                             r": \['OutEnergy'\]"):
             gomc_control.write_gomc_control_file(charmm, 'test_save_NVT_bad_variables_part_1.conf',
                                                  'NVT', 10, 300,
                                                  input_variables_dict={'OutEnergy': 's', }
                                                  )
 
-        with pytest.raises(ValueError, match=r"ERROR: The following input variables have bad "
-                                             r"values: \['OutPressure'\]"):
+        with pytest.raises(ValueError, match=r"ERROR: The following input variables have "
+                                             r"bad values \(check spelling and for empty spaces in the keys or that "
+                                             r"the values are in the correct form with the acceptable values\)"
+                                             r": \['OutPressure'\]"):
             gomc_control.write_gomc_control_file(charmm, 'test_save_NVT_bad_variables_part_1.conf',
                                                  'NVT', 10, 300,
                                                  input_variables_dict={'OutPressure': 's', }
                                                  )
 
-        with pytest.raises(ValueError, match=r"ERROR: The following input variables have bad "
-                                             r"values: \['OutMolNumber'\]"):
+        with pytest.raises(ValueError, match=r"ERROR: The following input variables have "
+                                             r"bad values \(check spelling and for empty spaces in the keys or that "
+                                             r"the values are in the correct form with the acceptable values\)"
+                                             r": \['OutMolNumber'\]"):
             gomc_control.write_gomc_control_file(charmm, 'test_save_NVT_bad_variables_part_1.conf',
                                                  'NVT', 10, 300,
                                                  input_variables_dict={'OutMolNumber': 's', }
                                                  )
 
-        with pytest.raises(ValueError, match=r"ERROR: The following input variables have bad "
-                                             r"values: \['OutDensity'\]"):
+        with pytest.raises(ValueError, match=r"ERROR: The following input variables have "
+                                             r"bad values \(check spelling and for empty spaces in the keys or that "
+                                             r"the values are in the correct form with the acceptable values\)"
+                                             r": \['OutDensity'\]"):
             gomc_control.write_gomc_control_file(charmm, 'test_save_NVT_bad_variables_part_1.conf',
                                                  'NVT', 10, 300,
                                                  input_variables_dict={'OutDensity': 's', }
                                                  )
 
-        with pytest.raises(ValueError, match=r"ERROR: The following input variables have bad "
-                                             r"values: \['OutVolume'\]"):
+        with pytest.raises(ValueError, match=r"ERROR: The following input variables have "
+                                             r"bad values \(check spelling and for empty spaces in the keys or that "
+                                             r"the values are in the correct form with the acceptable values\)"
+                                             r": \['OutVolume'\]"):
             gomc_control.write_gomc_control_file(charmm, 'test_save_NVT_bad_variables_part_1.conf',
                                                  'NVT', 10, 300,
                                                  input_variables_dict={'OutVolume': 's', }
                                                  )
 
-        with pytest.raises(ValueError, match=r"ERROR: The following input variables have bad "
-                                             r"values: \['OutSurfaceTension'\]"):
+        with pytest.raises(ValueError, match=r"ERROR: The following input variables have "
+                                             r"bad values \(check spelling and for empty spaces in the keys or that "
+                                             r"the values are in the correct form with the acceptable values\)"
+                                             r": \['OutSurfaceTension'\]"):
             gomc_control.write_gomc_control_file(charmm, 'test_save_NVT_bad_variables_part_1.conf',
                                                  'NVT', 10, 300,
                                                  input_variables_dict={'OutSurfaceTension': 's', }
                                                  )
 
-        with pytest.raises(ValueError, match=r"ERROR: The following input variables have bad "
-                                             r"values: \['FreeEnergyCalc'\]"):
+        with pytest.raises(ValueError, match=r"ERROR: The following input variables have "
+                                             r"bad values \(check spelling and for empty spaces in the keys or that "
+                                             r"the values are in the correct form with the acceptable values\)"
+                                             r": \['FreeEnergyCalc'\]"):
             gomc_control.write_gomc_control_file(charmm, 'test_save_NVT_bad_variables_part_1.conf',
                                                  'NVT', 10, 300,
                                                  input_variables_dict={"FreeEnergyCalc": 's',
@@ -1712,8 +1804,10 @@ class TestGOMCControlFileWriter(BaseTest):
                                                                        }
                                                  )
 
-        with pytest.raises(ValueError, match=r"ERROR: The following input variables have bad "
-                                             r"values: \['MoleculeType'\]"):
+        with pytest.raises(ValueError, match=r"ERROR: The following input variables have "
+                                             r"bad values \(check spelling and for empty spaces in the keys or that "
+                                             r"the values are in the correct form with the acceptable values\)"
+                                             r": \['MoleculeType'\]"):
             gomc_control.write_gomc_control_file(charmm, 'test_save_NVT_bad_variables_part_1.conf',
                                                  'NVT', 10, 300,
                                                  input_variables_dict={"FreeEnergyCalc": [True, 10000],
@@ -1724,8 +1818,10 @@ class TestGOMCControlFileWriter(BaseTest):
                                                                        }
                                                  )
 
-        with pytest.raises(ValueError, match=r"ERROR: The following input variables have bad "
-                                             r"values: \['MoleculeType'\]"):
+        with pytest.raises(ValueError, match=r"ERROR: The following input variables have "
+                                             r"bad values \(check spelling and for empty spaces in the keys or that "
+                                             r"the values are in the correct form with the acceptable values\)"
+                                             r": \['MoleculeType'\]"):
             gomc_control.write_gomc_control_file(charmm, 'test_save_NVT_bad_variables_part_1.conf',
                                                  'NVT', 10, 300,
                                                  input_variables_dict={"FreeEnergyCalc": [True, 10000],
@@ -1735,8 +1831,10 @@ class TestGOMCControlFileWriter(BaseTest):
                                                                        "LambdaCoulomb": [0.1, 0.3, 0.8, 0.8]}
                                                  )
 
-        with pytest.raises(ValueError, match=r"ERROR: The following input variables have bad "
-                                             r"values: \['MoleculeType'\]"):
+        with pytest.raises(ValueError, match=r"ERROR: The following input variables have "
+                                             r"bad values \(check spelling and for empty spaces in the keys or that "
+                                             r"the values are in the correct form with the acceptable values\)"
+                                             r": \['MoleculeType'\]"):
             gomc_control.write_gomc_control_file(charmm, 'test_save_NVT_bad_variables_part_1.conf',
                                                  'NVT', 10, 300,
                                                  input_variables_dict={"FreeEnergyCalc": [True, 10000],
@@ -1747,8 +1845,10 @@ class TestGOMCControlFileWriter(BaseTest):
                                                                        }
                                                  )
 
-        with pytest.raises(ValueError, match=r"ERROR: The following input variables have bad "
-                                             r"values: \['InitialState'\]"):
+        with pytest.raises(ValueError, match=r"ERROR: The following input variables have "
+                                             r"bad values \(check spelling and for empty spaces in the keys or that "
+                                             r"the values are in the correct form with the acceptable values\)"
+                                             r": \['InitialState'\]"):
             gomc_control.write_gomc_control_file(charmm, 'test_save_NVT_bad_variables_part_1.conf',
                                                  'NVT', 10, 300,
                                                  input_variables_dict={"FreeEnergyCalc": [True, 10000],
@@ -1759,8 +1859,10 @@ class TestGOMCControlFileWriter(BaseTest):
                                                                        }
                                                  )
 
-        with pytest.raises(ValueError, match=r"ERROR: The following input variables have bad "
-                                             r"values: \['LambdaVDW'\]"):
+        with pytest.raises(ValueError, match=r"ERROR: The following input variables have "
+                                             r"bad values \(check spelling and for empty spaces in the keys or that "
+                                             r"the values are in the correct form with the acceptable values\)"
+                                             r": \['LambdaVDW'\]"):
             gomc_control.write_gomc_control_file(charmm, 'test_save_NVT_bad_variables_part_1.conf',
                                                  'NVT', 10, 300,
                                                  input_variables_dict={"FreeEnergyCalc": [True, 10000],
@@ -1771,8 +1873,10 @@ class TestGOMCControlFileWriter(BaseTest):
                                                                        }
                                                  )
 
-        with pytest.raises(ValueError, match=r"ERROR: The following input variables have bad "
-                                             r"values: \['LambdaCoulomb'\]"):
+        with pytest.raises(ValueError, match=r"ERROR: The following input variables have "
+                                             r"bad values \(check spelling and for empty spaces in the keys or that "
+                                             r"the values are in the correct form with the acceptable values\)"
+                                             r": \['LambdaCoulomb'\]"):
             gomc_control.write_gomc_control_file(charmm, 'test_save_NVT_bad_variables_part_1.conf',
                                                  'NVT', 10, 300,
                                                  input_variables_dict={"FreeEnergyCalc": [True, 10000],
@@ -1792,141 +1896,181 @@ class TestGOMCControlFileWriter(BaseTest):
                                                                        }
                                                  )
 
-        with pytest.raises(ValueError, match=r"ERROR: The following input variables have bad "
-                                             r"values: \['ScaleCoulomb'\]"):
+        with pytest.raises(ValueError, match=r"ERROR: The following input variables have "
+                                             r"bad values \(check spelling and for empty spaces in the keys or that "
+                                             r"the values are in the correct form with the acceptable values\)"
+                                             r": \['ScaleCoulomb'\]"):
             gomc_control.write_gomc_control_file(charmm, 'test_save_NVT_bad_variables_part_1.conf',
                                                  'NVT', 10, 300,
                                                  input_variables_dict={'ScaleCoulomb': 's', }
                                                  )
 
-        with pytest.raises(ValueError, match=r"ERROR: The following input variables have bad "
-                                             r"values: \['ScalePower'\]"):
+        with pytest.raises(ValueError, match=r"ERROR: The following input variables have "
+                                             r"bad values \(check spelling and for empty spaces in the keys or that "
+                                             r"the values are in the correct form with the acceptable values\)"
+                                             r": \['ScalePower'\]"):
             gomc_control.write_gomc_control_file(charmm, 'test_save_NVT_bad_variables_part_1.conf',
                                                  'NVT', 10, 300,
                                                  input_variables_dict={'ScalePower': 's', }
                                                  )
 
-        with pytest.raises(ValueError, match=r"ERROR: The following input variables have bad "
-                                             r"values: \['ScaleAlpha'\]"):
+        with pytest.raises(ValueError, match=r"ERROR: The following input variables have "
+                                             r"bad values \(check spelling and for empty spaces in the keys or that "
+                                             r"the values are in the correct form with the acceptable values\)"
+                                             r": \['ScaleAlpha'\]"):
             gomc_control.write_gomc_control_file(charmm, 'test_save_NVT_bad_variables_part_1.conf',
                                                  'NVT', 10, 300,
                                                  input_variables_dict={'ScaleAlpha': 's', }
                                                  )
 
-        with pytest.raises(ValueError, match=r"ERROR: The following input variables have bad "
-                                             r"values: \['MinSigma'\]"):
+        with pytest.raises(ValueError, match=r"ERROR: The following input variables have "
+                                             r"bad values \(check spelling and for empty spaces in the keys or that "
+                                             r"the values are in the correct form with the acceptable values\)"
+                                             r": \['MinSigma'\]"):
             gomc_control.write_gomc_control_file(charmm, 'test_save_NVT_bad_variables_part_1.conf',
                                                  'NVT', 10, 300,
                                                  input_variables_dict={'MinSigma': 's', }
                                                  )
 
-        with pytest.raises(ValueError, match=r"ERROR: The following input variables have bad "
-                                             r"values: \['ExchangeVolumeDim'\]"):
+        with pytest.raises(ValueError, match=r"ERROR: The following input variables have "
+                                             r"bad values \(check spelling and for empty spaces in the keys or that "
+                                             r"the values are in the correct form with the acceptable values\)"
+                                             r": \['ExchangeVolumeDim'\]"):
             gomc_control.write_gomc_control_file(charmm, 'test_save_NVT_bad_variables_part_1.conf',
                                                  'NVT', 10, 300,
                                                  input_variables_dict={'ExchangeVolumeDim': 's', }
                                                  )
 
-        with pytest.raises(ValueError, match=r"ERROR: The following input variables have bad "
-                                             r"values: \['MEMC_DataInput'\]"):
+        with pytest.raises(ValueError, match=r"ERROR: The following input variables have "
+                                             r"bad values \(check spelling and for empty spaces in the keys or that "
+                                             r"the values are in the correct form with the acceptable values\)"
+                                             r": \['MEMC_DataInput'\]"):
             gomc_control.write_gomc_control_file(charmm, 'test_save_NVT_bad_variables_part_1.conf',
                                                  'NVT', 10, 300,
                                                  input_variables_dict={'MEMC_DataInput': 's', }
                                                  )
 
-        with pytest.raises(ValueError, match=r"ERROR: The following input variables have bad "
-                                             r"values: \['DisFreq'\]"):
+        with pytest.raises(ValueError, match=r"ERROR: The following input variables have "
+                                             r"bad values \(check spelling and for empty spaces in the keys or that "
+                                             r"the values are in the correct form with the acceptable values\)"
+                                             r": \['DisFreq'\]"):
             gomc_control.write_gomc_control_file(charmm, 'test_save_NVT_bad_variables_part_1.conf',
                                                  'NVT', 10, 300,
                                                  input_variables_dict={'DisFreq': 's', }
                                                  )
 
-        with pytest.raises(ValueError, match=r"ERROR: The following input variables have bad "
-                                             r"values: \['RotFreq'\]"):
+        with pytest.raises(ValueError, match=r"ERROR: The following input variables have "
+                                             r"bad values \(check spelling and for empty spaces in the keys or that "
+                                             r"the values are in the correct form with the acceptable values\)"
+                                             r": \['RotFreq'\]"):
             gomc_control.write_gomc_control_file(charmm, 'test_save_NVT_bad_variables_part_1.conf',
                                                  'NVT', 10, 300,
                                                  input_variables_dict={'RotFreq': 's', }
                                                  )
 
-        with pytest.raises(ValueError, match=r"ERROR: The following input variables have bad "
-                                             r"values: \['IntraSwapFreq'\]"):
+        with pytest.raises(ValueError, match=r"ERROR: The following input variables have "
+                                             r"bad values \(check spelling and for empty spaces in the keys or that "
+                                             r"the values are in the correct form with the acceptable values\)"
+                                             r": \['IntraSwapFreq'\]"):
             gomc_control.write_gomc_control_file(charmm, 'test_save_NVT_bad_variables_part_1.conf',
                                                  'NVT', 10, 300,
                                                  input_variables_dict={'IntraSwapFreq': 's', }
                                                  )
 
-        with pytest.raises(ValueError, match=r"ERROR: The following input variables have bad "
-                                             r"values: \['SwapFreq'\]"):
+        with pytest.raises(ValueError, match=r"ERROR: The following input variables have "
+                                             r"bad values \(check spelling and for empty spaces in the keys or that "
+                                             r"the values are in the correct form with the acceptable values\)"
+                                             r": \['SwapFreq'\]"):
             gomc_control.write_gomc_control_file(charmm, 'test_save_NVT_bad_variables_part_1.conf',
                                                  'NVT', 10, 300,
                                                  input_variables_dict={'SwapFreq': 's', }
                                                  )
 
-        with pytest.raises(ValueError, match=r"ERROR: The following input variables have bad "
-                                             r"values: \['RegrowthFreq'\]"):
+        with pytest.raises(ValueError, match=r"ERROR: The following input variables have "
+                                             r"bad values \(check spelling and for empty spaces in the keys or that "
+                                             r"the values are in the correct form with the acceptable values\)"
+                                             r": \['RegrowthFreq'\]"):
             gomc_control.write_gomc_control_file(charmm, 'test_save_NVT_bad_variables_part_1.conf',
                                                  'NVT', 10, 300,
                                                  input_variables_dict={'RegrowthFreq': 's', }
                                                  )
 
-        with pytest.raises(ValueError, match=r"ERROR: The following input variables have bad "
-                                             r"values: \['CrankShaftFreq'\]"):
+        with pytest.raises(ValueError, match=r"ERROR: The following input variables have "
+                                             r"bad values \(check spelling and for empty spaces in the keys or that "
+                                             r"the values are in the correct form with the acceptable values\)"
+                                             r": \['CrankShaftFreq'\]"):
             gomc_control.write_gomc_control_file(charmm, 'test_save_NVT_bad_variables_part_1.conf',
                                                  'NVT', 10, 300,
                                                  input_variables_dict={'CrankShaftFreq': 's', }
                                                  )
 
-        with pytest.raises(ValueError, match=r"ERROR: The following input variables have bad "
-                                             r"values: \['VolFreq'\]"):
+        with pytest.raises(ValueError, match=r"ERROR: The following input variables have "
+                                             r"bad values \(check spelling and for empty spaces in the keys or that "
+                                             r"the values are in the correct form with the acceptable values\)"
+                                             r": \['VolFreq'\]"):
             gomc_control.write_gomc_control_file(charmm, 'test_save_NVT_bad_variables_part_1.conf',
                                                  'NVT', 10, 300,
                                                  input_variables_dict={'VolFreq': 's', }
                                                  )
 
-        with pytest.raises(ValueError, match=r"ERROR: The following input variables have bad "
-                                             r"values: \['MultiParticleFreq'\]"):
+        with pytest.raises(ValueError, match=r"ERROR: The following input variables have "
+                                             r"bad values \(check spelling and for empty spaces in the keys or that "
+                                             r"the values are in the correct form with the acceptable values\)"
+                                             r": \['MultiParticleFreq'\]"):
             gomc_control.write_gomc_control_file(charmm, 'test_save_NVT_bad_variables_part_1.conf',
                                                  'NVT', 10, 300,
                                                  input_variables_dict={'MultiParticleFreq': 's', }
                                                  )
 
-        with pytest.raises(ValueError, match=r"ERROR: The following input variables have bad "
-                                             r"values: \['IntraMEMC-1Freq'\]"):
+        with pytest.raises(ValueError, match=r"ERROR: The following input variables have "
+                                             r"bad values \(check spelling and for empty spaces in the keys or that "
+                                             r"the values are in the correct form with the acceptable values\)"
+                                             r": \['IntraMEMC-1Freq'\]"):
             gomc_control.write_gomc_control_file(charmm, 'test_save_NVT_bad_variables_part_1.conf',
                                                  'NVT', 10, 300,
                                                  input_variables_dict={'IntraMEMC-1Freq': 's', }
                                                  )
 
-        with pytest.raises(ValueError, match=r"ERROR: The following input variables have bad "
-                                             r"values: \['MEMC-1Freq'\]"):
+        with pytest.raises(ValueError, match=r"ERROR: The following input variables have "
+                                             r"bad values \(check spelling and for empty spaces in the keys or that "
+                                             r"the values are in the correct form with the acceptable values\)"
+                                             r": \['MEMC-1Freq'\]"):
             gomc_control.write_gomc_control_file(charmm, 'test_save_NVT_bad_variables_part_1.conf',
                                                  'NVT', 10, 300,
                                                  input_variables_dict={'MEMC-1Freq': 's', }
                                                  )
 
-        with pytest.raises(ValueError, match=r"ERROR: The following input variables have bad "
-                                             r"values: \['IntraMEMC-2Freq'\]"):
+        with pytest.raises(ValueError, match=r"ERROR: The following input variables have "
+                                             r"bad values \(check spelling and for empty spaces in the keys or that "
+                                             r"the values are in the correct form with the acceptable values\)"
+                                             r": \['IntraMEMC-2Freq'\]"):
             gomc_control.write_gomc_control_file(charmm, 'test_save_NVT_bad_variables_part_1.conf',
                                                  'NVT', 10, 300,
                                                  input_variables_dict={'IntraMEMC-2Freq': 's', }
                                                  )
 
-        with pytest.raises(ValueError, match=r"ERROR: The following input variables have bad "
-                                             r"values: \['MEMC-2Freq'\]"):
+        with pytest.raises(ValueError, match=r"ERROR: The following input variables have "
+                                             r"bad values \(check spelling and for empty spaces in the keys or that "
+                                             r"the values are in the correct form with the acceptable values\)"
+                                             r": \['MEMC-2Freq'\]"):
             gomc_control.write_gomc_control_file(charmm, 'test_save_NVT_bad_variables_part_1.conf',
                                                  'NVT', 10, 300,
                                                  input_variables_dict={'MEMC-2Freq': 's', }
                                                  )
 
-        with pytest.raises(ValueError, match=r"ERROR: The following input variables have bad "
-                                             r"values: \['IntraMEMC-3Freq'\]"):
+        with pytest.raises(ValueError, match=r"ERROR: The following input variables have "
+                                             r"bad values \(check spelling and for empty spaces in the keys or that "
+                                             r"the values are in the correct form with the acceptable values\)"
+                                             r": \['IntraMEMC-3Freq'\]"):
             gomc_control.write_gomc_control_file(charmm, 'test_save_NVT_bad_variables_part_1.conf',
                                                  'NVT', 10, 300,
                                                  input_variables_dict={'IntraMEMC-3Freq': 's', }
                                                  )
 
-        with pytest.raises(ValueError, match=r"ERROR: The following input variables have bad "
-                                             r"values: \['MEMC-3Freq'\]"):
+        with pytest.raises(ValueError, match=r"ERROR: The following input variables have "
+                                             r"bad values \(check spelling and for empty spaces in the keys or that "
+                                             r"the values are in the correct form with the acceptable values\)"
+                                             r": \['MEMC-3Freq'\]"):
             gomc_control.write_gomc_control_file(charmm, 'test_save_NVT_bad_variables_part_1.conf',
                                                  'NVT', 10, 300,
                                                  input_variables_dict={'MEMC-3Freq': 's', }
@@ -1953,50 +2097,64 @@ class TestGOMCControlFileWriter(BaseTest):
                         box_0=[1, 1, 1]
                         )
 
-        with pytest.raises(ValueError, match=r"ERROR: The following input variables have bad "
-                                             r"values: \['Restart'\]"):
+        with pytest.raises(ValueError, match=r"ERROR: The following input variables have "
+                                             r"bad values \(check spelling and for empty spaces in the keys or that "
+                                             r"the values are in the correct form with the acceptable values\)"
+                                             r": \['Restart'\]"):
             gomc_control.write_gomc_control_file(charmm, 'test_save_NVT_bad_variables_part_2.conf',
                                                  'NVT', 10, 300,
                                                  input_variables_dict={'Restart': [], }
                                                  )
 
-        with pytest.raises(ValueError, match=r"ERROR: The following input variables have bad "
-                                             r"values: \['RestartCheckpoint'\]"):
+        with pytest.raises(ValueError, match=r"ERROR: The following input variables have "
+                                             r"bad values \(check spelling and for empty spaces in the keys or that "
+                                             r"the values are in the correct form with the acceptable values\)"
+                                             r": \['RestartCheckpoint'\]"):
             gomc_control.write_gomc_control_file(charmm, 'test_save_NVT_bad_variables_part_2.conf',
                                                  'NVT', 10, 300,
                                                  input_variables_dict={'RestartCheckpoint': [], }
                                                  )
 
-        with pytest.raises(ValueError, match=r"ERROR: The following input variables have bad "
-                                             r"values: \['PRNG'\]"):
+        with pytest.raises(ValueError, match=r"ERROR: The following input variables have "
+                                             r"bad values \(check spelling and for empty spaces in the keys or that "
+                                             r"the values are in the correct form with the acceptable values\)"
+                                             r": \['PRNG'\]"):
             gomc_control.write_gomc_control_file(charmm, 'test_save_NVT_bad_variables_part_2.conf',
                                                  'NVT', 10, 300,
                                                  input_variables_dict={'PRNG': [], }
                                                  )
 
-        with pytest.raises(ValueError, match=r"ERROR: The following input variables have bad "
-                                             r"values: \['ParaTypeCHARMM'\]"):
+        with pytest.raises(ValueError, match=r"ERROR: The following input variables have "
+                                             r"bad values \(check spelling and for empty spaces in the keys or that "
+                                             r"the values are in the correct form with the acceptable values\)"
+                                             r": \['ParaTypeCHARMM'\]"):
             gomc_control.write_gomc_control_file(charmm, 'test_save_NVT_bad_variables_part_2.conf',
                                                  'NVT', 10, 300,
                                                  input_variables_dict={'ParaTypeCHARMM': [], }
                                                  )
 
-        with pytest.raises(ValueError, match=r"ERROR: The following input variables have bad "
-                                             r"values: \['ParaTypeMie'\]"):
+        with pytest.raises(ValueError, match=r"ERROR: The following input variables have "
+                                             r"bad values \(check spelling and for empty spaces in the keys or that "
+                                             r"the values are in the correct form with the acceptable values\)"
+                                             r": \['ParaTypeMie'\]"):
             gomc_control.write_gomc_control_file(charmm, 'test_save_NVT_bad_variables_part_2.conf',
                                                  'NVT', 10, 300,
                                                  input_variables_dict={'ParaTypeMie': [], }
                                                  )
 
-        with pytest.raises(ValueError, match=r"ERROR: The following input variables have bad "
-                                             r"values: \['ParaTypeMARTINI'\]"):
+        with pytest.raises(ValueError, match=r"ERROR: The following input variables have "
+                                             r"bad values \(check spelling and for empty spaces in the keys or that "
+                                             r"the values are in the correct form with the acceptable values\)"
+                                             r": \['ParaTypeMARTINI'\]"):
             gomc_control.write_gomc_control_file(charmm, 'test_save_NVT_bad_variables_part_2.conf',
                                                  'NVT', 10, 300,
                                                  input_variables_dict={'ParaTypeMARTINI': [], }
                                                  )
 
-        with pytest.raises(ValueError, match=r"ERROR: The following input variables have bad "
-                                             r"values: \['RcutCoulomb_box_0'\]"):
+        with pytest.raises(ValueError, match=r"ERROR: The following input variables have "
+                                             r"bad values \(check spelling and for empty spaces in the keys or that "
+                                             r"the values are in the correct form with the acceptable values\)"
+                                             r": \['RcutCoulomb_box_0'\]"):
             gomc_control.write_gomc_control_file(charmm, 'test_save_NVT_bad_variables_part_2.conf',
                                                  'NVT', 10, 300,
                                                  input_variables_dict={'RcutCoulomb_box_0': [], }
@@ -2013,113 +2171,145 @@ class TestGOMCControlFileWriter(BaseTest):
                                                  input_variables_dict={'RcutCoulomb_box_1': [], }
                                                  )
 
-        with pytest.raises(ValueError, match=r"ERROR: The following input variables have bad "
-                                             r"values: \['Pressure'\]"):
+        with pytest.raises(ValueError, match=r"ERROR: The following input variables have "
+                                             r"bad values \(check spelling and for empty spaces in the keys or that "
+                                             r"the values are in the correct form with the acceptable values\)"
+                                             r": \['Pressure'\]"):
             gomc_control.write_gomc_control_file(charmm, 'test_save_NVT_bad_variables_part_2.conf',
                                                  'NVT', 10, 300,
                                                  input_variables_dict={'Pressure': [], }
                                                  )
 
-        with pytest.raises(ValueError, match=r"ERROR: The following input variables have bad "
-                                             r"values: \['Rcut'\]"):
+        with pytest.raises(ValueError, match=r"ERROR: The following input variables have "
+                                             r"bad values \(check spelling and for empty spaces in the keys or that "
+                                             r"the values are in the correct form with the acceptable values\)"
+                                             r": \['Rcut'\]"):
             gomc_control.write_gomc_control_file(charmm, 'test_save_NVT_bad_variables_part_2.conf',
                                                  'NVT', 10, 300,
                                                  input_variables_dict={'Rcut': [], }
                                                  )
 
-        with pytest.raises(ValueError, match=r"ERROR: The following input variables have bad "
-                                             r"values: \['RcutLow'\]"):
+        with pytest.raises(ValueError, match=r"ERROR: The following input variables have "
+                                             r"bad values \(check spelling and for empty spaces in the keys or that "
+                                             r"the values are in the correct form with the acceptable values\)"
+                                             r": \['RcutLow'\]"):
             gomc_control.write_gomc_control_file(charmm, 'test_save_NVT_bad_variables_part_2.conf',
                                                  'NVT', 10, 300,
                                                  input_variables_dict={'RcutLow': [], }
                                                  )
 
-        with pytest.raises(ValueError, match=r"ERROR: The following input variables have bad "
-                                             r"values: \['LRC'\]"):
+        with pytest.raises(ValueError, match=r"ERROR: The following input variables have "
+                                             r"bad values \(check spelling and for empty spaces in the keys or that "
+                                             r"the values are in the correct form with the acceptable values\)"
+                                             r": \['LRC'\]"):
             gomc_control.write_gomc_control_file(charmm, 'test_save_NVT_bad_variables_part_2.conf',
                                                  'NVT', 10, 300,
                                                  input_variables_dict={'LRC': [], }
                                                  )
 
-        with pytest.raises(ValueError, match=r"ERROR: The following input variables have bad "
-                                             r"values: \['Exclude'\]"):
+        with pytest.raises(ValueError, match=r"ERROR: The following input variables have "
+                                             r"bad values \(check spelling and for empty spaces in the keys or that "
+                                             r"the values are in the correct form with the acceptable values\)"
+                                             r": \['Exclude'\]"):
             gomc_control.write_gomc_control_file(charmm, 'test_save_NVT_bad_variables_part_2.conf',
                                                  'NVT', 10, 300,
                                                  input_variables_dict={'Exclude': [], }
                                                  )
 
-        with pytest.raises(ValueError, match=r"ERROR: The following input variables have bad "
-                                             r"values: \['Potential'\]"):
+        with pytest.raises(ValueError, match=r"ERROR: The following input variables have "
+                                             r"bad values \(check spelling and for empty spaces in the keys or that "
+                                             r"the values are in the correct form with the acceptable values\)"
+                                             r": \['Potential'\]"):
             gomc_control.write_gomc_control_file(charmm, 'test_save_NVT_bad_variables_part_2.conf',
                                                  'NVT', 10, 300,
                                                  input_variables_dict={'Potential': [], }
                                                  )
 
-        with pytest.raises(ValueError, match=r"ERROR: The following input variables have bad "
-                                             r"values: \['Rswitch'\]"):
+        with pytest.raises(ValueError, match=r"ERROR: The following input variables have "
+                                             r"bad values \(check spelling and for empty spaces in the keys or that "
+                                             r"the values are in the correct form with the acceptable values\)"
+                                             r": \['Rswitch'\]"):
             gomc_control.write_gomc_control_file(charmm, 'test_save_NVT_bad_variables_part_2.conf',
                                                  'NVT', 10, 300,
                                                  input_variables_dict={'Rswitch': [], }
                                                  )
 
-        with pytest.raises(ValueError, match=r"ERROR: The following input variables have bad "
-                                             r"values: \['ElectroStatic'\]"):
+        with pytest.raises(ValueError, match=r"ERROR: The following input variables have "
+                                             r"bad values \(check spelling and for empty spaces in the keys or that "
+                                             r"the values are in the correct form with the acceptable values\)"
+                                             r": \['ElectroStatic'\]"):
             gomc_control.write_gomc_control_file(charmm, 'test_save_NVT_bad_variables_part_2.conf',
                                                  'NVT', 10, 300,
                                                  input_variables_dict={'ElectroStatic': [], }
                                                  )
 
-        with pytest.raises(ValueError, match=r"ERROR: The following input variables have bad "
-                                             r"values: \['Ewald'\]"):
+        with pytest.raises(ValueError, match=r"ERROR: The following input variables have "
+                                             r"bad values \(check spelling and for empty spaces in the keys or that "
+                                             r"the values are in the correct form with the acceptable values\)"
+                                             r": \['Ewald'\]"):
             gomc_control.write_gomc_control_file(charmm, 'test_save_NVT_bad_variables_part_2.conf',
                                                  'NVT', 10, 300,
                                                  input_variables_dict={'Ewald': [], }
                                                  )
 
-        with pytest.raises(ValueError, match=r"ERROR: The following input variables have bad "
-                                             r"values: \['CachedFourier'\]"):
+        with pytest.raises(ValueError, match=r"ERROR: The following input variables have "
+                                             r"bad values \(check spelling and for empty spaces in the keys or that "
+                                             r"the values are in the correct form with the acceptable values\)"
+                                             r": \['CachedFourier'\]"):
             gomc_control.write_gomc_control_file(charmm, 'test_save_NVT_bad_variables_part_2.conf',
                                                  'NVT', 10, 300,
                                                  input_variables_dict={'CachedFourier': [], }
                                                  )
 
-        with pytest.raises(ValueError, match=r"ERROR: The following input variables have bad "
-                                             r"values: \['Tolerance'\]"):
+        with pytest.raises(ValueError, match=r"ERROR: The following input variables have "
+                                             r"bad values \(check spelling and for empty spaces in the keys or that "
+                                             r"the values are in the correct form with the acceptable values\)"
+                                             r": \['Tolerance'\]"):
             gomc_control.write_gomc_control_file(charmm, 'test_save_NVT_bad_variables_part_2.conf',
                                                  'NVT', 10, 300,
                                                  input_variables_dict={'Tolerance': [], }
                                                  )
 
-        with pytest.raises(ValueError, match=r"ERROR: The following input variables have bad "
-                                             r"values: \['Dielectric'\]"):
+        with pytest.raises(ValueError, match=r"ERROR: The following input variables have "
+                                             r"bad values \(check spelling and for empty spaces in the keys or that "
+                                             r"the values are in the correct form with the acceptable values\)"
+                                             r": \['Dielectric'\]"):
             gomc_control.write_gomc_control_file(charmm, 'test_save_NVT_bad_variables_part_2.conf',
                                                  'NVT', 10, 300,
                                                  input_variables_dict={'Dielectric': [], }
                                                  )
 
-        with pytest.raises(ValueError, match=r"ERROR: The following input variables have bad "
-                                             r"values: \['PressureCalc'\]"):
+        with pytest.raises(ValueError, match=r"ERROR: The following input variables have "
+                                             r"bad values \(check spelling and for empty spaces in the keys or that "
+                                             r"the values are in the correct form with the acceptable values\)"
+                                             r": \['PressureCalc'\]"):
             gomc_control.write_gomc_control_file(charmm, 'test_save_NVT_bad_variables_part_2.conf',
                                                  'NVT', 10, 300,
                                                  input_variables_dict={'PressureCalc': [], }
                                                  )
 
-        with pytest.raises(ValueError, match=r"ERROR: The following input variables have bad "
-                                             r"values: \['EqSteps'\]"):
+        with pytest.raises(ValueError, match=r"ERROR: The following input variables have "
+                                             r"bad values \(check spelling and for empty spaces in the keys or that "
+                                             r"the values are in the correct form with the acceptable values\)"
+                                             r": \['EqSteps'\]"):
             gomc_control.write_gomc_control_file(charmm, 'test_save_NVT_bad_variables_part_2.conf',
                                                  'NVT', 10, 300,
                                                  input_variables_dict={'EqSteps': [], }
                                                  )
 
-        with pytest.raises(ValueError, match=r"ERROR: The following input variables have bad "
-                                             r"values: \['AdjSteps'\]"):
+        with pytest.raises(ValueError, match=r"ERROR: The following input variables have "
+                                             r"bad values \(check spelling and for empty spaces in the keys or that "
+                                             r"the values are in the correct form with the acceptable values\)"
+                                             r": \['AdjSteps'\]"):
             gomc_control.write_gomc_control_file(charmm, 'test_save_NVT_bad_variables_part_2.conf',
                                                  'NVT', 10, 300,
                                                  input_variables_dict={'AdjSteps': [], }
                                                  )
 
-        with pytest.raises(ValueError, match=r"ERROR: The following input variables have bad "
-                                             r"values: \['useConstantArea'\]"):
+        with pytest.raises(ValueError, match=r"ERROR: The following input variables have "
+                                             r"bad values \(check spelling and for empty spaces in the keys or that "
+                                             r"the values are in the correct form with the acceptable values\)"
+                                             r": \['useConstantArea'\]"):
             gomc_control.write_gomc_control_file(charmm, 'test_save_NVT_bad_variables_part_2.conf',
                                                  'NVT', 10, 300,
                                                  input_variables_dict={'useConstantArea': [], }
@@ -2158,162 +2348,208 @@ class TestGOMCControlFileWriter(BaseTest):
                                                  input_variables_dict={'Fugacity': [], }
                                                  )
 
-        with pytest.raises(ValueError, match=r"ERROR: The following input variables have bad "
-                                             r"values: \['CBMC_First'\]"):
+        with pytest.raises(ValueError, match=r"ERROR: The following input variables have "
+                                             r"bad values \(check spelling and for empty spaces in the keys or that "
+                                             r"the values are in the correct form with the acceptable values\)"
+                                             r": \['CBMC_First'\]"):
             gomc_control.write_gomc_control_file(charmm, 'test_save_NVT_bad_variables_part_2.conf',
                                                  'NVT', 10, 300,
                                                  input_variables_dict={'CBMC_First': [], }
                                                  )
 
-        with pytest.raises(ValueError, match=r"ERROR: The following input variables have bad "
-                                             r"values: \['CBMC_Nth'\]"):
+        with pytest.raises(ValueError, match=r"ERROR: The following input variables have "
+                                             r"bad values \(check spelling and for empty spaces in the keys or that "
+                                             r"the values are in the correct form with the acceptable values\)"
+                                             r": \['CBMC_Nth'\]"):
             gomc_control.write_gomc_control_file(charmm, 'test_save_NVT_bad_variables_part_2.conf',
                                                  'NVT', 10, 300,
                                                  input_variables_dict={'CBMC_Nth': [], }
                                                  )
 
-        with pytest.raises(ValueError, match=r"ERROR: The following input variables have bad "
-                                             r"values: \['CBMC_Ang'\]"):
+        with pytest.raises(ValueError, match=r"ERROR: The following input variables have "
+                                             r"bad values \(check spelling and for empty spaces in the keys or that "
+                                             r"the values are in the correct form with the acceptable values\)"
+                                             r": \['CBMC_Ang'\]"):
             gomc_control.write_gomc_control_file(charmm, 'test_save_NVT_bad_variables_part_2.conf',
                                                  'NVT', 10, 300,
                                                  input_variables_dict={'CBMC_Ang': [], }
                                                  )
 
-        with pytest.raises(ValueError, match=r"ERROR: The following input variables have bad "
-                                             r"values: \['CBMC_Dih'\]"):
+        with pytest.raises(ValueError, match=r"ERROR: The following input variables have "
+                                             r"bad values \(check spelling and for empty spaces in the keys or that "
+                                             r"the values are in the correct form with the acceptable values\)"
+                                             r": \['CBMC_Dih'\]"):
             gomc_control.write_gomc_control_file(charmm, 'test_save_NVT_bad_variables_part_2.conf',
                                                  'NVT', 10, 300,
                                                  input_variables_dict={'CBMC_Dih': [], }
                                                  )
 
-        with pytest.raises(ValueError, match=r"ERROR: The following input variables have bad "
-                                             r"values: \['OutputName'\]"):
+        with pytest.raises(ValueError, match=r"ERROR: The following input variables have "
+                                             r"bad values \(check spelling and for empty spaces in the keys or that "
+                                             r"the values are in the correct form with the acceptable values\)"
+                                             r": \['OutputName'\]"):
             gomc_control.write_gomc_control_file(charmm, 'test_save_NVT_bad_variables_part_2.conf',
                                                  'NVT', 10, 300,
                                                  input_variables_dict={'OutputName': [], }
                                                  )
 
-        with pytest.raises(ValueError, match=r"ERROR: The following input variables have bad "
-                                             r"values: \['CoordinatesFreq'\]"):
+        with pytest.raises(ValueError, match=r"ERROR: The following input variables have "
+                                             r"bad values \(check spelling and for empty spaces in the keys or that "
+                                             r"the values are in the correct form with the acceptable values\)"
+                                             r": \['CoordinatesFreq'\]"):
             gomc_control.write_gomc_control_file(charmm, 'test_save_NVT_bad_variables_part_2.conf',
                                                  'NVT', 10, 300,
                                                  input_variables_dict={'CoordinatesFreq': [], }
                                                  )
 
-        with pytest.raises(ValueError, match=r"ERROR: The following input variables have bad "
-                                             r"values: \['RestartFreq'\]"):
+        with pytest.raises(ValueError, match=r"ERROR: The following input variables have "
+                                             r"bad values \(check spelling and for empty spaces in the keys or that "
+                                             r"the values are in the correct form with the acceptable values\)"
+                                             r": \['RestartFreq'\]"):
             gomc_control.write_gomc_control_file(charmm, 'test_save_NVT_bad_variables_part_2.conf',
                                                  'NVT', 10, 300,
                                                  input_variables_dict={'RestartFreq': [], }
                                                  )
 
-        with pytest.raises(ValueError, match=r"ERROR: The following input variables have bad "
-                                             r"values: \['CheckpointFreq'\]"):
+        with pytest.raises(ValueError, match=r"ERROR: The following input variables have "
+                                             r"bad values \(check spelling and for empty spaces in the keys or that "
+                                             r"the values are in the correct form with the acceptable values\)"
+                                             r": \['CheckpointFreq'\]"):
             gomc_control.write_gomc_control_file(charmm, 'test_save_NVT_bad_variables_part_2.conf',
                                                  'NVT', 10, 300,
                                                  input_variables_dict={'CheckpointFreq': [], }
                                                  )
 
-        with pytest.raises(ValueError, match=r"ERROR: The following input variables have bad "
-                                             r"values: \['ConsoleFreq'\]"):
+        with pytest.raises(ValueError, match=r"ERROR: The following input variables have "
+                                             r"bad values \(check spelling and for empty spaces in the keys or that "
+                                             r"the values are in the correct form with the acceptable values\)"
+                                             r": \['ConsoleFreq'\]"):
             gomc_control.write_gomc_control_file(charmm, 'test_save_NVT_bad_variables_part_2.conf',
                                                  'NVT', 10, 300,
                                                  input_variables_dict={'ConsoleFreq': [], }
                                                  )
 
-        with pytest.raises(ValueError, match=r"ERROR: The following input variables have bad "
-                                             r"values: \['BlockAverageFreq'\]"):
+        with pytest.raises(ValueError, match=r"ERROR: The following input variables have "
+                                             r"bad values \(check spelling and for empty spaces in the keys or that "
+                                             r"the values are in the correct form with the acceptable values\)"
+                                             r": \['BlockAverageFreq'\]"):
             gomc_control.write_gomc_control_file(charmm, 'test_save_NVT_bad_variables_part_2.conf',
                                                  'NVT', 10, 300,
                                                  input_variables_dict={'BlockAverageFreq': [], }
                                                  )
 
-        with pytest.raises(ValueError, match=r"ERROR: The following input variables have bad "
-                                             r"values: \['HistogramFreq'\]"):
+        with pytest.raises(ValueError, match=r"ERROR: The following input variables have "
+                                             r"bad values \(check spelling and for empty spaces in the keys or that "
+                                             r"the values are in the correct form with the acceptable values\)"
+                                             r": \['HistogramFreq'\]"):
             gomc_control.write_gomc_control_file(charmm, 'test_save_NVT_bad_variables_part_2.conf',
                                                  'NVT', 10, 300,
                                                  input_variables_dict={'HistogramFreq': [], }
                                                  )
 
-        with pytest.raises(ValueError, match=r"ERROR: The following input variables have bad "
-                                             r"values: \['DistName'\]"):
+        with pytest.raises(ValueError, match=r"ERROR: The following input variables have "
+                                             r"bad values \(check spelling and for empty spaces in the keys or that "
+                                             r"the values are in the correct form with the acceptable values\)"
+                                             r": \['DistName'\]"):
             gomc_control.write_gomc_control_file(charmm, 'test_save_NVT_bad_variables_part_2.conf',
                                                  'NVT', 10, 300,
                                                  input_variables_dict={'DistName': [], }
                                                  )
 
-        with pytest.raises(ValueError, match=r"ERROR: The following input variables have bad "
-                                             r"values: \['HistName'\]"):
+        with pytest.raises(ValueError, match=r"ERROR: The following input variables have "
+                                             r"bad values \(check spelling and for empty spaces in the keys or that "
+                                             r"the values are in the correct form with the acceptable values\)"
+                                             r": \['HistName'\]"):
             gomc_control.write_gomc_control_file(charmm, 'test_save_NVT_bad_variables_part_2.conf',
                                                  'NVT', 10, 300,
                                                  input_variables_dict={'HistName': [], }
                                                  )
 
-        with pytest.raises(ValueError, match=r"ERROR: The following input variables have bad "
-                                             r"values: \['RunNumber'\]"):
+        with pytest.raises(ValueError, match=r"ERROR: The following input variables have "
+                                             r"bad values \(check spelling and for empty spaces in the keys or that "
+                                             r"the values are in the correct form with the acceptable values\)"
+                                             r": \['RunNumber'\]"):
             gomc_control.write_gomc_control_file(charmm, 'test_save_NVT_bad_variables_part_2.conf',
                                                  'NVT', 10, 300,
                                                  input_variables_dict={'RunNumber': [], }
                                                  )
 
-        with pytest.raises(ValueError, match=r"ERROR: The following input variables have bad "
-                                             r"values: \['RunLetter'\]"):
+        with pytest.raises(ValueError, match=r"ERROR: The following input variables have "
+                                             r"bad values \(check spelling and for empty spaces in the keys or that "
+                                             r"the values are in the correct form with the acceptable values\)"
+                                             r": \['RunLetter'\]"):
             gomc_control.write_gomc_control_file(charmm, 'test_save_NVT_bad_variables_part_2.conf',
                                                  'NVT', 10, 300,
                                                  input_variables_dict={'RunLetter': [], }
                                                  )
 
-        with pytest.raises(ValueError, match=r"ERROR: The following input variables have bad "
-                                             r"values: \['SampleFreq'\]"):
+        with pytest.raises(ValueError, match=r"ERROR: The following input variables have "
+                                             r"bad values \(check spelling and for empty spaces in the keys or that "
+                                             r"the values are in the correct form with the acceptable values\)"
+                                             r": \['SampleFreq'\]"):
             gomc_control.write_gomc_control_file(charmm, 'test_save_NVT_bad_variables_part_2.conf',
                                                  'NVT', 10, 300,
                                                  input_variables_dict={'SampleFreq': [], }
                                                  )
 
-        with pytest.raises(ValueError, match=r"ERROR: The following input variables have bad "
-                                             r"values: \['OutEnergy'\]"):
+        with pytest.raises(ValueError, match=r"ERROR: The following input variables have "
+                                             r"bad values \(check spelling and for empty spaces in the keys or that "
+                                             r"the values are in the correct form with the acceptable values\)"
+                                             r": \['OutEnergy'\]"):
             gomc_control.write_gomc_control_file(charmm, 'test_save_NVT_bad_variables_part_2.conf',
                                                  'NVT', 10, 300,
                                                  input_variables_dict={'OutEnergy': [], }
                                                  )
 
-        with pytest.raises(ValueError, match=r"ERROR: The following input variables have bad "
-                                             r"values: \['OutPressure'\]"):
+        with pytest.raises(ValueError, match=r"ERROR: The following input variables have "
+                                             r"bad values \(check spelling and for empty spaces in the keys or that "
+                                             r"the values are in the correct form with the acceptable values\)"
+                                             r": \['OutPressure'\]"):
             gomc_control.write_gomc_control_file(charmm, 'test_save_NVT_bad_variables_part_2.conf',
                                                  'NVT', 10, 300,
                                                  input_variables_dict={'OutPressure': [], }
                                                  )
 
-        with pytest.raises(ValueError, match=r"ERROR: The following input variables have bad "
-                                             r"values: \['OutMolNumber'\]"):
+        with pytest.raises(ValueError, match=r"ERROR: The following input variables have "
+                                             r"bad values \(check spelling and for empty spaces in the keys or that "
+                                             r"the values are in the correct form with the acceptable values\)"
+                                             r": \['OutMolNumber'\]"):
             gomc_control.write_gomc_control_file(charmm, 'test_save_NVT_bad_variables_part_2.conf',
                                                  'NVT', 10, 300,
                                                  input_variables_dict={'OutMolNumber': [], }
                                                  )
 
-        with pytest.raises(ValueError, match=r"ERROR: The following input variables have bad "
-                                             r"values: \['OutDensity'\]"):
+        with pytest.raises(ValueError, match=r"ERROR: The following input variables have "
+                                             r"bad values \(check spelling and for empty spaces in the keys or that "
+                                             r"the values are in the correct form with the acceptable values\)"
+                                             r": \['OutDensity'\]"):
             gomc_control.write_gomc_control_file(charmm, 'test_save_NVT_bad_variables_part_2.conf',
                                                  'NVT', 10, 300,
                                                  input_variables_dict={'OutDensity': [], }
                                                  )
 
-        with pytest.raises(ValueError, match=r"ERROR: The following input variables have bad "
-                                             r"values: \['OutVolume'\]"):
+        with pytest.raises(ValueError, match=r"ERROR: The following input variables have "
+                                             r"bad values \(check spelling and for empty spaces in the keys or that "
+                                             r"the values are in the correct form with the acceptable values\)"
+                                             r": \['OutVolume'\]"):
             gomc_control.write_gomc_control_file(charmm, 'test_save_NVT_bad_variables_part_2.conf',
                                                  'NVT', 10, 300,
                                                  input_variables_dict={'OutVolume': [], }
                                                  )
 
-        with pytest.raises(ValueError, match=r"ERROR: The following input variables have bad "
-                                             r"values: \['OutSurfaceTension'\]"):
+        with pytest.raises(ValueError, match=r"ERROR: The following input variables have "
+                                             r"bad values \(check spelling and for empty spaces in the keys or that "
+                                             r"the values are in the correct form with the acceptable values\)"
+                                             r": \['OutSurfaceTension'\]"):
             gomc_control.write_gomc_control_file(charmm, 'test_save_NVT_bad_variables_part_2.conf',
                                                  'NVT', 10, 300,
                                                  input_variables_dict={'OutSurfaceTension': [], }
                                                  )
 
-        with pytest.raises(ValueError, match=r"ERROR: The following input variables have bad "
-                                             r"values: \['FreeEnergyCalc'\]"):
+        with pytest.raises(ValueError, match=r"ERROR: The following input variables have "
+                                             r"bad values \(check spelling and for empty spaces in the keys or that "
+                                             r"the values are in the correct form with the acceptable values\)"
+                                             r": \['FreeEnergyCalc'\]"):
             gomc_control.write_gomc_control_file(charmm, 'test_save_NVT_bad_variables_part_1.conf',
                                                  'NVT', 10, 300,
                                                  input_variables_dict={"FreeEnergyCalc": [],
@@ -2324,8 +2560,10 @@ class TestGOMCControlFileWriter(BaseTest):
                                                                        }
                                                  )
 
-        with pytest.raises(ValueError, match=r"ERROR: The following input variables have bad "
-                                             r"values: \['MoleculeType'\]"):
+        with pytest.raises(ValueError, match=r"ERROR: The following input variables have "
+                                             r"bad values \(check spelling and for empty spaces in the keys or that "
+                                             r"the values are in the correct form with the acceptable values\)"
+                                             r": \['MoleculeType'\]"):
             gomc_control.write_gomc_control_file(charmm, 'test_save_NVT_bad_variables_part_1.conf',
                                                  'NVT', 10, 300,
                                                  input_variables_dict={"FreeEnergyCalc": [True, 10000],
@@ -2335,8 +2573,10 @@ class TestGOMCControlFileWriter(BaseTest):
                                                                        "LambdaCoulomb": [0.1, 0.3, 0.8, 0.8]}
                                                  )
 
-        with pytest.raises(ValueError, match=r"ERROR: The following input variables have bad "
-                                             r"values: \['MoleculeType'\]"):
+        with pytest.raises(ValueError, match=r"ERROR: The following input variables have "
+                                             r"bad values \(check spelling and for empty spaces in the keys or that "
+                                             r"the values are in the correct form with the acceptable values\)"
+                                             r": \['MoleculeType'\]"):
             gomc_control.write_gomc_control_file(charmm, 'test_save_NVT_bad_variables_part_1.conf',
                                                  'NVT', 10, 300,
                                                  input_variables_dict={"FreeEnergyCalc": [True, 10000],
@@ -2346,8 +2586,10 @@ class TestGOMCControlFileWriter(BaseTest):
                                                                        "LambdaCoulomb": [0.1, 0.3, 0.8, 0.8]}
                                                  )
 
-        with pytest.raises(ValueError, match=r"ERROR: The following input variables have bad "
-                                             r"values: \['MoleculeType'\]"):
+        with pytest.raises(ValueError, match=r"ERROR: The following input variables have "
+                                             r"bad values \(check spelling and for empty spaces in the keys or that "
+                                             r"the values are in the correct form with the acceptable values\)"
+                                             r": \['MoleculeType'\]"):
             gomc_control.write_gomc_control_file(charmm, 'test_save_NVT_bad_variables_part_1.conf',
                                                  'NVT', 10, 300,
                                                  input_variables_dict={"FreeEnergyCalc": [True, 10000],
@@ -2357,8 +2599,10 @@ class TestGOMCControlFileWriter(BaseTest):
                                                                        "LambdaCoulomb": [0.1, 0.3, 0.8, 0.8]}
                                                  )
 
-        with pytest.raises(ValueError, match=r"ERROR: The following input variables have bad "
-                                             r"values: \['InitialState'\]"):
+        with pytest.raises(ValueError, match=r"ERROR: The following input variables have "
+                                             r"bad values \(check spelling and for empty spaces in the keys or that "
+                                             r"the values are in the correct form with the acceptable values\)"
+                                             r": \['InitialState'\]"):
             gomc_control.write_gomc_control_file(charmm, 'test_save_NVT_bad_variables_part_1.conf',
                                                  'NVT', 10, 300,
                                                  input_variables_dict={"FreeEnergyCalc": [True, 10000],
@@ -2368,8 +2612,10 @@ class TestGOMCControlFileWriter(BaseTest):
                                                                        "LambdaCoulomb": [0.1, 0.3, 0.8, 0.8]}
                                                  )
 
-        with pytest.raises(ValueError, match=r"ERROR: The following input variables have bad "
-                                             r"values: \['LambdaVDW'\]"):
+        with pytest.raises(ValueError, match=r"ERROR: The following input variables have "
+                                             r"bad values \(check spelling and for empty spaces in the keys or that "
+                                             r"the values are in the correct form with the acceptable values\)"
+                                             r": \['LambdaVDW'\]"):
             gomc_control.write_gomc_control_file(charmm, 'test_save_NVT_bad_variables_part_1.conf',
                                                  'NVT', 10, 300,
                                                  input_variables_dict={"FreeEnergyCalc": [True, 10000],
@@ -2379,8 +2625,10 @@ class TestGOMCControlFileWriter(BaseTest):
                                                                        "LambdaCoulomb": [0.1, 0.3, 0.8, 0.8]}
                                                  )
 
-        with pytest.raises(ValueError, match=r"ERROR: The following input variables have bad "
-                                             r"values: \['LambdaCoulomb'\]"):
+        with pytest.raises(ValueError, match=r"ERROR: The following input variables have "
+                                             r"bad values \(check spelling and for empty spaces in the keys or that "
+                                             r"the values are in the correct form with the acceptable values\)"
+                                             r": \['LambdaCoulomb'\]"):
             gomc_control.write_gomc_control_file(charmm, 'test_save_NVT_bad_variables_part_1.conf',
                                                  'NVT', 10, 300,
                                                  input_variables_dict={"FreeEnergyCalc": [True, 10000],
@@ -2398,141 +2646,181 @@ class TestGOMCControlFileWriter(BaseTest):
                                                  input_variables_dict={"FreeEnergyCalc": [True, 10000]}
                                                  )
 
-        with pytest.raises(ValueError, match=r"ERROR: The following input variables have bad "
-                                             r"values: \['ScaleCoulomb'\]"):
+        with pytest.raises(ValueError, match=r"ERROR: The following input variables have "
+                                             r"bad values \(check spelling and for empty spaces in the keys or that "
+                                             r"the values are in the correct form with the acceptable values\)"
+                                             r": \['ScaleCoulomb'\]"):
             gomc_control.write_gomc_control_file(charmm, 'test_save_NVT_bad_variables_part_2.conf',
                                                  'NVT', 10, 300,
                                                  input_variables_dict={'ScaleCoulomb': [], }
                                                  )
 
-        with pytest.raises(ValueError, match=r"ERROR: The following input variables have bad "
-                                             r"values: \['ScalePower'\]"):
+        with pytest.raises(ValueError, match=r"ERROR: The following input variables have "
+                                             r"bad values \(check spelling and for empty spaces in the keys or that "
+                                             r"the values are in the correct form with the acceptable values\)"
+                                             r": \['ScalePower'\]"):
             gomc_control.write_gomc_control_file(charmm, 'test_save_NVT_bad_variables_part_2.conf',
                                                  'NVT', 10, 300,
                                                  input_variables_dict={'ScalePower': [], }
                                                  )
 
-        with pytest.raises(ValueError, match=r"ERROR: The following input variables have bad "
-                                             r"values: \['ScaleAlpha'\]"):
+        with pytest.raises(ValueError, match=r"ERROR: The following input variables have "
+                                             r"bad values \(check spelling and for empty spaces in the keys or that "
+                                             r"the values are in the correct form with the acceptable values\)"
+                                             r": \['ScaleAlpha'\]"):
             gomc_control.write_gomc_control_file(charmm, 'test_save_NVT_bad_variables_part_2.conf',
                                                  'NVT', 10, 300,
                                                  input_variables_dict={'ScaleAlpha': [], }
                                                  )
 
-        with pytest.raises(ValueError, match=r"ERROR: The following input variables have bad "
-                                             r"values: \['MinSigma'\]"):
+        with pytest.raises(ValueError, match=r"ERROR: The following input variables have "
+                                             r"bad values \(check spelling and for empty spaces in the keys or that "
+                                             r"the values are in the correct form with the acceptable values\)"
+                                             r": \['MinSigma'\]"):
             gomc_control.write_gomc_control_file(charmm, 'test_save_NVT_bad_variables_part_2.conf',
                                                  'NVT', 10, 300,
                                                  input_variables_dict={'MinSigma': [], }
                                                  )
 
-        with pytest.raises(ValueError, match=r"ERROR: The following input variables have bad "
-                                             r"values: \['ExchangeVolumeDim'\]"):
+        with pytest.raises(ValueError, match=r"ERROR: The following input variables have "
+                                             r"bad values \(check spelling and for empty spaces in the keys or that "
+                                             r"the values are in the correct form with the acceptable values\)"
+                                             r": \['ExchangeVolumeDim'\]"):
             gomc_control.write_gomc_control_file(charmm, 'test_save_NVT_bad_variables_part_2.conf',
                                                  'NVT', 10, 300,
                                                  input_variables_dict={'ExchangeVolumeDim': [], }
                                                  )
 
-        with pytest.raises(ValueError, match=r"ERROR: The following input variables have bad "
-                                             r"values: \['MEMC_DataInput'\]"):
+        with pytest.raises(ValueError, match=r"ERROR: The following input variables have "
+                                             r"bad values \(check spelling and for empty spaces in the keys or that "
+                                             r"the values are in the correct form with the acceptable values\)"
+                                             r": \['MEMC_DataInput'\]"):
             gomc_control.write_gomc_control_file(charmm, 'test_save_NVT_bad_variables_part_2.conf',
                                                  'NVT', 10, 300,
                                                  input_variables_dict={'MEMC_DataInput': [], }
                                                  )
 
-        with pytest.raises(ValueError, match=r"ERROR: The following input variables have bad "
-                                             r"values: \['DisFreq'\]"):
+        with pytest.raises(ValueError, match=r"ERROR: The following input variables have "
+                                             r"bad values \(check spelling and for empty spaces in the keys or that "
+                                             r"the values are in the correct form with the acceptable values\)"
+                                             r": \['DisFreq'\]"):
             gomc_control.write_gomc_control_file(charmm, 'test_save_NVT_bad_variables_part_2.conf',
                                                  'NVT', 10, 300,
                                                  input_variables_dict={'DisFreq': [], }
                                                  )
 
-        with pytest.raises(ValueError, match=r"ERROR: The following input variables have bad "
-                                             r"values: \['DisFreq'\]"):
+        with pytest.raises(ValueError, match=r"ERROR: The following input variables have "
+                                             r"bad values \(check spelling and for empty spaces in the keys or that "
+                                             r"the values are in the correct form with the acceptable values\)"
+                                             r": \['DisFreq'\]"):
             gomc_control.write_gomc_control_file(charmm, 'test_save_NVT_bad_variables_part_2.conf',
                                                  'NVT', 10, 300,
                                                  input_variables_dict={'DisFreq': [], }
                                                  )
 
-        with pytest.raises(ValueError, match=r"ERROR: The following input variables have bad "
-                                             r"values: \['IntraSwapFreq'\]"):
+        with pytest.raises(ValueError, match=r"ERROR: The following input variables have "
+                                             r"bad values \(check spelling and for empty spaces in the keys or that "
+                                             r"the values are in the correct form with the acceptable values\)"
+                                             r": \['IntraSwapFreq'\]"):
             gomc_control.write_gomc_control_file(charmm, 'test_save_NVT_bad_variables_part_2.conf',
                                                  'NVT', 10, 300,
                                                  input_variables_dict={'IntraSwapFreq': [], }
                                                  )
 
-        with pytest.raises(ValueError, match=r"ERROR: The following input variables have bad "
-                                             r"values: \['IntraSwapFreq'\]"):
+        with pytest.raises(ValueError, match=r"ERROR: The following input variables have "
+                                             r"bad values \(check spelling and for empty spaces in the keys or that "
+                                             r"the values are in the correct form with the acceptable values\)"
+                                             r": \['IntraSwapFreq'\]"):
             gomc_control.write_gomc_control_file(charmm, 'test_save_NVT_bad_variables_part_2.conf',
                                                  'NVT', 10, 300,
                                                  input_variables_dict={'IntraSwapFreq': [], }
                                                  )
 
-        with pytest.raises(ValueError, match=r"ERROR: The following input variables have bad "
-                                             r"values: \['RegrowthFreq'\]"):
+        with pytest.raises(ValueError, match=r"ERROR: The following input variables have "
+                                             r"bad values \(check spelling and for empty spaces in the keys or that "
+                                             r"the values are in the correct form with the acceptable values\)"
+                                             r": \['RegrowthFreq'\]"):
             gomc_control.write_gomc_control_file(charmm, 'test_save_NVT_bad_variables_part_2.conf',
                                                  'NVT', 10, 300,
                                                  input_variables_dict={'RegrowthFreq': [], }
                                                  )
 
-        with pytest.raises(ValueError, match=r"ERROR: The following input variables have bad "
-                                             r"values: \['CrankShaftFreq'\]"):
+        with pytest.raises(ValueError, match=r"ERROR: The following input variables have "
+                                             r"bad values \(check spelling and for empty spaces in the keys or that "
+                                             r"the values are in the correct form with the acceptable values\)"
+                                             r": \['CrankShaftFreq'\]"):
             gomc_control.write_gomc_control_file(charmm, 'test_save_NVT_bad_variables_part_2.conf',
                                                  'NVT', 10, 300,
                                                  input_variables_dict={'CrankShaftFreq': [], }
                                                  )
 
-        with pytest.raises(ValueError, match=r"ERROR: The following input variables have bad "
-                                             r"values: \['VolFreq'\]"):
+        with pytest.raises(ValueError, match=r"ERROR: The following input variables have "
+                                             r"bad values \(check spelling and for empty spaces in the keys or that "
+                                             r"the values are in the correct form with the acceptable values\)"
+                                             r": \['VolFreq'\]"):
             gomc_control.write_gomc_control_file(charmm, 'test_save_NVT_bad_variables_part_2.conf',
                                                  'NVT', 10, 300,
                                                  input_variables_dict={'VolFreq': [], }
                                                  )
 
-        with pytest.raises(ValueError, match=r"ERROR: The following input variables have bad "
-                                             r"values: \['MultiParticleFreq'\]"):
+        with pytest.raises(ValueError, match=r"ERROR: The following input variables have "
+                                             r"bad values \(check spelling and for empty spaces in the keys or that "
+                                             r"the values are in the correct form with the acceptable values\)"
+                                             r": \['MultiParticleFreq'\]"):
             gomc_control.write_gomc_control_file(charmm, 'test_save_NVT_bad_variables_part_2.conf',
                                                  'NVT', 10, 300,
                                                  input_variables_dict={'MultiParticleFreq': [], }
                                                  )
 
-        with pytest.raises(ValueError, match=r"ERROR: The following input variables have bad "
-                                             r"values: \['IntraMEMC-1Freq'\]"):
+        with pytest.raises(ValueError, match=r"ERROR: The following input variables have "
+                                             r"bad values \(check spelling and for empty spaces in the keys or that "
+                                             r"the values are in the correct form with the acceptable values\)"
+                                             r": \['IntraMEMC-1Freq'\]"):
             gomc_control.write_gomc_control_file(charmm, 'test_save_NVT_bad_variables_part_2.conf',
                                                  'NVT', 10, 300,
                                                  input_variables_dict={'IntraMEMC-1Freq': [], }
                                                  )
 
-        with pytest.raises(ValueError, match=r"ERROR: The following input variables have bad "
-                                             r"values: \['MEMC-1Freq'\]"):
+        with pytest.raises(ValueError, match=r"ERROR: The following input variables have "
+                                             r"bad values \(check spelling and for empty spaces in the keys or that "
+                                             r"the values are in the correct form with the acceptable values\)"
+                                             r": \['MEMC-1Freq'\]"):
             gomc_control.write_gomc_control_file(charmm, 'test_save_NVT_bad_variables_part_2.conf',
                                                  'NVT', 10, 300,
                                                  input_variables_dict={'MEMC-1Freq': [], }
                                                  )
 
-        with pytest.raises(ValueError, match=r"ERROR: The following input variables have bad "
-                                             r"values: \['IntraMEMC-2Freq'\]"):
+        with pytest.raises(ValueError, match=r"ERROR: The following input variables have "
+                                             r"bad values \(check spelling and for empty spaces in the keys or that "
+                                             r"the values are in the correct form with the acceptable values\)"
+                                             r": \['IntraMEMC-2Freq'\]"):
             gomc_control.write_gomc_control_file(charmm, 'test_save_NVT_bad_variables_part_2.conf',
                                                  'NVT', 10, 300,
                                                  input_variables_dict={'IntraMEMC-2Freq': [], }
                                                  )
 
-        with pytest.raises(ValueError, match=r"ERROR: The following input variables have bad "
-                                             r"values: \['MEMC-2Freq'\]"):
+        with pytest.raises(ValueError, match=r"ERROR: The following input variables have "
+                                             r"bad values \(check spelling and for empty spaces in the keys or that "
+                                             r"the values are in the correct form with the acceptable values\)"
+                                             r": \['MEMC-2Freq'\]"):
             gomc_control.write_gomc_control_file(charmm, 'test_save_NVT_bad_variables_part_2.conf',
                                                  'NVT', 10, 300,
                                                  input_variables_dict={'MEMC-2Freq': [], }
                                                  )
 
-        with pytest.raises(ValueError, match=r"ERROR: The following input variables have bad "
-                                             r"values: \['IntraMEMC-3Freq'\]"):
+        with pytest.raises(ValueError, match=r"ERROR: The following input variables have "
+                                             r"bad values \(check spelling and for empty spaces in the keys or that "
+                                             r"the values are in the correct form with the acceptable values\)"
+                                             r": \['IntraMEMC-3Freq'\]"):
             gomc_control.write_gomc_control_file(charmm, 'test_save_NVT_bad_variables_part_2.conf',
                                                  'NVT', 10, 300,
                                                  input_variables_dict={'IntraMEMC-3Freq': [], }
                                                  )
 
-        with pytest.raises(ValueError, match=r"ERROR: The following input variables have bad "
-                                             r"values: \['MEMC-3Freq'\]"):
+        with pytest.raises(ValueError, match=r"ERROR: The following input variables have "
+                                             r"bad values \(check spelling and for empty spaces in the keys or that "
+                                             r"the values are in the correct form with the acceptable values\)"
+                                             r": \['MEMC-3Freq'\]"):
             gomc_control.write_gomc_control_file(charmm, 'test_save_NVT_bad_variables_part_2.conf',
                                                  'NVT', 10, 300,
                                                  input_variables_dict={'MEMC-3Freq': [], }
@@ -2579,8 +2867,10 @@ class TestGOMCControlFileWriter(BaseTest):
 
         assert value == "GOMC_CONTROL_FILE_WRITTEN"
 
-        with pytest.raises(ValueError, match=r"ERROR: The following input variables have bad "
-                                             r"values: \['PressureCalc'\]"):
+        with pytest.raises(ValueError, match=r"ERROR: The following input variables have "
+                                             r"bad values \(check spelling and for empty spaces in the keys or that "
+                                             r"the values are in the correct form with the acceptable values\)"
+                                             r": \['PressureCalc'\]"):
             gomc_control.write_gomc_control_file(charmm, 'test_save_NVT_bad_variables_part_5.conf',
                                                  'NPT', 10, 300,
                                                  input_variables_dict={'PressureCalc': [1, 10000], }
@@ -2606,64 +2896,82 @@ class TestGOMCControlFileWriter(BaseTest):
 
         assert value == "GOMC_CONTROL_FILE_WRITTEN"
 
-        with pytest.raises(ValueError, match=r"ERROR: The following input variables have bad "
-                                             r"values: \['PressureCalc'\]"):
+        with pytest.raises(ValueError, match=r"ERROR: The following input variables have "
+                                             r"bad values \(check spelling and for empty spaces in the keys or that "
+                                             r"the values are in the correct form with the acceptable values\)"
+                                             r": \['PressureCalc'\]"):
             gomc_control.write_gomc_control_file(charmm, 'test_save_NVT_bad_variables_part_5.conf',
                                                  'NVT', 10, 300,
                                                  input_variables_dict={'PressureCalc': [1, 10000], }
                                                  )
 
-        with pytest.raises(ValueError, match=r"ERROR: The following input variables have bad "
-                                             r"values: \['PressureCalc'\]"):
+        with pytest.raises(ValueError, match=r"ERROR: The following input variables have "
+                                             r"bad values \(check spelling and for empty spaces in the keys or that "
+                                             r"the values are in the correct form with the acceptable values\)"
+                                             r": \['PressureCalc'\]"):
             gomc_control.write_gomc_control_file(charmm, 'test_save_NVT_bad_variables_part_5.conf',
                                                  'NVT', 10, 300,
                                                  input_variables_dict={'PressureCalc': ['', 10000], }
                                                  )
 
-        with pytest.raises(ValueError, match=r"ERROR: The following input variables have bad "
-                                             r"values: \['PressureCalc'\]"):
+        with pytest.raises(ValueError, match=r"ERROR: The following input variables have "
+                                             r"bad values \(check spelling and for empty spaces in the keys or that "
+                                             r"the values are in the correct form with the acceptable values\)"
+                                             r": \['PressureCalc'\]"):
             gomc_control.write_gomc_control_file(charmm, 'test_save_NVT_bad_variables_part_5.conf',
                                                  'NVT', 10, 300,
                                                  input_variables_dict={'PressureCalc': [['x'], 10000], }
                                                  )
 
-        with pytest.raises(ValueError, match=r"ERROR: The following input variables have bad "
-                                             r"values: \['PressureCalc'\]"):
+        with pytest.raises(ValueError, match=r"ERROR: The following input variables have "
+                                             r"bad values \(check spelling and for empty spaces in the keys or that "
+                                             r"the values are in the correct form with the acceptable values\)"
+                                             r": \['PressureCalc'\]"):
             gomc_control.write_gomc_control_file(charmm, 'test_save_NVT_bad_variables_part_5.conf',
                                                  'NVT', 10, 300,
                                                  input_variables_dict={'PressureCalc': [{'s': 1}, 10000], }
                                                  )
 
-        with pytest.raises(ValueError, match=r"ERROR: The following input variables have bad "
-                                             r"values: \['PressureCalc'\]"):
+        with pytest.raises(ValueError, match=r"ERROR: The following input variables have "
+                                             r"bad values \(check spelling and for empty spaces in the keys or that "
+                                             r"the values are in the correct form with the acceptable values\)"
+                                             r": \['PressureCalc'\]"):
             gomc_control.write_gomc_control_file(charmm, 'test_save_NVT_bad_variables_part_5.conf',
                                                  'NVT', 10, 300,
                                                  input_variables_dict={'PressureCalc': [True, 1.0], }
                                                  )
 
-        with pytest.raises(ValueError, match=r"ERROR: The following input variables have bad "
-                                             r"values: \['PressureCalc'\]"):
+        with pytest.raises(ValueError, match=r"ERROR: The following input variables have "
+                                             r"bad values \(check spelling and for empty spaces in the keys or that "
+                                             r"the values are in the correct form with the acceptable values\)"
+                                             r": \['PressureCalc'\]"):
             gomc_control.write_gomc_control_file(charmm, 'test_save_NVT_bad_variables_part_5.conf',
                                                  'NVT', 10, 300,
                                                  input_variables_dict={'PressureCalc': [True, 'x'], }
                                                  )
 
-        with pytest.raises(ValueError, match=r"ERROR: The following input variables have bad "
-                                             r"values: \['PressureCalc'\]"):
+        with pytest.raises(ValueError, match=r"ERROR: The following input variables have "
+                                             r"bad values \(check spelling and for empty spaces in the keys or that "
+                                             r"the values are in the correct form with the acceptable values\)"
+                                             r": \['PressureCalc'\]"):
             gomc_control.write_gomc_control_file(charmm, 'test_save_NVT_bad_variables_part_5.conf',
                                                  'NVT', 10, 300,
                                                  input_variables_dict={'PressureCalc': [True, ['x']], }
                                                  )
 
-        with pytest.raises(ValueError, match=r"ERROR: The following input variables have bad "
-                                             r"values: \['PressureCalc'\]"):
+        with pytest.raises(ValueError, match=r"ERROR: The following input variables have "
+                                             r"bad values \(check spelling and for empty spaces in the keys or that "
+                                             r"the values are in the correct form with the acceptable values\)"
+                                             r": \['PressureCalc'\]"):
             gomc_control.write_gomc_control_file(charmm, 'test_save_NVT_bad_variables_part_5.conf',
                                                  'NVT', 10, 300,
                                                  input_variables_dict={'PressureCalc': [True, {'s': 1}], }
                                                  )
 
-        with pytest.raises(ValueError, match=r"ERROR: The following input variables have bad "
-                                             r"values: \['PressureCalc'\]"):
+        with pytest.raises(ValueError, match=r"ERROR: The following input variables have "
+                                             r"bad values \(check spelling and for empty spaces in the keys or that "
+                                             r"the values are in the correct form with the acceptable values\)"
+                                             r": \['PressureCalc'\]"):
             gomc_control.write_gomc_control_file(charmm, 'test_save_NVT_bad_variables_part_5.conf',
                                                  'NVT', 10, 300,
                                                  input_variables_dict={'PressureCalc': [1, True], }
@@ -2739,57 +3047,73 @@ class TestGOMCControlFileWriter(BaseTest):
 
         assert value == "GOMC_CONTROL_FILE_WRITTEN"
 
-        with pytest.raises(ValueError, match=r"ERROR: The following input variables have bad "
-                                             r"values: \['OutEnergy'\]"):
+        with pytest.raises(ValueError, match=r"ERROR: The following input variables have "
+                                             r"bad values \(check spelling and for empty spaces in the keys or that "
+                                             r"the values are in the correct form with the acceptable values\)"
+                                             r": \['OutEnergy'\]"):
             gomc_control.write_gomc_control_file(charmm, 'test_save_NVT_bad_variables_part_6.conf',
                                                  'NVT', 10, 300,
                                                  input_variables_dict={'OutEnergy': [1, True], }
                                                  )
 
-        with pytest.raises(ValueError, match=r"ERROR: The following input variables have bad "
-                                             r"values: \['OutEnergy'\]"):
+        with pytest.raises(ValueError, match=r"ERROR: The following input variables have "
+                                             r"bad values \(check spelling and for empty spaces in the keys or that "
+                                             r"the values are in the correct form with the acceptable values\)"
+                                             r": \['OutEnergy'\]"):
             gomc_control.write_gomc_control_file(charmm, 'test_save_NVT_bad_variables_part_6.conf',
                                                  'NVT', 10, 300,
                                                  input_variables_dict={'OutEnergy': ['', True], }
                                                  )
 
-        with pytest.raises(ValueError, match=r"ERROR: The following input variables have bad "
-                                             r"values: \['OutEnergy'\]"):
+        with pytest.raises(ValueError, match=r"ERROR: The following input variables have "
+                                             r"bad values \(check spelling and for empty spaces in the keys or that "
+                                             r"the values are in the correct form with the acceptable values\)"
+                                             r": \['OutEnergy'\]"):
             gomc_control.write_gomc_control_file(charmm, 'test_save_NVT_bad_variables_part_6.conf',
                                                  'NVT', 10, 300,
                                                  input_variables_dict={'OutEnergy': [['x'], True], }
                                                  )
 
-        with pytest.raises(ValueError, match=r"ERROR: The following input variables have bad "
-                                             r"values: \['OutEnergy'\]"):
+        with pytest.raises(ValueError, match=r"ERROR: The following input variables have "
+                                             r"bad values \(check spelling and for empty spaces in the keys or that "
+                                             r"the values are in the correct form with the acceptable values\)"
+                                             r": \['OutEnergy'\]"):
             gomc_control.write_gomc_control_file(charmm, 'test_save_NVT_bad_variables_part_6.conf',
                                                  'NVT', 10, 300,
                                                  input_variables_dict={'OutEnergy': [{'s': 1}, True], }
                                                  )
 
-        with pytest.raises(ValueError, match=r"ERROR: The following input variables have bad "
-                                             r"values: \['OutEnergy'\]"):
+        with pytest.raises(ValueError, match=r"ERROR: The following input variables have "
+                                             r"bad values \(check spelling and for empty spaces in the keys or that "
+                                             r"the values are in the correct form with the acceptable values\)"
+                                             r": \['OutEnergy'\]"):
             gomc_control.write_gomc_control_file(charmm, 'test_save_NVT_bad_variables_part_6.conf',
                                                  'NVT', 10, 300,
                                                  input_variables_dict={'OutEnergy': [True, 1.0], }
                                                  )
 
-        with pytest.raises(ValueError, match=r"ERROR: The following input variables have bad "
-                                             r"values: \['OutEnergy'\]"):
+        with pytest.raises(ValueError, match=r"ERROR: The following input variables have "
+                                             r"bad values \(check spelling and for empty spaces in the keys or that "
+                                             r"the values are in the correct form with the acceptable values\)"
+                                             r": \['OutEnergy'\]"):
             gomc_control.write_gomc_control_file(charmm, 'test_save_NVT_bad_variables_part_6.conf',
                                                  'NVT', 10, 300,
                                                  input_variables_dict={'OutEnergy': [True, 'x'], }
                                                  )
 
-        with pytest.raises(ValueError, match=r"ERROR: The following input variables have bad "
-                                             r"values: \['OutEnergy'\]"):
+        with pytest.raises(ValueError, match=r"ERROR: The following input variables have "
+                                             r"bad values \(check spelling and for empty spaces in the keys or that "
+                                             r"the values are in the correct form with the acceptable values\)"
+                                             r": \['OutEnergy'\]"):
             gomc_control.write_gomc_control_file(charmm, 'test_save_NVT_bad_variables_part_6.conf',
                                                  'NVT', 10, 300,
                                                  input_variables_dict={'OutEnergy': [True, ['x']], }
                                                  )
 
-        with pytest.raises(ValueError, match=r"ERROR: The following input variables have bad "
-                                             r"values: \['OutEnergy'\]"):
+        with pytest.raises(ValueError, match=r"ERROR: The following input variables have "
+                                             r"bad values \(check spelling and for empty spaces in the keys or that "
+                                             r"the values are in the correct form with the acceptable values\)"
+                                             r": \['OutEnergy'\]"):
             gomc_control.write_gomc_control_file(charmm, 'test_save_NVT_bad_variables_part_6.conf',
                                                  'NVT', 10, 300,
                                                  input_variables_dict={'OutEnergy': [True, {'s': 1}], }
@@ -2936,8 +3260,10 @@ class TestGOMCControlFileWriter(BaseTest):
         assert value == "GOMC_CONTROL_FILE_WRITTEN"
 
         # starting bad inputs for the Free engergy calcs side from not using all required variables
-        with pytest.raises(ValueError, match=r"ERROR: The following input variables have bad "
-                                             r"values: \['FreeEnergyCalc'\]"):
+        with pytest.raises(ValueError, match=r"ERROR: The following input variables have "
+                                             r"bad values \(check spelling and for empty spaces in the keys or that "
+                                             r"the values are in the correct form with the acceptable values\)"
+                                             r": \['FreeEnergyCalc'\]"):
             gomc_control.write_gomc_control_file(charmm, 'test_save_NVT_bad_variables_part_7.conf',
                                                  'NVT', 10, 300,
                                                  input_variables_dict={"FreeEnergyCalc": [1, 10000],
@@ -2948,8 +3274,10 @@ class TestGOMCControlFileWriter(BaseTest):
                                                                        }
                                                  )
 
-        with pytest.raises(ValueError, match=r"ERROR: The following input variables have bad "
-                                             r"values: \['FreeEnergyCalc'\]"):
+        with pytest.raises(ValueError, match=r"ERROR: The following input variables have "
+                                             r"bad values \(check spelling and for empty spaces in the keys or that "
+                                             r"the values are in the correct form with the acceptable values\)"
+                                             r": \['FreeEnergyCalc'\]"):
             gomc_control.write_gomc_control_file(charmm, 'test_save_NVT_bad_variables_part_7.conf',
                                                  'NVT', 10, 300,
                                                  input_variables_dict={"FreeEnergyCalc": ['1', 10000],
@@ -2960,8 +3288,10 @@ class TestGOMCControlFileWriter(BaseTest):
                                                                        }
                                                  )
 
-        with pytest.raises(ValueError, match=r"ERROR: The following input variables have bad "
-                                             r"values: \['FreeEnergyCalc'\]"):
+        with pytest.raises(ValueError, match=r"ERROR: The following input variables have "
+                                             r"bad values \(check spelling and for empty spaces in the keys or that "
+                                             r"the values are in the correct form with the acceptable values\)"
+                                             r": \['FreeEnergyCalc'\]"):
             gomc_control.write_gomc_control_file(charmm, 'test_save_NVT_bad_variables_part_7.conf',
                                                  'NVT', 10, 300,
                                                  input_variables_dict={"FreeEnergyCalc": [['1'], 10000],
@@ -2972,8 +3302,10 @@ class TestGOMCControlFileWriter(BaseTest):
                                                                        }
                                                  )
 
-        with pytest.raises(ValueError, match=r"ERROR: The following input variables have bad "
-                                             r"values: \['FreeEnergyCalc'\]"):
+        with pytest.raises(ValueError, match=r"ERROR: The following input variables have "
+                                             r"bad values \(check spelling and for empty spaces in the keys or that "
+                                             r"the values are in the correct form with the acceptable values\)"
+                                             r": \['FreeEnergyCalc'\]"):
             gomc_control.write_gomc_control_file(charmm, 'test_save_NVT_bad_variables_part_7.conf',
                                                  'NVT', 10, 300,
                                                  input_variables_dict={"FreeEnergyCalc": [{'a': '1'}, 10000],
@@ -3000,8 +3332,10 @@ class TestGOMCControlFileWriter(BaseTest):
         assert value == "GOMC_CONTROL_FILE_WRITTEN"
 
         # starting bad inputs for the Free engergy calcs side from not using all required variables
-        with pytest.raises(ValueError, match=r"ERROR: The following input variables have bad "
-                                             r"values: \['FreeEnergyCalc'\]"):
+        with pytest.raises(ValueError, match=r"ERROR: The following input variables have "
+                                             r"bad values \(check spelling and for empty spaces in the keys or that "
+                                             r"the values are in the correct form with the acceptable values\)"
+                                             r": \['FreeEnergyCalc'\]"):
             gomc_control.write_gomc_control_file(charmm, 'test_save_NVT_bad_variables_part_7.conf',
                                                  'NVT', 10, 300,
                                                  input_variables_dict={"FreeEnergyCalc": [True, 1.0],
@@ -3012,8 +3346,10 @@ class TestGOMCControlFileWriter(BaseTest):
                                                                        }
                                                  )
 
-        with pytest.raises(ValueError, match=r"ERROR: The following input variables have bad "
-                                             r"values: \['FreeEnergyCalc'\]"):
+        with pytest.raises(ValueError, match=r"ERROR: The following input variables have "
+                                             r"bad values \(check spelling and for empty spaces in the keys or that "
+                                             r"the values are in the correct form with the acceptable values\)"
+                                             r": \['FreeEnergyCalc'\]"):
             gomc_control.write_gomc_control_file(charmm, 'test_save_NVT_bad_variables_part_7.conf',
                                                  'NVT', 10, 300,
                                                  input_variables_dict={"FreeEnergyCalc": [True, '1'],
@@ -3024,8 +3360,10 @@ class TestGOMCControlFileWriter(BaseTest):
                                                                        }
                                                  )
 
-        with pytest.raises(ValueError, match=r"ERROR: The following input variables have bad "
-                                             r"values: \['FreeEnergyCalc'\]"):
+        with pytest.raises(ValueError, match=r"ERROR: The following input variables have "
+                                             r"bad values \(check spelling and for empty spaces in the keys or that "
+                                             r"the values are in the correct form with the acceptable values\)"
+                                             r": \['FreeEnergyCalc'\]"):
             gomc_control.write_gomc_control_file(charmm, 'test_save_NVT_bad_variables_part_7.conf',
                                                  'NVT', 10, 300,
                                                  input_variables_dict={"FreeEnergyCalc": [True, ['1']],
@@ -3036,8 +3374,10 @@ class TestGOMCControlFileWriter(BaseTest):
                                                                        }
                                                  )
 
-        with pytest.raises(ValueError, match=r"ERROR: The following input variables have bad "
-                                             r"values: \['FreeEnergyCalc'\]"):
+        with pytest.raises(ValueError, match=r"ERROR: The following input variables have "
+                                             r"bad values \(check spelling and for empty spaces in the keys or that "
+                                             r"the values are in the correct form with the acceptable values\)"
+                                             r": \['FreeEnergyCalc'\]"):
             gomc_control.write_gomc_control_file(charmm, 'test_save_NVT_bad_variables_part_7.conf',
                                                  'NVT', 10, 300,
                                                  input_variables_dict={"FreeEnergyCalc": [True, {'a': '1'}],
@@ -3048,8 +3388,10 @@ class TestGOMCControlFileWriter(BaseTest):
                                                                        }
                                                  )
 
-        with pytest.raises(ValueError, match=r"ERROR: The following input variables have bad "
-                                             r"values: \['FreeEnergyCalc'\]"):
+        with pytest.raises(ValueError, match=r"ERROR: The following input variables have "
+                                             r"bad values \(check spelling and for empty spaces in the keys or that "
+                                             r"the values are in the correct form with the acceptable values\)"
+                                             r": \['FreeEnergyCalc'\]"):
             gomc_control.write_gomc_control_file(charmm, 'test_save_NVT_bad_variables_part_7.conf',
                                                  'NVT', 10, 300,
                                                  input_variables_dict={"FreeEnergyCalc": [True, 10000, 's'],
@@ -3061,8 +3403,10 @@ class TestGOMCControlFileWriter(BaseTest):
                                                  )
 
         # start checking the MoleculeType variable for errors
-        with pytest.raises(ValueError, match=r"ERROR: The following input variables have bad "
-                                             r"values: \['MoleculeType'\]"):
+        with pytest.raises(ValueError, match=r"ERROR: The following input variables have "
+                                             r"bad values \(check spelling and for empty spaces in the keys or that "
+                                             r"the values are in the correct form with the acceptable values\)"
+                                             r": \['MoleculeType'\]"):
             gomc_control.write_gomc_control_file(charmm, 'test_save_NVT_bad_variables_part_7.conf',
                                                  'NVT', 10, 300,
                                                  input_variables_dict={"FreeEnergyCalc": [True, 10000],
@@ -3073,8 +3417,10 @@ class TestGOMCControlFileWriter(BaseTest):
                                                                        }
                                                  )
 
-        with pytest.raises(ValueError, match=r"ERROR: The following input variables have bad "
-                                             r"values: \['MoleculeType'\]"):
+        with pytest.raises(ValueError, match=r"ERROR: The following input variables have "
+                                             r"bad values \(check spelling and for empty spaces in the keys or that "
+                                             r"the values are in the correct form with the acceptable values\)"
+                                             r": \['MoleculeType'\]"):
             gomc_control.write_gomc_control_file(charmm, 'test_save_NVT_bad_variables_part_7.conf',
                                                  'NVT', 10, 300,
                                                  input_variables_dict={"FreeEnergyCalc": [True, 10000],
@@ -3085,8 +3431,10 @@ class TestGOMCControlFileWriter(BaseTest):
                                                                        }
                                                  )
 
-        with pytest.raises(ValueError, match=r"ERROR: The following input variables have bad "
-                                             r"values: \['MoleculeType'\]"):
+        with pytest.raises(ValueError, match=r"ERROR: The following input variables have "
+                                             r"bad values \(check spelling and for empty spaces in the keys or that "
+                                             r"the values are in the correct form with the acceptable values\)"
+                                             r": \['MoleculeType'\]"):
             gomc_control.write_gomc_control_file(charmm, 'test_save_NVT_bad_variables_part_7.conf',
                                                  'NVT', 10, 300,
                                                  input_variables_dict={"FreeEnergyCalc": [True, 10000],
@@ -3097,8 +3445,10 @@ class TestGOMCControlFileWriter(BaseTest):
                                                                        }
                                                  )
 
-        with pytest.raises(ValueError, match=r"ERROR: The following input variables have bad "
-                                             r"values: \['MoleculeType'\]"):
+        with pytest.raises(ValueError, match=r"ERROR: The following input variables have "
+                                             r"bad values \(check spelling and for empty spaces in the keys or that "
+                                             r"the values are in the correct form with the acceptable values\)"
+                                             r": \['MoleculeType'\]"):
             gomc_control.write_gomc_control_file(charmm, 'test_save_NVT_bad_variables_part_7.conf',
                                                  'NVT', 10, 300,
                                                  input_variables_dict={"FreeEnergyCalc": [True, 10000],
@@ -3109,8 +3459,10 @@ class TestGOMCControlFileWriter(BaseTest):
                                                                        }
                                                  )
 
-        with pytest.raises(ValueError, match=r"ERROR: The following input variables have bad "
-                                             r"values: \['MoleculeType'\]"):
+        with pytest.raises(ValueError, match=r"ERROR: The following input variables have "
+                                             r"bad values \(check spelling and for empty spaces in the keys or that "
+                                             r"the values are in the correct form with the acceptable values\)"
+                                             r": \['MoleculeType'\]"):
             gomc_control.write_gomc_control_file(charmm, 'test_save_NVT_bad_variables_part_7.conf',
                                                  'NVT', 10, 300,
                                                  input_variables_dict={"FreeEnergyCalc": [True, 10000],
@@ -3121,8 +3473,10 @@ class TestGOMCControlFileWriter(BaseTest):
                                                                        }
                                                  )
 
-        with pytest.raises(ValueError, match=r"ERROR: The following input variables have bad "
-                                             r"values: \['MoleculeType'\]"):
+        with pytest.raises(ValueError, match=r"ERROR: The following input variables have "
+                                             r"bad values \(check spelling and for empty spaces in the keys or that "
+                                             r"the values are in the correct form with the acceptable values\)"
+                                             r": \['MoleculeType'\]"):
             gomc_control.write_gomc_control_file(charmm, 'test_save_NVT_bad_variables_part_7.conf',
                                                  'NVT', 10, 300,
                                                  input_variables_dict={"FreeEnergyCalc": [True, 10000],
@@ -3133,8 +3487,10 @@ class TestGOMCControlFileWriter(BaseTest):
                                                                        }
                                                  )
 
-        with pytest.raises(ValueError, match=r"ERROR: The following input variables have bad "
-                                             r"values: \['MoleculeType'\]"):
+        with pytest.raises(ValueError, match=r"ERROR: The following input variables have "
+                                             r"bad values \(check spelling and for empty spaces in the keys or that "
+                                             r"the values are in the correct form with the acceptable values\)"
+                                             r": \['MoleculeType'\]"):
             gomc_control.write_gomc_control_file(charmm, 'test_save_NVT_bad_variables_part_7.conf',
                                                  'NVT', 10, 300,
                                                  input_variables_dict={"FreeEnergyCalc": [True, 10000],
@@ -3146,8 +3502,10 @@ class TestGOMCControlFileWriter(BaseTest):
                                                  )
 
         # start checking the initial state variable
-        with pytest.raises(ValueError, match=r"ERROR: The following input variables have bad "
-                                             r"values: \['InitialState'\]"):
+        with pytest.raises(ValueError, match=r"ERROR: The following input variables have "
+                                             r"bad values \(check spelling and for empty spaces in the keys or that "
+                                             r"the values are in the correct form with the acceptable values\)"
+                                             r": \['InitialState'\]"):
             gomc_control.write_gomc_control_file(charmm, 'test_save_NVT_bad_variables_part_7.conf',
                                                  'NVT', 10, 300,
                                                  input_variables_dict={"FreeEnergyCalc": [True, 10000],
@@ -3158,8 +3516,10 @@ class TestGOMCControlFileWriter(BaseTest):
                                                                        }
                                                  )
 
-        with pytest.raises(ValueError, match=r"ERROR: The following input variables have bad "
-                                             r"values: \['InitialState'\]"):
+        with pytest.raises(ValueError, match=r"ERROR: The following input variables have "
+                                             r"bad values \(check spelling and for empty spaces in the keys or that "
+                                             r"the values are in the correct form with the acceptable values\)"
+                                             r": \['InitialState'\]"):
             gomc_control.write_gomc_control_file(charmm, 'test_save_NVT_bad_variables_part_7.conf',
                                                  'NVT', 10, 300,
                                                  input_variables_dict={"FreeEnergyCalc": [True, 10000],
@@ -3170,8 +3530,10 @@ class TestGOMCControlFileWriter(BaseTest):
                                                                        }
                                                  )
 
-        with pytest.raises(ValueError, match=r"ERROR: The following input variables have bad "
-                                             r"values: \['InitialState'\]"):
+        with pytest.raises(ValueError, match=r"ERROR: The following input variables have "
+                                             r"bad values \(check spelling and for empty spaces in the keys or that "
+                                             r"the values are in the correct form with the acceptable values\)"
+                                             r": \['InitialState'\]"):
             gomc_control.write_gomc_control_file(charmm, 'test_save_NVT_bad_variables_part_7.conf',
                                                  'NVT', 10, 300,
                                                  input_variables_dict={"FreeEnergyCalc": [True, 10000],
@@ -3182,8 +3544,10 @@ class TestGOMCControlFileWriter(BaseTest):
                                                                        }
                                                  )
 
-        with pytest.raises(ValueError, match=r"ERROR: The following input variables have bad "
-                                             r"values: \['InitialState'\]"):
+        with pytest.raises(ValueError, match=r"ERROR: The following input variables have "
+                                             r"bad values \(check spelling and for empty spaces in the keys or that "
+                                             r"the values are in the correct form with the acceptable values\)"
+                                             r": \['InitialState'\]"):
             gomc_control.write_gomc_control_file(charmm, 'test_save_NVT_bad_variables_part_7.conf',
                                                  'NVT', 10, 300,
                                                  input_variables_dict={"FreeEnergyCalc": [True, 10000],
@@ -3195,8 +3559,10 @@ class TestGOMCControlFileWriter(BaseTest):
                                                  )
 
         # start checking the LamdaVDW variable
-        with pytest.raises(ValueError, match=r"ERROR: The following input variables have bad "
-                                             r"values: \['LambdaVDW'\]"):
+        with pytest.raises(ValueError, match=r"ERROR: The following input variables have "
+                                             r"bad values \(check spelling and for empty spaces in the keys or that "
+                                             r"the values are in the correct form with the acceptable values\)"
+                                             r": \['LambdaVDW'\]"):
             gomc_control.write_gomc_control_file(charmm, 'test_save_NVT_bad_variables_part_7.conf',
                                                  'NVT', 10, 300,
                                                  input_variables_dict={"FreeEnergyCalc": [True, 10000],
@@ -3207,8 +3573,10 @@ class TestGOMCControlFileWriter(BaseTest):
                                                                        }
                                                  )
 
-        with pytest.raises(ValueError, match=r"ERROR: The following input variables have bad "
-                                             r"values: \['LambdaVDW'\]"):
+        with pytest.raises(ValueError, match=r"ERROR: The following input variables have "
+                                             r"bad values \(check spelling and for empty spaces in the keys or that "
+                                             r"the values are in the correct form with the acceptable values\)"
+                                             r": \['LambdaVDW'\]"):
             gomc_control.write_gomc_control_file(charmm, 'test_save_NVT_bad_variables_part_7.conf',
                                                  'NVT', 10, 300,
                                                  input_variables_dict={"FreeEnergyCalc": [True, 10000],
@@ -3219,8 +3587,10 @@ class TestGOMCControlFileWriter(BaseTest):
                                                                        }
                                                  )
 
-        with pytest.raises(ValueError, match=r"ERROR: The following input variables have bad "
-                                             r"values: \['LambdaVDW'\]"):
+        with pytest.raises(ValueError, match=r"ERROR: The following input variables have "
+                                             r"bad values \(check spelling and for empty spaces in the keys or that "
+                                             r"the values are in the correct form with the acceptable values\)"
+                                             r": \['LambdaVDW'\]"):
             gomc_control.write_gomc_control_file(charmm, 'test_save_NVT_bad_variables_part_7.conf',
                                                  'NVT', 10, 300,
                                                  input_variables_dict={"FreeEnergyCalc": [True, 10000],
@@ -3232,8 +3602,10 @@ class TestGOMCControlFileWriter(BaseTest):
                                                  )
 
         # start testing the LambdaCoulomb
-        with pytest.raises(ValueError, match=r"ERROR: The following input variables have bad "
-                                             r"values: \['LambdaCoulomb'\]"):
+        with pytest.raises(ValueError, match=r"ERROR: The following input variables have "
+                                             r"bad values \(check spelling and for empty spaces in the keys or that "
+                                             r"the values are in the correct form with the acceptable values\)"
+                                             r": \['LambdaCoulomb'\]"):
             gomc_control.write_gomc_control_file(charmm, 'test_save_NVT_bad_variables_part_7.conf',
                                                  'NVT', 10, 300,
                                                  input_variables_dict={"FreeEnergyCalc": [True, 10000],
@@ -3244,8 +3616,10 @@ class TestGOMCControlFileWriter(BaseTest):
                                                                        }
                                                  )
 
-        with pytest.raises(ValueError, match=r"ERROR: The following input variables have bad "
-                                             r"values: \['LambdaCoulomb'\]"):
+        with pytest.raises(ValueError, match=r"ERROR: The following input variables have "
+                                             r"bad values \(check spelling and for empty spaces in the keys or that "
+                                             r"the values are in the correct form with the acceptable values\)"
+                                             r": \['LambdaCoulomb'\]"):
             gomc_control.write_gomc_control_file(charmm, 'test_save_NVT_bad_variables_part_7.conf',
                                                  'NVT', 10, 300,
                                                  input_variables_dict={"FreeEnergyCalc": [True, 10000],
@@ -3256,8 +3630,10 @@ class TestGOMCControlFileWriter(BaseTest):
                                                                        }
                                                  )
 
-        with pytest.raises(ValueError, match=r"ERROR: The following input variables have bad "
-                                             r"values: \['LambdaCoulomb'\]"):
+        with pytest.raises(ValueError, match=r"ERROR: The following input variables have "
+                                             r"bad values \(check spelling and for empty spaces in the keys or that "
+                                             r"the values are in the correct form with the acceptable values\)"
+                                             r": \['LambdaCoulomb'\]"):
             gomc_control.write_gomc_control_file(charmm, 'test_save_NVT_bad_variables_part_7.conf',
                                                  'NVT', 10, 300,
                                                  input_variables_dict={"FreeEnergyCalc": [True, 10000],
@@ -3311,15 +3687,19 @@ class TestGOMCControlFileWriter(BaseTest):
                                 residues=[ethane_gomc.name, ethanol_gomc.name], forcefield_selection='oplsaa'
                                 )
 
-        with pytest.raises(ValueError, match=r"ERROR: The following input variables have bad "
-                                             r"values: \['RcutCoulomb_box_1'\]"):
+        with pytest.raises(ValueError, match=r"ERROR: The following input variables have "
+                                             r"bad values \(check spelling and for empty spaces in the keys or that "
+                                             r"the values are in the correct form with the acceptable values\)"
+                                             r": \['RcutCoulomb_box_1'\]"):
             gomc_control.write_gomc_control_file(charmm, 'test_save_NVT_bad_variables_part_1.conf',
                                                  'GEMC_NVT', 10, 300,
                                                  input_variables_dict={'RcutCoulomb_box_1': 's', }
                                                  )
 
-        with pytest.raises(ValueError, match=r"ERROR: The following input variables have bad "
-                                             r"values: \['FixVolBox0'\]"):
+        with pytest.raises(ValueError, match=r"ERROR: The following input variables have "
+                                             r"bad values \(check spelling and for empty spaces in the keys or that "
+                                             r"the values are in the correct form with the acceptable values\)"
+                                             r": \['FixVolBox0'\]"):
             gomc_control.write_gomc_control_file(charmm, 'test_save_NVT_bad_variables_part_1.conf',
                                                  'GEMC_NPT', 10, 300,
                                                  input_variables_dict={'FixVolBox0': 's', }
@@ -3357,22 +3737,28 @@ class TestGOMCControlFileWriter(BaseTest):
 
         assert value == "GOMC_CONTROL_FILE_WRITTEN"
 
-        with pytest.raises(ValueError, match=r"ERROR: The following input variables have bad "
-                                             r"values: \['ExchangeVolumeDim'\]"):
+        with pytest.raises(ValueError, match=r"ERROR: The following input variables have "
+                                             r"bad values \(check spelling and for empty spaces in the keys or that "
+                                             r"the values are in the correct form with the acceptable values\)"
+                                             r": \['ExchangeVolumeDim'\]"):
             gomc_control.write_gomc_control_file(charmm, 'test_save_NVT_bad_variables_part_8.conf',
                                                  'GEMC_NVT', 10, 300,
                                                  input_variables_dict={"ExchangeVolumeDim": ['s', 1.0, 1.0]}
                                                  )
 
-        with pytest.raises(ValueError, match=r"ERROR: The following input variables have bad "
-                                             r"values: \['ExchangeVolumeDim'\]"):
+        with pytest.raises(ValueError, match=r"ERROR: The following input variables have "
+                                             r"bad values \(check spelling and for empty spaces in the keys or that "
+                                             r"the values are in the correct form with the acceptable values\)"
+                                             r": \['ExchangeVolumeDim'\]"):
             gomc_control.write_gomc_control_file(charmm, 'test_save_NVT_bad_variables_part_8.conf',
                                                  'GEMC_NVT', 10, 300,
                                                  input_variables_dict={"ExchangeVolumeDim": [1.0, [1.0], 1.0]}
                                                  )
 
-        with pytest.raises(ValueError, match=r"ERROR: The following input variables have bad "
-                                             r"values: \['ExchangeVolumeDim'\]"):
+        with pytest.raises(ValueError, match=r"ERROR: The following input variables have "
+                                             r"bad values \(check spelling and for empty spaces in the keys or that "
+                                             r"the values are in the correct form with the acceptable values\)"
+                                             r": \['ExchangeVolumeDim'\]"):
             gomc_control.write_gomc_control_file(charmm, 'test_save_NVT_bad_variables_part_8.conf',
                                                  'GEMC_NVT', 10, 300,
                                                  input_variables_dict={"ExchangeVolumeDim": [1.0, 1.0, {'a': 1.0}]}
@@ -3463,8 +3849,10 @@ class TestGOMCControlFileWriter(BaseTest):
 
         assert value == "GOMC_CONTROL_FILE_WRITTEN"
 
-        with pytest.raises(ValueError, match=r"ERROR: The following input variables have bad "
-                                             r"values: \['MEMC_DataInput'\]"):
+        with pytest.raises(ValueError, match=r"ERROR: The following input variables have "
+                                             r"bad values \(check spelling and for empty spaces in the keys or that "
+                                             r"the values are in the correct form with the acceptable values\)"
+                                             r": \['MEMC_DataInput'\]"):
             gomc_control.write_gomc_control_file(charmm, 'test_save_NVT_bad_variables_part_8.conf',
                                                  'GEMC_NPT', 10, 300,
                                                  input_variables_dict={"MEMC_DataInput":
@@ -3488,8 +3876,10 @@ class TestGOMCControlFileWriter(BaseTest):
                                                                        }
                                                  )
 
-        with pytest.raises(ValueError, match=r"ERROR: The following input variables have bad "
-                                             r"values: \['MEMC_DataInput'\]"):
+        with pytest.raises(ValueError, match=r"ERROR: The following input variables have "
+                                             r"bad values \(check spelling and for empty spaces in the keys or that "
+                                             r"the values are in the correct form with the acceptable values\)"
+                                             r": \['MEMC_DataInput'\]"):
             gomc_control.write_gomc_control_file(charmm, 'test_save_NVT_bad_variables_part_8.conf',
                                                  'GEMC_NPT', 10, 300,
                                                  input_variables_dict={"MEMC_DataInput":
@@ -3513,8 +3903,10 @@ class TestGOMCControlFileWriter(BaseTest):
                                                                        }
                                                  )
 
-        with pytest.raises(ValueError, match=r"ERROR: The following input variables have bad "
-                                             r"values: \['MEMC_DataInput'\]"):
+        with pytest.raises(ValueError, match=r"ERROR: The following input variables have "
+                                             r"bad values \(check spelling and for empty spaces in the keys or that "
+                                             r"the values are in the correct form with the acceptable values\)"
+                                             r": \['MEMC_DataInput'\]"):
             gomc_control.write_gomc_control_file(charmm, 'test_save_NVT_bad_variables_part_8.conf',
                                                  'GEMC_NPT', 10, 300,
                                                  input_variables_dict={"MEMC_DataInput":
@@ -3538,8 +3930,10 @@ class TestGOMCControlFileWriter(BaseTest):
                                                                        }
                                                  )
 
-        with pytest.raises(ValueError, match=r"ERROR: The following input variables have bad "
-                                             r"values: \['MEMC_DataInput'\]"):
+        with pytest.raises(ValueError, match=r"ERROR: The following input variables have "
+                                             r"bad values \(check spelling and for empty spaces in the keys or that "
+                                             r"the values are in the correct form with the acceptable values\)"
+                                             r": \['MEMC_DataInput'\]"):
             gomc_control.write_gomc_control_file(charmm, 'test_save_NVT_bad_variables_part_8.conf',
                                                  'GEMC_NPT', 10, 300,
                                                  input_variables_dict={"MEMC_DataInput":
@@ -3563,8 +3957,10 @@ class TestGOMCControlFileWriter(BaseTest):
                                                                        }
                                                  )
 
-        with pytest.raises(ValueError, match=r"ERROR: The following input variables have bad "
-                                             r"values: \['MEMC_DataInput'\]"):
+        with pytest.raises(ValueError, match=r"ERROR: The following input variables have "
+                                             r"bad values \(check spelling and for empty spaces in the keys or that "
+                                             r"the values are in the correct form with the acceptable values\)"
+                                             r": \['MEMC_DataInput'\]"):
             gomc_control.write_gomc_control_file(charmm, 'test_save_NVT_bad_variables_part_8.conf',
                                                  'GEMC_NPT', 10, 300,
                                                  input_variables_dict={"MEMC_DataInput":
@@ -3588,8 +3984,10 @@ class TestGOMCControlFileWriter(BaseTest):
                                                                        }
                                                  )
 
-        with pytest.raises(ValueError, match=r"ERROR: The following input variables have bad "
-                                             r"values: \['MEMC_DataInput'\]"):
+        with pytest.raises(ValueError, match=r"ERROR: The following input variables have "
+                                             r"bad values \(check spelling and for empty spaces in the keys or that "
+                                             r"the values are in the correct form with the acceptable values\)"
+                                             r": \['MEMC_DataInput'\]"):
             gomc_control.write_gomc_control_file(charmm, 'test_save_NVT_bad_variables_part_8.conf',
                                                  'GEMC_NPT', 10, 300,
                                                  input_variables_dict={"MEMC_DataInput":
@@ -3613,8 +4011,10 @@ class TestGOMCControlFileWriter(BaseTest):
                                                                        }
                                                  )
 
-        with pytest.raises(ValueError, match=r"ERROR: The following input variables have bad "
-                                             r"values: \['MEMC_DataInput'\]"):
+        with pytest.raises(ValueError, match=r"ERROR: The following input variables have "
+                                             r"bad values \(check spelling and for empty spaces in the keys or that "
+                                             r"the values are in the correct form with the acceptable values\)"
+                                             r": \['MEMC_DataInput'\]"):
             gomc_control.write_gomc_control_file(charmm, 'test_save_NVT_bad_variables_part_8.conf',
                                                  'GEMC_NPT', 10, 300,
                                                  input_variables_dict={"MEMC_DataInput":
@@ -3638,8 +4038,10 @@ class TestGOMCControlFileWriter(BaseTest):
                                                                        }
                                                  )
 
-        with pytest.raises(ValueError, match=r"ERROR: The following input variables have bad "
-                                             r"values: \['MEMC_DataInput'\]"):
+        with pytest.raises(ValueError, match=r"ERROR: The following input variables have "
+                                             r"bad values \(check spelling and for empty spaces in the keys or that "
+                                             r"the values are in the correct form with the acceptable values\)"
+                                             r": \['MEMC_DataInput'\]"):
             gomc_control.write_gomc_control_file(charmm, 'test_save_NVT_bad_variables_part_8.conf',
                                                  'GEMC_NPT', 10, 300,
                                                  input_variables_dict={"MEMC_DataInput":
@@ -3663,8 +4065,10 @@ class TestGOMCControlFileWriter(BaseTest):
                                                                        }
                                                  )
 
-        with pytest.raises(ValueError, match=r"ERROR: The following input variables have bad "
-                                             r"values: \['MEMC_DataInput'\]"):
+        with pytest.raises(ValueError, match=r"ERROR: The following input variables have "
+                                             r"bad values \(check spelling and for empty spaces in the keys or that "
+                                             r"the values are in the correct form with the acceptable values\)"
+                                             r": \['MEMC_DataInput'\]"):
             gomc_control.write_gomc_control_file(charmm, 'test_save_NVT_bad_variables_part_8.conf',
                                                  'GEMC_NPT', 10, 300,
                                                  input_variables_dict={"MEMC_DataInput":
@@ -3688,8 +4092,10 @@ class TestGOMCControlFileWriter(BaseTest):
                                                                        }
                                                  )
 
-        with pytest.raises(ValueError, match=r"ERROR: The following input variables have bad "
-                                             r"values: \['MEMC_DataInput'\]"):
+        with pytest.raises(ValueError, match=r"ERROR: The following input variables have "
+                                             r"bad values \(check spelling and for empty spaces in the keys or that "
+                                             r"the values are in the correct form with the acceptable values\)"
+                                             r": \['MEMC_DataInput'\]"):
             gomc_control.write_gomc_control_file(charmm, 'test_save_NVT_bad_variables_part_8.conf',
                                                  'GEMC_NPT', 10, 300,
                                                  input_variables_dict={"MEMC_DataInput":
@@ -3713,8 +4119,10 @@ class TestGOMCControlFileWriter(BaseTest):
                                                                        }
                                                  )
 
-        with pytest.raises(ValueError, match=r"ERROR: The following input variables have bad "
-                                             r"values: \['MEMC_DataInput'\]"):
+        with pytest.raises(ValueError, match=r"ERROR: The following input variables have "
+                                             r"bad values \(check spelling and for empty spaces in the keys or that "
+                                             r"the values are in the correct form with the acceptable values\)"
+                                             r": \['MEMC_DataInput'\]"):
             gomc_control.write_gomc_control_file(charmm, 'test_save_NVT_bad_variables_part_8.conf',
                                                  'GEMC_NPT', 10, 300,
                                                  input_variables_dict={"MEMC_DataInput":
@@ -3738,8 +4146,10 @@ class TestGOMCControlFileWriter(BaseTest):
                                                                        }
                                                  )
 
-        with pytest.raises(ValueError, match=r"ERROR: The following input variables have bad "
-                                             r"values: \['MEMC_DataInput'\]"):
+        with pytest.raises(ValueError, match=r"ERROR: The following input variables have "
+                                             r"bad values \(check spelling and for empty spaces in the keys or that "
+                                             r"the values are in the correct form with the acceptable values\)"
+                                             r": \['MEMC_DataInput'\]"):
             gomc_control.write_gomc_control_file(charmm, 'test_save_NVT_bad_variables_part_8.conf',
                                                  'GEMC_NPT', 10, 300,
                                                  input_variables_dict={"MEMC_DataInput":
@@ -3763,8 +4173,10 @@ class TestGOMCControlFileWriter(BaseTest):
                                                                        }
                                                  )
 
-        with pytest.raises(ValueError, match=r"ERROR: The following input variables have bad "
-                                             r"values: \['MEMC_DataInput'\]"):
+        with pytest.raises(ValueError, match=r"ERROR: The following input variables have "
+                                             r"bad values \(check spelling and for empty spaces in the keys or that "
+                                             r"the values are in the correct form with the acceptable values\)"
+                                             r": \['MEMC_DataInput'\]"):
             gomc_control.write_gomc_control_file(charmm, 'test_save_NVT_bad_variables_part_8.conf',
                                                  'GEMC_NPT', 10, 300,
                                                  input_variables_dict={"MEMC_DataInput":
@@ -3788,8 +4200,10 @@ class TestGOMCControlFileWriter(BaseTest):
                                                                        }
                                                  )
 
-        with pytest.raises(ValueError, match=r"ERROR: The following input variables have bad "
-                                             r"values: \['MEMC_DataInput'\]"):
+        with pytest.raises(ValueError, match=r"ERROR: The following input variables have "
+                                             r"bad values \(check spelling and for empty spaces in the keys or that "
+                                             r"the values are in the correct form with the acceptable values\)"
+                                             r": \['MEMC_DataInput'\]"):
             gomc_control.write_gomc_control_file(charmm, 'test_save_NVT_bad_variables_part_8.conf',
                                                  'GEMC_NPT', 10, 300,
                                                  input_variables_dict={"MEMC_DataInput":
@@ -3813,8 +4227,10 @@ class TestGOMCControlFileWriter(BaseTest):
                                                                        }
                                                  )
 
-        with pytest.raises(ValueError, match=r"ERROR: The following input variables have bad "
-                                             r"values: \['MEMC_DataInput'\]"):
+        with pytest.raises(ValueError, match=r"ERROR: The following input variables have "
+                                             r"bad values \(check spelling and for empty spaces in the keys or that "
+                                             r"the values are in the correct form with the acceptable values\)"
+                                             r": \['MEMC_DataInput'\]"):
             gomc_control.write_gomc_control_file(charmm, 'test_save_NVT_bad_variables_part_8.conf',
                                                  'GEMC_NPT', 10, 300,
                                                  input_variables_dict={"MEMC_DataInput":
@@ -3838,8 +4254,10 @@ class TestGOMCControlFileWriter(BaseTest):
                                                                        }
                                                  )
 
-        with pytest.raises(ValueError, match=r"ERROR: The following input variables have bad "
-                                             r"values: \['MEMC_DataInput'\]"):
+        with pytest.raises(ValueError, match=r"ERROR: The following input variables have "
+                                             r"bad values \(check spelling and for empty spaces in the keys or that "
+                                             r"the values are in the correct form with the acceptable values\)"
+                                             r": \['MEMC_DataInput'\]"):
             gomc_control.write_gomc_control_file(charmm, 'test_save_NVT_bad_variables_part_8.conf',
                                                  'GEMC_NPT', 10, 300,
                                                  input_variables_dict={"MEMC_DataInput":
@@ -3863,8 +4281,10 @@ class TestGOMCControlFileWriter(BaseTest):
                                                                        }
                                                  )
 
-        with pytest.raises(ValueError, match=r"ERROR: The following input variables have bad "
-                                             r"values: \['MEMC_DataInput'\]"):
+        with pytest.raises(ValueError, match=r"ERROR: The following input variables have "
+                                             r"bad values \(check spelling and for empty spaces in the keys or that "
+                                             r"the values are in the correct form with the acceptable values\)"
+                                             r": \['MEMC_DataInput'\]"):
             gomc_control.write_gomc_control_file(charmm, 'test_save_NVT_bad_variables_part_8.conf',
                                                  'GEMC_NPT', 10, 300,
                                                  input_variables_dict={"MEMC_DataInput":
@@ -3888,8 +4308,10 @@ class TestGOMCControlFileWriter(BaseTest):
                                                                        }
                                                  )
 
-        with pytest.raises(ValueError, match=r"ERROR: The following input variables have bad "
-                                             r"values: \['MEMC_DataInput'\]"):
+        with pytest.raises(ValueError, match=r"ERROR: The following input variables have "
+                                             r"bad values \(check spelling and for empty spaces in the keys or that "
+                                             r"the values are in the correct form with the acceptable values\)"
+                                             r": \['MEMC_DataInput'\]"):
             gomc_control.write_gomc_control_file(charmm, 'test_save_NVT_bad_variables_part_8.conf',
                                                  'GEMC_NPT', 10, 300,
                                                  input_variables_dict={"MEMC_DataInput":
@@ -3913,8 +4335,10 @@ class TestGOMCControlFileWriter(BaseTest):
                                                                        }
                                                  )
 
-        with pytest.raises(ValueError, match=r"ERROR: The following input variables have bad "
-                                             r"values: \['MEMC_DataInput'\]"):
+        with pytest.raises(ValueError, match=r"ERROR: The following input variables have "
+                                             r"bad values \(check spelling and for empty spaces in the keys or that "
+                                             r"the values are in the correct form with the acceptable values\)"
+                                             r": \['MEMC_DataInput'\]"):
             gomc_control.write_gomc_control_file(charmm, 'test_save_NVT_bad_variables_part_8.conf',
                                                  'GEMC_NPT', 10, 300,
                                                  input_variables_dict={"MEMC_DataInput":
@@ -3956,15 +4380,19 @@ class TestGOMCControlFileWriter(BaseTest):
                                                  )
 
         # test some GCMC variable errors with Chempot and fugacity
-        with pytest.raises(ValueError, match=r"ERROR: The following input variables have bad "
-                                             r"values: \['ChemPot'\]"):
+        with pytest.raises(ValueError, match=r"ERROR: The following input variables have "
+                                             r"bad values \(check spelling and for empty spaces in the keys or that "
+                                             r"the values are in the correct form with the acceptable values\)"
+                                             r": \['ChemPot'\]"):
             gomc_control.write_gomc_control_file(charmm, 'test_save_NVT_bad_variables_part_1.conf',
                                                  'GCMC', 10, 300,
                                                  input_variables_dict={'ChemPot': 's', }
                                                  )
 
-        with pytest.raises(ValueError, match=r"ERROR: The following input variables have bad "
-                                             r"values: \['Fugacity'\]"):
+        with pytest.raises(ValueError, match=r"ERROR: The following input variables have "
+                                             r"bad values \(check spelling and for empty spaces in the keys or that "
+                                             r"the values are in the correct form with the acceptable values\)"
+                                             r": \['Fugacity'\]"):
             gomc_control.write_gomc_control_file(charmm, 'test_save_NVT_bad_variables_part_1.conf',
                                                  'GCMC', 10, 300,
                                                  input_variables_dict={'Fugacity': 's', }
@@ -4351,8 +4779,10 @@ class TestGOMCControlFileWriter(BaseTest):
         assert value == "GOMC_CONTROL_FILE_WRITTEN"
 
         # test come MEMC with GCMC
-        with pytest.raises(ValueError, match=r"ERROR: The following input variables have bad "
-                                             r"values: \['Fugacity'\]"):
+        with pytest.raises(ValueError, match=r"ERROR: The following input variables have "
+                                             r"bad values \(check spelling and for empty spaces in the keys or that "
+                                             r"the values are in the correct form with the acceptable values\)"
+                                             r": \['Fugacity'\]"):
             gomc_control.write_gomc_control_file(charmm, 'test_save_NVT_bad_variables_part_8.conf',
                                                  'GCMC', 10, 300,
                                                  input_variables_dict={"MEMC_DataInput":
@@ -4364,7 +4794,10 @@ class TestGOMCControlFileWriter(BaseTest):
                                                                        }
                                                  )
 
-        with pytest.raises(ValueError, match=r"ERROR: The following input variables have bad values: \['Fugacity'\]"):
+        with pytest.raises(ValueError, match=r"ERROR: The following input variables have "
+                                             r"bad values \(check spelling and for empty spaces in the keys or that "
+                                             r"the values are in the correct form with the acceptable values\)"
+                                             r": \['Fugacity'\]"):
             gomc_control.write_gomc_control_file(charmm, 'test_save_NVT_bad_variables_part_8.conf',
                                                  'GCMC', 10, 300,
                                                  input_variables_dict={"MEMC_DataInput":
@@ -4376,7 +4809,10 @@ class TestGOMCControlFileWriter(BaseTest):
                                                                        }
                                                  )
 
-        with pytest.raises(ValueError, match=r"ERROR: The following input variables have bad values: \['Fugacity'\]"):
+        with pytest.raises(ValueError, match=r"ERROR: The following input variables have "
+                                             r"bad values \(check spelling and for empty spaces in the keys or that "
+                                             r"the values are in the correct form with the acceptable values\)"
+                                             r": \['Fugacity'\]"):
             gomc_control.write_gomc_control_file(charmm, 'test_save_NVT_bad_variables_part_8.conf',
                                                  'GCMC', 10, 300,
                                                  input_variables_dict={"MEMC_DataInput":
@@ -4402,8 +4838,10 @@ class TestGOMCControlFileWriter(BaseTest):
                                                                        }
                                                  )
 
-        with pytest.raises(ValueError, match=r"ERROR: The following input variables have bad "
-                                             r"values: \['Fugacity'\]"):
+        with pytest.raises(ValueError, match=r"ERROR: The following input variables have "
+                                             r"bad values \(check spelling and for empty spaces in the keys or that "
+                                             r"the values are in the correct form with the acceptable values\)"
+                                             r": \['Fugacity'\]"):
             gomc_control.write_gomc_control_file(charmm, 'test_save_NVT_bad_variables_part_8.conf',
                                                  'GCMC', 10, 300,
                                                  input_variables_dict={
@@ -4412,8 +4850,10 @@ class TestGOMCControlFileWriter(BaseTest):
                                                  }
                                                  )
 
-        with pytest.raises(ValueError, match=r"ERROR: The following input variables have bad "
-                                             r"values: \['Fugacity'\]"):
+        with pytest.raises(ValueError, match=r"ERROR: The following input variables have "
+                                             r"bad values \(check spelling and for empty spaces in the keys or that "
+                                             r"the values are in the correct form with the acceptable values\)"
+                                             r": \['Fugacity'\]"):
             gomc_control.write_gomc_control_file(charmm, 'test_save_NVT_bad_variables_part_8.conf',
                                                  'GCMC', 10, 300,
                                                  input_variables_dict={
@@ -4422,8 +4862,10 @@ class TestGOMCControlFileWriter(BaseTest):
                                                  }
                                                  )
 
-        with pytest.raises(ValueError, match=r"ERROR: The following input variables have bad "
-                                             r"values: \['ChemPot'\]"):
+        with pytest.raises(ValueError, match=r"ERROR: The following input variables have "
+                                             r"bad values \(check spelling and for empty spaces in the keys or that "
+                                             r"the values are in the correct form with the acceptable values\)"
+                                             r": \['ChemPot'\]"):
             gomc_control.write_gomc_control_file(charmm, 'test_save_NVT_bad_variables_part_8.conf',
                                                  'GCMC', 10, 300,
                                                  input_variables_dict={
@@ -4432,8 +4874,10 @@ class TestGOMCControlFileWriter(BaseTest):
                                                  }
                                                  )
 
-        with pytest.raises(ValueError, match=r"ERROR: The following input variables have bad "
-                                             r"values: \['ChemPot'\]"):
+        with pytest.raises(ValueError, match=r"ERROR: The following input variables have "
+                                             r"bad values \(check spelling and for empty spaces in the keys or that "
+                                             r"the values are in the correct form with the acceptable values\)"
+                                             r": \['ChemPot'\]"):
             gomc_control.write_gomc_control_file(charmm, 'test_save_NVT_bad_variables_part_8.conf',
                                                  'GCMC', 10, 300,
                                                  input_variables_dict={
@@ -4442,8 +4886,10 @@ class TestGOMCControlFileWriter(BaseTest):
                                                  }
                                                  )
 
-        with pytest.raises(ValueError, match=r"ERROR: The following input variables have bad "
-                                             r"values: \['ChemPot'\]"):
+        with pytest.raises(ValueError, match=r"ERROR: The following input variables have "
+                                             r"bad values \(check spelling and for empty spaces in the keys or that "
+                                             r"the values are in the correct form with the acceptable values\)"
+                                             r": \['ChemPot'\]"):
             gomc_control.write_gomc_control_file(charmm, 'test_save_NVT_bad_variables_part_8.conf',
                                                  'GCMC', 10, 300,
                                                  input_variables_dict={
@@ -4452,8 +4898,10 @@ class TestGOMCControlFileWriter(BaseTest):
                                                  }
                                                  )
 
-        with pytest.raises(ValueError, match=r"ERROR: The following input variables have bad "
-                                             r"values: \['ChemPot'\]"):
+        with pytest.raises(ValueError, match=r"ERROR: The following input variables have "
+                                             r"bad values \(check spelling and for empty spaces in the keys or that "
+                                             r"the values are in the correct form with the acceptable values\)"
+                                             r": \['ChemPot'\]"):
             gomc_control.write_gomc_control_file(charmm, 'test_save_NVT_bad_variables_part_8.conf',
                                                  'GCMC', 10, 300,
                                                  input_variables_dict={
@@ -4462,8 +4910,10 @@ class TestGOMCControlFileWriter(BaseTest):
                                                  }
                                                  )
 
-        with pytest.raises(ValueError, match=r"ERROR: The following input variables have bad "
-                                             r"values: \['ChemPot'\]"):
+        with pytest.raises(ValueError, match=r"ERROR: The following input variables have "
+                                             r"bad values \(check spelling and for empty spaces in the keys or that "
+                                             r"the values are in the correct form with the acceptable values\)"
+                                             r": \['ChemPot'\]"):
             gomc_control.write_gomc_control_file(charmm, 'test_save_NVT_bad_variables_part_8.conf',
                                                  'GCMC', 10, 300,
                                                  input_variables_dict={"DisFreq": 1,
