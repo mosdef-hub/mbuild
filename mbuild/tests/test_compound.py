@@ -663,6 +663,7 @@ class TestCompound(BaseTest):
         molecules = list(intermol_system.molecule_types['Compound'].molecules)
         assert len(molecules[0].atoms) == 11
 
+    @pytest.mark.xfail(strict=False)
     @pytest.mark.skipif(not has_intermol, reason="InterMol is not installed")
     def test_intermol_conversion2(self, ethane, h2o):
         # 2 distinct Ethane objects.
