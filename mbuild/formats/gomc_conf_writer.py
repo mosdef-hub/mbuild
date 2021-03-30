@@ -86,7 +86,7 @@ def _get_required_data(description=False):
 
 
 def _get_all_possible_input_variables(description=False):
-    """
+    """ 
     Provides a list of the variables inputs (user optional) for all possible ensembles.
 
     Parameters
