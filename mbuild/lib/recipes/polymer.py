@@ -114,16 +114,13 @@ class Polymer(Compound):
             hydrogen['up'].update_separation(0.0547) # Defaut to 1/2 H-C bond len
             hydrogen_2 = clone(hydrogen)
             self.end_groups.extend([hydrogen, hydrogen_2])
-            head_port.update_separation(0.0547) # 1/2 H-C bond len
-            tail_port.update_separation(0.0547)
-        elif self.end_groups: # Use compounds in self.end_groups
+        
+        if self.end_groups: # Add self.end_group compounds to self 
             head_port.update_separation(self.end_groups[0]['up'].separation)
             tail_port.update_separation(self.end_groups[1]['up'].separation)
-        
-        if self.end_groups: # if end_groups contains hydrogens or manually added compounds
             for compound in self.end_groups:
                 self.add(compound)
-            
+
             force_overlap(self.end_groups[0],
                          self.end_groups[0].labels['up'],
                          head_port
