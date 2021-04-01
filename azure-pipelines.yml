@@ -76,15 +76,13 @@ stages:
           - bash: |
               source activate test-environment
               pip install pytest-azurepipelines
-              python -m pytest -v --pyargs mbuild --cov=mbuild --no-coverage-upload
+              python -m pytest -v --cov=mbuild --cov-report=html --pyargs mbuild
             displayName: Run Tests
 
           - bash: |
               source activate test-environment
-              coverage xml
-              codecov --file ./coverage.xml --token 2b64a140-cfdd-4d0f-b1ba-33d34b8bf522
-              coverage html
-            condition: and( eq( variables['Agent.OS'], 'Linux' ), eq( variables['python.version'], '3.7' ) )
+              bash <(curl -s https://codecov.io/bash) -C $(Build.SourceVersion)
+            condition: and( eq( variables['Agent.OS'], 'Linux' ), eq( variables['python.version'], '3.8' ) )
             displayName: Upload Coverage Report
 
           - task: PublishCodeCoverageResults@1
@@ -135,7 +133,7 @@ stages:
           - script: |
               call activate test-environment
               python -m pip install pytest-azurepipelines
-              python -m pytest -v --cov=mbuild --cov-report=html --pyargs mbuild --no-coverage-upload
+              python -m pytest -v --cov=mbuild --cov-report=html --pyargs mbuild
             displayName: Run Tests
 
       - job: LinuxBleedingFoyer
@@ -174,7 +172,7 @@ stages:
           - bash: |
               source activate bleeding-test-environment
               pip install pytest-azurepipelines
-              python -m pytest -v --cov=mbuild --cov-report= --pyargs mbuild --no-coverage-upload
+              python -m pytest -v --cov=mbuild --cov-report=html --pyargs mbuild
             displayName: Run Tests
 
   - stage: Docker
