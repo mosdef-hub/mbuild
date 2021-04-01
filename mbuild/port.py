@@ -99,7 +99,7 @@ class Port(Compound):
         if self.anchor:
             self.translate_to(self.anchor.pos)
         else:
-            self.translate_to((0,0,0))
+            self.translate_to((0, 0, 0))
 
         self.translate(separation*self.direction)
 
