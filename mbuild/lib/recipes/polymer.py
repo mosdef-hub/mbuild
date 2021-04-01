@@ -13,13 +13,13 @@ __all__ = ['Polymer']
 class Polymer(Compound):
     """Connect one or more components in a specified sequence.
 
-    Attributes 
+    Attributes
     ----------
     monomers : List of mb.Compounds
         The compound(s) to replicate. Add to this list using the add_monomers method.
     end_groups : List of mb.Compounds
         The compound to cap the end of the polymer. Add to this list using the
-        add_end_groups method. 
+        add_end_groups method.
 
     Methods
     -------
@@ -30,7 +30,7 @@ class Polymer(Compound):
         Use to add an end group compound to Polymer.end_groups
 
     build(n, sequence)
-        Use to create a single polymer compound. This method uses the compounds created 
+        Use to create a single polymer compound. This method uses the compounds created
         by calling the add_monomer and add_end_group methods.
     """
     def __init__(self):
@@ -53,11 +53,11 @@ class Polymer(Compound):
             repetition of a monomer. Characters in `sequence` are assigned to
             monomers in the order assigned by the built-in `sorted()`.
         add_hydrogens : bool, default=True
-            If True, and end group compounds were not added using the 
+            If True, and end group compounds were not added using the
             add_end_groups() function, then the head and tail monomer
-            will be capped off with Hydrogens. If compounds were 
+            will be capped off with Hydrogens. If compounds were
             added to end_groups, then they will be used to cap the
-            polymer. 
+            polymer.
             If False, and end_groups is empty, then nothing will
             be used to cap off the polymer.
             """
@@ -68,7 +68,7 @@ class Polymer(Compound):
         for monomer in self.monomers:
             for label in self.port_labels:
                 assert_port_exists(label, monomer)
-                
+
         unique_seq_ids = sorted(set(sequence))
         if len(self.monomers) != len(unique_seq_ids):
             raise ValueError('Number of monomers passed to `Polymer` class must'
@@ -114,8 +114,8 @@ class Polymer(Compound):
             hydrogen['up'].update_separation(0.0547) # Defaut to 1/2 H-C bond len
             hydrogen_2 = clone(hydrogen)
             self.end_groups.extend([hydrogen, hydrogen_2])
-        
-        if self.end_groups: # Add self.end_group compounds to self 
+
+        if self.end_groups: # Add self.end_group compounds to self
             head_port.update_separation(self.end_groups[0]['up'].separation)
             tail_port.update_separation(self.end_groups[1]['up'].separation)
             for compound in self.end_groups:
@@ -129,14 +129,14 @@ class Polymer(Compound):
                          self.end_groups[1].labels['up'],
                          tail_port
                          )
-        
+
     def add_monomer(self, compound, bonding_indices, separation,
                     port_labels=['A', 'B'], orientation=[None, None],
                     replace=True):
         """
         Add an mBuild compound to self.monomers which will be used to build the polymer.
         Call this function for each unique monomer to be used in the polymer.
-        
+
         Parameters
         ----------
         compound : mb.Compound
@@ -156,7 +156,7 @@ class Polymer(Compound):
             monomer created using add_monomer()
         orientation : list of array-like, shape=(3,) of length 2, default=[None, None]
             Vector along which to orient the port
-            If replace = True, and orientation = None, 
+            If replace = True, and orientation = None,
             the orientation of the bond between the particle being
             removed and the anchor particle is used.
             Recommended behavior is to leave orientation set to None
@@ -168,7 +168,7 @@ class Polymer(Compound):
             that bonding_indices point to hydrogen atoms bonded to the
             desired monomer-monomer bonding site particles.
             If False, then the particles identified by bonding_indices
-            will have ports added, and no particles are removed from 
+            will have ports added, and no particles are removed from
             the monomer compound.
         """
         if self.port_labels:
@@ -191,10 +191,10 @@ class Polymer(Compound):
         self.monomers.append(compound)
 
     def add_end_groups(self,
-            compound, 
-            bond_index, 
-            separation, 
-            orientation=None, 
+            compound,
+            bond_index,
+            separation,
+            orientation=None,
             replace=True,
             duplicate=True):
         """
@@ -211,24 +211,24 @@ class Polymer(Compound):
             (separation / 2) is used to set the length of each port
         orientation : array-like, shape=(3,), default=None
             Vector along which to orient the port
-            If replace = True, and orientation = None, 
+            If replace = True, and orientation = None,
             the orientation of the bond between the particle being
             removed and the anchor particle is used.
             Recommended behavior is to leave orientation set to None
             if you are using replace=True.
         replace : Bool, required, default=True
             If True, then the particle identified by bond_index
-            will be removed and ports are added to the particle it 
+            will be removed and ports are added to the particle it
             was initially bonded to. Only use replace=True in the case
             that bond_index points to a hydrogen atom bonded to the
             desired bonding site particles.
             If False, then the particle identified by bond_index
-            will have a port added, and no particle is removed from 
+            will have a port added, and no particle is removed from
             the end group compound.
         duplicate : Bool, default = True
             If True, then `compound` is duplicated and added to Polymer.end_groups
             twice. Set to True, if you want the same end group compound at the
-            head and tail of the polymer. If that's the case, you only need to 
+            head and tail of the polymer. If that's the case, you only need to
             call the add_end_groups() function one time.
             If False, `compound` is not duplicated, and only instance of the
             end group structure is added to Polymer.end_groups. You can call
@@ -264,7 +264,7 @@ def _add_port(compound, label, atom_idx, separation, orientation=None, replace=T
             orientation = compound[atom_idx].pos - anchor_particle.pos
     else:
         anchor_particle = compound[atom_idx]
-        
+
     port = Port(anchor = anchor_particle,
                 orientation=orientation,
                 separation=separation/2
