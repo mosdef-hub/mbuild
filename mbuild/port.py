@@ -107,7 +107,7 @@ class Port(Compound):
         """
         Change the direction between a port and its anchor particle
 
-        orientation : array-like, shape=(3,), optional, default=[0, 1, 0]
+        orientation : array-like, shape=(3,), required
             Vector along which to orient the port
         """
         if self.used:
