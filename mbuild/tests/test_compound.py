@@ -1314,7 +1314,7 @@ class TestCompound(BaseTest):
                 c.element for c in container.particles_by_element("sod")
             ]
 
-    @pytest.mark.parametrize('backend', ['pybabel', 'rdkit'])
+    @pytest.mark.parametrize('backend', ['pybel', 'rdkit'])
     def test_elements_from_smiles(self, backend):
         mol = mb.load("COC", smiles=True, backend=backend)
         for particle in mol.particles():
