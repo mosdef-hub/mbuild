@@ -62,6 +62,18 @@ or
 # pip install py3Dmol
 '''
 
+MESSAGES['rdkit'] = '''
+The code at {filename}:{line_number} requires the "rdkit" package
+
+rdkit can be installed with conda using:
+
+# conda install -c conda-forge rdkit
+
+or from source following instructions at:
+
+https://www.rdkit.org/docs/Install.html#installation-from-source
+'''
+
 MESSAGES['openbabel'] = '''
 The code at {filename}:{line_number} requires the "openbabel" package
 
@@ -272,7 +284,6 @@ try:
 except ImportError:
     has_protobuf = False
 
-
 try:
     import garnett
     has_garnett = True
@@ -286,6 +297,13 @@ try:
     del CifFile
 except ImportError:
     has_pycifrw = False
+
+try:
+    import rdkit
+    has_rdkit = True
+    del rdkit
+except ImportError:
+    has_rdkit = False
 
 def get_fn(name):
     """Get the full path to one of the reference files shipped for utils.

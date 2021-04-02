@@ -17,7 +17,8 @@ from mbuild.utils.io import (get_fn,
                              has_openbabel,
                              has_networkx,
                              has_py3Dmol,
-                             has_nglview)
+                             has_nglview,
+                             has_rdkit)
 from mbuild.tests.base_test import BaseTest
 
 class TestCompound(BaseTest):
@@ -489,11 +490,11 @@ class TestCompound(BaseTest):
     @pytest.mark.skipif(not has_openbabel, reason="Open Babel package not installed")
     def test_reload(self):
         # Create a compound and write it to file.
-        p3ht1= mb.load('CCCCCCC1=C(SC(=C1)C)C', smiles=True)
+        p3ht1= mb.load('CCCCCCC1=C(SC(=C1)C)C', smiles=True, backend='pybel')
         p3ht1.save("p3ht1.pdb")
 
         # Create another compound, rotate it and write it to file.
-        p3ht2 = mb.load('CCCCCCC1=C(SC(=C1)C)C', smiles=True)
+        p3ht2 = mb.load('CCCCCCC1=C(SC(=C1)C)C', smiles=True, backend='pybel')
         p3ht2.rotate(np.pi / 2, [0, 0, 1])
         p3ht2.save("p3ht2.pdb")
 
@@ -990,12 +991,12 @@ class TestCompound(BaseTest):
             assert np.isclose(angle1, angle2, atol=1e-6)
 
     def test_smarts_from_string(self):
-        p3ht = mb.load('CCCCCCC1=C(SC(=C1)C)C', smiles=True)
+        p3ht = mb.load('CCCCCCC1=C(SC(=C1)C)C', smiles=True, backend='pybel')
         assert p3ht.n_bonds == 33
         assert p3ht.n_particles == 33
 
     def test_smarts_from_file(self):
-        p3ht = mb.load(get_fn('p3ht.smi'), smiles=True)
+        p3ht = mb.load(get_fn('p3ht.smi'), smiles=True, backend='pybel')
         assert p3ht.n_bonds == 33
         assert p3ht.n_particles == 33
 
@@ -1164,11 +1165,25 @@ class TestCompound(BaseTest):
         #            chol.unitcell.GetC()/10],
         #        rtol=1e-3)
 
+    @pytest.mark.parametrize('test_smiles', [
+        "CCO",
+        "CCCCCCCC",
+        "c1ccccc1,"
+        "CC(=O)Oc1ccccc1C(=O)O"
+    ])
+    @pytest.mark.skipif(not has_rdkit, reason="RDKit is not installed")
+    def test_from_rdkit_smiles(self, test_smiles):
+        pos = list()
+        for _ in range(3):
+            cmpd = mb.load(test_smiles, smiles=True, backend='rdkit', seed=29)
+            pos.append(cmpd.xyz)
+        assert (np.diff(np.vstack(pos).reshape(len(pos), -1), axis=0) == 0).all()
+
     @pytest.mark.skipif(not has_openbabel, reason="Pybel is not installed")
     def test_get_smiles(self):
         test_strings = ["CCO", "CCCCCCCC", "c1ccccc1", "CC(=O)Oc1ccccc1C(=O)O"]
         for test_string in test_strings:
-            my_cmp = mb.load(test_string, smiles=True)
+            my_cmp = mb.load(test_string, smiles=True, backend='pybel')
             assert my_cmp.get_smiles() == test_string
 
     def test_sdf(self, methane):
@@ -1299,7 +1314,8 @@ class TestCompound(BaseTest):
                 c.element for c in container.particles_by_element("sod")
             ]
 
-    def test_elements_from_smiles(self):
-        mol = mb.load("COC", smiles=True)
+    @pytest.mark.parametrize('backend', ['pybabel', 'rdkit'])
+    def test_elements_from_smiles(self, backend):
+        mol = mb.load("COC", smiles=True, backend=backend)
         for particle in mol.particles():
             assert particle.element is not None
