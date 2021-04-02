@@ -64,7 +64,7 @@ stages:
           - bash: |
               conda update -c defaults conda
               conda update --all
-              sed -i -E 's/  - python.*/  - python='$(python.version)'/' environment-dev.yml
+              sed -i -E 's/python.*$/python='$(python.version)'/' environment-dev.yml`
               conda env create -f environment-dev.yml
               source activate mbuild-dev
               pip install -e .
@@ -113,7 +113,7 @@ stages:
           - script: |
               conda update -c defaults conda
               conda update conda -yq
-              sed -i -E 's/  - python.*/  - python='$(python.version)'/' environment-win.yml
+              sed -i -E 's/python.*$/python='$(python.version)'/' environment-win.yml`
               conda env create -f environment-win.yml
               call activate mbuild-dev
             displayName: Create Conda env, Activate, Install dependencies
@@ -142,7 +142,7 @@ stages:
               conda config --set always_yes yes --set changeps1 no
               conda update -c defaults conda
               conda update --all
-              sed -i -E 's/  - python.*/  - python=3.7/' environment-dev.yml
+              sed -i -E 's/python.*$/python=3.7/' environment-dev.yml`
               conda env create -f environment-dev.yml
               source activate mbuild-dev
             displayName: Create a new bleeding test environment
