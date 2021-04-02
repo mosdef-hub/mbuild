@@ -1168,7 +1168,7 @@ class TestCompound(BaseTest):
     @pytest.mark.parametrize('test_smiles', [
         "CCO",
         "CCCCCCCC",
-        "c1ccccc1,"
+        "c1ccccc1,",
         "CC(=O)Oc1ccccc1C(=O)O"
     ])
     @pytest.mark.skipif(not has_rdkit, reason="RDKit is not installed")
