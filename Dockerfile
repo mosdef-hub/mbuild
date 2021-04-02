@@ -17,10 +17,11 @@ WORKDIR /mbuild
 RUN conda update conda -yq && \
 	conda config --set always_yes yes --set changeps1 no && \
 	. /opt/conda/etc/profile.d/conda.sh && \
-	conda create -n mbuild-docker python=$PY_VERSION nomkl --file environment-dev.yml && \
-	conda activate mbuild-docker && \
-        python setup.py install && \
-	echo "source activate mbuild-docker" >> \
+    sed -i -E "s/python.*$/python="$(PY_VERSION)"/" environment-dev.yml
+	conda env create nomkl --file environment-dev.yml && \
+	conda activate mbuild-dev && \
+    python setup.py install && \
+	echo "source activate mbuild-dev" >> \
 	/home/anaconda/.profile && \
 	conda clean -afy && \
 	mkdir /home/anaconda/data && \
