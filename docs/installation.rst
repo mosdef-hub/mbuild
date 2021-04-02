@@ -25,7 +25,10 @@ after which you can simply install without specifying the channels::
 
 Install an editable version from source
 ---------------------------------------
-::
+
+To make your life easier, we recommend that you use a pre-packaged Python
+distribution like `Continuum's Anaconda <https://www.anaconda.com/products/individual/>`_
+in order to get all of the dependencies.::
 
     $ git clone https://github.com/mosdef-hub/mbuild
     $ cd mbuild
@@ -33,9 +36,8 @@ Install an editable version from source
     $ conda activate mbuild-dev
     $ pip install -e .
 
-To make your life easier, we recommend that you use a pre-packaged Python
-distribution like `Continuum's Anaconda <https://www.anaconda.com/products/individual/>`_
-in order to get all of the dependencies.
+.. note::
+    The above installation is for OSX and Unix. If you are using Windows, use environment-win.yml instead of environment-dev.yml
 
 Supported Python Versions
 -------------------------
