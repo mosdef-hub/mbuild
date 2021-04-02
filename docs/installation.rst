@@ -27,7 +27,7 @@ Install an editable version from source
 ---------------------------------------
 
 To make your life easier, we recommend that you use a pre-packaged Python
-distribution like `Continuum's Anaconda <https://www.anaconda.com/products/individual/>`_
+distribution like `Miniconda <https://docs.conda.io/en/latest/miniconda.html>`_
 in order to get all of the dependencies::
 
     $ git clone https://github.com/mosdef-hub/mbuild
@@ -50,7 +50,7 @@ successfully build and function but no guarantee is made.
 Testing your installation
 -------------------------
 
-mBuild uses ``py.test`` for unit testing. To run them simply type run the
+mBuild uses `py.test <https://docs.pytest.org/en/stable/>`_ for unit testing. To run them simply type run the
 following while in the base directory::
 
     $ conda install pytest
