@@ -28,7 +28,7 @@ Install an editable version from source
 
 To make your life easier, we recommend that you use a pre-packaged Python
 distribution like `Continuum's Anaconda <https://www.anaconda.com/products/individual/>`_
-in order to get all of the dependencies.::
+in order to get all of the dependencies::
 
     $ git clone https://github.com/mosdef-hub/mbuild
     $ cd mbuild
