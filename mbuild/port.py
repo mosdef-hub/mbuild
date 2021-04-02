@@ -95,11 +95,11 @@ class Port(Compound):
         if self.used:
             warn("This port is already being used and changing its separation"
                     " will have no effect on the distance between particles.")
-            return
+
         if self.anchor:
             self.translate_to(self.anchor.pos)
         else:
-            self.translate_to((0,0,0))
+            self.translate_to((0, 0, 0))
 
         self.translate(separation*self.direction)
 
@@ -107,15 +107,14 @@ class Port(Compound):
         """
         Change the direction between a port and its anchor particle
 
-        orientation : array-like, shape=(3,), optional, default=[0, 1, 0]
+        orientation : array-like, shape=(3,), required
             Vector along which to orient the port
         """
         if self.used:
             warn("This port is already being used and changing its orientation"
                     " will have no effect on the direction between particles.")
-            return
 
-        orientation = np.asarray(orientation)
+        orientation = np.asarray(orientation).reshape(3,)
         down = self.labels['down']
         up = self.labels['up']
 
@@ -137,8 +136,16 @@ class Port(Compound):
 
     @property
     def separation(self):
+        """
+        The distance between a port and its anchor particle.
+        If the port has no anchor particle, returns None.
+        """
         if self.anchor:
             return np.linalg.norm(self.center - self.anchor.pos)
+        else:
+            warn("This port is not anchored to another particle." 
+                    " Returning a separation of None")
+            return None
 
     @property
     def access_labels(self):
