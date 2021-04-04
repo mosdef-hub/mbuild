@@ -86,7 +86,7 @@ def _get_required_data(description=False):
 
 
 def _get_all_possible_input_variables(description=False):
-    """ 
+    """
     Provides a list of the variables inputs (user optional) for all possible ensembles.
 
     Parameters
@@ -1909,6 +1909,32 @@ class GOMCControl():
         self.ExchangeVolumeDim = default_input_variables_dict['ExchangeVolumeDim']
         self.MEMC_DataInput = default_input_variables_dict['MEMC_DataInput']
 
+        if input_variables_dict is None:
+            self.input_variables_dict = {}
+        elif isinstance(input_variables_dict, dict) is True:
+            self.input_variables_dict = input_variables_dict
+        else:
+            self.input_error = True
+            print_error_message = "ERROR: The input_variables_dict variable is not None or a dictionary. "
+            raise ValueError(print_error_message)
+
+        # Create all lower case spelled keywords, and return case specific keywords
+        # Also, creates a dict to convert the lower case keys to case sensitive keys
+        all_input_var_case_spec_list = _get_all_possible_input_variables(description=False)
+        all_input_var_case_unspec_list = []
+        all_input_var_case_unspec_to_spec_dict = {}
+        for var_i in all_input_var_case_spec_list:
+            all_input_var_case_unspec_list.append(var_i.lower())
+            all_input_var_case_unspec_to_spec_dict.update({var_i.lower(): var_i})
+
+        # create/fix user case insensitive input variables (input_variables_dict) keys to case sensitive keys
+        input_var_dict_orig_keys_list = dict_keys_to_list(self.input_variables_dict)
+        for z_j in range(0, len(input_var_dict_orig_keys_list)):
+            key_lower = input_var_dict_orig_keys_list[z_j].lower()
+            if key_lower in all_input_var_case_unspec_list:
+                input_variables_dict[all_input_var_case_unspec_to_spec_dict[key_lower]] = \
+                    input_variables_dict.pop(input_var_dict_orig_keys_list[z_j])
+
         # check the box dimensions
         ck_box_dim_is_float_or_int_greater_0(self.x_dim_box_0, 'x', 0, self.ensemble_type)
         ck_box_dim_is_float_or_int_greater_0(self.y_dim_box_0, 'y', 0, self.ensemble_type)
@@ -2005,31 +2031,6 @@ class GOMCControl():
             print("INFO: All the required force field, pdb, and psf files for box 0 and 1 (.inp, .pdb, and .psf) all "
                   "passed the intial error checking. Note: the file names and their existance is not confirmed.")
 
-        if input_variables_dict is None:
-            self.input_variables_dict = {}
-        elif isinstance(input_variables_dict, dict) is True:
-            self.input_variables_dict = input_variables_dict
-        else:
-            self.input_error = True
-            print_error_message = "ERROR: The input_variables_dict variable is not None or a dictionary. "
-            raise ValueError(print_error_message)
-
-        # Create all lower case spelled keywords, and return case specific keywords
-        # Also, creates a dict to convert the lower case keys to case sensitive keys
-        all_input_var_case_spec_list = _get_all_possible_input_variables(description=False)
-        all_input_var_case_unspec_list = []
-        all_input_var_case_unspec_to_spec_dict = {}
-        for var_i in all_input_var_case_spec_list:
-            all_input_var_case_unspec_list.append(var_i.lower())
-            all_input_var_case_unspec_to_spec_dict.update({var_i.lower(): var_i})
-
-        # create/fix user case insensitive input variables (input_variables_dict) keys to case sensitive keys
-        input_var_dict_orig_keys_list = dict_keys_to_list(self.input_variables_dict)
-        for z_j in range(0, len(input_var_dict_orig_keys_list)):
-            key_lower = input_var_dict_orig_keys_list[z_j].lower()
-            if key_lower in all_input_var_case_unspec_list:
-                input_variables_dict[all_input_var_case_unspec_to_spec_dict[key_lower]] = \
-                    input_variables_dict.pop(input_var_dict_orig_keys_list[z_j])
 
         # verify all input variables keys are valid
         input_variables_dict_keys_list = dict_keys_to_list(self.input_variables_dict)
