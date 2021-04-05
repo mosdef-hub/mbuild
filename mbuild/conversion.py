@@ -34,7 +34,6 @@ def load(filename_or_object,
          infer_hierarchy=True,
          backend=None,
          ignore_box_warn=False,
-         smiles_seed=0,
          **kwargs):
     """Load a file or an existing topology into an mbuild compound.
 
@@ -66,10 +65,6 @@ def load(filename_or_object,
     smiles: bool, optional, default=False
         Use RDKit or OpenBabel to parse filename as a SMILES string
         or file containing a SMILES string.
-    smiles_seed: int, optional, default=-1
-        If using smiles=True and backend='rdkit', set a random seed to
-        control particle positions for reproducibility. Default value of -1
-        will not seed the PRNG.
     infer_hierarchy : bool, optional, default=True
         If True, infer hierarchy from chains and residues
     ignore_box_warn : bool, optional, default=False
@@ -110,7 +105,7 @@ def load(filename_or_object,
             infer_hierarchy=infer_hierarchy,
             ignore_box_warn=ignore_box_warn,
             backend=backend,
-            smiles_seed=smiles_seed
+            **kwargs
         )
     # Last, if none of the above, load from file
     else:
@@ -203,8 +198,8 @@ def load_smiles(smiles_or_filename,
                 infer_hierarchy=True,
                 ignore_box_warn=False,
                 backend='rdkit',
-                smiles_seed=0,
-                coords_only=False):
+                coords_only=False,
+                **kwargs):
     """Helper function to load a SMILES string
 
     Loading SMILES string from a string, a list, or a file using RDKit by
@@ -220,6 +215,8 @@ def load_smiles(smiles_or_filename,
     infer_hierarchy : bool, optional, default=True
     ignore_box_warn : bool, optional, default=False
         If True, ignore warning if no box is present.
+    coords_only : bool, optional, default=False
+        Only load the coordinates into a provided compound.
     backend : str, optional, default='rdkit'
         The smiles loading backend, either 'rdkit' or 'pybel'
     smiles_seed : int, optional, default=0
@@ -239,6 +236,9 @@ def load_smiles(smiles_or_filename,
     test_path = Path(smiles_or_filename)
 
     # Will try to support list of smiles strings in the future
+    if backend is None:
+        backend = 'rdkit'
+
     if backend == 'rdkit':
         rdkit = import_('rdkit')
         from rdkit import Chem
@@ -262,10 +262,14 @@ def load_smiles(smiles_or_filename,
         else:
             rdmol = Chem.MolFromSmiles(smiles_or_filename)
 
+        seed = kwargs.get('smiles_seed', None)
+        if seed is None:
+            seed = 0
+
         return from_rdkit(rdkit_mol=rdmol,
                           compound=compound,
                           coords_only=coords_only,
-                          smiles_seed=smiles_seed)
+                          smiles_seed=seed)
     elif backend == 'pybel':
         pybel = import_('pybel')
         # First we try treating filename_or_object as a SMILES string
@@ -778,13 +782,39 @@ def from_rdkit(rdkit_mol,
                compound=None,
                coords_only=False,
                smiles_seed=0):
+    """Return an mbuild Compound based on a smiles string using RDKit.
+
+    Parameters
+    ---------
+    rdkit_mol : rdkit.Chem.rdchem.Mol
+        RDKit mol to generate an mBuild compound
+    compound : mb.Compound, optional, default=None
+        The host mbuild Compound.
+    coords_only : bool, optional, default=False
+        Set preexisting atoms in compound to coordinates given
+        by structure. Note: Not yet implemented, included only
+        for parity with other conversion functions.
+    smiles_seed : int, optional, default=0
+        Random number seed for PRNG, set to -1 for non-deterministic behavior
+
+    Returns
+    -------
+    mbuild.Compound
+
+    NOTES
+    -----
+    Option `coords_only` currently is not implemented, it is only provided to
+        maintain parity with other conversion methods.
+
+    """
     from rdkit import Chem
     from rdkit.Chem import AllChem
 
     mymol = Chem.AddHs(rdkit_mol)
     AllChem.EmbedMolecule(mymol, randomSeed=smiles_seed)
     single_mol = mymol.GetConformer(0)
-    xyz = single_mol.GetPositions()
+    # convert from Angstroms to nanometers
+    xyz = single_mol.GetPositions() / 10
 
     if compound is None:
         comp = mb.Compound()
