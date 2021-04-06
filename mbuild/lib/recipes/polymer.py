@@ -97,7 +97,6 @@ class Polymer(Compound):
 
         # 'A': monomer_1, 'B': monomer_2....
         seq_map = dict(zip(unique_seq_ids, self._monomers))
-        print(seq_map)
         last_part = None
         for n_added, seq_item in enumerate(it.cycle(sequence)):
             this_part = clone(seq_map[seq_item])
