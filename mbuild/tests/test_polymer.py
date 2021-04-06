@@ -10,7 +10,7 @@ class TestPolymer(BaseTest):
     def test_polymer(self, ch2):
         n = 6
         c6 = mb.recipes.Polymer(monomers=[ch2])
-        c6.build(n=n)
+        c6.build(n=n, add_hydrogens=False)
         assert c6.n_particles == n * 3
         assert c6.n_bonds == n * 2 + (n - 1)
 
@@ -18,7 +18,7 @@ class TestPolymer(BaseTest):
         n = 2
         sequence = 'ABBA'
         abba = mb.recipes.Polymer(monomers=[ch2, ester])
-        abba.build(n=n, sequence=sequence)
+        abba.build(n=n, sequence=sequence, add_hydrogens=False)
 
         assert abba.n_particles == n * 3 * len(sequence)
         assert len(abba.children) == len(sequence) * n
