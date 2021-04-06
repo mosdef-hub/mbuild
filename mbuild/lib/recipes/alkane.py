@@ -78,7 +78,7 @@ class Alkane(mb.Compound):
                 end_groups[1] = CH3()
 
             chain = mb.recipes.Polymer(monomers=[CH2()], end_groups=end_groups)
-            chain.build(n)
+            chain.build(n, add_hydrogens=False)
             self.add(chain, "chain")
             if not cap_front:
                 # Hoist port label to Alkane level.
