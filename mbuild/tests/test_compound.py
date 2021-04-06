@@ -16,8 +16,7 @@ from mbuild.utils.io import (get_fn,
                              has_intermol,
                              has_openbabel,
                              has_networkx,
-                             has_nglview,
-                             has_rdkit)
+                             has_rdkit,
                              has_py3Dmol)
 from mbuild.tests.base_test import BaseTest
 
