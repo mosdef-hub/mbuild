@@ -68,75 +68,21 @@ class Alkane(mb.Compound):
 
         # Handle general case of n >= 3
         else:
+            end_groups = [None, None]
             # Adjust length of Polmyer for absence of methyl terminations.
             if cap_front:
                 n -= 1
+                end_groups[0] = CH3()
             if cap_end:
                 n -= 1
-            chain = mb.recipes.Polymer()
+                end_groups[1] = CH3()
 
-            cwd = path.abspath(path.dirname(__file__))
-            ch2_path = path.abspath(path.join(cwd, "../moieties/ch2.pdb"))
-            ch2 = mb.load(ch2_path)
-            ch4 = Methane()
-            if cap_front and cap_end:
-                chain.add_end_groups(ch4, 1, 0.15)
-
-            chain.add_monomer(
-                    ch2,
-                    bonding_indices=[0, 0],
-                    orientation=[[0, 1, 0], [0, -1, 0]],
-                    separation=0.15,
-                    replace=False,
-                    port_labels=['up','down']
-                    )
-            chain.build(n)
+            chain = mb.recipes.Polymer(monomers=[CH2()], end_groups=end_groups)
+            chain.build(n, add_hydrogens=False)
             self.add(chain, "chain")
-            if not cap_front or not cap_end:
-                last = [p for p in self.particles()][-1]
-                bond = [b for b in self.bonds() if last in b][0]
-                anchor = [p for p in bond if p != last][0]
-                orientation = last.pos - anchor.pos
-                separation = np.linalg.norm(orientation)
-                port = mb.Port(
-                        anchor=anchor,
-                        orientation=orientation,
-                        separation=separation
-                        )
-                self.remove(last)
-                self.add(port, 'up')
-
-                last = [p for p in self.particles()][-1]
-                bond = [b for b in self.bonds() if last in b][0]
-                anchor = [p for p in bond if p != last][0]
-                orientation = last.pos - anchor.pos
-                separation = np.linalg.norm(orientation)
-                port = mb.Port(
-                        anchor=anchor,
-                        orientation=orientation,
-                        separation=separation
-                        )
-                self.remove(last)
-                self.add(port, 'down')
-
-                ch3 = CH3()
-                if cap_front:
-                    self.add(ch3, 'methyl1')
-                    mb.force_overlap(
-                            self['methyl1'],
-                            self['methyl1']['up'],
-                            self['up']
-                            )
-                #else:
-                #    # Hoist port label to Alkane level.
-                #    self.add(self["chain"]['up'], 'up', containment=False)
-                if cap_end:
-                    self.add(mb.clone(ch3), 'methyl2')
-                    mb.force_overlap(
-                            self['methyl2'],
-                            self['methyl2']['up'],
-                            self['down']
-                            )
-                #else:
-                #    # Hoist port label to Alkane level.
-                #    self.add(self["chain"]['down'], 'down', containment=False)
+            if not cap_front:
+                # Hoist port label to Alkane level.
+                self.add(self["chain"]['up'], 'up', containment=False)
+            if  not cap_end:
+                # Hoist port label to Alkane level.
+                self.add(self["chain"]['down'], 'down', containment=False)
