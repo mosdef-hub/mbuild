@@ -5,6 +5,7 @@ import numpy as np
 from mbuild.port import Port
 from mbuild.compound import Compound
 from mbuild.coordinate_transform import force_overlap
+from mbuild.lib.atoms import H
 from mbuild.utils.validation import assert_port_exists
 from mbuild import clone
 
@@ -57,7 +58,7 @@ class Polymer(Compound):
     def end_groups(self):
         return self._end_groups
 
-    def build(self, n, sequence="A"):
+    def build(self, n, sequence="A", add_hydrogens=True):
         """Connect one or more components in a specified sequence.
 
         Parameters
@@ -66,18 +67,16 @@ class Polymer(Compound):
             The compound(s) to replicate.
         n : int
             The number of times to replicate the sequence.
-        sequence : str, optional, default='A'
+        sequence : str, optional, default 'A'
             A string of characters where each unique character represents one
             repetition of a monomer. Characters in `sequence` are assigned to
             monomers in the order they appear in `Polymer.monomers`.
-        add_hydrogens : bool, default=True
-            If True, and end group compounds were not added using the
-            add_end_groups() function, then the head and tail monomer
-            will be capped off with hydrogen atoms. If compounds were
-            added to end_groups, then they will be used to cap the
-            polymer.
-            If False, and end_groups is empty, then nothing will
-            be used to cap off the polymer.
+        add_hydrogens : bool, default True
+            If True and an end group compound is None, then the head or tail
+            of the polymer will be capped off with hydrogen atoms. If end group
+            compounds exist, then they will be used.
+            If False and an end group compound is None, then the head or tail
+            port will be exposed in the polymer.
         """
         if n < 1:
             raise ValueError("n must be 1 or more")
@@ -136,8 +135,20 @@ class Polymer(Compound):
                 self.add(compound)
                 force_overlap(compound, compound.labels["up"], head_tail[i])
             else:
-                # if None, hoist port to polymer level
-                self.add(head_tail[i], self._port_labels[i], containment=False)
+                if add_hydrogens:
+                    hydrogen = H()
+                    # Defaut to 1/2 H-C bond len
+                    head_tail[i].update_separation(0.0547)
+                    hydrogen['up'].update_separation(0.0547)
+                    self.add(hydrogen)
+                    force_overlap(hydrogen, hydrogen["up"], head_tail[i])
+                else:
+                    # if None, hoist port to polymer level
+                    self.add(
+                            head_tail[i],
+                            self._port_labels[i],
+                            containment=False
+                            )
 
         for port in self.all_ports():
             if port not in self.available_ports():
