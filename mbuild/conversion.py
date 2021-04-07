@@ -259,9 +259,7 @@ def load_smiles(smiles_or_filename,
         else:
             rdmol = Chem.MolFromSmiles(smiles_or_filename)
 
-        seed = kwargs.get('smiles_seed', None)
-        if seed is None:
-            seed = 0
+        seed = kwargs.get('smiles_seed', 0)
 
         return from_rdkit(rdkit_mol=rdmol,
                           compound=compound,
