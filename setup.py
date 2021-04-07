@@ -16,7 +16,7 @@ from distutils.spawn import find_executable
 
 #####################################
 NAME = 'mbuild'
-VERSION = "0.10.10"
+VERSION = "0.10.13"
 ISRELEASED = True
 if ISRELEASED:
     __version__ = VERSION

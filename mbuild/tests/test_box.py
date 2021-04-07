@@ -79,24 +79,24 @@ class TestBox(BaseTest):
         
         box.maxs[0] = 5
         box.mins[2] = 1
-        assert np.allclose(box.mins, np.array([0, 0, 1], dtype=np.float))
-        assert np.allclose(box.maxs, np.array([5, 4, 4], dtype=np.float))
-        assert np.allclose(box.lengths, np.array([5, 4, 3], dtype=np.float))
+        assert np.allclose(box.mins, np.array([0, 0, 1], dtype=float))
+        assert np.allclose(box.maxs, np.array([5, 4, 4], dtype=float))
+        assert np.allclose(box.lengths, np.array([5, 4, 3], dtype=float))
 
         box.lengths[1] = 6
-        assert np.allclose(box.mins, np.array([0, -1, 1], dtype=np.float))
-        assert np.allclose(box.maxs, np.array([5, 5, 4], dtype=np.float))
-        assert np.allclose(box.lengths, np.array([5, 6, 3], dtype=np.float))
+        assert np.allclose(box.mins, np.array([0, -1, 1], dtype=float))
+        assert np.allclose(box.maxs, np.array([5, 5, 4], dtype=float))
+        assert np.allclose(box.lengths, np.array([5, 6, 3], dtype=float))
 
         new_box = mb.Box(5)
-        assert np.allclose(new_box.lengths, np.array([5, 5, 5], dtype=np.float))
-        assert np.allclose(new_box.mins, np.array([0, 0, 0], dtype=np.float))
-        assert np.allclose(new_box.maxs, np.array([5, 5, 5], dtype=np.float))
+        assert np.allclose(new_box.lengths, np.array([5, 5, 5], dtype=float))
+        assert np.allclose(new_box.mins, np.array([0, 0, 0], dtype=float))
+        assert np.allclose(new_box.maxs, np.array([5, 5, 5], dtype=float))
 
         new_box.lengths = 4
-        assert np.allclose(new_box.lengths, np.array([4, 4, 4], dtype=np.float))
-        assert np.allclose(new_box.mins, np.array([0.5, 0.5, 0.5], dtype=np.float))
-        assert np.allclose(new_box.maxs, np.array([4.5, 4.5, 4.5], dtype=np.float))
+        assert np.allclose(new_box.lengths, np.array([4, 4, 4], dtype=float))
+        assert np.allclose(new_box.mins, np.array([0.5, 0.5, 0.5], dtype=float))
+        assert np.allclose(new_box.maxs, np.array([4.5, 4.5, 4.5], dtype=float))
 
     def test_sanity_checks(self):
         # Initialization step

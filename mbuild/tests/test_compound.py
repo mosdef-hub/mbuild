@@ -16,9 +16,17 @@ from mbuild.utils.io import (get_fn,
                              has_intermol,
                              has_openbabel,
                              has_networkx,
-                             has_py3Dmol,
-                             has_nglview)
+                             has_py3Dmol)
 from mbuild.tests.base_test import BaseTest
+
+
+try:
+    import nglview
+    has_nglview = True
+    del nglview
+except ImportError:
+    has_nglview = False
+
 
 class TestCompound(BaseTest):
 
@@ -657,12 +665,13 @@ class TestCompound(BaseTest):
         intermol_system = compound.to_intermol()
         assert len(intermol_system.molecule_types) == 1
         assert 'Compound' in intermol_system.molecule_types
-        assert len(intermol_system.molecule_types['Compound'].bonds) == 9
+        assert len(intermol_system.molecule_types['Compound'].bond_forces) == 9
 
         assert len(intermol_system.molecule_types['Compound'].molecules) == 1
         molecules = list(intermol_system.molecule_types['Compound'].molecules)
         assert len(molecules[0].atoms) == 11
 
+    @pytest.mark.xfail(strict=False)
     @pytest.mark.skipif(not has_intermol, reason="InterMol is not installed")
     def test_intermol_conversion2(self, ethane, h2o):
         # 2 distinct Ethane objects.
@@ -722,7 +731,7 @@ class TestCompound(BaseTest):
     def test_fillbox_then_parmed(self):
         # This test would fail with the old to_parmed code (pre PR #699)
 
-        bead = mb.Compound(name="Bead")
+        bead = mb.Compound(name="Ar")
         box = mb.Box(mins=(2,2,2), maxs=(3,3,3))
         bead_box = mb.fill_box(bead, 100, box)
         bead_box_in_pmd = bead_box.to_parmed()
@@ -889,7 +898,12 @@ class TestCompound(BaseTest):
     @pytest.mark.skipif(not has_openbabel, reason="Open Babel package not installed")
     def test_energy_minimize_non_element(self, octane):
         for particle in octane.particles():
+            particle.element = None
+        # Pass with element inference from names
+        octane.energy_minimize()
+        for particle in octane.particles():
             particle.name = 'Q'
+        # Fail once names don't match elements
         with pytest.raises(MBuildError):
             octane.energy_minimize()
 
@@ -1294,3 +1308,7 @@ class TestCompound(BaseTest):
                 c.element for c in container.particles_by_element("sod")
             ]
 
+    def test_elements_from_smiles(self):
+        mol = mb.load("COC", smiles=True)
+        for particle in mol.particles():
+            assert particle.element is not None
