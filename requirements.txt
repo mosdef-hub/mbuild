@@ -1,7 +1,0 @@
-numpy
-scipy
-packmol>=1!18.013
-oset
-parmed>=3.4.0
-ele
-openbabel>=3.0.0

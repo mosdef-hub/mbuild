@@ -252,13 +252,6 @@ except ImportError:
     has_hoomd = False
 
 try:
-    import nglview
-    has_nglview = True
-    del nglview
-except ImportError:
-    has_nglview = False
-
-try:
     import py3Dmol
     has_py3Dmol = True
     del py3Dmol

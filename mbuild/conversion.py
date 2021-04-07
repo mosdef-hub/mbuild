@@ -1482,8 +1482,7 @@ def to_intermol(compound, molecule_types=None):  # pragma: no cover
             if type(parent) in molecule_types:
                 # Check if we have encountered this molecule type before.
                 if parent.name not in intermol_system.molecule_types:
-                    compound._add_intermol_molecule_type(
-                        intermol_system, parent)
+                    _add_intermol_molecule_type(intermol_system, parent)
                 if parent != last_molecule_compound:
                     last_molecule_compound = parent
                     last_molecule = Molecule(name=parent.name)
@@ -1512,7 +1511,7 @@ def _add_intermol_molecule_type(intermol_system, parent):  # pragma: no cover
     parent compound, including its particles and bonds, to it.
     """
     from intermol.moleculetype import MoleculeType
-    from intermol.forces.bond import Bond as InterMolBond
+    from intermol.forces.abstract_bond_type import AbstractBondType as InterMolBond
 
     molecule_type = MoleculeType(name=parent.name)
     intermol_system.add_molecule_type(molecule_type)
@@ -1522,7 +1521,7 @@ def _add_intermol_molecule_type(intermol_system, parent):  # pragma: no cover
 
     for atom1, atom2 in parent.bonds():
         intermol_bond = InterMolBond(atom1.index, atom2.index)
-        molecule_type.bonds.add(intermol_bond)
+        molecule_type.bond_forces.add(intermol_bond)
 
 
 def _infer_element_from_compound(compound, guessed_elements):
