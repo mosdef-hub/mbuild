@@ -807,6 +807,7 @@ def from_rdkit(rdkit_mol,
 
     mymol = Chem.AddHs(rdkit_mol)
     AllChem.EmbedMolecule(mymol, randomSeed=smiles_seed)
+    AllChem.UFFOptimizeMolecule(mymol)
     single_mol = mymol.GetConformer(0)
     # convert from Angstroms to nanometers
     xyz = single_mol.GetPositions() / 10
