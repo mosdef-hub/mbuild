@@ -79,7 +79,7 @@ def load(filename_or_object,
 
     NOTES
     -----
-    If `smiles` is `True`, either `rdkit` (default) or `openbabel` can be used,
+    If `smiles` is `True`, either `rdkit` (default) or `pybel` can be used,
     but RDkit is the only option of these that allows the user to specify a
     random number seed to reproducibly generate the same starting structure.
     This is NOT possible with `openbabel`, use `rdkit` if you need
