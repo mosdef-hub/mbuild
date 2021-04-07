@@ -219,9 +219,6 @@ def load_smiles(smiles_or_filename,
         Only load the coordinates into a provided compound.
     backend : str, optional, default='rdkit'
         The smiles loading backend, either 'rdkit' or 'pybel'
-    smiles_seed : int, optional, default=0
-        The random number seed to control the position of particles generated
-        from the smiles loader. -1 means no seed is set.
 
 
     Returns
