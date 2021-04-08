@@ -115,13 +115,15 @@ class Port(Compound):
                     " will have no effect on the direction between particles.")
 
         orientation = np.asarray(orientation).reshape(3,)
-        down = self.labels['down']
-        up = self.labels['up']
-
+        init_separation = self.separation
         normal = np.cross(self.direction, orientation)
+        #Move to origin to perform rotation
+        self.translate_to((0, 0, 0))
         self.rotate(angle(self.direction, orientation), normal)
-        down.rotate(np.pi, normal)
-        up.rotate(np.pi, normal)
+        self.labels['down'].rotate(np.pi, normal)
+        self.labels['up'].rotate(np.pi, normal)
+        #Move back to it's anchor particle
+        self.update_separation(init_separation)
 
     @property
     def center(self):
