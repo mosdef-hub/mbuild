@@ -6,12 +6,11 @@ Install with `conda <https://repo.anaconda.com/miniconda/>`_
 -----------------------------------------------------
 ::
 
-    $ conda install -c conda-forge -c omnia mbuild
+    $ conda install -c conda-forge mbuild
 
 Alternatively you can add all the required channels to your ``.condarc``
 after which you can simply install without specifying the channels::
 
-    $ conda config --add channels omnia
     $ conda config --add channels conda-forge
     $ conda install mbuild
 
@@ -24,27 +23,21 @@ after which you can simply install without specifying the channels::
     `Anaconda scientific python distribution <https://www.anaconda.com/products/individual>`_
     to manage your numerical and scientific Python packages.
 
-Install with `pip <https://pypi.org/project/pip/>`_
----------------------------------------------------
-::
-
-    $ pip install mbuild
-
-.. note::
-    `PACKMOL <http://m3g.iqm.unicamp.br/packmol/>`_ is not available on pip
-    but can be installed from source or via conda.
-
 Install an editable version from source
 ---------------------------------------
-::
+
+To make your life easier, we recommend that you use a pre-packaged Python
+distribution like `Miniconda <https://docs.conda.io/en/latest/miniconda.html>`_
+in order to get all of the dependencies::
 
     $ git clone https://github.com/mosdef-hub/mbuild
     $ cd mbuild
+    $ conda env create -f environment-dev.yml
+    $ conda activate mbuild-dev
     $ pip install -e .
 
-To make your life easier, we recommend that you use a pre-packaged Python
-distribution like `Continuum's Anaconda <https://www.anaconda.com/products/individual/>`_
-in order to get all of the dependencies.
+.. note::
+    The above installation is for OSX and Unix. If you are using Windows, use environment-win.yml instead of environment-dev.yml
 
 Supported Python Versions
 -------------------------
@@ -57,7 +50,7 @@ successfully build and function but no guarantee is made.
 Testing your installation
 -------------------------
 
-mBuild uses ``py.test`` for unit testing. To run them simply type run the
+mBuild uses `py.test <https://docs.pytest.org/en/stable/>`_ for unit testing. To run them simply type run the
 following while in the base directory::
 
     $ conda install pytest
