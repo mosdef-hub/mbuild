@@ -1470,10 +1470,8 @@ def to_intermol(compound, molecule_types=None):  # pragma: no cover
     import simtk.unit as u
 
     if isinstance(molecule_types, list):
-        print(f'my moltypes: {molecule_types}')
         molecule_types = tuple(molecule_types)
     elif molecule_types is None:
-        print(f'my moltype none: {molecule_types}')
         molecule_types = (compound.name,)
     intermol_system = System()
 
@@ -1481,8 +1479,6 @@ def to_intermol(compound, molecule_types=None):  # pragma: no cover
     for atom_index, atom in enumerate(compound.particles()):
         for parent in atom.ancestors():
             # Don't want inheritance via isinstance().
-            print(parent.name)
-            print(parent.name in molecule_types)
             if parent.name in molecule_types:
                 # Check if we have encountered this molecule type before.
                 if parent.name not in intermol_system.molecule_types:
