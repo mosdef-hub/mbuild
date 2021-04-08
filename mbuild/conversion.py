@@ -64,7 +64,8 @@ def load(filename_or_object,
         a default backend (extension specific) will be used.
     smiles: bool, optional, default=False
         Use RDKit or OpenBabel to parse filename as a SMILES string
-        or file containing a SMILES string.
+        or file containing a SMILES string. If this is set to True, `rdkit`
+        is the default backend.
     infer_hierarchy : bool, optional, default=True
         If True, infer hierarchy from chains and residues
     ignore_box_warn : bool, optional, default=False
