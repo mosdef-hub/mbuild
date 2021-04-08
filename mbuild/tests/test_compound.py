@@ -671,19 +671,19 @@ class TestCompound(BaseTest):
         molecules = list(intermol_system.molecule_types['Compound'].molecules)
         assert len(molecules[0].atoms) == 11
 
-    @pytest.mark.xfail(strict=False)
     @pytest.mark.skipif(not has_intermol, reason="InterMol is not installed")
     def test_intermol_conversion2(self, ethane, h2o):
         # 2 distinct Ethane objects.
         compound = mb.Compound([ethane, mb.clone(ethane), h2o])
 
-        molecule_types = [type(ethane), type(h2o)]
+        molecule_types = [ethane.name, h2o.name]
         intermol_system = compound.to_intermol(molecule_types=molecule_types)
         assert len(intermol_system.molecule_types) == 2
         assert 'Ethane' in intermol_system.molecule_types
         assert 'H2O' in intermol_system.molecule_types
-        assert len(intermol_system.molecule_types['Ethane'].bonds) == 7
-        assert len(intermol_system.molecule_types['H2O'].bonds) == 2
+
+        assert len(intermol_system.molecule_types['Ethane'].bond_forces) == 7
+        assert len(intermol_system.molecule_types['H2O'].bond_forces) == 2
 
         assert len(intermol_system.molecule_types['Ethane'].molecules) == 2
         ethanes = list(intermol_system.molecule_types['Ethane'].molecules)

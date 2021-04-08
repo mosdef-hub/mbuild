@@ -1472,14 +1472,14 @@ def to_intermol(compound, molecule_types=None):  # pragma: no cover
     if isinstance(molecule_types, list):
         molecule_types = tuple(molecule_types)
     elif molecule_types is None:
-        molecule_types = (type(compound),)
+        molecule_types = (compound.name,)
     intermol_system = System()
 
     last_molecule_compound = None
     for atom_index, atom in enumerate(compound.particles()):
         for parent in atom.ancestors():
             # Don't want inheritance via isinstance().
-            if type(parent) in molecule_types:
+            if parent.name in molecule_types:
                 # Check if we have encountered this molecule type before.
                 if parent.name not in intermol_system.molecule_types:
                     _add_intermol_molecule_type(intermol_system, parent)
