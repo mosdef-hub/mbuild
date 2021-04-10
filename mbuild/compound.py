@@ -302,7 +302,7 @@ class Compound(object):
         Parameters
         ----------
         name : str or ele.Element
-            element abbreviation or element 
+            element abbreviation or element
 
         Yields
         ------
@@ -997,7 +997,7 @@ class Compound(object):
     @property
     def element(self):
         return self._element
-    
+
     @element.setter
     def element(self, element):
         if element is None:
@@ -2161,9 +2161,11 @@ class Compound(object):
     def __getitem__(self, selection):
         if isinstance(selection, int):
             return list(self.particles())[selection]
+        if isinstance(selection, slice):
+            return list(self.particles())[selection]
         if isinstance(selection, str):
             if selection not in self.labels:
-                raise MBuildError('{}[\'{}\'] does not exist.'.format(self.name,selection))
+                raise MBuildError(f"{self.name}['{selection}'] does not exist.")
             return self.labels.get(selection)
 
     def __repr__(self):
