@@ -2159,10 +2159,10 @@ class Compound(object):
         return smiles
 
     def __getitem__(self, selection):
-        if isinstance(selection, int):
+        if isinstance(selection, int) or isinstance(selection, slice):
             return list(self.particles())[selection]
-        if isinstance(selection, slice):
-            return list(self.particles())[selection]
+        if isinstance(selection, tuple):
+            return [list(self.particles())[i] for i in selection]
         if isinstance(selection, str):
             if selection not in self.labels:
                 raise MBuildError(f"{self.name}['{selection}'] does not exist.")
