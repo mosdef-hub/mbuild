@@ -60,5 +60,5 @@ Building the documentation
 
 mBuild uses `sphinx <https://www.sphinx-doc.org/en/master/index.html>`_ to build its documentation. To build the docs locally, run the following while in the `docs` directory::
     
-    $ pip install sphinx sphinx-rtd-theme nbsphinx numpydoc sphinxcontrib-svg2pdfconverter
+    $ pip install -r requirements.txt
     $ make html
