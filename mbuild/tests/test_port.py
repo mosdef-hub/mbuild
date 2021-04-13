@@ -61,7 +61,7 @@ class TestPattern(BaseTest):
         with warnings.catch_warnings(record=True) as w:
             separation = port_no_anchor.separation
             assert w
-            assert(separation == None)
+            assert(separation is None)
 
     def test_update_separation(self, ethane, hexane):
         port = mb.Port(anchor=ethane, separation=0.7)
