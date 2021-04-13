@@ -21,7 +21,8 @@ from mbuild.formats.hoomdxml import write_hoomdxml
 from mbuild.formats.lammpsdata import write_lammpsdata
 from mbuild.formats.gsdwriter import write_gsd
 from mbuild.formats.par_writer import write_par
-from mbuild.utils.io import import_, has_networkx, has_openbabel, has_mdtraj
+from mbuild.utils.io import (import_, has_networkx, has_openbabel,
+                             has_mdtraj, has_rdkit)
 
 
 def load(filename_or_object,
@@ -59,22 +60,31 @@ def load(filename_or_object,
     rigid : bool, optional, default=False
         Treat the compound as a rigid body
     backend : str, optional, default=None
-        Backend used to load structure from file. If not specified, a default
-        backend (extension specific) will be used.
+        Backend used to load structure from file or string. If not specified,
+        a default backend (extension specific) will be used.
     smiles: bool, optional, default=False
-        Use Open Babel to parse filename as a SMILES string
-        or file containing a SMILES string.
+        Use RDKit or OpenBabel to parse filename as a SMILES string
+        or file containing a SMILES string. If this is set to True, `rdkit`
+        is the default backend.
     infer_hierarchy : bool, optional, default=True
         If True, infer hierarchy from chains and residues
     ignore_box_warn : bool, optional, default=False
         If True, ignore warning if no box is present.
         Defaults to True when loading from SMILES
     **kwargs : keyword arguments
-        Key word arguments passed to mdTraj for loading.
+        Key word arguments passed to mdTraj, RDKit, or pybel for loading.
 
     Returns
     -------
     compound : mb.Compound
+
+    NOTES
+    -----
+    If `smiles` is `True`, either `rdkit` (default) or `pybel` can be used,
+    but RDkit is the only option of these that allows the user to specify a
+    random number seed to reproducibly generate the same starting structure.
+    This is NOT possible with `openbabel`, use `rdkit` if you need
+    control over starting structure's position (recommended).
     """
     # First check if we are loading from an object
     if not isinstance(filename_or_object, str):
@@ -94,7 +104,9 @@ def load(filename_or_object,
             smiles_or_filename=filename_or_object,
             compound=compound,
             infer_hierarchy=infer_hierarchy,
-            ignore_box_warn=ignore_box_warn
+            ignore_box_warn=ignore_box_warn,
+            backend=backend,
+            **kwargs
         )
     # Last, if none of the above, load from file
     else:
@@ -185,11 +197,15 @@ def load_object(obj,
 def load_smiles(smiles_or_filename,
                 compound=None,
                 infer_hierarchy=True,
-                ignore_box_warn=False):
+                ignore_box_warn=False,
+                backend='rdkit',
+                coords_only=False,
+                **kwargs):
     """Helper function to load a SMILES string
 
-    Loading SMILES string from a string, a list, or a file using pybel.
-    Must have pybel packages installed.
+    Loading SMILES string from a string, a list, or a file using RDKit by
+    default.
+    Must have rdkit or pybel packages installed.
 
     Parameters
     ----------
@@ -200,44 +216,86 @@ def load_smiles(smiles_or_filename,
     infer_hierarchy : bool, optional, default=True
     ignore_box_warn : bool, optional, default=False
         If True, ignore warning if no box is present.
+    coords_only : bool, optional, default=False
+        Only load the coordinates into a provided compound.
+    backend : str, optional, default='rdkit'
+        The smiles loading backend, either 'rdkit' or 'pybel'
+
 
     Returns
     -------
     compound : mb.Compound
 
     """
-    # Will try to support list of smiles strings in the future
-    pybel = import_('pybel')
-
     # Initialize an mb.Compound if none is provided
     if not compound:
         compound = mb.Compound()
 
-    # First we try treating filename_or_object as a SMILES string
-    try:
-        mymol = pybel.readstring("smi", smiles_or_filename)
-    # Now we treat it as a filename
-    except(OSError, IOError):
-        # For now, we only support reading in a single smiles molecule,
-        # but pybel returns a generator, so we get the first molecule
-        # and warn the user if there is more
+    test_path = Path(smiles_or_filename)
 
-        mymol_generator = pybel.readfile("smi", smiles_or_filename)
-        mymol_list = list(mymol_generator)
-        if len(mymol_list) == 1:
-            mymol = mymol_list[0]
+    # Will try to support list of smiles strings in the future
+    if backend is None:
+        backend = 'rdkit'
+
+    if backend == 'rdkit':
+        rdkit = import_('rdkit')
+        from rdkit import Chem
+        from rdkit.Chem import AllChem
+        if test_path.exists():
+            # assuming this is a smi file now
+            mymol = Chem.SmilesMolSupplier(smiles_or_filename)
+            if not mymol:
+                raise ValueError('Provided smiles string or file was invalid. '
+                                 'Refer to the above RDKit error messages for '
+                                 'additional information.')
+            mol_list = [mol for mol in mymol]
+            if len(mol_list) == 1:
+                rdmol = mymol[0]
+            else:
+                rdmol = mymol[0]
+                warn(
+                    "More than one SMILES string in file, more than one SMILES "
+                    "string is not supported, using {}".format(
+                        Chem.MolToSmiles(rdmol)))
         else:
-            mymol = mymol_list[0]
-            warn("More than one SMILES string in file, more than one SMILES "
-                 "string is not supported, using {}".format(mymol.write("smi")))
-    mymol.make3D()
+            rdmol = Chem.MolFromSmiles(smiles_or_filename)
 
-    return from_pybel(
-        pybel_mol=mymol,
-        compound=compound,
-        infer_hierarchy=infer_hierarchy,
-        ignore_box_warn=ignore_box_warn
-    )
+        seed = kwargs.get('smiles_seed', 0)
+
+        return from_rdkit(rdkit_mol=rdmol,
+                          compound=compound,
+                          coords_only=coords_only,
+                          smiles_seed=seed)
+    elif backend == 'pybel':
+        pybel = import_('pybel')
+        # First we try treating filename_or_object as a SMILES string
+        try:
+            mymol = pybel.readstring("smi", smiles_or_filename)
+        # Now we treat it as a filename
+        except(OSError, IOError):
+            # For now, we only support reading in a single smiles molecule,
+            # but pybel returns a generator, so we get the first molecule
+            # and warn the user if there is more
+
+            mymol_generator = pybel.readfile("smi", smiles_or_filename)
+            mymol_list = list(mymol_generator)
+            if len(mymol_list) == 1:
+                mymol = mymol_list[0]
+            else:
+                mymol = mymol_list[0]
+                warn(
+                    "More than one SMILES string in file, more than one SMILES "
+                    "string is not supported, using {}".format(
+                        mymol.write("smi")))
+        mymol.make3D()
+        return from_pybel(
+            pybel_mol=mymol,
+            compound=compound,
+            infer_hierarchy=infer_hierarchy,
+            ignore_box_warn=ignore_box_warn)
+    else:
+        raise ValueError(f"Expected SMILES loading backend 'rdkit' or "
+                         f"'pybel'. Was provided: {backend}")
 
 
 def load_file(filename,
@@ -361,7 +419,7 @@ def load_file(filename,
                 raise ValueError('More than one pybel molecule in file, '
                                  'more than one pybel molecule is not supported')
 
-        # text file detected, asssume contain smiles string
+        # text file detected, assume contain smiles string
         elif extension == '.txt':
             warn('.txt file detected, loading as a SMILES string')
             # Fail-safe measure
@@ -624,8 +682,8 @@ def from_pybel(pybel_mol,
     compound : mb.Compound, optional, default=None
         The host mbuild Compound.
     use_element : bool, optional, default=True
-        If True, construct mb Particle names based on the pybel Atom's element.
-        If False, construcs mb Particle names based on the pybel Atom's type.
+        If True, construct mb.Particle names based on the pybel Atom's element.
+        If False, constructs mb.Particle names based on the pybel Atom's type.
     coords_only : bool, optional, default=False
         Set preexisting atoms in compound to coordinates given
         by structure. Note: Not yet implemented, included only
@@ -714,6 +772,70 @@ def from_pybel(pybel_mol,
 #             include storing it in .periodicity or writing a separate function
 #             that returns the box.
     return compound
+
+
+def from_rdkit(rdkit_mol,
+               compound=None,
+               coords_only=False,
+               smiles_seed=0):
+    """Return an mbuild Compound based on a smiles string using RDKit.
+
+    Parameters
+    ---------
+    rdkit_mol : rdkit.Chem.rdchem.Mol
+        RDKit mol to generate an mBuild compound
+    compound : mb.Compound, optional, default=None
+        The host mbuild Compound.
+    coords_only : bool, optional, default=False
+        Set preexisting atoms in compound to coordinates given
+        by structure. Note: Not yet implemented, included only
+        for parity with other conversion functions.
+    smiles_seed : int, optional, default=0
+        Random number seed for PRNG, set to -1 for non-deterministic behavior
+
+    Returns
+    -------
+    mbuild.Compound
+
+    NOTES
+    -----
+    Option `coords_only` currently is not implemented, it is only provided to
+        maintain parity with other conversion methods.
+
+    """
+    from rdkit import Chem
+    from rdkit.Chem import AllChem
+
+    mymol = Chem.AddHs(rdkit_mol)
+    if AllChem.EmbedMolecule(mymol, randomSeed=smiles_seed) != 0:
+        raise MBuildError(f"RDKit was unable to generate 3D coordinates for "
+                          f"{mymol}. Refer to the RDKit error messages for "
+                          f"possible fixes. You can also install openbabel "
+                          f"and use the backend='pybel' instead")
+    AllChem.UFFOptimizeMolecule(mymol)
+    single_mol = mymol.GetConformer(0)
+    # convert from Angstroms to nanometers
+    xyz = single_mol.GetPositions() / 10
+
+    if compound is None:
+        comp = mb.Compound()
+    else:
+        comp = compound
+
+    for i, atom in enumerate(mymol.GetAtoms()):
+        part = mb.Particle(name=atom.GetSymbol(),
+                           element=element_from_atomic_number(
+                               atom.GetAtomicNum()),
+                           pos=xyz[i])
+        comp.add(part)
+
+    for bond in mymol.GetBonds():
+        comp.add_bond([
+                       comp[bond.GetBeginAtomIdx()],
+                       comp[bond.GetEndAtomIdx()]
+                       ])
+
+    return comp
 
 
 def save(compound,
