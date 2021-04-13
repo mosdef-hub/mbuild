@@ -625,7 +625,7 @@ class TestCharmmWriterData(BaseTest):
     def test_specific_all_residue_not_input(self, ethane_gomc, ethanol_gomc):
         with pytest.raises(ValueError, match=r'ERROR: The initial number of atoms sent to the force field analysis is '
                                              r'not the same as the final number of atoms analyzed. '
-                                             r'The intial number of atoms was 17 and the final number of atoms was 8. '
+                                             r'The initial number of atoms was 17 and the final number of atoms was 8. '
                                              r'Please ensure that all the residues names that are in the initial '
                                              r'Compound are listed in the residues list '
                                              r'\(i.e., the residues variable\).'

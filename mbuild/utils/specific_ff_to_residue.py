@@ -376,10 +376,11 @@ def specific_ff_to_residue(structure,
     if final_no_atoms != initial_no_atoms:
         print_error_message = 'ERROR: The initial number of atoms sent to the force field analysis is ' \
                               'not the same as the final number of atoms analyzed. ' \
-                              'The intial number of atoms was {} and the final number of atoms was {}. ' \
+                              'The initial number of atoms was {} and the final number of atoms was {}. ' \
                               'Please ensure that all the residues names that are in the initial ' \
                               'Compound are listed in the residues list ' \
                               '(i.e., the residues variable).'.format(initial_no_atoms, final_no_atoms)
+        print('print_error_message = ' + str(print_error_message))
         raise ValueError(print_error_message)
 
     return [structure, coulomb14scalar_dict, lj14_scalar_dict, residues_applied_list]
