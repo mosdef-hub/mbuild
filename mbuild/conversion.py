@@ -72,7 +72,7 @@ def load(filename_or_object,
         If True, ignore warning if no box is present.
         Defaults to True when loading from SMILES
     **kwargs : keyword arguments
-        Key word arguments passed to mdTraj or RDKit for loading.
+        Key word arguments passed to mdTraj, RDKit, or pybel for loading.
 
     Returns
     -------
