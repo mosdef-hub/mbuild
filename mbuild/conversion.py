@@ -807,7 +807,11 @@ def from_rdkit(rdkit_mol,
     from rdkit.Chem import AllChem
 
     mymol = Chem.AddHs(rdkit_mol)
-    AllChem.EmbedMolecule(mymol, randomSeed=smiles_seed)
+    if AllChem.EmbedMolecule(mymol, randomSeed=smiles_seed) != 0:
+        raise MBuildError(f"RDKit was unable to generate 3D coordinates for "
+                          f"{mymol}. Refer to the RDKit error messages for "
+                          f"possible fixes. You can also install openbabel "
+                          f"and use the backend='pybel' instead")
     AllChem.UFFOptimizeMolecule(mymol)
     single_mol = mymol.GetConformer(0)
     # convert from Angstroms to nanometers
