@@ -76,7 +76,6 @@ def _get_required_data(description=False):
                      "The number or run steps for the simulation.",
         "Temperature":  "Required files or System Info (all ensembles): float or integer (> 0), " 
                         "Temperature of system in Kelvin (K)",
-
     }
 
     if description:
