@@ -63,7 +63,7 @@ def fill_box(
     edge=0.2,
     compound_ratio=None,
     aspect_ratio=None,
-    fix_orientation=[False, False, False]
+    fix_orientation=[False, False, False],
     temp_file=None,
     update_port_locations=False,
 ):
@@ -157,7 +157,7 @@ def fill_box(
         fix_orientation = [fix_orientation]*len(compound)
         try:
             iter(fix_orientation[0])
-        except:
+        except TypeError:
             warnings.warn("fix_orientation can now be passed as a list with True/False "
              "values specified for each x,y,z axis individually. "
              "Using a single instance of True/False defaults to [True,True,True] "
@@ -297,7 +297,7 @@ def fill_region(
     seed=12345,
     sidemax=100.0,
     edge=0.2,
-    fix_orientation=[False, False, False]
+    fix_orientation=[False, False, False],
     temp_file=None,
     update_port_locations=False,
 ):
@@ -354,7 +354,7 @@ def fill_region(
         fix_orientation = [fix_orientation]*len(compound)
         try:
             iter(fix_orientation[0])
-        except:
+        except TypeError:
             warnings.warn("fix_orientation can now be passed as a list with True/False "
              "values specified for each x,y,z axis individually. "
              "Using a single instance of True/False defaults to (True,True,True) "
@@ -443,7 +443,7 @@ def fill_sphere(
     sidemax=100.0,
     edge=0.2,
     compound_ratio=None,
-    fix_orientation=[False, False, False]
+    fix_orientation=[False, False, False],
     temp_file=None,
     update_port_locations=False,
 ):
@@ -524,7 +524,7 @@ def fill_sphere(
         fix_orientation = [fix_orientation]*len(compound)
         try:
             iter(fix_orientation[0])
-        except:
+        except TypeError:
             warnings.warn("fix_orientation can now be passed as a list with True/False "
              "values specified for each x,y,z axis individually. "
              "Using a single instance of True/False defaults to [True,True,True] "
@@ -653,7 +653,7 @@ def solvate(
     seed=12345,
     sidemax=100.0,
     edge=0.2,
-    fix_orientation=[False, False, False]
+    fix_orientation=[False, False, False],
     temp_file=None,
     update_port_locations=False,
 ):
@@ -709,7 +709,7 @@ def solvate(
         fix_orientation = [fix_orientation] * len(solvent)
         try:
             iter(fix_orientation[0])
-        except:
+        except TypeError:
             warnings.warn("fix_orientation can now be passed as a list with True/False "
              "values specified for each x,y,z axes individually. "
              "Using a single instance of True/False defaults to [True,True,True] "
@@ -833,7 +833,7 @@ def _packmol_constrain(fix_orientation):
     {}
     """
     # Handles instances that are not iterable; defaults to True/False for all axes
-    if fix_orientation is True or is False:
+    if fix_orientation is True or fix_orientation is False:
         fix_orientation = [fix_orientation] * 3
 
     if not any(fix_orientation):
@@ -926,11 +926,7 @@ def _run_packmol(input_text, filled_xyz, temp_file):
             "sufficient packing result."
         )
         warnings.warn(msg)
-<<<<<<< HEAD
         os.system('cp {0}_FORCED {0}'.format(filled_xyz.name))
-=======
-        os.system("cp {0}_FORCED {0}".format(filled_xyz.name))
->>>>>>> 636f9b15f796614c616f807c652486010fa9e43e
 
     if "ERROR" in out or proc.returncode != 0:
         _packmol_error(out, err)
