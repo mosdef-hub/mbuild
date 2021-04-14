@@ -3,14 +3,31 @@ import time
 
 import numpy as np
 import parmed as pmd
-import mdtraj
 import pytest
 
 import mbuild as mb
 from mbuild.exceptions import MBuildError
 from mbuild.utils.geometry import calc_dihedral
-from mbuild.utils.io import get_fn, import_, has_foyer, has_intermol, has_openbabel, has_networkx
+from mbuild.utils.exceptions import RemovedFuncError
+from mbuild.utils.io import (get_fn,
+                             import_,
+                             has_foyer,
+                             has_mdtraj,
+                             has_intermol,
+                             has_openbabel,
+                             has_networkx,
+                             has_rdkit,
+                             has_py3Dmol)
 from mbuild.tests.base_test import BaseTest
+
+
+try:
+    import nglview
+    has_nglview = True
+    del nglview
+except ImportError:
+    has_nglview = False
+
 
 class TestCompound(BaseTest):
 
@@ -68,6 +85,37 @@ class TestCompound(BaseTest):
 
     def test_update_from_file(self, ch3):
         ch3.update_coordinates(get_fn("methyl.pdb"))
+
+    def test_load_protein(self):
+        # Testing the loading function with complicated protein,
+        # The protein file is taken from RCSB protein data bank
+        # https://www.rcsb.org/structure/6M03
+        protein = mb.load(get_fn('6m03.pdb'))
+
+        # Asserting the protein having correct number of chains
+        if has_mdtraj:
+            # Loading using mdtraj
+            assert len(protein.children) == 2
+
+            chain1 = protein.children[0]
+            chain2 = protein.children[1] # Guess what this is: CG Water
+
+            # Asserting the main chains having the correct number of residues
+            # as well number of atoms and bonds
+            # Main protein chain
+            assert len(chain1.children) == 306
+            assert chain1.n_particles == 2367
+            assert chain1.n_bonds == 2420
+
+            # CG Water
+            assert len(chain2.children) == 87
+            assert chain2.n_particles == 87
+            assert chain2.n_bonds == 0
+        else:
+            # Loading using parmed
+            # Chains info is lossed
+            assert len(protein.children) == 393
+
 
     def test_save_simple(self, ch3):
         extensions = ['.xyz', '.pdb', '.mol2', '.json', '.sdf']
@@ -196,6 +244,14 @@ class TestCompound(BaseTest):
                     if i == 18:
                         gmx_rule = int(line.split()[1])
                         assert gmx_rule == gmx_rules[combining_rule]
+
+    def test_clone_with_box(self, ethane):
+        ethane.box = ethane.boundingbox
+        ethane_clone = mb.clone(ethane)
+        assert np.all(ethane.xyz == ethane_clone.xyz)
+        assert np.all([p.name for p in ethane.particles()] ==
+                      [p.name for p in ethane_clone.particles()])
+        assert len(ethane.children) == len(ethane_clone.children)
 
     def test_batch_add(self, ethane, h2o):
         compound = mb.Compound()
@@ -360,7 +416,7 @@ class TestCompound(BaseTest):
         assert ethane.n_bonds == 3
         assert len(ethane.children) == 1
         # Still contains a port
-        assert len(ethane.children[0].children) == 5  
+        assert len(ethane.children[0].children) == 5
 
         methyl = ethane.children[0]
         ethane.remove(methyl)
@@ -442,12 +498,12 @@ class TestCompound(BaseTest):
     @pytest.mark.skipif(not has_openbabel, reason="Open Babel package not installed")
     def test_reload(self):
         # Create a compound and write it to file.
-        p3ht1= mb.load('CCCCCCC1=C(SC(=C1)C)C', smiles=True)
+        p3ht1= mb.load('CCCCCCC1=C(SC(=C1)C)C', smiles=True, backend='pybel')
         p3ht1.save("p3ht1.pdb")
 
         # Create another compound, rotate it and write it to file.
-        p3ht2 = mb.load('CCCCCCC1=C(SC(=C1)C)C', smiles=True)
-        mb.rotate(p3ht2, np.pi / 2, [0, 0, 1])
+        p3ht2 = mb.load('CCCCCCC1=C(SC(=C1)C)C', smiles=True, backend='pybel')
+        p3ht2.rotate(np.pi / 2, [0, 0, 1])
         p3ht2.save("p3ht2.pdb")
 
         # Load p3ht2.pdb into p3ht1, modifying the atom positions of p3ht1.
@@ -483,6 +539,7 @@ class TestCompound(BaseTest):
         ref = mb.load('myclone.pdb')
         assert np.allclose(mycomp.xyz, ref.xyz)
 
+    @pytest.mark.skipif(not has_mdtraj, reason="MDTraj not installed")
     def test_to_trajectory(self, ethane, c3, n4):
         traj = ethane.to_trajectory()
         assert traj.n_atoms == 8
@@ -526,6 +583,7 @@ class TestCompound(BaseTest):
         assert traj.n_chains == 1
         assert traj.n_residues == 1
 
+    @pytest.mark.skipif(not has_mdtraj, reason="MDTraj not installed")
     def test_box_mdtraj(self, ethane):
         assert np.allclose(ethane.periodicity, np.zeros(3))
         traj_boundingbox = ethane.to_trajectory()
@@ -549,6 +607,7 @@ class TestCompound(BaseTest):
             box.lengths
         )
 
+    @pytest.mark.skipif(not has_mdtraj, reason="MDTraj not installed")
     def test_resnames_mdtraj(self, h2o, ethane):
         system = mb.Compound([h2o, mb.clone(h2o), ethane])
         traj = system.to_trajectory(residues=['Ethane', 'H2O'])
@@ -575,6 +634,7 @@ class TestCompound(BaseTest):
         assert traj.n_residues == 1
         assert residues[0].name == 'RES'
 
+    @pytest.mark.skipif(not has_mdtraj, reason="MDTraj not installed")
     def test_chainnames_mdtraj(self, h2o, ethane):
         system = mb.Compound([h2o, mb.clone(h2o), ethane])
         traj = system.to_trajectory(chains=['Ethane', 'H2O'])
@@ -589,6 +649,7 @@ class TestCompound(BaseTest):
         traj = system.to_trajectory()
         assert traj.n_chains == 1
 
+    @pytest.mark.skipif(not has_mdtraj, reason="MDTraj not installed")
     def test_mdtraj_box(self, h2o):
         compound = mb.Compound()
         compound.add(h2o)
@@ -605,7 +666,7 @@ class TestCompound(BaseTest):
         intermol_system = compound.to_intermol()
         assert len(intermol_system.molecule_types) == 1
         assert 'Compound' in intermol_system.molecule_types
-        assert len(intermol_system.molecule_types['Compound'].bonds) == 9
+        assert len(intermol_system.molecule_types['Compound'].bond_forces) == 9
 
         assert len(intermol_system.molecule_types['Compound'].molecules) == 1
         molecules = list(intermol_system.molecule_types['Compound'].molecules)
@@ -616,13 +677,14 @@ class TestCompound(BaseTest):
         # 2 distinct Ethane objects.
         compound = mb.Compound([ethane, mb.clone(ethane), h2o])
 
-        molecule_types = [type(ethane), type(h2o)]
+        molecule_types = [ethane.name, h2o.name]
         intermol_system = compound.to_intermol(molecule_types=molecule_types)
         assert len(intermol_system.molecule_types) == 2
         assert 'Ethane' in intermol_system.molecule_types
         assert 'H2O' in intermol_system.molecule_types
-        assert len(intermol_system.molecule_types['Ethane'].bonds) == 7
-        assert len(intermol_system.molecule_types['H2O'].bonds) == 2
+
+        assert len(intermol_system.molecule_types['Ethane'].bond_forces) == 7
+        assert len(intermol_system.molecule_types['H2O'].bond_forces) == 2
 
         assert len(intermol_system.molecule_types['Ethane'].molecules) == 2
         ethanes = list(intermol_system.molecule_types['Ethane'].molecules)
@@ -670,7 +732,7 @@ class TestCompound(BaseTest):
     def test_fillbox_then_parmed(self):
         # This test would fail with the old to_parmed code (pre PR #699)
 
-        bead = mb.Compound(name="Bead")
+        bead = mb.Compound(name="Ar")
         box = mb.Box(mins=(2,2,2), maxs=(3,3,3))
         bead_box = mb.fill_box(bead, 100, box)
         bead_box_in_pmd = bead_box.to_parmed()
@@ -808,42 +870,52 @@ class TestCompound(BaseTest):
 
     @pytest.mark.skipif(not has_openbabel, reason="Open Babel package not installed")
     def test_energy_minimization(self, octane):
-        octane.energy_minimization()
+        with pytest.raises(RemovedFuncError):
+            octane.energy_minimization()
+
+    @pytest.mark.skipif(not has_openbabel, reason="Open Babel package not installed")
+    def test_energy_minimize(self, octane):
+        octane.energy_minimize()
 
     @pytest.mark.skipif(has_openbabel, reason="Open Babel package is installed")
-    def test_energy_minimization_openbabel_warn(self, octane):
+    def test_energy_minimize_openbabel_warn(self, octane):
         with pytest.raises(MBuildError):
-            octane.energy_minimization()
+            octane.energy_minimize()
 
     @pytest.mark.skipif(not has_openbabel, reason="Open Babel package not installed")
-    def test_energy_minimization_ff(self, octane):
+    def test_energy_minimize_ff(self, octane):
         for ff in ['UFF', 'GAFF', 'MMFF94', 'MMFF94s', 'Ghemical']:
-            octane.energy_minimization(forcefield=ff)
+            octane.energy_minimize(forcefield=ff)
         with pytest.raises(IOError):
-            octane.energy_minimization(forcefield='fakeFF')
+            octane.energy_minimize(forcefield='fakeFF')
 
     @pytest.mark.skipif(not has_openbabel, reason="Open Babel package not installed")
-    def test_energy_minimization_algorithm(self, octane):
+    def test_energy_minimize_algorithm(self, octane):
         for algorithm in ['cg', 'steep', 'md']:
-            octane.energy_minimization(algorithm=algorithm)
+            octane.energy_minimize(algorithm=algorithm)
         with pytest.raises(MBuildError):
-            octane.energy_minimization(algorithm='fakeAlg')
+            octane.energy_minimize(algorithm='fakeAlg')
 
     @pytest.mark.skipif(not has_openbabel, reason="Open Babel package not installed")
-    def test_energy_minimization_non_element(self, octane):
+    def test_energy_minimize_non_element(self, octane):
+        for particle in octane.particles():
+            particle.element = None
+        # Pass with element inference from names
+        octane.energy_minimize()
         for particle in octane.particles():
             particle.name = 'Q'
+        # Fail once names don't match elements
         with pytest.raises(MBuildError):
-            octane.energy_minimization()
+            octane.energy_minimize()
 
     @pytest.mark.skipif(not has_openbabel, reason="Open Babel package not installed")
-    def test_energy_minimization_ports(self, octane):
+    def test_energy_minimize_ports(self, octane):
         distances = np.round([octane.min_periodic_distance(port.pos, port.anchor.pos)
                               for port in octane.all_ports()], 5)
         orientations = np.round([port.pos - port.anchor.pos
                                  for port in octane.all_ports()], 5)
 
-        octane.energy_minimization()
+        octane.energy_minimize()
 
         updated_distances = np.round([octane.min_periodic_distance(port.pos,
                                                                    port.anchor.pos)
@@ -870,14 +942,15 @@ class TestCompound(BaseTest):
             ch3_clone = mb.clone(ch3)
 
     def test_load_nonelement_mol2(self):
-        mb.load(get_fn('benzene-nonelement.mol2'))
-        mb.load(get_fn('benzene-nonelement.mol2'), use_parmed=True)
+        mb.load(get_fn('benzene-nonelement.mol2'), backend='mdtraj')
+        mb.load(get_fn('benzene-nonelement.mol2'), backend='parmed')
 
     def test_load_nonatom_mdtraj_mol2(self):
         # First atom name and element are incorrect
         # Loading with MDTraj should raise an error
         with pytest.raises(KeyError):
-            mb.load(get_fn('benzene-nonatom-nonelement.mol2'))
+            mb.load(get_fn('benzene-nonatom-nonelement.mol2'),
+                    backend='mdtraj')
 
     def test_siliane_bond_number(self, silane):
         assert silane.n_bonds == 4
@@ -927,12 +1000,12 @@ class TestCompound(BaseTest):
             assert np.isclose(angle1, angle2, atol=1e-6)
 
     def test_smarts_from_string(self):
-        p3ht = mb.load('CCCCCCC1=C(SC(=C1)C)C', smiles=True)
+        p3ht = mb.load('CCCCCCC1=C(SC(=C1)C)C', smiles=True, backend='pybel')
         assert p3ht.n_bonds == 33
         assert p3ht.n_particles == 33
 
     def test_smarts_from_file(self):
-        p3ht = mb.load(get_fn('p3ht.smi'), smiles=True)
+        p3ht = mb.load(get_fn('p3ht.smi'), smiles=True, backend='pybel')
         assert p3ht.n_bonds == 33
         assert p3ht.n_particles == 33
 
@@ -990,7 +1063,10 @@ class TestCompound(BaseTest):
 
         assert all([isinstance(n, str) for n in graph.nodes()])
 
+    @pytest.mark.skipif(not has_mdtraj, reason="MDTraj not installed")
     def test_from_trajectory(self):
+        if has_mdtraj:
+            mdtraj = import_('mdtraj')
         comp = mb.Compound()
         traj = mdtraj.load(get_fn('spc.pdb'))
         comp.from_trajectory(traj)
@@ -1002,7 +1078,10 @@ class TestCompound(BaseTest):
         comp.from_parmed(struc)
         assert comp.children[0].name == 'SPC'
 
+    @pytest.mark.skipif(not has_mdtraj, reason="MDTraj not installed")
     def test_complex_from_trajectory(self):
+        if has_mdtraj:
+            mdtraj = import_('mdtraj')
         comp = mb.Compound()
         traj = mdtraj.load(get_fn('pro_but.pdb'))
         comp.from_trajectory(traj)
@@ -1095,11 +1174,34 @@ class TestCompound(BaseTest):
         #            chol.unitcell.GetC()/10],
         #        rtol=1e-3)
 
+    @pytest.mark.parametrize('test_smiles', [
+        "CCO",
+        "CCCCCCCC",
+        "c1ccccc1",
+        "CC(=O)Oc1ccccc1C(=O)O"
+    ])
+    @pytest.mark.skipif(not has_rdkit, reason="RDKit is not installed")
+    def test_from_rdkit_smiles(self, test_smiles):
+        pos = list()
+        for _ in range(3):
+            cmpd = mb.load(test_smiles, smiles=True, backend='rdkit', seed=29)
+            pos.append(cmpd.xyz)
+        assert (np.diff(np.vstack(pos).reshape(len(pos), -1), axis=0) == 0).all()
+
+    @pytest.mark.parametrize('bad_smiles', [
+        "F[P-](F)(F)(F)(F)F",
+    ])
+    @pytest.mark.skipif(not has_rdkit, reason='RDKit is not installed')
+    def test_incorrect_rdkit_smiles(self, bad_smiles):
+        with pytest.raises(MBuildError, match=r'RDKit was unable to generate '
+                                              r'3D coordinates'):
+            mb.load(bad_smiles, smiles=True, backend='rdkit', seed=29)
+
     @pytest.mark.skipif(not has_openbabel, reason="Pybel is not installed")
     def test_get_smiles(self):
         test_strings = ["CCO", "CCCCCCCC", "c1ccccc1", "CC(=O)Oc1ccccc1C(=O)O"]
         for test_string in test_strings:
-            my_cmp = mb.load(test_string, smiles=True)
+            my_cmp = mb.load(test_string, smiles=True, backend='pybel')
             assert my_cmp.get_smiles() == test_string
 
     def test_sdf(self, methane):
@@ -1117,3 +1219,121 @@ class TestCompound(BaseTest):
         filled.save('methane.sdf')
         sdf_string = mb.load('methane.sdf')
         assert np.allclose(filled.xyz, sdf_string.xyz, atol=1e-5)
+
+    def test_box(self):
+        compound = mb.Compound()
+        assert compound.box == None
+        compound.box = mb.Box([3.,3.,3.])
+        assert np.allclose(compound.box.lengths, [3.,3.,3.])
+        assert np.allclose(compound.box.angles, [90.,90.,90])
+        with pytest.raises(TypeError, match=r"specified as an mbuild.Box"):
+            compound.box = "Hello, world"
+        with pytest.raises(TypeError, match=r"specified as an mbuild.Box"):
+            compound.box = [3.,3.,3.]
+        port = mb.Port()
+        assert port.box == None
+        with pytest.raises(ValueError, match=r"cannot have"):
+            port.box = mb.Box([3.,3.,3.])
+
+        compound = mb.Compound()
+        subcomp = mb.Compound(box=mb.Box([3.,3.,3.]))
+        compound.add(subcomp)
+        assert np.allclose(compound.box.lengths, [3.,3.,3.])
+        assert np.allclose(compound.box.angles, [90.,90.,90.])
+        compound = mb.Compound(box=mb.Box([3.,3.,3.]))
+        subcomp = mb.Compound(box=mb.Box(lengths=[6.,6.,6.], angles=[60.,60.,120.]))
+        with pytest.warns(UserWarning):
+            compound.add(subcomp)
+        assert np.allclose(compound.box.lengths, [3.,3.,3.])
+        assert np.allclose(compound.box.angles, [90.,90.,90.])
+        compound = mb.Compound(box=mb.Box([3.,3.,3.]))
+        subcomp = mb.Compound(box=mb.Box(lengths=[6.,6.,6.], angles=[60.,60.,120.]))
+        compound.add(subcomp, inherit_box=True)
+        assert np.allclose(compound.box.lengths, [6.,6.,6.])
+        assert np.allclose(compound.box.angles, [60.,60.,120.])
+        compound = mb.Compound(box=mb.Box([3.,3.,3.]))
+        subcomp = mb.Compound()
+        with pytest.warns(UserWarning):
+            compound.add(subcomp, inherit_box=True)
+        assert np.allclose(compound.box.lengths, [3.,3.,3.])
+        assert np.allclose(compound.box.angles, [90.,90.,90.])
+
+        compound = mb.Compound()
+        carbon = mb.Compound(name="C")
+        compound.add(carbon)
+        compound.box = mb.Box([3.,3.,3.])
+        nitrogen = mb.Compound(name="N", pos=[4,3,3,])
+        with pytest.warns(UserWarning):
+            compound.add(nitrogen)
+        compound.box = mb.Box([5.,4.,4.])
+        with pytest.warns(UserWarning):
+            compound.box = mb.Box([5.,4.,2.])
+
+    @pytest.mark.skipif(not has_py3Dmol, reason="Py3Dmol is not installed")
+    def test_visualize_py3dmol(self, ethane):
+        py3Dmol = import_("py3Dmol")
+        vis_object = ethane._visualize_py3dmol()
+        assert isinstance(vis_object, py3Dmol.view)
+
+    @pytest.mark.skipif(not has_nglview, reason="NGLView is not installed")
+    def test_visualize_nglview(self, ethane):
+        nglview = import_("nglview")
+        vis_object = ethane._visualize_nglview()
+        assert isinstance(vis_object.component_0, nglview.component.ComponentViewer)
+
+    def test_element(self):
+        from ele import Elements
+        na_compound = mb.Compound(element="Na")
+        assert na_compound.element == Elements.Na
+        na_compound = mb.Compound(element="NA")
+        assert na_compound.element == Elements.Na
+        na_compound = mb.Compound(element="na")
+        assert na_compound.element == Elements.Na
+        co_compound = mb.Compound(element="Co")
+        assert co_compound.element != Elements.Na
+
+        na_compound_clone = mb.clone(na_compound)
+        assert na_compound_clone.element == Elements.Na
+        container = mb.Compound()
+        container.add(na_compound)
+        container.add(na_compound_clone)
+        for child in container.children:
+            assert child.element == Elements.Na
+
+        na_compound = mb.Compound()
+        na_compound.element = "Na"
+        assert na_compound.element == Elements.Na
+
+
+    def test_invalid_element(self):
+        from ele.exceptions import ElementError
+        with pytest.raises(ElementError, match=r"No element with symbol"):
+            na_compound = mb.Compound(element="sodium")
+        with pytest.raises(ElementError, match=r"No element with symbol"):
+            na_compound = mb.Compound(element="")
+
+    def test_get_by_element(self):
+        from ele import Elements
+        from ele.exceptions import ElementError
+        container = mb.Compound()
+        na = mb.Compound(element="Na")
+        na2 = mb.Compound(element="Na")
+        co = mb.Compound(element="Co")
+        container.add([na,na2,co])
+        element_list = [
+            c.element for c in container.particles_by_element("Na")
+        ]
+        assert len(element_list) == 2
+        for item in element_list:
+            assert item == Elements.Na
+
+        with pytest.raises(ElementError, match=r"No element with symbol"):
+            element_list = [
+                c.element for c in container.particles_by_element("sod")
+            ]
+
+    @pytest.mark.parametrize('backend', ['pybel', 'rdkit'])
+    def test_elements_from_smiles(self, backend):
+        mol = mb.load("COC", smiles=True, backend=backend)
+        for particle in mol.particles():
+            assert particle.element is not None

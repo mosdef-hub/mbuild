@@ -6,8 +6,12 @@ import mbuild as mb
 class TestJSONFormats(BaseTest):
 
     def test_loop(self, ethane):
+        for part in ethane:
+            part.element = part.name
         compound_to_json(ethane, 'ethane.json')
         ethane_copy = compound_from_json('ethane.json')
+        for part_orig, part_copy in zip(ethane, ethane_copy):
+            assert part_orig.element.symbol == part_copy.element.symbol
         assert ethane.n_particles == ethane_copy.n_particles
         assert ethane.n_bonds == ethane_copy.n_bonds
         assert len(ethane.children) == len(ethane_copy.children)
@@ -72,5 +76,3 @@ class TestJSONFormats(BaseTest):
         for child, child_copy in zip(parent.successors(), parent_copy.successors()):
             assert child.labels.keys() == child_copy.labels.keys()
         assert parent_copy.available_ports() == parent.available_ports()
-
-

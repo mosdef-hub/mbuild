@@ -3,6 +3,7 @@ from collections import OrderedDict
 
 import mbuild as mb
 from mbuild.exceptions import MBuildError
+import ele
 
 
 def compound_from_json(json_file):
@@ -79,7 +80,7 @@ def compound_to_json(cmpd, file_path, include_ports=False):
     include_ports: bool, whether to dump port information, default False
     """
     # Maintain a bookkeeping dict, to do the nesting of children correctly
-    version = mb.version
+    version = mb.__version__
     cmpd_info = {}
     compound_dict = _particle_info(cmpd, include_ports)
     cmpd_info[cmpd] = compound_dict
@@ -124,6 +125,7 @@ def _particle_info(cmpd, include_ports=False):
     particle_dict['pos'] = list(cmpd.pos)
     particle_dict['charge'] = cmpd.charge
     particle_dict['periodicity'] = list(cmpd.periodicity)
+    particle_dict['element'] = cmpd.element
 
     if include_ports:
         particle_dict['ports'] = list()
@@ -156,7 +158,19 @@ def _dict_to_mb(compound_dict):
     pos = compound_dict.get('pos', [0.0, 0.0, 0.0])
     charge = compound_dict.get('charge', 0.0)
     periodicity = compound_dict.get('periodicity', [0.0, 0.0, 0.0])
-    this_particle = mb.Compound(name=name, pos=pos, charge=charge, periodicity=periodicity)
+    element = compound_dict.get('element', None)
+    if isinstance(element, ele.element.Element):
+        pass
+    elif isinstance(element, list):
+        atom_num = element[0]
+        element = ele.element_from_atomic_number(atom_num)
+    elif isinstance(element, str):
+        pass
+    else:
+        pass
+
+    this_particle = mb.Compound(name=name, pos=pos, charge=charge,
+                                periodicity=periodicity, element=element)
     return this_particle
 
 
@@ -206,7 +220,7 @@ def _perform_sanity_check(json_dict):
     """Perform Sanity Check on the JSON File"""
     from warnings import warn
     warning_msg = "This Json was written using {0}, current mbuild version is {1}."
-    this_version = mb.version
+    this_version = mb.__version__
     json_mbuild_version = json_dict.get('mbuild-version', None)
 
     if not json_mbuild_version:

@@ -4,7 +4,7 @@ import xml.etree.ElementTree
 
 import mbuild as mb
 from mbuild.tests.base_test import BaseTest
-from mbuild.utils.io import get_fn, has_foyer, has_hoomd, import_
+from mbuild.utils.io import get_fn, has_foyer, has_gsd, has_hoomd, import_
 
 
 @pytest.mark.skipif(not has_hoomd, reason="HOOMD is not installed")
@@ -27,6 +27,37 @@ class TestHoomd(BaseTest):
         assert snap.bonds.N == 0
         assert snap.angles.N == 0
 
+
+    def test_snapshot_from_initial(self):
+        hoomd = import_("hoomd")
+        hoomd_snapshot = import_("mbuild.formats.hoomd_snapshot")
+        part = mb.Compound(name='Ar')
+        box = mb.fill_box(part, n_compounds=10, box=mb.Box([5,5,5]))
+        init_snap = hoomd.data.make_snapshot(
+                N=10, box=hoomd.data.boxdim(L=10)
+                )
+        snap, _ = hoomd_snapshot.to_hoomdsnapshot(
+                box, hoomd_snapshot=init_snap
+                )
+
+        assert snap.particles.N == 20
+        assert snap.bonds.N == 0
+        assert snap.angles.N == 0
+        assert (snap.box.Lx, snap.box.Ly, snap.box.Lz) == (50,50,50)
+        assert (snap.box.xy, snap.box.xz, snap.box.yz) == (0,0,0)
+
+    def test_empty_initial_snapshot(self):
+        hoomd = import_("hoomd")
+        hoomd_snapshot = import_("mbuild.formats.hoomd_snapshot")
+        part = mb.Compound(name='Ar')
+        box = mb.fill_box(part, n_compounds=10, box=mb.Box([5,5,5]))
+        init_snap = hoomd.data.make_snapshot(
+                N=0, box=hoomd.data.boxdim(L=10)
+                )
+        with pytest.raises(RuntimeError):
+            snap, _ = hoomd_snapshot.to_hoomdsnapshot(
+                    box, hoomd_snapshot=init_snap
+                    )
 
     def test_bad_input_to_snapshot(self):
         hoomd_snapshot = import_("mbuild.formats.hoomd_snapshot")
@@ -73,24 +104,26 @@ class TestHoomd(BaseTest):
         hoomd_simulation = import_("mbuild.formats.hoomd_simulation")
         ff = forcefield.Forcefield(name='oplsaa')
         structure = ff.apply(ethane)
-        hoomd_simulation.create_hoomd_simulation(structure)
+        sim = hoomd.context.SimulationContext()
+        with sim:
+            hoomd_simulation.create_hoomd_simulation(structure)
 
-        sim_forces = hoomd.context.current.forces
-        pair_force = import_("hoomd.md.pair")
-        charge_force = import_("hoomd.md.charge")
-        special_pair_force = import_("hoomd.md.special_pair")
-        bond_force = import_("hoomd.md.bond")
-        angle_force = import_("hoomd.md.angle")
-        dihedral_force = import_("hoomd.md.dihedral")
+            sim_forces = hoomd.context.current.forces
+            pair_force = import_("hoomd.md.pair")
+            charge_force = import_("hoomd.md.charge")
+            special_pair_force = import_("hoomd.md.special_pair")
+            bond_force = import_("hoomd.md.bond")
+            angle_force = import_("hoomd.md.angle")
+            dihedral_force = import_("hoomd.md.dihedral")
 
-        assert isinstance(sim_forces[0], pair_force.lj)
-        assert isinstance(sim_forces[1], charge_force.pppm)
-        assert isinstance(sim_forces[2], pair_force.ewald)
-        assert isinstance(sim_forces[3], special_pair_force.lj)
-        assert isinstance(sim_forces[4], special_pair_force.coulomb)
-        assert isinstance(sim_forces[5], bond_force.harmonic)
-        assert isinstance(sim_forces[6], angle_force.harmonic)
-        assert isinstance(sim_forces[7], dihedral_force.opls)
+            assert isinstance(sim_forces[0], pair_force.lj)
+            assert isinstance(sim_forces[1], charge_force.pppm)
+            assert isinstance(sim_forces[2], pair_force.ewald)
+            assert isinstance(sim_forces[3], special_pair_force.lj)
+            assert isinstance(sim_forces[4], special_pair_force.coulomb)
+            assert isinstance(sim_forces[5], bond_force.harmonic)
+            assert isinstance(sim_forces[6], angle_force.harmonic)
+            assert isinstance(sim_forces[7], dihedral_force.opls)
 
     @pytest.mark.skipif(not has_foyer, reason="Foyer is not installed")
     def test_lj_to_hoomdsimulation(self):
@@ -103,11 +136,42 @@ class TestHoomd(BaseTest):
         ff = forcefield.Forcefield(forcefield_files=get_fn('lj.xml'))
         structure = ff.apply(box)
         structure.box = [10, 10, 10, 90, 90, 90]
-        hoomd_simulation.create_hoomd_simulation(structure)
-        sim_forces = hoomd.context.current.forces
-        pair_force = import_("hoomd.md.pair")
+        sim = hoomd.context.SimulationContext()
+        with sim:
+            hoomd_simulation.create_hoomd_simulation(structure)
+            sim_forces = hoomd.context.current.forces
+            pair_force = import_("hoomd.md.pair")
 
-        assert isinstance(sim_forces[0], pair_force.lj)
+            assert isinstance(sim_forces[0], pair_force.lj)
+
+    @pytest.mark.skipif(not has_foyer, reason="Foyer is not installed")
+    @pytest.mark.skipif(not has_gsd, reason="GSD is not installed")
+    def test_hoomdsimulation_restart(self):
+        hoomd = import_("hoomd")
+        hoomd_simulation = import_("mbuild.formats.hoomd_simulation")
+        forcefield = import_("foyer.forcefield")
+        gsd = import_("gsd.hoomd")
+        box = mb.Compound()
+        box.add(mb.Compound(name='Ar', pos=[1,1,1]))
+        box.add(mb.Compound(name='Ar', pos=[1,1,1]))
+        ff = forcefield.Forcefield(forcefield_files=get_fn('lj.xml'))
+        structure = ff.apply(box)
+        structure.box = [10, 10, 10, 90, 90, 90]
+        sim = hoomd.context.SimulationContext()
+        with sim:
+            hoomd_obj, ref_vals = hoomd_simulation.create_hoomd_simulation(
+                    structure,
+                    restart=get_fn("restart.gsd")
+                    )
+            sim_forces = hoomd.context.current.forces
+            pair_force = import_("hoomd.md.pair")
+
+            assert isinstance(sim_forces[0], pair_force.lj)
+
+        snap = hoomd_obj[0]
+        with gsd.open(get_fn("restart.gsd")) as f:
+            rsnap = f[0]
+        assert np.array_equal(snap.particles.position, rsnap.particles.position)
 
 
 class TestHoomdXML(BaseTest):

@@ -16,17 +16,15 @@ WORKDIR /mbuild
 
 RUN conda update conda -yq && \
 	conda config --set always_yes yes --set changeps1 no && \
-	conda config --add channels omnia && \
-	conda config --add channels conda-forge && \
-	conda config --add channels mosdef && \
 	. /opt/conda/etc/profile.d/conda.sh && \
-	conda create -n mbuild-docker python=$PY_VERSION nomkl --file requirements-dev.txt && \
-	conda activate mbuild-docker && \
-        python setup.py install && \
-	echo "source activate mbuild-docker" >> \
+    sed -i -E "s/python.*$/python="$(PY_VERSION)"/" environment-dev.yml && \
+	conda env create nomkl --file environment-dev.yml && \
+	conda activate mbuild-dev && \
+    python setup.py install && \
+	echo "source activate mbuild-dev" >> \
 	/home/anaconda/.profile && \
 	conda clean -afy && \
-	mkdir /home/anaconda/mbuild-notebooks && \
+	mkdir /home/anaconda/data && \
 	chown -R anaconda:anaconda /mbuild && \
 	chown -R anaconda:anaconda /opt && \
 	chown -R anaconda:anaconda /home/anaconda
@@ -34,4 +32,11 @@ RUN conda update conda -yq && \
 
 WORKDIR /home/anaconda
 
-CMD /bin/su anaconda -s /bin/sh -l
+COPY devtools/docker-entrypoint.sh /entrypoint.sh
+
+RUN chmod a+x /entrypoint.sh
+
+USER anaconda
+
+ENTRYPOINT ["/entrypoint.sh"]
+CMD ["jupyter"]

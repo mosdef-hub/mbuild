@@ -8,6 +8,7 @@ source:
 build:
   noarch: python
   number: {{ environ.get('GIT_DESCRIBE_NUMBER', 0)}}
+  preserve_egg_dir: True
   script_env:
     - CONDA_PY
   script: activate
@@ -16,6 +17,7 @@ build:
 requirements:
   build:
     - python
+    - setuptools
     - protobuf
 
   run:
@@ -23,26 +25,23 @@ requirements:
     - numpy
     - scipy
     - packmol >=1!18.013
-    - nglview >=2.7
     - oset
     - parmed
     - protobuf
     - mdtraj
+    - setuptools
+    - openbabel >=3.0.0
 
 test:
   requires:
     - pytest >=3.0
-    - jupyter
-    - nbformat
-    - ipykernel
     - foyer
     - networkx
-    - nbval
 
   commands:
     - set LNAME=mosdef
     - activate
-    - pytest -v --pyargs mbuild --nbval --nbval-lax
+    - pytest -v --pyargs mbuild
 
 about:
   home: http://mosdef-hub.github.io/mbuild

@@ -1,7 +1,6 @@
 ## mBuild: a hierarchical, component based molecule builder
 
 [![Gitter chat](https://badges.gitter.im/mosdef-hub/gitter.svg)](https://gitter.im/mosdef-hub/Lobby)
-[![Travis Build Status](https://travis-ci.org/mosdef-hub/mbuild.svg?branch=master)](https://travis-ci.org/mosdef-hub/mbuild)
 [![AZP Build Status](https://dev.azure.com/mosdef/mbuild/_apis/build/status/mosdef-hub.mbuild?branchName=master)](https://dev.azure.com/mosdef/mbuild/_build/latest?definitionId=1&branchName=master)
 [![PyPI Version](https://badge.fury.io/py/mbuild.svg)](https://pypi.python.org/pypi/mbuild)
 [![Anaconda Badge](https://anaconda.org/conda-forge/mbuild/badges/version.svg)](https://anaconda.org/conda-forge/mbuild)
@@ -17,7 +16,7 @@ complex molecular systems for molecular dynamics simulations.
   worry about manually defining bonds when constructing chemically bonded
   structures from smaller components.
 
-To learn more, get started or contribute, check out our [website](http://mosdef-hub.github.io/mbuild/).
+To learn more, get started or contribute, check out our [website](http://mbuild.mosdef.org).
 
 If you use this package, please cite [our paper](http://dx.doi.org/10.1007/978-981-10-1128-3_5
 ). The BibTeX reference is

@@ -1,0 +1,64 @@
+data_global
+_chemical_name_mineral 'Titanite'
+loop_
+_publ_author_name
+'Speer J A'
+'Gibbs G V'
+_journal_name_full 'American Mineralogist'
+_journal_volume 61 
+_journal_year 1976
+_journal_page_first 238
+_journal_page_last 247
+_publ_section_title
+;
+ The crystal structure of synthetic titanite, CaTiOSiO4, and the domain textures
+ of natural titanites
+;
+_database_code_amcsd 0000500
+_chemical_formula_sum 'Ca Ti Si O5'
+_chemical_formula_sum ''
+_cell_length_a 7.069
+_cell_length_b 8.722
+_cell_length_c 6.566
+_cell_angle_alpha 90
+_cell_angle_beta 113.86
+_cell_angle_gamma 90
+_cell_volume 370.234
+_exptl_crystal_density_diffrn      3.517
+_symmetry_space_group_name_H-M 'P 1 21/a 1'
+loop_
+_space_group_symop_operation_xyz
+  'x,y,z'
+  '1/2+x,1/2-y,z'
+  '1/2-x,1/2+y,-z'
+  '-x,-y,-z'
+loop_
+_atom_site_label
+_atom_site_fract_x
+_atom_site_fract_y
+_atom_site_fract_z
+Ca   0.24240   0.91840   0.75120
+Ti   0.51340   0.75420   0.24950
+Si   0.74860   0.93300   0.74900
+O1   0.74990   0.82020   0.25020
+O2   0.91080   0.81620   0.93470
+O3   0.38270   0.96080   0.14590
+O4   0.91220   0.31650   0.43680
+O5   0.38130   0.46010   0.64680
+loop_
+_atom_site_aniso_label
+_atom_site_aniso_U_11
+_atom_site_aniso_U_22
+_atom_site_aniso_U_33
+_atom_site_aniso_U_12
+_atom_site_aniso_U_13
+_atom_site_aniso_U_23
+Ca 0.02200 0.00497 0.00537 0.00069 -0.00098 0.00029
+Ti 0.00737 0.00451 0.00327 0.00031 0.00126 0.00027
+Si 0.00474 0.00258 0.00192 -0.00029 0.00092 0.00003
+O1 0.00874 0.00736 0.01253 0.00109 0.00680 0.00122
+O2 0.01196 0.00856 0.00495 0.00071 0.00035 0.00019
+O3 0.00938 0.01064 0.00510 0.00120 0.00210 0.00125
+O4 0.01211 0.00863 0.00356 0.00157 0.00112 0.00103
+O5 0.00828 0.00663 0.00590 0.00166 0.00153 0.00175
+
