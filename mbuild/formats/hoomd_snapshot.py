@@ -35,14 +35,15 @@ def from_snapshot(snapshot, scale=1.0):
     n_atoms = snapshot.particles.N
 
     # There will be a better way to do this once box overhaul merged
+    # Only orthogonal boxes allowed
     try:
         # gsd
         box = snapshot.configuration.box
-        comp.box = mb.box.Box.from_lengths_tilt_factors(lengths=box[:3] * scale, tilt_factors=box[3:])
+        comp.box = mb.Box(lengths=box[:3] * scale)
     except AttributeError:
         # hoomd
         box = snapshot.box
-        comp.box = mb.box.Box.from_lengths_tilt_factors(lengths=np.array([box.Lx,box.Ly,box.Lz]) * scale, tilt_factors=[box.xy, box.xz, box.yz])
+        comp.box = mb.Box(lengths=np.array([box.Lx,box.Ly,box.Lz]) * scale)
 
     # to_hoomdsnapshot shifts the coords, this will keep consistent
     shift = np.array(comp.box.lengths)/2

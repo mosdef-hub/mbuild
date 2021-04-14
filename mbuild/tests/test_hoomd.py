@@ -12,8 +12,7 @@ class TestHoomd(BaseTest):
     def test_compound_from_snapshot(self, ethane):
         hoomd_snapshot = import_("mbuild.formats.hoomd_snapshot")
         lengths = [5, 5, 5]
-        angles = [90, 90, 90]
-        box = mb.fill_box(ethane, n_compounds=5, box=mb.Box.from_lengths_angles(lengths=lengths, angles=angles))
+        box = mb.fill_box(ethane, n_compounds=5, box=mb.Box(lengths))
         snap, _ = hoomd_snapshot.to_hoomdsnapshot(box)
         new_box = hoomd_snapshot.from_snapshot(snap, scale=0.1)
 
@@ -35,8 +34,7 @@ class TestHoomd(BaseTest):
     def test_compound_from_gsdsnapshot(self, ethane):
         hoomd_snapshot = import_("mbuild.formats.hoomd_snapshot")
         lengths = [5, 5, 5]
-        angles = [90, 90, 90]
-        box = mb.fill_box(ethane, n_compounds=5, box=mb.Box.from_lengths_angles(lengths=lengths, angles=angles))
+        box = mb.fill_box(ethane, n_compounds=5, box=mb.Box(lengths))
         snap, _ = hoomd_snapshot.to_hoomdsnapshot(box)
 
         # copy attributes from the snapshot to a gsd snapshot
