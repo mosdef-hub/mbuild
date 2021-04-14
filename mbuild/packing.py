@@ -685,7 +685,7 @@ def solvate(
 
     # Apply edge buffer
     box_maxs -= edge * 10
-
+    box_mins += edge * 10
     # Build the input file for each compound and call packmol.
     solvated_xyz = _new_xyz_file()
     solute_xyz = _new_xyz_file()
