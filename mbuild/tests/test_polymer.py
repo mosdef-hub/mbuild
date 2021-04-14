@@ -1,5 +1,6 @@
 from collections import Counter
 import os
+import pytest
 
 import mbuild as mb
 from mbuild.tests.base_test import BaseTest
@@ -18,13 +19,29 @@ class TestPolymer(BaseTest):
         assert len([p for p in chain.particles() if p.name == "H"]) == 22
         assert len(chain.available_ports()) == 0
 
-    def test_add_end_groups(self, ch2):
+    def test_add_end_groups(self, ch2, ester):
         n = 6
         c6 = mb.recipes.Polymer(monomers=[ch2])
         acid = mb.load("C(=O)O", smiles=True)
         c6.add_end_groups(acid, index=3, separation=0.15)
         c6.build(n=n, add_hydrogens=False)
         assert len([p for p in c6.particles() if p.name=="O"]) == 4
+
+    def test_pass_end_groups(self, ch2, ester):        
+        ester_2 = mb.clone(ester)
+        c6 = mb.recipes.Polymer(monomers=[ch2], end_groups=[ester, ester_2])
+        c6.build(n=6)
+        assert c6.children[-1].name == 'Ester'
+        assert c6.children[-2].name == 'Ester'
+
+    def test_errors(self, ch2, ester):
+        with pytest.raises(ValueError):
+            chain = mb.recipes.Polymer(monomers=[ch2],
+                                       end_groups=[ester])
+
+        with pytest.raises(ValueError):
+            chain = mb.recipes.Polymer(monomers=[ch2])
+            chain.build(n=5, sequence="AB")
 
     def test_no_end_groups(self):
         chain = mb.recipes.Polymer()
@@ -33,6 +50,7 @@ class TestPolymer(BaseTest):
         chain.build(n=5, add_hydrogens=False)
         assert len([p for p in chain.particles() if p.name == "H"]) == 20
         assert len(chain.available_ports()) == 2
+
 
     def test_replace_is_false(self):
         n = 6
