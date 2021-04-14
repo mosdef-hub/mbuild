@@ -39,7 +39,6 @@ class Polymer(Compound):
     
     Notes
     -----
-
     There are two different approaches to using the Polymer class to create polymers
 
     1) Pass in already created mb.Compound instances to the monomers and
@@ -205,29 +204,27 @@ class Polymer(Compound):
 
         Notes
         -----
-
         Using the 'replace' and 'indices' parameters:
 
-        The atoms in an mbuild compound can be identified by their index numbers.
-        
-        For example, an ethane compound with the index number next to each atom.
-        
-            H(4)       H(7)
-               \       /
-         H(3) - C(0) - C(1) - H(6)
-                /       \
-              H(2)      H(5)
+            The atoms in an mbuild compound can be identified by their index numbers.
+            
+            For example, an ethane compound with the index number next to each atom:
+            
+                    H(4)    H(7)
+                     |      |
+             H(3) - C(0) - C(1) - H(6)
+                     |      | 
+                    H(2)   H(5)
 
-        If replace=True, then this fucntion removes the hydrogen atoms that are
-        occupying where the C-C bond should occur between monomers. 
-        It is required that you specify which atoms should be removed which is
-        achieved by the `indices` parameter.
+            If replace=True, then this fucntion removes the hydrogen atoms that are
+            occupying where the C-C bond should occur between monomers. 
+            It is required that you specify which atoms should be removed which is
+            achieved by the `indices` parameter.
 
-        In this example, you would remove H(2) and H(7) by indicating indices = [2, 7]
-        The resulting structure of the polymer can vary wildly depending on your choice
-        for `indices`, so you will have to test out different combinations to find
-        the two that result in the desired structure.
-
+            In this example, you would remove H(2) and H(7) by indicating indices = [2, 7]
+            The resulting structure of the polymer can vary wildly depending on your choice
+            for `indices`, so you will have to test out different combinations to find
+            the two that result in the desired structure.
         
         Parameters
         ----------
@@ -286,7 +283,7 @@ class Polymer(Compound):
         be used in the polymer, or call it once with duplicate=True if the head
         and tail end groups are the same.
 
-        Note
+        Notes
         ----
         Refer to the doc string notes of the add_monomer() function for an
         explanation of the correct way to use the `replace` and `index`
