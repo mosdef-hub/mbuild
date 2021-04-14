@@ -4,7 +4,7 @@ import xml.etree.ElementTree
 
 import mbuild as mb
 from mbuild.tests.base_test import BaseTest
-from mbuild.utils.io import get_fn, has_foyer, has_hoomd, import_
+from mbuild.utils.io import get_fn, has_foyer, has_gsd, has_hoomd, import_
 
 
 @pytest.mark.skipif(not has_hoomd, reason="HOOMD is not installed")
@@ -143,6 +143,35 @@ class TestHoomd(BaseTest):
             pair_force = import_("hoomd.md.pair")
 
             assert isinstance(sim_forces[0], pair_force.lj)
+
+    @pytest.mark.skipif(not has_foyer, reason="Foyer is not installed")
+    @pytest.mark.skipif(not has_gsd, reason="GSD is not installed")
+    def test_hoomdsimulation_restart(self):
+        hoomd = import_("hoomd")
+        hoomd_simulation = import_("mbuild.formats.hoomd_simulation")
+        forcefield = import_("foyer.forcefield")
+        gsd = import_("gsd.hoomd")
+        box = mb.Compound()
+        box.add(mb.Compound(name='Ar', pos=[1,1,1]))
+        box.add(mb.Compound(name='Ar', pos=[1,1,1]))
+        ff = forcefield.Forcefield(forcefield_files=get_fn('lj.xml'))
+        structure = ff.apply(box)
+        structure.box = [10, 10, 10, 90, 90, 90]
+        sim = hoomd.context.SimulationContext()
+        with sim:
+            hoomd_obj, ref_vals = hoomd_simulation.create_hoomd_simulation(
+                    structure,
+                    restart=get_fn("restart.gsd")
+                    )
+            sim_forces = hoomd.context.current.forces
+            pair_force = import_("hoomd.md.pair")
+
+            assert isinstance(sim_forces[0], pair_force.lj)
+
+        snap = hoomd_obj[0]
+        with gsd.open(get_fn("restart.gsd")) as f:
+            rsnap = f[0]
+        assert np.array_equal(snap.particles.position, rsnap.particles.position)
 
 
 class TestHoomdXML(BaseTest):

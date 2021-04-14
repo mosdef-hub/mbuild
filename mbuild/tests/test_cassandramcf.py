@@ -371,3 +371,14 @@ class TestCassandraMCF(BaseTest):
         assert int(mcf_data[frag_section_start+4][1]) == 5
         assert int(mcf_data[frag_section_start+5][1]) == 5
         assert int(mcf_data[frag_section_start+6][1]) == 5
+
+    def test_infer_14_scaling_zero_eps(self):
+        import mbuild
+        import foyer
+        from mbuild.formats.cassandramcf import write_mcf
+        mol = mbuild.load("CO", smiles=True)
+        mol_ff = foyer.forcefields.load_OPLSAA().apply(mol)
+        with pytest.warns(UserWarning):
+            write_mcf(mol_ff, "test.mcf", angle_style="harmonic", dihedral_style="opls")
+
+
