@@ -106,12 +106,7 @@ class Port(Compound):
     def update_orientation(self, orientation):
         """
         Change the direction between a port and its anchor particle
-
-<<<<<<< HEAD
-        orientation : array-like, shape=(3,), optional, default=[0, 1, 0]
-=======
         orientation : array-like, shape=(3,), required
->>>>>>> 16c39b01b3bd646ae67dac5c79ba1749f480c19a
             Vector along which to orient the port
         """
         if self.used:
