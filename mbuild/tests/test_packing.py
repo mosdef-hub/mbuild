@@ -248,3 +248,41 @@ class TestPacking(BaseTest):
                     sidemax=2000.0)
         assert all(big_box_of_methane.boundingbox.lengths > [900, 900, 900])
         assert all(big_sphere_of_methane.boundingbox.lengths > [1800, 1800, 1800])
+
+    def test_box_edge(self, h2o, methane):
+        system_box = mb.Box(lengths=(1.8, 1.8, 1.8))
+        packed = mb.fill_box(compound=h2o,
+                             n_compounds=100,
+                             box=system_box,
+                             edge=0.2)
+        edge_sizes = system_box.lengths - packed.boundingbox.lengths
+        assert np.allclose(edge_sizes, np.array([0.4]*3), atol=0.1)
+
+        region = mb.fill_region(compound=h2o,
+                                n_compounds=100,
+                                region=system_box,
+                                edge=0.2)
+        edge_sizes = system_box.lengths - packed.boundingbox.lengths
+        assert np.allclose(edge_sizes, np.array([0.4]*3), atol=0.1)
+
+        sphere = mb.fill_sphere(compound=h2o,
+                                n_compounds=100,
+                                sphere=[2, 2, 2, 1],
+                                edge=0.2)
+        assert np.allclose(sphere.boundingbox.mins, np.array([1.2]*3), atol=0.1)
+        assert np.allclose(sphere.boundingbox.maxs, np.array([2.8]*3), atol=0.1)
+
+        solvated = mb.solvate(solvent=h2o,
+                              solute=methane,
+                              n_solvent=100,
+                              box=system_box,
+                              overlap=0.2)
+        edge_sizes = system_box.lengths - solvated.boundingbox.lengths
+        assert np.allclose(edge_sizes, np.array([0.4]*3), atol=0.1)
+
+
+
+        
+        
+
+
