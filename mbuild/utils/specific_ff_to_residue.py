@@ -333,7 +333,7 @@ def specific_ff_to_residue(structure,
     if not reorder_res_in_pdb_psf:
         residues = residue_orig_order_list
     elif reorder_res_in_pdb_psf:
-        print("Information: the output file are being reordered in via the residues list's sequence. ")
+        print("Information: the output file are being reordered in via the residues list's sequence.")
 
     for i in range(0, len(residues)):
         children_in_iteration = False
