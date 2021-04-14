@@ -1,0 +1,12 @@
+name: mbuild
+channels:
+  - conda-forge
+dependencies:
+  - ele
+  - numpy
+  - rdkit
+  - oset
+  - packmol>=18
+  - parmed>=3.4.0
+  - python<=3.8
+  - scipy

@@ -2138,7 +2138,8 @@ class Compound(object):
         mbuild.conversion.to_intermol
 
         """
-        return conversion.to_intermol(compound=self, molecule_types=None)
+        return conversion.to_intermol(compound=self,
+                                      molecule_types=molecule_types)
 
     def get_smiles(self):
         """Get SMILES string for compound
