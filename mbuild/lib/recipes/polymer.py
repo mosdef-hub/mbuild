@@ -36,6 +36,43 @@ class Polymer(Compound):
     build(n, sequence)
         Use to create a single polymer compound. This method uses the compounds
         created by calling the add_monomer and add_end_group methods.
+    
+    Notes
+    -----
+
+    There are two different approaches to using the Polymer class to create polymers
+
+    1) Pass in already created mb.Compound instances to the monomers and
+    end_groups parameters when creating a Polymer instance:
+
+        You can then call the Polymer.build() method to create a polymer.
+        This approach can be used if the compounds being passed into the Polymer
+        instance already have the ports created, and correct atomic structure to
+        allow for the monomer-monomer and monomer-end group bonds. These compounds
+        are used as-is when creating the polymer chain.
+
+        Example:
+        --------
+        chain = Polymer(monomers=[mb.Compound], end_groups = [mb.Compound, mb.Compound])
+        chain.build(n=5)
+
+    2) Use the add_monomer() and add_end_group() methods:
+
+        These functions are there to help with the creation of mb.Ports, which are
+        required by the build() method, and they help with the removal of any atoms
+        (hydrogens) that are occupying what should be the monomer-monomer and
+        monomer-end group bonding sites.  With this approach, create a Polymer()
+        instance, then call the add_monomer() and add_end_group() methodss before
+        calling the build() method.
+
+        Example:
+        --------
+        chain = Polymer()
+        chain.add_monomer(mb.Compound)
+        chain.add_end_groups(mb.Compound)
+        chain.build(n=5)
+
+        Refer to the method specific doc strings to see the correct use.
     """
 
     def __init__(self, monomers=None, end_groups=None):
@@ -166,6 +203,32 @@ class Polymer(Compound):
         the polymer. Call this function for each unique monomer to be used in
         the polymer.
 
+        Notes
+        -----
+
+        Using the 'replace' and 'indices' parameters:
+
+        The atoms in an mbuild compound can be identified by their index numbers.
+        
+        For example, an ethane compound with the index number next to each atom.
+        
+            H(4)       H(7)
+               \       /
+         H(3) - C(0) - C(1) - H(6)
+                /       \
+              H(2)      H(5)
+
+        If replace=True, then this fucntion removes the hydrogen atoms that are
+        occupying where the C-C bond should occur between monomers. 
+        It is required that you specify which atoms should be removed which is
+        achieved by the `indices` parameter.
+
+        In this example, you would remove H(2) and H(7) by indicating indices = [2, 7]
+        The resulting structure of the polymer can vary wildly depending on your choice
+        for `indices`, so you will have to test out different combinations to find
+        the two that result in the desired structure.
+
+        
         Parameters
         ----------
         compound : mbuild.Compound
@@ -218,7 +281,19 @@ class Polymer(Compound):
         label="head",
         duplicate=True,
     ):
-        """
+        """Add an mBuild compound to self.end_groups which will be used to cap
+        the polymer. Call this function for each unique end group compound to
+        be used in the polymer, or call it once with duplicate=True if the head
+        and tail end groups are the same.
+
+        Note
+        ----
+        Refer to the doc string notes of the add_monomer() function for an
+        explanation of the correct way to use the `replace` and `index`
+        parameters.
+        
+        Parameters:
+        -----------
         compound : mbuild.Compound
             A compound of the end group structure
         index : int
