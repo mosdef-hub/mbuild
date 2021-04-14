@@ -380,6 +380,7 @@ def specific_ff_to_residue(structure,
                               'Please ensure that all the residues names that are in the initial ' \
                               'Compound are listed in the residues list ' \
                               '(i.e., the residues variable).'.format(initial_no_atoms, final_no_atoms)
+        print('print_error_message = ' + str(print_error_message))
         raise ValueError(print_error_message)
 
     return [structure, coulomb14scalar_dict, lj14_scalar_dict, residues_applied_list]
