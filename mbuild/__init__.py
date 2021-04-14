@@ -8,4 +8,4 @@ from mbuild.conversion import load
 from mbuild.port import Port
 from mbuild.lattice import Lattice
 from mbuild.recipes import recipes
-__version__ = '0.10.12'
+__version__ = '0.10.13'

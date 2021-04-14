@@ -59,32 +59,26 @@ stages:
 
           - bash: |
               conda config --set always_yes yes --set changeps1 no
-              conda config --add channels omnia
-              conda config --add channels conda-forge
-            displayName: Add relavent Channels
+            displayName: Set conda config
 
           - bash: |
               conda update -c defaults conda
               conda update --all
-              conda create -n test-environment
-              source activate test-environment
-              conda install --yes python=$(python.version) --file requirements-dev.txt
-              conda install 'hoomd<3'
+              sed -i -E 's/python.*$/python='$(python.version)'/' environment-dev.yml
+              conda env create -f environment-dev.yml
+              source activate mbuild-dev
               pip install -e .
             displayName: Create Conda env, Activate, Install dependencies, Install Branch
 
           - bash: |
-              source activate test-environment
-              pip install pytest-azurepipelines
-              python -m pytest -v --pyargs mbuild --cov=mbuild --no-coverage-upload
+              source activate mbuild-dev
+              python -m pytest -v --cov=mbuild --cov-report=html --pyargs mbuild
             displayName: Run Tests
 
           - bash: |
               source activate test-environment
-              coverage xml
-              codecov --file ./coverage.xml --token 2b64a140-cfdd-4d0f-b1ba-33d34b8bf522
-              coverage html
-            condition: and( eq( variables['Agent.OS'], 'Linux' ), eq( variables['python.version'], '3.7' ) )
+              bash <(curl -s https://codecov.io/bash) -C $(Build.SourceVersion)
+            condition: and( eq( variables['Agent.OS'], 'Linux' ), eq( variables['python.version'], '3.8' ) )
             displayName: Upload Coverage Report
 
           - task: PublishCodeCoverageResults@1
@@ -114,28 +108,25 @@ stages:
 
           - script: |
               conda config --set always_yes yes --set changeps1 no
-              conda config --add channels omnia
-              conda config --add channels conda-forge
             displayName: Add relavent channels
 
           - script: |
               conda update -c defaults conda
               conda update conda -yq
-              conda create -n test-environment
-              call activate test-environment
-              conda install --yes python=$(python.version) --file requirements-dev.txt
+              sed -i -E 's/python.*$/python='$(python.version)'/' environment-win.yml
+              conda env create -f environment-win.yml
+              call activate mbuild-dev
             displayName: Create Conda env, Activate, Install dependencies
 
           - script: |
-              call activate test-environment
+              call activate mbuild-dev
               python -m pip --version
               python -m pip --verbose install -e .
             displayName: Install mBuild
 
           - script: |
-              call activate test-environment
-              python -m pip install pytest-azurepipelines
-              python -m pytest -v --cov=mbuild --cov-report=html --pyargs mbuild --no-coverage-upload
+              call activate mbuild-dev
+              python -m pytest -v --cov=mbuild --cov-report=html --pyargs mbuild
             displayName: Run Tests
 
       - job: LinuxBleedingFoyer
@@ -149,32 +140,24 @@ stages:
 
           - bash: |
               conda config --set always_yes yes --set changeps1 no
-              conda config --add channels omnia
-              conda config --add channels conda-forge
               conda update -c defaults conda
               conda update --all
-              conda create -n  bleeding-test-environment
-              source activate bleeding-test-environment
-              conda install --yes python=3.7 --file requirements-dev.txt
-              conda install --yes python=3.7 --file requirements-dev.txt
+              pip install conda-merge
+              git clone https://github.com/mosdef-hub/foyer.git
+              conda-merge environment-dev.yml foyer/environment-dev.yml > combine.yml
+              sed -iE 's/python.*$/python=3.7/' combine.yml
+              sed -iE '/mbuild/d' combine.yml
+              sed -iE '/ foyer/d' combine.yml
+              conda env create -n bleeding -f combine.yml
+              source activate bleeding
+              pip install -e .
+              cd foyer
+              pip install -e .
             displayName: Create a new bleeding test environment
 
           - bash: |
-              source activate bleeding-test-environment
-              git clone https://github.com/mosdef-hub/foyer.git
-              cd foyer
-              conda install --yes --file requirements-dev.txt
-              conda install --yes --file requirements-dev.txt
-              pip install -e .
-              pip uninstall mbuild -y
-              cd ..
-              pip install -e .
-            displayName: clone foyer, install foyer, install mbuild
-
-          - bash: |
-              source activate bleeding-test-environment
-              pip install pytest-azurepipelines
-              python -m pytest -v --cov=mbuild --cov-report= --pyargs mbuild --no-coverage-upload
+              source activate bleeding
+              python -m pytest -v --cov=mbuild --cov-report=html --pyargs mbuild
             displayName: Run Tests
 
   - stage: Docker
