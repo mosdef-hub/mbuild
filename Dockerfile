@@ -17,7 +17,7 @@ WORKDIR /mbuild
 RUN conda update conda -yq && \
 	conda config --set always_yes yes --set changeps1 no && \
 	. /opt/conda/etc/profile.d/conda.sh && \
-    sed -i -E "s/python.*$/python="$(PY_VERSION)"/" environment-dev.yml
+    sed -i -E "s/python.*$/python="$(PY_VERSION)"/" environment-dev.yml && \
 	conda env create nomkl --file environment-dev.yml && \
 	conda activate mbuild-dev && \
     python setup.py install && \

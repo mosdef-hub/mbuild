@@ -99,7 +99,7 @@ class Port(Compound):
         if self.anchor:
             self.translate_to(self.anchor.pos)
         else:
-            self.translate_to((0,0,0))
+            self.translate_to((0, 0, 0))
 
         self.translate(separation*self.direction)
 
@@ -107,21 +107,27 @@ class Port(Compound):
         """
         Change the direction between a port and its anchor particle
 
+<<<<<<< HEAD
         orientation : array-like, shape=(3,), optional, default=[0, 1, 0]
+=======
+        orientation : array-like, shape=(3,), required
+>>>>>>> 16c39b01b3bd646ae67dac5c79ba1749f480c19a
             Vector along which to orient the port
         """
         if self.used:
             warn("This port is already being used and changing its orientation"
                     " will have no effect on the direction between particles.")
 
-        orientation = np.asarray(orientation)
-        down = self.labels['down']
-        up = self.labels['up']
-
+        orientation = np.asarray(orientation).reshape(3,)
+        init_separation = self.separation
         normal = np.cross(self.direction, orientation)
+        #Move to origin to perform rotation
+        self.translate_to((0, 0, 0))
         self.rotate(angle(self.direction, orientation), normal)
-        down.rotate(np.pi, normal)
-        up.rotate(np.pi, normal)
+        self.labels['down'].rotate(np.pi, normal)
+        self.labels['up'].rotate(np.pi, normal)
+        #Move back to it's anchor particle
+        self.update_separation(init_separation)
 
     @property
     def center(self):
