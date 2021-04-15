@@ -95,18 +95,24 @@ class Polymer(Compound):
         return self._end_groups
 
     def build(self, n, sequence="A", add_hydrogens=True):
-        """Connect one or more components in a specified sequence.
+        """
+        Connect one or more components in a specified sequence.
+        Uses the compounds that are stored in Polymer.monomers and
+        Polymer.end_groups.
 
         Parameters
         ----------
-        monomers : mbuild.Compound or list of mbuild.Compound
-            The compound(s) to replicate.
         n : int
             The number of times to replicate the sequence.
         sequence : str, optional, default 'A'
             A string of characters where each unique character represents one
             repetition of a monomer. Characters in `sequence` are assigned to
             monomers in the order they appear in `Polymer.monomers`.
+            The characters in `sequence` are assigned to the compounds in the
+            in the order that they appear in the Polymer.monomers list. 
+            For example, 'AB' where 'A'corresponds to the first compound
+            added to Polymer.monomers and 'B' to the second compound.
+
         add_hydrogens : bool, default True
             If True and an end group compound is None, then the head or tail
             of the polymer will be capped off with hydrogen atoms. If end group
