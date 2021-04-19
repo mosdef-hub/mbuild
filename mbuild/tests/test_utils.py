@@ -129,7 +129,7 @@ class TestUtils(BaseTest):
         xyz = np.array([[3, 3, 1],
                         [1, 1, 0]])
 
-        box = mb.Box.from_lengths_angles(lengths=[2.0, 2.0, 2.0], angles=[90, 90, 90])
+        box = mb.Box(lengths=[2.0, 2.0, 2.0], angles=[90, 90, 90])
 
         new_xyz = wrap_coords(xyz, box, mins=np.min(xyz, axis=0))
 

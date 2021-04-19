@@ -50,7 +50,7 @@ class TestLammpsData(BaseTest):
     @pytest.mark.skipif(not has_foyer, reason="Foyer package not installed")
     @pytest.mark.parametrize('unit_style', ['real', 'lj'])
     def test_save_box(self, ethane, unit_style):
-        box = mb.Box.from_lengths_angles(lengths=np.array([2.0, 2.0, 2.0]), angles=[90.0, 90.0, 90.0])
+        box = mb.Box(lengths=np.array([2.0, 2.0, 2.0]), angles=[90.0, 90.0, 90.0])
         ethane.save(filename='ethane-box.lammps',
                 forcefield_name='oplsaa', box=box,
                 unit_style=unit_style)
@@ -91,7 +91,7 @@ class TestLammpsData(BaseTest):
                     break
 
     def test_save_triclinic_box(self, ethane):
-        box = mb.Box.from_lengths_angles(lengths=np.array([2.0, 2.0, 2.0]), angles=[60, 70, 80])
+        box = mb.Box(lengths=np.array([2.0, 2.0, 2.0]), angles=[60, 70, 80])
         ethane.save(filename='triclinic-box.lammps', forcefield_name='oplsaa', box=box)
 
     @pytest.mark.parametrize(

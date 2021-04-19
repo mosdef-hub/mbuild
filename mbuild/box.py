@@ -4,7 +4,7 @@ import numpy as np
 
 from mbuild.exceptions import MBuildError
 
-__all__ = ['Box']
+__all__ = ["Box"]
 
 
 class Box(object):
@@ -12,8 +12,10 @@ class Box(object):
 
     Parameters
     ----------
-    box_vectors : np.ndarray, shape=(3,3), dtype=float
-        Vectors that define a right-handed parallelepiped (triclinic box).
+    lengths : list-like, shape=(3,), dtype=float
+        Lengths of the edges of the box.
+    angles : list-like, shape=(3,), dtype=float
+        Angles that define the tilt of the edges of the box.
     precision : int, optional, default=None
         Control the precision of the floating point representation __repr__
 
@@ -41,11 +43,10 @@ class Box(object):
     Box vectors are expected to be provided in row-major format.
     """
 
-    def __init__(self, box_vectors=None, precision=None):
-        box_vectors = _validate_box_vectors(box_vectors)
-
-        self._box_vectors = box_vectors
-
+    def __init__(self, lengths=None, angles=None, precision=None):
+        if angles is None:
+            angles = [90.0, 90.0, 90.0]
+        self._box_vectors = _lengths_angles_to_vectors(lengths=lengths, angles=angles)
         (Lx, Ly, Lz, xy, xz, yz) = self._from_vecs_to_lengths_tilt_factors()
         self._Lx = Lx
         self._Ly = Ly
@@ -60,35 +61,46 @@ class Box(object):
             self._precision = precision
 
     @classmethod
-    def from_lengths_angles(cls, lengths, angles):
-        box_vectors = _lengths_angles_to_vectors(lengths, angles)
-
-        return cls(box_vectors=box_vectors)
-
-    @classmethod
     def from_uvec_lengths(cls, uvec, lengths):
         uvec = np.asarray(uvec)
         uvec.reshape(3, 3)
 
         if not np.allclose(np.linalg.norm(uvec, axis=1), 1.0):
-            msg = (f"Unit vector magnitudes provided are not "
-                   f"close to 1.0, "
-                   f"magnitudes: {np.linalg.norm(uvec, axis=1)}")
+            msg = (
+                f"Unit vector magnitudes provided are not "
+                f"close to 1.0, "
+                f"magnitudes: {np.linalg.norm(uvec, axis=1)}"
+            )
             raise MBuildError(msg)
 
         lengths = np.asarray(lengths)
         lengths.reshape(1, 3)
         _validate_box_vectors(uvec)
         scaled_vec = (uvec.T * lengths).T
+        (alpha, beta, gamma) = _calc_angles(scaled_vec)
 
-        return cls(box_vectors=scaled_vec)
+        return cls(lengths=lengths, angles=(alpha, beta, gamma))
 
     @classmethod
     def from_mins_maxs_angles(cls, mins, maxs, angles):
         (x_min, y_min, z_min) = mins
         (x_max, y_max, z_max) = maxs
         lengths = (x_max - x_min, y_max - y_min, z_max - z_min)
-        return cls.from_lengths_angles(lengths, angles)
+        return cls(lengths=lengths, angles=angles)
+
+    @classmethod
+    def from_box_vectors(cls, vectors):
+        vectors = _validate_box_vectors(vectors)
+        (alpha, beta, gamma) = _calc_angles(vectors)
+        v1 = vectors[0, :]
+        v2 = vectors[1, :]
+        v3 = vectors[2, :]
+
+        Lx = np.linalg.norm(v1)
+        Ly = np.linalg.norm(v2)
+        Lz = np.linalg.norm(v3)
+        lengths = (Lx, Ly, Lz)
+        return cls(lengths=lengths, angles=(alpha, beta, gamma))
 
     @classmethod
     def from_lengths_tilt_factors(cls, lengths, tilt_factors=None):
@@ -98,11 +110,9 @@ class Box(object):
         else:
             (xy, xz, yz) = tilt_factors
 
-        vecs = np.asarray([Lx, 0.0, 0.0],
-                          [Ly * xy, Ly, 0.0],
-                          [Lz * xz, Lz * yz, Lz])
-
-        return Box(_validate_box_vectors(box_vectors=vecs))
+        vecs = np.asarray([Lx, 0.0, 0.0], [Ly * xy, Ly, 0.0], [Lz * xz, Lz * yz, Lz])
+        (alpha, beta, gamma) = _calc_angles(vecs)
+        return cls(lengths=lengths, angles=[alpha, beta, gamma])
 
     @classmethod
     def from_lo_hi_tilt_factors(cls, lo, hi, tilt_factors):
@@ -110,12 +120,12 @@ class Box(object):
         (xhi, yhi, zhi) = hi
         (xy, xz, yz) = tilt_factors
 
-        box_vectors = np.asarray([xhi - xlo, 0.0, 0.0],
-                                 [xy, yhi - ylo, 0.0],
-                                 [xz, yz, zhi - zlo])
+        box_vectors = np.asarray(
+            [xhi - xlo, 0.0, 0.0], [xy, yhi - ylo, 0.0], [xz, yz, zhi - zlo]
+        )
         _validate_box_vectors(box_vectors)
 
-        return Box(box_vectors=box_vectors)
+        return cls.from_box_vectors(vectors=box_vectors)
 
     @property
     def box_vectors(self):
@@ -123,14 +133,7 @@ class Box(object):
 
     @property
     def box_parameters(self):
-        return (
-            self._Lx,
-            self._Ly,
-            self._Lz,
-            self._xy,
-            self._xz,
-            self._xy
-        )
+        return self._Lx, self._Ly, self._Lz, self._xy, self._xz, self._xy
 
     @property
     def Lx(self):
@@ -146,7 +149,7 @@ class Box(object):
 
     @property
     def lengths(self):
-        return (self._Lx, self._Ly, self._Lz)
+        return self._Lx, self._Ly, self._Lz
 
     @property
     def xy(self):
@@ -177,25 +180,21 @@ class Box(object):
         -------
         parameters : tuple of floats (a, b, c, alpha, beta, gamma)
         """
-        (alpha, beta, gamma) = self._get_angles()
-        return (
-            self._Lx,
-            self._Ly,
-            self._Lz,
-            alpha,
-            beta,
-            gamma
-        )
+        (alpha, beta, gamma) = self.angles
+        (Lx, Ly, Lz) = self.lengths
+        return Lx, Ly, Lz, alpha, beta, gamma
 
     def __repr__(self):
         (Lx, Ly, Lz, xy, xz, yz) = self.box_parameters
         format_precision = f".{self._precision}f" if self._precision else ""
-        desc = (f"Box: Lx={Lx:{format_precision}}, "
-                f"Ly={Ly:{format_precision}}, "
-                f"Lz={Lz:{format_precision}}, "
-                f"xy={xy:{format_precision}}, "
-                f"xz={xz:{format_precision}}, "
-                f"yz={yz:{format_precision}}, ")
+        desc = (
+            f"Box: Lx={Lx:{format_precision}}, "
+            f"Ly={Ly:{format_precision}}, "
+            f"Lz={Lz:{format_precision}}, "
+            f"xy={xy:{format_precision}}, "
+            f"xz={xz:{format_precision}}, "
+            f"yz={yz:{format_precision}}, "
+        )
         return desc
 
     def _from_vecs_to_lengths_tilt_factors(self):
@@ -219,26 +218,7 @@ class Box(object):
         return Lx, Ly, Lz, xy, xz, yz
 
     def _get_angles(self):
-        """Calculate the angles between the vectors that define the box.
-
-        Calculates the angles alpha, beta, and gamma from the Box object
-        attribute box_vectors.
-
-        """
-
-        vector_magnitudes = np.linalg.norm(self.box_vectors, axis=1)
-
-        a_dot_b = np.dot(self._box_vectors[0], self._box_vectors[1])
-        b_dot_c = np.dot(self._box_vectors[1], self._box_vectors[2])
-        a_dot_c = np.dot(self._box_vectors[0], self._box_vectors[2])
-
-        alpha_raw = b_dot_c / (vector_magnitudes[1] * vector_magnitudes[2])
-        beta_raw = a_dot_c / (vector_magnitudes[0] * vector_magnitudes[2])
-        gamma_raw = a_dot_b / (vector_magnitudes[0] * vector_magnitudes[1])
-
-        (alpha, beta, gamma) = np.rad2deg(np.arccos(np.clip([alpha_raw, beta_raw, gamma_raw], -1.0, 1.0)))
-
-        return alpha, beta, gamma
+        return _calc_angles(self.box_vectors)
 
 
 def _validate_box_vectors(box_vectors):
@@ -270,14 +250,18 @@ def _lengths_angles_to_vectors(lengths, angles):
     (a, b, c) = lengths
     (alpha, beta, gamma) = np.deg2rad(angles)
 
-    a_vec = np.asarray([a, 0.0, 0.0], )
+    a_vec = np.asarray(
+        [a, 0.0, 0.0],
+    )
 
     b_x = b * np.cos(gamma)
     b_y = b * np.sin(gamma)
-    b_vec = np.asarray([b_x, b_y, 0.0], )
+    b_vec = np.asarray(
+        [b_x, b_y, 0.0],
+    )
 
     c_x = c * np.cos(beta)
-    c_cos_y_term = ((np.cos(alpha) - (np.cos(beta) * np.cos(gamma))) / np.sin(gamma))
+    c_cos_y_term = (np.cos(alpha) - (np.cos(beta) * np.cos(gamma))) / np.sin(gamma)
     c_y = c * c_cos_y_term
     c_z = c * np.sqrt(1 - np.square(np.cos(beta)) - np.square(c_cos_y_term))
     c_vec = np.asarray([c_x, c_y, c_z])
@@ -297,14 +281,19 @@ def _normalize_box(vectors):
     For additional information, refer to the License file provided with
     this package.
     """
+
     det = np.linalg.det(vectors)
     if np.isclose(det, 0.0, atol=1e-5):
-        raise MBuildError("The vectors to define the box are co-linear, "
-                          "this does not form a 3D region in space.\n"
-                          f"Box vectors evaluated: {vectors}")
+        raise MBuildError(
+            "The vectors to define the box are co-linear, "
+            "this does not form a 3D region in space.\n"
+            f"Box vectors evaluated: {vectors}"
+        )
     if det < 0.0:
-        warn("Box vectors provided for a left-handed basis, these will "
-             "be transformed into a right-handed basis automatically.")
+        warn(
+            "Box vectors provided for a left-handed basis, these will "
+            "be transformed into a right-handed basis automatically."
+        )
 
     # transpose to column-major for the time being
     Q, R = np.linalg.qr(vectors.T)
@@ -337,8 +326,33 @@ def _reduced_form_vectors(box_vectors):
     xz = a_3x / lz
     yz = (np.dot(v2, v3) - a_2x * a_3x) / (ly * lz)
 
-    reduced_vecs = np.asarray([[lx, 0.0, 0.0],
-                               [xy * ly, ly, 0.0],
-                               [xz * lz, yz * lz, lz]])
+    reduced_vecs = np.asarray(
+        [[lx, 0.0, 0.0], [xy * ly, ly, 0.0], [xz * lz, yz * lz, lz]]
+    )
 
     return reduced_vecs
+
+
+def _calc_angles(vectors):
+    """Calculate the angles between the vectors that define the box.
+
+    Calculates the angles alpha, beta, and gamma from the Box object
+    attribute box_vectors.
+
+    """
+
+    vector_magnitudes = np.linalg.norm(vectors, axis=1)
+
+    a_dot_b = np.dot(vectors[0], vectors[1])
+    b_dot_c = np.dot(vectors[1], vectors[2])
+    a_dot_c = np.dot(vectors[0], vectors[2])
+
+    alpha_raw = b_dot_c / (vector_magnitudes[1] * vector_magnitudes[2])
+    beta_raw = a_dot_c / (vector_magnitudes[0] * vector_magnitudes[2])
+    gamma_raw = a_dot_b / (vector_magnitudes[0] * vector_magnitudes[1])
+
+    (alpha, beta, gamma) = np.rad2deg(
+        np.arccos(np.clip([alpha_raw, beta_raw, gamma_raw], -1.0, 1.0))
+    )
+
+    return alpha, beta, gamma

@@ -125,7 +125,7 @@ class TestCompound(BaseTest):
     def test_save_box(self, ch3):
         extensions = ['.mol2', '.pdb', '.hoomdxml', '.gro', '.sdf']
         box_attributes = ['lengths']
-        custom_box = mb.Box.from_lengths_angles(lengths=[.8, .8, .8], angles=[90,90,90])
+        custom_box = mb.Box(lengths=[.8, .8, .8], angles=[90,90,90])
         for ext in extensions:
             outfile_padded = 'padded_methyl' + ext
             outfile_custom = 'custom_methyl' + ext
@@ -576,7 +576,7 @@ class TestCompound(BaseTest):
 
     @pytest.mark.skipif(not has_mdtraj, reason="MDTraj not installed")
     def test_box_mdtraj(self, ethane):
-        box = mb.Box.from_lengths_angles(lengths=[4.0, 5.0, 6.0], angles=[90, 90, 90])
+        box = mb.Box(lengths=[4.0, 5.0, 6.0], angles=[90, 90, 90])
         assert ethane.box is None
         # (1) Specify box
         traj = ethane.to_trajectory(box=box)
@@ -646,7 +646,7 @@ class TestCompound(BaseTest):
     def test_mdtraj_box(self, h2o):
         compound = mb.Compound()
         compound.add(h2o)
-        tilted_box = mb.Box.from_lengths_angles(lengths=[2.0, 2.0, 2.0], angles=[60.0, 80.0, 100.0])
+        tilted_box = mb.Box(lengths=[2.0, 2.0, 2.0], angles=[60.0, 80.0, 100.0])
         trajectory = compound.to_trajectory(box=tilted_box)
         assert (trajectory.unitcell_lengths == [2.0, 2.0, 2.0]).all()
         assert (trajectory.unitcell_angles == [60.0, 80.0, 100.0]).all()
@@ -722,7 +722,7 @@ class TestCompound(BaseTest):
         assert np.allclose(compound2.xyz, compound3.xyz)
 
     def test_box_parmed(self, ethane):
-        box = mb.Box.from_lengths_angles(lengths=[4.0, 5.0, 6.0], angles=[90, 90, 90])
+        box = mb.Box(lengths=[4.0, 5.0, 6.0], angles=[90, 90, 90])
         assert ethane.box is None
         # (1) Specify box
         pmd = ethane.to_parmed(box=box)
@@ -802,14 +802,14 @@ class TestCompound(BaseTest):
     def test_parmed_box(self, h2o):
         compound = mb.Compound()
         compound.add(h2o)
-        tilted_box = mb.Box.from_lengths_angles(lengths=[2.0, 2.0, 2.0], angles=[90.0, 90.0, 120.0])
+        tilted_box = mb.Box(lengths=[2.0, 2.0, 2.0], angles=[90.0, 90.0, 120.0])
         structure = compound.to_parmed(box=tilted_box)
         assert np.all(np.isclose(structure.box, [20, 20, 20, 90.0, 90.0, 120.0]))
 
     def test_parmed_box_with_periodicity(self, h2o):
         compound = mb.Compound()
         compound.add(h2o)
-        compound.box = mb.Box.from_lengths_angles(lengths=[2.0, 2.0, 2.0], angles=[90.0, 90.0, 120.0])
+        compound.box = mb.Box(lengths=[2.0, 2.0, 2.0], angles=[90.0, 90.0, 120.0])
         structure = compound.to_parmed()
         assert np.all(np.isclose(structure.box, [20, 20, 20, 90.0, 90.0, 120.0]))
 
@@ -817,7 +817,7 @@ class TestCompound(BaseTest):
         compound = mb.Compound(ethane)
         C_pos = np.array([atom.pos for atom in list(compound.particles_by_name('C'))])
         assert round(compound.min_periodic_distance(C_pos[0], C_pos[1]), 2) == 0.14
-        compound.box = mb.Box.from_lengths_angles(lengths=[0.2, 0.2, 0.2], angles=[90, 90, 90])
+        compound.box = mb.Box(lengths=[0.2, 0.2, 0.2], angles=[90, 90, 90])
         assert round(compound.min_periodic_distance(C_pos[0], C_pos[1]), 2) == 0.06
 
     def test_bond_graph(self, ch3):
@@ -1170,7 +1170,7 @@ class TestCompound(BaseTest):
     @pytest.mark.skipif(not has_openbabel, reason="Pybel is not installed")
     def test_to_more_pybel_residues(self, methane, ethane):
         box = mb.fill_box([methane, ethane], n_compounds=[3,3],
-                box=mb.Box.from_lengths_angles(lengths=[10,10,10], angles=[90.0, 90.0, 90.0]))
+                box=mb.Box(lengths=[10,10,10], angles=[90.0, 90.0, 90.0]))
         pybel_mol = box.to_pybel(box=None, residues=['Ethane', 'Methane'])
         pybel_mol_resnames = {a.name for a in pybel_mol.residues}
         assert 'Ethane' in pybel_mol_resnames
@@ -1216,7 +1216,7 @@ class TestCompound(BaseTest):
         assert np.allclose(methane.xyz, sdf_string.xyz, atol=1e-5)
 
     def test_load_multiple_sdf(self, methane):
-        filled = mb.fill_box(methane, n_compounds=10, box=mb.box.Box.from_lengths_angles(lengths=[4,4,4], angles=[90.0, 90.0, 90.0]))
+        filled = mb.fill_box(methane, n_compounds=10, box=mb.box.Box(lengths=[4,4,4], angles=[90.0, 90.0, 90.0]))
         filled.save('methane.sdf')
         sdf_string = mb.load('methane.sdf')
 
@@ -1231,7 +1231,7 @@ class TestCompound(BaseTest):
         lengths = [3.0, 3.0, 3.0]
         compound = mb.Compound()
         assert compound.box == None
-        compound.box = mb.box.Box.from_lengths_angles(lengths=[3.0, 3.0, 3.0],angles=[90.0, 90.0, 90.0])
+        compound.box = mb.box.Box(lengths=[3.0, 3.0, 3.0],angles=[90.0, 90.0, 90.0])
         assert np.allclose(compound.box.lengths, lengths)
         assert np.allclose(compound.box.angles, angles)
         with pytest.raises(TypeError, match=r"specified as an mbuild.Box"):
@@ -1241,26 +1241,26 @@ class TestCompound(BaseTest):
         port = mb.Port()
         assert port.box == None
         with pytest.raises(ValueError, match=r"cannot have"):
-            port.box = mb.Box.from_lengths_angles(
+            port.box = mb.Box(
                 lengths=lengths, angles=angles)
 
         compound = mb.Compound()
-        subcomp = mb.Compound(box=mb.Box.from_lengths_angles(lengths=lengths, angles=angles))
+        subcomp = mb.Compound(box=mb.Box(lengths=lengths, angles=angles))
         compound.add(subcomp)
         assert np.allclose(compound.box.lengths, lengths)
         assert np.allclose(compound.box.angles, angles)
-        compound = mb.Compound(box=mb.Box.from_lengths_angles(lengths=[3.,3.,3.], angles=[90.0, 90.0, 90.0]))
-        subcomp = mb.Compound(box=mb.Box.from_lengths_angles(lengths=[6.,6.,6.], angles=[90.,90.,120.]))
+        compound = mb.Compound(box=mb.Box(lengths=[3.,3.,3.], angles=[90.0, 90.0, 90.0]))
+        subcomp = mb.Compound(box=mb.Box(lengths=[6.,6.,6.], angles=[90.,90.,120.]))
         with pytest.warns(UserWarning):
             compound.add(subcomp)
         assert np.allclose(compound.box.lengths, [3.,3.,3.])
         assert np.allclose(compound.box.angles, [90.,90.,90.])
-        compound = mb.Compound(box=mb.Box.from_lengths_angles(lengths=lengths, angles=angles))
-        subcomp = mb.Compound(box=mb.Box.from_lengths_angles(lengths=[6.,6.,6.], angles=[90.,90.,120.]))
+        compound = mb.Compound(box=mb.Box(lengths=lengths, angles=angles))
+        subcomp = mb.Compound(box=mb.Box(lengths=[6.,6.,6.], angles=[90.,90.,120.]))
         compound.add(subcomp, inherit_box=True)
         assert np.allclose(compound.box.lengths, [6.,6.,6.])
         assert np.allclose(compound.box.angles, [90.,90.,120.])
-        compound = mb.Compound(box=mb.Box.from_lengths_angles(lengths=lengths, angles=angles))
+        compound = mb.Compound(box=mb.Box(lengths=lengths, angles=angles))
         subcomp = mb.Compound()
         with pytest.warns(UserWarning):
             compound.add(subcomp, inherit_box=True)
@@ -1269,13 +1269,13 @@ class TestCompound(BaseTest):
         compound = mb.Compound()
         carbon = mb.Compound(name="C")
         compound.add(carbon)
-        compound.box = mb.Box.from_lengths_angles(lengths=lengths, angles=angles)
+        compound.box = mb.Box(lengths=lengths, angles=angles)
         nitrogen = mb.Compound(name="N", pos=[4,3,3,])
         with pytest.warns(UserWarning):
             compound.add(nitrogen)
-        compound.box = mb.Box.from_lengths_angles(lengths=[5.,4.,4.], angles=angles)
+        compound.box = mb.Box(lengths=[5.,4.,4.], angles=angles)
         with pytest.warns(UserWarning):
-            compound.box = mb.Box.from_lengths_angles(lengths=[1.,1.,1.], angles=angles)
+            compound.box = mb.Box(lengths=[1.,1.,1.], angles=angles)
 
     @pytest.mark.skipif(not has_py3Dmol, reason="Py3Dmol is not installed")
     def test_visualize_py3dmol(self, ethane):

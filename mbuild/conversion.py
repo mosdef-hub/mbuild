@@ -700,7 +700,7 @@ def from_pybel(pybel_mol,
                         compound[bond.GetEndAtomIdx()-1]])
 
     if hasattr(pybel_mol, 'unitcell'):
-        box = Box.from_lengths_angles(lengths=[pybel_mol.unitcell.GetA()/10,
+        box = Box(lengths=[pybel_mol.unitcell.GetA()/10,
                             pybel_mol.unitcell.GetB()/10,
                             pybel_mol.unitcell.GetC()/10],
                     angles=[pybel_mol.unitcell.GetAlpha(),
@@ -1032,7 +1032,7 @@ def to_parmed(compound,
         else:
             box = compound.get_boundingbox()
             # Pad by an extra 0.5 nm (0.25 on each side) from bounding box
-            box = Box.from_lengths_angles(lengths=np.array(box.lengths)+0.5, angles=box.angles)
+            box = Box(lengths=np.array(box.lengths)+0.5, angles=box.angles)
 
     box_vector = np.empty(6)
     box_vector[3:6] = box.angles

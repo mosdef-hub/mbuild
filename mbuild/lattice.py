@@ -8,7 +8,7 @@ import numpy as np
 import mbuild as mb
 from mbuild.utils.io import import_
 
-__all__ = ['load_cif', 'Lattice']
+__all__ = ["load_cif", "Lattice"]
 
 
 def load_cif(file_or_path=None, wrap_coords=False):
@@ -20,38 +20,42 @@ def load_cif(file_or_path=None, wrap_coords=False):
         Wrap the lattice points back into the 0-1 acceptable coordinates.
     """
 
-    garnett = import_('garnett')
-    pycifrw = import_('CifFile')
+    garnett = import_("garnett")
+    pycifrw = import_("CifFile")
 
     assert isinstance(file_or_path, (str, pathlib.Path))
     cif_location = pathlib.Path(file_or_path)
 
     reader = garnett.ciffilereader.CifFileReader()
-    with open(cif_location.absolute(), 'r') as cif_file:
+    with open(cif_location.absolute(), "r") as cif_file:
         my_cif = reader.read(cif_file)
 
         # only need the first frame, not used as a trajectory
         frame = my_cif[0]
 
         # convert angstroms to nanometers
-        lattice_spacing = np.linalg.norm(np.asarray(frame.box.get_box_matrix()).T, axis=1) / 10
+        lattice_spacing = (
+            np.linalg.norm(np.asarray(frame.box.get_box_matrix()).T, axis=1) / 10
+        )
 
         # create lattice_points dictionary
         position_dict = defaultdict(list)
         for elem_id, coords in zip(frame.typeid, frame.cif_coordinates.tolist()):
             if wrap_coords:
                 for i, pos in enumerate(coords):
-                    if pos < 0 and pos > -1:
+                    if 0 > pos > -1:
                         coords[i] = coords[i] + 1
-                    elif pos > 1 and pos < 2:
+                    elif 1 < pos < 2:
                         coords[i] = coords[i] - 1
                     else:
                         pass
             position_dict[frame.types[elem_id]].append(list(coords))
         box_vectors = np.asarray(frame.box.get_box_matrix()).T
-        return Lattice(lattice_spacing=lattice_spacing,
-                       lattice_vectors=box_vectors,
-                       lattice_points=position_dict)
+        return Lattice(
+            lattice_spacing=lattice_spacing,
+            lattice_vectors=box_vectors,
+            lattice_points=position_dict,
+        )
 
 
 class Lattice(object):
@@ -182,21 +186,29 @@ class Lattice(object):
 
     """
 
-    def __init__(self, lattice_spacing=None, lattice_vectors=None,
-                 lattice_points=None, angles=None):
+    def __init__(
+        self,
+        lattice_spacing=None,
+        lattice_vectors=None,
+        lattice_points=None,
+        angles=None,
+    ):
         super(Lattice, self).__init__()
         self.dimension = 3
         self.lattice_spacing = None
         self.lattice_vectors = None
         self.lattice_points = dict()
         self.angles = None
-        self._sanitize_inputs(lattice_spacing=lattice_spacing,
-                              lattice_vectors=lattice_vectors,
-                              lattice_points=lattice_points,
-                              angles=angles)
+        self._sanitize_inputs(
+            lattice_spacing=lattice_spacing,
+            lattice_vectors=lattice_vectors,
+            lattice_points=lattice_points,
+            angles=angles,
+        )
 
-    def _sanitize_inputs(self, lattice_spacing, lattice_vectors,
-                         lattice_points, angles):
+    def _sanitize_inputs(
+        self, lattice_spacing, lattice_vectors, lattice_points, angles
+    ):
         """Check for proper inputs and set instance attributes.
 
         Takes the data passed to the constructor by the user
@@ -218,8 +230,10 @@ class Lattice(object):
         """
 
         if angles is not None and lattice_vectors is not None:
-            raise ValueError('Overdefined system: angles and lattice_vectors '
-                             'provided. Only one of these should be passed.')
+            raise ValueError(
+                "Overdefined system: angles and lattice_vectors "
+                "provided. Only one of these should be passed."
+            )
 
         self._validate_lattice_spacing(lattice_spacing)
 
@@ -251,23 +265,30 @@ class Lattice(object):
             lattice_spacing = np.asarray(lattice_spacing, dtype=dataType)
             lattice_spacing = lattice_spacing.reshape((3,))
             if np.shape(lattice_spacing) != (self.dimension,):
-                raise ValueError('Lattice spacing should be a vector of '
-                                 'size:({},). Please include lattice spacing '
-                                 'of size >= 0 depending on desired '
-                                 'dimensionality.'
-                                 .format(self.dimension))
+                raise ValueError(
+                    "Lattice spacing should be a vector of "
+                    "size:({},). Please include lattice spacing "
+                    "of size >= 0 depending on desired "
+                    "dimensionality.".format(self.dimension)
+                )
         else:
-            raise ValueError('No lattice_spacing provided. Please provide '
-                             'lattice spacing\'s that are >= 0. with size ({},)'
-                             .format((self.dimension)))
+            raise ValueError(
+                "No lattice_spacing provided. Please provide "
+                "lattice spacing's that are >= 0. with size ({},)".format(
+                    self.dimension
+                )
+            )
 
         if np.any(np.isnan(lattice_spacing)):
-            raise ValueError('None type or NaN type values present in '
-                             'lattice_spacing: {}.'.format(lattice_spacing))
+            raise ValueError(
+                "None type or NaN type values present in "
+                "lattice_spacing: {}.".format(lattice_spacing)
+            )
         elif np.any(lattice_spacing < 0.0):
-            raise ValueError('Negative lattice spacing value. One of '
-                             'the spacing: {} is negative.'
-                             .format(lattice_spacing))
+            raise ValueError(
+                "Negative lattice spacing value. One of "
+                "the spacing: {} is negative.".format(lattice_spacing)
+            )
 
         self.lattice_spacing = lattice_spacing
 
@@ -290,26 +311,30 @@ class Lattice(object):
 
         if np.shape(tempAngles) == (self.dimension,):
             if np.sum(tempAngles) < 360.0 or np.sum(tempAngles) > -360.0:
-                if (np.all(tempAngles != 180.0)
-                        and np.all(tempAngles != 0.0)):
+                if np.all(tempAngles != 180.0) and np.all(tempAngles != 0.0):
                     pass
                 else:
-                    raise ValueError('Angles cannot be 180.0 or 0.0')
+                    raise ValueError("Angles cannot be 180.0 or 0.0")
             else:
-                raise ValueError('Angles sum: {} is either greater than '
-                                 '360.0 or less than -360.0'
-                                 .format(np.sum(tempAngles)))
+                raise ValueError(
+                    "Angles sum: {} is either greater than "
+                    "360.0 or less than -360.0".format(np.sum(tempAngles))
+                )
 
             for subset in it.permutations(tempAngles, r=self.dimension):
                 if not subset[0] < np.sum(tempAngles) - subset[0]:
-                    raise ValueError('Each angle provided must be less'
-                                     'than the sum of the other angles. '
-                                     '{} is greater.'.format(subset[0]))
+                    raise ValueError(
+                        "Each angle provided must be less"
+                        "than the sum of the other angles. "
+                        "{} is greater.".format(subset[0])
+                    )
         else:
-            raise ValueError('Incorrect array size. When converted to a '
-                             'Numpy array, the shape is: {}, expected {}.'
-                             .format(np.shape(tempAngles),
-                                     (3,)))
+            raise ValueError(
+                "Incorrect array size. When converted to a "
+                "Numpy array, the shape is: {}, expected {}.".format(
+                    np.shape(tempAngles), (3,)
+                )
+            )
         self.angles = tempAngles
 
     def _validate_lattice_vectors(self, lattice_vectors):
@@ -328,27 +353,32 @@ class Lattice(object):
 
         dataType = np.float64
         if lattice_vectors is None:
-                lattice_vectors = np.identity(self.dimension, dtype=dataType)
+            lattice_vectors = np.identity(self.dimension, dtype=dataType)
         else:
             lattice_vectors = np.asarray(lattice_vectors, dtype=dataType)
 
             if (self.dimension, self.dimension) != np.shape(lattice_vectors):
-                raise ValueError('Dimensionality of lattice_vectors is '
-                                 ' of shape {} not {}.'
-                                 .format(np.shape(lattice_vectors),
-                                         (self.dimension, self.dimension)))
+                raise ValueError(
+                    "Dimensionality of lattice_vectors is "
+                    " of shape {} not {}.".format(
+                        np.shape(lattice_vectors), (self.dimension, self.dimension)
+                    )
+                )
 
             det = np.linalg.det(lattice_vectors)
             if abs(det) == 0.0:
-                raise ValueError('Co-linear vectors: {}'
-                                 'have a determinant of 0.0. Does not '
-                                 'define a unit cell.'
-                                 .format(lattice_vectors))
+                raise ValueError(
+                    "Co-linear vectors: {}"
+                    "have a determinant of 0.0. Does not "
+                    "define a unit cell.".format(lattice_vectors)
+                )
 
             if det <= 0.0:
-                raise ValueError('Negative Determinant: the determinant '
-                                 'of {} is negative, indicating a left-'
-                                 'handed system.' .format(det))
+                raise ValueError(
+                    "Negative Determinant: the determinant "
+                    "of {} is negative, indicating a left-"
+                    "handed system.".format(det)
+                )
         self.lattice_vectors = lattice_vectors
 
     def _validate_lattice_points(self, lattice_points):
@@ -366,31 +396,38 @@ class Lattice(object):
 
         if lattice_points is None:
             lattice_points = {}
-            lattice_points = {'id': [[0. for _ in range(self.dimension)]]}
+            lattice_points = {"id": [[0.0 for _ in range(self.dimension)]]}
         elif isinstance(lattice_points, dict):
             pass
         else:
-            raise TypeError('Incorrect type, lattice_points is of type {}, '
-                            'Expected dict.'.format(type(lattice_points)))
+            raise TypeError(
+                "Incorrect type, lattice_points is of type {}, "
+                "Expected dict.".format(type(lattice_points))
+            )
 
         for name, positions in lattice_points.items():
             for pos in positions:
                 if len(pos) != self.dimension:
-                    raise ValueError('Incorrect lattice point position size. '
-                                     'lattice point {} has location '
-                                     '{}, which is inconsistent with the '
-                                     'dimension {}.'.format(name, pos,
-                                                            self.dimension))
+                    raise ValueError(
+                        "Incorrect lattice point position size. "
+                        "lattice point {} has location "
+                        "{}, which is inconsistent with the "
+                        "dimension {}.".format(name, pos, self.dimension)
+                    )
                 if pos is None:
-                    raise ValueError('NoneType passed, expected float. '
-                                     'None was passed in as position for {}.'
-                                     .format(name))
+                    raise ValueError(
+                        "NoneType passed, expected float. "
+                        "None was passed in as position for {}.".format(name)
+                    )
                 for coord in pos:
-                    if (coord is None) or (0 > coord) or (coord >=1):
-                        raise ValueError('Incorrect lattice point fractional '
-                                         'coordinates. Coordinates cannot be '
-                                         '{}, {}, or {}. You passed {}.'
-                                         .format('None', '>= 1', '< 0', coord))
+                    if (coord is None) or (0 > coord) or (coord >= 1):
+                        raise ValueError(
+                            "Incorrect lattice point fractional "
+                            "coordinates. Coordinates cannot be "
+                            "{}, {}, or {}. You passed {}.".format(
+                                "None", ">= 1", "< 0", coord
+                            )
+                        )
 
         self.lattice_points = self._check_for_overlap(lattice_points)
 
@@ -412,17 +449,20 @@ class Lattice(object):
         for name, positions in lattice_points.items():
             for pos in positions:
                 for offsets in it.product(range(num_iter), repeat=dim):
-                    offset_vector = tuple((v + offset for v, offset in zip(pos, offsets)))
+                    offset_vector = tuple(
+                        (v + offset for v, offset in zip(pos, offsets))
+                    )
                     overlap_dict[offset_vector].append((pos))
 
         for key, val in overlap_dict.items():
             if len(val) > 1:
-                raise ValueError('Overlapping lattice points: Lattice '
-                                 'points overlap when the unit cell is '
-                                 'expanded to {}. This is an incorrect '
-                                 'perfect lattice. The offending '
-                                 'points are: {}'
-                                 .format(key, val))
+                raise ValueError(
+                    "Overlapping lattice points: Lattice "
+                    "points overlap when the unit cell is "
+                    "expanded to {}. This is an incorrect "
+                    "perfect lattice. The offending "
+                    "points are: {}".format(key, val)
+                )
         return lattice_points
 
     def _from_lattice_parameters(self, angles):
@@ -454,19 +494,20 @@ class Lattice(object):
         cosg = np.cos(np.deg2rad(gamma))
         sing = np.sin(np.deg2rad(gamma))
         matCoef_y = (cosa - cosb * cosg) / sing
-        matCoef_z = np.power(sinb, 2, dtype=dataType) - \
-            np.power(matCoef_y, 2, dtype=dataType)
+        matCoef_z = np.power(sinb, 2, dtype=dataType) - np.power(
+            matCoef_y, 2, dtype=dataType
+        )
 
-        if matCoef_z > 0.:
+        if matCoef_z > 0.0:
             matCoef_z = np.sqrt(matCoef_z)
         else:
-            raise ValueError('Incorrect lattice vector coefficients.'
-                             'Lattice parameters chosen return a non-positive '
-                             'z vector.')
+            raise ValueError(
+                "Incorrect lattice vector coefficients."
+                "Lattice parameters chosen return a non-positive "
+                "z vector."
+            )
 
-        lattice_vec = [[1, 0, 0],
-                       [cosg, sing, 0],
-                       [cosb, matCoef_y, matCoef_z]]
+        lattice_vec = [[1, 0, 0], [cosg, sing, 0], [cosb, matCoef_y, matCoef_z]]
 
         return np.asarray(lattice_vec, dtype=np.float64)
 
@@ -496,13 +537,15 @@ class Lattice(object):
 
     def _sanitize_populate_args(self, x, y, z):
 
-        error_dict = {0: 'X', 1: 'Y', 2: 'Z'}
+        error_dict = {0: "X", 1: "Y", 2: "Z"}
 
         # Make sure neither x, y, z input is None
         if None in [x, y, z]:
-            raise ValueError('Attempt to replicate None times. '
-                             'None is not an acceptable replication '
-                             'amount, 1 is the default.')
+            raise ValueError(
+                "Attempt to replicate None times. "
+                "None is not an acceptable replication "
+                "amount, 1 is the default."
+            )
 
         # Try to convert x, y, and z to int, raise a ValueError if fail
         try:
@@ -510,15 +553,19 @@ class Lattice(object):
             y = int(y)
             z = int(z)
         except (ValueError, TypeError):
-            raise ValueError('Cannot convert replication amounts into '
-                             'integers. x= {}, y= {}, z= {} needs to '
-                             'be an int.'.format(x, y, z))
+            raise ValueError(
+                "Cannot convert replication amounts into "
+                "integers. x= {}, y= {}, z= {} needs to "
+                "be an int.".format(x, y, z)
+            )
 
         for replication_amount, index in zip([x, y, z], range(3)):
             if replication_amount < 1:
-                raise ValueError('Incorrect populate value: {} : {} is < 1. '
-                                 .format(error_dict[index],
-                                         replication_amount))
+                raise ValueError(
+                    "Incorrect populate value: {} : {} is < 1. ".format(
+                        error_dict[index], replication_amount
+                    )
+                )
 
         return x, y, z
 
@@ -556,11 +603,13 @@ class Lattice(object):
 
         x, y, z = self._sanitize_populate_args(x=x, y=y, z=z)
 
-        if ((isinstance(compound_dict, dict)) or (compound_dict is None)):
+        if (isinstance(compound_dict, dict)) or (compound_dict is None):
             pass
         else:
-            raise TypeError('Compound dictionary is not of type dict. '
-                            '{} was passed.'.format(type(compound_dict)))
+            raise TypeError(
+                "Compound dictionary is not of type dict. "
+                "{} was passed.".format(type(compound_dict))
+            )
 
         cell = defaultdict(list)
         [a, b, c] = self.lattice_spacing
@@ -568,7 +617,7 @@ class Lattice(object):
         transform_mat = self.lattice_vectors
         # Unit vectors
         transform_mat = np.asarray(transform_mat, dtype=np.float64)
-        transform_mat = np.reshape(transform_mat, newshape=(3,3))
+        transform_mat = np.reshape(transform_mat, newshape=(3, 3))
         norms = np.linalg.norm(transform_mat, axis=1)
 
         # Normalized vectors for change of basis
@@ -580,7 +629,7 @@ class Lattice(object):
                 for replication in it.product(range(x), range(y), range(z)):
 
                     new_coords = np.asarray(coords, dtype=np.float64)
-                    new_coords = np.reshape(new_coords, (1, 3), order='C')
+                    new_coords = np.reshape(new_coords, (1, 3), order="C")
 
                     new_coords[0][0] = new_coords[0][0] + replication[0]
                     new_coords[0][1] = new_coords[0][1] + replication[1]
@@ -592,7 +641,7 @@ class Lattice(object):
                     new_coords[0] = new_coords[0] * a
                     new_coords[1] = new_coords[1] * b
                     new_coords[2] = new_coords[2] * c
-                    new_coords = np.reshape(new_coords, (1, 3), order='C')
+                    new_coords = np.reshape(new_coords, (1, 3), order="C")
 
                     tuple_of_coords = tuple(new_coords.flatten())
                     cell[key].append(tuple_of_coords)
@@ -617,16 +666,19 @@ class Lattice(object):
                         ret_lattice.add(tmp_comp)
                 else:
                     err_type = type(compound_dict.get(key_id))
-                    raise TypeError('Invalid type in provided Compound '
-                                    'dictionary. For key {}, type: {} was '
-                                    'provided, not mbuild.Compound.'
-                                    .format(key_id, err_type))
+                    raise TypeError(
+                        "Invalid type in provided Compound "
+                        "dictionary. For key {}, type: {} was "
+                        "provided, not mbuild.Compound.".format(key_id, err_type)
+                    )
         # Create mbuild.box
-        ret_lattice.box = mb.Box.from_lengths_angles(lengths=[a*x, b*y, c*z], angles=self.angles)
+        ret_lattice.box = mb.Box(
+            lengths=[a * x, b * y, c * z], angles=self.angles
+        )
 
         # if coordinates are below a certain threshold, set to 0
         tolerance = 1e-12
-        ret_lattice.xyz_with_ports[ret_lattice.xyz_with_ports <= tolerance] = 0.
+        ret_lattice.xyz_with_ports[ret_lattice.xyz_with_ports <= tolerance] = 0.0
 
         return ret_lattice
 
@@ -654,7 +706,7 @@ class Lattice(object):
 
         [a, b, c] = self.lattice_spacing
 
-        return mb.Box.from_lengths_angles(
+        return mb.Box(
             lengths=np.asarray([a * x, b * y, c * z], dtype=np.float64),
-            angles=np.asarray(self.angles)
+            angles=np.asarray(self.angles),
         )

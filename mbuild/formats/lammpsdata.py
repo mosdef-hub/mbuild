@@ -166,7 +166,7 @@ def write_lammpsdata(structure, filename, atom_style='full',
         box = Box.from_mins_maxs_angles(mins=mins, maxs=maxs, angles=structure.box[3:6])
     else:
         # Internally use nm
-        box = Box.from_lengths_angles(lengths=np.array([0.1 * val for val in structure.box[0:3]]),
+        box = Box(lengths=np.array([0.1 * val for val in structure.box[0:3]]),
                   angles=structure.box[3:6])
 
         warn('Explicit box bounds (i.e., mins and maxs) were not provided. Box bounds are assumed to be min = 0 and max = length in each direction. This may not produce a system with the expected spatial location and may cause non-periodic systems to fail. Bounds can be defined explicitly by passing the them to the write_lammpsdata function or by passing box info to the save function.')
@@ -174,7 +174,7 @@ def write_lammpsdata(structure, filename, atom_style='full',
     Lx = box.Lx * (1/sigma_conversion_factor)
     Ly = box.Ly * (1/sigma_conversion_factor)
     Lz = box.Lz * (1/sigma_conversion_factor)
-    box = Box.from_lengths_angles(lengths=(Lx,Ly,Lz), angles=box.angles)
+    box = Box(lengths=(Lx,Ly,Lz), angles=box.angles)
     
     # Lammps syntax depends on the functional form
     # Infer functional form based on the properties of the structure

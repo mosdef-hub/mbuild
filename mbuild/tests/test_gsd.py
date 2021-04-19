@@ -19,12 +19,12 @@ class TestGSD(BaseTest):
     @pytest.mark.skipif(not has_foyer, reason="Foyer package not installed")
     @pytest.mark.skipif(not has_gsd, reason="GSD package not installed")
     def test_save_box(self, ethane):
-        box = mb.Box.from_lengths_angles(lengths=[2.0,2.0,2.0], angles=[90.0, 90.0, 90.0])
+        box = mb.Box(lengths=[2.0,2.0,2.0], angles=[90.0, 90.0, 90.0])
         ethane.save(filename='ethane-box.gsd', forcefield_name='oplsaa',box=box)
 
     @pytest.mark.skipif(not has_foyer, reason="Foyer package not installed")
     def test_save_triclinic_box_(self, ethane):
-        box = mb.box.Box.from_lengths_angles(lengths=np.array([2.0, 2.0, 2.0]), angles=[60, 70, 80])
+        box = mb.box.Box(lengths=np.array([2.0, 2.0, 2.0]), angles=[60, 70, 80])
         ethane.save(filename='triclinic-box.gsd', forcefield_name='oplsaa', box=box)
 
     @pytest.mark.skipif(not has_foyer, reason="Foyer package not installed")
@@ -72,7 +72,7 @@ class TestGSD(BaseTest):
     def test_box(self, ethane):
         import gsd, gsd.pygsd
         lengths = [2.0, 3.0, 4.0]
-        box = mb.box.Box.from_lengths_angles(lengths=[2.0, 3.0, 4.0], angles=[90.0, 90.0, 90.0])
+        box = mb.box.Box(lengths=[2.0, 3.0, 4.0], angles=[90.0, 90.0, 90.0])
         for i in range(len(ethane.periodicity)):
             ethane.periodicity[i] = lengths[i]
 
@@ -95,7 +95,7 @@ class TestGSD(BaseTest):
         box_from_gsd_periodic = frame.configuration.box.astype(float)
         assert np.array_equal(box_from_gsd, box_from_gsd_periodic)
 
-        box = mb.box.Box.from_lengths_angles(lengths=np.array([2.0, 2.0, 2.0]), angles=[92, 104, 119])
+        box = mb.box.Box(lengths=np.array([2.0, 2.0, 2.0]), angles=[92, 104, 119])
         ethane.periodicity = [2.0, 2.0, 2.0]
         ethane.save(filename='triclinic-box.gsd', forcefield_name='oplsaa', box=box)
         gsd_file = gsd.pygsd.GSDFile(open('triclinic-box.gsd', 'rb'))
@@ -231,7 +231,7 @@ class TestGSD(BaseTest):
         ref_energy = 0.066
         ref_mass = 12.011
 
-        box = mb.Box.from_lengths_angles(lengths=[2.0, 3.0, 4.0], angles=[90.0, 90.0, 90.0])
+        box = mb.Box(lengths=[2.0, 3.0, 4.0], angles=[90.0, 90.0, 90.0])
         ethane.periodicity = [2.0, 3.0, 4.0]
         ethane.save(filename='ethane.gsd', forcefield_name='oplsaa',
                     ref_distance=ref_distance, ref_energy=ref_energy,
