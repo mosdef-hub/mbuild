@@ -34,6 +34,7 @@ class TiledCompound(Compound):
         if not np.all(n_tiles > 0):
             raise ValueError('Number of tiles must be positive.')
 
+        tile.box = tile.get_boundingbox()
         # Check that the tile is periodic in the requested dimensions.
         if np.any(np.logical_and(n_tiles != 1, tile.periodicity == 0)):
             raise ValueError('Tile not periodic in at least one of the '
@@ -62,20 +63,26 @@ class TiledCompound(Compound):
         for ijk in it.product(range(n_tiles[0]),
                               range(n_tiles[1]),
                               range(n_tiles[2])):
+            print(ijk)
             new_tile = clone(tile)
-            new_tile.translate(np.array(ijk * tile.periodicity))
+            print(np.multiply(ijk, tile.periodicity))
+            new_tile.translate(np.multiply(ijk, tile.periodicity))
             self._add_tile(new_tile, ijk)
             self._hoist_ports(new_tile)
 
         # Fix bonds across periodic boundaries.
         # -------------------------------------
         # Cutoff for long bonds is half the shortest periodic distance.
-        bond_dist_thres = min(tile.periodicity[tile.periodicity > 0]) / 2
+        bond_dist_thresh = min(tile.periodicity) / 2
+        if bond_dist_thresh < 0:
+            raise ValueError(f"Cannot have a negative periodicity, provided: "
+                             f"{tile.periodicity}")
+        #bond_dist_thres = min(tile.periodicity[tile.periodicity > 0]) / 2
 
         # Bonds that were periodic in the original tile.
         indices_of_periodic_bonds = set()
         for particle1, particle2 in tile.bonds():
-            if np.linalg.norm(particle1.pos - particle2.pos) > bond_dist_thres:
+            if np.linalg.norm(particle1.pos - particle2.pos) > bond_dist_thresh:
                 indices_of_periodic_bonds.add((particle1.index,
                                                         particle2.index))
 
@@ -91,7 +98,8 @@ class TiledCompound(Compound):
                     and (particle2.index, particle1.index) not in indices_of_periodic_bonds:
                 continue
 
-            if self.min_periodic_distance(particle1.pos, particle2.pos) > bond_dist_thres:
+            if self.min_periodic_distance(particle1.pos, particle2.pos) > \
+                    bond_dist_thresh:
                 bonds_to_remove.add((particle1, particle2))
                 image2 = self._find_particle_image(particle1, particle2,
                                                    all_particles)

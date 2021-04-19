@@ -181,9 +181,7 @@ def fill_box(
                     Box(lengths=[L, L, L], angles=[90.0, 90.0, 90.0])
                 )
             else:
-                print(f"my_L: {L}")
                 L *= np.prod(aspect_ratio) ** (-1 / 3)
-                print(f"my_aspect_L: {L}")
                 (box, my_mins, my_maxs) = _validate_box(
                     [val * L for val in aspect_ratio]
                 )
@@ -231,12 +229,11 @@ def fill_box(
     # not really a thing a box would know?
     box_mins = np.asarray(my_mins) * 10
     box_maxs = np.asarray(my_maxs) * 10
-    print("box_min, box_maxs")
-    print(f"{box_mins}, {box_maxs}")
     overlap *= 10
 
     # Apply 1nm edge buffer
     box_maxs = [a_max - (edge * 10) for a_max in box_maxs]
+    box_mins = [a_min + (edge * 10) for a_min in box_mins]
 
     # Build the input file for each compound and call packmol.
     filled_xyz = _new_xyz_file()
@@ -686,7 +683,7 @@ def solvate(
 
     # Apply edge buffer
     box_maxs = np.subtract(box_maxs, edge * 10)
-
+    box_mins = np.add(box_mins, edge * 10)
     # Build the input file for each compound and call packmol.
     solvated_xyz = _new_xyz_file()
     solute_xyz = _new_xyz_file()
