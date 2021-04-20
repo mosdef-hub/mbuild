@@ -77,7 +77,7 @@ class TestPattern(BaseTest):
 
         port_used = hexane.labels['propyl2'].labels['down']
         with pytest.warns(UserWarning):
-            port_used.update_orientation(0.10)
+            port_used.update_orientation([0,1,0])
 
     def test_access_labels(self):
         port = mb.Port()
