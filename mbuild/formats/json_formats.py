@@ -108,7 +108,7 @@ def compound_to_json(cmpd, file_path, include_ports=False):
 
     # Should this be nested as well? Not sure...
     compound_dict['bonds'] = _bond_info(cmpd)
-    compound_dict['periodicity'] = list(cmpd.periodicity)
+    compound_dict['periodicity'] = [float(i) for i in cmpd.periodicity]
     compound_json = OrderedDict()
     compound_json['mbuild-version'] = version
     compound_json['type'] = 'Compound'
