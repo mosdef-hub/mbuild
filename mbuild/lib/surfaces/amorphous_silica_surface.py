@@ -16,8 +16,8 @@ class AmorphousSilicaSurface(mb.Compound):
                 compound=self,
                 relative_to_module=self.__module__,
             )
+            self.periodicity = np.array([5.4366, 4.7082, 0.0])
             self.box = mb.Box(lengths=[5.4366, 4.7082, 1.0], angles=[90, 90, 90])
-            # self.periodicity = np.array([5.4366, 4.7082, 0.0])
         else:
             raise ValueError(
                 "Amorphous silica input file with surface "
