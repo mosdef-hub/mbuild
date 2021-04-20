@@ -34,7 +34,8 @@ class TiledCompound(Compound):
         if not np.all(n_tiles > 0):
             raise ValueError('Number of tiles must be positive.')
 
-        tile.box = tile.get_boundingbox()
+        if tile.box is None:
+            tile.box = tile.get_boundingbox()
         # Check that the tile is periodic in the requested dimensions.
         if np.any(np.logical_and(n_tiles != 1, tile.periodicity == 0)):
             raise ValueError('Tile not periodic in at least one of the '
@@ -73,7 +74,7 @@ class TiledCompound(Compound):
         # Fix bonds across periodic boundaries.
         # -------------------------------------
         # Cutoff for long bonds is half the shortest periodic distance.
-        bond_dist_thresh = min(tile.periodicity) / 2
+        bond_dist_thresh = min(tile.box.lengths) / 2
         if bond_dist_thresh < 0:
             raise ValueError(f"Cannot have a negative periodicity, provided: "
                              f"{tile.periodicity}")
