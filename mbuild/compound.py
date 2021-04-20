@@ -169,7 +169,7 @@ class Compound(object):
         if periodicity is not None:
             self.periodicity = periodicity
         else:
-            self._periodicity = [0,0,0]
+            self._periodicity = np.array([0,0,0])
 
         # self.add() must be called after labels and children are initialized.
         if subcompounds:
@@ -651,7 +651,7 @@ class Compound(object):
         new_child.referrers.add(self)
 
         if inherit_periodicity and isinstance(new_child, Compound):
-            inherit_box = True
+            self._periodicity = new_child._periodicity
             warn(
                 "inherit_periodicity is deprecated and will removed in "
                 "version 0.11. Please use Compound.box and inherit_box "
@@ -994,13 +994,13 @@ class Compound(object):
             raise ValueError("Periodicity must be of length 3")
         if (np.array(periods) == 0).any():
             self.box = None
-            self._periodicity = list(periods)
+            self._periodicity = np.array(periods)
         else:
             if self.box is None:
                 self.box = self.get_boundingbox()
             angles = self.box.angles
             self.box = Box(lengths=periods, angles=angles)
-            self._periodicity = list(periods)
+            self._periodicity = np.array(periods)
 
     @property
     def box(self):
