@@ -22,8 +22,8 @@ class TestPacking(BaseTest):
         filled = mb.fill_box(
             h2o, n_compounds=1000, density=1000, aspect_ratio=[1, 2, 1]
         )
-        assert filled.periodicity[0] / filled.periodicity[1] == 0.5
-        assert filled.periodicity[1] / filled.periodicity[2] == 2
+        assert filled.box.lengths[0] / filled.box.lengths[1]  == 0.5
+        assert filled.box.lengths[1] / filled.box.lengths[2]  == 2
 
     def test_fill_box_density_n_compounds(self, h2o):
         filled = mb.fill_box(

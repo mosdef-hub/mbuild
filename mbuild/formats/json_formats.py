@@ -108,6 +108,7 @@ def compound_to_json(cmpd, file_path, include_ports=False):
 
     # Should this be nested as well? Not sure...
     compound_dict['bonds'] = _bond_info(cmpd)
+    compound_dict['periodicity'] = [float(i) for i in cmpd.periodicity]
     compound_json = OrderedDict()
     compound_json['mbuild-version'] = version
     compound_json['type'] = 'Compound'
@@ -124,7 +125,6 @@ def _particle_info(cmpd, include_ports=False):
     particle_dict['name'] = cmpd.name
     particle_dict['pos'] = list(cmpd.pos)
     particle_dict['charge'] = cmpd.charge
-    particle_dict['periodicity'] = list(cmpd.periodicity)
     particle_dict['element'] = cmpd.element
 
     if include_ports:

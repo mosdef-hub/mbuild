@@ -1207,15 +1207,13 @@ def to_trajectory(compound,
     for idx, atom in enumerate(atom_list):
         xyz[0, idx] = atom.pos
 
-    # Unitcell information.
-    unitcell_angles = [90.0, 90.0, 90.0]
     if box is None:
-        unitcell_lengths = np.empty(3)
-        for dim, val in enumerate(compound.periodicity):
-            if val:
-                unitcell_lengths[dim] = val
-            else:
-                unitcell_lengths[dim] = compound.get_boundingbox().lengths[dim] + 0.5
+        box = compound.box
+
+    # Unitcell information.
+    if box is None:
+        unitcell_lengths = np.array(compound.get_boundingbox().lengths) + 0.5
+        unitcell_angles = [90.0, 90.0, 90.0]
     else:
         unitcell_lengths = box.lengths
         unitcell_angles = box.angles

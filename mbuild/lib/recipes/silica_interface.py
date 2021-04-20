@@ -68,7 +68,7 @@ class SilicaInterface(mb.Compound):
                     (particle.name == 'O' and particle.pos[2] < (thickness + 2*O_buffer))):
                 interface_particle = mb.Compound(name=particle.name, pos=particle.pos)
                 interface.add(interface_particle, particle.name + "_{}".format(i))
-        self.add(interface)
+        self.add(interface, inherit_box=True, inherit_periodicity=True)
 
     def _strip_stray_atoms(self):
         """Remove stray atoms and surface pieces. """
@@ -89,7 +89,7 @@ class SilicaInterface(mb.Compound):
                17, 24683-24695
         """
 
-        area = self.periodicity[0] * self.periodicity[1]
+        area = self.box.lengths[0] * self.box.lengths[1]
         target = int(oh_density * area)
 
         dangling_Os = [atom for atom in self.particles()
