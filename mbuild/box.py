@@ -14,8 +14,8 @@ class Box(object):
     ----------
     lengths : list-like, shape=(3,), dtype=float
         Lengths of the edges of the box.
-    angles : list-like, shape=(3,), dtype=float
-        Angles that define the tilt of the edges of the box.
+    angles : list-like, shape=(3,), dtype=float, default=None
+        Angles (in degrees) that define the tilt of the edges of the box. If None is given, angles are assumed to be [90.0, 90.0, 90.0].
     precision : int, optional, default=None
         Control the precision of the floating point representation __repr__
 
@@ -43,7 +43,7 @@ class Box(object):
     Box vectors are expected to be provided in row-major format.
     """
 
-    def __init__(self, lengths=None, angles=None, precision=None):
+    def __init__(self, lengths, angles=None, precision=None):
         if angles is None:
             angles = [90.0, 90.0, 90.0]
         self._box_vectors = _lengths_angles_to_vectors(lengths=lengths, angles=angles)
