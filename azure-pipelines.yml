@@ -11,6 +11,9 @@ pr:
   branches:
     include:
       - master
+  paths:
+    exclude:
+    - docs
 
 schedules:
 - cron: "0 0 * * *"
