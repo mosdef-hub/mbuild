@@ -1,9 +1,7 @@
 import pytest
 
-import mbuild as mb
 from mbuild.tests.base_test import BaseTest
 from mbuild.lib.recipes import TiledCompound
-from mbuild.lib.surfaces import Betacristobalite
 
 
 class TestTiledCompound(BaseTest):
@@ -12,7 +10,7 @@ class TestTiledCompound(BaseTest):
         nx = 2
         ny = 2
         nz = 1
-        tiled = mb.recipes.TiledCompound(betacristobalite, [nx, ny, nz])
+        tiled = TiledCompound(betacristobalite, [nx, ny, nz])
         assert tiled.n_particles == 1900 * nx * ny
         assert tiled.n_bonds == 2400 * nx * ny
         for at in tiled.particles():
@@ -25,7 +23,7 @@ class TestTiledCompound(BaseTest):
         nx = 1
         ny = 1
         nz = 1
-        tiled = mb.recipes.TiledCompound(betacristobalite, [nx, ny, nz])
+        tiled = TiledCompound(betacristobalite, [nx, ny, nz])
         assert tiled.n_particles == 1900 * nx * ny
         assert tiled.n_bonds == 2400 * nx * ny
 
@@ -34,12 +32,12 @@ class TestTiledCompound(BaseTest):
         ny = 2
         nz = 2
         with pytest.raises(ValueError):
-            mb.recipes.TiledCompound(betacristobalite, [nx, ny, nz])
+            TiledCompound(betacristobalite, [nx, ny, nz])
 
     def test_negative_periodicity(self, betacristobalite):
         nx = -2
         ny = 3
         nz = 2
         with pytest.raises(ValueError):
-            mb.recipes.TiledCompound(betacristobalite, [nx, ny, nz])
+            TiledCompound(betacristobalite, [nx, ny, nz])
 
