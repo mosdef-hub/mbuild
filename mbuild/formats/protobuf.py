@@ -1,5 +1,5 @@
 import mbuild as mb
-from mbuild import Box
+from mbuild import Box, Compound
 import ele
 from mbuild.formats import compound_pb2
 from google.protobuf.text_format import PrintMessage, Merge
@@ -94,7 +94,9 @@ def _mb_to_proto(cmpd, proto):
     proto.pos.x, proto.pos.y, proto.pos.z = cmpd.pos
     proto.charge = cmpd.charge
     proto.id = id(cmpd)
-    proto.periodicity.x, proto.periodicity.y, proto.periodicity.z = cmpd.box.lengths
+    cmpd.box = Box(
+            [proto.periodicity.x, proto.periodicity.y, proto.periodicity.z]
+            )
     if cmpd.element:
         proto.element.name = cmpd.element.name
         proto.element.symbol = cmpd.element.symbol
@@ -152,13 +154,15 @@ def _proto_to_mb(proto):
         elem = None
     else:
         elem = ele.element_from_symbol(proto.element.symbol)
-    return  mb.Compound(name=proto.name,
-                pos=[proto.pos.x, proto.pos.y, proto.pos.z],
-                charge=proto.charge,
-                box=Box(
-                    [proto.periodicity.x, proto.periodicity.y, proto.periodicity.z]
-                    ),
-                element=elem)
+    return Compound(
+            name=proto.name,
+            pos=[proto.pos.x, proto.pos.y, proto.pos.z],
+            charge=proto.charge,
+            box=Box(
+                [proto.periodicity.x, proto.periodicity.y, proto.periodicity.z]
+                ),
+            element=elem
+            )
 
 def _add_mb_bonds(proto, cmpd, proto_to_cmpd):
     """ Parse the compound_pb2.Compound bonds, add to mb.Compound
