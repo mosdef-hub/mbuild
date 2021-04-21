@@ -43,7 +43,7 @@ class Box(object):
     Box vectors are expected to be provided in row-major format.
     """
 
-    def __init__(self, lengths=None, angles=None, precision=None):
+    def __init__(self, lengths, angles=None, precision=None):
         if angles is None:
             angles = [90.0, 90.0, 90.0]
         self._box_vectors = _lengths_angles_to_vectors(lengths=lengths, angles=angles)
