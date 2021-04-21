@@ -99,9 +99,7 @@ def _mb_to_proto(cmpd, proto):
         lengths = cmpd.box.lengths
     else:
         lengths = [0,0,0]
-    proto.periodicity.x, proto.periodicity.y, proto.periodicity.z
-    if np.all(np.array(lengths) != 0):
-        cmpd.box = Box(lengths)
+    proto.periodicity.x, proto.periodicity.y, proto.periodicity.z = lengths
     if cmpd.element:
         proto.element.name = cmpd.element.name
         proto.element.symbol = cmpd.element.symbol
