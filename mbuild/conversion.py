@@ -558,7 +558,7 @@ def from_parmed(structure,
     # Convert box information
     if structure.box is not None:
         warn('All angles are assumed to be 90 degrees')
-        compound.box = Box([0:3] / 10)
+        compound.box = Box(structure.box[0:3] / 10)
 
     return compound
 
