@@ -922,7 +922,7 @@ def save(compound,
 
     See Also
     --------
-    formats.gsdwrite.write_gsd : Write to GSD format
+    formats.gsdwriter.write_gsd : Write to GSD format
     formats.hoomdxml.write_hoomdxml : Write to Hoomd XML format
     formats.xyzwriter.write_xyz : Write to XYZ format
     formats.lammpsdata.write_lammpsdata : Write to LAMMPS data format
