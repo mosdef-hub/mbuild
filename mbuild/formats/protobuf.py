@@ -1,3 +1,4 @@
+import numpy as np
 import mbuild as mb
 from mbuild import Box, Compound
 import ele
@@ -94,7 +95,11 @@ def _mb_to_proto(cmpd, proto):
     proto.pos.x, proto.pos.y, proto.pos.z = cmpd.pos
     proto.charge = cmpd.charge
     proto.id = id(cmpd)
-    lengths = [proto.periodicity.x, proto.periodicity.y, proto.periodicity.z]
+    if cmpd.box:
+        lengths = cmpd.box.lengths
+    else:
+        lengths = [0,0,0]
+    proto.periodicity.x, proto.periodicity.y, proto.periodicity.z
     if np.all(np.array(lengths) != 0):
         cmpd.box = Box(lengths)
     if cmpd.element:
@@ -154,13 +159,16 @@ def _proto_to_mb(proto):
         elem = None
     else:
         elem = ele.element_from_symbol(proto.element.symbol)
+    lengths = [proto.periodicity.x, proto.periodicity.y, proto.periodicity.z]
+    if np.all(np.array(lengths) != 0):
+        box = Box(lengths)
+    else:
+        box = None
     return Compound(
             name=proto.name,
             pos=[proto.pos.x, proto.pos.y, proto.pos.z],
             charge=proto.charge,
-            box=Box(
-                [proto.periodicity.x, proto.periodicity.y, proto.periodicity.z]
-                ),
+            box=box,
             element=elem
             )
 
