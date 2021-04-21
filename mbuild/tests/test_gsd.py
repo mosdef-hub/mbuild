@@ -211,8 +211,8 @@ class TestGSD(BaseTest):
         import gsd, gsd.hoomd
 
         benzene.save(filename='benzene.gsd', forcefield_name='oplsaa')
-        with gsd.hoomd.open('benzene.gsd', mode='rb'))
-        frame = gsd.hoomd.HOOMDTrajectory(gsd_file).read_frame(0)
+        with gsd.hoomd.open('benzene.gsd', mode='rb') as f:
+            frame = f[0]
 
         structure = benzene.to_parmed()
         forcefield = Forcefield(name='oplsaa')
