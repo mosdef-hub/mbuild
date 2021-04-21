@@ -64,9 +64,7 @@ class TiledCompound(Compound):
         for ijk in it.product(range(n_tiles[0]),
                               range(n_tiles[1]),
                               range(n_tiles[2])):
-            print(ijk)
             new_tile = clone(tile)
-            print(np.multiply(ijk, tile.periodicity))
             new_tile.translate(np.multiply(ijk, tile.periodicity))
             self._add_tile(new_tile, ijk)
             self._hoist_ports(new_tile)
