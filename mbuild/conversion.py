@@ -558,10 +558,7 @@ def from_parmed(structure,
     # Convert box information
     if structure.box is not None:
         warn('All angles are assumed to be 90 degrees')
-        compound.periodicity = structure.box[0:3] / 10
-    else:
-        warn('No box information detected, periodicity is set to [0, 0, 0]')
-        compound.periodicity = np.array([0., 0., 0.])
+        compound.box = Box([0:3] / 10)
 
     return compound
 
@@ -660,9 +657,7 @@ def from_trajectory(traj,
         compound.add_bond((atom1, atom2))
 
     if np.any(traj.unitcell_lengths) and np.any(traj.unitcell_lengths[0]):
-        compound.periodicity = traj.unitcell_lengths[0]
-    else:
-        compound.periodicity = np.array([0., 0., 0.])
+        compound.box = Box(traj.unitcell_lengths[0])
 
     return compound
 
@@ -764,7 +759,7 @@ def from_pybel(pybel_mol,
                     angles=[pybel_mol.unitcell.GetAlpha(),
                             pybel_mol.unitcell.GetBeta(),
                             pybel_mol.unitcell.GetGamma()])
-        compound.periodicity = box.lengths
+        compound.box = box
     else:
         if not ignore_box_warn:
             warn("No unitcell detected for pybel.Molecule {}".format(pybel_mol))
@@ -1184,9 +1179,7 @@ def to_trajectory(compound,
     box : mb.Box, optional, default=compound.boundingbox (with buffer)
         Box information to be used when converting to a `Trajectory`.
         If 'None', a bounding box is used with a 0.5nm buffer in each
-        dimension. to avoid overlapping atoms, unless `compound.periodicity`
-        is not None, in which case those values are used for the
-        box lengths.
+        dimension to avoid overlapping atoms.
 
     Returns
     -------
