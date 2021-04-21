@@ -61,5 +61,5 @@ class TestMonolayer(BaseTest):
 
         n_a = round(n * m * 0.75)
         n_b = round(n * m * 0.25)
-        assert monolayer.n_particles == 2000 + n_a * 15 + n_b * 45 - n_a + n_b
-        assert monolayer.n_bonds == 2500 + n_a * 15 + n_b * 45 - n_a + n_b
+        assert monolayer.n_particles == 2000 + n_a * 15 + n_b * 45 - n_a - n_b
+        assert monolayer.n_bonds == 2500 + n_a * 15 + n_b * 45 - n_a - n_b
