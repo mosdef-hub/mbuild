@@ -18,8 +18,8 @@ class TestMonolayer(BaseTest):
                 surface=bc, chains=chain, backfill=H(), pattern=pattern
                 )
 
-        assert monolayer.n_particles == 2000 + n * m * 30 - n * m
-        assert monolayer.n_bonds == 2500 + n * m * 30 - n * m
+        assert monolayer.n_particles == 2000 + n * m * 29
+        assert monolayer.n_bonds == 2500 + n * m * 29
 
     def test_pattern_kwargs(self, ch2):
         n = 8
@@ -39,8 +39,8 @@ class TestMonolayer(BaseTest):
 
         chains = 100 - (n*m)
 
-        assert monolayer.n_particles == 2000 + chains * 30 - chains
-        assert monolayer.n_bonds == 2500 + chains * 30 - chains
+        assert monolayer.n_particles == 2000 + chains * 29
+        assert monolayer.n_bonds == 2500 + chains * 29
 
     def test_mixed_monolayer(self, ch2):
         n = 8
@@ -61,5 +61,5 @@ class TestMonolayer(BaseTest):
 
         n_a = round(n * m * 0.75)
         n_b = round(n * m * 0.25)
-        assert monolayer.n_particles == 2000 + n_a * 15 + n_b * 45 - n_a - n_b
-        assert monolayer.n_bonds == 2500 + n_a * 15 + n_b * 45 - n_a - n_b
+        assert monolayer.n_particles == 2000 + n_a * 14 + n_b * 44
+        assert monolayer.n_bonds == 2500 + n_a * 14 + n_b * 44
