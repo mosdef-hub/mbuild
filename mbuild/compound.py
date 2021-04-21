@@ -959,8 +959,9 @@ class Compound(object):
         if not self.children:
             self._pos = value
         else:
-            raise MBuildError('Cannot set position on a Compound that has'
-                              ' children.')
+            raise MBuildError(
+                'Cannot set position on a Compound that has children.'
+                )
 
     @property
     def periodicity(self):
@@ -970,6 +971,11 @@ class Compound(object):
     def periodicity(self, periods):
         if len(list(periods)) != 3:
             raise ValueError("Periodicity must be of length 3")
+        if not all([isinstance(p, bool) for p in periods]):
+            raise TypeError(
+                "Periodicity values must be True/False; if you are trying to "
+                "set the dimensions, use Compound.box."
+                )
         self._periodicity = tuple(periods)
 
     @property
