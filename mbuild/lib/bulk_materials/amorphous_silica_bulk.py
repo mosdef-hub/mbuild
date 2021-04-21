@@ -9,7 +9,8 @@ class AmorphousSilicaBulk(mb.Compound):
 
         mb.load('amorphous_silica_bulk.pdb', compound=self,
                 relative_to_module=self.__module__)
-        self.periodicity = np.array([5, 5, 5])
+        self.box = mb.Box([5, 5, 5])
+        self.periodicity = (True,True,True)
 
 if __name__ == "__main__":
     bulk = AmorphousSilicaBulk()
