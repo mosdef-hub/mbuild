@@ -75,14 +75,14 @@ class TestGSD(BaseTest):
     def test_box(self, ethane):
         import gsd, gsd.hoomd
         lengths = [2.0, 3.0, 4.0]
-        box = Box(lengths=[2.0, 3.0, 4.0], angles=[90.0, 90.0, 90.0])
+        ethane.box = Box(lengths=[2.0, 3.0, 4.0])
 
-        ethane.save(filename='ethane.gsd', forcefield_name='oplsaa', box=box)
+        ethane.save(filename='ethane.gsd', forcefield_name='oplsaa')
         with gsd.hoomd.open('ethane.gsd', mode='rb') as f:
             frame = f[0]
 
         box_from_gsd = frame.configuration.box.astype(float)
-        (lx, ly, lz) = box.lengths
+        (lx, ly, lz) = ethane.box.lengths
         lx *= 10
         ly *= 10
         lz *= 10
@@ -97,6 +97,7 @@ class TestGSD(BaseTest):
         assert np.array_equal(box_from_gsd, box_from_gsd_periodic)
 
         box = Box(lengths=np.array([2.0, 2.0, 2.0]), angles=[92, 104, 119])
+        # check that providing a box to save overwrites compound.box
         ethane.save(
                 filename='triclinic-box.gsd', forcefield_name='oplsaa', box=box
                 )
