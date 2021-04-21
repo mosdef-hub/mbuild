@@ -1121,7 +1121,8 @@ def to_parmed(compound,
                 mass=mass,
                 charge=atom.charge
             )
-            pmd_atom.xx, pmd_atom.xy, pmd_atom.xz = atom.pos * 10.0  # nm to Angstroms
+            # nm to Angstroms
+            pmd_atom.xx, pmd_atom.xy, pmd_atom.xz = atom.pos * 10.0
 
         residue = atom_residue_map[atom]
         structure.add_atom(
