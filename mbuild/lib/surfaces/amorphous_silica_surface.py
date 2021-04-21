@@ -16,20 +16,22 @@ class AmorphousSilicaSurface(mb.Compound):
                 compound=self,
                 relative_to_module=self.__module__,
             )
-            self.periodicity = np.array([5.4366, 4.7082, 0.0])
-            self.box = mb.Box(lengths=[5.4366, 4.7082, 1.0], angles=[90, 90, 90])
+            self.periodicity = (True, True, False)
+            self.box = mb.Box([5.4366, 4.7082, 1.0])
         else:
             raise ValueError(
                 "Amorphous silica input file with surface "
                 "roughness of {0:.1f} does not exist. If you have "
-                "this structure, please submit a pull request to"
+                "this structure, please submit a pull request to "
                 "add it! ".format(surface_roughness)
             )
         count = 0
         for particle in self.particles():
             if particle.name == "OB":
                 count += 1
-                port = mb.Port(anchor=particle, orientation=[0, 0, 1], separation=0.1)
+                port = mb.Port(
+                    anchor=particle, orientation=[0, 0, 1], separation=0.1
+                    )
                 self.add(port, "port_{}".format(count))
 
 
