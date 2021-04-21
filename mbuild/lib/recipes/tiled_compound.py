@@ -36,7 +36,7 @@ class TiledCompound(Compound):
         if tile.box is None:
             tile.box = tile.get_boundingbox()
         # Check that the tile is periodic in the requested dimensions.
-        if not np.all((n_tiles != 1) == np.invert(periodicity)):
+        if not np.all(np.logical_or((n_tiles == 1), periodicity)):
             raise ValueError(
                 'Tile not periodic in at least one of the specified dimensions.'
                 )
