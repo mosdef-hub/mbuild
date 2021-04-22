@@ -25,7 +25,9 @@ class Betacristobalite(mb.Compound):
 
         mb.load('beta-cristobalite-expanded.mol2', compound=self,
                 relative_to_module=self.__module__)
-        self.periodicity = np.array([5.3888, 4.6669, 0.0])
+        self.periodicity = (True, True, False)
+        # 1.3200 taken from boundingbox length rounded to 4 decimal places
+        self.box = mb.Box([5.3888, 4.6669, 1.3200])
 
         count = 0
         for particle in self.particles():

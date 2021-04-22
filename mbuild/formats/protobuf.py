@@ -1,4 +1,6 @@
+import numpy as np
 import mbuild as mb
+from mbuild import Box, Compound
 import ele
 from mbuild.formats import compound_pb2
 from google.protobuf.text_format import PrintMessage, Merge
@@ -12,7 +14,7 @@ def write_pb2(cmpd, filename, binary=True):
     ---------
     cmpd : mb.Compound
     filename : str
-    binary: bool, default True 
+    binary: bool, default True
         If True, will print a binary file
         If False, will print to a text file
         Todo: This could be more elegantly detected
@@ -29,7 +31,7 @@ def write_pb2(cmpd, filename, binary=True):
 
     for sub_cmpd in cmpd.successors():
         parent_cmpd = sub_cmpd.parent
-        sub_proto = cmpd_to_proto[parent_cmpd].children.add() 
+        sub_proto = cmpd_to_proto[parent_cmpd].children.add()
         sub_proto = _mb_to_proto(sub_cmpd, sub_proto)
         cmpd_to_proto[sub_cmpd] = sub_proto
 
@@ -49,7 +51,7 @@ def read_pb2(filename, binary=True):
     Parameters
     ---------
     filename : str
-    binary: bool, default True 
+    binary: bool, default True
         If True, will print a binary file
         If False, will print to a text file
         Todo: This could be more elegantly detected
@@ -93,13 +95,17 @@ def _mb_to_proto(cmpd, proto):
     proto.pos.x, proto.pos.y, proto.pos.z = cmpd.pos
     proto.charge = cmpd.charge
     proto.id = id(cmpd)
-    proto.periodicity.x, proto.periodicity.y, proto.periodicity.z = cmpd.periodicity
+    if cmpd.box:
+        lengths = cmpd.box.lengths
+    else:
+        lengths = [0,0,0]
+    proto.periodicity.x, proto.periodicity.y, proto.periodicity.z = lengths
     if cmpd.element:
         proto.element.name = cmpd.element.name
         proto.element.symbol = cmpd.element.symbol
         proto.element.atomic_number = cmpd.element.atomic_number
         proto.element.mass  = cmpd.element.mass
-   
+
     return proto
 
 def _add_proto_bonds(cmpd, proto):
@@ -126,7 +132,7 @@ def _proto_successors(proto):
 
     Notes
     -----
-    Base Case: there are no children to the proto, just return 
+    Base Case: there are no children to the proto, just return
     Recursion: First look at proto's children and return these children (sub_proto)
         Then make the recursive call to look at all the sub_proto's successors
     This is similar to mb.Compound().successors()
@@ -140,23 +146,29 @@ def _proto_successors(proto):
             yield (sub_sub_proto, parent_proto)
 
 def _proto_to_mb(proto):
-    """ Given compound_pb2.Compound, create mb.Compound 
-    
+    """ Given compound_pb2.Compound, create mb.Compound
+
     Parameters
     ----------
     proto: compound_pb2.Compound()
-    
+
     """
     if proto.element.symbol is '':
         elem = None
     else:
         elem = ele.element_from_symbol(proto.element.symbol)
-    return  mb.Compound(name=proto.name,
-                pos=[proto.pos.x, proto.pos.y, proto.pos.z],
-                charge=proto.charge,
-                periodicity=[proto.periodicity.x, proto.periodicity.y, 
-                            proto.periodicity.z],
-                element=elem)
+    lengths = [proto.periodicity.x, proto.periodicity.y, proto.periodicity.z]
+    if np.all(np.array(lengths) != 0):
+        box = Box(lengths)
+    else:
+        box = None
+    return Compound(
+            name=proto.name,
+            pos=[proto.pos.x, proto.pos.y, proto.pos.z],
+            charge=proto.charge,
+            box=box,
+            element=elem
+            )
 
 def _add_mb_bonds(proto, cmpd, proto_to_cmpd):
     """ Parse the compound_pb2.Compound bonds, add to mb.Compound

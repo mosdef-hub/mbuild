@@ -22,7 +22,6 @@ from mbuild.periodic_kdtree import PeriodicCKDTree
 from mbuild.utils.io import run_from_ipython, import_
 from mbuild.utils.jsutils import overwrite_nglview_default
 from mbuild.utils.exceptions import RemovedFuncError
-from mbuild.utils.decorators import deprecated_property
 from mbuild.coordinate_transform import _translate, _rotate
 
 
@@ -83,10 +82,10 @@ class Compound(object):
         The position of the Compound in Cartestian space
     charge : float, optional, default=0.0
         Currently not used. Likely removed in next release.
-    periodicity : np.ndarray, shape=(3,), dtype=float, optional, default=[0, 0, 0]
-        Deprecated; use Compound.box instead. The periodic lengths of the
-        Compound in the x, y and z directions. Defaults to zeros which is
-        treated as non-periodic.
+    periodicity : tuple of bools, length=3, optional, default=None
+        Whether the Compound is periodic in the x, y, and z directions.
+        If None is provided, the periodicity is set to (False, False, False)
+        which is non-periodic in all directions.
     port_particle : bool, optional, default=False
         Whether or not this Compound is part of a Port
     box : mb.Box, optional
@@ -159,17 +158,11 @@ class Compound(object):
         self._check_if_contains_rigid_bodies = False
 
         self.element = element
-        if box is not None and periodicity is not None:
-            raise ValueError(
-                "You may only specify one of 'periodicity' "
-                " and 'box'. Since periodicity is deprecated, "
-                "you should specify 'box'."
-            )
         self._box = box
         if periodicity is not None:
             self.periodicity = periodicity
         else:
-            self._periodicity = np.array([0,0,0])
+            self.periodicity = (False, False, False)
 
         # self.add() must be called after labels and children are initialized.
         if subcompounds:
@@ -651,13 +644,7 @@ class Compound(object):
         new_child.referrers.add(self)
 
         if inherit_periodicity and isinstance(new_child, Compound):
-            self._periodicity = new_child._periodicity
-            warn(
-                "inherit_periodicity is deprecated and will removed in "
-                "version 0.11. Please use Compound.box and inherit_box "
-                "instead. Note the default behavior of inherit_box "
-                "will be false."
-            )
+            self.periodicity = new_child.periodicity
 
         # If parent has no box --> inherit child box
         # If parent has box --> keep unless inherit_box == True
@@ -972,35 +959,24 @@ class Compound(object):
         if not self.children:
             self._pos = value
         else:
-            raise MBuildError('Cannot set position on a Compound that has'
-                              ' children.')
+            raise MBuildError(
+                'Cannot set position on a Compound that has children.'
+                )
 
-    warning_message = (
-        "Compound.periodicity will be removed in version 0.11. "
-        "Please use Compound.box instead."
-    )
-
-    @deprecated_property(warning_message)
+    @property
     def periodicity(self):
         return self._periodicity
 
     @periodicity.setter
     def periodicity(self, periods):
-        # This handles the conversion from the old "standard"
-        # where compound.periodicity = [0,0,0] meant non-periodic
-        # to the new standard, where compound.box = None means
-        # non-periodic
         if len(list(periods)) != 3:
             raise ValueError("Periodicity must be of length 3")
-        if (np.array(periods) == 0).any():
-            self.box = None
-            self._periodicity = np.array(periods)
-        else:
-            if self.box is None:
-                self.box = self.get_boundingbox()
-            angles = self.box.angles
-            self.box = Box(lengths=periods, angles=angles)
-            self._periodicity = np.array(periods)
+        if not all([isinstance(p, bool) for p in periods]):
+            raise TypeError(
+                "Periodicity values must be True/False; if you are trying to "
+                "set the dimensions, use Compound.box."
+                )
+        self._periodicity = tuple(periods)
 
     @property
     def box(self):

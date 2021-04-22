@@ -57,12 +57,13 @@ class SilicaInterface(mb.Compound):
         interface is coated.
         """
         O_buffer = self._O_buffer
-        tile_z = int(math.ceil((thickness + 2*O_buffer) / bulk_silica.periodicity[2]))
+        z_height = bulk_silica.box.lengths[2]
+        tile_z = int(math.ceil((thickness + 2*O_buffer) / z_height))
         bulk = mb.recipes.TiledCompound(bulk_silica, n_tiles=(tile_x, tile_y, tile_z))
 
         interface = mb.Compound(periodicity=(bulk.periodicity[0],
                                              bulk.periodicity[1],
-                                             0.0))
+                                             False))
         for i, particle in enumerate(bulk.particles()):
             if ((particle.name == 'Si' and O_buffer < particle.pos[2] < (thickness + O_buffer)) or
                     (particle.name == 'O' and particle.pos[2] < (thickness + 2*O_buffer))):

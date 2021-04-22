@@ -461,8 +461,6 @@ def _write_dihedral_information(mcf_file, structure, dihedral_style,
         elif dihedral_style.casefold() == 'charmm':
             dihedral_style = dihedral_style.upper()
             dihedrals = structure.dihedrals
-            # type.per = periodicity (a1)
-            # type.phase = phase offset (delta)
             dihedral_parms = [ str('{:8.3f} '.format(
                                         dihedral.type.phi_k*KCAL_TO_KJ)) +
                                str('{:8.3f} '.format(dihedral.type.per)) +

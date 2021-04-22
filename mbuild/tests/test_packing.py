@@ -4,19 +4,24 @@ import pytest
 import numpy as np
 
 import mbuild as mb
+from mbuild import Box
 from mbuild.exceptions import MBuildError
 from mbuild.tests.base_test import BaseTest
 
 
 class TestPacking(BaseTest):
     def test_fill_box(self, h2o):
-        filled = mb.fill_box(h2o, n_compounds=50, box=[2, 2, 2, 4, 4, 4])
+        filled = mb.fill_box(h2o, n_compounds=50, box=Box([2, 2, 2]))
         assert filled.n_particles == 50 * 3
         assert filled.n_bonds == 50 * 2
+        assert np.array_equal(filled.box.lengths, [2, 2, 2])
+        assert np.array_equal(filled.box.angles, (90, 90, 90))
 
     def test_fill_box_density_box(self, h2o):
-        filled = mb.fill_box(h2o, n_compounds=1000, density=1000)
-        assert [3.1042931 < period < 3.1042932 for period in filled.periodicity]
+        filled = mb.fill_box(h2o, n_compounds=100, density=100)
+        assert np.array_equal(
+                filled.box.lengths, np.ones(3) * 3.104281669169261
+                )
 
     def test_fill_box_aspect_ratio(self, h2o):
         filled = mb.fill_box(
@@ -28,19 +33,17 @@ class TestPacking(BaseTest):
     def test_fill_box_density_n_compounds(self, h2o):
         filled = mb.fill_box(
             h2o,
-            density=1000,
-            box=mb.Box(
-                lengths=[3.1042931, 3.1042931, 3.1042931], angles=[90.0, 90.0, 90.0]
-            ),
+            density=100,
+            box=Box([3.1042931, 3.1042931, 3.1042931]),
         )
-        assert filled.n_particles == 3000
+        assert filled.n_particles == 300
 
     def test_fill_box_compound_ratio(self, h2o, ethane):
         filled = mb.fill_box(
             compound=[h2o, ethane],
             density=800,
             compound_ratio=[2, 1],
-            box=[2, 2, 2, 4, 4, 4],
+            box=Box([2, 2, 2]),
         )
         n_ethane = len([c for c in filled.children if c.name == "Ethane"])
         n_water = len([c for c in filled.children if c.name == "H2O"])
@@ -101,7 +104,7 @@ class TestPacking(BaseTest):
         assert np.max(filled.xyz[:, 2]) <= 5
 
     def test_fill_region_box(self, h2o):
-        mybox = mb.Box(lengths=[4, 4, 4], angles=[90.0, 90.0, 90.0])
+        mybox = Box(lengths=[4, 4, 4], angles=[90.0, 90.0, 90.0])
         filled = mb.fill_region(
             h2o, n_compounds=50, region=mybox, bounds=[[0, 0, 0, 4, 4, 4]]
         )
@@ -123,7 +126,7 @@ class TestPacking(BaseTest):
         assert np.min(filled.xyz[16:, 0]) > 4
 
     def test_fill_region_multiple_bounds(self, ethane, h2o):
-        box1 = mb.Box.from_mins_maxs_angles(
+        box1 = Box.from_mins_maxs_angles(
             mins=[2, 2, 2], maxs=[4, 4, 4], angles=[90.0, 90.0, 90.0]
         )
         box2 = mb.Box.from_mins_maxs_angles(
@@ -214,7 +217,7 @@ class TestPacking(BaseTest):
     def test_write_temp_file(self, h2o):
         cwd = os.getcwd()  # Must keep track of the temp dir that pytest creates
         filled = mb.fill_box(
-            h2o, n_compounds=10, box=[4, 4, 4], temp_file="temp_file1.pdb"
+            h2o, n_compounds=10, box=Box([4, 4, 4]), temp_file="temp_file1.pdb"
         )
         region = mb.fill_region(
             h2o,
