@@ -1766,10 +1766,12 @@ class GOMCControl():
         print('INFO: ensemble_type = ' + str(ensemble_type))
         if ensemble_type in ['NPT', 'NVT', 'GCMC', 'GEMC_NVT', 'GEMC_NPT']:
             self.ensemble_type = ensemble_type
+            print("INFO: All the ensemble (ensemble_type) input passed the initial error checking")
         else:
             self.input_error = True
-            print_error_message = "The ensemble_type is not a valid entry. "\
-                                  "Only 'NPT', 'NVT', 'GCMC', 'GEMC_NVT', 'GEMC_NPT' are valid entries."
+            print_error_message =  "ERROR: The ensemble type selection of {}  is not a valid ensemble option. " \
+                                  "Please choose the 'NPT', 'NVT', 'GEMC_NVT','GEMC_NPT', or 'GCMC' " \
+                                  "ensembles".format(ensemble_type)
             raise ValueError(print_error_message)
 
         self.RunSteps = RunSteps
@@ -1803,14 +1805,49 @@ class GOMCControl():
         self.x_dim_box_0 = charmm_object.box_0.maxs[0] * 10   # times 10 to convert from nm to Angstroms
         self.y_dim_box_0 = charmm_object.box_0.maxs[1] * 10   # times 10 to convert from nm to Angstroms
         self.z_dim_box_0 = charmm_object.box_0.maxs[2] * 10   # times 10 to convert from nm to Angstroms
-        if charmm_object.filename_box_1 is not None and isinstance(charmm_object.filename_box_1, str) is True:
-            self.x_dim_box_1 = charmm_object.box_1.maxs[0] * 10   # times 10 to convert from nm to Angstroms
-            self.y_dim_box_1 = charmm_object.box_1.maxs[1] * 10   # times 10 to convert from nm to Angstroms
-            self.z_dim_box_1 = charmm_object.box_1.maxs[2] * 10   # times 10 to convert from nm to Angstroms
-        else:
-            self.x_dim_box_1 = None
-            self.y_dim_box_1 = None
-            self.z_dim_box_1 = None
+
+        print('charmm_object.filename_box_1 = ',format(str(charmm_object.filename_box_1)))
+        print('type(charmm_object.filename_box_1) = ', format(str(type(charmm_object.filename_box_1))))
+
+        if self.ensemble_type in ['GEMC_NVT', 'GEMC_NPT', 'GCMC']:
+            if charmm_object.filename_box_1 is not None and isinstance(charmm_object.filename_box_1, str) is True:
+                self.x_dim_box_1 = charmm_object.box_1.maxs[0] * 10   # times 10 to convert from nm to Angstroms
+                self.y_dim_box_1 = charmm_object.box_1.maxs[1] * 10   # times 10 to convert from nm to Angstroms
+                self.z_dim_box_1 = charmm_object.box_1.maxs[2] * 10   # times 10 to convert from nm to Angstroms
+            else:
+                self.x_dim_box_1 = None
+                self.y_dim_box_1 = None
+                self.z_dim_box_1 = None
+
+        # check if the ensembles have the correct number of boxes in the charmm object
+        if self.ensemble_type in ['NVT', 'NPT'] and \
+                self.Coordinates_box_1 is not None and self.Structures_box_1 is not None:
+            self.input_error = True
+            print_error_message = "ERROR: The ensemble type selection of {} is using a Charmm " \
+                                  "object with two simulation boxes, and the {} ensemble only accepts " \
+                                  "one box (box 0)." \
+                                  "".format(ensemble_type, ensemble_type)
+            raise ValueError(print_error_message)
+
+        if self.ensemble_type in ['GEMC_NVT', 'GEMC_NPT', 'GCMC'] and \
+                self.Coordinates_box_1 is None and self.Structures_box_1 is None:
+            self.input_error = True
+            print_error_message = "ERROR: The ensemble type selection of {} is using a Charmm " \
+                                  "object with one simulation boxes, and the {} ensemble only accepts " \
+                                  "two boxes (box 0 and box 1)." \
+                                  "".format(ensemble_type, ensemble_type)
+            raise ValueError(print_error_message)
+
+
+        # check the box dimensions
+        ck_box_dim_is_float_or_int_greater_0(self.x_dim_box_0, 'x', 0, self.ensemble_type)
+        ck_box_dim_is_float_or_int_greater_0(self.y_dim_box_0, 'y', 0, self.ensemble_type)
+        ck_box_dim_is_float_or_int_greater_0(self.z_dim_box_0, 'z', 0, self.ensemble_type)
+
+        if self.ensemble_type in ['GEMC_NVT', 'GEMC_NPT', 'GCMC']:
+            ck_box_dim_is_float_or_int_greater_0(self.x_dim_box_1, 'x', 1, self.ensemble_type)
+            ck_box_dim_is_float_or_int_greater_0(self.y_dim_box_1, 'y', 1, self.ensemble_type)
+            ck_box_dim_is_float_or_int_greater_0(self.z_dim_box_1, 'z', 1, self.ensemble_type)
 
         # the future control file name is entered now as None
         self.conf_filename = None
@@ -1933,31 +1970,6 @@ class GOMCControl():
             if key_lower in all_input_var_case_unspec_list:
                 input_variables_dict[all_input_var_case_unspec_to_spec_dict[key_lower]] = \
                     input_variables_dict.pop(input_var_dict_orig_keys_list[z_j])
-
-        # check the box dimensions
-        ck_box_dim_is_float_or_int_greater_0(self.x_dim_box_0, 'x', 0, self.ensemble_type)
-        ck_box_dim_is_float_or_int_greater_0(self.y_dim_box_0, 'y', 0, self.ensemble_type)
-        ck_box_dim_is_float_or_int_greater_0(self.z_dim_box_0, 'z', 0, self.ensemble_type)
-
-        if self.ensemble_type in ['GEMC_NVT', 'GEMC_NPT', 'GCMC']:
-            ck_box_dim_is_float_or_int_greater_0(self.x_dim_box_1, 'x', 1, self.ensemble_type)
-            ck_box_dim_is_float_or_int_greater_0(self.y_dim_box_1, 'y', 1, self.ensemble_type)
-            ck_box_dim_is_float_or_int_greater_0(self.z_dim_box_1, 'z', 1, self.ensemble_type)
-
-        else:
-            self.x_dim_box_1 = None
-            self.y_dim_box_1 = None
-            self.z_dim_box_1 = None
-
-        # Checking for a valid ensemble type
-        if self.ensemble_type not in ['NPT', 'NVT', 'GEMC_NVT', 'GEMC_NPT', 'GCMC']:
-            self.input_error = True
-            print_error_message = "ERROR: The ensemble type selection of {}  is not a valid ensemble option. " \
-                                  "Please choose the 'NPT', 'NVT', 'GEMC_NVT','GEMC_NPT', or 'GCMC' " \
-                                  "ensembles".format(ensemble_type)
-            raise ValueError(print_error_message)
-        else:
-            print("INFO: All the ensemble (ensemble_type) input passed the intial error checking")
 
         # check that the coulombic 1-4 scalar is : 0 =< 1-4 scalar <=1
         if (isinstance(self.coul_1_4, int) is False
@@ -2956,7 +2968,7 @@ class GOMCControl():
             raise ValueError(print_error_message)
 
         else:
-            print("INFO: All the input variable passed the intial error checking")
+            print("INFO: All the input variable passed the initial error checking")
 
         # auto calculate the best EqSteps (number of Equilbrium Steps) and Adj_Steps (number of AdjSteps Steps)
         self.EqSteps = scale_gen_freq_for_run_steps_int(self.EqSteps, self.RunSteps)
@@ -4429,34 +4441,6 @@ def write_gomc_control_file(charmm_object, conf_filename,  ensemble_type,
     configuration/contorl files based on the simulation specifics or in to
     optimize the system beyond the standard settings.  These override
     options are available via the keyword arguments in input_variable_dict.
-
-    Parameters
-    ----------
-    charmm_object: CHARMM object (i.e., Charmm())
-        The Charmm object from the charmm_writer file
-    conf_filename: str,
-        The file name that the GOMC control file will be given.
-        This can wither have no extension or (.conf).  If no extension is provided
-        the .conf extension is automatically added.
-    ensemble_type: str, Only accepts 'NVT', 'NPT', 'GEMC_NPT', 'GCMC-NVT', 'GCMC'
-    RunSteps: int (>0), Must be an integer greater than zero.
-        Sets the total number of simulation steps.
-    Temperature: int (>0), Must be an integer greater than zero.
-        Temperature of system in Kelvin (K)
-    input_variables_dict: dict, default = None
-        These input variables are optional and override the default settings.
-        Changing these variables likely required for more advanced systems.
-
-        The details of the acceptable input variables for the selected
-        ensembles can be found by running this python workbook,
-
-            print_valid_ensemble_input_variables('GCMC', description = True)
-
-        which prints the input_variables with their subsection description
-        for the selected 'GCMC' ensemble (other ensembles can be set as well).
-
-        Example : input_variables_dict = {'Restart' : False, 'PRNG' : 123,
-                                          'ParaTypeCHARMM' : True }
 
     Parameters
         ----------

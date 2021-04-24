@@ -303,8 +303,10 @@ def specific_ff_to_residue(structure,
                         for sub_child in child.children:
                             if sub_child.name in residues:
                                 new_compound_iter.add(mb.compound.clone(sub_child))
+
                             else:
                                 if len(sub_child.children) == 0 and (child.name not in residues):
+
                                     raise ValueError(print_error_message_all_res_not_specified)
 
         structure = new_compound_iter
@@ -333,7 +335,7 @@ def specific_ff_to_residue(structure,
     if not reorder_res_in_pdb_psf:
         residues = residue_orig_order_list
     elif reorder_res_in_pdb_psf:
-        print("Information: the output file are being reordered in via the residues list's sequence.")
+        print("INFO: the output file are being reordered in via the residues list's sequence.")
 
     for i in range(0, len(residues)):
         children_in_iteration = False

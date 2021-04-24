@@ -623,12 +623,9 @@ class TestCharmmWriterData(BaseTest):
                                    )
 
     def test_specific_all_residue_not_input(self, ethane_gomc, ethanol_gomc):
-        with pytest.raises(ValueError, match=r'ERROR: The initial number of atoms sent to the force field analysis is '
-                                             r'not the same as the final number of atoms analyzed. '
-                                             r'The initial number of atoms was {} and the final number of atoms was {}. '
-                                             r'Please ensure that all the residues names that are in the initial '
-                                             r'Compound are listed in the residues list '
-                                             r'\(i.e., the residues variable\).'.format(str(17), str(8))
+        with pytest.raises(ValueError, match=r'All the residues are not specified, or the residues '
+                                             r'entered does not match the residues that were found '
+                                             r'and built for structure.'
                            ):
             box = mb.fill_box(compound=[ethane_gomc, ethanol_gomc],
                               box=[1, 1, 1], n_compounds=[1, 1])
@@ -638,7 +635,7 @@ class TestCharmmWriterData(BaseTest):
                                    residues=[ethane_gomc.name],
                                    reorder_res_in_pdb_psf=False,
                                    box=None,
-                                   boxes_for_simulation=1
+                                   boxes_for_simulation=2
                                    )
 
     def test_specific_ff_to_residue_ff_selection_not_dict(self, ethane_gomc):
