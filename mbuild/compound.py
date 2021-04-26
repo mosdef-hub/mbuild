@@ -128,7 +128,7 @@ class Compound(object):
 
     """
 
-    def __init__(self, subcompounds=None, name=None, pos=None, mass=0.0,
+    def __init__(self, subcompounds=None, name=None, pos=None, mass=None,
                  charge=0.0, periodicity=None, box=None, element=None,
                  port_particle=False):
         super(Compound, self).__init__()
@@ -325,17 +325,20 @@ class Compound(object):
     
     @property
     def mass(self):
-        if self._mass != 0.0:
+        if self._mass:
             return self._mass
         else:
             return sum([self._particle_mass(p) for p in self.particles()]) 
 #            return sum([p.element.mass for p in self.particles()])
     
     def _particle_mass(self, particle):
-        if particle._mass != 0:
+        if particle._mass:
             return particle._mass
         else:
-            return particle.element.mass
+            if particle.element:
+                return particle.element.mass
+            else:
+                return 0
     
     @mass.setter
     def mass(self, value):
