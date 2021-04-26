@@ -36,6 +36,8 @@ class AmorphousSilicaSurface(mb.Compound):
 
 
 if __name__ == "__main__":
+    from mbuild.lib.recipes import TiledCompound
+
     single = AmorphousSilicaSurface()
-    multiple = mb.TiledCompound(single, n_tiles=(2, 1, 1), name="tiled")
+    multiple = TiledCompound(single, n_tiles=(2, 1, 1), name="tiled")
     multiple.save("amorphous_silica_surface.mol2")

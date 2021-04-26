@@ -5,7 +5,7 @@ import random
 import numpy as np
 
 from mbuild import Compound, Port
-from mbuild.lib.recipes import TiledCompound
+from mbuild.lib.recipes.tiled_compound import TiledCompound
 
 
 class SilicaInterface(Compound):
