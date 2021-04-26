@@ -81,6 +81,8 @@ class Compound(object):
         The type of Compound.
     pos : np.ndarray, shape=(3,), dtype=float, optional, default=[0, 0, 0]
         The position of the Compound in Cartestian space
+    mass : float, optional, default=0.0
+        The mass of the compound.
     charge : float, optional, default=0.0
         Currently not used. Likely removed in next release.
     periodicity : np.ndarray, shape=(3,), dtype=float, optional, default=[0, 0, 0]
@@ -126,8 +128,8 @@ class Compound(object):
 
     """
 
-    def __init__(self, subcompounds=None, name=None, pos=None, charge=0.0,
-                 periodicity=None, box=None, element=None,
+    def __init__(self, subcompounds=None, name=None, pos=None, mass=0.0,
+                 charge=0.0, periodicity=None, box=None, element=None,
                  port_particle=False):
         super(Compound, self).__init__()
 
@@ -165,7 +167,6 @@ class Compound(object):
 
         self.box = box
         self.element = element
-
         # self.add() must be called after labels and children are initialized.
         if subcompounds:
             if charge:
@@ -176,6 +177,8 @@ class Compound(object):
             self._charge = 0.0
         else:
             self._charge = charge
+
+        self._mass = mass
 
     def particles(self, include_ports=False):
         """Return all Particles of the Compound.
@@ -315,6 +318,31 @@ class Compound(object):
         for particle in self.particles():
             if particle.element == element:
                 yield particle
+    
+    @property
+    def mass(self):
+        if self._mass != 0.0:
+            return self._mass
+        else:
+            return sum([self._particle_mass(p) for p in self.particles()]) 
+#            return sum([p.element.mass for p in self.particles()])
+    
+    def _particle_mass(self, particle):
+        if particle._mass != 0:
+            return particle._mass
+        else:
+            return particle.element.mass
+    
+    @mass.setter
+    def mass(self, value):
+        if self.children:
+            raise MBuildError(
+                "Cannot set the mass of a Compound containing "
+                "children compounds")
+        if value == 0.0:
+            self._mass = self.element.mass
+        else:
+            self._mass = value
 
     @property
     def charge(self):
@@ -2217,6 +2245,7 @@ class Compound(object):
         newone._contains_rigid = deepcopy(self._contains_rigid)
         newone._rigid_id = deepcopy(self._rigid_id)
         newone._charge = deepcopy(self._charge)
+        newone._mass = deepcopy(self._mass)
         if hasattr(self, 'index'):
             newone.index = deepcopy(self.index)
 
