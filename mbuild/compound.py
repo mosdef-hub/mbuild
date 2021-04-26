@@ -171,14 +171,18 @@ class Compound(object):
         if subcompounds:
             if charge:
                 raise MBuildError(
-                    'Cannot set the charge of a Compound containing '
-                    'subcompounds.')
+                    "Cannot set the charge of a Compound containing "
+                    "subcompounds.")
+            if mass:
+                raise MBuildError(
+                        "Cannot set the mass of a Compound containing "
+                        "subcompounds.")
             self.add(subcompounds)
             self._charge = 0.0
+            self._mass = 0.0
         else:
             self._charge = charge
-
-        self._mass = mass
+            self._mass = mass
 
     def particles(self, include_ports=False):
         """Return all Particles of the Compound.
