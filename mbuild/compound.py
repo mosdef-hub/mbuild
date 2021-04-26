@@ -81,8 +81,9 @@ class Compound(object):
         The type of Compound.
     pos : np.ndarray, shape=(3,), dtype=float, optional, default=[0, 0, 0]
         The position of the Compound in Cartestian space
-    mass : float, optional, default=0.0
-        The mass of the compound.
+    mass : float, optional, default=None
+        The mass of the compound. If none is set, then will try to
+        infer the mass from a compound's element attribute
     charge : float, optional, default=0.0
         Currently not used. Likely removed in next release.
     periodicity : np.ndarray, shape=(3,), dtype=float, optional, default=[0, 0, 0]
@@ -119,6 +120,7 @@ class Compound(object):
         The bounds (xmin, xmax, ymin, ymax, zmin, zmax) of particles in Compound
     center
     contains_rigid
+    mass
     max_rigid_id
     n_particles
     n_bonds
