@@ -48,6 +48,7 @@ different licenses. See those files for their specific terms.
     docker
     tutorials/tutorials
     data_structures
+    units
     coordinate_transforms
     recipes
     citing_mbuild
