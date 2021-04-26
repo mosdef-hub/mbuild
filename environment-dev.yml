@@ -28,3 +28,5 @@ dependencies:
   - pytest-cov
   - python<=3.8
   - scipy
+  - pip:
+    - pre-commit
