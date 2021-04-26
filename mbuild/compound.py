@@ -329,7 +329,6 @@ class Compound(object):
             return self._mass
         else:
             return sum([self._particle_mass(p) for p in self.particles()]) 
-#            return sum([p.element.mass for p in self.particles()])
     
     def _particle_mass(self, particle):
         if particle._mass:
