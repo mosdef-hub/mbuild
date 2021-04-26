@@ -627,7 +627,6 @@ class Lattice(object):
         for key, locations in self.lattice_points.items():
             for coords in locations:
                 for replication in it.product(range(x), range(y), range(z)):
-
                     new_coords = np.asarray(coords, dtype=np.float64)
                     new_coords = np.reshape(new_coords, (1, 3), order="C")
 
@@ -672,41 +671,10 @@ class Lattice(object):
                         "provided, not mbuild.Compound.".format(key_id, err_type)
                     )
         # Create mbuild.box
-        ret_lattice.box = mb.Box(
-            lengths=[a * x, b * y, c * z], angles=self.angles
-        )
+        ret_lattice.box = mb.Box(lengths=[a * x, b * y, c * z], angles=self.angles)
 
         # if coordinates are below a certain threshold, set to 0
         tolerance = 1e-12
         ret_lattice.xyz_with_ports[ret_lattice.xyz_with_ports <= tolerance] = 0.0
 
         return ret_lattice
-
-    def get_populated_box(self, x=1, y=1, z=1):
-        """
-        Deprecated. Will be removed in version 0.11. Use Compound.box instead.
-
-        Return a mbuild.Box representing the periodic boundaries of a
-        populated mbuild.Lattice. This is meant to be called in parallel
-        with, and using the same arguments of, a call to
-        mb.Lattice.populate().
-
-        Parameters
-        ----------
-        x : int, optional, default=1
-            How many iterations in the x direction.
-        y : int, optional, default=1
-            How many iterations in the y direction.
-        z : int, optional, default=1
-            How many iterations in the z direction.
-
-        """
-
-        x, y, z = self._sanitize_populate_args(x, y, z)
-
-        [a, b, c] = self.lattice_spacing
-
-        return mb.Box(
-            lengths=np.asarray([a * x, b * y, c * z], dtype=np.float64),
-            angles=np.asarray(self.angles),
-        )
