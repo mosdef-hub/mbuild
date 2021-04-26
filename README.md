@@ -27,7 +27,7 @@ If you use this package, please cite [our paper](http://dx.doi.org/10.1007/978-9
       booktitle = "Foundations of Molecular Modeling and Simulation",
       series = "Molecular Modeling and Simulation: Applications and Perspectives",
       year = "2016",
-      doi = "http://dx.doi.org/10.1007/978-981-10-1128-3_5" 
+      doi = "http://dx.doi.org/10.1007/978-981-10-1128-3_5"
 }
 ```
 
@@ -50,7 +50,7 @@ To learn more about using `mBuild` with docker, please refer to the documentatio
 
 #### Tutorials
 
-*Interactive tutorials can be found here:* 
+*Interactive tutorials can be found here:*
 
 [![Binder](https://mybinder.org/badge.svg)](https://mybinder.org/v2/gh/mosdef-hub/mbuild_tutorials/master)
 
