@@ -16,13 +16,6 @@ gsd = import_("gsd")
 gsd.hoomd = import_("gsd.hoomd")
 hoomd = import_("hoomd")
 hoomd.md = import_("hoomd.md")
-hoomd.md.pair = import_("hoomd.md.pair")
-hoomd.md.special_pair = import_("hoomd.md.special_pair")
-hoomd.md.charge = import_("hoomd.md.charge")
-hoomd.md.bond = import_("hoomd.md.bond")
-hoomd.md.angle = import_("hoomd.md.angle")
-hoomd.md.dihedral = import_("hoomd.md.dihedral")
-hoomd.group = import_("hoomd.group")
 
 
 def create_hoomd_simulation(
