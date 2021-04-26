@@ -345,8 +345,6 @@ class Compound(object):
             raise MBuildError(
                 "Cannot set the mass of a Compound containing "
                 "children compounds")
-        if value == 0.0:
-            self._mass = self.element.mass
         else:
             self._mass = value
 
