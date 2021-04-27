@@ -36,7 +36,7 @@ Libraries in the MoSDeF ecosystem are designed to provide utilities neccessary t
 simulation workflow and ease the reporting process. When setting up simulation studies,
 we also recommend users to follow the [TRUE](https://www.tandfonline.com/doi/full/10.1080/00268976.2020.1742938)  
 (Transparent, Reproducible, Usable-by-others, and Extensible) standard, which is a set of common
-practices meant to improve the reproducibility of computational simulation reserach. 
+practices meant to improve the reproducibility of computational simulation research. 
 
 #### Quick Start with Docker
 To use `mbuild` in a jupyter-notebook that runs from a docker container with all the dependencies installed use the following command:
