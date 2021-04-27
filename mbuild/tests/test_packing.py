@@ -72,7 +72,7 @@ class TestPacking(BaseTest):
             mb.fill_sphere(
                 compound=h2o, n_compounds=100, density=100, sphere=[4, 4, 4, 1]
             )
-        with pytest.raises(ValueError):
+        with pytest.raises(TypeError):
             mb.fill_sphere(compound=h2o, density=1000, sphere="yes")
         with pytest.raises(ValueError):
             mb.fill_sphere(
