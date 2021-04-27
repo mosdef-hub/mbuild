@@ -1310,7 +1310,6 @@ class TestCompound(BaseTest):
                 extension, get_fn("cholesterol.{}".format(extension))
             )
         )[0]
-        # TODO: Actually store the box information
         cmpd = mb.Compound()
         cmpd.from_pybel(chol)
         assert chol.OBMol.NumAtoms() == cmpd.n_particles
@@ -1324,10 +1323,6 @@ class TestCompound(BaseTest):
                 first_atom.GetZ() / 10,
             ],
         )
-        # assert np.allclose(box.lengths,
-        #        [chol.unitcell.GetA()/10, chol.unitcell.GetB()/10,
-        #            chol.unitcell.GetC()/10],
-        #        rtol=1e-3)
 
     @pytest.mark.parametrize(
         "test_smiles", ["CCO", "CCCCCCCC", "c1ccccc1", "CC(=O)Oc1ccccc1C(=O)O"]

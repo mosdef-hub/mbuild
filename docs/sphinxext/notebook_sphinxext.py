@@ -82,7 +82,6 @@ class NotebookDirective(Directive):
 
         shutil.copyfile(nb_abs_path, "{wd}/{name}.ipynb".format(**fmt))
 
-        # TODO: Actually save evaluated notebook
         shutil.copyfile(nb_abs_path, "{wd}/{name}_eval.ipynb".format(**fmt))
 
         html = export_html(**fmt)

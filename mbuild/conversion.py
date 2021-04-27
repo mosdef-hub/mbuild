@@ -782,9 +782,6 @@ def from_pybel(
     else:
         if not ignore_box_warn:
             warn(f"No unitcell detected for pybel.Molecule {pybel_mol}")
-    #       TODO: Decide how to gather PBC information from openbabel. Options may
-    #             include storing it in .periodicity or writing a separate function
-    #             that returns the box.
     return compound
 
 

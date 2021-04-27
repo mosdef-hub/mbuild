@@ -173,7 +173,6 @@ def write_lammpsdata(
             * epsilon_0
         )
         charges[np.isinf(charges)] = 0
-        # TODO: FIX CHARGE UNIT CONVERSION
     else:
         sigma_conversion_factor = 1
         epsilon_conversion_factor = 1
