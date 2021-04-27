@@ -62,12 +62,12 @@ def RB_to_CHARMM(c0, c1, c2, c3, c4, c5):
     """
 
     # see below or the long version is,  K0 = (c0 + c2 / 2 + 3 / 8 * c4) - K1 - K2 - K3 - K4 - K5
-    K0 = (c0 - c1 - c3 - (c4/4) - c5)
-    K1 = (c1 + (3/4) * c3 + (5/8) * c5)
-    K2 = ((1/2) * c2 + (1/2) * c4)
-    K3 = ((1/4) * c3 + (5/16) * c5)
-    K4 = ((1/8) * c4)
-    K5 = ((1/16) * c5)
+    K0 = c0 - c1 - c3 - (c4 / 4) - c5
+    K1 = c1 + (3 / 4) * c3 + (5 / 8) * c5
+    K2 = (1 / 2) * c2 + (1 / 2) * c4
+    K3 = (1 / 4) * c3 + (5 / 16) * c5
+    K4 = (1 / 8) * c4
+    K5 = (1 / 16) * c5
 
     n0 = 0
     n1 = 1
@@ -83,7 +83,16 @@ def RB_to_CHARMM(c0, c1, c2, c3, c4, c5):
     d4 = 0
     d5 = 180
 
-    return np.array([[K0, n0, d0], [K1, n1, d1], [K2, n2, d2], [K3, n3, d3], [K4, n4, d4], [K5, n5, d5]])
+    return np.array(
+        [
+            [K0, n0, d0],
+            [K1, n1, d1],
+            [K2, n2, d2],
+            [K3, n3, d3],
+            [K4, n4, d4],
+            [K5, n5, d5],
+        ]
+    )
 
 
 def base10_to_base62_alph_num(base10_no):
@@ -182,15 +191,11 @@ def base10_to_base16_alph_num(base10_no):
 # Helpers to convert base
 def _to_base(number, base=62):
     """Convert a base-10 number into base-n alpha-num"""
-    start_values = {
-        62: '0',
-        52: 'A',
-        26: 'A'
-    }
+    start_values = {62: "0", 52: "A", 26: "A"}
     if base not in start_values:
         raise ValueError(
-            f'Base-{base} system is not supported.'
-            f'Supported bases are: {list(start_values.keys())}'
+            f"Base-{base} system is not supported."
+            f"Supported bases are: {list(start_values.keys())}"
         )
 
     num = 1
@@ -206,10 +211,14 @@ def _to_base(number, base=62):
             base_n_values = start_values[base] + base_n_values
 
         elif num != 0 and num > base:
-            base_n_values = str(_digit_to_alpha_num(int(num % base), base)) + base_n_values
+            base_n_values = (
+                str(_digit_to_alpha_num(int(num % base), base)) + base_n_values
+            )
 
         elif (num != 0) and (num < base):
-            base_n_values = str(_digit_to_alpha_num(int(num), base)) + base_n_values
+            base_n_values = (
+                str(_digit_to_alpha_num(int(num), base)) + base_n_values
+            )
 
         power += 1
 
@@ -219,15 +228,15 @@ def _to_base(number, base=62):
 def _digit_to_alpha_num(digit, base=52):
     """Helper function to convert digit to base-n"""
     base_values = {
-        26: {j: chr(j+65) for j in range(0, 26)},
+        26: {j: chr(j + 65) for j in range(0, 26)},
         52: {j: chr(j + 65) if j < 26 else chr(j + 71) for j in range(0, 52)},
-        62: {j: chr(j+55) if j < 36 else chr(j+61) for j in range(10, 62)}
+        62: {j: chr(j + 55) if j < 36 else chr(j + 61) for j in range(10, 62)},
     }
 
     if base not in base_values:
         raise ValueError(
-            f'Base-{base} system is not supported.'
-            f'Supported bases are: {list(base_values.keys())}'
+            f"Base-{base} system is not supported."
+            f"Supported bases are: {list(base_values.keys())}"
         )
 
     return base_values[base].get(digit, digit)
