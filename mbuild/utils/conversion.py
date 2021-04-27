@@ -1,8 +1,9 @@
+"""mBuild conversion utilities."""
 import numpy as np
 
 
 def RB_to_OPLS(c0, c1, c2, c3, c4, c5):
-    """Converts Ryckaert-Bellemans type dihedrals to OPLS type.
+    """Convert Ryckaert-Bellemans type dihedrals to OPLS type.
 
     Parameters
     ----------
@@ -13,9 +14,7 @@ def RB_to_OPLS(c0, c1, c2, c3, c4, c5):
     opls_coeffs : np.array, shape=(4,)
         Array containing the OPLS dihedrals coeffs f1, f2, f3, and f4
         (in kcal/mol)
-
     """
-
     f1 = (-1.5 * c3) - (2 * c1)
     f2 = c0 + c1 + c3
     f3 = -0.5 * c3
