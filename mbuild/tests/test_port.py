@@ -1,5 +1,3 @@
-import warnings
-
 import numpy as np
 import pytest
 
@@ -15,16 +13,12 @@ class TestPattern(BaseTest):
     def test_port_shift(self, ethane):
         ethane.translate_to(np.ones(3))
         port = mb.Port(anchor=ethane)
-        assert [
-            ethane.center[i] == coord for i, coord in enumerate(port.center)
-        ]
+        assert [ethane.center[i] == xyz for i, xyz in enumerate(port.center)]
 
     def test_port_init_shift_0(self, ethane):
         ethane.translate_to(np.ones(3))
         port = mb.Port(anchor=ethane, separation=0)
-        assert [
-            ethane.center[i] == coord for i, coord in enumerate(port.center)
-        ]
+        assert [ethane.center[i] == xyz for i, xyz in enumerate(port.center)]
 
     def test_port_init_shift(self, ethane):
         ethane.translate_to(np.ones(3))
@@ -67,9 +61,8 @@ class TestPattern(BaseTest):
         assert np.allclose(0.7, port.separation, atol=1e-15)
 
         port_no_anchor = mb.Port()
-        with warnings.catch_warnings(record=True) as w:
+        with pytest.warns(UserWarning):
             separation = port_no_anchor.separation
-            assert w
             assert separation is None
 
     def test_update_separation(self, ethane, hexane):
@@ -78,9 +71,8 @@ class TestPattern(BaseTest):
         assert np.allclose(0.9, port.separation, atol=1e-15)
 
         port_used = hexane.labels["propyl2"].labels["down"]
-        with warnings.catch_warnings(record=True) as w:
+        with pytest.warns(UserWarning):
             port_used.update_separation(0.10)
-            assert w
 
     def test_update_orientaiton(self, ch2, hexane):
         port = ch2["up"]
@@ -88,9 +80,8 @@ class TestPattern(BaseTest):
         assert np.allclose([-1, 0, 0], port.direction, atol=1e-15)
 
         port_used = hexane.labels["propyl2"].labels["down"]
-        with warnings.catch_warnings(record=True) as w:
-            port_used.update_separation(0.10)
-            assert w
+        with pytest.warns(UserWarning):
+            port_used.update_orientation((0, 1, 0))
 
     def test_access_labels(self):
         port = mb.Port()
