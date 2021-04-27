@@ -32,7 +32,7 @@ class Pattern(object):
         self.points = points
         if orientations is None:
             orientations = dict()
-        self.orientations = orientations  # TODO: implement for more patterns
+        self.orientations = orientations
         if scale is not None:
             self.scale(scale)
 

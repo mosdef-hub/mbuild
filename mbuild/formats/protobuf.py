@@ -12,14 +12,9 @@ def write_pb2(cmpd, filename, binary=True):
     ---------
     cmpd : mb.Compound
     filename : str
-    binary: bool, default True 
+    binary: bool, default True
         If True, will print a binary file
         If False, will print to a text file
-        Todo: This could be more elegantly detected
-
-    Notes
-    ----
-    Todo: Handle Ports in the protocol buffer (.proto) and in this writer/reader
     """
     cmpd_to_proto = {}
 
@@ -29,7 +24,7 @@ def write_pb2(cmpd, filename, binary=True):
 
     for sub_cmpd in cmpd.successors():
         parent_cmpd = sub_cmpd.parent
-        sub_proto = cmpd_to_proto[parent_cmpd].children.add() 
+        sub_proto = cmpd_to_proto[parent_cmpd].children.add()
         sub_proto = _mb_to_proto(sub_cmpd, sub_proto)
         cmpd_to_proto[sub_cmpd] = sub_proto
 
@@ -49,10 +44,9 @@ def read_pb2(filename, binary=True):
     Parameters
     ---------
     filename : str
-    binary: bool, default True 
+    binary: bool, default True
         If True, will print a binary file
         If False, will print to a text file
-        Todo: This could be more elegantly detected
 
     Returns
     ------
@@ -99,7 +93,7 @@ def _mb_to_proto(cmpd, proto):
         proto.element.symbol = cmpd.element.symbol
         proto.element.atomic_number = cmpd.element.atomic_number
         proto.element.mass  = cmpd.element.mass
-   
+
     return proto
 
 def _add_proto_bonds(cmpd, proto):
@@ -126,7 +120,7 @@ def _proto_successors(proto):
 
     Notes
     -----
-    Base Case: there are no children to the proto, just return 
+    Base Case: there are no children to the proto, just return
     Recursion: First look at proto's children and return these children (sub_proto)
         Then make the recursive call to look at all the sub_proto's successors
     This is similar to mb.Compound().successors()
@@ -140,12 +134,12 @@ def _proto_successors(proto):
             yield (sub_sub_proto, parent_proto)
 
 def _proto_to_mb(proto):
-    """ Given compound_pb2.Compound, create mb.Compound 
-    
+    """ Given compound_pb2.Compound, create mb.Compound
+
     Parameters
     ----------
     proto: compound_pb2.Compound()
-    
+
     """
     if proto.element.symbol is '':
         elem = None
@@ -154,7 +148,7 @@ def _proto_to_mb(proto):
     return  mb.Compound(name=proto.name,
                 pos=[proto.pos.x, proto.pos.y, proto.pos.z],
                 charge=proto.charge,
-                periodicity=[proto.periodicity.x, proto.periodicity.y, 
+                periodicity=[proto.periodicity.x, proto.periodicity.y,
                             proto.periodicity.z],
                 element=elem)
 
