@@ -169,6 +169,9 @@ class Compound(object):
 
         self.box = box
         self.element = element
+        if mass and mass < 0:
+            raise ValueError("Cannot set a Compound mass value less than zero")
+            
         # self.add() must be called after labels and children are initialized.
         if subcompounds:
             if charge:
@@ -343,6 +346,9 @@ class Compound(object):
     
     @mass.setter
     def mass(self, value):
+        if value < 0:
+            raise ValueError(
+                    "Cannot set a mass value less than zero")
         if self.children:
             raise MBuildError(
                 "Cannot set the mass of a Compound containing "
