@@ -24,7 +24,7 @@ def _check_minsmaxs(mins, maxs):
     else:
         return False
 
-def write_lammpsdata(structure, filename, atom_style='full', 
+def write_lammpsdata(structure, filename, atom_style='full',
                     unit_style='real',
                     mins=None,
                     maxs=None,
@@ -32,8 +32,8 @@ def write_lammpsdata(structure, filename, atom_style='full',
                     use_urey_bradleys=False,
                     use_rb_torsions=True, use_dihedrals=False):
     """Output a LAMMPS data file.
-    
-    Outputs a LAMMPS data file in the 'full' atom style format. Default units are 
+
+    Outputs a LAMMPS data file in the 'full' atom style format. Default units are
     'real' units. See http://lammps.sandia.gov/doc/atom_style.html for
     more information on atom styles.
 
@@ -58,7 +58,7 @@ def write_lammpsdata(structure, filename, atom_style='full',
     maxs : list
         maximum box dimension in x, y, z directions
     detect_forcefield_style: boolean
-        If True, format lammpsdata parameters based on the contents of 
+        If True, format lammpsdata parameters based on the contents of
         the parmed Structure
     use_urey_bradleys: boolean
         If True, will treat angles as CHARMM-style angles with urey bradley terms
@@ -67,7 +67,7 @@ def write_lammpsdata(structure, filename, atom_style='full',
         If True, will treat dihedrals OPLS-style torsions while looking for
         `structure.rb_torsions`
     use_dihedrals:
-        If True, will treat dihedrals as CHARMM-style dihedrals while looking for 
+        If True, will treat dihedrals as CHARMM-style dihedrals while looking for
         `structure.dihedrals`
 
     Notes
@@ -89,7 +89,7 @@ def write_lammpsdata(structure, filename, atom_style='full',
     # Check if structure is paramterized
     if unit_style == 'lj':
         if any([atom.sigma for atom in structure.atoms]) is None:
-           raise ValueError('LJ units specified but one or more atoms has undefined LJ parameters.') 
+           raise ValueError('LJ units specified but one or more atoms has undefined LJ parameters.')
 
     xyz = np.array([[atom.xx,atom.xy,atom.xz] for atom in structure.atoms])
 
@@ -149,8 +149,7 @@ def write_lammpsdata(structure, filename, atom_style='full',
         xyz = xyz / sigma_conversion_factor
         charges = (charges*1.6021e-19) / np.sqrt(4*np.pi*(sigma_conversion_factor*1e-10)*
           (epsilon_conversion_factor*4184)*epsilon_0)
-        charges[np.isinf(charges)] = 0 
-        # TODO: FIX CHARGE UNIT CONVERSION
+        charges[np.isinf(charges)] = 0
     else:
         sigma_conversion_factor = 1
         epsilon_conversion_factor = 1
@@ -170,7 +169,7 @@ def write_lammpsdata(structure, filename, atom_style='full',
         warn('Explicit box bounds (i.e., mins and maxs) were not provided. Box bounds are assumed to be min = 0 and max = length in each direction. This may not produce a system with the expected spatial location and may cause non-periodic systems to fail. Bounds can be defined explicitly by passing the them to the write_lammpsdata function or by passing box info to the save function.')
     # Divide by conversion factor
     box.maxs /= sigma_conversion_factor
-    
+
     # Lammps syntax depends on the functional form
     # Infer functional form based on the properties of the structure
     if detect_forcefield_style:
@@ -242,11 +241,11 @@ def write_lammpsdata(structure, filename, atom_style='full',
         dihedral_types, unique_dihedral_types = _get_dihedral_types(
                 structure, use_rb_torsions, use_dihedrals,
                 epsilon_conversion_factor)
-            
+
     if impropers:
         improper_types, unique_improper_types = _get_impropers(structure,
                 epsilon_conversion_factor)
-    
+
 
     with open(filename, 'w') as data:
         data.write(filename+' - created by mBuild; units = {}\n\n'.format(
@@ -324,7 +323,7 @@ def write_lammpsdata(structure, filename, atom_style='full',
             epsilon_dict = dict([(unique_types.index(atom_type)+1,epsilon) for atom_type,epsilon in zip(types,epsilons)])
             sigma_dict = dict([(unique_types.index(atom_type)+1,sigma) for atom_type,sigma in zip(types,sigmas)])
             forcefield_dict = dict([(unique_types.index(atom_type)+1,forcefield) for atom_type,forcefield in zip(types,forcefields)])
-            
+
 
 
             # Modified cross-interactions
@@ -543,7 +542,7 @@ def _get_angle_types(structure, use_urey_bradleys,
                     ub_k = ub.type.k
                     ub_req = ub.type.req
             charmm_angle_types.append((round(angle.type.k*(
-                sigma_conversion_factor**2/epsilon_conversion_factor),3), 
+                sigma_conversion_factor**2/epsilon_conversion_factor),3),
                                        round(angle.type.theteq,3),
                                        round(ub_k/epsilon_conversion_factor, 3),
                                        round(ub_req, 3),
