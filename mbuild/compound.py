@@ -302,7 +302,7 @@ class Compound(object):
         Parameters
         ----------
         name : str or ele.Element
-            element abbreviation or element 
+            element abbreviation or element
 
         Yields
         ------
@@ -983,7 +983,6 @@ class Compound(object):
             raise TypeError("box must be specified as an mbuild.Box")
         if self.port_particle and box is not None:
             raise ValueError("Ports cannot have a box")
-        # TODO: Fix this for non-orthogonal boxes
         # Make sure the box is bigger than the bounding box
         if box is not None:
             if (box.lengths < self.boundingbox.lengths).any():
@@ -997,7 +996,7 @@ class Compound(object):
     @property
     def element(self):
         return self._element
-    
+
     @element.setter
     def element(self, element):
         if element is None:

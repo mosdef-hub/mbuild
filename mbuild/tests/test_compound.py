@@ -1162,17 +1162,12 @@ class TestCompound(BaseTest):
         pybel = import_('pybel')
         chol = list(pybel.readfile(extension,
             get_fn('cholesterol.{}'.format(extension))))[0]
-        # TODO: Actually store the box information
         cmpd = mb.Compound()
         cmpd.from_pybel(chol)
         assert chol.OBMol.NumAtoms() == cmpd.n_particles
         assert chol.OBMol.NumBonds() == cmpd.n_bonds
         first_atom = chol.OBMol.GetAtom(1)
         assert np.allclose(cmpd[0].pos, [first_atom.GetX()/10, first_atom.GetY()/10, first_atom.GetZ()/10])
-        #assert np.allclose(box.lengths,
-        #        [chol.unitcell.GetA()/10, chol.unitcell.GetB()/10,
-        #            chol.unitcell.GetC()/10],
-        #        rtol=1e-3)
 
     @pytest.mark.parametrize('test_smiles', [
         "CCO",
