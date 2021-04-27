@@ -164,10 +164,9 @@ class SilicaInterface(Compound):
 
 
 if __name__ == "__main__":
-    import mbuild as mb
     from mbuild.lib.bulk_materials import AmorphousSilicaBulk
 
-    silica_interface = mb.recipes.SilicaInterface(
+    silica_interface = SilicaInterface(
         bulk_silica=AmorphousSilicaBulk(), thickness=1.2
     )
     silica_interface.save("silica_interface.mol2", show_ports=True)
