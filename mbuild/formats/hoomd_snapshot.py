@@ -21,7 +21,7 @@ def from_snapshot(snapshot, scale=1.0):
 
     Parameters
     ----------
-    snapshot : hoomd.data.SnapshotParticleData or gsd.hoomd.Snapshot
+    snapshot : hoomd._hoomd.SnapshotSystemData_float or gsd.hoomd.Snapshot
         Snapshot from which to build the mbuild Compound.
     scale : float, optional, default 1.0
         Value by which to scale the length values
@@ -29,6 +29,11 @@ def from_snapshot(snapshot, scale=1.0):
     Returns
     -------
     comp : mb.Compound
+
+    Note
+    ----
+    GSD and HOOMD snapshots center their boxes on the origin (0,0,0), so the
+    compound is shifted by half the box lengths
     """
     comp = mb.Compound()
     bond_array = snapshot.bonds.group
@@ -36,7 +41,11 @@ def from_snapshot(snapshot, scale=1.0):
 
     # There will be a better way to do this once box overhaul merged
     # Only orthogonal boxes allowed
-    if 'SnapshotSystemData_float' in dir(hoomd._hoomd) and isinstance(snapshot, hoomd._hoomd.SnapshotSystemData_float):
+    if (
+            'SnapshotSystemData_float' in dir(hoomd._hoomd))
+            and
+            isinstance(snapshot, hoomd._hoomd.SnapshotSystemData_float)
+            ):
         # hoomd v2
         box = snapshot.box
         comp.box = mb.Box(lengths=np.array([box.Lx,box.Ly,box.Lz]) * scale)
@@ -45,7 +54,7 @@ def from_snapshot(snapshot, scale=1.0):
         box = snapshot.configuration.box
         comp.box = mb.Box(lengths=box[:3] * scale)
 
-    # to_hoomdsnapshot shifts the coords, this will keep consistent
+    # GSD and HOOMD snapshots center their boxes on the origin (0,0,0)
     shift = np.array(comp.box.lengths)/2
     # Add particles
     for i in range(n_atoms):
