@@ -169,12 +169,7 @@ def fill_box(
 
     if density is not None:
         if box is None and n_compounds is not None:
-            total_mass = np.sum(
-                [
-                    n * np.sum([a.mass for a in c.to_parmed().atoms])
-                    for c, n in zip(compound, n_compounds)
-                ]
-            )
+            total_mass = np.sum([n*c.mass for c, n in zip(compound, n_compounds)])
             # Conversion from (amu/(kg/m^3))**(1/3) to nm
             L = (total_mass / density) ** (1 / 3) * 1.1841763
             if aspect_ratio is None:
@@ -184,13 +179,10 @@ def fill_box(
                 box = _validate_box(Box([val * L for val in aspect_ratio]))
         if n_compounds is None and box is not None:
             if len(compound) == 1:
-                compound_mass = np.sum(
-                    [a.mass for a in compound[0].to_parmed().atoms]
-                )
                 # Conversion from kg/m^3 / amu * nm^3 to dimensionless units
                 n_compounds = [
                     int(
-                        density / compound_mass * np.prod(box.lengths) * 0.60224
+                        density / compound[0].mass * np.prod(box.lengths) * 0.60224
                     )
                 ]
             else:
@@ -209,9 +201,7 @@ def fill_box(
                     raise ValueError(msg)
                 prototype_mass = 0
                 for c, r in zip(compound, compound_ratio):
-                    prototype_mass += r * np.sum(
-                        [a.mass for a in c.to_parmed().atoms]
-                    )
+                    prototype_mass += r * c.mass 
                 # Conversion from kg/m^3 / amu * nm^3 to dimensionless units
                 n_prototypes = int(
                     density / prototype_mass * np.prod(box.lengths) * 0.60224
@@ -520,14 +510,11 @@ def fill_sphere(
     if density is not None:
         if n_compounds is None:
             if len(compound) == 1:
-                compound_mass = np.sum(
-                    [a.mass for a in compound[0].to_parmed().atoms]
-                )
                 # Conversion from kg/m^3 / amu * nm^3 to dimensionless units
                 n_compounds = [
                     int(
                         density
-                        / compound_mass
+                        / compound[0].mass 
                         * (4 / 3 * np.pi * radius ** 3)
                         * 0.60224
                     )
@@ -548,9 +535,7 @@ def fill_sphere(
                     raise ValueError(msg)
                 prototype_mass = 0
                 for c, r in zip(compound, compound_ratio):
-                    prototype_mass += r * np.sum(
-                        [a.mass for a in c.to_parmed().atoms]
-                    )
+                    prototype_mass += r * c.mass 
                 # Conversion from kg/m^3 / amu * nm^3 to dimensionless units
                 n_prototypes = int(
                     density
