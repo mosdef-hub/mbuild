@@ -31,7 +31,7 @@ If you use this package, please cite [our paper](http://dx.doi.org/10.1007/978-9
 }
 ```
 
-The mBuild package is part of the Molecular Simulation Design Framework (MoSDeF) project. 
+The `mBuild` package is part of the Molecular Simulation Design Framework (MoSDeF) project. 
 Libraries in the MoSDeF ecosystem are designed to provide utilities neccessary to streamline 
 a researcher's simulation workflow. When setting up simulation studies,
 we also recommend users to follow the [TRUE](https://www.tandfonline.com/doi/full/10.1080/00268976.2020.1742938)  
