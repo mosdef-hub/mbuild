@@ -9,7 +9,6 @@ class AmorphousSilicaSurface(mb.Compound):
         super(AmorphousSilicaSurface, self).__init__()
 
         if surface_roughness == 1.0:
-            # TODO: description of how this surface was generated/citation
             mb.load('amorphous_silica_sr1.0.pdb', compound=self,
                     relative_to_module=self.__module__)
             self.periodicity = np.array([5.4366, 4.7082, 0.0])
