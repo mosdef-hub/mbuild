@@ -1,6 +1,5 @@
 """mBuild recipe for a generic alkane chain."""
 import mbuild as mb
-from mbuild.lib.atoms import H
 from mbuild.lib.moieties import CH2, CH3
 from mbuild.lib.molecules import Ethane, Methane
 
