@@ -13,6 +13,7 @@ from mbuild.utils.conversion import base10_to_base26_alph
 from mbuild.utils.conversion import base10_to_base52_alph
 from mbuild.utils.conversion import base10_to_base62_alph_num
 from mbuild.utils.specific_ff_to_residue  import specific_ff_to_residue
+from mbuild.exceptions import MBuildError
 from foyer.forcefields import forcefields
 from collections import OrderedDict
 
@@ -803,7 +804,7 @@ class TestCharmmWriterData(BaseTest):
     def test_specific_ff_to_empty_box_with_max_mins(self, ethane_gomc):
         with pytest.raises(ValueError, match=r'This writer only currently supports orthogonal boxes ' \
                                              '\(i.e., boxes with all 90 degree angles\).'):
-            empty_compound = mb.Box(mins=[1, 1, 1], maxs=[3, 3, 3], angles=[89, 90, 90])
+            empty_compound = mb.Box(lengths=[2, 2, 2], angles=[89, 90, 90])
 
             specific_ff_to_residue(empty_compound,
                                    forcefield_selection={ethane_gomc.name: 'oplsaa'},
@@ -814,7 +815,7 @@ class TestCharmmWriterData(BaseTest):
                                    )
 
     def test_specific_ff_to_empty_box_with_length_0(self, ethane_gomc):
-        with pytest.raises(ValueError, match=r'An empty box was specified, with one or more dimensions <= 0.'):
+        with pytest.raises(MBuildError, match=r'The vectors to define the box are co-linear'):
             empty_compound = mb.Box(lengths=[0, 1, 1])
 
             specific_ff_to_residue(empty_compound,
@@ -855,9 +856,7 @@ class TestCharmmWriterData(BaseTest):
     def test_charmm_a_few_mbuild_layers(self, ethane_gomc, ethanol_gomc):
         box_reservior_1 = mb.fill_box(compound=[ethane_gomc],
                                       box=[1, 1, 1], n_compounds=[1])
-        box_reservior_1.periodicity[0] = 2
-        box_reservior_1.periodicity[1] = 2
-        box_reservior_1.periodicity[1] = 2
+        box_reservior_1.periodicity = (True, True, True)
         box_reservior_2 = mb.fill_box(compound=[ethanol_gomc],
                                       box=[1, 1, 1], n_compounds=[1])
         box_reservior_2.translate([0, 0, 1])
@@ -1488,7 +1487,7 @@ class TestCharmmWriterData(BaseTest):
                     pass
 
     def test_box_1_empty_test_2(self, two_propanol_ua):
-        empty_compound = Box(mins=[1, 1, 1], maxs=[4, 4, 4])
+        empty_compound = Box(lengths=[3,3,3], angles=[90, 90, 90])
 
         charmm = Charmm(two_propanol_ua, 'charmm_filled_box',
                         structure_box_1=empty_compound, filename_box_1='charmm_empty_box',

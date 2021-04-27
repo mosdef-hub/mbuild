@@ -246,11 +246,11 @@ class TestLattice(BaseTest):
 
         expected_lengths = [x*y for x,y in zip(replication, lattice.lattice_spacing)]
 
-        mybox = lattice.get_populated_box(x=5, y=4, z=3)
+        mylat = lattice.populate(x=5, y=4, z=3)
 
-        assert isinstance(mybox, mb.Box)
-        np.testing.assert_allclose([90, 90, 90], mybox.angles)
-        np.testing.assert_allclose(expected_lengths, mybox.lengths)
+        assert isinstance(mylat.box, mb.Box)
+        np.testing.assert_allclose([90, 90, 90], mylat.box.angles)
+        np.testing.assert_allclose(expected_lengths, mylat.box.lengths)
 
     def test_get_box_non_rectangular(self):
         lattice = mb.Lattice(lattice_spacing=[0.5, 0.5, 1], angles=[90, 90, 120],
@@ -259,8 +259,8 @@ class TestLattice(BaseTest):
 
         expected_lengths = [x*y for x,y in zip(replication, lattice.lattice_spacing)]
 
-        mybox = lattice.get_populated_box(x=2, y=2, z=1)
+        mylat = lattice.populate(x=2, y=2, z=1)
 
-        assert isinstance(mybox, mb.Box)
-        np.testing.assert_allclose([90, 90, 120], mybox.angles)
-        np.testing.assert_allclose(expected_lengths, mybox.lengths)
+        assert isinstance(mylat.box, mb.Box)
+        np.testing.assert_allclose([90, 90, 120], mylat.box.angles)
+        np.testing.assert_allclose(expected_lengths, mylat.box.lengths)

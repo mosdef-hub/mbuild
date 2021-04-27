@@ -1570,17 +1570,14 @@ class Charmm:
             [(self.unique_types[self.unique_types.index(atom_type)], self.unique_types.index(atom_type))
              for atom_type, mass in zip(self.types, self.masses)])
 
-        self.box_0 = Box(lengths=np.array([0.1 * val for val in self.structure_box_0_ff.box[0:3]]
+        # normalize by sigma
+        self.box_0 = Box(lengths=np.array([(0.1 * val) / self.sigma_conversion_factor for val in self.structure_box_0_ff.box[0:3]]
                                           ), angles=self.structure_box_0_ff.box[3:6])
-        # Divide by conversion factor
-        self.box_0.maxs /= self.sigma_conversion_factor
 
         # Internally use nm
         if self.structure_box_1:
-            self.box_1 = Box(lengths=np.array([0.1 * val for val in self.structure_box_1_ff.box[0:3]]),
+            self.box_1 = Box(lengths=np.array([(0.1 * val) / self.sigma_conversion_factor for val in self.structure_box_1_ff.box[0:3]]),
                              angles=self.structure_box_1_ff.box[3:6])
-            # Divide by conversion factor
-            self.box_1.maxs /= self.sigma_conversion_factor
 
         # if self.structure_box_1 != None:
         if self.structure_box_1:

@@ -1802,18 +1802,18 @@ class GOMCControl():
         self.residues = charmm_object.residues
         self.all_residues_unique_atom_name_dict = charmm_object.all_res_unique_atom_name_dict
 
-        self.x_dim_box_0 = charmm_object.box_0.maxs[0] * 10   # times 10 to convert from nm to Angstroms
-        self.y_dim_box_0 = charmm_object.box_0.maxs[1] * 10   # times 10 to convert from nm to Angstroms
-        self.z_dim_box_0 = charmm_object.box_0.maxs[2] * 10   # times 10 to convert from nm to Angstroms
+        self.x_dim_box_0 = charmm_object.box_0.Lx * 10   # times 10 to convert from nm to Angstroms
+        self.y_dim_box_0 = charmm_object.box_0.Ly * 10   # times 10 to convert from nm to Angstroms
+        self.z_dim_box_0 = charmm_object.box_0.Lz * 10   # times 10 to convert from nm to Angstroms
 
         print('charmm_object.filename_box_1 = ',format(str(charmm_object.filename_box_1)))
         print('type(charmm_object.filename_box_1) = ', format(str(type(charmm_object.filename_box_1))))
 
         if self.ensemble_type in ['GEMC_NVT', 'GEMC_NPT', 'GCMC']:
             if charmm_object.filename_box_1 is not None and isinstance(charmm_object.filename_box_1, str) is True:
-                self.x_dim_box_1 = charmm_object.box_1.maxs[0] * 10   # times 10 to convert from nm to Angstroms
-                self.y_dim_box_1 = charmm_object.box_1.maxs[1] * 10   # times 10 to convert from nm to Angstroms
-                self.z_dim_box_1 = charmm_object.box_1.maxs[2] * 10   # times 10 to convert from nm to Angstroms
+                self.x_dim_box_1 = charmm_object.box_1.Lx * 10   # times 10 to convert from nm to Angstroms
+                self.y_dim_box_1 = charmm_object.box_1.Ly * 10   # times 10 to convert from nm to Angstroms
+                self.z_dim_box_1 = charmm_object.box_1.Lz * 10   # times 10 to convert from nm to Angstroms
             else:
                 self.x_dim_box_1 = None
                 self.y_dim_box_1 = None
