@@ -1,0 +1,29 @@
+name: mbuild-dev
+channels:
+  - conda-forge
+  - omnia
+dependencies:
+  - bump2version
+  - codecov
+  - ele
+  - foyer
+  - garnett>=0.7.1
+  - gsd>=1.2
+  - intermol
+  - mdtraj
+  - networkx
+  - nglview>=2.7
+  - numpy
+  - openbabel>=3.0.0
+  - rdkit
+  - oset
+  - packmol=1!18.013
+  - parmed>=3.4.0
+  - pip
+  - protobuf
+  - py3Dmol
+  - pycifrw
+  - pytest>=3.0
+  - pytest-cov
+  - python<=3.8
+  - scipy

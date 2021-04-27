@@ -20,8 +20,8 @@ def load_cif(file_or_path=None, wrap_coords=False):
         Wrap the lattice points back into the 0-1 acceptable coordinates.
     """
 
-    garnett = import_('Garnett')
-    pycifrw = import_('pycifrw')
+    garnett = import_('garnett')
+    pycifrw = import_('CifFile')
 
     assert isinstance(file_or_path, (str, pathlib.Path))
     cif_location = pathlib.Path(file_or_path)
@@ -34,7 +34,7 @@ def load_cif(file_or_path=None, wrap_coords=False):
         frame = my_cif[0]
 
         # convert angstroms to nanometers
-        lattice_spacing = [frame.box.Lx/10, frame.box.Ly/10, frame.box.Lz/10]
+        lattice_spacing = np.linalg.norm(np.asarray(frame.box.get_box_matrix()).T, axis=1) / 10
 
         # create lattice_points dictionary
         position_dict = defaultdict(list)
@@ -48,7 +48,7 @@ def load_cif(file_or_path=None, wrap_coords=False):
                     else:
                         pass
             position_dict[frame.types[elem_id]].append(list(coords))
-        box_vectors = frame.box.get_box_matrix()
+        box_vectors = np.asarray(frame.box.get_box_matrix()).T
         return Lattice(lattice_spacing=lattice_spacing,
                        lattice_vectors=box_vectors,
                        lattice_points=position_dict)
@@ -448,12 +448,11 @@ class Lattice(object):
         dataType = np.float64
         (alpha, beta, gamma) = angles
 
-        radianConversion = np.pi / 180.0
-        cosa = np.cos(alpha * radianConversion)
-        cosb = np.cos(beta * radianConversion)
-        sinb = np.sin(beta * radianConversion)
-        cosg = np.cos(gamma * radianConversion)
-        sing = np.sin(gamma * radianConversion)
+        cosa = np.cos(np.deg2rad(alpha))
+        cosb = np.cos(np.deg2rad(beta))
+        sinb = np.sin(np.deg2rad(beta))
+        cosg = np.cos(np.deg2rad(gamma))
+        sing = np.sin(np.deg2rad(gamma))
         matCoef_y = (cosa - cosb * cosg) / sing
         matCoef_z = np.power(sinb, 2, dtype=dataType) - \
             np.power(matCoef_y, 2, dtype=dataType)
@@ -479,7 +478,6 @@ class Lattice(object):
 
         """
 
-        degreeConversion = 180.0 / np.pi
         vector_magnitudes = np.linalg.norm(self.lattice_vectors, axis=1)
 
         a_dot_b = np.dot(self.lattice_vectors[0], self.lattice_vectors[1])
@@ -490,9 +488,9 @@ class Lattice(object):
         beta_raw = a_dot_c / (vector_magnitudes[0] * vector_magnitudes[2])
         gamma_raw = a_dot_b / (vector_magnitudes[0] * vector_magnitudes[1])
 
-        alpha = np.arccos(np.clip(alpha_raw, -1.0, 1.0)) * degreeConversion
-        beta = np.arccos(np.clip(beta_raw, -1.0, 1.0)) * degreeConversion
-        gamma = np.arccos(np.clip(gamma_raw, -1.0, 1.0)) * degreeConversion
+        alpha = np.rad2deg(np.arccos(np.clip(alpha_raw, -1.0, 1.0)))
+        beta = np.rad2deg(np.arccos(np.clip(beta_raw, -1.0, 1.0)))
+        gamma = np.rad2deg(np.arccos(np.clip(gamma_raw, -1.0, 1.0)))
 
         return np.asarray([alpha, beta, gamma], dtype=np.float64)
 

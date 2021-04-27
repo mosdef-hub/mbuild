@@ -62,6 +62,18 @@ or
 # pip install py3Dmol
 '''
 
+MESSAGES['rdkit'] = '''
+The code at {filename}:{line_number} requires the "rdkit" package
+
+rdkit can be installed with conda using:
+
+# conda install -c conda-forge rdkit
+
+or from source following instructions at:
+
+https://www.rdkit.org/docs/Install.html#installation-from-source
+'''
+
 MESSAGES['openbabel'] = '''
 The code at {filename}:{line_number} requires the "openbabel" package
 
@@ -75,6 +87,14 @@ or from source following instructions at:
 '''
 
 MESSAGES['pybel'] = MESSAGES['openbabel']
+
+MESSAGES['mdtraj'] = '''
+The code at {filename}:{line_number} requires the "mdtraj" package
+mdtraj can be installed using:
+# conda install -c conda-forge mdtraj
+or
+# pip install mdtraj
+'''
 
 MESSAGES['foyer'] = '''
 The code at {filename}:{line_number} requires the "foyer" package
@@ -217,6 +237,12 @@ except ImportError:
     has_openbabel = False
 
 try:
+    import mdtraj
+    has_mdtraj = True
+    del mdtraj
+except ImportError:
+    has_mdtraj = False
+try:
     import foyer
     has_foyer = True
     del foyer
@@ -238,13 +264,6 @@ except ImportError:
     has_hoomd = False
 
 try:
-    import nglview
-    has_nglview = True
-    del nglview
-except ImportError:
-    has_nglview = False
-
-try:
     import py3Dmol
     has_py3Dmol = True
     del py3Dmol
@@ -258,7 +277,6 @@ try:
 except ImportError:
     has_protobuf = False
 
-
 try:
     import garnett
     has_garnett = True
@@ -267,11 +285,18 @@ except ImportError:
     has_garnett = False
 
 try:
-    import pycifrw
+    import CifFile
     has_pycifrw = True
-    del pycifrw
+    del CifFile
 except ImportError:
     has_pycifrw = False
+
+try:
+    import rdkit
+    has_rdkit = True
+    del rdkit
+except ImportError:
+    has_rdkit = False
 
 def get_fn(name):
     """Get the full path to one of the reference files shipped for utils.

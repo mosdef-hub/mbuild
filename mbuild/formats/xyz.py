@@ -2,6 +2,9 @@ import numpy as np
 
 import mbuild as mb
 from mbuild.exceptions import MBuildError
+from ele import element_from_symbol
+from ele.exceptions import ElementError
+from warnings import warn
 
 __all__ = ['read_xyz', 'write_xyz']
 
@@ -36,6 +39,8 @@ def read_xyz(filename, compound=None):
     if compound is None:
         compound = mb.Compound()
 
+    guessed_elements = set()
+
     with open(filename, 'r') as xyz_file:
         n_atoms = int(xyz_file.readline())
         xyz_file.readline()
@@ -49,7 +54,21 @@ def read_xyz(filename, compound=None):
                 raise MBuildError(msg.format(n_atoms))
             coords[row] = line[1:4]
             coords[row] *= 0.1
-            particle = mb.Compound(pos=coords[row], name=line[0])
+            name = line[0]
+            try:
+                element = name.capitalize()
+                element = element_from_symbol(element)
+            except ElementError:
+                if name not in guessed_elements:
+                    warn(
+                        "No matching element found for {}; the particle will "
+                        "be added to the compound without an element "
+                        "attribute.".format(name)
+                    )
+                    guessed_elements.add(name)
+                element = None
+
+            particle = mb.Compound(pos=coords[row], name=name, element=element)
             compound.add(particle)
 
         # Verify we have read the last line by ensuring the next line in blank

@@ -15,6 +15,7 @@ from mbuild.coordinate_transform import (Translation, CoordinateTransform,
                                          rotate, spin, spin_x, spin_y, spin_z,
                                          angle, _spin)
 from mbuild.tests.base_test import BaseTest
+from mbuild.utils.exceptions import RemovedFuncError
 import mbuild as mb
 
 
@@ -193,31 +194,34 @@ class TestCoordinateTransform(BaseTest):
     def test_spin_x_eq(self, sixpoints):
         compound2 = mb.clone(sixpoints)
         sixpoints.spin(np.pi*1.23456789, np.asarray([1.0, 0.0, 0.0]))
-        spin_x(compound2, np.pi*1.23456789)
+
+        compound2.spin(np.pi*1.23456789, around=np.asarray([1, 0, 0]))
         assert(np.allclose(compound2.xyz, sixpoints.xyz, atol=1e-16))
 
     def test_spin_y_eq(self, sixpoints):
         compound2 = mb.clone(sixpoints)
         sixpoints.spin(np.pi*1.23456789, np.asarray([0.0, 1.0, 0.0]))
-        spin_y(compound2, np.pi*1.23456789)
+        
+        compound2.spin(np.pi*1.23456789, around=np.asarray([0, 1, 0]))
         assert(np.allclose(compound2.xyz, sixpoints.xyz, atol=1e-16))
 
     def test_spin_z_eq(self, sixpoints):
         compound2 = mb.clone(sixpoints)
         sixpoints.spin(np.pi*1.23456789, np.asarray([0.0, 0.0, 1.0]))
-        spin_z(compound2, np.pi*1.23456789)
+        
+        compound2.spin(np.pi*1.23456789, around=np.asarray([0, 0, 1]))
         assert(np.allclose(compound2.xyz, sixpoints.xyz, atol=1e-16))
 
     def test_spin_deprecated_x(self, sixpoints):
-        with pytest.warns(DeprecationWarning):
+        with pytest.raises(RemovedFuncError):
             spin_x(sixpoints, np.pi*3/2)
 
     def test_spin_deprecated_y(self, sixpoints):
-        with pytest.warns(DeprecationWarning):
+        with pytest.raises(RemovedFuncError):
             spin_y(sixpoints, np.pi*3/2)
 
     def test_spin_deprecated_z(self, sixpoints):
-        with pytest.warns(DeprecationWarning):
+        with pytest.raises(RemovedFuncError):
             spin_z(sixpoints, 69)
 
     def test_spin_arbitraty(self, sixpoints):
@@ -226,16 +230,16 @@ class TestCoordinateTransform(BaseTest):
         assert(np.allclose(sixpoints['up'].xyz, before['right'].xyz, atol=1e-16)
                 and np.allclose(sixpoints['down'].xyz, before['left'].xyz, atol=1e-16))
 
-    def test_warn_rotate_x(self, methane):
-        with pytest.warns(DeprecationWarning):
+    def test_error_rotate_x(self, methane):
+        with pytest.raises(RemovedFuncError):
             rotate_around_x(methane, np.pi)
 
-    def test_warn_rotate_y(self, methane):
-        with pytest.warns(DeprecationWarning):
+    def test_error_rotate_y(self, methane):
+        with pytest.raises(RemovedFuncError):
             rotate_around_y(methane, np.pi)
 
-    def test_warn_rotate_z(self, methane):
-        with pytest.warns(DeprecationWarning):
+    def test_error_rotate_z(self, methane):
+        with pytest.raises(RemovedFuncError):
             rotate_around_z(methane, np.pi)
 
     def test_spin_relative_compound_coordinates(self, sixpoints):
@@ -259,42 +263,42 @@ class TestCoordinateTransform(BaseTest):
 
     def test_rotate_around_x(self, methane):
         before = methane.xyz_with_ports
-        rotate_around_x(methane, np.pi)
+        methane.rotate(np.pi, around=np.asarray([1, 0, 0]))
         after = methane.xyz_with_ports
         assert (    np.allclose(before[:, 1], -1*after[:, 1], atol=1e-16)
                 and np.allclose(before[:, 2], -1*after[:, 2], atol=1e-16))
 
     def test_rotate_around_y(self, ch2):
         before = ch2.xyz_with_ports
-        rotate_around_y(ch2, np.pi)
+        ch2.rotate(np.pi, around=np.asarray([0, 1, 0]))
         after = ch2.xyz_with_ports
         assert (    np.allclose(before[:, 0], -1*after[:, 0], atol=1e-16)
                 and np.allclose(before[:, 2], -1*after[:, 2], atol=1e-16))
 
     def test_rotate_around_z(self, ch2):
         before = ch2.xyz_with_ports
-        rotate_around_z(ch2, np.pi)
+        ch2.rotate(np.pi, around=np.asarray([0, 0, 1]))
         after = ch2.xyz_with_ports
         assert (    np.allclose(before[:, 0], -1*after[:, 0], atol=1e-16)
                 and np.allclose(before[:, 1], -1*after[:, 1], atol=1e-16))
 
     def test_rotate_around_x_away_from_origin(self, sixpoints):
         before = sixpoints.xyz_with_ports
-        rotate_around_x(sixpoints, np.pi)
+        sixpoints.rotate(np.pi, around=np.asarray([1, 0, 0]))
         after = sixpoints.xyz_with_ports
         assert (    np.allclose(before[:, 1], -1*after[:, 1], atol=1e-16)
                 and np.allclose(before[:, 2], -1*after[:, 2], atol=1e-16))
 
     def test_rotate_around_y_away_from_origin(self, sixpoints):
         before = sixpoints.xyz_with_ports
-        rotate_around_y(sixpoints, np.pi)
+        sixpoints.rotate(np.pi, around=np.asarray([0, 1, 0]))
         after = sixpoints.xyz_with_ports
         assert (    np.allclose(before[:, 0], -1*after[:, 0], atol=1e-16)
                 and np.allclose(before[:, 2], -1*after[:, 2], atol=1e-16))
 
     def test_rotate_around_z_away_from_origin(self, sixpoints):
         before = sixpoints.xyz_with_ports
-        rotate_around_z(sixpoints, np.pi)
+        sixpoints.rotate(np.pi, around=np.asarray([0, 0, 1]))
         after = sixpoints.xyz_with_ports
         assert (    np.allclose(before[:, 1], -1*after[:, 1], atol=1e-16)
                 and np.allclose(before[:, 0], -1*after[:, 0], atol=1e-16))
@@ -350,21 +354,21 @@ class TestCoordinateTransform(BaseTest):
     def test_spin(self):
         points = np.asarray(
                 [[0, 0, 0], [1, 0, 0], [0, 1, 0], [-1, 0, 0], [0, -1, 0]],
-                dtype=np.float)
+                dtype=float)
         new_points_should_be = np.asarray(
                 [[0, 0, 0], [0, 1, 0], [-1, 0, 0], [0, -1, 0], [1, 0, 0]],
-                dtype=np.float)
+                dtype=float)
         spun_points = _spin(points, np.pi/2, [0, 0, 1])
         assert np.allclose(spun_points, new_points_should_be, atol=1e-15)
 
     def test_spin_away_from_origin(self):
         points = np.asarray(
                 [[0, 0, 0], [1, 0, 0], [0, 1, 0], [-1, 0, 0], [0, -1, 0]],
-                dtype=np.float)
+                dtype=float)
         points += [2, 2, 69]
         new_points_should_be = np.asarray(
                 [[2, 2, 69], [2, 3, 69], [1, 2, 69], [2, 1, 69], [3, 2, 69]],
-                dtype=np.float)
+                dtype=float)
         spun_points = _spin(points, np.pi/2, [0, 0, 1])
         assert np.allclose(spun_points, new_points_should_be, atol=1e-15)
     def test_xyz_axis_transform(self):
