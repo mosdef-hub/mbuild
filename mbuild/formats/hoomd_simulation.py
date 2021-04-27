@@ -101,12 +101,7 @@ def create_hoomd_simulation(
     _check_hoomd_version()
     version_numbers = _check_hoomd_version()
     if float(version_numbers[0]) >= 3:
-        warnings.warn(
-            "Warning when using Hoomd 3, potential API change "
-            + "where the hoomd context is not updated upon "
-            + "creation of forces - utilize "
-            + "the returned `hoomd_objects`"
-        )
+        raise RuntimeError("This method does not support HOOMD-blue v3.x.")
 
     hoomd_objects = []  # Potential adaptation for Hoomd v3 API
 
