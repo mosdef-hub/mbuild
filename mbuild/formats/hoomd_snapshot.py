@@ -36,14 +36,14 @@ def from_snapshot(snapshot, scale=1.0):
 
     # There will be a better way to do this once box overhaul merged
     # Only orthogonal boxes allowed
-    try:
-        # gsd
-        box = snapshot.configuration.box
-        comp.box = mb.Box(lengths=box[:3] * scale)
-    except AttributeError:
-        # hoomd
+    if 'SnapshotSystemData_float' in dir(hoomd._hoomd) and isinstance(snapshot, hoomd._hoomd.SnapshotSystemData_float):
+        # hoomd v2
         box = snapshot.box
         comp.box = mb.Box(lengths=np.array([box.Lx,box.Ly,box.Lz]) * scale)
+    else:
+        # gsd / hoomd v3
+        box = snapshot.configuration.box
+        comp.box = mb.Box(lengths=box[:3] * scale)
 
     # to_hoomdsnapshot shifts the coords, this will keep consistent
     shift = np.array(comp.box.lengths)/2
