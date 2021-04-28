@@ -274,6 +274,28 @@ class TestCompound(BaseTest):
         assert compound.n_particles == 8 + 2 * 3
         assert compound.n_bonds == 7 + 2 * 2
 
+    def test_init_mass(self):
+        element = mb.Compound(name="carbon", element="C")
+        assert np.allclose(12.011, element.mass, atol=1e-5)
+
+        bead = mb.Compound(name="A", mass=1.0)
+        assert bead.mass == 1.0
+        
+        bead_overwrite = mb.Compound(name="A", element="C", mass=1.0)
+        assert bead_overwrite.mass == 1.0
+
+        bead_no_mass = mb.Compound(name="A")
+        assert bead_no_mass.mass == 0.0
+
+    def test_init_with_bad_mass(self):
+        with pytest.raises(MBuildError):
+            a = mb.Compound(name="A")
+            b = mb.Compound(name="B")
+            compound = mb.Compound(subcompounds=[a, b], mass=2.0)
+        
+        with pytest.raises(ValueError):
+            mb.Compound(name="A", mass=-1.0)
+
     def test_init_with_bad_name(self):
         with pytest.raises(ValueError):
             mb.Compound(name=1)
@@ -281,6 +303,47 @@ class TestCompound(BaseTest):
     def test_add_wrong_input(self, ethane):
         with pytest.raises(ValueError):
             ethane.add('water')
+
+    def test_mass_property(self, h2o):
+        methane = mb.load("C", smiles=True)
+        assert np.allclose(methane.mass, 16.043, atol=1e-5)
+
+        assert np.allclose(h2o.mass, 18.015, atol=1e-5)
+
+        system = mb.fill_box(compound=h2o,
+                            n_compounds=5,
+                            box=[0.5, 0.5, 0.5]
+                            )
+        assert np.allclose(system.mass, 5*h2o.mass, atol=1e-5)
+
+    def test_mass_setter(self, ethane):
+        comp = mb.Compound(name="A", mass=1.0)
+        comp.mass = 2.0
+        assert comp.mass == 2.0
+
+        carbon = mb.Compound(name="carbon", element="C")
+        carbon.mass = 1.0
+        assert carbon.mass == 1.0
+
+        carbon.mass = np.array(12.011)
+        assert carbon.mass == 12.011
+
+        carbon.mass = "1.0"
+        assert carbon.mass == 1.0
+
+        for p in ethane.particles():
+            p.mass = 1.0
+        assert ethane.mass == 8.0 
+
+    def test_mass_setter_wrong_input(self, methane):
+        with pytest.raises(MBuildError):
+            methane.mass = 1.0
+
+        with pytest.raises(ValueError):
+            methane[0].mass = -1.0
+
+        with pytest.raises(MBuildError):
+            methane[0].mass = [1.0, 1.0, 1.0, 1.0, 1.0]
 
     def test_add_existing_parent(self, ethane, h2o):
         water_in_water = mb.clone(h2o)

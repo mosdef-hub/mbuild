@@ -7,7 +7,7 @@ import ele
 import numpy as np
 
 from collections import OrderedDict
-from collections.abc import Iterable
+from collections.abc import Iterable, Sequence
 from copy import deepcopy
 from warnings import warn
 from oset import oset as OrderedSet
@@ -171,7 +171,7 @@ class Compound(object):
 
         self.box = box
         self.element = element
-        if mass and mass < 0:
+        if mass and float(mass) < 0.0:
             raise ValueError("Cannot set a Compound mass value less than zero")
             
         # self.add() must be called after labels and children are initialized.
@@ -336,13 +336,10 @@ class Compound(object):
         
         If the compound contains children compouds, the total mass of all
         children compounds is returned.
-
         If the compound contains element information (Compound.element) then
         the mass is inferred from the elemental mass. 
-
         If Compound.mass has been set explicitly, then it will override the
         mass inferred from Compound.element.
-
         If neither of a Compound's element or mass attributes have been set,
         then a mass of zero is returned.
         """
@@ -366,11 +363,11 @@ class Compound(object):
             raise MBuildError(
                 "Cannot set the mass of a Compound containing "
                 "children compounds")
-        if isinstance(value, Iterable):
+        if isinstance(value, Sequence) and not isinstance(value, str):
             if len(value) == 1:
                 value=value[0]
             else:
-                raise ValueError("Mass can only be set for "
+                raise MBuildError("Mass can only be set for "
                         "one compound at a time")
         value = float(value)
         if value < 0:
