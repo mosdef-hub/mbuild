@@ -597,7 +597,6 @@ def _get_bond_types(structure, bonds, sigma_conversion_factor,
                                              tuple(sorted((bond.atom1.type,bond.atom2.type)))
                                              ) for bond in structure.bonds])))
     unique_bond_types = OrderedDict([(y,x+1) for x,y in unique_bond_types.items()])
-    print(unique_bond_types)
     bond_types = [unique_bond_types[(round(bond.type.k*
         (sigma_conversion_factor**2/epsilon_conversion_factor),3),
                                      round(bond.type.req/sigma_conversion_factor,3),
