@@ -35,17 +35,23 @@ class TestPolymer(BaseTest):
         assert c6.children[-2].name == 'Ester'
 
     def test_errors(self, ch2, ester):
-        with pytest.raises(ValueError):
+        with pytest.raises(ValueError): # Not enough end groups
             chain = mb.recipes.Polymer(monomers=[ch2],
                                        end_groups=[ester])
 
-        with pytest.raises(ValueError):
+        with pytest.raises(ValueError): # Bad sequence
             chain = mb.recipes.Polymer(monomers=[ch2])
             chain.build(n=5, sequence="AB")
 
-        with pytest.raises(ValueError):
+        with pytest.raises(ValueError): # Bad n value
             chain = mb.recipes.Polymer(monomers=[ch2])
             chain.build(n=0, sequence="A")
+
+        with pytest.raises(ValueError): # Bad end group label
+            chain = mb.recipes.Polymer(monomers=[ch2])
+            acid = mb.load("C(=O)O", smiles=True)
+            chain.add_end_groups(acid, index=3, separation=0.15,
+                    duplicate=False, label="front")
 
     def test_no_end_groups(self):
         chain = mb.recipes.Polymer()
