@@ -42,7 +42,7 @@ def from_snapshot(snapshot, scale=1.0):
     # There will be a better way to do this once box overhaul merged
     # Only orthogonal boxes allowed
     if (
-            'SnapshotSystemData_float' in dir(hoomd._hoomd))
+            'SnapshotSystemData_float' in dir(hoomd._hoomd)
             and
             isinstance(snapshot, hoomd._hoomd.SnapshotSystemData_float)
             ):
