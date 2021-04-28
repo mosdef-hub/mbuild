@@ -1,4 +1,5 @@
 import os
+import warnings
 
 import pytest
 import numpy as np
@@ -279,6 +280,30 @@ class TestPacking(BaseTest):
                               overlap=0.2)
         edge_sizes = system_box.lengths - solvated.boundingbox.lengths
         assert np.allclose(edge_sizes, np.array([0.4]*3), atol=0.1)
+    
+    def test_validate_density(self, methane):
+        bead = mb.Compound(name="A", mass=0.0)
+        with pytest.raises(MBuildError):
+            mb.fill_box(compound=bead, n_compounds=10, density=1)
+
+        with pytest.raises(MBuildError):
+            mb.fill_box(compound=bead, density=1, box=[.5, .5, .5])
+        
+        with pytest.raises(MBuildError):
+            mb.fill_sphere(compound=bead, sphere=[20, 20, 20, 20], density=1)
+
+        methane[1].mass = 0.0
+        with warnings.catch_warnings(record=True) as w:
+            box = mb.fill_box(compound=methane, n_compounds=10, density=1)
+            assert w
+
+        with warnings.catch_warnings(record=True) as w:
+            box = mb.fill_sphere(compound=methane, sphere=[20, 20, 20, 20], density=.25)
+            assert w
+
+
+
+        
 
 
 

@@ -168,6 +168,7 @@ def fill_box(
             raise ValueError(msg)
 
     if density is not None:
+        _validate_mass(compound, n_compounds)
         if box is None and n_compounds is not None:
             total_mass = np.sum([n*c.mass for c, n in zip(compound, n_compounds)])
             # Conversion from (amu/(kg/m^3))**(1/3) to nm
@@ -508,6 +509,7 @@ def fill_sphere(
     radius = sphere[3] - edge
 
     if density is not None:
+        _validate_mass(compound, n_compounds)
         if n_compounds is None:
             if len(compound) == 1:
                 # Conversion from kg/m^3 / amu * nm^3 to dimensionless units
@@ -721,6 +723,28 @@ def solvate(
         os.unlink(solute_xyz.name)
     return solvated
 
+def _validate_mass(compound, n_compounds):
+    """
+    Check the mass of the compounds passed into the various packing functions 
+    """
+    if compound and n_compounds:
+        total_mass = np.sum([n*c.mass for c, n in zip(compound, n_compounds)])
+    elif compound and not n_compounds:
+        total_mass = np.sum([c.mass for c in compound])
+
+    if total_mass == 0:
+        raise MBuildError("The total mass of your compound(s) is zero "
+                "In order to use density when packing a box, the mass of "
+                "the compounds must be set. See the doc strings of the "
+                "Compound() class in compound.py for more information "
+                "on how mass is handled."
+                )
+    for comp in compound:
+        if 0.0 in [c.mass for c in comp.particles()]:
+            warnings.warn(f"Some of the compounds or subcompounds in {comp} "
+                    "have a mass of zero. This may have an effect on "
+                    "density calculations"
+                    )
 
 def _validate_box(box):
     """Ensure that the box passed by the user can be formatted as an mbuild.Box

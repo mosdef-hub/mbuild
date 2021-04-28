@@ -186,7 +186,7 @@ class Compound(object):
                         "subcompounds.")
             self.add(subcompounds)
             self._charge = 0.0
-            self._mass = 0.0
+            self._mass = mass 
         else:
             self._charge = charge
             self._mass = mass
@@ -343,7 +343,7 @@ class Compound(object):
         If neither of a Compound's element or mass attributes have been set,
         then a mass of zero is returned.
         """
-        if self._mass:
+        if self._mass is not None:
             return self._mass
         else:
             return sum([self._particle_mass(p) for p in self.particles()]) 
@@ -370,7 +370,7 @@ class Compound(object):
                 raise MBuildError("Mass can only be set for "
                         "one compound at a time")
         value = float(value)
-        if value < 0:
+        if value < 0.0:
             raise ValueError(
                     "Cannot set a mass value less than zero")
         self._mass = value
