@@ -362,16 +362,21 @@ class Compound(object):
     
     @mass.setter
     def mass(self, value):
-        value = float(value)
-        if value < 0:
-            raise ValueError(
-                    "Cannot set a mass value less than zero")
         if self.children:
             raise MBuildError(
                 "Cannot set the mass of a Compound containing "
                 "children compounds")
-        else:
-            self._mass = value
+        if isinstance(value, Iterable):
+            if len(value) == 1:
+                value=value[0]
+            else:
+                raise ValueError("Mass can only be set for "
+                        "one compound at a time")
+        value = float(value)
+        if value < 0:
+            raise ValueError(
+                    "Cannot set a mass value less than zero")
+        self._mass = value
 
     @property
     def charge(self):
