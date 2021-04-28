@@ -204,7 +204,10 @@ def to_hoomdsnapshot(
             hoomd_snapshot.box = hoomd.data.boxdim(
                 Lx=lx, Ly=ly, Lz=lz, xy=xy, xz=xz, yz=yz
             )
-        elif hoomd_version_major == 3:
+
+            # save the box for later use when wrapping coordinates
+            box = hoomd_snapshot.box
+        elif hoomd_version.major == 3:
             hoomd_snapshot.configuration.box = [lx, ly, lz, xy, xz, yz]
         else:
             raise RuntimeError("Unsupported HOOMD version:",
