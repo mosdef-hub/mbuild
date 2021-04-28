@@ -83,7 +83,9 @@ class Compound(object):
         The position of the Compound in Cartestian space
     mass : float, optional, default=None
         The mass of the compound. If none is set, then will try to
-        infer the mass from a compound's element attribute
+        infer the mass from a compound's element attribute.
+        If neither `mass` or `element` are specified, then the 
+        mass will be zero.
     charge : float, optional, default=0.0
         Currently not used. Likely removed in next release.
     periodicity : np.ndarray, shape=(3,), dtype=float, optional, default=[0, 0, 0]
@@ -330,6 +332,20 @@ class Compound(object):
     
     @property
     def mass(self):
+        """Return the total mass of a compound
+        
+        If the compound contains children compouds, the total mass of all
+        children compounds is returned.
+
+        If the compound contains element information (Compound.element) then
+        the mass is inferred from the elemental mass. 
+
+        If Compound.mass has been set explicitly, then it will override the
+        mass inferred from Compound.element.
+
+        If neither of a Compound's element or mass attributes have been set,
+        then a mass of zero is returned.
+        """
         if self._mass:
             return self._mass
         else:
@@ -346,6 +362,7 @@ class Compound(object):
     
     @mass.setter
     def mass(self, value):
+        value = float(value)
         if value < 0:
             raise ValueError(
                     "Cannot set a mass value less than zero")
