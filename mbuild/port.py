@@ -89,7 +89,7 @@ class Port(Compound):
         separation : float, required
             Distance to shift port along the orientation vector from the anchor
             particle position. If no anchor is provided, the port will be
-            shiftedfrom the origin.
+            shifted from the origin.
         """
         if self.used:
             warn(
