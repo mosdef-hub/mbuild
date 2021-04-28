@@ -44,3 +44,43 @@ Lattice
 
 .. autoclass:: mbuild.Lattice
     :members:
+
+Fill Box
+--------------------
+
+.. automodule:: mbuild.packing.fill_box
+    :members:
+
+
+Fill Region
+--------------------
+
+.. automodule:: mbuild.packing.fill_region
+    :members:
+
+
+Fill Sphere
+--------------------
+
+.. automodule:: mbuild.packing.fill_sphere
+    :members:
+
+Solvate
+--------------------
+
+.. automodule:: mbuild.packing.solvate
+    :members:
+
+
+Load
+--------------------
+
+.. automodule:: mbuild.conversion.load
+    :members:
+
+
+Load CIF
+--------------------
+
+.. automodule:: mbuild.lattice.load_cif
+    :members:
