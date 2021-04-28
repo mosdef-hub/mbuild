@@ -39,6 +39,17 @@ in order to get all of the dependencies::
 .. note::
     The above installation is for OSX and Unix. If you are using Windows, use environment-win.yml instead of environment-dev.yml
 
+Install pre-commit
+------------------
+
+We use [pre-commit](https://pre-commit.com/) to automatically handle our code formatting and this package is included in the dev environment. To install pre-commit locally as a git hook run::
+
+    $ pre-commit install
+
+And optionally to check all the files::
+
+    $ pre-commit run --all-files
+
 Supported Python Versions
 -------------------------
 
