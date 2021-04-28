@@ -63,7 +63,7 @@ def fill_box(
     edge=0.2,
     compound_ratio=None,
     aspect_ratio=None,
-    fix_orientation=False,
+    fix_orientation=[False, False, False],
     temp_file=None,
     update_port_locations=False,
 ):
@@ -120,9 +120,11 @@ def fill_box(
     aspect_ratio : list of float
         If a non-cubic box is desired, the ratio of box lengths in the x, y,
         and z directions.
-    fix_orientation : bool or list of bools
-        Specify that compounds should not be rotated when filling the box,
-        default=False.
+    fix_orientation : boolean, list of booleans or list of lists of booleans
+        If True, specifies that compounds should not be rotated when filling the box.
+        Rotation contraints are specified for each individual axis (x, y, z)
+        default=[False, False, False]. If a single instance of True or False is passed
+        then defaults to True or False for all axes.
     temp_file : str, default=None
         File name to write PACKMOL's raw output to.
     update_port_locations : bool, default=False
@@ -136,7 +138,6 @@ def fill_box(
     """
     # check that the user has the PACKMOL binary on their PATH
     _check_packmol(PACKMOL)
-
     arg_count = 3 - [n_compounds, box, density].count(None)
     if arg_count != 2:
         msg = (
@@ -151,8 +152,18 @@ def fill_box(
         compound = [compound]
     if n_compounds is not None and not isinstance(n_compounds, (list, set)):
         n_compounds = [n_compounds]
+
     if not isinstance(fix_orientation, (list, set)):
-        fix_orientation = [fix_orientation] * len(compound)
+        fix_orientation = [fix_orientation]*len(compound)
+        try:
+            iter(fix_orientation[0])
+        except TypeError:
+            warnings.warn("fix_orientation can now be passed as a list with True/False "
+             "values specified for each x,y,z axis individually. "
+             "Using a single instance of True/False defaults to [True,True,True] "
+             "and [False,False,False] respectively")
+    if isinstance(fix_orientation, (list, set)) and len(fix_orientation) == 3:
+        fix_orientation = [fix_orientation]*len(compound)
 
     if compound is not None and n_compounds is not None:
         if len(compound) != len(n_compounds):
@@ -247,17 +258,17 @@ def fill_box(
             compound_xyz_list.append(compound_xyz)
 
             comp.save(compound_xyz.name, overwrite=True)
-            input_text += PACKMOL_BOX.format(
-                compound_xyz.name,
-                m_compounds,
-                box_mins[0],
-                box_mins[1],
-                box_mins[2],
-                box_maxs[0],
-                box_maxs[1],
-                box_maxs[2],
-                PACKMOL_CONSTRAIN if rotate else "",
-            )
+            PACKMOL_CONSTRAIN = _packmol_constrain(rotate) 
+            input_text += PACKMOL_BOX.format(compound_xyz.name, m_compounds,
+                                             box_mins[0],
+                                             box_mins[1],
+                                             box_mins[2],
+                                             box_maxs[0],
+                                             box_maxs[1],
+                                             box_maxs[2],
+                                             PACKMOL_CONSTRAIN if PACKMOL_CONSTRAIN else ""
+                                             )
+
         _run_packmol(input_text, filled_xyz, temp_file)
         # Create the topology and update the coordinates.
         filled = Compound()
@@ -286,7 +297,7 @@ def fill_region(
     seed=12345,
     sidemax=100.0,
     edge=0.2,
-    fix_orientation=False,
+    fix_orientation=[False, False, False],
     temp_file=None,
     update_port_locations=False,
 ):
@@ -312,9 +323,11 @@ def fill_region(
         Buffer at the edge of the region to not place molecules. This is
         necessary in some systems because PACKMOL does not account for
         periodic boundary conditions in its optimization.
-    fix_orientation : bool or list of bools
-        Specify that compounds should not be rotated when filling the box,
-        default=False.
+    fix_orientation : list of booleans or list of lists of booleans
+        If True, specifies that compounds should not be rotated when filling the box.
+        Rotation contraints are specified for each individual axis (x, y, z)
+        default=[False, False, False]. If a single instance of True or False is passed
+        then defaults to True or False for all axes.
     temp_file : str, default=None
         File name to write PACKMOL's raw output to.
     update_port_locations : bool, default=False
@@ -338,7 +351,16 @@ def fill_region(
     if not isinstance(n_compounds, (list, set)):
         n_compounds = [n_compounds]
     if not isinstance(fix_orientation, (list, set)):
-        fix_orientation = [fix_orientation] * len(compound)
+        fix_orientation = [fix_orientation]*len(compound)
+        try:
+            iter(fix_orientation[0])
+        except TypeError:
+            warnings.warn("fix_orientation can now be passed as a list with True/False "
+             "values specified for each x,y,z axis individually. "
+             "Using a single instance of True/False defaults to (True,True,True) "
+             "and (False,False,False) respectively")
+    if isinstance(fix_orientation, (list, set)) and len(fix_orientation) == 3:
+        fix_orientation = [fix_orientation]*len(compound)
 
     if compound is not None and n_compounds is not None:
         if len(compound) != len(n_compounds):
@@ -382,16 +404,16 @@ def fill_region(
             reg_maxs = reg.maxs * 10
             reg_maxs -= edge * 10  # Apply edge buffer
             reg_mins += edge * 10
-            input_text += PACKMOL_BOX.format(
-                compound_xyz.name,
-                m_compounds,
-                reg_mins[0],
-                reg_mins[1],
-                reg_mins[2],
-                reg_maxs[0],
-                reg_maxs[1],
-                reg_maxs[2],
-                PACKMOL_CONSTRAIN if rotate else "",
+            PACKMOL_CONSTRAIN = _packmol_constrain(rotate)
+            input_text += PACKMOL_BOX.format(compound_xyz.name,
+                                             m_compounds,
+                                             reg_mins[0],
+                                             reg_mins[1],
+                                             reg_mins[2],
+                                             reg_maxs[0],
+                                             reg_maxs[1],
+                                             reg_maxs[2],
+                                             PACKMOL_CONSTRAIN if PACKMOL_CONSTRAIN else ""
             )
 
         _run_packmol(input_text, filled_xyz, temp_file)
@@ -421,7 +443,7 @@ def fill_sphere(
     sidemax=100.0,
     edge=0.2,
     compound_ratio=None,
-    fix_orientation=False,
+    fix_orientation=[False, False, False],
     temp_file=None,
     update_port_locations=False,
 ):
@@ -461,9 +483,11 @@ def fill_sphere(
         Ratio of number of each compound to be put in sphere. Only used in the
         case of `density` having been specified, `n_compounds` not specified,
         and more than one `compound`.
-    fix_orientation : bool or list of bools
-        Specify that compounds should not be rotated when filling the sphere,
-        default=False.
+    fix_orientation : boolean, list of booleans or list of lists of booleans
+        If True, specifies that compounds should not be rotated when filling the box.
+        Rotation contraints are specified for each individual axis (x, y, z)
+        default=[False, False, False]. If a single instance of True or False is passed
+        then defaults to True or False for all axes.
     temp_file : str, default=None
         File name to write PACKMOL's raw output to.
     update_port_locations : bool, default=False
@@ -497,7 +521,16 @@ def fill_sphere(
     if n_compounds is not None and not isinstance(n_compounds, (list, set)):
         n_compounds = [n_compounds]
     if not isinstance(fix_orientation, (list, set)):
-        fix_orientation = [fix_orientation] * len(compound)
+        fix_orientation = [fix_orientation]*len(compound)
+        try:
+            iter(fix_orientation[0])
+        except TypeError:
+            warnings.warn("fix_orientation can now be passed as a list with True/False "
+             "values specified for each x,y,z axis individually. "
+             "Using a single instance of True/False defaults to [True,True,True] "
+             "and [False,False,False] respectively")
+    if isinstance(fix_orientation, (list, set)) and len(fix_orientation) == 3:
+        fix_orientation = [fix_orientation]*len(compound)
 
     if compound is not None and n_compounds is not None:
         if len(compound) != len(n_compounds):
@@ -583,7 +616,7 @@ def fill_sphere(
 
             compound_xyz = _new_xyz_file()
             compound_xyz_list.append(compound_xyz)
-
+            PACKMOL_CONSTRAIN = _packmol_constrain(rotate)
             comp.save(compound_xyz.name, overwrite=True)
             input_text += PACKMOL_SPHERE.format(
                 compound_xyz.name,
@@ -592,10 +625,10 @@ def fill_sphere(
                 sphere[1],
                 sphere[2],
                 radius,
-                PACKMOL_CONSTRAIN if rotate else "",
+                PACKMOL_CONSTRAIN if PACKMOL_CONSTRAIN else "",
             )
         _run_packmol(input_text, filled_xyz, temp_file)
-
+        
         # Create the topology and update the coordinates.
         filled = Compound()
         filled = _create_topology(filled, compound, n_compounds)
@@ -620,7 +653,7 @@ def solvate(
     seed=12345,
     sidemax=100.0,
     edge=0.2,
-    fix_orientation=False,
+    fix_orientation=[False, False, False],
     temp_file=None,
     update_port_locations=False,
 ):
@@ -648,9 +681,11 @@ def solvate(
         Buffer at the edge of the box to not place molecules. This is necessary
         in some systems because PACKMOL does not account for periodic boundary
         conditions in its optimization.
-    fix_orientation : bool
-        Specify if solvent should not be rotated when filling box,
-        default=False.
+    fix_orientation : boolean, list of booleans or list of lists of booleans
+        If True, specifies that compounds should not be rotated when filling the box.
+        Rotation contraints are specified for each individual axis (x, y, z)
+        default=[False, False, False]. If a single instance of True or False is passed
+        then defaults to True or False for all axes.
     temp_file : str, default=None
         File name to write PACKMOL's raw output to.
     update_port_locations : bool, default=False
@@ -672,6 +707,15 @@ def solvate(
         n_solvent = [n_solvent]
     if not isinstance(fix_orientation, (list, set)):
         fix_orientation = [fix_orientation] * len(solvent)
+        try:
+            iter(fix_orientation[0])
+        except TypeError:
+            warnings.warn("fix_orientation can now be passed as a list with True/False "
+             "values specified for each x,y,z axes individually. "
+             "Using a single instance of True/False defaults to [True,True,True] "
+             "and [False,False,False] respectively")
+    if isinstance(fix_orientation, (list, set)) and len(fix_orientation) == 3:
+        fix_orientation = [fix_orientation]*len(solvent)
 
     if len(solvent) != len(n_solvent):
         msg = "`n_solvent` and `n_solvent` must be of equal length."
@@ -703,8 +747,9 @@ def solvate(
 
             solvent_xyz = _new_xyz_file()
             solvent_xyz_list.append(solvent_xyz)
-
+            
             solv.save(solvent_xyz.name, overwrite=True)
+            PACKMOL_CONSTRAIN = _packmol_constrain(rotate)
             input_text += PACKMOL_BOX.format(
                 solvent_xyz.name,
                 m_solvent,
@@ -714,7 +759,7 @@ def solvate(
                 box_maxs[0],
                 box_maxs[1],
                 box_maxs[2],
-                PACKMOL_CONSTRAIN if rotate else "",
+                PACKMOL_CONSTRAIN if PACKMOL_CONSTRAIN else "",
             )
         _run_packmol(input_text, solvated_xyz, temp_file)
 
@@ -762,6 +807,44 @@ def _validate_box(box):
             " 6 (box mins and maxes) or an mbuild.Box object."
         )
     return box
+
+
+def _packmol_constrain(fix_orientation):
+    """
+    Provides information to PACKMOL about which axes to constrain rotation.
+    fix_orientation is generated within the `fill_box` function
+    Parameters
+    ----------
+    fix_orientation : list of booleans or single boolean, directions (x, y, z) about
+                      which to constrain rotation. If True, no rotation
+                      in that direction
+    Returns
+    -------
+    None if fix_orientation = (False, False, False)
+    string
+        rotation constraints to be added to PACKMOL input text
+    """
+    constraints = ['constrain_rotation x 0. 0.',
+                   'constrain_rotation y 0. 0.',
+                   'constrain_rotation z 0. 0.']
+    CONSTRAIN = """
+    {}
+    {}
+    {}
+    """
+    # Handles instances that are not iterable; defaults to True/False for all axes
+    if fix_orientation is True or fix_orientation is False:
+        fix_orientation = [fix_orientation] * 3
+
+    if not any(fix_orientation):
+        return None
+    final_constraints = list()
+    for i, val in enumerate(fix_orientation):
+        if val:
+            final_constraints.append(constraints[i])
+        else:
+            final_constraints.append("")
+    return CONSTRAIN.format(*final_constraints)
 
 
 def _new_xyz_file():
@@ -843,7 +926,7 @@ def _run_packmol(input_text, filled_xyz, temp_file):
             "sufficient packing result."
         )
         warnings.warn(msg)
-        os.system("cp {0}_FORCED {0}".format(filled_xyz.name))
+        os.system('cp {0}_FORCED {0}'.format(filled_xyz.name))
 
     if "ERROR" in out or proc.returncode != 0:
         _packmol_error(out, err)

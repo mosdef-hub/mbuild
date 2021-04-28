@@ -217,6 +217,20 @@ class TestPacking(BaseTest):
         w1 -= w1.sum(0) / len(w1)
         assert np.isclose(w0, w1).all() is not True
 
+    @pytest.mark.parametrize('orientations,constraints',
+               [((True, False, False),["constrain_rotation x"]),
+                ((False, True, False),["constrain_rotation y"]),
+                ((False, False, True),["constrain_rotation z"]),
+                ((True, True, False),["constrain_rotation x",
+                    "constrain_rotation y"]),
+                ((False, True, True),["constrain_rotation y",
+                    "constrain_rotation z"]),
+                ((True, False, True),["constrain_rotation x",
+                    "constrain_rotation z"])])
+    def test_specify_axis(self, orientations, constraints):
+        for i in constraints:
+            assert i in mb.packing._packmol_constrain(orientations)
+
     def test_remove_port(self):
         from mbuild.lib.recipes import Alkane
 
