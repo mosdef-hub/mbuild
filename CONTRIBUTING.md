@@ -33,7 +33,7 @@ It is important to have a consistent style throughout the source code. The follo
 * Lines do not end with whitespace
 * For other details, refer to [PEP8](https://www.python.org/dev/peps/pep-0008)
 
-We use [pre-commit](https://pre-commit.com/) to automatically check our code style. Pre-commit is included in the dev environment and can be installed using:
+We use [pre-commit](https://pre-commit.com/) to automatically check our code style. Pre-commit is included in the dev environment and its git hooks can be installed using:
 
 ```bash
 pre-commit install
