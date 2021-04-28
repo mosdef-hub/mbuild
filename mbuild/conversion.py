@@ -72,7 +72,7 @@ def load(
     rigid : bool, optional, default=False
         Treat the compound as a rigid body
     backend : str, optional, default=None
-        Backend used to load structure from file or string. If not specified,a
+        Backend used to load structure from file or string. If not specified, a
         default backend (extension specific) will be used.
     smiles: bool, optional, default=False
         Use RDKit or OpenBabel to parse filename as a SMILES string or file
