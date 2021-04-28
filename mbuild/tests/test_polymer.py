@@ -43,6 +43,10 @@ class TestPolymer(BaseTest):
             chain = mb.recipes.Polymer(monomers=[ch2])
             chain.build(n=5, sequence="AB")
 
+        with pytest.raises(ValueError):
+            chain = mb.recipes.Polymer(monomers=[ch2])
+            chain.build(n=0, sequence="A")
+
     def test_no_end_groups(self):
         chain = mb.recipes.Polymer()
         ethane = mb.load('CC', smiles=True)
