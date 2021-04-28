@@ -1,18 +1,13 @@
 name: mBuild-docs
 channels:
   - conda-forge
-  - omnia
-  - mosdef
 dependencies:
   - python=3.7
-  - openmm
-  - parmed
+  - sphinx
+  - nbsphinx
+  - lark-parser
+  - requests
+  - mock
   - pip:
-    - sphinx
     - sphinx_rtd_theme
     - sphinxcontrib-svg2pdfconverter
-    - nbsphinx
-    - networkx >=2.0
-    - lark-parser
-    - requests
-    - lxml
