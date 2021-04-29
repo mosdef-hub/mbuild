@@ -1,3 +1,7 @@
+"""mBuild packing module: a wrapper for PACKMOL.
+
+http://leandro.iqm.unicamp.br/m3g/packmol/home.shtml
+"""
 import os
 import sys
 import tempfile
@@ -12,14 +16,15 @@ from mbuild.box import Box
 from mbuild.compound import Compound
 from mbuild.exceptions import MBuildError
 
-__all__ = ['fill_box', 'fill_region', 'fill_sphere', 'solvate']
+__all__ = ["fill_box", "fill_region", "fill_sphere", "solvate"]
 
-PACKMOL = find_executable('packmol')
+PACKMOL = find_executable("packmol")
 PACKMOL_HEADER = """
 tolerance {0:.16f}
 filetype xyz
 output {1}
 seed {2}
+sidemax {3}
 
 """
 PACKMOL_SOLUTE = """
@@ -51,32 +56,43 @@ constrain_rotation z 0. 0.
 """
 
 
-def fill_box(compound, n_compounds=None, box=None, density=None, overlap=0.2,
-             seed=12345, edge=0.2, compound_ratio=None,
-             aspect_ratio=None, fix_orientation=False, temp_file=None,
-             update_port_locations=False):
-    """Fill a box with a `mbuild.compound` or `Compound`s using PACKMOL.
+def fill_box(
+    compound,
+    n_compounds=None,
+    box=None,
+    density=None,
+    overlap=0.2,
+    seed=12345,
+    sidemax=100.0,
+    edge=0.2,
+    compound_ratio=None,
+    aspect_ratio=None,
+    fix_orientation=False,
+    temp_file=None,
+    update_port_locations=False,
+):
+    """Fill a box with an `mbuild.compound` or `Compound`s using PACKMOL.
 
-   `fill_box` takes a single `mbuild.Compound` or a
-   list of `mbuild.Compound`'s and return an `mbuild.Compound` that has
-   been filled to the user's specifications to the best of PACKMOL's ability.
+    `fill_box` takes a single `Compound` or a list of `Compound`'s and returns
+    a `Compound` that has been filled to the user's specifications to the best
+    of PACKMOL's ability.
 
-    When filling a system, two arguments of `n_compounds, box, and density`
-    must be specified.
+    When filling a system, two arguments of `n_compounds, box, and density` must
+    be specified.
 
-    If `n_compounds` and `box` are not None, the specified number of
-    n_compounds will be inserted into a box of the specified size.
+    If `n_compounds` and `box` are not None, the specified number of n_compounds
+    will be inserted into a box of the specified size.
 
-    If `n_compounds` and `density` are not None, the corresponding box
-    size will be calculated internally. In this case, `n_compounds`
-    must be an int and not a list of int.
+    If `n_compounds` and `density` are not None, the corresponding box size will
+    be calculated internally. In this case, `n_compounds` must be an int and not
+    a list of int.
 
-    If `box` and `density` are not None, the corresponding number of
-    compounds will be calculated internally.
+    If `box` and `density` are not None, the corresponding number of compounds
+    will be calculated internally.
 
-    For the cases in which `box` is not specified but generated internally,
-    the default behavior is to calculate a cubic box. Optionally,
-    `aspect_ratio` can be passed to generate a non-cubic box.
+    For the cases in which `box` is not specified but generated internally, the
+    default behavior is to calculate a cubic box. Optionally, `aspect_ratio` can
+    be passed to generate a non-cubic box.
 
     Parameters
     ----------
@@ -93,39 +109,43 @@ def fill_box(compound, n_compounds=None, box=None, density=None, overlap=0.2,
         Minimum separation between atoms of different molecules.
     seed : int, default=12345
         Random seed to be passed to PACKMOL.
+    sidemax : float, optional, default=100.0
+        Needed to build an initial approximation of the molecule distribution in
+        PACKMOL. All system coordinates must fit with in +/- sidemax, so
+        increase sidemax accordingly to your final box size.
     edge : float, units nm, default=0.2
         Buffer at the edge of the box to not place molecules. This is necessary
         in some systems because PACKMOL does not account for periodic boundary
         conditions in its optimization.
     compound_ratio : list, default=None
-        Ratio of number of each compound to be put in box. Only used in the
-        case of `density` and `box` having been specified, `n_compounds` not
+        Ratio of number of each compound to be put in box. Only used in the case
+        of `density` and `box` having been specified, `n_compounds` not
         specified, and more than one `compound`.
     aspect_ratio : list of float
-        If a non-cubic box is desired, the ratio of box lengths in the x, y,
-        and z directions.
+        If a non-cubic box is desired, the ratio of box lengths in the x, y, and
+        z directions.
     fix_orientation : bool or list of bools
         Specify that compounds should not be rotated when filling the box,
         default=False.
     temp_file : str, default=None
         File name to write PACKMOL's raw output to.
     update_port_locations : bool, default=False
-        After packing, port locations can be updated, but since compounds
-        can be rotated, port orientation may be incorrect.
+        After packing, port locations can be updated, but since compounds can be
+        rotated, port orientation may be incorrect.
 
     Returns
     -------
     filled : mb.Compound
-
     """
     # check that the user has the PACKMOL binary on their PATH
     _check_packmol(PACKMOL)
 
     arg_count = 3 - [n_compounds, box, density].count(None)
     if arg_count != 2:
-        msg = ("Exactly 2 of `n_compounds`, `box`, and `density` "
-               "must be specified. {} were given.".format(arg_count))
-        raise ValueError(msg)
+        raise ValueError(
+            "Exactly 2 of `n_compounds`, `box`, and `density` must be "
+            "specified. {} were given.".format(arg_count)
+        )
 
     if box is not None:
         box = _validate_box(box)
@@ -134,51 +154,68 @@ def fill_box(compound, n_compounds=None, box=None, density=None, overlap=0.2,
     if n_compounds is not None and not isinstance(n_compounds, (list, set)):
         n_compounds = [n_compounds]
     if not isinstance(fix_orientation, (list, set)):
-        fix_orientation = [fix_orientation]*len(compound)
+        fix_orientation = [fix_orientation] * len(compound)
 
     if compound is not None and n_compounds is not None:
         if len(compound) != len(n_compounds):
-            msg = ("`compound` and `n_compounds` must be of equal length.")
-            raise ValueError(msg)
+            raise ValueError(
+                "`compound` and `n_compounds` must be of equal length."
+            )
 
     if compound is not None:
         if len(compound) != len(fix_orientation):
-            msg = ("`compound`, `n_compounds`, and `fix_orientation` "
-                   "must be of equal length.")
-            raise ValueError(msg)
+            raise ValueError(
+                "`compound`, `n_compounds`, and `fix_orientation` must be of "
+                "equal length."
+            )
 
     if density is not None:
         if box is None and n_compounds is not None:
-            total_mass = np.sum([n*np.sum([a.mass for a in c.to_parmed().atoms])
-                                for c, n in zip(compound, n_compounds)])
+            total_mass = np.sum(
+                [
+                    n * np.sum([a.mass for a in c.to_parmed().atoms])
+                    for c, n in zip(compound, n_compounds)
+                ]
+            )
             # Conversion from (amu/(kg/m^3))**(1/3) to nm
-            L = (total_mass/density)**(1/3)*1.1841763
+            L = (total_mass / density) ** (1 / 3) * 1.1841763
             if aspect_ratio is None:
-                box = _validate_box(Box(3*[L]))
+                box = _validate_box(Box(3 * [L]))
             else:
-                L *= np.prod(aspect_ratio) ** (-1/3)
-                box = _validate_box(Box([val*L for val in aspect_ratio]))
+                L *= np.prod(aspect_ratio) ** (-1 / 3)
+                box = _validate_box(Box([val * L for val in aspect_ratio]))
         if n_compounds is None and box is not None:
             if len(compound) == 1:
-                compound_mass = np.sum([a.mass for a in compound[0].to_parmed().atoms])
+                compound_mass = np.sum(
+                    [a.mass for a in compound[0].to_parmed().atoms]
+                )
                 # Conversion from kg/m^3 / amu * nm^3 to dimensionless units
                 n_compounds = [
-                    int(density/compound_mass*np.prod(box.lengths)*0.60224)]
+                    int(
+                        density / compound_mass * np.prod(box.lengths) * 0.60224
+                    )
+                ]
             else:
                 if compound_ratio is None:
-                    msg = ("Determing `n_compounds` from `density` and `box` "
-                           "for systems with more than one compound type "
-                           "requires `compound_ratio`")
-                    raise ValueError(msg)
+                    raise ValueError(
+                        "Determing `n_compounds` from `density` and `box` for "
+                        "systems with more than one compound type requires "
+                        "`compound_ratio`"
+                    )
                 if len(compound) != len(compound_ratio):
-                    msg = ("Length of `compound_ratio` must equal length of "
-                           "`compound`")
-                    raise ValueError(msg)
+                    raise ValueError(
+                        "Length of `compound_ratio` must equal length of "
+                        "`compound`"
+                    )
                 prototype_mass = 0
                 for c, r in zip(compound, compound_ratio):
-                    prototype_mass += r * np.sum([a.mass for a in c.to_parmed().atoms])
+                    prototype_mass += r * np.sum(
+                        [a.mass for a in c.to_parmed().atoms]
+                    )
                 # Conversion from kg/m^3 / amu * nm^3 to dimensionless units
-                n_prototypes = int(density/prototype_mass*np.prod(box.lengths)*0.60224)
+                n_prototypes = int(
+                    density / prototype_mass * np.prod(box.lengths) * 0.60224
+                )
                 n_compounds = list()
                 for c in compound_ratio:
                     n_compounds.append(int(n_prototypes * c))
@@ -188,8 +225,9 @@ def fill_box(compound, n_compounds=None, box=None, density=None, overlap=0.2,
     box_maxs = box.maxs * 10
     overlap *= 10
 
-    # Apply 1nm edge buffer
+    # Apply edge buffer
     box_maxs -= edge * 10
+    box_mins += edge * 10
 
     # Build the input file for each compound and call packmol.
     filled_xyz = _new_xyz_file()
@@ -197,25 +235,37 @@ def fill_box(compound, n_compounds=None, box=None, density=None, overlap=0.2,
     # create a list to contain the file handles for the compound temp files
     compound_xyz_list = list()
     try:
-        input_text = PACKMOL_HEADER.format(overlap, filled_xyz.name, seed)
-        for comp, m_compounds, rotate in zip(compound, n_compounds, fix_orientation):
+        input_text = PACKMOL_HEADER.format(
+            overlap, filled_xyz.name, seed, sidemax * 10
+        )
+        for comp, m_compounds, rotate in zip(
+            compound, n_compounds, fix_orientation
+        ):
             m_compounds = int(m_compounds)
 
             compound_xyz = _new_xyz_file()
             compound_xyz_list.append(compound_xyz)
 
             comp.save(compound_xyz.name, overwrite=True)
-            input_text += PACKMOL_BOX.format(compound_xyz.name, m_compounds,
-                                             box_mins[0], box_mins[1],
-                                             box_mins[2], box_maxs[0],
-                                             box_maxs[1], box_maxs[2],
-                                             PACKMOL_CONSTRAIN if rotate else "")
-
+            input_text += PACKMOL_BOX.format(
+                compound_xyz.name,
+                m_compounds,
+                box_mins[0],
+                box_mins[1],
+                box_mins[2],
+                box_maxs[0],
+                box_maxs[1],
+                box_maxs[2],
+                PACKMOL_CONSTRAIN if rotate else "",
+            )
         _run_packmol(input_text, filled_xyz, temp_file)
         # Create the topology and update the coordinates.
         filled = Compound()
         filled = _create_topology(filled, compound, n_compounds)
-        filled.update_coordinates(filled_xyz.name, update_port_locations=update_port_locations)
+        filled.update_coordinates(
+            filled_xyz.name, update_port_locations=update_port_locations
+        )
+        filled.box = box
         filled.periodicity = np.asarray(box.lengths, dtype=np.float32)
 
     # ensure that the temporary files are removed from the machine after filling
@@ -228,9 +278,18 @@ def fill_box(compound, n_compounds=None, box=None, density=None, overlap=0.2,
     return filled
 
 
-def fill_region(compound, n_compounds, region, overlap=0.2,
-                seed=12345, edge=0.2, fix_orientation=False, temp_file=None,
-                update_port_locations=False):
+def fill_region(
+    compound,
+    n_compounds,
+    region,
+    overlap=0.2,
+    seed=12345,
+    sidemax=100.0,
+    edge=0.2,
+    fix_orientation=False,
+    temp_file=None,
+    update_port_locations=False,
+):
     """Fill a region of a box with `mbuild.Compound`(s) using PACKMOL.
 
     Parameters
@@ -245,27 +304,31 @@ def fill_region(compound, n_compounds, region, overlap=0.2,
         Minimum separation between atoms of different molecules.
     seed : int, default=12345
         Random seed to be passed to PACKMOL.
+    sidemax : float, optional, default=100.0
+        Needed to build an initial approximation of the molecule distribution in
+        PACKMOL. All system coordinates must fit with in +/- sidemax, so
+        increase sidemax accordingly to your final box size.
     edge : float, units nm, default=0.2
         Buffer at the edge of the region to not place molecules. This is
-        necessary in some systems because PACKMOL does not account for
-        periodic boundary conditions in its optimization.
+        necessary in some systems because PACKMOL does not account for periodic
+        boundary conditions in its optimization.
     fix_orientation : bool or list of bools
         Specify that compounds should not be rotated when filling the box,
         default=False.
     temp_file : str, default=None
         File name to write PACKMOL's raw output to.
     update_port_locations : bool, default=False
-        After packing, port locations can be updated, but since compounds
-        can be rotated, port orientation may be incorrect.
+        After packing, port locations can be updated, but since compounds can be
+        rotated, port orientation may be incorrect.
 
     Returns
     -------
     filled : mb.Compound
 
-    If using mulitple regions and compounds, the nth value in each
-    list are used in order.
-    For example, if the third compound will be put in the third
-    region using the third value in n_compounds.
+    If using mulitple regions and compounds, the nth value in each list are used
+    in order.
+    For example, if the third compound will be put in the third region using the
+    third value in n_compounds.
     """
     # check that the user has the PACKMOL binary on their PATH
     _check_packmol(PACKMOL)
@@ -275,16 +338,19 @@ def fill_region(compound, n_compounds, region, overlap=0.2,
     if not isinstance(n_compounds, (list, set)):
         n_compounds = [n_compounds]
     if not isinstance(fix_orientation, (list, set)):
-        fix_orientation = [fix_orientation]*len(compound)
+        fix_orientation = [fix_orientation] * len(compound)
 
     if compound is not None and n_compounds is not None:
         if len(compound) != len(n_compounds):
-            msg = ("`compound` and `n_compounds` must be of equal length.")
-            raise ValueError(msg)
+            raise ValueError(
+                "`compound` and `n_compounds` must be of equal length."
+            )
     if compound is not None:
         if len(compound) != len(fix_orientation):
-            msg = ("`compound`, `n_compounds`, and `fix_orientation` must be of equal length.")
-            raise ValueError(msg)
+            raise ValueError(
+                "`compound`, `n_compounds`, and `fix_orientation` must be of "
+                "equal length."
+            )
 
     # See if region is a single region or list
     if isinstance(region, Box):  # Cannot iterate over boxes
@@ -302,9 +368,13 @@ def fill_region(compound, n_compounds, region, overlap=0.2,
     # List to hold file handles for the temporary compounds
     compound_xyz_list = list()
     try:
-        input_text = PACKMOL_HEADER.format(overlap, filled_xyz.name, seed)
+        input_text = PACKMOL_HEADER.format(
+            overlap, filled_xyz.name, seed, sidemax * 10
+        )
 
-        for comp, m_compounds, reg, rotate in zip(compound, n_compounds, region, fix_orientation):
+        for comp, m_compounds, reg, rotate in zip(
+            compound, n_compounds, region, fix_orientation
+        ):
             m_compounds = int(m_compounds)
 
             compound_xyz = _new_xyz_file()
@@ -314,18 +384,27 @@ def fill_region(compound, n_compounds, region, overlap=0.2,
             reg_mins = reg.mins * 10
             reg_maxs = reg.maxs * 10
             reg_maxs -= edge * 10  # Apply edge buffer
-            input_text += PACKMOL_BOX.format(compound_xyz.name, m_compounds,
-                                             reg_mins[0], reg_mins[1],
-                                             reg_mins[2], reg_maxs[0],
-                                             reg_maxs[1], reg_maxs[2],
-                                            PACKMOL_CONSTRAIN if rotate else "")
+            reg_mins += edge * 10
+            input_text += PACKMOL_BOX.format(
+                compound_xyz.name,
+                m_compounds,
+                reg_mins[0],
+                reg_mins[1],
+                reg_mins[2],
+                reg_maxs[0],
+                reg_maxs[1],
+                reg_maxs[2],
+                PACKMOL_CONSTRAIN if rotate else "",
+            )
 
         _run_packmol(input_text, filled_xyz, temp_file)
 
         # Create the topology and update the coordinates.
         filled = Compound()
         filled = _create_topology(filled, compound, n_compounds)
-        filled.update_coordinates(filled_xyz.name, update_port_locations=update_port_locations)
+        filled.update_coordinates(
+            filled_xyz.name, update_port_locations=update_port_locations
+        )
     finally:
         for file_handle in compound_xyz_list:
             file_handle.close()
@@ -335,18 +414,29 @@ def fill_region(compound, n_compounds, region, overlap=0.2,
     return filled
 
 
-def fill_sphere(compound, sphere, n_compounds=None, density=None, overlap=0.2,
-                seed=12345, edge=0.2, compound_ratio=None,
-                fix_orientation=False, temp_file=None, update_port_locations=False):
-    """Fill a sphere with a compound using packmol.
+def fill_sphere(
+    compound,
+    sphere,
+    n_compounds=None,
+    density=None,
+    overlap=0.2,
+    seed=12345,
+    sidemax=100.0,
+    edge=0.2,
+    compound_ratio=None,
+    fix_orientation=False,
+    temp_file=None,
+    update_port_locations=False,
+):
+    """Fill a sphere with a compound using PACKMOL.
 
     One argument of `n_compounds and density` must be specified.
 
-    If `n_compounds` is not None, the specified number of
-    n_compounds will be inserted into a sphere of the specified size.
+    If `n_compounds` is not None, the specified number of n_compounds will be
+    inserted into a sphere of the specified size.
 
-    If `density` is not None, the corresponding number of
-    compounds will be calculated internally.
+    If `density` is not None, the corresponding number of compounds will be
+    calculated internally.
 
     Parameters
     ----------
@@ -362,10 +452,14 @@ def fill_sphere(compound, sphere, n_compounds=None, density=None, overlap=0.2,
         Minimum separation between atoms of different molecules.
     seed : int, default=12345
         Random seed to be passed to PACKMOL.
+    sidemax : float, optional, default=100.0
+        Needed to build an initial approximation of the molecule distribution in
+        PACKMOL. All system coordinates must fit with in +/- sidemax, so
+        increase sidemax accordingly to your final sphere size
     edge : float, units nm, default=0.2
-        Buffer at the edge of the sphere to not place molecules. This is necessary
-        in some systems because PACKMOL does not account for periodic boundary
-        conditions in its optimization.
+        Buffer at the edge of the sphere to not place molecules. This is
+        necessary in some systems because PACKMOL does not account for periodic
+        boundary conditions in its optimization.
     compound_ratio : list, default=None
         Ratio of number of each compound to be put in sphere. Only used in the
         case of `density` having been specified, `n_compounds` not specified,
@@ -376,50 +470,53 @@ def fill_sphere(compound, sphere, n_compounds=None, density=None, overlap=0.2,
     temp_file : str, default=None
         File name to write PACKMOL's raw output to.
     update_port_locations : bool, default=False
-        After packing, port locations can be updated, but since compounds
-        can be rotated, port orientation may be incorrect.
+        After packing, port locations can be updated, but since compounds can be
+        rotated, port orientation may be incorrect.
 
     Returns
     -------
     filled : mb.Compound
-
     """
     _check_packmol(PACKMOL)
 
     arg_count = 2 - [n_compounds, density].count(None)
     if arg_count != 1:
-        msg = ("Exactly 1 of `n_compounds` and `density` "
-               "must be specified. {} were given.".format(arg_count))
-        raise ValueError(msg)
+        raise ValueError(
+            "Exactly 1 of `n_compounds` and `density` must be specified. "
+            "{} were given.".format(arg_count)
+        )
 
     if isinstance(sphere, (list, set, tuple)):
         if len(sphere) != 4:
-            msg = ("`sphere` must be a list of len 4")
+            raise ValueError("`sphere` must be a list of len 4")
     else:
-        msg = ("`sphere` must be a list")
-        raise ValueError(msg)
+        raise TypeError("`sphere` must be a list")
 
     if not isinstance(compound, (list, set)):
         compound = [compound]
     if n_compounds is not None and not isinstance(n_compounds, (list, set)):
         n_compounds = [n_compounds]
     if not isinstance(fix_orientation, (list, set)):
-        fix_orientation = [fix_orientation]*len(compound)
+        fix_orientation = [fix_orientation] * len(compound)
 
     if compound is not None and n_compounds is not None:
         if len(compound) != len(n_compounds):
-            msg = ("`compound` and `n_compounds` must be of equal length.")
-            raise ValueError(msg)
+            raise ValueError(
+                "`compound` and `n_compounds` must be of equal length."
+            )
 
     if compound is not None:
         if len(compound) != len(fix_orientation):
-            msg = ("`compound`, `n_compounds`, and `fix_orientation` must be of equal length.")
-            raise ValueError(msg)
+            raise ValueError(
+                "`compound`, `n_compounds`, and `fix_orientation` must be of "
+                "equal length."
+            )
 
     for coord in sphere[:3]:
         if coord < sphere[3]:
-            msg = ("`sphere` center coordinates must be greater than radius.")
-            raise ValueError(msg)
+            raise ValueError(
+                "`sphere` center coordinates must be greater than radius."
+            )
 
     # Apply edge buffer
     radius = sphere[3] - edge
@@ -427,24 +524,42 @@ def fill_sphere(compound, sphere, n_compounds=None, density=None, overlap=0.2,
     if density is not None:
         if n_compounds is None:
             if len(compound) == 1:
-                compound_mass = np.sum([a.mass for a in compound[0].to_parmed().atoms])
+                compound_mass = np.sum(
+                    [a.mass for a in compound[0].to_parmed().atoms]
+                )
                 # Conversion from kg/m^3 / amu * nm^3 to dimensionless units
-                n_compounds = [int(density/compound_mass*(4/3*np.pi*radius**3)*.60224)]
+                n_compounds = [
+                    int(
+                        density
+                        / compound_mass
+                        * (4 / 3 * np.pi * radius ** 3)
+                        * 0.60224
+                    )
+                ]
             else:
                 if compound_ratio is None:
-                    msg = ("Determing `n_compounds` from `density` "
-                           "for systems with more than one compound type requires"
-                           "`compound_ratio`")
-                    raise ValueError(msg)
+                    raise ValueError(
+                        "Determing `n_compounds` from `density` for systems "
+                        "with more than one compound type requires"
+                        "`compound_ratio`"
+                    )
                 if len(compound) != len(compound_ratio):
-                    msg = ("Length of `compound_ratio` must equal length of "
-                           "`compound`")
-                    raise ValueError(msg)
+                    raise ValueError(
+                        "Length of `compound_ratio` must equal length of "
+                        "`compound`"
+                    )
                 prototype_mass = 0
                 for c, r in zip(compound, compound_ratio):
-                    prototype_mass += r * np.sum([a.mass for a in c.to_parmed().atoms])
+                    prototype_mass += r * np.sum(
+                        [a.mass for a in c.to_parmed().atoms]
+                    )
                 # Conversion from kg/m^3 / amu * nm^3 to dimensionless units
-                n_prototypes = int(density/prototype_mass*(4/3*np.pi*radius**3)*.60224)
+                n_prototypes = int(
+                    density
+                    / prototype_mass
+                    * (4 / 3 * np.pi * radius ** 3)
+                    * 0.60224
+                )
                 n_compounds = list()
                 for c in compound_ratio:
                     n_compounds.append(int(n_prototypes * c))
@@ -460,25 +575,35 @@ def fill_sphere(compound, sphere, n_compounds=None, density=None, overlap=0.2,
     # List to hold file handles for the temporary compounds
     compound_xyz_list = list()
     try:
-        input_text = PACKMOL_HEADER.format(overlap, filled_xyz.name, seed)
-        for comp, m_compounds, rotate in zip(compound, n_compounds, fix_orientation):
+        input_text = PACKMOL_HEADER.format(
+            overlap, filled_xyz.name, seed, sidemax * 10
+        )
+        for comp, m_compounds, rotate in zip(
+            compound, n_compounds, fix_orientation
+        ):
             m_compounds = int(m_compounds)
 
             compound_xyz = _new_xyz_file()
             compound_xyz_list.append(compound_xyz)
 
             comp.save(compound_xyz.name, overwrite=True)
-            input_text += PACKMOL_SPHERE.format(compound_xyz.name, m_compounds,
-                                                sphere[0], sphere[1],
-                                                sphere[2], radius,
-                                                PACKMOL_CONSTRAIN if rotate else "")
-        print(input_text)
+            input_text += PACKMOL_SPHERE.format(
+                compound_xyz.name,
+                m_compounds,
+                sphere[0],
+                sphere[1],
+                sphere[2],
+                radius,
+                PACKMOL_CONSTRAIN if rotate else "",
+            )
         _run_packmol(input_text, filled_xyz, temp_file)
 
         # Create the topology and update the coordinates.
         filled = Compound()
         filled = _create_topology(filled, compound, n_compounds)
-        filled.update_coordinates(filled_xyz.name, update_port_locations=update_port_locations)
+        filled.update_coordinates(
+            filled_xyz.name, update_port_locations=update_port_locations
+        )
     finally:
         for file_handle in compound_xyz_list:
             file_handle.close()
@@ -488,10 +613,20 @@ def fill_sphere(compound, sphere, n_compounds=None, density=None, overlap=0.2,
     return filled
 
 
-def solvate(solute, solvent, n_solvent, box, overlap=0.2,
-            seed=12345, edge=0.2, fix_orientation=False, temp_file=None,
-            update_port_locations=False):
-    """Solvate a compound in a box of solvent using packmol.
+def solvate(
+    solute,
+    solvent,
+    n_solvent,
+    box,
+    overlap=0.2,
+    seed=12345,
+    sidemax=100.0,
+    edge=0.2,
+    fix_orientation=False,
+    temp_file=None,
+    update_port_locations=False,
+):
+    """Solvate a compound in a box of solvent using PACKMOL.
 
     Parameters
     ----------
@@ -507,6 +642,10 @@ def solvate(solute, solvent, n_solvent, box, overlap=0.2,
         Minimum separation between atoms of different molecules.
     seed : int, default=12345
         Random seed to be passed to PACKMOL.
+    sidemax : float, optional, default=100.0
+        Needed to build an initial approximation of the molecule distribution in
+        PACKMOL. All system coordinates must fit with in +/- sidemax, so
+        increase sidemax accordingly to your final box size
     edge : float, units nm, default=0.2
         Buffer at the edge of the box to not place molecules. This is necessary
         in some systems because PACKMOL does not account for periodic boundary
@@ -517,13 +656,12 @@ def solvate(solute, solvent, n_solvent, box, overlap=0.2,
     temp_file : str, default=None
         File name to write PACKMOL's raw output to.
     update_port_locations : bool, default=False
-        After packing, port locations can be updated, but since compounds
-        can be rotated, port orientation may be incorrect.
+        After packing, port locations can be updated, but since compounds can be
+        rotated, port orientation may be incorrect.
 
     Returns
     -------
     solvated : mb.Compound
-
     """
     # check that the user has the PACKMOL binary on their PATH
     _check_packmol(PACKMOL)
@@ -537,8 +675,7 @@ def solvate(solute, solvent, n_solvent, box, overlap=0.2,
         fix_orientation = [fix_orientation] * len(solvent)
 
     if len(solvent) != len(n_solvent):
-        msg = ("`n_solvent` and `n_solvent` must be of equal length.")
-        raise ValueError(msg)
+        raise ValueError("`n_solvent` and `n_solvent` must be of equal length.")
 
     # In angstroms for packmol.
     box_mins = box.mins * 10
@@ -548,7 +685,7 @@ def solvate(solute, solvent, n_solvent, box, overlap=0.2,
 
     # Apply edge buffer
     box_maxs -= edge * 10
-
+    box_mins += edge * 10
     # Build the input file for each compound and call packmol.
     solvated_xyz = _new_xyz_file()
     solute_xyz = _new_xyz_file()
@@ -557,8 +694,9 @@ def solvate(solute, solvent, n_solvent, box, overlap=0.2,
     solvent_xyz_list = list()
     try:
         solute.save(solute_xyz.name, overwrite=True)
-        input_text = (PACKMOL_HEADER.format(overlap, solvated_xyz.name, seed) +
-                      PACKMOL_SOLUTE.format(solute_xyz.name, *center_solute))
+        input_text = PACKMOL_HEADER.format(
+            overlap, solvated_xyz.name, seed, sidemax * 10
+        ) + PACKMOL_SOLUTE.format(solute_xyz.name, *center_solute)
 
         for solv, m_solvent, rotate in zip(solvent, n_solvent, fix_orientation):
             m_solvent = int(m_solvent)
@@ -567,18 +705,26 @@ def solvate(solute, solvent, n_solvent, box, overlap=0.2,
             solvent_xyz_list.append(solvent_xyz)
 
             solv.save(solvent_xyz.name, overwrite=True)
-            input_text += PACKMOL_BOX.format(solvent_xyz.name, m_solvent,
-                                             box_mins[0], box_mins[1],
-                                             box_mins[2], box_maxs[0],
-                                             box_maxs[1], box_maxs[2],
-                                             PACKMOL_CONSTRAIN if rotate else "")
+            input_text += PACKMOL_BOX.format(
+                solvent_xyz.name,
+                m_solvent,
+                box_mins[0],
+                box_mins[1],
+                box_mins[2],
+                box_maxs[0],
+                box_maxs[1],
+                box_maxs[2],
+                PACKMOL_CONSTRAIN if rotate else "",
+            )
         _run_packmol(input_text, solvated_xyz, temp_file)
 
         # Create the topology and update the coordinates.
         solvated = Compound()
         solvated.add(solute)
         solvated = _create_topology(solvated, solvent, n_solvent)
-        solvated.update_coordinates(solvated_xyz.name, update_port_locations=update_port_locations)
+        solvated.update_coordinates(
+            solvated_xyz.name, update_port_locations=update_port_locations
+        )
 
     finally:
         for file_handle in solvent_xyz_list:
@@ -592,7 +738,7 @@ def solvate(solute, solvent, n_solvent, box, overlap=0.2,
 
 
 def _validate_box(box):
-    """Ensure that the box passed by the user can be formatted as an mbuild.Box
+    """Ensure that the box passed by the user can be formatted as an mbuild.Box.
 
     Parameters
     ----------
@@ -610,9 +756,11 @@ def _validate_box(box):
             box = Box(mins=box[:3], maxs=box[3:])
 
     if not isinstance(box, Box):
-        raise MBuildError('Unknown format for `box` parameter. Must pass a'
-                          ' list/tuple of length 3 (box lengths) or length'
-                          ' 6 (box mins and maxes) or an mbuild.Box object.')
+        raise MBuildError(
+            "Unknown format for `box` parameter. Must pass a list/tuple of "
+            "length 3 (box lengths) or length 6 (box mins and maxes) or an "
+            "mbuild.Box object."
+        )
     return box
 
 
@@ -624,8 +772,7 @@ def _new_xyz_file():
     _ : file-object
         Temporary PDB file.
     """
-
-    return tempfile.NamedTemporaryFile(suffix='.xyz', delete=False)
+    return tempfile.NamedTemporaryFile(suffix=".xyz", delete=False)
 
 
 def _create_topology(container, comp_to_add, n_compounds):
@@ -645,7 +792,6 @@ def _create_topology(container, comp_to_add, n_compounds):
     container : mb.Compound
         Compound with added compounds from PACKMOL.
     """
-
     for comp, m_compound in zip(comp_to_add, n_compounds):
         for _ in range(m_compound):
             container.add(clone(comp))
@@ -653,8 +799,8 @@ def _create_topology(container, comp_to_add, n_compounds):
 
 
 def _packmol_error(out, err):
-    """Log packmol output to files. """
-    with open('log.txt', 'w') as log_file:
+    """Log packmol output to files."""
+    with open("log.txt", "w") as log_file:
         log_file.write(out)
     raise RuntimeError("PACKMOL failed. See 'log.txt'")
 
@@ -672,37 +818,45 @@ def _run_packmol(input_text, filled_xyz, temp_file):
         Where to copy the filled tempfile.
     """
     # Create input file
-    packmol_inp = tempfile.NamedTemporaryFile(mode='w', delete=False,
-                                              prefix='packmol-', suffix='.inp')
+    packmol_inp = tempfile.NamedTemporaryFile(
+        mode="w", delete=False, prefix="packmol-", suffix=".inp"
+    )
     packmol_inp.write(input_text)
     packmol_inp.close()
 
-    proc = Popen('{} < {}'.format(PACKMOL, packmol_inp.name),
-                 stdin=PIPE, stdout=PIPE, stderr=PIPE,
-                 universal_newlines=True, shell=True)
+    proc = Popen(
+        "{} < {}".format(PACKMOL, packmol_inp.name),
+        stdin=PIPE,
+        stdout=PIPE,
+        stderr=PIPE,
+        universal_newlines=True,
+        shell=True,
+    )
     out, err = proc.communicate()
 
-    if 'WITHOUT PERFECT PACKING' in out:
-        msg = ("Packmol finished with imperfect packing. Using "
-               "the .xyz_FORCED file instead. This may not be a "
-               "sufficient packing result.")
-        warnings.warn(msg)
-        os.system('cp {0}_forced {0}'.format(filled_xyz.name))
+    if "WITHOUT PERFECT PACKING" in out:
+        warnings.warn(
+            "Packmol finished with imperfect packing. Using the .xyz_FORCED "
+            "file instead. This may not be a sufficient packing result."
+        )
+        os.system("cp {0}_FORCED {0}".format(filled_xyz.name))
 
-    if 'ERROR' in out or proc.returncode != 0:
+    if "ERROR" in out or proc.returncode != 0:
         _packmol_error(out, err)
     else:
         # Delete input file if success
         os.remove(packmol_inp.name)
 
     if temp_file is not None:
-        os.system('cp {0} {1}'.format(filled_xyz.name, os.path.join(temp_file)))
+        os.system("cp {0} {1}".format(filled_xyz.name, os.path.join(temp_file)))
 
 
-def _check_packmol(PACKMOL): # pragma: no cover
+def _check_packmol(PACKMOL):  # pragma: no cover
     if not PACKMOL:
         msg = "Packmol not found."
         if sys.platform.startswith("win"):
-            msg = (msg + " If packmol is already installed, make sure that the "
-                         "packmol.exe is on the path.")
+            msg = (
+                msg + " If packmol is already installed, make sure that the "
+                "packmol.exe is on the path."
+            )
         raise IOError(msg)
