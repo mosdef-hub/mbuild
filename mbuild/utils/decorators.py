@@ -1,33 +1,44 @@
-"""Some helpful decorators"""
-
-
-from warnings import warn
+"""Some helpful decorators."""
 from functools import wraps
+from warnings import warn
+
 
 def make_callable(decorator):
-    """https://stackoverflow.com/questions/3888158/making-decorators-with-optional-arguments"""
+    """Make function callable.
+
+    See https://stackoverflow.com/questions/3888158/making-decorators-with-
+    optional-arguments
+    """
+
     @wraps(decorator)
     def inner(*args, **kw):
         if len(args) == 1 and not kw and callable(args[0]):
             return decorator()(args[0])
         else:
             return decorator(*args, **kw)
+
     return inner
 
 
-def deprecated(warning_string=''):
+def deprecated(warning_string=""):
+    """Decorate deprecated functions."""
+
     def old_function(fcn):
         def wrapper(*args, **kwargs):
-            printed_message = '{0} is deprecated. {1}'.format(fcn.__name__, warning_string)
+            printed_message = "{0} is deprecated. {1}".format(
+                fcn.__name__, warning_string
+            )
             warn(printed_message, DeprecationWarning)
             fcn(*args, **kwargs)
+
         return wrapper
+
     return old_function
 
 
 @make_callable
-def deprecated_property(warning_msg='Property deprecated', always=False):
-    """A decorator to deprecate properties of an object.
+def deprecated_property(warning_msg="Property deprecated", always=False):
+    """Alert users to deprecated properties of an object.
 
     Deprecation messages are shown only once per runtime by default
 
@@ -83,7 +94,11 @@ def deprecated_property(warning_msg='Property deprecated', always=False):
 
             def show_warning_msg(self):
                 if self.warning_msg is not None:
-                    warn(f'Property {fcn.__name__} is deprecated. {self.warning_msg}', DeprecationWarning)
+                    warn(
+                        f"Property {fcn.__name__} is deprecated. "
+                        f"{self.warning_msg}",
+                        DeprecationWarning,
+                    )
                     if not self.always_show:
                         self.warning_msg = None
 
@@ -93,11 +108,16 @@ def deprecated_property(warning_msg='Property deprecated', always=False):
     return old_func
 
 
-def breaking_change(warning_string=''):
+def breaking_change(warning_string=""):
+    """Decorate functions with breaking changes."""
+
     def old_function(fcn):
         def wrapper(*args, **kwargs):
-            printed_message = '{0} has breaking change. {1}'.format(fcn.__name__, warning_string)
-            warn(printed_message, Warning)
+            warn(
+                "{fcn.__name__} has breaking change. {warning_string}", Warning
+            )
             fcn(*args, **kwargs)
+
         return wrapper
+
     return old_function

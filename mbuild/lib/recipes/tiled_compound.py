@@ -1,10 +1,11 @@
+"""Module for creating TiledCompounds."""
 __all__ = ["TiledCompound"]
 
 import itertools as it
 
 import numpy as np
 
-from mbuild import clone, Box, Compound, Port
+from mbuild import Box, Compound, Port, clone
 from mbuild.exceptions import MBuildError
 from mbuild.periodic_kdtree import PeriodicCKDTree
 
@@ -16,14 +17,13 @@ class TiledCompound(Compound):
     conditions.
 
     Parameters
-    -----------
+    ----------
     tile : mb.Compound
         The Compound to be replicated.
     n_tiles : array-like, shape=(3,), dtype=int, optional, default=(1, 1, 1)
         Number of times to replicate tile in the x, y and z-directions.
     name : str, optional, default=tile.name
         Descriptive string for the compound.
-
     """
 
     def __init__(self, tile, n_tiles, name=None):
@@ -39,17 +39,16 @@ class TiledCompound(Compound):
         # Check that the tile is periodic in the requested dimensions.
         if not np.all(np.logical_or((n_tiles == 1), periodicity)):
             raise ValueError(
-                "Tile not periodic in at least one of the " "specified dimensions."
+                "Tile not periodic in at least one of the specified dimensions."
             )
-
 
         if name is None:
             name = tile.name + "-".join(str(d) for d in n_tiles)
         self.name = name
         self.periodicity = tile.periodicity
         self.box = Box(
-                np.array(tile.box.lengths) * n_tiles, angles=tile.box.angles
-                )
+            np.array(tile.box.lengths) * n_tiles, angles=tile.box.angles
+        )
 
         if all(n_tiles == 1):
             self._add_tile(tile, [(0, 0, 0)])
@@ -66,7 +65,9 @@ class TiledCompound(Compound):
 
         # Replicate and place periodic tiles.
         # -----------------------------------
-        for ijk in it.product(range(n_tiles[0]), range(n_tiles[1]), range(n_tiles[2])):
+        for ijk in it.product(
+            range(n_tiles[0]), range(n_tiles[1]), range(n_tiles[2])
+        ):
             new_tile = clone(tile)
             new_tile.translate(np.multiply(ijk, tile.box.lengths))
 
@@ -85,11 +86,10 @@ class TiledCompound(Compound):
             if np.linalg.norm(particle1.pos - particle2.pos) > dist_thresh:
                 periodic_bonds.add((particle1.index, particle2.index))
 
-
         # Build a periodic kdtree of all particle positions.
         self.particle_kdtree = PeriodicCKDTree(
-                data=self.xyz, bounds=self.box.lengths
-                )
+            data=self.xyz, bounds=self.box.lengths
+        )
         all_particles = np.asarray(list(self.particles(include_ports=False)))
 
         # Store bonds to remove/add since we'll be iterating over all bonds.
@@ -104,8 +104,12 @@ class TiledCompound(Compound):
             dist = self.min_periodic_distance(particle1.pos, particle2.pos)
             if dist > dist_thresh:
                 bonds_to_remove.add((particle1, particle2))
-                image2 = self._find_particle_image(particle1, particle2, all_particles)
-                image1 = self._find_particle_image(particle2, particle1, all_particles)
+                image2 = self._find_particle_image(
+                    particle1, particle2, all_particles
+                )
+                image1 = self._find_particle_image(
+                    particle2, particle1, all_particles
+                )
 
                 if (image2, particle1) not in bonds_to_add:
                     bonds_to_add.add((particle1, image2))
@@ -124,18 +128,18 @@ class TiledCompound(Compound):
         del self.particle_kdtree
 
     def _add_tile(self, new_tile, ijk):
-        """Add a tile with a label indicating its tiling position. """
+        """Add a tile with a label indicating its tiling position."""
         tile_label = "{0}_{1}".format(self.name, "-".join(str(d) for d in ijk))
         self.add(new_tile, label=tile_label, inherit_periodicity=False)
 
     def _hoist_ports(self, new_tile):
-        """Add labels for all the ports to the parent (TiledCompound). """
+        """Add labels for all the ports to the parent (TiledCompound)."""
         for port in new_tile.children:
             if isinstance(port, Port):
                 self.add(port, containment=False)
 
     def _find_particle_image(self, query, match, all_particles):
-        """Find particle with the same index as match in a neighboring tile. """
+        """Find particle with the same index as match in a neighboring tile."""
         _, idxs = self.particle_kdtree.query(query.pos, k=10)
 
         neighbors = all_particles[idxs]
@@ -144,5 +148,5 @@ class TiledCompound(Compound):
             if particle.index == match.index:
                 return particle
         raise MBuildError(
-            "Unable to find matching particle image while" " stitching bonds."
+            "Unable to find matching particle image while stitching bonds."
         )

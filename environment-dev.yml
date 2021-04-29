@@ -7,19 +7,20 @@ dependencies:
   - ele
   - foyer
   - garnett>=0.7.1
-  - gsd>=1.2
-  - hoomd=2.9.4
+  - gsd>=2
+  - hoomd=2.9.6
   - intermol
   - mdtraj
   - networkx
-  - nglview>=2.7
+  - nglview>=3
   - numpy
-  - openbabel>=3.0.0
+  - openbabel>=3
   - rdkit
   - oset
-  - packmol>=18
+  - packmol>=20
   - parmed>=3.4.0
   - pip
+  - pre-commit
   - protobuf
   - py3Dmol
   - pycifrw

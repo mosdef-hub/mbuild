@@ -1,16 +1,16 @@
+"""Amorphous silica surface."""
 import numpy as np
 
 import mbuild as mb
 
 
 class AmorphousSilicaSurface(mb.Compound):
-    """ """
+    """Amorphous silica surface."""
 
     def __init__(self, surface_roughness=1.0):
         super(AmorphousSilicaSurface, self).__init__()
 
         if surface_roughness == 1.0:
-            # TODO: description of how this surface was generated/citation
             mb.load(
                 "amorphous_silica_sr1.0.pdb",
                 compound=self,
@@ -31,11 +31,13 @@ class AmorphousSilicaSurface(mb.Compound):
                 count += 1
                 port = mb.Port(
                     anchor=particle, orientation=[0, 0, 1], separation=0.1
-                    )
+                )
                 self.add(port, "port_{}".format(count))
 
 
 if __name__ == "__main__":
+    from mbuild.lib.recipes import TiledCompound
+
     single = AmorphousSilicaSurface()
-    multiple = mb.TiledCompound(single, n_tiles=(2, 1, 1), name="tiled")
+    multiple = TiledCompound(single, n_tiles=(2, 1, 1), name="tiled")
     multiple.save("amorphous_silica_surface.mol2")
