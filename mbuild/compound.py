@@ -92,7 +92,7 @@ class Compound(object):
     mass : float, optional, default=None
         The mass of the compound. If none is set, then will try to
         infer the mass from a compound's element attribute.
-        If neither `mass` or `element` are specified, then the 
+        If neither `mass` or `element` are specified, then the
         mass will be zero.
     charge : float, optional, default=0.0
         Currently not used. Likely removed in next release.
@@ -138,6 +138,7 @@ class Compound(object):
     xyz
     xyz_with_ports
     """
+
     def __init__(
         self,
         subcompounds=None,
@@ -187,7 +188,7 @@ class Compound(object):
         self.element = element
         if mass and float(mass) < 0.0:
             raise ValueError("Cannot set a Compound mass value less than zero")
-            
+
         # self.add() must be called after labels and children are initialized.
         if subcompounds:
             if charge:
@@ -200,7 +201,7 @@ class Compound(object):
                 )
             self.add(subcompounds)
             self._charge = 0.0
-            self._mass = mass 
+            self._mass = mass
         else:
             self._charge = charge
             self._mass = mass
@@ -337,15 +338,15 @@ class Compound(object):
         for particle in self.particles():
             if particle.element == element:
                 yield particle
-    
+
     @property
     def mass(self):
         """Return the total mass of a compound
-        
+
         If the compound contains children compouds, the total mass of all
         children compounds is returned.
         If the compound contains element information (Compound.element) then
-        the mass is inferred from the elemental mass. 
+        the mass is inferred from the elemental mass.
         If Compound.mass has been set explicitly, then it will override the
         mass inferred from Compound.element.
         If neither of a Compound's element or mass attributes have been set,
@@ -355,7 +356,7 @@ class Compound(object):
             return self._mass
         else:
             return sum([self._particle_mass(p) for p in self.particles()])
-    
+
     def _particle_mass(self, particle):
         if particle._mass:
             return particle._mass
@@ -364,23 +365,24 @@ class Compound(object):
                 return particle.element.mass
             else:
                 return 0
-    
+
     @mass.setter
     def mass(self, value):
         if self.children:
             raise MBuildError(
                 "Cannot set the mass of a Compound containing "
-                "children compounds")
+                "children compounds"
+            )
         if isinstance(value, Sequence) and not isinstance(value, str):
             if len(value) == 1:
-                value=value[0]
+                value = value[0]
             else:
-                raise MBuildError("Mass can only be set for "
-                        "one compound at a time")
+                raise MBuildError(
+                    "Mass can only be set for " "one compound at a time"
+                )
         value = float(value)
         if value < 0.0:
-            raise ValueError(
-                    "Cannot set a mass value less than zero")
+            raise ValueError("Cannot set a mass value less than zero")
         self._mass = value
 
     @property
