@@ -1,8 +1,7 @@
 """Recipe for an mBuild polymer."""
 import itertools as it
 
-from mbuild import clone
-from mbuild.compound import Compound
+from mbuild import Compound, clone
 from mbuild.coordinate_transform import force_overlap
 from mbuild.utils.validation import assert_port_exists
 

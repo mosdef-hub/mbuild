@@ -71,14 +71,14 @@ class Alkane(mb.Compound):
 
         # Handle general case of n >= 3
         else:
+            from mbuild.lib.recipes import Polymer
+
             # Adjust length of Polmyer for absence of methyl terminations.
             if not cap_front:
                 n += 1
             if not cap_end:
                 n += 1
-            chain = mb.recipes.Polymer(
-                CH2(), n=n - 2, port_labels=("up", "down")
-            )
+            chain = Polymer(CH2(), n=n - 2, port_labels=("up", "down"))
             self.add(chain, "chain")
             if cap_front:
                 self.add(CH3(), "methyl_front")
