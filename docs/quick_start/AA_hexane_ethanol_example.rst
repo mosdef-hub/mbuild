@@ -20,7 +20,7 @@ Lastly, the hexane and ethanol molecule's configuration will be energy minimized
 
 .. code:: ipython3
 
-    hexane = mb.load('CCCCCC', smiles=True, name='HEX')
+    hexane = mb.load('CCCCCC', smiles=True)
     hexane.name = 'HEX'
     hexane.energy_minimize(forcefield='oplsaa' , steps=10**4)
 
