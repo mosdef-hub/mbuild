@@ -1,14 +1,17 @@
+"""Tools for coarse-grained systems."""
 from collections import OrderedDict
-from oset import oset as OrderedSet
 from copy import deepcopy
+
+from oset import oset as OrderedSet
 
 from mbuild.compound import Compound, clone
 from mbuild.exceptions import MBuildError
 
-__all__ = ['coarse_grain']
+__all__ = ["coarse_grain"]
 
 
 def coarse_grain(real_thing, memo=None, particle_classes=None):
+    """Coarse-graining function."""
     if memo is None:
         memo = OrderedDict()
 
@@ -23,12 +26,13 @@ def coarse_grain(real_thing, memo=None, particle_classes=None):
 
 
 class Proxy(Compound):
+    """Proxy class."""
 
     def __init__(self, compound):
-        if compound.name == 'G':
-            name = 'G'
+        if compound.name == "G":
+            name = "G"
         else:
-            name = compound.name + '_PROXY'
+            name = compound.name + "_PROXY"
         super(Proxy, self).__init__(name=name)
 
         self.wrapped = compound
@@ -40,13 +44,15 @@ class Proxy(Compound):
         self.bond_graph = None
 
     def proxy_for(self):
-        if hasattr(self.wrapped, 'wrapped'):
+        """Get the proxy."""
+        if hasattr(self.wrapped, "wrapped"):
             return self.wrapped.proxy_for()
         else:
             return self.wrapped.__class__
 
     @property
     def pos(self):
+        """Get the wrapped position."""
         return self.wrapped.pos
 
     @pos.setter
@@ -54,14 +60,16 @@ class Proxy(Compound):
         self.wrapped.pos = value
 
     def __getattr__(self, attr):
+        """Get the attribute from the class."""
         return getattr(self.wrapped, attr)
 
     def _clone(self, clone_of=None, root_container=None):
-        """A faster alternative to deepcopying.
+        """Clone a Proxy.
 
-        Does not resolve circular dependencies. This should be safe provided
-        you never try to add the top of a Compound hierarchy to a
-        sub-Compound. Clones compound hierarchy only, not the bonds.
+        A faster alternative to deepcopying. Does not resolve circular
+        dependencies. This should be safe provided you never try to add the
+        top of a Compound hierarchy to a sub-Compound. Clones compound
+        hierarchy only, not the bonds.
         """
         if root_container is None:
             root_container = self
@@ -82,7 +90,7 @@ class Proxy(Compound):
         newone.name = deepcopy(self.name)
         newone.wrapped = clone(self.wrapped)
 
-        if hasattr(self, 'index'):
+        if hasattr(self, "index"):
             newone.index = deepcopy(self.index)
 
         if self.children is None:
@@ -107,7 +115,8 @@ class Proxy(Compound):
             for label, compound in self.labels.items():
                 if not isinstance(compound, list):
                     newone.labels[label] = compound._clone(
-                        clone_of, root_container)
+                        clone_of, root_container
+                    )
                     compound.referrers.add(clone_of[compound])
                 else:
                     # compound is a list of compounds, so we create an empty
@@ -115,7 +124,8 @@ class Proxy(Compound):
                     newone.labels[label] = []
                     for subpart in compound:
                         newone.labels[label].append(
-                            subpart._clone(clone_of, root_container))
+                            subpart._clone(clone_of, root_container)
+                        )
                         # Referrers must have been handled already, or the will
                         # be handled
 
@@ -129,10 +139,12 @@ class Proxy(Compound):
             except KeyError:
                 raise MBuildError(
                     "Cloning failed. Compound contains bonds to "
-                    "Particles outside of its containment hierarchy.")
+                    "Particles outside of its containment hierarchy."
+                )
+
 
 def is_leaf(what):
-    return hasattr(what, 'parts') and not what.children
+    return hasattr(what, "parts") and not what.children
 
 
 def _create_proxy_compounds(real_thing, memo, particle_classes):
@@ -143,8 +155,9 @@ def _create_proxy_compounds(real_thing, memo, particle_classes):
         if not is_leaf(real_thing):  # Recurse only if it has parts.
             # Recursively create proxies for parts.
             for part in real_thing.children:
-                part_proxy = _create_proxy_compounds(part, memo,
-                                                     particle_classes)
+                part_proxy = _create_proxy_compounds(
+                    part, memo, particle_classes
+                )
                 proxy.add(part_proxy)
 
     return proxy
@@ -168,7 +181,7 @@ def _create_proxy_bonds(real_thing, memo, leaf_classes):
             _create_proxy_bonds(part, memo, leaf_classes)
 
     # Check if there's a contained bond that needs to be added to the proxy.
-    if hasattr(real_thing, 'bonds'):
+    if hasattr(real_thing, "bonds"):
         for a1, a2 in real_thing.bonds():
             pa1 = _proxy_of(a1, memo)
             pa2 = _proxy_of(a2, memo)
