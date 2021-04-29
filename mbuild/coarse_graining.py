@@ -180,7 +180,6 @@ def _create_proxy_labels(real_thing, memo):
     if not is_leaf(real_thing):
         for label, part in real_thing.labels.items():
             if isinstance(part, list):
-                # TODO support lists with labels
                 continue
             if part in memo:
                 memo[real_thing].labels[label] = memo[part]

@@ -326,7 +326,6 @@ def _create_equivalence_transform(equiv):
                 "and pair[1] is a {1}".format(type(pair[0]), type(pair[1]))
             )
 
-        # TODO: vstack is slow, replace with list concatenation
         if not pair[0].children:
             self_points = np.vstack([self_points, pair[0].pos])
             other_points = np.vstack([other_points, pair[1].pos])
@@ -381,7 +380,6 @@ def equivalence_transform(compound, from_positions, to_positions, add_bond=True)
     if add_bond:
         if isinstance(from_positions, Port) and isinstance(to_positions, Port):
             if not from_positions.anchor or not to_positions.anchor:
-                # TODO: I think warnings is undefined here
                 warn("Attempting to form bond from port that has no anchor")
             else:
                 from_positions.anchor.parent.add_bond(
@@ -399,10 +397,6 @@ def _choose_correct_port(from_port, to_port):
     used to make a connection with an equivalence transform. This function
     chooses the set of 4 atoms that makes the anchor atoms not overlap which is
     the intended behavior for most use-cases.
-
-    TODO: -Increase robustness for cases where the anchors are a different
-           distance from their respective ports.
-          -Provide options in `force_overlap` to override this behavior.
 
     Parameters
     ----------

@@ -29,8 +29,6 @@ message Compound {
     int64 id = 6; // this is simply a unique number for this compound
     repeated Vec2 bonds = 7;  // a list of 2-tuples
     Element element = 8;
-
-    // Todo: Maybe need something for port particles
 }
 
 

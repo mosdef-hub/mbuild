@@ -17,11 +17,6 @@ def write_pb2(cmpd, filename, binary=True):
     binary: bool, default True
         If True, will print a binary file
         If False, will print to a text file
-        Todo: This could be more elegantly detected
-
-    Notes
-    ----
-    Todo: Handle Ports in the protocol buffer (.proto) and in this writer/reader
     """
     cmpd_to_proto = {}
 
@@ -54,7 +49,6 @@ def read_pb2(filename, binary=True):
     binary: bool, default True
         If True, will print a binary file
         If False, will print to a text file
-        Todo: This could be more elegantly detected
 
     Returns
     ------
