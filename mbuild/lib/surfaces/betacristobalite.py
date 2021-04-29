@@ -1,6 +1,4 @@
 """Beta-cristobalite surface."""
-import numpy as np
-
 import mbuild as mb
 
 

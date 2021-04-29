@@ -1,6 +1,4 @@
 """Amorphous silica surface."""
-import numpy as np
-
 import mbuild as mb
 
 
