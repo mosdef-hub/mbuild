@@ -1,7 +1,7 @@
 import os
 
-import pytest
 import numpy as np
+import pytest
 
 import mbuild as mb
 from mbuild import Box
@@ -20,21 +20,19 @@ class TestPacking(BaseTest):
     def test_fill_box_density_box(self, h2o):
         filled = mb.fill_box(h2o, n_compounds=100, density=100)
         assert np.array_equal(
-                filled.box.lengths, np.ones(3) * 3.104281669169261
-                )
+            filled.box.lengths, np.ones(3) * 3.104281669169261
+        )
 
     def test_fill_box_aspect_ratio(self, h2o):
         filled = mb.fill_box(
             h2o, n_compounds=1000, density=1000, aspect_ratio=[1, 2, 1]
         )
-        assert filled.box.lengths[0] / filled.box.lengths[1]  == 0.5
-        assert filled.box.lengths[1] / filled.box.lengths[2]  == 2
+        assert filled.box.lengths[0] / filled.box.lengths[1] == 0.5
+        assert filled.box.lengths[1] / filled.box.lengths[2] == 2
 
     def test_fill_box_density_n_compounds(self, h2o):
         filled = mb.fill_box(
-            h2o,
-            density=100,
-            box=Box([3.1042931, 3.1042931, 3.1042931]),
+            h2o, density=100, box=Box([3.1042931, 3.1042931, 3.1042931])
         )
         assert filled.n_particles == 300
 
@@ -79,20 +77,25 @@ class TestPacking(BaseTest):
             mb.fill_sphere(
                 compound=h2o, n_compounds=100, density=100, sphere=[4, 4, 4, 1]
             )
-        with pytest.raises(ValueError):
+        with pytest.raises(TypeError):
             mb.fill_sphere(compound=h2o, density=1000, sphere="yes")
         with pytest.raises(ValueError):
             mb.fill_sphere(
                 compound=[h2o, ethane], n_compounds=1000, sphere=[1, 1, 1, 4]
             )
         with pytest.raises(ValueError):
-            mb.fill_sphere(compound=h2o, n_compounds=[10, 10], sphere=[1, 1, 1, 4])
+            mb.fill_sphere(
+                compound=h2o, n_compounds=[10, 10], sphere=[1, 1, 1, 4]
+            )
         with pytest.raises(ValueError):
             mb.fill_sphere(compound=h2o, n_compounds=100, sphere=[1, 1, 1, 4])
 
     def test_fill_region(self, h2o):
         filled = mb.fill_region(
-            h2o, n_compounds=50, region=[3, 2, 2, 5, 5, 5], bounds=[[3, 2, 2, 5, 5, 5]]
+            h2o,
+            n_compounds=50,
+            region=[3, 2, 2, 5, 5, 5],
+            bounds=[[3, 2, 2, 5, 5, 5]],
         )
         assert filled.n_particles == 50 * 3
         assert filled.n_bonds == 50 * 2
@@ -203,7 +206,9 @@ class TestPacking(BaseTest):
         with pytest.raises(ValueError):
             mb.fill_box(compound=[h2o, h2o], n_compounds=[10], density=1000)
         with pytest.raises(ValueError):
-            mb.solvate(solute=h2o, solvent=[h2o], n_solvent=[10, 10], box=[2, 2, 2])
+            mb.solvate(
+                solute=h2o, solvent=[h2o], n_solvent=[10, 10], box=[2, 2, 2]
+            )
         with pytest.raises(ValueError):
             mb.fill_region(h2o, n_compounds=[10, 10], region=[2, 2, 2, 4, 4, 4])
         with pytest.raises(ValueError):
@@ -273,15 +278,19 @@ class TestPacking(BaseTest):
 
         ch4 = Methane()
         # With default sidemax
-        box_of_methane = mb.fill_box(ch4, box=[1000, 1000, 1000], n_compounds=500)
+        box_of_methane = mb.fill_box(
+            ch4, box=[1000, 1000, 1000], n_compounds=500
+        )
         sphere_of_methane = mb.fill_sphere(
             ch4, sphere=[1000, 1000, 1000, 1000], n_compounds=500
         )
         assert all(
-            np.asarray(box_of_methane.get_boundingbox().lengths) < [110, 110, 110]
+            np.asarray(box_of_methane.get_boundingbox().lengths)
+            < [110, 110, 110]
         )
         assert all(
-            np.asarray(sphere_of_methane.get_boundingbox().lengths) < [210, 210, 210]
+            np.asarray(sphere_of_methane.get_boundingbox().lengths)
+            < [210, 210, 210]
         )
 
         # With adjusted sidemax
@@ -289,11 +298,15 @@ class TestPacking(BaseTest):
             ch4, box=[1000, 1000, 1000], n_compounds=500, sidemax=1000.0
         )
         big_sphere_of_methane = mb.fill_sphere(
-            ch4, sphere=[1000, 1000, 1000, 1000], n_compounds=500, sidemax=2000.0
+            ch4,
+            sphere=[1000, 1000, 1000, 1000],
+            n_compounds=500,
+            sidemax=2000.0,
         )
 
         assert all(
-            np.asarray(big_box_of_methane.get_boundingbox().lengths) > [900, 900, 900]
+            np.asarray(big_box_of_methane.get_boundingbox().lengths)
+            > [900, 900, 900]
         )
         assert all(
             np.asarray(big_sphere_of_methane.get_boundingbox().lengths)
@@ -302,8 +315,12 @@ class TestPacking(BaseTest):
 
     def test_box_edge(self, h2o, methane):
         system_box = mb.Box(lengths=(1.8, 1.8, 1.8))
-        packed = mb.fill_box(compound=h2o, n_compounds=100, box=system_box, edge=0.2)
-        edge_sizes = np.subtract(system_box.lengths, packed.get_boundingbox().lengths)
+        packed = mb.fill_box(
+            compound=h2o, n_compounds=100, box=system_box, edge=0.2
+        )
+        edge_sizes = np.subtract(
+            system_box.lengths, packed.get_boundingbox().lengths
+        )
         assert np.allclose(edge_sizes, np.array([0.4] * 3), atol=0.1)
 
         region = mb.fill_region(
@@ -313,7 +330,9 @@ class TestPacking(BaseTest):
             edge=0.2,
             bounds=[system_box],
         )
-        edge_sizes = np.subtract(system_box.lengths, packed.get_boundingbox().lengths)
+        edge_sizes = np.subtract(
+            system_box.lengths, packed.get_boundingbox().lengths
+        )
         assert np.allclose(edge_sizes, np.array([0.4] * 3), atol=0.1)
 
         edge = 0.2
@@ -322,13 +341,18 @@ class TestPacking(BaseTest):
             compound=h2o, n_compounds=100, sphere=bounds, edge=edge
         )
         target_diameter = (bounds[3] - edge) * 2
-        assert np.allclose(sphere.maxs - sphere.mins, np.array([target_diameter] * 3),
-                           atol=0.1)
+        assert np.allclose(
+            sphere.maxs - sphere.mins, np.array([target_diameter] * 3), atol=0.1
+        )
 
         solvated = mb.solvate(
-            solvent=h2o, solute=methane, n_solvent=100, box=system_box, overlap=0.2
+            solvent=h2o,
+            solute=methane,
+            n_solvent=100,
+            box=system_box,
+            overlap=0.2,
         )
         edge_sizes = np.subtract(
-            system_box.lengths,  solvated.get_boundingbox().lengths
+            system_box.lengths, solvated.get_boundingbox().lengths
         )
         assert np.allclose(edge_sizes, np.array([0.4] * 3), atol=0.1)
