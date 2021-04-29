@@ -1252,9 +1252,8 @@ class Compound(object):
             raise MBuildError(f'Cannot calculate minimum periodic distance. '
                               f'No Box set for {self}')
             """
-            Warning(
-                f"No Box object set for {self}, using a "
-                f"rectangular bounding box"
+            warn(
+                f"No Box object set for {self}, using rectangular bounding box"
             )
             self.box = self.get_boundingbox()
             if np.allclose(self.box.angles, 90.0):

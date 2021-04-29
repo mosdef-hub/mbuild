@@ -2,7 +2,6 @@
 import itertools as it
 import pathlib
 from collections import defaultdict
-from warnings import warn
 
 import numpy as np
 

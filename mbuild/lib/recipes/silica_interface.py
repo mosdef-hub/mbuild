@@ -18,7 +18,7 @@ class SilicaInterface(Compound):
 
     Parameters
     ----------
-    bulk_silica : mb.Compound
+    bulk_silica : Compound
         Bulk silica from which to cleave an interface
     tile_x : int, optional, default=1
         Number of times to replicate bulk silica in x-direction
@@ -63,11 +63,11 @@ class SilicaInterface(Compound):
         O_buffer = self._O_buffer
         z_height = bulk_silica.box.lengths[2]
         tile_z = int(math.ceil((thickness + 2 * O_buffer) / z_height))
-        bulk = mb.recipes.TiledCompound(
+        bulk = TiledCompound(
             bulk_silica, n_tiles=(tile_x, tile_y, tile_z)
         )
 
-        interface = mb.Compound(
+        interface = Compound(
             periodicity=(bulk.periodicity[0], bulk.periodicity[1], False)
         )
         for i, particle in enumerate(bulk.particles()):
@@ -78,7 +78,7 @@ class SilicaInterface(Compound):
                 particle.name == "O"
                 and particle.pos[2] < (thickness + 2 * O_buffer)
             ):
-                interface_particle = mb.Compound(
+                interface_particle = Compound(
                     name=particle.name, pos=particle.pos
                 )
                 interface.add(

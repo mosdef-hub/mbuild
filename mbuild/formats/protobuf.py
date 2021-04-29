@@ -7,7 +7,6 @@ import ele
 import numpy as np
 from google.protobuf.text_format import Merge, PrintMessage
 
-import mbuild as mb
 from mbuild import Box, Compound
 from mbuild.formats import compound_pb2
 
