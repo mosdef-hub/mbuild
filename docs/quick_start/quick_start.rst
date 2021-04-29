@@ -1,5 +1,5 @@
 -----------------------
-Quick Start Guide
+Quick Start
 -----------------------
 
 .. image:: https://img.shields.io/badge/license-MIT-blue.svg
@@ -25,7 +25,8 @@ box or boxes utilizing only a few lines of python code.
 
 
 .. toctree::
-
+	
    AA_hexane_ethanol_example
    UA_methane_example
+   Box_example	
 
