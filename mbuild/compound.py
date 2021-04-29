@@ -143,6 +143,7 @@ class Compound(object):
         subcompounds=None,
         name=None,
         pos=None,
+        mass=None,
         charge=0.0,
         periodicity=None,
         box=None,
