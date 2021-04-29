@@ -30,7 +30,8 @@ def write_lammpsdata(structure, filename, atom_style='full',
                     maxs=None,
                     detect_forcefield_style=True, nbfix_in_data_file=True,
                     use_urey_bradleys=False,
-                    use_rb_torsions=True, use_dihedrals=False):
+                    use_rb_torsions=True, use_dihedrals=False,
+                    charmm_ff=False):
     """Output a LAMMPS data file.
     
     Outputs a LAMMPS data file in the 'full' atom style format. Default units are 
@@ -69,6 +70,10 @@ def write_lammpsdata(structure, filename, atom_style='full',
     use_dihedrals:
         If True, will treat dihedrals as CHARMM-style dihedrals while looking for 
         `structure.dihedrals`
+    charmm_ff:
+        If True, will treat forcefield as CHARMM forcefield.  Note that this 
+        should be False when the forcefield is not a CHARMM forcefield, even if the 
+        CHARMM dihedral style is used, such as when using AMBER forcefields..
 
     Notes
     -----
@@ -626,7 +631,10 @@ def _get_dihedral_types(structure, use_rb_torsions, use_dihedrals,
         structure.join_dihedrals()
         for dihedral in structure.dihedrals:
             if not dihedral.improper:
-                weight = 1 / len(dihedral.type)
+                if charmm_ff:
+                    weight = 1.0 / len(dihedral.type)
+                else:
+                    weight = 0.0
                 for dih_type in dihedral.type:
                     charmm_dihedrals.append((round(dih_type.phi_k*lj_unit,3),
                                              int(round(dih_type.per,0)),
