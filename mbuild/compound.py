@@ -342,7 +342,7 @@ class Compound(object):
 
     @property
     def mass(self):
-        """Return the total mass of a compound
+        """Return the total mass of a compound.
 
         If the compound contains children compouds, the total mass of all
         children compounds is returned.
