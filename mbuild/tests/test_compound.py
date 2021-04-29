@@ -340,7 +340,7 @@ class TestCompound(BaseTest):
 
         bead = mb.Compound(name="A", mass=1.0)
         assert bead.mass == 1.0
-        
+
         bead_overwrite = mb.Compound(name="A", element="C", mass=1.0)
         assert bead_overwrite.mass == 1.0
 
@@ -352,7 +352,7 @@ class TestCompound(BaseTest):
             a = mb.Compound(name="A")
             b = mb.Compound(name="B")
             compound = mb.Compound(subcompounds=[a, b], mass=2.0)
-        
+
         with pytest.raises(ValueError):
             mb.Compound(name="A", mass=-1.0)
 
@@ -370,11 +370,8 @@ class TestCompound(BaseTest):
 
         assert np.allclose(h2o.mass, 18.015, atol=1e-5)
 
-        system = mb.fill_box(compound=h2o,
-                            n_compounds=5,
-                            box=[0.5, 0.5, 0.5]
-                            )
-        assert np.allclose(system.mass, 5*h2o.mass, atol=1e-5)
+        system = mb.fill_box(compound=h2o, n_compounds=5, box=[0.5, 0.5, 0.5])
+        assert np.allclose(system.mass, 5 * h2o.mass, atol=1e-5)
 
     def test_mass_setter(self, ethane):
         comp = mb.Compound(name="A", mass=1.0)
@@ -393,7 +390,7 @@ class TestCompound(BaseTest):
 
         for p in ethane.particles():
             p.mass = 1.0
-        assert ethane.mass == 8.0 
+        assert ethane.mass == 8.0
 
     def test_mass_setter_wrong_input(self, methane):
         with pytest.raises(MBuildError):
