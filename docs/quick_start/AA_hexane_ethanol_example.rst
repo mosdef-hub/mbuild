@@ -12,8 +12,9 @@ Import the required mbuild package.
 
 Construct an all-atom (AA) hexane and ethanol using the OPLS-AA force field (FF),
 which is comes as a standard `foyer <https://foyer.mosdef.org/en/stable/>`_ force field (FF).
+The hexane and ethanol molecules will be created using `smiles strings <https://www.daylight.com/dayhtml/doc/theory/theory.smiles.html>`_. 
 The hexane and ethanol residues will be named HEX and ETO, respectively.  
-Lastly, the hexane and ethanol molecule's configuration will be energy minimized. 
+Lastly, the hexane and ethanol molecule's configuration will be energy minimized, properly reorienting the molecule to the specified FF, which is sometimes needed for some simulation engines to ensure the initial configuration energy is not too high.     
 
 **Note**: The energy minimize step requires the `foyer <https://foyer.mosdef.org/en/stable/>`_ package. 
 
