@@ -150,7 +150,7 @@ def _proto_to_mb(proto):
     ----------
     proto: compound_pb2.Compound()
     """
-    if proto.element.symbol is "":
+    if proto.element.symbol == "":
         elem = None
     else:
         elem = ele.element_from_symbol(proto.element.symbol)
