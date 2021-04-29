@@ -20,6 +20,7 @@ RUN conda update conda -yq && \
     sed -i -E "s/python.*$/python="$(PY_VERSION)"/" environment-dev.yml && \
 	conda env create nomkl --file environment-dev.yml && \
 	conda activate mbuild-dev && \
+	conda install -c conda-forge nomkl jupyter && \
     python setup.py install && \
 	echo "source activate mbuild-dev" >> \
 	/home/anaconda/.profile && \
