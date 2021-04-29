@@ -70,10 +70,9 @@ def write_lammpsdata(structure, filename, atom_style='full',
     use_dihedrals:
         If True, will treat dihedrals as CHARMM-style dihedrals while looking for 
         `structure.dihedrals`
-    charmm_ff:
-        If True, will treat forcefield as CHARMM forcefield.  Note that this 
-        should be False when the forcefield is not a CHARMM forcefield, even if the 
-        CHARMM dihedral style is used, such as when using AMBER forcefields..
+    borrowed_charmm:
+        If True, will set weighting parameter to zero in CHARMM-style dihedrals.  
+        This should be True if the CHARMM dihedral style is used in non-CHARMM forcefields.
 
     Notes
     -----
@@ -631,10 +630,10 @@ def _get_dihedral_types(structure, use_rb_torsions, use_dihedrals,
         structure.join_dihedrals()
         for dihedral in structure.dihedrals:
             if not dihedral.improper:
-                if charmm_ff:
-                    weight = 1.0 / len(dihedral.type)
-                else:
+                if borrowed_charmm:
                     weight = 0.0
+                else:
+                    weight = 1.0 / len(dihedral.type)
                 for dih_type in dihedral.type:
                     charmm_dihedrals.append((round(dih_type.phi_k*lj_unit,3),
                                              int(round(dih_type.per,0)),
