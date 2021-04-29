@@ -27,7 +27,7 @@ MOCK_MODULES = [
     "mdtraj",
     "mdtraj.core.element",
     "nglview",
-    "oset",
+    "orderedset",
     "parmed",
     "parmed.parameters",
     "parmed.periodic_table",

@@ -13,7 +13,7 @@ import ele
 import numpy as np
 from ele.element import Element, element_from_name, element_from_symbol
 from ele.exceptions import ElementError
-from oset import oset as OrderedSet
+from orderedset import OrderedSet
 
 from mbuild import conversion
 from mbuild.bond_graph import BondGraph
