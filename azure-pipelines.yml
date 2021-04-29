@@ -1,11 +1,19 @@
 trigger:
-  - master
+  branches:
+    include:
+    - master
+  tags:
+    include:
+    - 0.*
 
 pr:
   autoCancel: true
   branches:
     include:
       - master
+  paths:
+    exclude:
+    - docs
 
 schedules:
 - cron: "0 0 * * *"
@@ -28,12 +36,18 @@ stages:
             Python37Ubuntu:
               imageName: 'ubuntu-latest'
               python.version: 3.7
+            Python38Ubuntu:
+              imageName: 'ubuntu-latest'
+              python.version: 3.8
             Python36macOS:
               imageName: 'macOS-latest'
               python.version: 3.6
             Python37macOS:
               imageName: 'macOS-latest'
               python.version: 3.7
+            Python38macOS:
+              imageName: 'macOS-latest'
+              python.version: 3.8
 
         pool:
           vmImage: $(imageName)
@@ -48,33 +62,26 @@ stages:
 
           - bash: |
               conda config --set always_yes yes --set changeps1 no
-              conda config --add channels omnia
-              conda config --add channels conda-forge
-              conda config --add channels mosdef
-            displayName: Add relavent Channels
+            displayName: Set conda config
 
           - bash: |
               conda update -c defaults conda
               conda update --all
-              conda create -n test-environment
-              source activate test-environment
-              conda install --yes python=$(python.version) --file requirements-dev.txt
-              conda install --yes python=$(python.version) --file requirements-dev.txt
+              sed -i -E 's/python.*$/python='$(python.version)'/' environment-dev.yml
+              conda env create -f environment-dev.yml
+              source activate mbuild-dev
               pip install -e .
             displayName: Create Conda env, Activate, Install dependencies, Install Branch
 
           - bash: |
-              source activate test-environment
-              pip install pytest-azurepipelines
-              python -m pytest -v --pyargs mbuild --cov=mbuild --no-coverage-upload
+              source activate mbuild-dev
+              python -m pytest -v --cov=mbuild --cov-report=html --pyargs mbuild
             displayName: Run Tests
 
           - bash: |
               source activate test-environment
-              coverage xml
-              codecov --file ./coverage.xml --token 2b64a140-cfdd-4d0f-b1ba-33d34b8bf522
-              coverage html
-            condition: and( eq( variables['Agent.OS'], 'Linux' ), eq( variables['python.version'], '3.7' ) )
+              bash <(curl -s https://codecov.io/bash) -C $(Build.SourceVersion)
+            condition: and( eq( variables['Agent.OS'], 'Linux' ), eq( variables['python.version'], '3.8' ) )
             displayName: Upload Coverage Report
 
           - task: PublishCodeCoverageResults@1
@@ -86,7 +93,6 @@ stages:
             displayName: Publish Coverage Report
 
 
-
       - job: Windows_no_bleeding
         pool:
           vmImage: 'windows-latest'
@@ -96,6 +102,8 @@ stages:
               python.version: 3.6
             Python37:
               python.version: 3.7
+            Python38:
+              python.version: 3.8
 
         steps:
           - powershell: Write-Host "##vso[task.prependpath]$env:CONDA\Scripts"
@@ -103,30 +111,25 @@ stages:
 
           - script: |
               conda config --set always_yes yes --set changeps1 no
-              conda config --add channels omnia
-              conda config --add channels conda-forge
-              conda config --add channels mosdef
             displayName: Add relavent channels
 
           - script: |
               conda update -c defaults conda
-              conda update --all
-              conda create -n test-environment
-              call activate test-environment
-              conda install --yes python=$(python.version) --file requirements-dev.txt
-              conda install --yes python=$(python.version) --file requirements-dev.txt
+              conda update conda -yq
+              sed -i -E 's/python.*$/python='$(python.version)'/' environment-win.yml
+              conda env create -f environment-win.yml
+              call activate mbuild-dev
             displayName: Create Conda env, Activate, Install dependencies
 
           - script: |
-              call activate test-environment
+              call activate mbuild-dev
               python -m pip --version
               python -m pip --verbose install -e .
             displayName: Install mBuild
 
           - script: |
-              call activate test-environment
-              python -m pip install pytest-azurepipelines
-              python -m pytest -v --cov=mbuild --cov-report=html --pyargs mbuild --no-coverage-upload
+              call activate mbuild-dev
+              python -m pytest -v --cov=mbuild --cov-report=html --pyargs mbuild
             displayName: Run Tests
 
       - job: LinuxBleedingFoyer
@@ -140,43 +143,41 @@ stages:
 
           - bash: |
               conda config --set always_yes yes --set changeps1 no
-              conda config --add channels omnia
-              conda config --add channels conda-forge
-              conda config --add channels mosdef
               conda update -c defaults conda
               conda update --all
-              conda create -n  bleeding-test-environment
-              source activate bleeding-test-environment
-              conda install --yes python=3.7 --file requirements-dev.txt
-              conda install --yes python=3.7 --file requirements-dev.txt
+              pip install conda-merge
+              git clone https://github.com/mosdef-hub/foyer.git
+              conda-merge environment-dev.yml foyer/environment-dev.yml > combine.yml
+              sed -iE 's/python.*$/python=3.7/' combine.yml
+              sed -iE '/mbuild/d' combine.yml
+              sed -iE '/ foyer/d' combine.yml
+              conda env create -n bleeding -f combine.yml
+              source activate bleeding
+              pip install -e .
+              cd foyer
+              pip install -e .
             displayName: Create a new bleeding test environment
 
           - bash: |
-              source activate bleeding-test-environment
-              git clone https://github.com/mosdef-hub/foyer.git
-              cd foyer
-              conda install --yes --file requirements-dev.txt
-              conda install --yes --file requirements-dev.txt
-              pip install -e .
-              pip uninstall mbuild -y
-              cd ..
-              pip install -e .
-            displayName: clone foyer, install foyer, install mbuild
-
-          - bash: |
-              source activate bleeding-test-environment
-              pip install pytest-azurepipelines
-              python -m pytest -v --cov=mbuild --cov-report= --pyargs mbuild --no-coverage-upload
+              source activate bleeding
+              python -m pytest -v --cov=mbuild --cov-report=html --pyargs mbuild
             displayName: Run Tests
 
   - stage: Docker
     dependsOn: Test
-    condition: and(succeeded(), eq(variables['Build.SourceBranch'], 'refs/heads/master'), ne(variables['Build.Reason'], 'Schedule'))
+    condition: and(succeeded(), or(eq(variables['Build.SourceBranch'], 'refs/heads/master'), startsWith(variables['Build.SourceBranch'], 'refs/tags/0')), ne(variables['Build.Reason'], 'Schedule'))
     pool:
       vmImage: 'ubuntu-latest'
     jobs:
       - job: publishDocker
         steps:
+          - bash: |
+              if [[ $BUILD_SOURCEBRANCH == "refs/heads/master" ]]; then TAG='latest'; else TAG='stable'; fi
+              if [[ $BUILD_SOURCEBRANCH != "refs/heads/master" ]]; then VERSION=$(Build.SourceBranch); fi;
+              echo "##vso[task.setvariable variable=VERSION;]${VERSION:10}"
+              echo "##vso[task.setvariable variable=DOCKER_TAG;]$TAG"
+            displayName: Export Docker Tags
+
           - task: Docker@2
             displayName: Login to docker hub
             inputs:
@@ -188,11 +189,12 @@ stages:
             inputs:
               command: buildAndPush
               repository: mosdef/mbuild
-              tags: latest
+              tags: |
+                $(DOCKER_TAG)
+                $(VERSION)
 
           - task: Docker@2
             displayName: Logout
             inputs:
               command: logout
               containerRegistry: mosdefDockerLogin
-
