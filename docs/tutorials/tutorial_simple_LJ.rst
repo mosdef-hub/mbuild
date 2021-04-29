@@ -15,35 +15,35 @@ and passed to the visualize command. Colors are passed in hex format
 .. code:: ipython3
 
     import mbuild as mb
-    
+
     class MonoLJ(mb.Compound):
         def __init__(self):
             super(MonoLJ, self).__init__()
             lj_particle1 = mb.Particle(name='LJ', pos=[0, 0, 0])
             self.add(lj_particle1)
-    
+
             lj_particle2 = mb.Particle(name='LJ', pos=[1, 0, 0])
             self.add(lj_particle2)
-    
+
             lj_particle3 = mb.Particle(name='LJ', pos=[0, 1, 0])
             self.add(lj_particle3)
-    
+
             lj_particle4 = mb.Particle(name='LJ', pos=[0, 0, 1])
             self.add(lj_particle4)
-    
+
             lj_particle5 = mb.Particle(name='LJ', pos=[1, 0, 1])
             self.add(lj_particle5)
-    
+
             lj_particle6 = mb.Particle(name='LJ', pos=[1, 1, 0])
             self.add(lj_particle6)
-    
+
             lj_particle7 = mb.Particle(name='LJ', pos=[0, 1, 1])
             self.add(lj_particle7)
-            
+
             lj_particle8 = mb.Particle(name='LJ', pos=[1, 1, 1])
             self.add(lj_particle8)
-    
-    
+
+
     monoLJ = MonoLJ()
     monoLJ.visualize()
 
@@ -66,12 +66,12 @@ behavior.
 .. code:: ipython3
 
     import mbuild as mb
-    
+
     class MonoLJ(mb.Compound):
         def __init__(self):
             super(MonoLJ, self).__init__()
             lj_proto = mb.Particle(name='LJ', pos=[0, 0, 0])
-    
+
             for i in range(0,2):
                 for j in range(0,2):
                     for k in range(0,2):
@@ -79,7 +79,7 @@ behavior.
                         pos = [i,j,k]
                         lj_particle.translate(pos)
                         self.add(lj_particle)
-    
+
     monoLJ = MonoLJ()
     monoLJ.visualize()
 
@@ -94,20 +94,20 @@ scaled based on the desired system size, i.e., pattern.scale(2).
 .. code:: ipython3
 
     import mbuild as mb
-    
+
     class MonoLJ(mb.Compound):
         def __init__(self):
             super(MonoLJ, self).__init__()
             lj_proto = mb.Particle(name='LJ', pos=[0, 0, 0])
-    
+
             pattern = mb.Grid3DPattern(2, 2, 2)
             pattern.scale(2)
-    
+
             for pos in pattern:
                 lj_particle = mb.clone(lj_proto)
                 lj_particle.translate(pos)
                 self.add(lj_particle)
-    
+
     monoLJ = MonoLJ()
     monoLJ.visualize()
 
@@ -118,20 +118,20 @@ same basic code, such as a 2D grid pattern:
 .. code:: ipython3
 
     import mbuild as mb
-    
+
     class MonoLJ(mb.Compound):
         def __init__(self):
             super(MonoLJ, self).__init__()
             lj_proto = mb.Particle(name='LJ', pos=[0, 0, 0])
-    
+
             pattern = mb.Grid2DPattern(5, 5)
             pattern.scale(5)
-    
+
             for pos in pattern:
                 lj_particle = mb.clone(lj_proto)
                 lj_particle.translate(pos)
                 self.add(lj_particle)
-    
+
     monoLJ = MonoLJ()
     monoLJ.visualize()
 
@@ -145,21 +145,21 @@ pos[0]+=1.0).
 .. code:: ipython3
 
     import mbuild as mb
-    
+
     class MonoLJ(mb.Compound):
         def __init__(self):
             super(MonoLJ, self).__init__()
             lj_proto = mb.Particle(name='LJ', pos=[0, 0, 0])
-            
+
             pattern_sphere = mb.SpherePattern(200)
             pattern_sphere.scale(0.5)
-            
+
             for pos in pattern_sphere:
                 lj_particle = mb.clone(lj_proto)
                 pos[0]-=1.0
                 lj_particle.translate(pos)
                 self.add(lj_particle)
-            
+
             pattern_disk = mb.DiskPattern(200)
             pattern_disk.scale(0.5)
             for pos in pattern_disk:
@@ -167,7 +167,7 @@ pos[0]+=1.0).
                 pos[0]+=1.0
                 lj_particle.translate(pos)
                 self.add(lj_particle)
-    
+
     monoLJ = MonoLJ()
     monoLJ.visualize()
 
@@ -180,48 +180,48 @@ individually in the MonoLJ component.
 .. code:: ipython3
 
     import mbuild as mb
-    
+
     class SphereLJ(mb.Compound):
         def __init__(self):
             super(SphereLJ, self).__init__()
             lj_proto = mb.Particle(name='LJ', pos=[0, 0, 0])
-            
+
             pattern_sphere = mb.SpherePattern(200)
             pattern_sphere.scale(0.5)
-            
+
             for pos in pattern_sphere:
                 lj_particle = mb.clone(lj_proto)
                 lj_particle.translate(pos)
                 self.add(lj_particle)
-    
+
     class DiskLJ(mb.Compound):
         def __init__(self):
             super(DiskLJ, self).__init__()
             lj_proto = mb.Particle(name='LJ', pos=[0, 0, 0])
-    
+
             pattern_disk = mb.DiskPattern(200)
             pattern_disk.scale(0.5)
             for pos in pattern_disk:
                 lj_particle = mb.clone(lj_proto)
                 lj_particle.translate(pos)
                 self.add(lj_particle)
-    
-    
+
+
     class MonoLJ(mb.Compound):
         def __init__(self):
             super(MonoLJ, self).__init__()
-            
+
             sphere = SphereLJ();
             pos=[-1, 0, 0]
             sphere.translate(pos)
             self.add(sphere)
-    
+
             disk = DiskLJ();
             pos=[1, 0, 0]
             disk.translate(pos)
             self.add(disk)
-    
-    
+
+
     monoLJ = MonoLJ()
     monoLJ.visualize()
 
@@ -232,15 +232,15 @@ replicate the SphereLJ component on a regular array.
 .. code:: ipython3
 
     import mbuild as mb
-    
+
     class SphereLJ(mb.Compound):
         def __init__(self):
             super(SphereLJ, self).__init__()
             lj_proto = mb.Particle(name='LJ', pos=[0, 0, 0])
-            
+
             pattern_sphere = mb.SpherePattern(13)
             pattern_sphere.scale(0.1)
-            
+
             for pos in pattern_sphere:
                 lj_particle = mb.clone(lj_proto)
                 lj_particle.translate(pos)
@@ -249,19 +249,19 @@ replicate the SphereLJ component on a regular array.
         def __init__(self):
             super(MonoLJ, self).__init__()
             sphere = SphereLJ();
-    
+
             pattern = mb.Grid3DPattern(3, 3, 3)
             pattern.scale(2)
-    
+
             for pos in pattern:
                 lj_sphere = mb.clone(sphere)
                 lj_sphere.translate_to(pos)
                 #shift the particle so the center of mass
                 #of the system is at the origin
                 lj_sphere.translate([-5,-5,-5])
-    
+
                 self.add(lj_sphere)
-    
+
     monoLJ = MonoLJ()
     monoLJ.visualize()
 
@@ -275,31 +275,31 @@ center of mass).
     import mbuild as mb
     import random
     from numpy import pi
-    
-    
+
+
     class CubeLJ(mb.Compound):
         def __init__(self):
             super(CubeLJ, self).__init__()
             lj_proto = mb.Particle(name='LJ', pos=[0, 0, 0])
-            
+
             pattern = mb.Grid3DPattern(2, 2, 2)
             pattern.scale(0.2)
-    
+
             for pos in pattern:
                 lj_particle = mb.clone(lj_proto)
                 lj_particle.translate(pos)
                 self.add(lj_particle)
-                
+
     class MonoLJ(mb.Compound):
         def __init__(self):
             super(MonoLJ, self).__init__()
             cube_proto = CubeLJ();
-    
+
             pattern = mb.Grid3DPattern(3, 3, 3)
             pattern.scale(2)
             rnd = random.Random()
             rnd.seed(123)
-            
+
             for pos in pattern:
                 lj_cube = mb.clone(cube_proto)
                 lj_cube.translate_to(pos)
@@ -309,9 +309,9 @@ center of mass).
                 lj_cube.spin( rnd.uniform(0, 2 * pi), [1, 0, 0])
                 lj_cube.spin(rnd.uniform(0, 2 * pi), [0, 1, 0])
                 lj_cube.spin(rnd.uniform(0, 2 * pi), [0, 0, 1])
-    
+
                 self.add(lj_cube)
-    
+
     monoLJ = MonoLJ()
     monoLJ.visualize()
 

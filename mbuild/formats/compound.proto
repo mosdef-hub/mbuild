@@ -30,5 +30,3 @@ message Compound {
     repeated Vec2 bonds = 7;  // a list of 2-tuples
     Element element = 8;
 }
-
-

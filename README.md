@@ -27,9 +27,17 @@ If you use this package, please cite [our paper](http://dx.doi.org/10.1007/978-9
       booktitle = "Foundations of Molecular Modeling and Simulation",
       series = "Molecular Modeling and Simulation: Applications and Perspectives",
       year = "2016",
-      doi = "http://dx.doi.org/10.1007/978-981-10-1128-3_5" 
+      doi = "http://dx.doi.org/10.1007/978-981-10-1128-3_5"
 }
 ```
+
+
+The `mBuild` package is part of the [Molecular Simulation Design Framework (MoSDeF) project](http://mosdef.org/). 
+Libraries in the MoSDeF ecosystem are designed to provide utilities neccessary to streamline 
+a researcher's simulation workflow. When setting up simulation studies,
+we also recommend users to follow the [TRUE](https://www.tandfonline.com/doi/full/10.1080/00268976.2020.1742938)  
+(Transparent, Reproducible, Usable-by-others, and Extensible) standard, which is a set of common
+practices meant to improve the reproducibility of computational simulation research. 
 
 #### Quick Start with Docker
 To use `mbuild` in a jupyter-notebook that runs from a docker container with all the dependencies installed use the following command:
@@ -50,7 +58,7 @@ To learn more about using `mBuild` with docker, please refer to the documentatio
 
 #### Tutorials
 
-*Interactive tutorials can be found here:* 
+*Interactive tutorials can be found here:*
 
 [![Binder](https://mybinder.org/badge.svg)](https://mybinder.org/v2/gh/mosdef-hub/mbuild_tutorials/master)
 

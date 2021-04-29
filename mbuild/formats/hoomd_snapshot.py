@@ -1,13 +1,14 @@
-from collections import namedtuple
+"""HOOMD snapshot format."""
 import operator
+from collections import namedtuple
 
 import numpy as np
 import parmed as pmd
 
 import mbuild as mb
-from mbuild.utils.sorting import natural_sort
 from mbuild.utils.geometry import coord_shift
 from mbuild.utils.io import import_
+from mbuild.utils.sorting import natural_sort
 
 hoomd = import_("hoomd")
 hoomd.data = import_("hoomd.data")
@@ -27,7 +28,7 @@ def to_hoomdsnapshot(
     parmed_kwargs={},
     hoomd_snapshot=None,
 ):
-    """Convert mb.Compound or parmed.Structure to hoomd.data.Snapshot
+    """Convert a Compound or parmed.Structure to hoomd.data.Snapshot.
 
     Parameters
     ----------
@@ -68,7 +69,6 @@ def to_hoomdsnapshot(
     Notes
     -----
     Force field parameters are not written to the hoomd_snapshot
-
     """
     if not isinstance(structure, (mb.Compound, pmd.Structure)):
         raise ValueError(

@@ -39,6 +39,18 @@ in order to get all of the dependencies::
 .. note::
     The above installation is for OSX and Unix. If you are using Windows, use environment-win.yml instead of environment-dev.yml
 
+Install pre-commit
+------------------
+
+We use [pre-commit](https://pre-commit.com/) to automatically handle our code formatting and this package is included in the dev environment.
+With the ``mbuild-dev`` conda environment active, pre-commit can be installed locally as a git hook by running::
+
+    $ pre-commit install
+
+And (optional) all files can be checked by running::
+
+    $ pre-commit run --all-files
+
 Supported Python Versions
 -------------------------
 
@@ -59,6 +71,6 @@ Building the documentation
 --------------------------
 
 mBuild uses `sphinx <https://www.sphinx-doc.org/en/master/index.html>`_ to build its documentation. To build the docs locally, run the following while in the ``docs`` directory::
-    
+
     $ pip install -r requirements.txt
     $ make html
