@@ -63,9 +63,7 @@ class SilicaInterface(Compound):
         O_buffer = self._O_buffer
         z_height = bulk_silica.box.lengths[2]
         tile_z = int(math.ceil((thickness + 2 * O_buffer) / z_height))
-        bulk = TiledCompound(
-            bulk_silica, n_tiles=(tile_x, tile_y, tile_z)
-        )
+        bulk = TiledCompound(bulk_silica, n_tiles=(tile_x, tile_y, tile_z))
 
         interface = Compound(
             periodicity=(bulk.periodicity[0], bulk.periodicity[1], False)
