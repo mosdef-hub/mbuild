@@ -2,8 +2,8 @@ import numpy as np
 import pytest
 
 import mbuild as mb
-from mbuild.exceptions import MBuildError
 from mbuild.tests.base_test import BaseTest
+from mbuild.exceptions import MBuildError
 
 
 class TestBox(BaseTest):
@@ -33,11 +33,7 @@ class TestBox(BaseTest):
         [
             [[1, 2, 3], [3, 2, 1], [2, 1, 3]],
             [[1, 0, 0], [0, 1, 0], [0, -1, -1]],
-            [
-                [0.5, np.sqrt(3) / 2, 0.0],
-                [0.5, 0.0, -np.sqrt(3) / 2],
-                [0, 0, 1],
-            ],
+            [[0.5, np.sqrt(3) / 2, 0.0], [0.5, 0.0, -np.sqrt(3) / 2], [0, 0, 1]],
         ],
     )
     def test_left_handed_matrix(self, lh_matrix):
@@ -45,9 +41,8 @@ class TestBox(BaseTest):
             "Box vectors provided for a left-handed basis, these will "
             "be transformed into a right-handed basis automatically."
         )
-        with pytest.warns(
-            UserWarning, match=r"provided for a left\-handed basis"
-        ):
+        with pytest.warns(UserWarning, match=r"provided for a left\-handed basis"):
+            # TODO add vector method properly
             mb.Box.from_box_vectors(vectors=lh_matrix)
 
     @pytest.mark.parametrize(
@@ -59,7 +54,10 @@ class TestBox(BaseTest):
         ],
     )
     def test_colinear_vectors(self, vecs):
-        with pytest.raises(mb.exceptions.MBuildError, match=r"co\-linear"):
+        with pytest.raises(
+            mb.exceptions.MBuildError,
+            match=r"co\-linear",
+        ):
             mb.Box.from_box_vectors(vectors=vecs)
 
     @pytest.mark.parametrize(
