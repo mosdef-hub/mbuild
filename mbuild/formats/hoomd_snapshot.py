@@ -42,21 +42,19 @@ def from_snapshot(snapshot, scale=1.0):
 
     # There will be a better way to do this once box overhaul merged
     # Only orthogonal boxes allowed
-    if (
-            'SnapshotSystemData_float' in dir(hoomd._hoomd)
-            and
-            isinstance(snapshot, hoomd._hoomd.SnapshotSystemData_float)
-            ):
+    if "SnapshotSystemData_float" in dir(hoomd._hoomd) and isinstance(
+        snapshot, hoomd._hoomd.SnapshotSystemData_float
+    ):
         # hoomd v2
         box = snapshot.box
-        comp.box = mb.Box(lengths=np.array([box.Lx,box.Ly,box.Lz]) * scale)
+        comp.box = mb.Box(lengths=np.array([box.Lx, box.Ly, box.Lz]) * scale)
     else:
         # gsd / hoomd v3
         box = snapshot.configuration.box
         comp.box = mb.Box(lengths=box[:3] * scale)
 
     # GSD and HOOMD snapshots center their boxes on the origin (0,0,0)
-    shift = np.array(comp.box.lengths)/2
+    shift = np.array(comp.box.lengths) / 2
     # Add particles
     for i in range(n_atoms):
         name = snapshot.particles.types[snapshot.particles.typeid[i]]

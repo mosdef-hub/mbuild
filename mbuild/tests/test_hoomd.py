@@ -22,14 +22,14 @@ class TestHoomd(BaseTest):
 
         for attr in ["lengths", "mins", "maxs", "angles"]:
             np.testing.assert_array_equal(
-                    getattr(box.box, attr), getattr(new_box.box, attr)
-                    )
-        old_dict = {i:p for i,p in enumerate(box.particles())}
-        new_dict = {i:p for i,p in enumerate(new_box.particles())}
+                getattr(box.box, attr), getattr(new_box.box, attr)
+            )
+        old_dict = {i: p for i, p in enumerate(box.particles())}
+        new_dict = {i: p for i, p in enumerate(new_box.particles())}
         for i in range(box.n_particles):
             np.testing.assert_array_almost_equal(
-                    old_dict[i].xyz, new_dict[i].xyz
-                    )
+                old_dict[i].xyz, new_dict[i].xyz
+            )
 
     @pytest.mark.skipif(not has_gsd, reason="gsd is not installed")
     def test_compound_from_gsdsnapshot(self, ethane):
@@ -45,14 +45,16 @@ class TestHoomd(BaseTest):
         gsd_snap.particles.types = snap.particles.types
         gsd_snap.particles.typeid = snap.particles.typeid
         gsd_snap.particles.position = snap.particles.position
-        gsd_snap.configuration.box = np.array([
-            snap.box.Lx,
-            snap.box.Ly,
-            snap.box.Lz,
-            snap.box.xy,
-            snap.box.xy,
-            snap.box.yz
-        ])
+        gsd_snap.configuration.box = np.array(
+            [
+                snap.box.Lx,
+                snap.box.Ly,
+                snap.box.Lz,
+                snap.box.xy,
+                snap.box.xy,
+                snap.box.yz,
+            ]
+        )
         gsd_snap.bonds.N = snap.bonds.N
         gsd_snap.bonds.group = snap.bonds.group
         gsd_snap.particles.charge = snap.particles.charge
@@ -65,14 +67,14 @@ class TestHoomd(BaseTest):
 
         for attr in ["lengths", "mins", "maxs", "angles"]:
             np.testing.assert_array_equal(
-                    getattr(box.box, attr), getattr(new_box.box, attr)
-                    )
-        old_dict = {i:p for i,p in enumerate(box.particles())}
-        new_dict = {i:p for i,p in enumerate(new_box.particles())}
+                getattr(box.box, attr), getattr(new_box.box, attr)
+            )
+        old_dict = {i: p for i, p in enumerate(box.particles())}
+        new_dict = {i: p for i, p in enumerate(new_box.particles())}
         for i in range(box.n_particles):
             np.testing.assert_array_almost_equal(
-                    old_dict[i].xyz, new_dict[i].xyz
-                    )
+                old_dict[i].xyz, new_dict[i].xyz
+            )
 
     def test_compound_to_snapshot(self, ethane):
         hoomd_snapshot = import_("mbuild.formats.hoomd_snapshot")
