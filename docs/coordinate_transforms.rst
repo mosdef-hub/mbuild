@@ -18,5 +18,3 @@ The following utility functions provide mechanisms for spatial transformations f
 .. autofunction:: mbuild.coordinate_transform.y_axis_transform
 
 .. autofunction:: mbuild.coordinate_transform.z_axis_transform
-
-

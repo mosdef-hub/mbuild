@@ -1,5 +1,4 @@
 import numpy as np
-
 import pytest
 
 import mbuild as mb
@@ -8,10 +7,9 @@ from mbuild.tests.base_test import BaseTest
 
 
 class TestAmorphousSilicaSurface(BaseTest):
-
     def test_create_amorphous_silica_surface(self):
         surface = AmorphousSilicaSurface()
-        
+
         assert isinstance(surface, mb.Compound)
         assert surface.n_particles == 1800
         assert surface.n_bonds == 0
@@ -19,4 +17,4 @@ class TestAmorphousSilicaSurface(BaseTest):
 
     def test_amorphous_silica_surface_error(self):
         with pytest.raises(ValueError):
-             surface = AmorphousSilicaSurface(surface_roughness = 2) 
+            surface = AmorphousSilicaSurface(surface_roughness=2)
