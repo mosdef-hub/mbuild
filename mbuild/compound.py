@@ -346,7 +346,7 @@ class Compound(object):
         if self._mass is not None:
             return self._mass
         else:
-            return sum([self._particle_mass(p) for p in self.particles()]) 
+            return sum([self._particle_mass(p) for p in self.particles()])
     
     def _particle_mass(self, particle):
         if particle._mass:

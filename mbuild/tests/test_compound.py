@@ -252,6 +252,7 @@ class TestCompound(BaseTest):
         assert np.all([p.name for p in ethane.particles()] ==
                       [p.name for p in ethane_clone.particles()])
         assert len(ethane.children) == len(ethane_clone.children)
+        assert ethane_clone.mass == ethane.mass
 
     def test_batch_add(self, ethane, h2o):
         compound = mb.Compound()

@@ -292,22 +292,13 @@ class TestPacking(BaseTest):
         with pytest.raises(MBuildError):
             mb.fill_sphere(compound=bead, sphere=[20, 20, 20, 20], density=1)
 
-        methane[1].mass = 0.0
+        beadA = mb.Compound(name="A", mass=0.0)
+        beadB = mb.Compound(name="B", mass=1.0, pos=[0.5, 0.5, 0.5])
+        beads = mb.Compound(subcompounds=[beadA, beadB])
         with warnings.catch_warnings(record=True) as w:
-            box = mb.fill_box(compound=methane, n_compounds=10, density=1)
+            box = mb.fill_box(compound=beads, n_compounds=10, density=1)
             assert w
 
         with warnings.catch_warnings(record=True) as w:
-            box = mb.fill_sphere(compound=methane, sphere=[20, 20, 20, 20], density=.25)
+            box = mb.fill_sphere(compound=beads, sphere=[20, 20, 20, 20], density=.25)
             assert w
-
-
-
-        
-
-
-
-        
-        
-
-

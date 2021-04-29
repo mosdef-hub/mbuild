@@ -168,9 +168,8 @@ def fill_box(
             raise ValueError(msg)
 
     if density is not None:
-        _validate_mass(compound, n_compounds)
+        total_mass = _validate_mass(compound, n_compounds)
         if box is None and n_compounds is not None:
-            total_mass = np.sum([n*c.mass for c, n in zip(compound, n_compounds)])
             # Conversion from (amu/(kg/m^3))**(1/3) to nm
             L = (total_mass / density) ** (1 / 3) * 1.1841763
             if aspect_ratio is None:
@@ -183,7 +182,7 @@ def fill_box(
                 # Conversion from kg/m^3 / amu * nm^3 to dimensionless units
                 n_compounds = [
                     int(
-                        density / compound[0].mass * np.prod(box.lengths) * 0.60224
+                        density / total_mass * np.prod(box.lengths) * 0.60224
                     )
                 ]
             else:
@@ -509,14 +508,14 @@ def fill_sphere(
     radius = sphere[3] - edge
 
     if density is not None:
-        _validate_mass(compound, n_compounds)
+        total_mass = _validate_mass(compound, n_compounds)
         if n_compounds is None:
             if len(compound) == 1:
                 # Conversion from kg/m^3 / amu * nm^3 to dimensionless units
                 n_compounds = [
                     int(
                         density
-                        / compound[0].mass 
+                        / total_mass 
                         * (4 / 3 * np.pi * radius ** 3)
                         * 0.60224
                     )
@@ -725,12 +724,28 @@ def solvate(
 
 def _validate_mass(compound, n_compounds):
     """
-    Check the mass of the compounds passed into the various packing functions 
+    Check the mass of the compounds passed into the various packing functions.
+    Returns an error if the total mass is zero, and density cannot be used to
+    find box size or number of compounds.
+    Returns a warning of any subcompound in compound has a mass of zero.
     """
+
+    found_zero_mass = False
+    total_mass = 0
+
     if compound and n_compounds:
-        total_mass = np.sum([n*c.mass for c, n in zip(compound, n_compounds)])
+        for c, n in zip(compound, n_compounds):
+            comp_masses = [c._particle_mass(p) for p in c.particles()]
+            if 0.0 in comp_masses:
+                found_zero_mass = True
+            total_mass += np.sum(comp_masses)*n
+            
     elif compound and not n_compounds:
-        total_mass = np.sum([c.mass for c in compound])
+        for c in compound:
+            mass = [c._particle_mass(p) for p in c.particles()]
+            if 0.0 in mass:
+                found_zero_mass = True
+            total_mass += np.sum(mass)
 
     if total_mass == 0:
         raise MBuildError("The total mass of your compound(s) is zero "
@@ -739,12 +754,12 @@ def _validate_mass(compound, n_compounds):
                 "Compound() class in compound.py for more information "
                 "on how mass is handled."
                 )
-    for comp in compound:
-        if 0.0 in [c.mass for c in comp.particles()]:
-            warnings.warn(f"Some of the compounds or subcompounds in {comp} "
-                    "have a mass of zero. This may have an effect on "
-                    "density calculations"
-                    )
+    if found_zero_mass:
+        warnings.warn("Some of the compounds or subcompounds in `compound` "
+                "have a mass of zero. This may have an effect on "
+                "density calculations"
+                )
+    return total_mass
 
 def _validate_box(box):
     """Ensure that the box passed by the user can be formatted as an mbuild.Box
