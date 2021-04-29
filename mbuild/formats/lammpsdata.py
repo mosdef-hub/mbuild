@@ -28,6 +28,7 @@ def _check_minsmaxs(mins, maxs):
     else:
         return False
 
+
 def write_lammpsdata(
     structure,
     filename,
@@ -42,7 +43,7 @@ def write_lammpsdata(
     use_dihedrals=False,
     sigma_conversion_factor=None,
     epsilon_conversion_factor=None,
-    mass_conversion_factor=None
+    mass_conversion_factor=None,
 ):
     """Output a LAMMPS data file.
 
@@ -100,40 +101,54 @@ def write_lammpsdata(
     for details.
     """
 
-    if atom_style not in ['atomic', 'charge', 'molecular', 'full']:
-        raise ValueError('Atom style "{}" is invalid or is not currently supported'.format(atom_style))
-    if unit_style not in ['real', 'lj']:
-        raise ValueError('Unit style "{}" is invalid or is not currently supported'.format(unit_style))
+    if atom_style not in ["atomic", "charge", "molecular", "full"]:
+        raise ValueError(
+            'Atom style "{}" is invalid or is not currently supported'.format(
+                atom_style
+            )
+        )
+    if unit_style not in ["real", "lj"]:
+        raise ValueError(
+            'Unit style "{}" is invalid or is not currently supported'.format(
+                unit_style
+            )
+        )
     # Check if structure is paramterized
-    if unit_style == 'lj':
+    if unit_style == "lj":
         sigma_use_default = False
         epsilon_use_default = False
         mass_use_default = False
 
         if any([atom.sigma for atom in structure.atoms]) is None:
-           raise ValueError('LJ units specified but one or more atoms has undefined LJ parameters.') 
-        
+            raise ValueError(
+                "LJ units specified but one or more atoms has undefined LJ parameters."
+            )
+
         if sigma_conversion_factor is None:
             sigma_use_default = True
         elif sigma_conversion_factor <= 0:
-            raise ValueError('The sigma conversion factor to convert to LJ units should be greater than 0.')
-        
+            raise ValueError(
+                "The sigma conversion factor to convert to LJ units should be greater than 0."
+            )
+
         if epsilon_conversion_factor is None:
             epsilon_use_default = True
         elif epsilon_conversion_factor <= 0:
-            raise ValueError('The epsilon conversion factor to convert to LJ units should be greater than 0.')
-        
+            raise ValueError(
+                "The epsilon conversion factor to convert to LJ units should be greater than 0."
+            )
+
         if mass_conversion_factor is None:
             mass_use_default = True
         elif mass_conversion_factor <= 0:
-            raise ValueError('The mass conversion factor to convert to LJ units should be greater than 0.')
+            raise ValueError(
+                "The mass conversion factor to convert to LJ units should be greater than 0."
+            )
 
-
-
-    xyz = np.array([[atom.xx,atom.xy,atom.xz] for atom in structure.atoms])
+    xyz = np.array([[atom.xx, atom.xy, atom.xz] for atom in structure.atoms])
 
     forcefield = True
-    if structure[0].type == '':
+    if structure[0].type == "":
         forcefield = False
 
     """
@@ -200,33 +215,50 @@ def write_lammpsdata(
     charges = np.array([atom.charge for atom in structure.atoms])
 
     # Convert coordinates to LJ units
-    if unit_style == 'lj':
+    if unit_style == "lj":
         # If not specified by user, get sigma, mass, and epsilon conversions by finding maximum of each
         if sigma_use_default:
-            sigma_conversion_factor = np.max([atom.sigma for atom in structure.atoms])
+            sigma_conversion_factor = np.max(
+                [atom.sigma for atom in structure.atoms]
+            )
             if sigma_conversion_factor == 0:
                 sigma_conversion_factor = 1
-                warnings.warn("sigma conversion factor cannot be inferred from the maximum sigma value in the ParmEd Structure. "
-                        "Setting the sigma conversion factor to 1")
+                warnings.warn(
+                    "sigma conversion factor cannot be inferred from the maximum sigma value in the ParmEd Structure. "
+                    "Setting the sigma conversion factor to 1"
+                )
 
         if epsilon_use_default:
-            epsilon_conversion_factor = np.max([atom.epsilon for atom in structure.atoms])
+            epsilon_conversion_factor = np.max(
+                [atom.epsilon for atom in structure.atoms]
+            )
             if epsilon_conversion_factor == 0:
                 epsilon_conversion_factor = 1
-                warnings.warn("epsilon conversion factor cannot be inferred from the maximum epsilon value in the ParmEd Structure. " 
-                        "Setting the epsilon conversion factor to 1")
+                warnings.warn(
+                    "epsilon conversion factor cannot be inferred from the maximum epsilon value in the ParmEd Structure. "
+                    "Setting the epsilon conversion factor to 1"
+                )
 
         if mass_use_default:
-            mass_conversion_factor = np.max([atom.mass for atom in structure.atoms])
+            mass_conversion_factor = np.max(
+                [atom.mass for atom in structure.atoms]
+            )
             if mass_conversion_factor == 0:
                 mass_conversion_factor = 1
-                warnings.warn("mass conversion factor cannot be inferred from the maximum mass value in the ParmEd Structure. "
-                        "Setting the mass conversion factor to 1")
+                warnings.warn(
+                    "mass conversion factor cannot be inferred from the maximum mass value in the ParmEd Structure. "
+                    "Setting the mass conversion factor to 1"
+                )
 
         xyz = xyz / sigma_conversion_factor
-        charges = (charges*1.6021e-19) / np.sqrt(4*np.pi*(sigma_conversion_factor*1e-10)*
-          (epsilon_conversion_factor*4184)*epsilon_0)
-        charges[np.isinf(charges)] = 0 
+        charges = (charges * 1.6021e-19) / np.sqrt(
+            4
+            * np.pi
+            * (sigma_conversion_factor * 1e-10)
+            * (epsilon_conversion_factor * 4184)
+            * epsilon_0
+        )
+        charges[np.isinf(charges)] = 0
         # TODO: FIX CHARGE UNIT CONVERSION
     else:
         sigma_conversion_factor = 1
@@ -371,18 +403,21 @@ def write_lammpsdata(
                     "{:d} improper types\n".format(len(set(improper_types)))
                 )
 
-        data.write('\n')
-        #If using real units, write our box dimensions in angstrom instead of nm.
+        data.write("\n")
+        # If using real units, write our box dimensions in angstrom instead of nm.
         boxdim_conversion = 10.0
-        if unit_style == 'lj':
+        if unit_style == "lj":
             boxdim_conversion = 1.0
         # Box data
         if np.allclose(box.angles, np.array([90, 90, 90])):
-            for i,dim in enumerate(['x','y','z']):
-                data.write('{0:.6f} {1:.6f} {2}lo {2}hi\n'.format(
-                    boxdim_conversion * box.mins[i],
-                    boxdim_conversion * box.maxs[i],
-                    dim))
+            for i, dim in enumerate(["x", "y", "z"]):
+                data.write(
+                    "{0:.6f} {1:.6f} {2}lo {2}hi\n".format(
+                        boxdim_conversion * box.mins[i],
+                        boxdim_conversion * box.maxs[i],
+                        dim,
+                    )
+                )
         else:
             a, b, c = boxdim_conversion * box.lengths
             alpha, beta, gamma = np.radians(box.angles)
@@ -580,35 +615,39 @@ def write_lammpsdata(
 
             # Bond coefficients
             if bonds:
-                data.write('\nBond Coeffs # harmonic\n')
-                if unit_style == 'real':
-                    data.write('#\tk(kcal/mol/angstrom^2)\t\treq(angstrom)\n')
-                elif unit_style == 'lj':
-                    data.write('#\treduced_k\t\treduced_req\n')
-                sorted_bond_types = {k: v 
-                                     for k, v in sorted(
-                                         unique_bond_types.items(),key=lambda item: item[1]
-                                         )
-                                    }
-                for params,idx in sorted_bond_types.items():
-                    #If the user specified LJ unit style, revert the internal conversion of k by ParmEd
-                    if unit_style == 'lj':  
-                        data.write('{}\t{}\t\t{}\t\t# {}\t{}\n'.format(
-                                        idx,
-                                        params[0]*4.184*100.*2.,
-                                        params[1]/10.,params[2][0],
-                                        params[2][1]
-                                        )
-                                  )
+                data.write("\nBond Coeffs # harmonic\n")
+                if unit_style == "real":
+                    data.write("#\tk(kcal/mol/angstrom^2)\t\treq(angstrom)\n")
+                elif unit_style == "lj":
+                    data.write("#\treduced_k\t\treduced_req\n")
+                sorted_bond_types = {
+                    k: v
+                    for k, v in sorted(
+                        unique_bond_types.items(), key=lambda item: item[1]
+                    )
+                }
+                for params, idx in sorted_bond_types.items():
+                    # If the user specified LJ unit style, revert the internal conversion of k by ParmEd
+                    if unit_style == "lj":
+                        data.write(
+                            "{}\t{}\t\t{}\t\t# {}\t{}\n".format(
+                                idx,
+                                params[0] * 4.184 * 100.0 * 2.0,
+                                params[1] / 10.0,
+                                params[2][0],
+                                params[2][1],
+                            )
+                        )
                     else:
-                        data.write('{}\t{}\t\t{}\t\t# {}\t{}\n'.format(
-                                        idx,
-                                        params[0],
-                                        params[1],
-                                        params[2][0],
-                                        params[2][1]
-                                        )
-                                  )
+                        data.write(
+                            "{}\t{}\t\t{}\t\t# {}\t{}\n".format(
+                                idx,
+                                params[0],
+                                params[1],
+                                params[2][0],
+                                params[2][1],
+                            )
+                        )
             # Angle coefficients
             if angles:
                 sorted_angle_types = {
@@ -630,16 +669,32 @@ def write_lammpsdata(
                         )
 
                 else:
-                    data.write('\nAngle Coeffs # harmonic\n')
-                    data.write('#\treduced_k\t\ttheteq(deg)\n')
-                    for params,idx in sorted_angle_types.items():
-                        #If the user specified LJ unit style, revert the internal conversion of k by ParmEd
-                        if unit_style == 'lj':
-                            data.write('{}\t{}\t\t{:.5f}\t# {}\t{}\t{}\n'.format(idx,params[0]*4.184*2.,params[1],
-                                                                             params[3][0],params[2],params[3][1]))
+                    data.write("\nAngle Coeffs # harmonic\n")
+                    data.write("#\treduced_k\t\ttheteq(deg)\n")
+                    for params, idx in sorted_angle_types.items():
+                        # If the user specified LJ unit style, revert the internal conversion of k by ParmEd
+                        if unit_style == "lj":
+                            data.write(
+                                "{}\t{}\t\t{:.5f}\t# {}\t{}\t{}\n".format(
+                                    idx,
+                                    params[0] * 4.184 * 2.0,
+                                    params[1],
+                                    params[3][0],
+                                    params[2],
+                                    params[3][1],
+                                )
+                            )
                         else:
-                            data.write('{}\t{}\t\t{:.5f}\t# {}\t{}\t{}\n'.format(idx,params[0],params[1],
-                                                                             params[3][0],params[2],params[3][1]))
+                            data.write(
+                                "{}\t{}\t\t{:.5f}\t# {}\t{}\t{}\n".format(
+                                    idx,
+                                    params[0],
+                                    params[1],
+                                    params[3][0],
+                                    params[2],
+                                    params[3][1],
+                                )
+                            )
 
             # Dihedral coefficients
             if dihedrals:
@@ -721,35 +776,49 @@ def write_lammpsdata(
                     )
 
         # Atom data
-        data.write('\nAtoms\n\n')
-        if atom_style == 'atomic':
-            atom_line = '{index:d}\t{type_index:d}\t{x:.6f}\t{y:.6f}\t{z:.6f}\n'
-        elif atom_style == 'charge':
-            if unit_style == 'real':
-                atom_line = '{index:d}\t{type_index:d}\t{charge:.6f}\t{x:.6f}\t{y:.6f}\t{z:.6f}\n'
-            elif unit_style == 'lj':
-                atom_line = '{index:d}\t{type_index:d}\t{charge:.4ef}\t{x:.6f}\t{y:.6f}\t{z:.6f}\n'
-        elif atom_style == 'molecular':
-            atom_line = '{index:d}\t{zero:d}\t{type_index:d}\t{x:.6f}\t{y:.6f}\t{z:.6f}\n'
-        elif atom_style == 'full':
-            if unit_style == 'real':
-                atom_line ='{index:d}\t{zero:d}\t{type_index:d}\t{charge:.6f}\t{x:.6f}\t{y:.6f}\t{z:.6f}\n'
-            elif unit_style == 'lj':
-                atom_line ='{index:d}\t{zero:d}\t{type_index:d}\t{charge:.4e}\t{x:.6f}\t{y:.6f}\t{z:.6f}\n'
+        data.write("\nAtoms\n\n")
+        if atom_style == "atomic":
+            atom_line = "{index:d}\t{type_index:d}\t{x:.6f}\t{y:.6f}\t{z:.6f}\n"
+        elif atom_style == "charge":
+            if unit_style == "real":
+                atom_line = "{index:d}\t{type_index:d}\t{charge:.6f}\t{x:.6f}\t{y:.6f}\t{z:.6f}\n"
+            elif unit_style == "lj":
+                atom_line = "{index:d}\t{type_index:d}\t{charge:.4ef}\t{x:.6f}\t{y:.6f}\t{z:.6f}\n"
+        elif atom_style == "molecular":
+            atom_line = "{index:d}\t{zero:d}\t{type_index:d}\t{x:.6f}\t{y:.6f}\t{z:.6f}\n"
+        elif atom_style == "full":
+            if unit_style == "real":
+                atom_line = "{index:d}\t{zero:d}\t{type_index:d}\t{charge:.6f}\t{x:.6f}\t{y:.6f}\t{z:.6f}\n"
+            elif unit_style == "lj":
+                atom_line = "{index:d}\t{zero:d}\t{type_index:d}\t{charge:.4e}\t{x:.6f}\t{y:.6f}\t{z:.6f}\n"
 
-        for i,coords in enumerate(xyz):
-            if (unit_style == 'lj'):
-                data.write(atom_line.format(
-                    index=i+1,type_index=unique_types.index(types[i])+1,
-                    zero=structure.atoms[i].residue.idx,charge=charges[i],
-                    x=coords[0]/10.,y=coords[1]/10.,z=coords[2]/10.))
+        for i, coords in enumerate(xyz):
+            if unit_style == "lj":
+                data.write(
+                    atom_line.format(
+                        index=i + 1,
+                        type_index=unique_types.index(types[i]) + 1,
+                        zero=structure.atoms[i].residue.idx,
+                        charge=charges[i],
+                        x=coords[0] / 10.0,
+                        y=coords[1] / 10.0,
+                        z=coords[2] / 10.0,
+                    )
+                )
             else:
-                data.write(atom_line.format(
-                    index=i+1,type_index=unique_types.index(types[i])+1,
-                    zero=structure.atoms[i].residue.idx,charge=charges[i],
-                    x=coords[0],y=coords[1],z=coords[2]))
+                data.write(
+                    atom_line.format(
+                        index=i + 1,
+                        type_index=unique_types.index(types[i]) + 1,
+                        zero=structure.atoms[i].residue.idx,
+                        charge=charges[i],
+                        x=coords[0],
+                        y=coords[1],
+                        z=coords[2],
+                    )
+                )
 
-        if atom_style in ['full', 'molecular']:
+        if atom_style in ["full", "molecular"]:
             # Bond data
             if bonds:
                 data.write("\nBonds\n\n")

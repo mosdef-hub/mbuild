@@ -292,7 +292,9 @@ class TestLammpsData(BaseTest):
                     bonds.append(float(fi.readline().split()[1]))
                     bonds.append(float(fi.readline().split()[1]))
                     print(bonds)
-                    assert np.allclose(sorted(bonds), [41624460.4032, 52807151.8448])
+                    assert np.allclose(
+                        sorted(bonds), [41624460.4032, 52807151.8448]
+                    )
                     checked_section = True
 
     def test_lj_angles(self, ethane):

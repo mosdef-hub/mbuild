@@ -36,9 +36,9 @@
   <Proper type1="HBP" type2="BBP" type3="BBG" type4="HBG" periodicity1="1" phase1="0" k1="15"/>
   <Proper type1="HBG" type2="BBG" type3="BBP" type4="HBP" periodicity1="1" phase1="0" k1="15"/>
 
-  <Proper type1="HBP" type2="BBD" type3="BBG" type4="HBG" periodicity1="1" phase1="0" k1="15"/> 
-  <Proper type1="HBG" type2="BBG" type3="BBD" type4="HBP" periodicity1="1" phase1="0" k1="15"/> 
-  
-  <Proper type1="HBG" type2="BBG" type3="BBG" type4="HBG" periodicity1="1" phase1="0" k1="15"/> 
+  <Proper type1="HBP" type2="BBD" type3="BBG" type4="HBG" periodicity1="1" phase1="0" k1="15"/>
+  <Proper type1="HBG" type2="BBG" type3="BBD" type4="HBP" periodicity1="1" phase1="0" k1="15"/>
+
+  <Proper type1="HBG" type2="BBG" type3="BBG" type4="HBG" periodicity1="1" phase1="0" k1="15"/>
  </PeriodicTorsionForce>
 </ForceField>
