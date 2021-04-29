@@ -4,7 +4,7 @@ data_ITG
 #
 # CIF taken from the IZA-SC Database of Zeolite Structures
 # Ch. Baerlocher and L.B. McCusker
-# Database of Zeolite Structures: http://www.iza-structure.org/databases/ 
+# Database of Zeolite Structures: http://www.iza-structure.org/databases/
 #
 # The atom coordinates and the cell parameters were optimized with DLS76
 # assuming a pure SiO2 composition.
@@ -84,4 +84,3 @@ _atom_site_fract_z
    O32    O    0.8601	 0.1931    0.1019
    O33    O    0.8583	 0.3209    0.0031
    O34    O    0.0168	 0.0000    0.3055
-

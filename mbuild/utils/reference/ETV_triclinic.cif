@@ -5,7 +5,7 @@ data_ETV
 #
 # CIF taken from the IZA-SC Database of Zeolite Structures
 # Ch. Baerlocher and L.B. McCusker
-# Database of Zeolite Structures: http://www.iza-structure.org/databases/ 
+# Database of Zeolite Structures: http://www.iza-structure.org/databases/
 #
 # The atom coordinates and the cell parameters were optimized with DLS76
 # assuming a pure SiO2 composition.
@@ -29,7 +29,7 @@ loop_
 _symmetry_equiv_pos_as_xyz
 '+x,+y,+z'
 '-x,-y,-z'
-  
+
 loop_
 _atom_site_label
 _atom_site_type_symbol
@@ -57,4 +57,3 @@ O11   O      0.6549    0.9739   0.2089
 O12   O      0.3816    0.7055   0.3195
 O13   O      0.9234    0.5671   0.1585
 O14   O      0.9196   0.3078   0.9867
-
