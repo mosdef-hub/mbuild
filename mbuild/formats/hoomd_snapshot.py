@@ -17,8 +17,9 @@ __all__ = ["to_hoomdsnapshot", "from_snapshot"]
 
 
 def from_snapshot(snapshot, scale=1.0):
-    """Convert a hoomd.data.Snapshot or a gsd.hoomd.Snapshot to an
-    mbuild Compound.
+    """Convert a Snapshot to a Compound.
+
+    Snapshot can be a hoomd.data.Snapshot or a gsd.hoomd.Snapshot.
 
     Parameters
     ----------
