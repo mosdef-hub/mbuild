@@ -12,7 +12,7 @@ The `MoSDeF <https://mosdef.org>`_ software is comprised the following packages:
 
 **Note**: **foyer** and **GMSO** are used together with **mBuild** to create all the required files to conduct the simulations.
 
-In the following examples, a few different types of simulation boxes are constructed using the **MoSDeF** software.  Additionally, examples for generating the files required to run different simulation engines are provided.
+In the following examples, a few different types of simulation boxes are constructed using the **MoSDeF** software.  
 
 
 Molecular simulations are comprised of many molecules contained in a 
@@ -26,6 +26,6 @@ box or boxes utilizing only a few lines of python code.
 
 .. toctree::
 
-    AA_hexane_ethanol_example
-    UA_methane_example
+   AA_hexane_ethanol_example
+   UA_methane_example
 

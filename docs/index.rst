@@ -44,7 +44,6 @@ different licenses. See those files for their specific terms.
 
 
 .. toctree::
-    introduction
     installation
     docker
     quick_start/quick_start
