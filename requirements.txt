@@ -1,7 +1,0 @@
-numpy
-scipy
-packmol>=1!18.013
-nglview>=2.7
-oset
-parmed
-mdtraj
