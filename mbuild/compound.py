@@ -131,6 +131,11 @@ class Compound(object):
     root
     xyz
     xyz_with_ports
+
+    Methods
+    -------
+    index(Compound or Port)
+        Returns the index of the child in Compound
     """
 
     def __init__(
@@ -235,6 +240,10 @@ class Compound(object):
             for subpart in part.successors():
                 yield subpart
 
+    def index(self, part):
+        """Get the index of the part."""
+        return self.children.index(part)
+
     @property
     def n_particles(self):
         """Return the number of Particles in the Compound.
@@ -243,7 +252,6 @@ class Compound(object):
         -------
         int,
             The number of Particles in the Compound
-
         """
         if not self.children:
             return 1
