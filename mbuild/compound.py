@@ -1179,7 +1179,7 @@ class Compound(object):
         ----
         Triclinic bounding boxes are supported, but only for Compounds
         that are generated from mb.Lattice's and the resulting
-        mb.Lattice.get_populated_box method.
+        mb.Lattice.populate method
         """
         # case where only 1 particle exists
         is_one_particle = False
