@@ -69,7 +69,7 @@ class TiledCompound(Compound):
             range(n_tiles[0]), range(n_tiles[1]), range(n_tiles[2])
         ):
             new_tile = clone(tile)
-            new_tile.translate(np.multiply(ijk, tile.box.lengths))
+            new_tile.translate(np.multiply(ijk, np.asarray(tile.box.lengths)))
 
             self._add_tile(new_tile, ijk)
             self._hoist_ports(new_tile)
@@ -77,8 +77,22 @@ class TiledCompound(Compound):
         # Fix bonds across periodic boundaries.
         # -------------------------------------
         # Cutoff for long bonds is half the shortest periodic distance.
-        dist_thresh = min(tile.box.lengths) / 2
+        threshold_calc = [np.inf, np.inf, np.inf]
+        for i, truthy in enumerate(tile.periodicity):
+            if truthy:
+                threshold_calc[i] = tile.box.lengths[i]
+            else:
+                continue
+        dist_thresh = np.min(threshold_calc) / 2
 
+        # Create the bounds for the periodicKDtree, non-periodic dimensions are 0
+        bounds = [0, 0, 0]
+        length_array = np.asarray(tile.box.lengths)
+        for i, dim in enumerate(bounds):
+            if tile.periodicity[i]:
+                bounds[i] = self.box.lengths[i]
+            else:
+                continue
         # Bonds that were periodic in the original tile.
         periodic_bonds = set()
         for particle1, particle2 in tile.bonds():
@@ -87,9 +101,7 @@ class TiledCompound(Compound):
                 periodic_bonds.add((particle1.index, particle2.index))
 
         # Build a periodic kdtree of all particle positions.
-        self.particle_kdtree = PeriodicCKDTree(
-            data=self.xyz, bounds=self.box.lengths
-        )
+        self.particle_kdtree = PeriodicCKDTree(data=self.xyz, bounds=bounds)
         all_particles = np.asarray(list(self.particles(include_ports=False)))
 
         # Store bonds to remove/add since we'll be iterating over all bonds.

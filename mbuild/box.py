@@ -69,6 +69,7 @@ class Box(object):
 
     @classmethod
     def from_uvec_lengths(cls, uvec, lengths):
+        """Generate a box from unit vectors and lengths."""
         uvec = np.asarray(uvec)
         uvec.reshape(3, 3)
 
@@ -88,6 +89,7 @@ class Box(object):
 
     @classmethod
     def from_mins_maxs_angles(cls, mins, maxs, angles):
+        """Generate a box from min/max distance calculations and angles."""
         (x_min, y_min, z_min) = mins
         (x_max, y_max, z_max) = maxs
         lengths = (x_max - x_min, y_max - y_min, z_max - z_min)
@@ -95,6 +97,7 @@ class Box(object):
 
     @classmethod
     def from_box_vectors(cls, vectors):
+        """Generate a box from box vectors."""
         vectors = _validate_box_vectors(vectors)
         (alpha, beta, gamma) = _calc_angles(vectors)
         v1 = vectors[0, :]
@@ -109,6 +112,7 @@ class Box(object):
 
     @classmethod
     def from_lengths_tilt_factors(cls, lengths, tilt_factors=None):
+        """Generate a box from box lengths and tilt factors."""
         (Lx, Ly, Lz) = lengths
         if tilt_factors is None:
             (xy, xz, yz) = (0.0, 0.0, 0.0)
@@ -123,6 +127,7 @@ class Box(object):
 
     @classmethod
     def from_lo_hi_tilt_factors(cls, lo, hi, tilt_factors):
+        """Generate a box from a lo, hi convention and tilt factors."""
         (xlo, ylo, zlo) = lo
         (xhi, yhi, zhi) = hi
         (xy, xz, yz) = tilt_factors
@@ -136,42 +141,52 @@ class Box(object):
 
     @property
     def box_vectors(self):
+        """Box representation as a 3x3 matrix."""
         return self._box_vectors
 
     @property
     def box_parameters(self):
+        """Lengths and tilt factors of the box."""
         return self._Lx, self._Ly, self._Lz, self._xy, self._xz, self._xy
 
     @property
     def Lx(self):
+        """Length in the x direction."""
         return self._Lx
 
     @property
     def Ly(self):
+        """Length in the y direction."""
         return self._Ly
 
     @property
     def Lz(self):
+        """Length in the z direction."""
         return self._Lz
 
     @property
     def lengths(self):
+        """Lengths of the box."""
         return self._Lx, self._Ly, self._Lz
 
     @property
     def xy(self):
+        """Tilt factor xy of the box."""
         return self._xy
 
     @property
     def xz(self):
+        """Tilt factor xz of the box."""
         return self._xz
 
     @property
     def yz(self):
+        """Tilt factor yz of the box."""
         return self._yz
 
     @property
     def angles(self):
+        """Angles defining the tilt of the box (alpha, beta, gamma)."""
         return self._get_angles()
 
     @property
@@ -193,6 +208,7 @@ class Box(object):
         return Lx, Ly, Lz, alpha, beta, gamma
 
     def __repr__(self):
+        """Return a string representation of the box."""
         (Lx, Ly, Lz, xy, xz, yz) = self.box_parameters
         format_precision = f".{self._precision}f" if self._precision else ""
         desc = (
