@@ -20,8 +20,9 @@ class TestUtils(BaseTest):
 
     def test_structure_reproducibility(self):
         from mbuild.lib.recipes import Alkane
+
         # this file is a temporary file
-        filename = 'decane.xyz'
+        filename = "decane.xyz"
 
         decane = Alkane(10)
         decane.save(filename)
