@@ -15,7 +15,6 @@ dependencies:
   - nglview>=3
   - numpy
   - openbabel>=3
-  - orderedset
   - packmol>=20
   - parmed>=3.4.0
   - pip
