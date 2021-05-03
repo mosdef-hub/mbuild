@@ -722,9 +722,8 @@ def solvate(
 
 
 def _validate_mass(compound, n_compounds):
-    """
+    """Check the mass of the compounds passed into the packing functions.
 
-    Check the mass of the compounds passed into the various packing functions.
     Returns an error if the total mass is zero, and density cannot be used to
     find box size or number of compounds.
     Returns a warning of any subcompound in compound has a mass of zero.
