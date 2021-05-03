@@ -137,3 +137,7 @@ class OrderedSet(MutableSet):
     def index(self, value):
         """Get the index of a value."""
         return list(self).index(value)
+
+    def remove(self, value):
+        """Get the index of a value."""
+        self.discard(value)
