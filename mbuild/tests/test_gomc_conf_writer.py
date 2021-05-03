@@ -9,7 +9,9 @@ from mbuild.utils.io import has_foyer
 
 @pytest.mark.skipif(not has_foyer, reason="Foyer package not installed")
 class TestGOMCControlFileWriter(BaseTest):
-    def test_dict_keys_to_list(self,):
+    def test_dict_keys_to_list(
+        self,
+    ):
         dict = {"a": "1", "b": "2", "c": "3"}
         keys = gomc_control.dict_keys_to_list(dict)
 

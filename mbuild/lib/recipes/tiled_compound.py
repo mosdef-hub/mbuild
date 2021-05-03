@@ -93,11 +93,12 @@ class TiledCompound(Compound):
         bonds_to_add = set()
         for particle1, particle2 in self.bonds():
             if (
-                (particle1.index, particle2.index)
-                not in indices_of_periodic_bonds
-                and (particle2.index, particle1.index)
-                not in indices_of_periodic_bonds
-            ):
+                particle1.index,
+                particle2.index,
+            ) not in indices_of_periodic_bonds and (
+                particle2.index,
+                particle1.index,
+            ) not in indices_of_periodic_bonds:
                 continue
 
             if (
