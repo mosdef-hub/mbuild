@@ -7,7 +7,9 @@ import mbuild as mb
 class Silane(mb.Compound):
     """An Si(OH)2 group with two ports."""
 
-    def __init__(self,):
+    def __init__(
+        self,
+    ):
         super(Silane, self).__init__()
         mb.load(
             "silane.pdb",

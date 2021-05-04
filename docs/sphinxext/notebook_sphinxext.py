@@ -53,8 +53,7 @@ def export_python(wd, name):
 
 
 class NotebookDirective(Directive):
-    """Insert an evaluated notebook into a document
-    """
+    """Insert an evaluated notebook into a document"""
 
     required_arguments = 1
     optional_arguments = 1
