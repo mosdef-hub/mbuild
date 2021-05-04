@@ -31,7 +31,7 @@ def write_lammpsdata(structure, filename, atom_style='full',
                     detect_forcefield_style=True, nbfix_in_data_file=True,
                     use_urey_bradleys=False,
                     use_rb_torsions=True, use_dihedrals=False,
-                    charmm_ff=False):
+                    borrowed_charmm=False):
     """Output a LAMMPS data file.
     
     Outputs a LAMMPS data file in the 'full' atom style format. Default units are 
@@ -248,7 +248,7 @@ def write_lammpsdata(structure, filename, atom_style='full',
     if dihedrals:
         dihedral_types, unique_dihedral_types = _get_dihedral_types(
                 structure, use_rb_torsions, use_dihedrals,
-                epsilon_conversion_factor)
+                epsilon_conversion_factor, borrowed_charmm)
             
     if impropers:
         improper_types, unique_improper_types = _get_impropers(structure,
@@ -599,7 +599,7 @@ def _get_angle_types(structure, use_urey_bradleys,
     return angle_types, unique_angle_types
 
 def _get_dihedral_types(structure, use_rb_torsions, use_dihedrals,
-         epsilon_conversion_factor):
+         epsilon_conversion_factor, borrowed_charmm):
     lj_unit = 1 / epsilon_conversion_factor
     if use_rb_torsions:
         unique_dihedral_types = dict(enumerate(set([(round(dihedral.type.c0*lj_unit,3),
@@ -652,6 +652,7 @@ def _get_dihedral_types(structure, use_rb_torsions, use_dihedrals,
     return dihedral_types, unique_dihedral_types
 
 def _get_improper_dihedral_types(structure, epsilon_conversion_factor):
+    lj_unit = 1 / epsilon_conversion_factor
     improper_dihedrals = []
     for dihedral in structure.dihedrals:
         if dihedral.improper:
@@ -672,7 +673,7 @@ def _get_improper_dihedral_types(structure, epsilon_conversion_factor):
                                      dihedral.atom3.type, dihedral.atom4.type))
     unique_imp_dihedral_types = dict(enumerate(set(improper_dihedrals)))
     unique_imp_dihedral_types = OrderedDict([(y,x+1) for x,y in unique_imp_dihedral_types.items()])
-    imp_dihedral_types = [unique_dihedral_types[dihedral_info] for dihedral_info in improper_dihedrals]
+    imp_dihedral_types = [unique_imp_dihedral_types[dihedral_info] for dihedral_info in improper_dihedrals]
 
     return imp_dihedral_types, unique_imp_dihedral_types
 

@@ -35,17 +35,92 @@ class TestLammpsData(BaseTest):
         from mbuild.formats.lammpsdata import write_lammpsdata
         write_lammpsdata(structure, 'charmm_dihedral.lammps')
         out_lammps = open('charmm_dihedral.lammps', 'r').readlines()
+        found_angles = False
+        found_dihedrals = False
         for i, line in enumerate(out_lammps):
             if 'Angle Coeffs' in line:
                 assert '# charmm' in line
                 assert '#\tk(kcal/mol/rad^2)\t\ttheteq(deg)\tk(kcal/mol/angstrom^2)\treq(angstrom)\n' in out_lammps[i+1]
                 assert len(out_lammps[i+2].split('#')[0].split()) == 5
+                found_angles = True
             elif 'Dihedral Coeffs' in line:
                 assert '# charmm' in line
                 assert '#k, n, phi, weight' in out_lammps[i+1]
                 assert len(out_lammps[i+2].split('#')[0].split()) == 5
+                found_dihedrals = True
             else:
                 pass
+        assert found_angles
+        assert found_dihedrals
+
+    @pytest.mark.skipif(not has_foyer, reason="Foyer package not installed")
+    def test_charmm_improper(self):
+        import mbuild as mb
+        system = mb.Compound()
+        first = mb.Particle(name='_CTL2',pos=[-1,0,0])
+        second = mb.Particle(name='_CL', pos=[0,0,0])
+        third = mb.Particle(name='_OBL', pos=[1,0,0])
+        fourth = mb.Particle(name='_OHL', pos = [0,1,0])
+
+        system.add([first, second, third, fourth])
+
+        system.add_bond((first,second))
+        system.add_bond((second, third))
+        system.add_bond((second, fourth))
+        from foyer import Forcefield
+        ff = Forcefield(forcefield_files=[get_fn('charmm36_cooh.xml')])
+        struc = ff.apply(system, assert_angle_params=False, assert_dihedral_params=False,
+                assert_improper_params=False)
+        from mbuild.formats.lammpsdata import write_lammpsdata
+        write_lammpsdata(struc, 'charmm_improper.lammps')
+        out_lammps = open('charmm_improper.lammps', 'r').readlines()
+        found_impropers = False
+        for i, line in enumerate(out_lammps):
+            if 'Improper Coeffs' in line:
+                assert '# harmonic' in line
+                assert 'k, phi' in out_lammps[i+1]
+                assert len(out_lammps[i+2].split('#')[0].split()) == 3
+                found_impropers = True
+        assert found_impropers
+
+
+
+    @pytest.mark.skipif(not has_foyer, reason="Foyer package not installed")
+    def test_amber(self):
+        cmpd = mb.load("C1(=CC=CC=C1)F", smiles=True)
+        from foyer import Forcefield
+        ff = Forcefield(forcefield_files=[get_fn('gaff_test.xml')])
+        structure = ff.apply(cmpd)
+
+        from mbuild.formats.lammpsdata import write_lammpsdata
+        write_lammpsdata(structure, 'amber.lammps', borrowed_charmm=True)
+        out_lammps = open('amber.lammps', 'r').readlines()
+        found_angles = False
+        found_dihedrals = False
+        found_impropers = False
+        for i, line in enumerate(out_lammps):
+            if 'Angle Coeffs' in line:
+                assert '# harmonic' in line
+                assert '#\treduced_k\t\ttheteq(deg)' in out_lammps[i+1]
+                assert len(out_lammps[i+2].split('#')[0].split()) == 3
+                found_angles = True
+            elif 'Dihedral Coeffs' in line:
+                assert '# charmm' in line
+                assert '#k, n, phi, weight' in out_lammps[i+1]
+                assert len(out_lammps[i+2].split('#')[0].split()) == 5
+                assert float(out_lammps[i+2].split('#')[0].split()[4]) == 0.0
+                found_dihedrals = True
+            elif 'Improper Coeffs' in line:
+                assert '# cvff' in line
+                assert '#K, d, n' in out_lammps[i+1]
+                assert len(out_lammps[i+2].split('#')[0].split()) == 4
+                assert out_lammps[i+2].split('#')[0].split()[2] == '-1'
+                found_impropers = True
+            else:
+                pass
+        assert found_angles
+        assert found_dihedrals
+        assert found_impropers
 
     @pytest.mark.skipif(not has_foyer, reason="Foyer package not installed")
     @pytest.mark.parametrize('unit_style', ['real', 'lj'])
