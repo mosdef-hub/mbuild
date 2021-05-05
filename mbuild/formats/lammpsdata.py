@@ -260,10 +260,15 @@ def write_lammpsdata(
         for i in structure.impropers
     ]
     imp_dihedrals = [
-        [d.atom1.idx + 1, d.atom2.idx + 1, d.atom3.idx + 1, d.atom4.idx + 1]
+        [d.atom3.idx + 1, d.atom1.idx + 1, d.atom2.idx + 1, d.atom4.idx + 1]
         for d in structure.dihedrals
         if d.improper
     ]
+
+    for i, imp in enumerate(imp_dihedrals):
+        imp_dihedrals[i][1:] = sorted(imp[1:], key = lambda x: x.type)
+
+
     if impropers and imp_dihedrals:
         raise ValueError("Use of multiple improper styles is not supported")
 
@@ -787,9 +792,9 @@ def write_lammpsdata(
                         "{:d}\t{:d}\t{:d}\t{:d}\t{:d}\t{:d}\n".format(
                             i + 1,
                             imp_dihedral_types[i],
-                            improper[2],
-                            improper[1],
                             improper[0],
+                            improper[1],
+                            improper[2],
                             improper[3],
                         )
                     )
