@@ -22,6 +22,8 @@ class TestLammpsData(BaseTest):
 
     @pytest.mark.skipif(not has_foyer, reason="Foyer package not installed")
     def test_save_charmm(self):
+        from foyer import Forcefield
+        from mbuild.formats.lammpsdata import write_lammpsdata
         cmpd = mb.load(get_fn("charmm_dihedral.mol2"))
         for i in cmpd.particles():
             i.name = "_{}".format(i.name)
@@ -29,14 +31,8 @@ class TestLammpsData(BaseTest):
             box=cmpd.boundingbox,
             residues=set([p.parent.name for p in cmpd.particles()]),
         )
-
-        from foyer import Forcefield
-
         ff = Forcefield(forcefield_files=[get_fn("charmm_truncated.xml")])
         structure = ff.apply(structure, assert_dihedral_params=False)
-
-        from mbuild.formats.lammpsdata import write_lammpsdata
-
         write_lammpsdata(structure, "charmm_dihedral.lammps")
         out_lammps = open("charmm_dihedral.lammps", "r").readlines()
         found_angles = False
@@ -63,6 +59,8 @@ class TestLammpsData(BaseTest):
     @pytest.mark.skipif(not has_foyer, reason="Foyer package not installed")
     def test_charmm_improper(self):
         import mbuild as mb
+        from foyer import Forcefield
+        from mbuild.formats.lammpsdata import write_lammpsdata
 
         system = mb.Compound()
         first = mb.Particle(name="_CTL2", pos=[-1, 0, 0])
@@ -75,7 +73,6 @@ class TestLammpsData(BaseTest):
         system.add_bond((first, second))
         system.add_bond((second, third))
         system.add_bond((second, fourth))
-        from foyer import Forcefield
 
         ff = Forcefield(forcefield_files=[get_fn("charmm36_cooh.xml")])
         struc = ff.apply(
@@ -84,7 +81,6 @@ class TestLammpsData(BaseTest):
             assert_dihedral_params=False,
             assert_improper_params=False,
         )
-        from mbuild.formats.lammpsdata import write_lammpsdata
 
         write_lammpsdata(struc, "charmm_improper.lammps")
         out_lammps = open("charmm_improper.lammps", "r").readlines()
@@ -99,13 +95,13 @@ class TestLammpsData(BaseTest):
 
     @pytest.mark.skipif(not has_foyer, reason="Foyer package not installed")
     def test_amber(self):
-        cmpd = mb.load("C1(=CC=CC=C1)F", smiles=True)
         from foyer import Forcefield
+        from mbuild.formats.lammpsdata import write_lammpsdata
+        cmpd = mb.load("C1(=CC=CC=C1)F", smiles=True)
 
         ff = Forcefield(forcefield_files=[get_fn("gaff_test.xml")])
         structure = ff.apply(cmpd)
 
-        from mbuild.formats.lammpsdata import write_lammpsdata
 
         write_lammpsdata(structure, "amber.lammps", borrowed_charmm=True)
         out_lammps = open("amber.lammps", "r").readlines()
