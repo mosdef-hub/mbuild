@@ -236,7 +236,7 @@ def fill_box(
     box_maxs = np.asarray(my_maxs) * 10
     overlap *= 10
 
-    # Apply 1nm edge buffer
+    # Apply 0.2nm edge buffer
     box_maxs = [a_max - (edge * 10) for a_max in box_maxs]
     box_mins = [a_min + (edge * 10) for a_min in box_mins]
 
@@ -340,7 +340,7 @@ def fill_region(
 
     If using mulitple regions and compounds, the nth value in each list are used
     in order.
-    For example, if the third compound will be put in the third region using the
+    For example, the third compound will be put in the third region using the
     third value in n_compounds.
     """
     # check that the user has the PACKMOL binary on their PATH

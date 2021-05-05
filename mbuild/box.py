@@ -19,12 +19,16 @@ class Box(object):
         Angles (in degrees) that define the tilt of the edges of the box. If
         None is given, angles are assumed to be [90.0, 90.0, 90.0].
     precision : int, optional, default=None
-        Control the precision of the floating point representation __repr__
+        Control the precision of the floating point representation __repr__. If None provided, default is to 16 decimal places.
 
     Attributes
     ----------
     box_vectors : np.ndarray, shape=(3,3), dtype=float
         Vectors that define the parallelepiped (Box).
+    lengths : tuple, shape=(3,), dtype=float
+        Lengths of the box in x,y,z
+    angles : tuple, shape=(3,), dtype=float
+        Angles defining the tilt of the box.
     Lx : float
         Length of the Box in the x dimension
     Ly : float
@@ -41,7 +45,7 @@ class Box(object):
         Tilt factor needed to displace an orthogonal box's yz face to its
         parallelepiped structure.
     precision : int
-        Precision of the floating point numbers when accessing the __repr__
+        Precision of the floating point numbers when accessing values.
 
     NOTE
     ----
@@ -49,10 +53,16 @@ class Box(object):
     """
 
     def __init__(self, lengths, angles=None, precision=None):
+        if precision is not None:
+            self._precision = int(precision)
+        else:
+            self._precision = 16
+
         if angles is None:
             angles = [90.0, 90.0, 90.0]
+
         self._box_vectors = _lengths_angles_to_vectors(
-            lengths=lengths, angles=angles
+            lengths=lengths, angles=angles, precision=self.precision
         )
         (Lx, Ly, Lz, xy, xz, yz) = self._from_vecs_to_lengths_tilt_factors()
         self._Lx = Lx
@@ -62,13 +72,8 @@ class Box(object):
         self._xz = xz
         self._yz = yz
 
-        if precision is not None:
-            self._precision = int(precision)
-        else:
-            self._precision = precision
-
     @classmethod
-    def from_uvec_lengths(cls, uvec, lengths):
+    def from_uvec_lengths(cls, uvec, lengths, precision=None):
         """Generate a box from unit vectors and lengths."""
         uvec = np.asarray(uvec)
         uvec.reshape(3, 3)
@@ -85,18 +90,20 @@ class Box(object):
         scaled_vec = (uvec.T * lengths).T
         (alpha, beta, gamma) = _calc_angles(scaled_vec)
 
-        return cls(lengths=lengths, angles=(alpha, beta, gamma))
+        return cls(
+            lengths=lengths, angles=(alpha, beta, gamma), precision=precision
+        )
 
     @classmethod
-    def from_mins_maxs_angles(cls, mins, maxs, angles):
+    def from_mins_maxs_angles(cls, mins, maxs, angles, precision=None):
         """Generate a box from min/max distance calculations and angles."""
         (x_min, y_min, z_min) = mins
         (x_max, y_max, z_max) = maxs
         lengths = (x_max - x_min, y_max - y_min, z_max - z_min)
-        return cls(lengths=lengths, angles=angles)
+        return cls(lengths=lengths, angles=angles, precision=precision)
 
     @classmethod
-    def from_box_vectors(cls, vectors):
+    def from_box_vectors(cls, vectors, precision=None):
         """Generate a box from box vectors."""
         vectors = _validate_box_vectors(vectors)
         (alpha, beta, gamma) = _calc_angles(vectors)
@@ -108,10 +115,14 @@ class Box(object):
         Ly = np.linalg.norm(v2)
         Lz = np.linalg.norm(v3)
         lengths = (Lx, Ly, Lz)
-        return cls(lengths=lengths, angles=(alpha, beta, gamma))
+        return cls(
+            lengths=lengths, angles=(alpha, beta, gamma), precision=precision
+        )
 
     @classmethod
-    def from_lengths_tilt_factors(cls, lengths, tilt_factors=None):
+    def from_lengths_tilt_factors(
+        cls, lengths, tilt_factors=None, precision=None
+    ):
         """Generate a box from box lengths and tilt factors."""
         (Lx, Ly, Lz) = lengths
         if tilt_factors is None:
@@ -123,10 +134,12 @@ class Box(object):
             [Lx, 0.0, 0.0], [Ly * xy, Ly, 0.0], [Lz * xz, Lz * yz, Lz]
         )
         (alpha, beta, gamma) = _calc_angles(vecs)
-        return cls(lengths=lengths, angles=[alpha, beta, gamma])
+        return cls(
+            lengths=lengths, angles=[alpha, beta, gamma], precision=precision
+        )
 
     @classmethod
-    def from_lo_hi_tilt_factors(cls, lo, hi, tilt_factors):
+    def from_lo_hi_tilt_factors(cls, lo, hi, tilt_factors, precision=None):
         """Generate a box from a lo, hi convention and tilt factors."""
         (xlo, ylo, zlo) = lo
         (xhi, yhi, zhi) = hi
@@ -137,7 +150,7 @@ class Box(object):
         )
         _validate_box_vectors(box_vectors)
 
-        return cls.from_box_vectors(vectors=box_vectors)
+        return cls.from_box_vectors(vectors=box_vectors, precision=precision)
 
     @property
     def box_vectors(self):
@@ -147,47 +160,65 @@ class Box(object):
     @property
     def box_parameters(self):
         """Lengths and tilt factors of the box."""
-        return self._Lx, self._Ly, self._Lz, self._xy, self._xz, self._xy
+        return self.Lx, self.Ly, self.Lz, self.xy, self.xz, self.xy
 
     @property
     def Lx(self):
         """Length in the x direction."""
-        return self._Lx
+        return round(self._Lx, self.precision)
 
     @property
     def Ly(self):
         """Length in the y direction."""
-        return self._Ly
+        return round(self._Ly, self.precision)
 
     @property
     def Lz(self):
         """Length in the z direction."""
-        return self._Lz
+        return round(self._Lz, self.precision)
 
     @property
     def lengths(self):
         """Lengths of the box."""
-        return self._Lx, self._Ly, self._Lz
+        return self.Lx, self.Ly, self.Lz
 
     @property
     def xy(self):
         """Tilt factor xy of the box."""
-        return self._xy
+        return round(self._xy, self.precision)
 
     @property
     def xz(self):
         """Tilt factor xz of the box."""
-        return self._xz
+        return round(self._xz, self.precision)
 
     @property
     def yz(self):
         """Tilt factor yz of the box."""
-        return self._yz
+        return round(self._yz, self.precision)
 
     @property
     def angles(self):
         """Angles defining the tilt of the box (alpha, beta, gamma)."""
-        return self._get_angles()
+        (alpha, beta, gamma) = self._get_angles()
+        alpha = round(alpha, self.precision)
+        beta = round(beta, self.precision)
+        gamma = round(gamma, self.precision)
+        return alpha, beta, gamma
+
+    @property
+    def precision(self):
+        """Amount of decimals to represent floating point values."""
+        return self._precision
+
+    @precision.setter
+    def precision(self, value):
+        """Decimal point precision, if None use 16, else cast as int."""
+        if not value:
+            precision = 16
+        else:
+            precision = int(value)
+        self._precision = precision
 
     @property
     def bravais_parameters(self):
@@ -269,7 +300,7 @@ def _validate_box_vectors(box_vectors):
     return _normalize_box(vecs)
 
 
-def _lengths_angles_to_vectors(lengths, angles):
+def _lengths_angles_to_vectors(lengths, angles, precision):
     (a, b, c) = lengths
     (alpha, beta, gamma) = np.deg2rad(angles)
 
@@ -289,7 +320,7 @@ def _lengths_angles_to_vectors(lengths, angles):
     box_vectors = np.asarray((a_vec, b_vec, c_vec))
     box_vectors.reshape(3, 3)
     _validate_box_vectors(box_vectors=box_vectors)
-    return box_vectors
+    return box_vectors.round(precision)
 
 
 def _normalize_box(vectors):
@@ -359,7 +390,7 @@ def _calc_angles(vectors):
     """Calculate the angles between the vectors that define the box.
 
     Calculates the angles alpha, beta, and gamma from the Box object
-    attribute box_vectors.
+    attribute box_vectors, rounded to 'precision' number of decimal points.
     """
     vector_magnitudes = np.linalg.norm(vectors, axis=1)
 
