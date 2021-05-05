@@ -108,9 +108,10 @@ class TiledCompound(Compound):
         bonds_to_remove = set()
         bonds_to_add = set()
         for particle1, particle2 in self.bonds():
-            i = particle1.index
-            j = particle2.index
-            if (i, j) not in periodic_bonds and (j, i) not in periodic_bonds:
+            if (particle1.index, particle2.index,) not in periodic_bonds and (
+                particle2.index,
+                particle1.index,
+            ) not in periodic_bonds:
                 continue
 
             dist = self.min_periodic_distance(particle1.pos, particle2.pos)

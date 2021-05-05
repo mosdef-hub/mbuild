@@ -1007,5 +1007,7 @@ def _get_impropers(structure, epsilon_conversion_factor):
     return improper_types, unique_improper_types
 
 
-def _get_box_information(structure,):
+def _get_box_information(
+    structure,
+):
     pass

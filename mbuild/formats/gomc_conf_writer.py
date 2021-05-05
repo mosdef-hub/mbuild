@@ -2406,8 +2406,8 @@ class GOMCControl:
         # verify all input variable values are valid, for their keys
         input_var_keys_list = dict_keys_to_list(self.input_variables_dict)
 
-        possible_ensemble_variables_list = _get_possible_ensemble_input_variables(
-            self.ensemble_type
+        possible_ensemble_variables_list = (
+            _get_possible_ensemble_input_variables(self.ensemble_type)
         )
 
         # check to make sure the VDW FF (ParaTypeCHARMM) is set true  for multiple ones by the user
