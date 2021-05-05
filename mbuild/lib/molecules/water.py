@@ -10,7 +10,9 @@ class Water3Site(mb.Compound):
         super().__init__()
 
         o1 = mb.Compound(name="OW", element="H", pos=[0.0, 0.0, 0.0])
-        h1 = mb.Compound(name="HW1", element="H", pos=[oh_bond_length, 0.0, 0.0])
+        h1 = mb.Compound(
+            name="HW1", element="H", pos=[oh_bond_length, 0.0, 0.0]
+        )
         h2 = mb.Compound(
             name="HW2",
             element="H",
@@ -18,7 +20,7 @@ class Water3Site(mb.Compound):
                 oh_bond_length * np.cos(np.radians(hoh_angle)),
                 oh_bond_length * np.sin(np.radians(180.0 - hoh_angle)),
                 0.0,
-                ],
+            ],
         )
 
         self.add([o1, h1, h2])
@@ -59,7 +61,9 @@ class Water4Site(mb.Compound):
         super(Water4Site, self).__init__()
 
         o1 = mb.Compound(name="OW", element="H", pos=[0.0, 0.0, 0.0])
-        h1 = mb.Compound(name="HW1", element="H", pos=[oh_bond_length, 0.0, 0.0])
+        h1 = mb.Compound(
+            name="HW1", element="H", pos=[oh_bond_length, 0.0, 0.0]
+        )
         h2 = mb.Compound(
             name="HW2",
             element="H",
@@ -67,7 +71,7 @@ class Water4Site(mb.Compound):
                 oh_bond_length * np.cos(np.radians(hoh_angle)),
                 oh_bond_length * np.sin(np.radians(180.0 - hoh_angle)),
                 0.0,
-                ],
+            ],
         )
         m1 = mb.Compound(
             name="MW",
@@ -76,7 +80,7 @@ class Water4Site(mb.Compound):
                 om_bond_length * np.cos(np.radians(hoh_angle / 2.0)),
                 om_bond_length * np.sin(np.radians(hoh_angle / 2.0)),
                 0.0,
-                ],
+            ],
         )
 
         self.add([o1, h1, h2, m1])
