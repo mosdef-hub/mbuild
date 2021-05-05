@@ -41,7 +41,7 @@ def write_lammpsdata(
     use_urey_bradleys=False,
     use_rb_torsions=True,
     use_dihedrals=False,
-    borrowed_charmm=False
+    borrowed_charmm=False,
 ):
     """Output a LAMMPS data file.
 
@@ -83,7 +83,7 @@ def write_lammpsdata(
         If True, will treat dihedrals as CHARMM-style dihedrals while looking
         for `structure.dihedrals`
     borrowed_charmm:
-        If True, will set weighting parameter to zero in CHARMM-style dihedrals.  
+        If True, will set weighting parameter to zero in CHARMM-style dihedrals.
         This should be True if the CHARMM dihedral style is used in non-CHARMM forcefields.
 
     Notes
@@ -250,7 +250,8 @@ def write_lammpsdata(
     elif use_dihedrals:
         dihedrals = [
             [d.atom1.idx + 1, d.atom2.idx + 1, d.atom3.idx + 1, d.atom4.idx + 1]
-            for d in structure.dihedrals if not d.improper
+            for d in structure.dihedrals
+            if not d.improper
         ]
     else:
         dihedrals = []
@@ -260,7 +261,8 @@ def write_lammpsdata(
     ]
     imp_dihedrals = [
         [d.atom1.idx + 1, d.atom2.idx + 1, d.atom3.idx + 1, d.atom4.idx + 1]
-        for d in structure.dihedrals if d.improper
+        for d in structure.dihedrals
+        if d.improper
     ]
     if impropers and imp_dihedrals:
         raise ValueError("Use of multiple improper styles is not supported")
@@ -285,26 +287,34 @@ def write_lammpsdata(
         )
 
     if imp_dihedrals:
-        imp_dihedral_types, unique_imp_dihedral_types = _get_improper_dihedral_types(
-                structure, epsilon_conversion_factor)
+        (
+            imp_dihedral_types,
+            unique_imp_dihedral_types,
+        ) = _get_improper_dihedral_types(structure, epsilon_conversion_factor)
     if dihedrals:
         dihedral_types, unique_dihedral_types = _get_dihedral_types(
-            structure, use_rb_torsions, use_dihedrals, epsilon_conversion_factor, borrowed_charmm
+            structure,
+            use_rb_torsions,
+            use_dihedrals,
+            epsilon_conversion_factor,
+            borrowed_charmm,
         )
-            
+
     if impropers:
         improper_types, unique_improper_types = _get_impropers(
             structure, epsilon_conversion_factor
         )
 
-    with open(filename, 'w') as data:
+    with open(filename, "w") as data:
         data.write(f"{filename} - created by mBuild; units = {unit_style}\n\n")
         data.write("{:d} atoms\n".format(len(structure.atoms)))
-        if atom_style in ['full', 'molecular']:
+        if atom_style in ["full", "molecular"]:
             data.write("{:d} bonds\n".format(len(bonds)))
             data.write("{:d} angles\n".format(len(angles)))
             data.write("{:d} dihedrals\n".format(len(dihedrals)))
-            data.write("{:d} impropers\n\n".format(len(impropers)+len(imp_dihedrals)))
+            data.write(
+                "{:d} impropers\n\n".format(len(impropers) + len(imp_dihedrals))
+            )
 
         data.write("{:d} atom types\n".format(len(set(types))))
         if atom_style in ["full", "molecular"]:
@@ -324,7 +334,6 @@ def write_lammpsdata(
                 data.write(
                     "{:d} improper types\n".format(len(set(imp_dihedral_types)))
                 )
-
 
         data.write("\n")
         # Box data
@@ -672,13 +681,15 @@ def write_lammpsdata(
                 sorted_imp_dihedral_types = {
                     k: v
                     for k, v in sorted(
-                        unique_imp_dihedral_types.items(), key=lambda item: item[1]
+                        unique_imp_dihedral_types.items(),
+                        key=lambda item: item[1],
                     )
                 }
                 data.write("\nImproper Coeffs # cvff\n")
                 data.write("#K, d, n\n")
-                for params,idx in sorted_imp_dihedral_types.items():
-                    data.write("{}\t{:.5f}\t{:d}\t{:d}\t# {}\t{}\t{}\t{}\n".format(
+                for params, idx in sorted_imp_dihedral_types.items():
+                    data.write(
+                        "{}\t{:.5f}\t{:d}\t{:d}\t# {}\t{}\t{}\t{}\n".format(
                             idx,
                             params[0],
                             params[1],
@@ -686,10 +697,9 @@ def write_lammpsdata(
                             params[5],
                             params[6],
                             params[7],
-                            params[8]
+                            params[8],
                         )
                     )
-            
 
         # Atom data
         data.write("\nAtoms\n\n")
@@ -920,7 +930,11 @@ def _get_angle_types(
 
 
 def _get_dihedral_types(
-    structure, use_rb_torsions, use_dihedrals, epsilon_conversion_factor, borrowed_charmm
+    structure,
+    use_rb_torsions,
+    use_dihedrals,
+    epsilon_conversion_factor,
+    borrowed_charmm,
 ):
     lj_unit = 1 / epsilon_conversion_factor
     if use_rb_torsions:
@@ -1005,31 +1019,44 @@ def _get_dihedral_types(
 
     return dihedral_types, unique_dihedral_types
 
+
 def _get_improper_dihedral_types(structure, epsilon_conversion_factor):
     lj_unit = 1 / epsilon_conversion_factor
     improper_dihedrals = []
     for dihedral in structure.dihedrals:
         if dihedral.improper:
             dih_type = dihedral.type
-            phase = abs(int(round(dih_type.phase,0)))
-            if not(phase == 0 or phase == 180):
+            phase = abs(int(round(dih_type.phase, 0)))
+            if not (phase == 0 or phase == 180):
                 raise ValueError("Improper dihedral phase must be 0 or 180")
             if phase:
                 d = -1
             else:
                 d = 1
-            improper_dihedrals.append((round(dih_type.phi_k*lj_unit,3),
-                                     d,
-                                     int(round(dih_type.per,0)),
-                                     round(dih_type.scee,1),
-                                     round(dih_type.scnb,1),
-                                     dihedral.atom1.type, dihedral.atom2.type,
-                                     dihedral.atom3.type, dihedral.atom4.type))
+            improper_dihedrals.append(
+                (
+                    round(dih_type.phi_k * lj_unit, 3),
+                    d,
+                    int(round(dih_type.per, 0)),
+                    round(dih_type.scee, 1),
+                    round(dih_type.scnb, 1),
+                    dihedral.atom1.type,
+                    dihedral.atom2.type,
+                    dihedral.atom3.type,
+                    dihedral.atom4.type,
+                )
+            )
     unique_imp_dihedral_types = dict(enumerate(set(improper_dihedrals)))
-    unique_imp_dihedral_types = OrderedDict([(y,x+1) for x,y in unique_imp_dihedral_types.items()])
-    imp_dihedral_types = [unique_imp_dihedral_types[dihedral_info] for dihedral_info in improper_dihedrals]
+    unique_imp_dihedral_types = OrderedDict(
+        [(y, x + 1) for x, y in unique_imp_dihedral_types.items()]
+    )
+    imp_dihedral_types = [
+        unique_imp_dihedral_types[dihedral_info]
+        for dihedral_info in improper_dihedrals
+    ]
 
     return imp_dihedral_types, unique_imp_dihedral_types
+
 
 def _get_impropers(structure, epsilon_conversion_factor):
     lj_unit = 1 / epsilon_conversion_factor
