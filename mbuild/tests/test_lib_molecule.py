@@ -1,15 +1,16 @@
 import numpy as np
 
+from mbuild.lib.molecules import (
+    WaterSPC,
+    WaterTIP3P,
+    WaterTIP4P,
+    WaterTIP4P2005,
+    WaterTIP4PIce,
+)
 from mbuild.tests.base_test import BaseTest
-from mbuild.lib.molecules import WaterTIP3P
-from mbuild.lib.molecules import WaterTIP4P
-from mbuild.lib.molecules import WaterTIP4PIce
-from mbuild.lib.molecules import WaterTIP4P2005
-from mbuild.lib.molecules import WaterSPC
 
 
 class TestWater(BaseTest):
-
     def test_tip3p(self):
         water = WaterTIP3P()
         o1 = [p for p in water.particles_by_name("OW")]
@@ -28,9 +29,10 @@ class TestWater(BaseTest):
         assert np.allclose(
             np.degrees(
                 np.arccos(
-                    np.dot(v1, v2)/(np.linalg.norm(v1) * np.linalg.norm(v2))
+                    np.dot(v1, v2) / (np.linalg.norm(v1) * np.linalg.norm(v2))
                 )
-            ), 104.52
+            ),
+            104.52,
         )
 
     def test_spc(self):
@@ -51,9 +53,10 @@ class TestWater(BaseTest):
         assert np.allclose(
             np.degrees(
                 np.arccos(
-                    np.dot(v1, v2)/(np.linalg.norm(v1) * np.linalg.norm(v2))
+                    np.dot(v1, v2) / (np.linalg.norm(v1) * np.linalg.norm(v2))
                 )
-            ), 109.47
+            ),
+            109.47,
         )
 
     def test_tip4p(self):
@@ -79,9 +82,10 @@ class TestWater(BaseTest):
         assert np.allclose(
             np.degrees(
                 np.arccos(
-                    np.dot(v1, v2)/(np.linalg.norm(v1) * np.linalg.norm(v2))
+                    np.dot(v1, v2) / (np.linalg.norm(v1) * np.linalg.norm(v2))
                 )
-            ), 104.52
+            ),
+            104.52,
         )
 
     def test_tip4pice(self):
@@ -107,9 +111,10 @@ class TestWater(BaseTest):
         assert np.allclose(
             np.degrees(
                 np.arccos(
-                    np.dot(v1, v2)/(np.linalg.norm(v1) * np.linalg.norm(v2))
+                    np.dot(v1, v2) / (np.linalg.norm(v1) * np.linalg.norm(v2))
                 )
-            ), 104.52
+            ),
+            104.52,
         )
 
     def test_tip4p2005(self):
@@ -135,7 +140,8 @@ class TestWater(BaseTest):
         assert np.allclose(
             np.degrees(
                 np.arccos(
-                    np.dot(v1, v2)/(np.linalg.norm(v1) * np.linalg.norm(v2))
+                    np.dot(v1, v2) / (np.linalg.norm(v1) * np.linalg.norm(v2))
                 )
-            ), 104.52
+            ),
+            104.52,
         )
