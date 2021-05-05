@@ -19,16 +19,16 @@ class TestPacking(BaseTest):
 
     def test_fill_box_density_box(self, h2o):
         filled = mb.fill_box(h2o, n_compounds=100, density=100)
-        assert np.array_equal(
-            filled.box.lengths, np.ones(3) * 3.104281669169261
+        assert np.all(
+            np.isclose(filled.box.lengths, np.ones(3) * 3.104281669169261)
         )
 
     def test_fill_box_aspect_ratio(self, h2o):
         filled = mb.fill_box(
             h2o, n_compounds=1000, density=1000, aspect_ratio=[1, 2, 1]
         )
-        assert filled.box.lengths[0] / filled.box.lengths[1] == 0.5
-        assert filled.box.lengths[1] / filled.box.lengths[2] == 2
+        assert np.isclose(filled.box.lengths[0] / filled.box.lengths[1], 0.5)
+        assert np.isclose(filled.box.lengths[1] / filled.box.lengths[2], 2)
 
     def test_fill_box_density_n_compounds(self, h2o):
         filled = mb.fill_box(

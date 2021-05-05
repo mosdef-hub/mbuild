@@ -15,7 +15,7 @@ class TestBox(BaseTest):
         ],
     )
     def test_from_vectors(self, vectors):
-        mb.Box.from_box_vectors(vectors)
+        mb.Box.from_vectors(vectors)
 
     @pytest.mark.parametrize(
         "lengths, angles",
@@ -27,6 +27,7 @@ class TestBox(BaseTest):
     )
     def test_from_lengths_angles(self, lengths, angles):
         mb.Box(lengths=lengths, angles=angles)
+        mb.Box.from_lengths_angles(lengths=lengths, angles=angles)
 
     @pytest.mark.parametrize(
         "lh_matrix",
@@ -49,7 +50,7 @@ class TestBox(BaseTest):
             UserWarning, match=r"provided for a left\-handed basis"
         ):
             # TODO add vector method properly
-            mb.Box.from_box_vectors(vectors=lh_matrix)
+            mb.Box.from_vectors(vectors=lh_matrix)
 
     @pytest.mark.parametrize(
         "vecs",
@@ -61,7 +62,7 @@ class TestBox(BaseTest):
     )
     def test_colinear_vectors(self, vecs):
         with pytest.raises(mb.exceptions.MBuildError, match=r"co\-linear"):
-            mb.Box.from_box_vectors(vectors=vecs)
+            mb.Box.from_vectors(vectors=vecs)
 
     @pytest.mark.parametrize(
         "vecs",

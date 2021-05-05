@@ -1214,7 +1214,7 @@ class Compound(object):
         for i, dim in enumerate(has_dimension):
             if not dim:
                 vecs[i][i] = 1.0
-        return Box.from_box_vectors(vectors=np.asarray([vecs]).reshape(3, 3))
+        return Box.from_vectors(vectors=np.asarray([vecs]).reshape(3, 3))
 
     def min_periodic_distance(self, xyz0, xyz1):
         """Vectorized distance calculation considering minimum image.
