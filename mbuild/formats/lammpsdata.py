@@ -266,8 +266,7 @@ def write_lammpsdata(
     ]
 
     for i, imp in enumerate(imp_dihedrals):
-        imp_dihedrals[i][1:] = sorted(imp[1:], key = lambda x: x.type)
-
+        imp_dihedrals[i][1:] = sorted(imp[1:], key=lambda x: x.type)
 
     if impropers and imp_dihedrals:
         raise ValueError("Use of multiple improper styles is not supported")
