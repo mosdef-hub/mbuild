@@ -3,7 +3,7 @@ from functools import wraps
 from warnings import warn
 
 
-def make_callable(decorator):
+def make_callable(decorator):  # pragma: no cover
     """Make function callable.
 
     See https://stackoverflow.com/questions/3888158/making-decorators-with-
@@ -11,7 +11,7 @@ def make_callable(decorator):
     """
 
     @wraps(decorator)
-    def inner(*args, **kw):
+    def inner(*args, **kw):  # pragma: no cover
         if len(args) == 1 and not kw and callable(args[0]):
             return decorator()(args[0])
         else:
@@ -20,7 +20,7 @@ def make_callable(decorator):
     return inner
 
 
-def deprecated(warning_string=""):
+def deprecated(warning_string=""):  # pragma: no cover
     """Decorate deprecated functions."""
 
     def old_function(fcn):
@@ -37,7 +37,9 @@ def deprecated(warning_string=""):
 
 
 @make_callable
-def deprecated_property(warning_msg="Property deprecated", always=False):
+def deprecated_property(
+    warning_msg="Property deprecated", always=False
+):  # pragma: no cover
     """Alert users to deprecated properties of an object.
 
     Deprecation messages are shown only once per runtime by default
