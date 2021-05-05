@@ -55,7 +55,7 @@ on your local machine or you wish to save files generated in the container,
 you can mount user volumes in the container. User volumes will provide a way
 to persist filesystem changes made to a container regardless of the container
 lifecycle. For example, you might want to create a directory called
-``mbuild-notebooks`` on your local system, which will store all of your mBuild 
+``mbuild-notebooks`` on your local system, which will store all of your mBuild
 notebooks/code. In order to make that accessible from within the container
 (where the notebooks will be created/edited), use the following steps:
 
@@ -127,7 +127,7 @@ for most recent stable release of mBuild.
 
 Cleaning Up
 -----------
-You can remove the *container* by using the following command. 
+You can remove the *container* by using the following command.
 
 .. code-block:: bash
 
@@ -146,5 +146,4 @@ top of this page for more information.
     You do not need to name the container `mbuild` as shown in the above
     examples (``--name mbuild``). Docker will give each container a name
     automatically. To see all the containers on your machine, run
-    ``docker ps -a``. 
-
+    ``docker ps -a``.

@@ -20,6 +20,7 @@ dependencies:
   - packmol=1!18.013
   - parmed>=3.4.0
   - pip
+  - pre-commit
   - protobuf
   - py3Dmol
   - pycifrw

@@ -31,22 +31,22 @@ structures.
 .. code:: ipython3
 
     import mbuild as mb
-    
+
     from mbuild.lib.recipes import Alkane
     from mbuild.lib.moieties import Silane
-    
-    
+
+
     class AlkylSilane(mb.Compound):
         """A silane functionalized alkane chain with one Port. """
         def __init__(self, chain_length):
             super(AlkylSilane, self).__init__()
-    
+
             alkane = Alkane(chain_length, cap_end=False)
             self.add(alkane, 'alkane')
             silane = Silane()
             self.add(silane, 'silane')
             mb.force_overlap(self['alkane'], self['alkane']['down'], self['silane']['up'])
-    
+
             # Hoist silane port to AlkylSilane level.
             self.add(silane['down'], 'down', containment=False)
 
@@ -60,7 +60,7 @@ Now let’s create a substrate to which we can later attach our monomers:
 
     import mbuild as mb
     from mbuild.lib.surfaces import Betacristobalite
-    
+
     surface = Betacristobalite()
     tiled_surface = mb.lib.recipes.TiledCompound(surface, n_tiles=(2, 1, 1))
 
@@ -90,7 +90,7 @@ pattern:
 .. code:: ipython3
 
     pattern = mb.Grid2DPattern(8, 8)  # Evenly spaced, 2D grid of points.
-    
+
     # Attach chains to specified binding sites. Other sites get a hydrogen.
     chains, hydrogens = pattern.apply_to_compound(host=tiled_surface, guest=alkylsilane, backfill=hydrogen)
 
@@ -114,10 +114,8 @@ general class for generating the monolayers, as shown below:
 .. code:: ipython3
 
     from mbuild.lib.recipes import Monolayer
-    
-    monolayer = Monolayer(fractions=[1.0], chains=alkylsilane, backfill=hydrogen, 
-                          pattern=mb.Grid2DPattern(n=8, m=8), 
+
+    monolayer = Monolayer(fractions=[1.0], chains=alkylsilane, backfill=hydrogen,
+                          pattern=mb.Grid2DPattern(n=8, m=8),
                           surface=surface, tile_x=2, tile_y=1)
     monolayer.visualize()
-
-

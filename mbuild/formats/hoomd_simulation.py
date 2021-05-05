@@ -1,14 +1,16 @@
-import warnings
+"""HOOMD simulation format."""
 import itertools
-import numpy as np
 import operator
+import warnings
 from collections import namedtuple
 
+import numpy as np
 import parmed as pmd
+
 import mbuild as mb
-from mbuild.utils.sorting import natural_sort
-from mbuild.utils.io import import_
 from mbuild.utils.conversion import RB_to_OPLS
+from mbuild.utils.io import import_
+from mbuild.utils.sorting import natural_sort
 
 from .hoomd_snapshot import to_hoomdsnapshot
 
@@ -35,9 +37,9 @@ def create_hoomd_simulation(
     snapshot_kwargs={},
     pppm_kwargs={"Nx": 8, "Ny": 8, "Nz": 8, "order": 4},
     init_snap=None,
-    restart=None
+    restart=None,
 ):
-    """Convert a parametrized pmd.Structure to hoomd.SimulationContext
+    """Convert a parametrized pmd.Structure to hoomd.SimulationContext.
 
     Parameters
     ----------
@@ -52,9 +54,8 @@ def create_hoomd_simulation(
     r_cut : float, optional, default 1.2
         Cutoff radius, in reduced units
     auto_scale : bool, optional, default=False
-        Automatically use largest sigma value as ref_distance,
-        largest mass value as ref_mass,
-        and largest epsilon value as ref_energy
+        Automatically use largest sigma value as ref_distance, largest mass
+        value as ref_mass, and largest epsilon value as ref_energy
     snapshot_kwargs : dict
         Kwargs to pass to to_hoomdsnapshot
     pppm_kwargs : dict
@@ -71,34 +72,28 @@ def create_hoomd_simulation(
         system state (e.g., particle positions, momenta, etc).
 
     Returns
-    ------
+    -------
     hoomd_objects : list
         List of hoomd objects created during conversion
     ReferenceValues : namedtuple
         Values used in scaling
 
-
     Notes
     -----
-    While the hoomd objects are returned, the
-    hoomd.SimulationContext is accessible via `hoomd.context.current`.
-    If you pass a non-parametrized pmd.Structure, you will not have
-    angle, dihedral, or force field information. You may be better off
-    creating a hoomd.Snapshot
-    Reference units should be expected to convert parmed Structure units :
+    While the hoomd objects are returned, the hoomd.SimulationContext is
+    accessible via `hoomd.context.current`. If you pass a non-parametrized
+    pmd.Structure, you will not have angle, dihedral, or force field
+    information. You may be better off creating a hoomd.Snapshot.
+    Reference units should be expected to convert parmed Structure units:
         angstroms, kcal/mol, and daltons
-
     """
-
     if isinstance(structure, mb.Compound):
         raise ValueError(
-            "You passed mb.Compound to create_hoomd_simulation, "
-            + "there will be no angles, dihedrals, or force field parameters. "
-            + "Please use "
-            + "hoomd_snapshot.to_hoomdsnapshot to create a hoomd.Snapshot, "
-            + "then create your own hoomd context "
-            + "and pass your hoomd.Snapshot "
-            + "to hoomd.init.read_snapshot()"
+            "You passed mb.Compound to create_hoomd_simulation, there will be "
+            "no angles, dihedrals, or force field parameters. Please use "
+            "hoomd_snapshot.to_hoomdsnapshot to create a hoomd.Snapshot, then "
+            "create your own hoomd context and pass your hoomd.Snapshot to "
+            "hoomd.init.read_snapshot()"
         )
     elif not isinstance(structure, pmd.Structure):
         raise ValueError(
@@ -109,10 +104,9 @@ def create_hoomd_simulation(
     version_numbers = _check_hoomd_version()
     if float(version_numbers[0]) >= 3:
         warnings.warn(
-            "Warning when using Hoomd 3, potential API change "
-            + "where the hoomd context is not updated upon "
-            + "creation of forces - utilize "
-            + "the returned `hoomd_objects`"
+            "Warning when using Hoomd 3, potential API change where the hoomd "
+            "context is not updated upon creation of forces - utilize the "
+            "returned `hoomd_objects`"
         )
 
     hoomd_objects = []  # Potential adaptation for Hoomd v3 API
@@ -120,10 +114,7 @@ def create_hoomd_simulation(
     if auto_scale:
         ref_mass = max([atom.mass for atom in structure.atoms])
         pair_coeffs = list(
-            set(
-                (atom.type, atom.epsilon, atom.sigma)
-                for atom in structure.atoms
-            )
+            set((a.type, a.epsilon, a.sigma) for a in structure.atoms)
         )
         ref_energy = max(pair_coeffs, key=operator.itemgetter(1))[1]
         ref_distance = max(pair_coeffs, key=operator.itemgetter(2))[2]
@@ -140,7 +131,7 @@ def create_hoomd_simulation(
             ref_mass=ref_mass,
             ref_energy=ref_energy,
             **snapshot_kwargs,
-            hoomd_snapshot=init_snap
+            hoomd_snapshot=init_snap,
         )
         hoomd_objects.append(snapshot)
         hoomd_system = hoomd.init.read_snapshot(snapshot)
@@ -202,7 +193,7 @@ def create_hoomd_simulation(
 
 
 def _init_hoomd_lj(structure, nl, r_cut=1.2, ref_distance=1.0, ref_energy=1.0):
-    """ LJ parameters """
+    """LJ parameters."""
     # Identify the unique atom types before setting
     atom_type_params = {}
     for atom in structure.atoms:
@@ -251,8 +242,8 @@ def _init_hoomd_lj(structure, nl, r_cut=1.2, ref_distance=1.0, ref_energy=1.0):
                 ) ** 0.5
             else:
                 raise ValueError(
-                    "Mixing rule {} ".format(structure.combining_rule)
-                    + "not supported, use lorentz"
+                    f"Mixing rule {structure.combining_rule} not supported, "
+                    "use lorentz"
                 )
         else:
             # If we have nbfix info, use it
@@ -264,7 +255,7 @@ def _init_hoomd_lj(structure, nl, r_cut=1.2, ref_distance=1.0, ref_energy=1.0):
 
 
 def _init_hoomd_qq(structure, nl, Nx=1, Ny=1, Nz=1, order=4, r_cut=1.2):
-    """ Charge interactions """
+    """Charge interactions."""
     charged = hoomd.group.charged()
     if len(charged) == 0:
         print("No charged groups found, ignoring electrostatics")
@@ -278,11 +269,11 @@ def _init_hoomd_qq(structure, nl, Nx=1, Ny=1, Nz=1, order=4, r_cut=1.2):
 def _init_hoomd_14_pairs(
     structure, nl, r_cut=1.2, ref_distance=1.0, ref_energy=1.0
 ):
-    """Special_pairs to handle 14 scalings
+    """Special_pairs to handle 14 scalings.
 
-    See discussion: https://groups.google.com/forum/
-    #!topic/hoomd-users/iZ9WCpHczg0"""
-
+    See discussion: https://groups.google.com/forum/#!topic/hoomd-users/
+    iZ9WCpHczg0
+    """
     # Update neighborlist to exclude 1-4 interactions,
     # but impose a special_pair force to handle these pairs
     nl.exclusions.append("1-4")
@@ -317,7 +308,7 @@ def _init_hoomd_14_pairs(
 
 
 def _init_hoomd_bonds(structure, ref_distance=1.0, ref_energy=1.0):
-    """ Harmonic bonds """
+    """Harmonic bonds."""
     # Identify the unique bond types before setting
     bond_type_params = {}
     for bond in structure.bonds:
@@ -347,7 +338,7 @@ def _init_hoomd_bonds(structure, ref_distance=1.0, ref_energy=1.0):
 
 
 def _init_hoomd_angles(structure, ref_energy=1.0):
-    """ Harmonic angles """
+    """Harmonic angles."""
     # Identify the unique angle types before setting
     angle_type_params = {}
     for angle in structure.angles:
@@ -370,7 +361,7 @@ def _init_hoomd_angles(structure, ref_energy=1.0):
 
 
 def _init_hoomd_dihedrals(structure, ref_energy=1.0):
-    """ Periodic dihedrals (dubbed harmonic dihedrals in HOOMD) """
+    """Periodic dihedrals (dubbed harmonic dihedrals in HOOMD)."""
     # Identify the unique dihedral types before setting
     # need Hoomd 2.8.0 to use proper dihedral implemtnation
     # from this PR https://github.com/glotzerlab/hoomd-blue/pull/492
@@ -394,10 +385,9 @@ def _init_hoomd_dihedrals(structure, ref_energy=1.0):
             elif isinstance(dihedral.type, pmd.DihedralTypeList):
                 if len(dihedral.type) > 1:
                     warnings.warn(
-                        "Multiple dihedral types detected"
-                        + " for single dihedral, will ignore all except "
-                        + " first dihedral type."
-                        + "First dihedral type: {}".format(dihedral.type[0])
+                        "Multiple dihedral types detected for single dihedral, "
+                        "will ignore all except  first dihedral type. First "
+                        "dihedral type: {}".format(dihedral.type[0])
                     )
                 dihedral_type_params[dihedral_type] = dihedral.type[0]
 
@@ -417,7 +407,7 @@ def _init_hoomd_dihedrals(structure, ref_energy=1.0):
 
 
 def _init_hoomd_rb_torsions(structure, ref_energy=1.0):
-    """ RB dihedrals (implemented as OPLS dihedrals in HOOMD) """
+    """RB dihedrals (implemented as OPLS dihedrals in HOOMD)."""
     # Identify the unique dihedral types before setting
     dihedral_type_params = {}
     for dihedral in structure.rb_torsions:
