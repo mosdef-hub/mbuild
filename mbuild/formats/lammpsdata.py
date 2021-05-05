@@ -776,7 +776,7 @@ def write_lammpsdata(
                     data.write(
                         "{:d}\t{:d}\t{:d}\t{:d}\t{:d}\t{:d}\n".format(
                             i + 1,
-                            improper_types[i],
+                            imp_dihedral_types[i],
                             improper[2],
                             improper[1],
                             improper[0],
