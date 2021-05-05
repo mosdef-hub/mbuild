@@ -17,7 +17,8 @@ class Box(object):
         Lengths of the edges of the box.
     angles : list-like, shape=(3,), dtype=float, default=None
         Angles (in degrees) that define the tilt of the edges of the box. If
-        None is given, angles are assumed to be [90.0, 90.0, 90.0].
+        None is given, angles are assumed to be [90.0, 90.0, 90.0]. These are
+        also known as alpha, beta, gamma in the crystallography community.
     precision : int, optional, default=None
         Control the precision of the floating point representation __repr__. If None provided, default is to 16 decimal places.
 
