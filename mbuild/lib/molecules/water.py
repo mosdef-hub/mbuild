@@ -1,10 +1,10 @@
+"""Water molecules with geometries from different models."""
 import numpy as np
-
 import mbuild as mb
 
 
 class Water3Site(mb.Compound):
-    """A generic 3-site water model"""
+    """A generic 3-site water model."""
 
     def __init__(self, oh_bond_length, hoh_angle):
         super().__init__()
