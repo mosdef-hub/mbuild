@@ -202,16 +202,6 @@ def write_lammpsdata(structure, filename, atom_style='full',
                          "Forcefield XML and structure")
 
 
-    # Check impropers
-    dihedrals = []
-    imp_dihedrals  = []
-    for dihedral in structure.dihedrals:
-        if dihedral.improper:
-            imp_dihedrals.append([dihedral.atom1.idx+1, dihedral.atom2.idx+1, dihedral.atom3.idx+1, dihedral.atom4.idx+4])
-        elif use_dihedrals:
-            dihedrals.append([dihedral.atom1.idx+1, dihedral.atom2.idx+1, dihedral.atom3.idx+1, dihedral.atom4.idx+4])
-
-
     bonds = [[bond.atom1.idx+1, bond.atom2.idx+1] for bond in structure.bonds]
     angles = [[angle.atom1.idx+1,
                angle.atom2.idx+1,
@@ -221,10 +211,20 @@ def write_lammpsdata(structure, filename, atom_style='full',
                       dihedral.atom2.idx+1,
                       dihedral.atom3.idx+1,
                       dihedral.atom4.idx+1] for dihedral in structure.rb_torsions]
+    elif use_dihedrals:
+        dihedrals = [[dihedral.atom1.idx+1,
+                      dihedral.atom2.idx+1,
+                      dihedral.atom3.idx+1,
+                      dihedral.atom4.idx+1] for dihedral in structure.dihedrals if not dihedral.improper]
+
     impropers = [[improper.atom1.idx+1,
                   improper.atom2.idx+1,
                   improper.atom3.idx+1,
                   improper.atom4.idx+1] for improper in structure.impropers]
+    imp_dihedrals = [[dihedral.atom1.idx+1,
+                  dihedral.atom2.idx+1,
+                  dihedral.atom3.idx+1,
+                  dihedral.atom4.idx+1] for dihedral in structure.dihedrals if dihedral.improper]
     if impropers and imp_dihedrals:
         raise ValueError("Use of multiple improper styles is not supported")
 
