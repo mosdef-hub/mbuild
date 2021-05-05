@@ -94,7 +94,7 @@ class TestPacking(BaseTest):
         filled = mb.fill_region(
             h2o,
             n_compounds=50,
-            region=[3, 2, 2, 5, 5, 5],
+            region=Box(lengths=[2, 3, 3], angles=[90.0, 90.0, 90.0]),
             bounds=[[3, 2, 2, 5, 5, 5]],
         )
         assert filled.n_particles == 50 * 3
@@ -117,16 +117,31 @@ class TestPacking(BaseTest):
         assert np.max(filled.xyz[:, 2]) <= 4
 
     def test_fill_region_multiple(self, ethane, h2o):
+        box1 = mb.Box(lengths=[2, 2, 2], angles=[90.0, 90.0, 90.0])
+        box2 = mb.Box(lengths=[2, 2, 2], angles=[90.0, 90.0, 90.0])
         filled = mb.fill_region(
             compound=[ethane, h2o],
             n_compounds=[2, 2],
-            region=[[2, 2, 2, 4, 4, 4], [4, 2, 2, 6, 4, 4]],
+            region=[box1, box2],
             bounds=[[2, 2, 2, 4, 4, 4], [4, 2, 2, 6, 4, 4]],
         )
         assert filled.n_particles == 2 * 8 + 2 * 3
         assert filled.n_bonds == 2 * 7 + 2 * 2
         assert np.max(filled.xyz[:16, 0]) < 4
         assert np.min(filled.xyz[16:, 0]) > 4
+
+    def test_fill_region_incorrect_type(self, ethane):
+        box1 = {"a": 1}
+        with pytest.raises(ValueError, match=r"expected a list of type:"):
+            mb.fill_region(
+                compound=[ethane], n_compounds=[2], region=box1, bounds=None
+            )
+
+    def test_box_no_bound(self, ethane):
+        box1 = Box(lengths=[2, 2, 2], angles=[90.0, 90.0, 90.0])
+        mb.fill_region(
+            compound=[ethane], n_compounds=[2], region=box1, bounds=None
+        )
 
     def test_fill_region_multiple_bounds(self, ethane, h2o):
         box1 = Box.from_mins_maxs_angles(
@@ -227,7 +242,7 @@ class TestPacking(BaseTest):
         region = mb.fill_region(
             h2o,
             10,
-            [2, 2, 2, 4, 4, 4],
+            [[2, 2, 2, 4, 4, 4]],
             temp_file="temp_file2.pdb",
             bounds=[[2, 2, 2, 4, 4, 4]],
         )

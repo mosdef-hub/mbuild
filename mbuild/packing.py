@@ -7,6 +7,7 @@ import sys
 import tempfile
 import warnings
 from distutils.spawn import find_executable
+from itertools import zip_longest
 from subprocess import PIPE, Popen
 
 import numpy as np
@@ -261,12 +262,12 @@ def fill_box(
             input_text += PACKMOL_BOX.format(
                 compound_xyz.name,
                 m_compounds,
-                box_mins[0][0],
-                box_mins[0][1],
-                box_mins[0][2],
-                box_maxs[0][0],
-                box_maxs[0][1],
-                box_maxs[0][2],
+                box_mins[0],
+                box_mins[1],
+                box_mins[2],
+                box_maxs[0],
+                box_maxs[1],
+                box_maxs[2],
                 PACKMOL_CONSTRAIN if rotate else "",
             )
         _run_packmol(input_text, filled_xyz, temp_file)
@@ -327,7 +328,8 @@ def fill_region(
         Specify that compounds should not be rotated when filling the box,
         default=False.
     bounds : list-like of floats [minx, miny, minz, maxx, maxy, maxz], units nm, default=None
-        Required when passing in mb.Box as `region`
+        Bounding within box to pack compounds, if you want to pack within a bounding
+        area that is not the full extent of the region, bounds are required.
     temp_file : str, default=None
         File name to write PACKMOL's raw output to.
     update_port_locations : bool, default=False
@@ -365,17 +367,31 @@ def fill_region(
             )
 
     # See if region is a single region or list
+    my_regions = []
     if isinstance(region, Box):  # Cannot iterate over boxes
-        region = [region]
-        if not bounds:
-            msg = (
-                "if passing in an mbuild.Box or list of mbuild.Box as `region`, "
-                "`bounds must also be defined as a list of the min and max xyz values"
-            )
-            raise ValueError(msg)
-    elif not any(isinstance(reg, (list, set, Box)) for reg in region):
-        region = [region]
-    container = [_validate_box(bounding) for bounding in bounds]
+        my_regions.append(region)
+    # if region is a list of boxes or a list of lists of floats append to my_regions, otherwise the list is expected to be a list of floats
+    elif isinstance(region, list):
+        for reg in region:
+            if isinstance(reg, (list, Box)):
+                my_regions.append(reg)
+            else:
+                raise ValueError(
+                    f"list contents expected to be mbuild.Box or list of floats, provided: {type(reg)}"
+                )
+    else:
+        raise ValueError(
+            f"expected a list of type: list or mbuild.Box, was provided {region} of type: {type(region)}"
+        )
+    container = []
+    if not bounds:
+        bounds = []
+    for bound, reg in zip_longest(bounds, my_regions, fillvalue=None):
+        if bound is None:
+            container.append(reg)
+        else:
+            container.append(bound)
+    container = [_validate_box(bounding) for bounding in container]
 
     # In angstroms for packmol.
     overlap *= 10
@@ -409,12 +425,12 @@ def fill_region(
             input_text += PACKMOL_BOX.format(
                 compound_xyz.name,
                 m_compounds,
-                reg_mins[0][0],
-                reg_mins[0][1],
-                reg_mins[0][2],
-                reg_maxs[0][0],
-                reg_maxs[0][1],
-                reg_maxs[0][2],
+                reg_mins[0],
+                reg_mins[1],
+                reg_mins[2],
+                reg_maxs[0],
+                reg_maxs[1],
+                reg_maxs[2],
                 PACKMOL_CONSTRAIN if rotate else "",
             )
 
@@ -717,7 +733,7 @@ def solvate(
         solute.save(solute_xyz.name, overwrite=True)
         input_text = PACKMOL_HEADER.format(
             overlap, solvated_xyz.name, seed, sidemax * 10
-        ) + PACKMOL_SOLUTE.format(solute_xyz.name, *center_solute[0].tolist())
+        ) + PACKMOL_SOLUTE.format(solute_xyz.name, *center_solute.tolist())
 
         for (solv, m_solvent, rotate) in zip(
             solvent, n_solvent, fix_orientation
@@ -730,12 +746,12 @@ def solvate(
             input_text += PACKMOL_BOX.format(
                 solvent_xyz.name,
                 m_solvent,
-                box_mins[0][0],
-                box_mins[0][1],
-                box_mins[0][2],
-                box_maxs[0][0],
-                box_maxs[0][1],
-                box_maxs[0][2],
+                box_mins[0],
+                box_mins[1],
+                box_mins[2],
+                box_maxs[0],
+                box_maxs[1],
+                box_maxs[2],
                 PACKMOL_CONSTRAIN if rotate else "",
             )
         _run_packmol(input_text, solvated_xyz, temp_file)
@@ -773,18 +789,18 @@ def _validate_box(box):
     mins : list-like
     maxs : list-like
     """
-    mins = list()
-    maxs = list()
     if isinstance(box, (list, tuple)):
         if len(box) == 3:
-            mins.append([0.0, 0.0, 0.0])
-            maxs.append(box)
-            box = Box(lengths=box, angles=(90.0, 90.0, 90.0))
-        elif len(box) == 6:
-            mins.append(box[:3])
-            maxs.append(box[3:])
+            mins = [0.0, 0.0, 0.0]
+            maxs = box
             box = Box.from_mins_maxs_angles(
-                mins=box[:3], maxs=box[3:], angles=(90.0, 90.0, 90.0)
+                mins=mins, maxs=maxs, angles=(90.0, 90.0, 90.0)
+            )
+        elif len(box) == 6:
+            mins = box[:3]
+            maxs = box[3:]
+            box = Box.from_mins_maxs_angles(
+                mins=mins, maxs=maxs, angles=(90.0, 90.0, 90.0)
             )
         else:
             raise MBuildError(
@@ -794,8 +810,8 @@ def _validate_box(box):
             )
 
     elif isinstance(box, Box):
-        mins.append([0.0, 0.0, 0.0])
-        maxs.append(box.lengths)
+        mins = [0.0, 0.0, 0.0]
+        maxs = box.lengths
     else:
         raise MBuildError(
             "Unknown format for `box` parameter. Must pass a list/tuple of "
