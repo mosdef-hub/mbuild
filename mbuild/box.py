@@ -319,7 +319,6 @@ def _normalize_box(vectors):
 
     # left or right handed: det<0 left, >0, right
     sign = np.linalg.det(Q)
-    Q = Q * sign
     R = R * sign
 
     signs = np.diag(
