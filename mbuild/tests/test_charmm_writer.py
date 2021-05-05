@@ -1949,7 +1949,10 @@ class TestCharmmWriterData(BaseTest):
         use_dihedrals_1 = True
         epsilon_conversion_factor = 1
         lj_unit = 1 / epsilon_conversion_factor
-        dihedral_types_1, unique_dihedral_types_1 = charmm_writer._get_dihedral_types(
+        (
+            dihedral_types_1,
+            unique_dihedral_types_1,
+        ) = charmm_writer._get_dihedral_types(
             structure_ff,
             use_rb_torsions_1,
             use_dihedrals_1,
@@ -1961,7 +1964,10 @@ class TestCharmmWriterData(BaseTest):
         use_rb_torsions_2 = True
         use_dihedrals_2 = False
 
-        dihedral_types_2, unique_dihedral_types_2 = charmm_writer._get_dihedral_types(
+        (
+            dihedral_types_2,
+            unique_dihedral_types_2,
+        ) = charmm_writer._get_dihedral_types(
             structure_ff,
             use_rb_torsions_2,
             use_dihedrals_2,
@@ -2012,7 +2018,10 @@ class TestCharmmWriterData(BaseTest):
         # ******** NOTE*************************
         # ******** NOTE*************************
         # ******** NOTE*************************
-        improper_types_1, unique_improper_types_1 = charmm_writer._get_impropers(
+        (
+            improper_types_1,
+            unique_improper_types_1,
+        ) = charmm_writer._get_impropers(
             structure_ff, epsilon_conversion_factor
         )
 

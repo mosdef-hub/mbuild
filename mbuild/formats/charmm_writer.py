@@ -132,7 +132,7 @@ def _get_angle_type_key(
 
 
 def _get_dihedral_rb_torsion_key(dihedral, epsilon_conversion_factor):
-    """ Get the dihedral_type key for a Ryckaert-Bellemans (RB) dihedrals/torsions
+    """Get the dihedral_type key for a Ryckaert-Bellemans (RB) dihedrals/torsions
 
     Parameters
     ----------
@@ -224,7 +224,7 @@ def _get_dihedral_rb_torsion_key(dihedral, epsilon_conversion_factor):
 
 
 def _get_improper_type_key(improper, epsilon_conversion_factor):
-    """ Get the improper_type key for the harmonic improper
+    """Get the improper_type key for the harmonic improper
 
     Parameters
     ----------
@@ -289,7 +289,7 @@ def _get_improper_type_key(improper, epsilon_conversion_factor):
 def _get_unique_bond_types(
     structure, sigma_conversion_factor, epsilon_conversion_factor
 ):
-    """ Get the unique bond types for a structure in a dictionary
+    """Get the unique bond types for a structure in a dictionary
 
     Parameters
     ----------
@@ -332,7 +332,7 @@ def _get_unique_bond_types(
 def _get_unique_angle_types(
     structure, sigma_conversion_factor, epsilon_conversion_factor
 ):
-    """ Get the unique angle types for a structure and return a dictionary
+    """Get the unique angle types for a structure and return a dictionary
 
     Parameters
     ----------
@@ -376,7 +376,7 @@ def _get_unique_angle_types(
 
 
 def _get_unique_rb_torsion_types(structure, epsilon_conversion_factor):
-    """ Get the unique rb torsion types for a structure and return a dictionary
+    """Get the unique rb torsion types for a structure and return a dictionary
 
     Parameters
     ----------
@@ -425,7 +425,7 @@ def _get_unique_rb_torsion_types(structure, epsilon_conversion_factor):
 
 
 def _get_unique_improper_types(structure, epsilon_conversion_factor):
-    """ Get the unique improper types for a structure  and return a dictionary
+    """Get the unique improper types for a structure  and return a dictionary
 
     Parameters
     ----------
@@ -584,7 +584,7 @@ def _get_angle_types(
                      (angle_k_constant, angle_theta_o, angle_center_atom_type_2,
                      (angle_end_atom_type_1, angle_end_atom_type_3),
                      angle_residue_atom_1, angle_residue_atom_2, angle_residue_atom_3), n])
-        """
+    """
 
     if use_urey_bradleys:
         print_warn_text = (
@@ -788,7 +788,7 @@ def _get_impropers(structure, epsilon_conversion_factor):
           improper_atom_1_res_type, (improper_atom_2_res_type,
           improper_atom_3_res_type, improper_atom_4_res_type)
          ), n ])
-         """
+    """
     unique_improper_types = _get_unique_improper_types(
         structure, epsilon_conversion_factor
     )
@@ -2120,8 +2120,8 @@ class Charmm:
         )
 
     def write_inp(self):
-        """ This write_inp function writes the Charmm style parameter (force field) file, which can be utilized
-         in the GOMC and NAMD engines. """
+        """This write_inp function writes the Charmm style parameter (force field) file, which can be utilized
+        in the GOMC and NAMD engines."""
         print("******************************")
         print("")
         print(
@@ -2971,8 +2971,8 @@ class Charmm:
                             data.write(info_if_dihedral_error_too_large)
                             print(info_if_dihedral_error_too_large)
                         else:
-                            list_if_abs_max_values_for_dihedral_overall_max = max(
-                                list_if_abs_max_values_for_dihedral_overall
+                            list_if_abs_max_values_for_dihedral_overall_max = (
+                                max(list_if_abs_max_values_for_dihedral_overall)
                             )
                             info_if_dihedral_error_ok = (
                                 "! RB-torsion to CHARMM dihedral conversion error is OK "
@@ -3066,8 +3066,8 @@ class Charmm:
         # **********************************
 
     def write_psf(self):
-        """ This write_psf function writes the Charmm style PSF (topology) file, which can be utilized
-                 in the GOMC and NAMD engines. """
+        """This write_psf function writes the Charmm style PSF (topology) file, which can be utilized
+        in the GOMC and NAMD engines."""
         # **********************************
         # **********************************
         # psf writer (start)
@@ -3382,7 +3382,12 @@ class Charmm:
                 first_indent % no_dihedrals + " !NPHI: dihedrals\n"
             )
             for i_dihedral, dihedral_iter in enumerate(dihedrals_list):
-                dihedral_atom_1, dihedral_atom_2, dihedral_atom_3, dihedral_atom_4 = (
+                (
+                    dihedral_atom_1,
+                    dihedral_atom_2,
+                    dihedral_atom_3,
+                    dihedral_atom_4,
+                ) = (
                     dihedral_iter.atom1,
                     dihedral_iter.atom2,
                     dihedral_iter.atom3,
@@ -3415,7 +3420,12 @@ class Charmm:
                 first_indent % no_impropers + " !NIMPHI: impropers\n"
             )
             for i_improper, improper_iter in enumerate(impropers_list):
-                improper_atom_1, improper_atom_2, improper_atom_3, improper_atom_4 = (
+                (
+                    improper_atom_1,
+                    improper_atom_2,
+                    improper_atom_3,
+                    improper_atom_4,
+                ) = (
                     improper_iter.atom1,
                     improper_iter.atom2,
                     improper_iter.atom3,
@@ -3554,8 +3564,8 @@ class Charmm:
         # **********************************
 
     def write_pdb(self):
-        """ This write_psf function writes the Charmm style PDB (coordinate file), which can be utilized
-                         in the GOMC and NAMD engines. """
+        """This write_psf function writes the Charmm style PDB (coordinate file), which can be utilized
+        in the GOMC and NAMD engines."""
         # **********************************
         # **********************************
         # pdb writer (start)
