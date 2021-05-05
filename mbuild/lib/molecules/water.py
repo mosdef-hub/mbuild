@@ -59,7 +59,7 @@ class Water4Site(mb.Compound):
     """A generic 4-site water model."""
 
     def __init__(self, oh_bond_length, hoh_angle, om_bond_length):
-        super(Water4Site, self).__init__()
+        super().__init__()
 
         o1 = mb.Compound(name="OW", element="H", pos=[0.0, 0.0, 0.0])
         h1 = mb.Compound(
