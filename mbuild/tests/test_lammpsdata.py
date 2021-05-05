@@ -23,7 +23,9 @@ class TestLammpsData(BaseTest):
     @pytest.mark.skipif(not has_foyer, reason="Foyer package not installed")
     def test_save_charmm(self):
         from foyer import Forcefield
+
         from mbuild.formats.lammpsdata import write_lammpsdata
+
         cmpd = mb.load(get_fn("charmm_dihedral.mol2"))
         for i in cmpd.particles():
             i.name = "_{}".format(i.name)
@@ -58,8 +60,9 @@ class TestLammpsData(BaseTest):
 
     @pytest.mark.skipif(not has_foyer, reason="Foyer package not installed")
     def test_charmm_improper(self):
-        import mbuild as mb
         from foyer import Forcefield
+
+        import mbuild as mb
         from mbuild.formats.lammpsdata import write_lammpsdata
 
         system = mb.Compound()
@@ -96,12 +99,13 @@ class TestLammpsData(BaseTest):
     @pytest.mark.skipif(not has_foyer, reason="Foyer package not installed")
     def test_amber(self):
         from foyer import Forcefield
+
         from mbuild.formats.lammpsdata import write_lammpsdata
+
         cmpd = mb.load("C1(=CC=CC=C1)F", smiles=True)
 
         ff = Forcefield(forcefield_files=[get_fn("gaff_test.xml")])
         structure = ff.apply(cmpd)
-
 
         write_lammpsdata(structure, "amber.lammps", borrowed_charmm=True)
         out_lammps = open("amber.lammps", "r").readlines()
