@@ -21,7 +21,7 @@ class Box(object):
         also known as alpha, beta, gamma in the crystallography community.
     precision : int, optional, default=None
         Control the precision of the floating point representation of box
-        attributes. If none provided, the default is 8 decimals.
+        attributes. If none provided, the default is 6 decimals.
 
     Attributes
     ----------
@@ -58,7 +58,7 @@ class Box(object):
         if precision is not None:
             self._precision = int(precision)
         else:
-            self._precision = 8
+            self._precision = 6
 
         if angles is None:
             angles = [90.0, 90.0, 90.0]
