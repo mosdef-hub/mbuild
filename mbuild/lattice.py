@@ -580,8 +580,8 @@ class Lattice(object):
         TypeError
             incorrect type for basis vector
 
-        Note
-        ----
+        Notes
+        -----
         Called after constructor by user.
         """
         x, y, z = self._sanitize_populate_args(x=x, y=y, z=z)
