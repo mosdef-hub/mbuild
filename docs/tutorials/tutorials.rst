@@ -12,4 +12,3 @@ Tutorials
     tutorial_monolayer
     tutorial_simple_LJ
     tutorial_polymers
-    tutorial_lattice
