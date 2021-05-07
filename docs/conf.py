@@ -13,7 +13,6 @@
 # serve to show the default.
 
 import os
-import pathlib
 import sys
 
 import mock
@@ -24,6 +23,8 @@ import mock
 
 MOCK_MODULES = [
     "ele",
+    "ele.element",
+    "ele.exceptions",
     "numpy",
     "numpy.linalg",
     "mdtraj",
@@ -44,9 +45,6 @@ for mod_name in MOCK_MODULES:
 sys.path.insert(0, os.path.abspath(".."))
 # sys.path.insert(0, os.path.abspath('sphinxext'))
 
-base_path = pathlib.Path(__file__).parent
-os.system("python {} --name".format((base_path / "../setup.py").resolve()))
-
 # -- General configuration ------git ------------------------------------------
 
 # If your documentation needs a minimal Sphinx version, state it here.
@@ -59,7 +57,7 @@ extensions = [
     "nbsphinx",
     "sphinx.ext.mathjax",
     "sphinx.ext.autodoc",
-    "sphinxcontrib.inkscapeconverter",
+    "sphinxcontrib.cairosvgconverter",
     "sphinx.ext.viewcode",
     "sphinx.ext.intersphinx",
     "sphinx.ext.autosummary",
@@ -72,7 +70,6 @@ nbsphinx_input_prompt = "%s"
 nbsphinx_prompt_width = "1.1"
 html_scaled_image_link = False
 nbsphinx_allow_errors = False
-
 
 # Prolog: Displayed on top of the notebook
 
