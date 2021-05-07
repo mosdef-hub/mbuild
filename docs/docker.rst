@@ -11,7 +11,7 @@ Prerequisites
 -------------
 A docker installation on your machine. This
 `Docker installation documentation <https://docs.docker.com/get-docker/>`_ has instructions to get docker running on your machine.
-If you are not familiar with docker, the Internet is full of good tutorials these from
+If you are not familiar with docker, the Internet is full of good tutorials like these from
 `Docker curriculum <https://docker-curriculum.com/>`_ and
 `YouTube <https://www.youtube.com/watch?v=zJ6WbK9zFpI&feature=youtu.be>`_.
 
@@ -34,7 +34,7 @@ as usual. The docker container will exit upon notebook shutdown.
 .. warning::
 
     Containers by nature are ephemeral, so filesystem changes (e.g., adding
-    a new notebook) only persist until the end of the container's lifecycle.
+    a new notebook) only persists until the end of the container's lifecycle.
     If the container is removed, any changes or code additions will not persist.
     See the section below for persistent data.
 
