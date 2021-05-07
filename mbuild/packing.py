@@ -71,11 +71,11 @@ def fill_box(
     temp_file=None,
     update_port_locations=False,
 ):
-    """Fill a box with an ``mbuild.compound`` or ``Compound``s using PACKMOL.
+    r"""Fill a box with an ``mbuild.compound`` or ``Compound``s using PACKMOL.
 
-    ``fill_box`` takes a single ``Compound`` or a list of ``Compound``'s and
-    returns a ``Compound`` that has been filled to the user's specifications to
-    the best of PACKMOL's ability.
+    ``fill_box`` takes a single ``Compound`` or a list of ``Compound``s and
+    returns a ``Compound`` that has been filled to the user\'s specifications to
+    the best of PACKMOL\'s ability.
 
     When filling a system, two arguments of ``n_compounds``, ``box``, and
     ``density`` must be specified.
@@ -128,7 +128,7 @@ def fill_box(
         Specify that compounds should not be rotated when filling the box,
         default=False.
     temp_file : str, default=None
-        File name to write PACKMOL's raw output to.
+        File name to write PACKMOL raw output to.
     update_port_locations : bool, default=False
         After packing, port locations can be updated, but since compounds can be
         rotated, port orientation may be incorrect.
@@ -316,7 +316,7 @@ def fill_region(
         Specify that compounds should not be rotated when filling the box,
         default=False.
     temp_file : str, default=None
-        File name to write PACKMOL's raw output to.
+        File name to write PACKMOL raw output to.
     update_port_locations : bool, default=False
         After packing, port locations can be updated, but since compounds can be
         rotated, port orientation may be incorrect.
@@ -468,7 +468,7 @@ def fill_sphere(
         Specify that compounds should not be rotated when filling the sphere,
         default=False.
     temp_file : str, default=None
-        File name to write PACKMOL's raw output to.
+        File name to write PACKMOL raw output to.
     update_port_locations : bool, default=False
         After packing, port locations can be updated, but since compounds can be
         rotated, port orientation may be incorrect.
@@ -654,7 +654,7 @@ def solvate(
         Specify if solvent should not be rotated when filling box,
         default=False.
     temp_file : str, default=None
-        File name to write PACKMOL's raw output to.
+        File name to write PACKMOL raw output to.
     update_port_locations : bool, default=False
         After packing, port locations can be updated, but since compounds can be
         rotated, port orientation may be incorrect.
@@ -813,7 +813,7 @@ def _run_packmol(input_text, filled_xyz, temp_file):
     input_text : str, required
         String formatted in the input file syntax for PACKMOL.
     filled_xyz : `tempfile` object, required
-        Tempfile that will store the results of PACKMOL's packing.
+        Tempfile that will store the results of PACKMOL packing.
     temp_file : `tempfile` object, required
         Where to copy the filled tempfile.
     """
