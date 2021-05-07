@@ -1481,8 +1481,8 @@ class Compound(object):
             for more information.
 
 
-        Keyword Arguments
-        -----------------
+        Other Parameters
+        ----------------
         algorithm : str, optional, default='cg'
             The energy minimization algorithm.  Valid options are 'steep', 'cg',
             and 'md', corresponding to steepest descent, conjugate gradient, and
