@@ -23,7 +23,9 @@ import mock
 # documentation root, use os.path.abspath to make it absolute, like shown here.
 
 MOCK_MODULES = [
+    "ele",
     "numpy",
+    "numpy.linalg",
     "mdtraj",
     "mdtraj.core.element",
     "nglview",
@@ -34,7 +36,6 @@ MOCK_MODULES = [
     "scipy",
     "scipy.spatial",
     "scipy.constants",
-    "numpy.linalg",
 ]
 for mod_name in MOCK_MODULES:
     sys.modules[mod_name] = mock.Mock()
@@ -68,7 +69,7 @@ extensions = [
 # nbsphinx specific configuration
 nbsphinx_execute = "never"
 nbsphinx_input_prompt = "%s"
-nbsphinx_prompt_width = 1.1
+nbsphinx_prompt_width = "1.1"
 html_scaled_image_link = False
 nbsphinx_allow_errors = False
 
