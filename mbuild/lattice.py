@@ -227,11 +227,12 @@ class Lattice(object):
         are provided, basis vectors do not overlap when the unit cell is
         expanded.
 
-        Exceptions Raised
-        -----------------
-        TypeError : incorrect typing of the input parameters
-
-        ValueError : values are not within restrictions
+        Raises
+        ------
+        TypeError
+            incorrect typing of the input parameters
+        ValueError
+            values are not within restrictions
         """
         if angles is not None and lattice_vectors is not None:
             raise ValueError(
@@ -257,9 +258,10 @@ class Lattice(object):
         Additional NumPy errors can also occur due to the conversion
         to a numpy array.
 
-        Exceptions Raised
-        -----------------
-        ValueError : Incorrect lattice_spacing input
+        Raises
+        ------
+        ValueError
+            Incorrect lattice_spacing input
         """
         dataType = np.float64
 
@@ -298,9 +300,10 @@ class Lattice(object):
         components is in an acceptatble range. Additional NumPy errors can
         also occur due to the conversion to a numpy array.
 
-        Exception Raised
-        ----------------
-        ValueError : Incorrect angles input
+        Raises
+        ------
+        ValueError
+            Incorrect angles input
         """
         dataType = np.float64
         tempAngles = np.asarray(angles, dtype=dataType)
@@ -339,9 +342,10 @@ class Lattice(object):
         Additional NumPy errors can also occur due to the conversion to
         a numpy array.
 
-        Exception Raised
-        ----------------
-        ValueError : Incorrect lattice_vectors input
+        Raises
+        ------
+        ValueError
+            Incorrect lattice_vectors input
         """
         dataType = np.float64
         if lattice_vectors is None:
@@ -379,9 +383,10 @@ class Lattice(object):
         specifically, making sure that the positions are consistent
         with the dimension and have appropriate input types/values.
 
-        Exception Raised
-        ----------------
-        ValueError : Incorrect lattice_poins input
+        Raises
+        ------
+        ValueError
+            Incorrect lattice_poins input
         """
         if lattice_points is None:
             lattice_points = {}
@@ -423,9 +428,10 @@ class Lattice(object):
         Makes sure the lattice_points do not overlap when the unit cell
         get expanded to certain extent.
 
-        Exception Raised
-        ----------------
-        ValueError : Incorrect lattice_points input
+        Raises
+        ------
+        ValueError
+            Incorrect lattice_points input
         """
         overlap_dict = defaultdict(list)
         num_iter = 3
@@ -567,13 +573,15 @@ class Lattice(object):
         compound_dict : dictionary, optional, default=None
             Link between basis_dict and Compounds.
 
-        Exceptions Raised
-        -----------------
-        ValueError : incorrect x,y, or z values.
-        TypeError : incorrect type for basis vector
+        Raises
+        ------
+        ValueError
+            incorrect x,y, or z values.
+        TypeError
+            incorrect type for basis vector
 
-        Call Restrictions
-        -----------------
+        Note
+        ----
         Called after constructor by user.
         """
         x, y, z = self._sanitize_populate_args(x=x, y=y, z=z)
