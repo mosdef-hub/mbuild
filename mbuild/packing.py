@@ -71,28 +71,27 @@ def fill_box(
     temp_file=None,
     update_port_locations=False,
 ):
-    r"""Fill a box with an ``mbuild.compound`` or ``Compound``s using PACKMOL.
+    """Fill a box with an `mbuild.compound` or `Compound`s using PACKMOL.
 
-    ``fill_box`` takes a single ``Compound`` or a list of ``Compound``s and
-    returns a ``Compound`` that has been filled to the user\'s specifications to
-    the best of PACKMOL\'s ability.
+    `fill_box` takes a single `Compound` or a list of `Compound`s and
+    returns a `Compound` that has been filled to specification by PACKMOL.
 
-    When filling a system, two arguments of ``n_compounds``, ``box``, and
-    ``density`` must be specified.
+    When filling a system, two arguments of `n_compounds`, `box`, and
+    `density` must be specified.
 
-    If ``n_compounds`` and ``box`` are not None, the specified number of
+    If `n_compounds` and `box` are not None, the specified number of
     compounds will be inserted into a box of the specified size.
 
-    If ``n_compounds`` and ``density`` are not None, the corresponding box size
-    will be calculated internally. In this case, ``n_compounds`` must be an int
+    If `n_compounds` and `density` are not None, the corresponding box size
+    will be calculated internally. In this case, `n_compounds` must be an int
     and not a list of int.
 
-    If ``box`` and ``density`` are not None, the corresponding number of
+    If `box` and `density` are not None, the corresponding number of
     compounds will be calculated internally.
 
-    For the cases in which ``box`` is not specified but generated internally,
+    For the cases in which `box` is not specified but generated internally,
     the default behavior is to calculate a cubic box. Optionally,
-    ``aspect_ratio`` can be passed to generate a non-cubic box.
+    `aspect_ratio` can be passed to generate a non-cubic box.
 
     Parameters
     ----------
@@ -102,9 +101,9 @@ def fill_box(
         Number of compounds to be filled in box.
     box : mb.Box
         Box to be filled by compounds.
-    density : float, units kg/m^3, default=None
+    density : float, units :math:`kg/m^3`, default=None
         Target density for the system in macroscale units. If not None, one of
-        ``n_compounds`` or ``box``, but not both, must be specified.
+        `n_compounds` or `box`, but not both, must be specified.
     overlap : float, units nm, default=0.2
         Minimum separation between atoms of different molecules.
     seed : int, default=12345
@@ -119,8 +118,8 @@ def fill_box(
         conditions in its optimization.
     compound_ratio : list, default=None
         Ratio of number of each compound to be put in box. Only used in the case
-        of ``density`` and ``box`` having been specified, ``n_compounds`` not
-        specified, and more than one ``compound``.
+        of `density` and `box` having been specified, `n_compounds` not
+        specified, and more than one `compound`.
     aspect_ratio : list of float
         If a non-cubic box is desired, the ratio of box lengths in the x, y, and
         z directions.
@@ -290,7 +289,7 @@ def fill_region(
     temp_file=None,
     update_port_locations=False,
 ):
-    """Fill a region of a box with ``mbuild.Compound``(s) using PACKMOL.
+    """Fill a region of a box with `mbuild.Compound`(s) using PACKMOL.
 
     Parameters
     ----------
@@ -446,7 +445,7 @@ def fill_sphere(
         Sphere coordinates in the form [x_center, y_center, z_center, radius]
     n_compounds : int or list of int
         Number of compounds to be put in box.
-    density : float, units kg/m^3, default=None
+    density : float, units :math:`kg/m^3`, default=None
         Target density for the sphere in macroscale units.
     overlap : float, units nm, default=0.2
         Minimum separation between atoms of different molecules.
