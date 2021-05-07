@@ -71,12 +71,12 @@ def fill_box(
     temp_file=None,
     update_port_locations=False,
 ):
-    """Fill a box with an `mbuild.compound` or `Compound`s using PACKMOL.
+    """Fill a box with an `mbuild.compound` or `Compound` s using PACKMOL.
 
-    `fill_box` takes a single `Compound` or a list of `Compound`s and
+    `fill_box` takes a single `Compound` or a list of `Compound` s and
     returns a `Compound` that has been filled to specification by PACKMOL.
 
-    When filling a system, two arguments of `n_compounds`, `box`, and
+    When filling a system, two arguments of `n_compounds` , `box` , and
     `density` must be specified.
 
     If `n_compounds` and `box` are not None, the specified number of
@@ -101,9 +101,9 @@ def fill_box(
         Number of compounds to be filled in box.
     box : mb.Box
         Box to be filled by compounds.
-    density : float, units :math:`kg/m^3`, default=None
+    density : float, units :math:`kg/m^3` , default=None
         Target density for the system in macroscale units. If not None, one of
-        `n_compounds` or `box`, but not both, must be specified.
+        `n_compounds` or `box` , but not both, must be specified.
     overlap : float, units nm, default=0.2
         Minimum separation between atoms of different molecules.
     seed : int, default=12345
@@ -119,7 +119,7 @@ def fill_box(
     compound_ratio : list, default=None
         Ratio of number of each compound to be put in box. Only used in the case
         of `density` and `box` having been specified, `n_compounds` not
-        specified, and more than one `compound`.
+        specified, and more than one `compound` .
     aspect_ratio : list of float
         If a non-cubic box is desired, the ratio of box lengths in the x, y, and
         z directions.
@@ -289,7 +289,7 @@ def fill_region(
     temp_file=None,
     update_port_locations=False,
 ):
-    """Fill a region of a box with `mbuild.Compound`(s) using PACKMOL.
+    """Fill a region of a box with `mbuild.Compound` (s) using PACKMOL.
 
     Parameters
     ----------
