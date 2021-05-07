@@ -2,13 +2,15 @@ name: mbuild-docs
 channels:
   - conda-forge
 dependencies:
-  - inkscape
   - ipykernel
   - ipywidgets
   - mock
   - nbsphinx
   - numpydoc
+  - pip
   - sphinx
   - sphinx_rtd_theme
-  - sphinxcontrib-svg2pdfconverter
   - widgetsnbextension
+  - pip:
+    - sphinxcontrib-svg2pdfconverter
+    - cairosvg
