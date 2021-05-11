@@ -12,7 +12,7 @@ Import the required mbuild package.
 
 Construct a pseudo-monatomic molecule (united atom (UA) methane), for use with the
 `TraPPE <http://trappe.oit.umn.edu>`_ force field (FF).  The UA methane, bead type "_CH4", will be built as a child (mbuild.Compound.children), so the parent (mbuild.Compound) will 
-allow a user-selected residue name (mbuild.Compound.name). If the methane is built using methane = mb.Compound(name="_CH4"), then the user must keep the residue name "_CH4" or `foyer <https://foyer.mosdef.org/en/stable/>`_ will not recognize the bead type.
+allow a user-selected residue name (mbuild.Compound.name). If the methane is built using methane = mb.Compound(name="_CH4"), then the user must keep the residue name "_CH4" or `foyer <https://foyer.mosdef.org/en/stable/>`_ will not recognize the bead type when using the standard TraPPE force field XML file.
 
 .. code:: ipython3
 

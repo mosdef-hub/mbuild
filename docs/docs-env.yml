@@ -4,6 +4,7 @@ channels:
 dependencies:
   - python=3.7
   - sphinx
+  - ele
   - nbsphinx
   - lark-parser
   - requests
@@ -11,3 +12,5 @@ dependencies:
   - pip:
     - sphinx_rtd_theme
     - sphinxcontrib-svg2pdfconverter
+sphinx:
+  fail_on_warning: true

@@ -25,8 +25,9 @@ box or boxes utilizing only a few lines of python code.
 
 
 .. toctree::
-	
-   AA_hexane_ethanol_example
-   UA_methane_example
+
+   load_files
+   fill_box_example
    Box_example	
+   polymer_example
 

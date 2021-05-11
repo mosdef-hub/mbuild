@@ -27,11 +27,6 @@ Compound
 .. autoclass:: mbuild.Compound
     :members:
 
-Port
-----
-
-.. autoclass:: mbuild.Port
-    :members:
 
 Box
 ---
@@ -43,32 +38,6 @@ Lattice
 -------
 
 .. autoclass:: mbuild.Lattice
-    :members:
-
-Fill Box
---------------------
-
-.. automodule:: mbuild.packing.fill_box
-    :members:
-
-
-Fill Region
---------------------
-
-.. automodule:: mbuild.packing.fill_region
-    :members:
-
-
-Fill Sphere
---------------------
-
-.. automodule:: mbuild.packing.fill_sphere
-    :members:
-
-Solvate
---------------------
-
-.. automodule:: mbuild.packing.solvate
     :members:
 
 
@@ -83,4 +52,16 @@ Load CIF
 --------------------
 
 .. automodule:: mbuild.lattice.load_cif
+    :members:
+
+Port
+----
+
+.. autoclass:: mbuild.Port
+    :members:
+
+Polymer
+--------
+
+.. autoclass:: mbuild.lib.recipes.polymer.Polymer
     :members:
