@@ -16,7 +16,6 @@ dependencies:
   - numpy
   - openbabel>=3.0.0
   - rdkit
-  - oset
   - packmol=1!18.013
   - parmed>=3.4.0
   - pip
