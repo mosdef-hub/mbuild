@@ -27,7 +27,7 @@ class OrderedSet(MutableSet):
 
     def __iter__(self):
         """Iterate through a copy."""
-        return iter(list(self._data))
+        return iter(self._data)
 
     def __len__(self):
         """Return the length."""
