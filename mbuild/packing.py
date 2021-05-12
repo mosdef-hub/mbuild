@@ -71,28 +71,27 @@ def fill_box(
     temp_file=None,
     update_port_locations=False,
 ):
-    """Fill a box with an `mbuild.compound` or `Compound`s using PACKMOL.
+    """Fill a box with an `mbuild.compound` or `Compound` s using PACKMOL.
 
-    `fill_box` takes a single `Compound` or a list of `Compound`'s and returns
-    a `Compound` that has been filled to the user's specifications to the best
-    of PACKMOL's ability.
+    `fill_box` takes a single `Compound` or a list of `Compound` s and
+    returns a `Compound` that has been filled to specification by PACKMOL.
 
-    When filling a system, two arguments of `n_compounds, box, and density` must
-    be specified.
+    When filling a system, two arguments of `n_compounds` , `box` , and
+    `density` must be specified.
 
-    If `n_compounds` and `box` are not None, the specified number of n_compounds
-    will be inserted into a box of the specified size.
+    If `n_compounds` and `box` are not None, the specified number of
+    compounds will be inserted into a box of the specified size.
 
-    If `n_compounds` and `density` are not None, the corresponding box size will
-    be calculated internally. In this case, `n_compounds` must be an int and not
-    a list of int.
+    If `n_compounds` and `density` are not None, the corresponding box size
+    will be calculated internally. In this case, `n_compounds` must be an int
+    and not a list of int.
 
-    If `box` and `density` are not None, the corresponding number of compounds
-    will be calculated internally.
+    If `box` and `density` are not None, the corresponding number of
+    compounds will be calculated internally.
 
-    For the cases in which `box` is not specified but generated internally, the
-    default behavior is to calculate a cubic box. Optionally, `aspect_ratio` can
-    be passed to generate a non-cubic box.
+    For the cases in which `box` is not specified but generated internally,
+    the default behavior is to calculate a cubic box. Optionally,
+    `aspect_ratio` can be passed to generate a non-cubic box.
 
     Parameters
     ----------
@@ -102,9 +101,9 @@ def fill_box(
         Number of compounds to be filled in box.
     box : mb.Box
         Box to be filled by compounds.
-    density : float, units kg/m^3, default=None
+    density : float, units :math:`kg/m^3` , default=None
         Target density for the system in macroscale units. If not None, one of
-        `n_compounds` or `box`, but not both, must be specified.
+        `n_compounds` or `box` , but not both, must be specified.
     overlap : float, units nm, default=0.2
         Minimum separation between atoms of different molecules.
     seed : int, default=12345
@@ -120,7 +119,7 @@ def fill_box(
     compound_ratio : list, default=None
         Ratio of number of each compound to be put in box. Only used in the case
         of `density` and `box` having been specified, `n_compounds` not
-        specified, and more than one `compound`.
+        specified, and more than one `compound` .
     aspect_ratio : list of float
         If a non-cubic box is desired, the ratio of box lengths in the x, y, and
         z directions.
@@ -128,7 +127,7 @@ def fill_box(
         Specify that compounds should not be rotated when filling the box,
         default=False.
     temp_file : str, default=None
-        File name to write PACKMOL's raw output to.
+        File name to write PACKMOL raw output to.
     update_port_locations : bool, default=False
         After packing, port locations can be updated, but since compounds can be
         rotated, port orientation may be incorrect.
@@ -290,7 +289,7 @@ def fill_region(
     temp_file=None,
     update_port_locations=False,
 ):
-    """Fill a region of a box with `mbuild.Compound`(s) using PACKMOL.
+    """Fill a region of a box with `mbuild.Compound` (s) using PACKMOL.
 
     Parameters
     ----------
@@ -316,7 +315,7 @@ def fill_region(
         Specify that compounds should not be rotated when filling the box,
         default=False.
     temp_file : str, default=None
-        File name to write PACKMOL's raw output to.
+        File name to write PACKMOL raw output to.
     update_port_locations : bool, default=False
         After packing, port locations can be updated, but since compounds can be
         rotated, port orientation may be incorrect.
@@ -446,7 +445,7 @@ def fill_sphere(
         Sphere coordinates in the form [x_center, y_center, z_center, radius]
     n_compounds : int or list of int
         Number of compounds to be put in box.
-    density : float, units kg/m^3, default=None
+    density : float, units :math:`kg/m^3`, default=None
         Target density for the sphere in macroscale units.
     overlap : float, units nm, default=0.2
         Minimum separation between atoms of different molecules.
@@ -468,7 +467,7 @@ def fill_sphere(
         Specify that compounds should not be rotated when filling the sphere,
         default=False.
     temp_file : str, default=None
-        File name to write PACKMOL's raw output to.
+        File name to write PACKMOL raw output to.
     update_port_locations : bool, default=False
         After packing, port locations can be updated, but since compounds can be
         rotated, port orientation may be incorrect.
@@ -654,7 +653,7 @@ def solvate(
         Specify if solvent should not be rotated when filling box,
         default=False.
     temp_file : str, default=None
-        File name to write PACKMOL's raw output to.
+        File name to write PACKMOL raw output to.
     update_port_locations : bool, default=False
         After packing, port locations can be updated, but since compounds can be
         rotated, port orientation may be incorrect.
@@ -813,7 +812,7 @@ def _run_packmol(input_text, filled_xyz, temp_file):
     input_text : str, required
         String formatted in the input file syntax for PACKMOL.
     filled_xyz : `tempfile` object, required
-        Tempfile that will store the results of PACKMOL's packing.
+        Tempfile that will store the results of PACKMOL packing.
     temp_file : `tempfile` object, required
         Where to copy the filled tempfile.
     """
