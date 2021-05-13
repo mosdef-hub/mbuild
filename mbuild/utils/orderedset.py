@@ -115,7 +115,7 @@ class OrderedSet(MutableSet):
         Each items order is defined by its first appearance.
 
         Example:
-        ________
+        -------
             >>> oset = OrderedSet.union(OrderedSet([3, 1, 4, 1, 5]), [1, 3], [2, 0])
             >>> print(oset)
             OrderedSet([3, 1, 4, 5, 2, 0])
