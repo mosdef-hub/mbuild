@@ -1,4 +1,5 @@
 """Ordered set module.
+
 Based on oset by Raymond Hettinger, with the following license:
 Copyright (c) 2009, Raymond Hettinger, and others All rights reserved.
 Package structured based on the one developed to odict Copyright (c) 2010,
@@ -43,7 +44,9 @@ T = TypeVar("T")
 
 class OrderedSet(MutableSet):
     """An ordered set object with additional convenience methods.
+
     Based on oset by Raymond Hettinger (see module for license)
+
     Methods
     -------
     add
@@ -71,6 +74,7 @@ class OrderedSet(MutableSet):
         return key in self.map
 
     def __iter__(self):
+        """Return an iterable of the set."""
         end = self.end
         curr = end[2]
         while curr is not end:
@@ -105,11 +109,13 @@ class OrderedSet(MutableSet):
         """Delete the set."""
         self.clear()
 
-    def union(self, *sets: Union[Sequence[T], Set[T]]) -> "OrderedSet[T]":
-        """
-        Combines all unique items.
+    def union(self, *sets: Union[Sequence[T], Set[T]]):
+        """Combine all unique items.
+
         Each items order is defined by its first appearance.
+
         Example:
+        ________
             >>> oset = OrderedSet.union(OrderedSet([3, 1, 4, 1, 5]), [1, 3], [2, 0])
             >>> print(oset)
             OrderedSet([3, 1, 4, 5, 2, 0])
@@ -124,12 +130,14 @@ class OrderedSet(MutableSet):
         return cls(items)
 
     def add(self, key):
+        """Add the key to the set."""
         if key not in self.map:
             end = self.end
             curr = end[1]
             curr[2] = end[1] = self.map[key] = [key, curr, end]
 
     def discard(self, key):
+        """Delete the key from the set."""
         if key in self.map:        
             key, prev, next = self.map.pop(key)
             prev[2] = next
