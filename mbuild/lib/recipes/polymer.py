@@ -141,7 +141,7 @@ class Polymer(Compound):
 
         unique_seq_ids = sorted(set(sequence))
 
-        if len(monomers) != len(unique_seq_ids):
+        if len(self._monomers) != len(unique_seq_ids):
             raise ValueError(
                 "Number of monomers passed to `Polymer` class must match "
                 "number of unique entries in the specified sequence."
