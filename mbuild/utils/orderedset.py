@@ -26,7 +26,7 @@ class OrderedSet(MutableSet):
         return list(self._data)[value]
 
     def __iter__(self):
-        """Iterate through a copy."""
+        """Iterate through the set."""
         return iter(self._data)
 
     def __len__(self):
@@ -40,7 +40,3 @@ class OrderedSet(MutableSet):
     def discard(self, value):
         """Remove a value."""
         self._data.pop(value, None)
-
-    def index(self, value):
-        """Get the index of a value."""
-        return list(self._data).index(value)

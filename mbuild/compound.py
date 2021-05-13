@@ -240,10 +240,6 @@ class Compound(object):
             for subpart in part.successors():
                 yield subpart
 
-    def index(self, part):
-        """Get the index of the part."""
-        return self.children.index(part)
-
     @property
     def n_particles(self):
         """Return the number of Particles in the Compound.
