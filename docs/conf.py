@@ -13,7 +13,6 @@
 # serve to show the default.
 
 import os
-import pathlib
 import sys
 
 import mock
@@ -23,7 +22,11 @@ import mock
 # documentation root, use os.path.abspath to make it absolute, like shown here.
 
 MOCK_MODULES = [
+    "ele",
+    "ele.element",
+    "ele.exceptions",
     "numpy",
+    "numpy.linalg",
     "mdtraj",
     "mdtraj.core.element",
     "nglview",
@@ -34,7 +37,6 @@ MOCK_MODULES = [
     "scipy",
     "scipy.spatial",
     "scipy.constants",
-    "numpy.linalg",
 ]
 for mod_name in MOCK_MODULES:
     sys.modules[mod_name] = mock.Mock()
@@ -42,9 +44,6 @@ for mod_name in MOCK_MODULES:
 
 sys.path.insert(0, os.path.abspath(".."))
 # sys.path.insert(0, os.path.abspath('sphinxext'))
-
-base_path = pathlib.Path(__file__).parent
-os.system("python {} --name".format((base_path / "../setup.py").resolve()))
 
 # -- General configuration ------git ------------------------------------------
 
@@ -58,7 +57,7 @@ extensions = [
     "nbsphinx",
     "sphinx.ext.mathjax",
     "sphinx.ext.autodoc",
-    "sphinxcontrib.inkscapeconverter",
+    "sphinxcontrib.cairosvgconverter",
     "sphinx.ext.viewcode",
     "sphinx.ext.intersphinx",
     "sphinx.ext.autosummary",
@@ -68,10 +67,9 @@ extensions = [
 # nbsphinx specific configuration
 nbsphinx_execute = "never"
 nbsphinx_input_prompt = "%s"
-nbsphinx_prompt_width = 1.1
+nbsphinx_prompt_width = "1.1"
 html_scaled_image_link = False
 nbsphinx_allow_errors = False
-
 
 # Prolog: Displayed on top of the notebook
 
@@ -114,13 +112,13 @@ numpydoc_class_members_toctree = False
 numpydoc_show_class_members = False
 numpydoc_show_inherited_class_members = False
 
-_python_doc_base = "http://docs.python.org/3.7"
+_python_doc_base = "https://docs.python.org/3.7"
 
 intersphinx_mapping = {
     _python_doc_base: None,
-    "http://docs.scipy.org/doc/numpy": None,
-    "http://docs.scipy.org/doc/scipy/reference": None,
-    "http://scikit-learn.org/stable": None,
+    "https://docs.scipy.org/doc/numpy": None,
+    "https://docs.scipy.org/doc/scipy/reference": None,
+    "https://scikit-learn.org/stable": None,
 }
 
 # Add any paths that contain templates here, relative to this directory.
@@ -225,7 +223,7 @@ hhtml_theme_path = [sphinx_rtd_theme.get_html_theme_path()]
 # Add any paths that contain custom static files (such as style sheets) here,
 # relative to this directory. They are copied after the builtin static files,
 # so a file named "default.css" will overwrite the builtin "default.css".
-html_static_path = ["_static"]
+# html_static_path = ["_static"]
 
 # Add any extra paths that contain custom files (such as robots.txt or
 # .htaccess) here, relative to this directory. These files are copied

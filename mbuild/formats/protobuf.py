@@ -94,9 +94,11 @@ def _mb_to_proto(cmpd, proto):
     proto.pos.x, proto.pos.y, proto.pos.z = cmpd.pos
     proto.charge = cmpd.charge
     proto.id = id(cmpd)
-    proto.periodicity.x, proto.periodicity.y, proto.periodicity.z = (
-        cmpd.periodicity
-    )
+    (
+        proto.periodicity.x,
+        proto.periodicity.y,
+        proto.periodicity.z,
+    ) = cmpd.periodicity
     if cmpd.element:
         proto.element.name = cmpd.element.name
         proto.element.symbol = cmpd.element.symbol
