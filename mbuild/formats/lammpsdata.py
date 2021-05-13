@@ -800,7 +800,7 @@ def write_lammpsdata(
                             imp_dihedral_types[i],
                             improper[1],
                             improper[2],
-                            improper[0], # central atom, atom3.idx
+                            improper[0],  # central atom, atom3.idx
                             improper[3],
                         )
                     )
