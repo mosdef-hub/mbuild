@@ -23,8 +23,8 @@ LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE
 OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF
 ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 """
-from collections.abc import MutableSet
 import itertools as it
+from collections.abc import MutableSet
 from typing import (
     Any,
     Dict,
@@ -39,8 +39,10 @@ from typing import (
     Union,
     overload,
 )
+
 KEY, PREV, NEXT = range(3)
 T = TypeVar("T")
+
 
 class OrderedSet(MutableSet):
     """An ordered set object with additional convenience methods.
@@ -138,7 +140,7 @@ class OrderedSet(MutableSet):
 
     def discard(self, key):
         """Delete the key from the set."""
-        if key in self.map:        
+        if key in self.map:
             key, prev, next = self.map.pop(key)
             prev[2] = next
             next[1] = prev
