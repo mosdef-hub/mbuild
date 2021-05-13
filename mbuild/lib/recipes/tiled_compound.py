@@ -61,7 +61,7 @@ class TiledCompound(Compound):
 
         # Replicate and place periodic tiles.
         # -----------------------------------
-        for ijk in it.product([range(i) for i in n_tiles]):
+        for ijk in it.product(*[range(i) for i in n_tiles]):
             new_tile = clone(tile)
             new_tile.translate(np.array(ijk * tile.periodicity))
             self._add_tile(new_tile, ijk)
