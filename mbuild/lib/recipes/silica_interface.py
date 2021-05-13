@@ -134,7 +134,7 @@ class SilicaInterface(Compound):
 
     def _identify_surface_sites(self, thickness):
         """Label surface sites and add ports above them."""
-        for atom in self.particles():
+        for atom in list(self.particles()):
             if len(self.bond_graph.neighbors(atom)) == 1:
                 if atom.name == "O" and atom.pos[2] > thickness:
                     atom.name = "O_surface"

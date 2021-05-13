@@ -25,7 +25,7 @@ class AmorphousSilicaSurface(mb.Compound):
                 "add it! ".format(surface_roughness)
             )
         count = 0
-        for particle in self.particles():
+        for particle in list(self.particles()):
             if particle.name == "OB":
                 count += 1
                 port = mb.Port(
