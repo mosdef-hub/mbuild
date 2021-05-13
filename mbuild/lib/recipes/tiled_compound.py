@@ -47,7 +47,7 @@ class TiledCompound(Compound):
         self.periodicity = np.array(tile.periodicity * n_tiles)
 
         if all(n_tiles == 1):
-            self._add_tile(tile, [(0, 0, 0)])
+            self._add_tile(tile, (0, 0, 0))
             self._hoist_ports(tile)
             return  # Don't waste time copying and checking bonds.
 
