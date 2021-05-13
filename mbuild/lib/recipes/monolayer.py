@@ -1,3 +1,4 @@
+"""mBuild monolayer recipe."""
 from copy import deepcopy
 from warnings import warn
 
@@ -5,7 +6,7 @@ import numpy as np
 
 import mbuild as mb
 
-__all__ = ['Monolayer']
+__all__ = ["Monolayer"]
 
 
 class Monolayer(mb.Compound):
@@ -32,13 +33,24 @@ class Monolayer(mb.Compound):
 
     """
 
-    def __init__(self, surface, chains, fractions=None, backfill=None, pattern=None,
-                 tile_x=1, tile_y=1, **kwargs):
+    def __init__(
+        self,
+        surface,
+        chains,
+        fractions=None,
+        backfill=None,
+        pattern=None,
+        tile_x=1,
+        tile_y=1,
+        **kwargs
+    ):
         super(Monolayer, self).__init__()
 
         # Replicate the surface.
-        tiled_compound = mb.recipes.TiledCompound(surface, n_tiles=(tile_x, tile_y, 1))
-        self.add(tiled_compound, label='tiled_surface')
+        tiled_compound = mb.recipes.TiledCompound(
+            surface, n_tiles=(tile_x, tile_y, 1)
+        )
+        self.add(tiled_compound, label="tiled_surface")
 
         if pattern is None:  # Fill the surface.
             pattern = mb.Random2DPattern(len(tiled_compound.referenced_ports()))
@@ -49,8 +61,10 @@ class Monolayer(mb.Compound):
         if fractions:
             fractions = list(fractions)
             if len(chains) != len(fractions):
-                raise ValueError("Number of fractions does not match the number"
-                                 " of chain types provided")
+                raise ValueError(
+                    "Number of fractions does not match the number"
+                    " of chain types provided"
+                )
 
             n_chains = len(pattern.points)
 
@@ -62,18 +76,28 @@ class Monolayer(mb.Compound):
                 subpattern = deepcopy(pattern)
                 n_points = int(round(fraction * n_chains))
                 warn("\n Adding {} of chain {}".format(n_points, chain))
-                pick = np.random.choice(subpattern.points.shape[0], n_points,
-                                        replace=False)
+                pick = np.random.choice(
+                    subpattern.points.shape[0], n_points, replace=False
+                )
                 points = subpattern.points[pick]
                 subpattern.points = points
 
                 # Remove now-occupied points from overall pattern
-                pattern.points = np.array([point for point in pattern.points.tolist()
-                                           if point not in subpattern.points.tolist()])
+                pattern.points = np.array(
+                    [
+                        point
+                        for point in pattern.points.tolist()
+                        if point not in subpattern.points.tolist()
+                    ]
+                )
 
                 # Attach chains to the surface
                 attached_chains, _ = subpattern.apply_to_compound(
-                    guest=chain, host=self['tiled_surface'], backfill=None, **kwargs)
+                    guest=chain,
+                    host=self["tiled_surface"],
+                    backfill=None,
+                    **kwargs
+                )
                 self.add(attached_chains)
 
         else:
@@ -81,7 +105,11 @@ class Monolayer(mb.Compound):
 
         # Attach final chain type. Remaining sites get a backfill.
         warn("\n Adding {} of chain {}".format(len(pattern), chains[-1]))
-        attached_chains, backfills = pattern.apply_to_compound(guest=chains[-1],
-                         host=self['tiled_surface'], backfill=backfill, **kwargs)
+        attached_chains, backfills = pattern.apply_to_compound(
+            guest=chains[-1],
+            host=self["tiled_surface"],
+            backfill=backfill,
+            **kwargs
+        )
         self.add(attached_chains)
         self.add(backfills)

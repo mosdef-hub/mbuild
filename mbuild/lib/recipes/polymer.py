@@ -1,14 +1,14 @@
+"""Recipe for an mBuild polymer."""
 import itertools as it
 
 import numpy as np
 
-from mbuild.port import Port
+from mbuild import clone
 from mbuild.compound import Compound
 from mbuild.coordinate_transform import force_overlap
 from mbuild.lib.atoms import H
+from mbuild.port import Port
 from mbuild.utils.validation import assert_port_exists
-from mbuild import clone
-
 
 __all__ = ["Polymer"]
 
@@ -18,10 +18,10 @@ class Polymer(Compound):
 
     Attributes
     ----------
-    monomers : List of mbuild.Compounds
+    monomers : list of mbuild.Compounds
         The compound(s) to replicate. Add to this list using the add_monomers
         method.
-    end_groups : List of mbuild.Compounds
+    end_groups : list of mbuild.Compounds
         The compound to cap the end of the polymer. Add to this list using the
         add_end_groups method.
 
@@ -36,40 +36,44 @@ class Polymer(Compound):
     build(n, sequence)
         Use to create a single polymer compound. This method uses the compounds
         created by calling the add_monomer and add_end_group methods.
-    
+
     Notes
     -----
-    There are two different approaches to using the Polymer class to create polymers
+    There are two different approaches to using the Polymer class to create
+    polymers
 
-    1) Pass in already created mb.Compound instances to the monomers and
-    end_groups parameters when creating a Polymer instance:
+    1) Pass in already created Compound instances to the monomers and end_groups
+    parameters when creating a Polymer instance:
 
         You can then call the Polymer.build() method to create a polymer.
         This approach can be used if the compounds being passed into the Polymer
         instance already have the ports created, and correct atomic structure to
-        allow for the monomer-monomer and monomer-end group bonds. These compounds
-        are used as-is when creating the polymer chain.
+        allow for the monomer-monomer and monomer-end group bonds. These
+        compounds are used as-is when creating the polymer chain.
 
-        Example:
-        --------
-        chain = Polymer(monomers=[mb.Compound], end_groups = [mb.Compound, mb.Compound])
-        chain.build(n=5)
+        Example
+        -------
+        >>> chain = Polymer(
+        ...     monomers=[mb.Compound],
+        ...     end_groups = [mb.Compound, mb.Compound]
+        ... )
+        >>> chain.build(n=5)
 
     2) Use the add_monomer() and add_end_group() methods:
 
-        These functions are there to help with the creation of mb.Ports, which are
-        required by the build() method, and they help with the removal of any atoms
-        (hydrogens) that are occupying what should be the monomer-monomer and
-        monomer-end group bonding sites.  With this approach, create a Polymer()
-        instance, then call the add_monomer() and add_end_group() methodss before
-        calling the build() method.
+        These functions are there to help with the creation of mb.Ports, which
+        are required by the build() method, and they help with the removal of
+        any atoms (hydrogens) that are occupying what should be the monomer-
+        monomer and monomer-end group bonding sites.  With this approach, create
+        a Polymer() instance, then call the add_monomer() and add_end_group()
+        methods before calling the build() method.
 
         Example:
         --------
-        chain = Polymer()
-        chain.add_monomer(mb.Compound)
-        chain.add_end_groups(mb.Compound)
-        chain.build(n=5)
+        >>> chain = Polymer()
+        >>> chain.add_monomer(mb.Compound)
+        >>> chain.add_end_groups(mb.Compound)
+        >>> chain.build(n=5)
 
         Refer to the method specific doc strings to see the correct use.
     """
@@ -80,23 +84,31 @@ class Polymer(Compound):
         self._end_groups = end_groups or [None, None]
         if len(self._end_groups) != 2:
             raise ValueError(
-                "Please provide two end groups;"
-                f" you provided {len(self._end_groups)}"
+                "Please provide two end groups; "
+                f"you provided {len(self._end_groups)}"
             )
         self._port_labels = ["up", "down"]
         self._headtail = [None, None]
 
     @property
     def monomers(self):
+        """Get the monomers.
+
+        monomers cannot be set. Use add_monomer method instead.
+        """
         return self._monomers
 
     @property
     def end_groups(self):
+        """Get the end groups.
+
+        end_groups cannot be set. Use add_end_group method instead.
+        """
         return self._end_groups
 
     def build(self, n, sequence="A", add_hydrogens=True):
-        """
-        Connect one or more components in a specified sequence.
+        """Connect one or more components in a specified sequence.
+
         Uses the compounds that are stored in Polymer.monomers and
         Polymer.end_groups.
 
@@ -109,10 +121,9 @@ class Polymer(Compound):
             repetition of a monomer. Characters in `sequence` are assigned to
             monomers in the order they appear in `Polymer.monomers`.
             The characters in `sequence` are assigned to the compounds in the
-            in the order that they appear in the Polymer.monomers list. 
+            in the order that they appear in the Polymer.monomers list.
             For example, 'AB' where 'A'corresponds to the first compound
             added to Polymer.monomers and 'B' to the second compound.
-
         add_hydrogens : bool, default True
             If True and an end group compound is None, then the head or tail
             of the polymer will be capped off with hydrogen atoms. If end group
@@ -129,11 +140,11 @@ class Polymer(Compound):
                 assert_port_exists(label, monomer)
 
         unique_seq_ids = sorted(set(sequence))
-        if len(self._monomers) != len(unique_seq_ids):
+
+        if len(monomers) != len(unique_seq_ids):
             raise ValueError(
-                "Number of monomers passed to `Polymer` class must"
-                " match number of unique entries in the specified"
-                " sequence."
+                "Number of monomers passed to `Polymer` class must match "
+                "number of unique entries in the specified sequence."
             )
 
         # 'A': monomer_1, 'B': monomer_2....
@@ -181,16 +192,14 @@ class Polymer(Compound):
                     hydrogen = H()
                     # Defaut to 1/2 H-C bond len
                     head_tail[i].update_separation(0.0547)
-                    hydrogen['up'].update_separation(0.0547)
+                    hydrogen["up"].update_separation(0.0547)
                     self.add(hydrogen)
                     force_overlap(hydrogen, hydrogen["up"], head_tail[i])
                 else:
                     # if None, hoist port to polymer level
                     self.add(
-                            head_tail[i],
-                            self._port_labels[i],
-                            containment=False
-                            )
+                        head_tail[i], self._port_labels[i], containment=False
+                    )
 
         for port in self.all_ports():
             if port not in self.available_ports():
@@ -204,34 +213,35 @@ class Polymer(Compound):
         orientation=[None, None],
         replace=True,
     ):
-        """Add an mBuild compound to self.monomers which will be used to build
-        the polymer. Call this function for each unique monomer to be used in
-        the polymer.
+        """Add a Compound to self.monomers.
+
+        The monomers will be used to build the polymer. Call this function for
+        each unique monomer to be used in the polymer.
 
         Notes
         -----
         Using the 'replace' and 'indices' parameters:
 
-            The atoms in an mbuild compound can be identified by their index numbers.
-            
-            For example, an ethane compound with the index number next to each atom:
-            
+        The atoms in an mbuild compound can be identified by their index
+        numbers. For example, an ethane compound with the index number next to
+        each atom::
+
                     H(4)    H(7)
                      |      |
              H(3) - C(0) - C(1) - H(6)
-                     |      | 
+                     |      |
                     H(2)   H(5)
 
-            If replace=True, then this fucntion removes the hydrogen atoms that are
-            occupying where the C-C bond should occur between monomers. 
-            It is required that you specify which atoms should be removed which is
-            achieved by the `indices` parameter.
+        If replace=True, then this fucntion removes the hydrogen atoms that are
+        occupying where the C-C bond should occur between monomers.
+        It is required that you specify which atoms should be removed which is
+        achieved by the `indices` parameter.
 
-            In this example, you would remove H(2) and H(7) by indicating indices = [2, 7]
-            The resulting structure of the polymer can vary wildly depending on your choice
-            for `indices`, so you will have to test out different combinations to find
-            the two that result in the desired structure.
-        
+        In this example, you would remove H(2) and H(7) by indicating indices
+        [2, 7]. The resulting structure of the polymer can vary wildly depending
+        on your choice for `indices`, so you will have to test out different
+        combinations to find the two that result in the desired structure.
+
         Parameters
         ----------
         compound : mbuild.Compound
@@ -284,19 +294,20 @@ class Polymer(Compound):
         label="head",
         duplicate=True,
     ):
-        """Add an mBuild compound to self.end_groups which will be used to cap
-        the polymer. Call this function for each unique end group compound to
-        be used in the polymer, or call it once with duplicate=True if the head
-        and tail end groups are the same.
+        """Add an mBuild compound to self.end_groups.
+
+        End groups will be used to cap the polymer. Call this function for each
+        unique end group compound to be used in the polymer, or call it once
+        with duplicate=True if the head and tail end groups are the same.
 
         Notes
-        ----
-        Refer to the doc string notes of the add_monomer() function for an
+        -----
+        Refer to the docstring notes of the add_monomer() function for an
         explanation of the correct way to use the `replace` and `index`
         parameters.
-        
-        Parameters:
-        -----------
+
+        Parameters
+        ----------
         compound : mbuild.Compound
             A compound of the end group structure
         index : int
@@ -354,8 +365,9 @@ class Polymer(Compound):
 
 
 def _add_port(compound, label, idx, separation, orientation=None, replace=True):
-    """Add the ports to the compound at the specified particle index, either
-    using that particle as the anchor or replacing it entirely.
+    """Add the ports to the compound at the specified particle index.
+
+    The port will either use that particle as an anchor or replace it entirely.
     """
     if replace:
         atom_bonds = [b for b in compound.bonds() if compound[idx] in b][0]
@@ -368,7 +380,9 @@ def _add_port(compound, label, idx, separation, orientation=None, replace=True):
         anchor = compound[idx]
 
     port = Port(
-        anchor=anchor, orientation=orientation, separation=separation / 2,
+        anchor=anchor,
+        orientation=orientation,
+        separation=separation / 2,
     )
     compound.add(port, label=label)
     return separation

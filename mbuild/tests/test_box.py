@@ -1,11 +1,11 @@
-import pytest
 import numpy as np
+import pytest
+
 import mbuild as mb
 from mbuild.tests.base_test import BaseTest
 
 
 class TestBox(BaseTest):
-
     def test_init_lengths(self):
         box = mb.Box(lengths=np.ones(3))
         assert np.array_equal(box.lengths, np.ones(3))
@@ -23,7 +23,9 @@ class TestBox(BaseTest):
             mb.Box(maxs=[4, 4, 4])
 
     def test_init_angles(self):
-        box = mb.Box(mins=np.zeros(3), maxs=np.ones(3), angles=[40.0, 50.0, 60.0])
+        box = mb.Box(
+            mins=np.zeros(3), maxs=np.ones(3), angles=[40.0, 50.0, 60.0]
+        )
         assert np.array_equal(box.angles, [40.0, 50.0, 60.0])
 
     def test_dtype(self):
@@ -53,7 +55,7 @@ class TestBox(BaseTest):
         assert (box.maxs - box.mins == 2 * np.ones(3)).all()
 
     def test_angles_setter(self):
-        box = mb.Box(mins=np.zeros(3), maxs=np.ones(3), angles=90*np.ones(3))
+        box = mb.Box(mins=np.zeros(3), maxs=np.ones(3), angles=90 * np.ones(3))
         box.angles = np.array([60.0, 120.0, 60.0])
         assert (box.angles == np.array([60.0, 120.0, 60.0])).all()
 
@@ -74,9 +76,9 @@ class TestBox(BaseTest):
         assert (box.angles == np.array([90, 90, 120])).all()
 
     def test_single_dimension_setter(self):
-        box = mb.Box(mins=np.zeros(3), maxs=4*np.ones(3))
-        assert (box.lengths == 4*np.ones(3)).all()
-        
+        box = mb.Box(mins=np.zeros(3), maxs=4 * np.ones(3))
+        assert (box.lengths == 4 * np.ones(3)).all()
+
         box.maxs[0] = 5
         box.mins[2] = 1
         assert np.allclose(box.mins, np.array([0, 0, 1], dtype=float))
@@ -101,15 +103,15 @@ class TestBox(BaseTest):
     def test_sanity_checks(self):
         # Initialization step
         with pytest.raises(AssertionError):
-            box = mb.Box(mins=[3,3,3], maxs=[1,1,1])
+            box = mb.Box(mins=[3, 3, 3], maxs=[1, 1, 1])
         with pytest.raises(AssertionError):
             box = mb.Box(lengths=-1)
-        
+
         # Modifying step
-        box = mb.Box(mins=[2,2,2], maxs=[4,4,4])
+        box = mb.Box(mins=[2, 2, 2], maxs=[4, 4, 4])
         with pytest.raises(AssertionError):
             box.mins[1] = box.maxs[1] + 1
-        with pytest.raises(AssertionError): 
+        with pytest.raises(AssertionError):
             box.maxs[1] = box.mins[1] - 1
         with pytest.raises(AssertionError):
             box.lengths = -1
@@ -117,14 +119,18 @@ class TestBox(BaseTest):
     def test_compound_without_box(self, ethane):
         # Set coordinates to trigger the case where `box.mins`
         # coordinates can be less than [0, 0, 0]
-        ethane.xyz = np.array([[0.31079999, 0.0653, -0.85259998],
-                   [0.459, 0.0674, -0.8132],
-                   [0.281, -0.0349, -0.8761],
-                   [0.251, 0.1015, -0.7710],
-                   [0.295, 0.1278, -0.9380],
-                   [0.474, 0.0049, -0.7277],
-                   [0.518, 0.0312, -0.8946],
-                   [0.488, 0.1676, -0.7896]])
+        ethane.xyz = np.array(
+            [
+                [0.31079999, 0.0653, -0.85259998],
+                [0.459, 0.0674, -0.8132],
+                [0.281, -0.0349, -0.8761],
+                [0.251, 0.1015, -0.7710],
+                [0.295, 0.1278, -0.9380],
+                [0.474, 0.0049, -0.7277],
+                [0.518, 0.0312, -0.8946],
+                [0.488, 0.1676, -0.7896],
+            ]
+        )
         # Set periodicity
         ethane.periodicity = np.array([0.767, 0.703, 0.710])
         # Convert compound to pmd.structure to set Box info
