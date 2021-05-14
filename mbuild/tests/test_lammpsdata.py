@@ -107,7 +107,9 @@ class TestLammpsData(BaseTest):
         ff = Forcefield(forcefield_files=[get_fn("gaff_test.xml")])
         structure = ff.apply(cmpd)
 
-        write_lammpsdata(structure, "amber.lammps", zero_dihedral_weighting_factor=True)
+        write_lammpsdata(
+            structure, "amber.lammps", zero_dihedral_weighting_factor=True
+        )
         out_lammps = open("amber.lammps", "r").readlines()
         found_angles = False
         found_dihedrals = False
