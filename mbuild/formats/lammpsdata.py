@@ -41,7 +41,7 @@ def write_lammpsdata(
     use_urey_bradleys=False,
     use_rb_torsions=True,
     use_dihedrals=False,
-    borrowed_charmm=False,
+    zero_dihedral_weighting_factor=False,
 ):
     """Output a LAMMPS data file.
 
@@ -82,7 +82,7 @@ def write_lammpsdata(
     use_dihedrals:
         If True, will treat dihedrals as CHARMM-style dihedrals while looking
         for `structure.dihedrals`
-    borrowed_charmm:
+    zero_dihedral_weighting_factor:
         If True, will set weighting parameter to zero in CHARMM-style dihedrals.
         This should be True if the CHARMM dihedral style is used in non-CHARMM forcefields.
 
@@ -306,7 +306,7 @@ def write_lammpsdata(
             use_rb_torsions,
             use_dihedrals,
             epsilon_conversion_factor,
-            borrowed_charmm,
+            zero_dihedral_weighting_factor,
         )
 
     if impropers:
@@ -792,8 +792,10 @@ def write_lammpsdata(
             elif imp_dihedrals:
                 data.write("\nImpropers\n\n")
                 for i, improper in enumerate(imp_dihedrals):
-                    # The atoms were stored central-atom first so non-central atoms could be sorted
-                    # The atoms are written central-atom third in LAMMPS data file
+                    # The atoms were stored central-atom first so non-central atoms could be sorted.
+                    # The atoms are written central-atom third in LAMMPS data file.
+                    # This is correct for AMBER impropers even though
+                    # LAMMPS documentation implies central-atom-first.
                     data.write(
                         "{:d}\t{:d}\t{:d}\t{:d}\t{:d}\t{:d}\n".format(
                             i + 1,
@@ -945,7 +947,7 @@ def _get_dihedral_types(
     use_rb_torsions,
     use_dihedrals,
     epsilon_conversion_factor,
-    borrowed_charmm,
+    zero_dihedral_weighting_factor,
 ):
     lj_unit = 1 / epsilon_conversion_factor
     if use_rb_torsions:
@@ -999,7 +1001,7 @@ def _get_dihedral_types(
         structure.join_dihedrals()
         for dihedral in structure.dihedrals:
             if not dihedral.improper:
-                if borrowed_charmm:
+                if zero_dihedral_weighting_factor:
                     weight = 0.0
                 else:
                     weight = 1.0 / len(dihedral.type)
