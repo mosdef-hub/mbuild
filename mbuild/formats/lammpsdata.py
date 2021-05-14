@@ -259,19 +259,12 @@ def write_lammpsdata(
         [i.atom1.idx + 1, i.atom2.idx + 1, i.atom3.idx + 1, i.atom4.idx + 1]
         for i in structure.impropers
     ]
-    # Atoms are reordered central-atom first in imp_dihedrals to
-    # allow sorting of non-central atoms.
-    # Atoms will be reordered central-atom third when written to LAMMPS data file.
     imp_dihedrals = [
-        [d.atom3.idx + 1, d.atom1.idx + 1, d.atom2.idx + 1, d.atom4.idx + 1]
+        [d.atom1.idx + 1, d.atom2.idx + 1, d.atom3.idx + 1, d.atom4.idx + 1]
         for d in structure.dihedrals
         if d.improper
     ]
 
-    for i, imp in enumerate(imp_dihedrals):
-        imp_dihedrals[i][1:] = sorted(
-            imp[1:], key=lambda x: structure.atoms[x - 1].type
-        )
 
     if impropers and imp_dihedrals:
         raise ValueError("Use of multiple improper styles is not supported")
@@ -792,7 +785,6 @@ def write_lammpsdata(
             elif imp_dihedrals:
                 data.write("\nImpropers\n\n")
                 for i, improper in enumerate(imp_dihedrals):
-                    # The atoms were stored central-atom first so non-central atoms could be sorted.
                     # The atoms are written central-atom third in LAMMPS data file.
                     # This is correct for AMBER impropers even though
                     # LAMMPS documentation implies central-atom-first.
@@ -800,9 +792,9 @@ def write_lammpsdata(
                         "{:d}\t{:d}\t{:d}\t{:d}\t{:d}\t{:d}\n".format(
                             i + 1,
                             imp_dihedral_types[i],
+                            improper[0],
                             improper[1],
                             improper[2],
-                            improper[0],  # central atom, atom3.idx
                             improper[3],
                         )
                     )
