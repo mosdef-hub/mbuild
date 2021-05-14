@@ -13,7 +13,6 @@ import ele
 import numpy as np
 from ele.element import Element, element_from_name, element_from_symbol
 from ele.exceptions import ElementError
-from oset import oset as OrderedSet
 
 from mbuild import conversion
 from mbuild.bond_graph import BondGraph
@@ -24,6 +23,7 @@ from mbuild.periodic_kdtree import PeriodicCKDTree
 from mbuild.utils.exceptions import RemovedFuncError
 from mbuild.utils.io import import_, run_from_ipython
 from mbuild.utils.jsutils import overwrite_nglview_default
+from mbuild.utils.orderedset import OrderedSet
 
 
 def clone(existing_compound, clone_of=None, root_container=None):
@@ -841,7 +841,6 @@ class Compound(object):
         -------
         list of mb.Compound
             A list of all Ports referenced by this Compound and its successors
-
         """
         from mbuild.port import Port
 

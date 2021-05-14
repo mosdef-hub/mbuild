@@ -5,13 +5,13 @@ from collections.abc import MutableSet
 class OrderedSet(MutableSet):
     """An ordered set object with additional convenience methods.
 
+    Taken from code suggested by Vyas in
     https://github.com/mosdef-hub/mbuild/issues/865
 
     Methods
     -------
     add
     discard
-    index
     """
 
     def __init__(self, *args):
@@ -26,8 +26,8 @@ class OrderedSet(MutableSet):
         return list(self._data)[value]
 
     def __iter__(self):
-        """Iterate through a copy."""
-        return iter(list(self._data))
+        """Iterate through the set."""
+        return iter(self._data)
 
     def __len__(self):
         """Return the length."""
@@ -40,7 +40,3 @@ class OrderedSet(MutableSet):
     def discard(self, value):
         """Remove a value."""
         self._data.pop(value, None)
-
-    def index(self, value):
-        """Get the index of a value."""
-        return list(self._data).index(value)
