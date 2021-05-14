@@ -265,7 +265,6 @@ def write_lammpsdata(
         if d.improper
     ]
 
-
     if impropers and imp_dihedrals:
         raise ValueError("Use of multiple improper styles is not supported")
 
