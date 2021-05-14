@@ -2,14 +2,12 @@ import numpy as np
 import pytest
 
 import mbuild as mb
-from mbuild.formats.vasp import write_poscar, read_poscar
+from mbuild.formats.vasp import read_poscar, write_poscar
 from mbuild.tests.base_test import BaseTest
 
 
 class TestVasp(BaseTest):
-    """
-    Unit tests for Vasp POSCAR writer
-    """
+    """Unit tests for Vasp POSCAR writer"""
 
     @pytest.fixture(autouse=True)
     def initdir(self, tmpdir):
@@ -39,10 +37,7 @@ class TestVasp(BaseTest):
         assert lattice_constant == 0.4123
 
     def test_bravais(self, copper_cell):
-        """
-        Test that a compound with no set box (bounding box only)
-        has a lattice that is zeros off-diagonal
-        """
+        """Test that compound with no box has a lattice that is diagonal."""
         write_poscar(copper_cell, "test.poscar")
         with open("test.poscar", "r") as f:
             lines = f.readlines()

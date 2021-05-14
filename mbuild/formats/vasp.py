@@ -1,11 +1,12 @@
-from itertools import chain
+"""VASP POSCAR format."""
 import warnings
+from itertools import chain
 
 import ele
-import mbuild as mb
 import numpy as np
-from numpy.linalg import norm, inv
+from numpy.linalg import inv, norm
 
+import mbuild as mb
 
 __all__ = ["write_poscar", "read_poscar"]
 
@@ -13,9 +14,9 @@ __all__ = ["write_poscar", "read_poscar"]
 def write_poscar(
     compound, filename, lattice_constant=1.0, coord_style="cartesian"
 ):
-    """
-    Outputs VASP POSCAR files.  See //https://www.vasp.at for
-    more information.
+    """Write a VASP POSCAR file from a Compound.
+
+    See //https://www.vasp.at formore information.
 
     Parameters
     ----------
@@ -81,22 +82,20 @@ def write_poscar(
 
 
 def read_poscar(filename, conversion=0.1):
-    """
-    Reads in a VASP POSCAR or CONTCAR file and returns an mbuild Compound.
+    """Read a VASP POSCAR or CONTCAR file into a Compound.
 
     Parameters
     ----------
     filename : str
-        path to the POSCAR file
+        Path to the POSCAR file
     conversion : float
-        conversion factor multiplied to coordinates when converting between
+        Conversion factor multiplied to coordinates when converting between
         VASP units (angstroms) and mbuild units (nm) (default = 0.1)
 
     Returns
     -------
     mbuild.Compound
     """
-
     comp = mb.Compound()
 
     with open(filename, "r") as f:
@@ -173,9 +172,7 @@ def read_poscar(filename, conversion=0.1):
 
 
 def _box_to_lattice(box):
-    """
-    http://gisaxs.com/index.php/Unit_cell
-    """
+    """See http://gisaxs.com/index.php/Unit_cell for more info."""
     lengths = box.maxs - box.mins
     alpha, beta, gamma = [np.deg2rad(a) for a in box.angles]
 
