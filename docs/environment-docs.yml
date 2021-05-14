@@ -1,0 +1,16 @@
+name: mbuild-docs
+channels:
+  - conda-forge
+dependencies:
+  - ipykernel
+  - ipywidgets
+  - mock
+  - nbsphinx
+  - numpydoc
+  - pip
+  - sphinx
+  - sphinx_rtd_theme
+  - widgetsnbextension
+  - pip:
+    - sphinxcontrib-svg2pdfconverter[CairoSVG]
+    - cairosvg

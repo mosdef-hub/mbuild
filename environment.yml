@@ -4,7 +4,7 @@ channels:
 dependencies:
   - ele
   - numpy
-  - openbabel>=3.0.0
+  - rdkit
   - oset
   - packmol>=18
   - parmed>=3.4.0

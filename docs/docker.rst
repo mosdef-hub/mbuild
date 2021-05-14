@@ -10,11 +10,10 @@ etc). This section is a how-to guide for using mBuild with docker.
 Prerequisites
 -------------
 A docker installation on your machine. This
-`link <https://docs.docker.com/get-docker/>`_ has instructions to get
-a docker installation running on your machine. If you are not familiar
-with docker, the Internet is full of good tutorials like the ones
-`here <https://docker-curriculum.com/>`_ and
-`here <https://www.youtube.com/watch?v=zJ6WbK9zFpI&feature=youtu.be>`_.
+`Docker installation documentation <https://docs.docker.com/get-docker/>`_ has instructions to get docker running on your machine.
+If you are not familiar with docker, the Internet is full of good tutorials like these from
+`Docker curriculum <https://docker-curriculum.com/>`_ and
+`YouTube <https://www.youtube.com/watch?v=zJ6WbK9zFpI&feature=youtu.be>`_.
 
 Jupyter Quick Start
 -------------------
@@ -35,7 +34,7 @@ as usual. The docker container will exit upon notebook shutdown.
 .. warning::
 
     Containers by nature are ephemeral, so filesystem changes (e.g., adding
-    a new notebook) only persist until the end of the container's lifecycle.
+    a new notebook) only persists until the end of the container's lifecycle.
     If the container is removed, any changes or code additions will not persist.
     See the section below for persistent data.
 
@@ -55,7 +54,7 @@ on your local machine or you wish to save files generated in the container,
 you can mount user volumes in the container. User volumes will provide a way
 to persist filesystem changes made to a container regardless of the container
 lifecycle. For example, you might want to create a directory called
-``mbuild-notebooks`` on your local system, which will store all of your mBuild 
+``mbuild-notebooks`` on your local system, which will store all of your mBuild
 notebooks/code. In order to make that accessible from within the container
 (where the notebooks will be created/edited), use the following steps:
 
@@ -127,7 +126,7 @@ for most recent stable release of mBuild.
 
 Cleaning Up
 -----------
-You can remove the *container* by using the following command. 
+You can remove the *container* by using the following command.
 
 .. code-block:: bash
 
@@ -146,5 +145,4 @@ top of this page for more information.
     You do not need to name the container `mbuild` as shown in the above
     examples (``--name mbuild``). Docker will give each container a name
     automatically. To see all the containers on your machine, run
-    ``docker ps -a``. 
-
+    ``docker ps -a``.
