@@ -56,7 +56,7 @@ class Compound(object):
     Compound is the superclass of all composite building blocks in the mBuild
     hierarchy. That is, all composite building blocks must inherit from
     compound, either directly or indirectly. The design of Compound follows the
-    Composite design pattern:
+    Composite design pattern::
 
         @book{DesignPatterns,
             author = "Gamma, Erich and Helm, Richard and Johnson, Ralph and
@@ -1452,14 +1452,14 @@ class Compound(object):
     def energy_minimize(self, forcefield="UFF", steps=1000, **kwargs):
         """Perform an energy minimization on a Compound.
 
-        Default behavior utilizes Open Babel (http://openbabel.org/docs/dev/)
-        to perform an energy minimization/geometry optimization on a
-        Compound by applying a generic force field
+        Default behavior utilizes `Open Babel <http://openbabel.org/docs/dev/>`_
+        to perform an energy minimization/geometry optimization on a Compound by
+        applying a generic force field
 
-        Can also utilize OpenMM (http://openmm.org/) to energy minimize
-        after atomtyping a Compound using
-        Foyer (https://github.com/mosdef-hub/foyer) to apply a forcefield
-        XML file that contains valid SMARTS strings.
+        Can also utilize `OpenMM <http://openmm.org/>`_ to energy minimize after
+        atomtyping a Compound using
+        `Foyer <https://github.com/mosdef-hub/foyer>`_ to apply a forcefield XML
+        file that contains valid SMARTS strings.
 
         This function is primarily intended to be used on smaller components,
         with sizes on the order of 10's to 100's of particles, as the energy
@@ -1472,21 +1472,21 @@ class Compound(object):
         forcefield : str, optional, default='UFF'
             The generic force field to apply to the Compound for minimization.
             Valid options are 'MMFF94', 'MMFF94s', ''UFF', 'GAFF', 'Ghemical'.
-            Please refer to the Open Babel documentation (http://open-babel.
-            readthedocs.io/en/latest/Forcefields/Overview.html) when considering
-            your choice of force field.
+            Please refer to the `Open Babel documentation
+            <http://open-babel.readthedocs.io/en/latest/Forcefields/Overview.html>`_
+            when considering your choice of force field.
             Utilizing OpenMM for energy minimization requires a forcefield
-            XML file with valid SMARTS strings. Please refer to (http://docs.
-            openmm.org/7.0.0/userguide/application.html#creating-force-fields)
+            XML file with valid SMARTS strings. Please refer to `OpenMM docs
+            <http://docs.openmm.org/7.0.0/userguide/application.html#creating-force-fields>`_
             for more information.
 
 
-        Keyword Arguments
-        ------------
+        Other Parameters
+        ----------------
         algorithm : str, optional, default='cg'
-            The energy minimization algorithm.  Valid options are 'steep',
-            'cg', and 'md', corresponding to steepest descent, conjugate
-            gradient, and equilibrium molecular dynamics respectively.
+            The energy minimization algorithm.  Valid options are 'steep', 'cg',
+            and 'md', corresponding to steepest descent, conjugate gradient, and
+            equilibrium molecular dynamics respectively.
             For _energy_minimize_openbabel
         scale_bonds : float, optional, default=1
             Scales the bond force constant (1 is completely on).
@@ -1505,58 +1505,69 @@ class Compound(object):
         References
         ----------
         If using _energy_minimize_openmm(), please cite:
-        .. [1] P. Eastman, M. S. Friedrichs, J. D. Chodera, R. J. Radmer,
-               C. M. Bruns, J. P. Ku, K. A. Beauchamp, T. J. Lane,
-               L.-P. Wang, D. Shukla, T. Tye, M. Houston, T. Stich,
-               C. Klein, M. R. Shirts, and V. S. Pande.
-               "OpenMM 4: A Reusable, Extensible, Hardware Independent
-               Library for High Performance Molecular Simulation."
-               J. Chem. Theor. Comput. 9(1): 461-469. (2013).
+
+        .. [Eastman2013] P. Eastman, M. S. Friedrichs, J. D. Chodera,
+           R. J. Radmer, C. M. Bruns, J. P. Ku, K. A. Beauchamp, T. J. Lane,
+           L.-P. Wang, D. Shukla, T. Tye, M. Houston, T. Stich, C. Klein,
+           M. R. Shirts, and V. S. Pande. "OpenMM 4: A Reusable, Extensible,
+           Hardware Independent Library for High Performance Molecular
+           Simulation." J. Chem. Theor. Comput. 9(1): 461-469. (2013).
 
         If using _energy_minimize_openbabel(), please cite:
-        .. [1] O'Boyle, N.M.; Banck, M.; James, C.A.; Morley, C.;
-               Vandermeersch, T.; Hutchison, G.R. "Open Babel: An open
-               chemical toolbox." (2011) J. Cheminf. 3, 33
 
-        .. [2] Open Babel, version X.X.X http://openbabel.org, (installed
-               Month Year)
+        .. [OBoyle2011] O'Boyle, N.M.; Banck, M.; James, C.A.; Morley, C.;
+           Vandermeersch, T.; Hutchison, G.R. "Open Babel: An open chemical
+           toolbox." (2011) J. Cheminf. 3, 33
+
+        .. [OpenBabel] Open Babel, version X.X.X http://openbabel.org,
+           (installed Month Year)
 
         If using the 'MMFF94' force field please also cite the following:
-        .. [3] T.A. Halgren, "Merck molecular force field. I. Basis, form,
-               scope, parameterization, and performance of MMFF94." (1996)
-               J. Comput. Chem. 17, 490-519
-        .. [4] T.A. Halgren, "Merck molecular force field. II. MMFF94 van der
-               Waals and electrostatic parameters for intermolecular
-               interactions." (1996) J. Comput. Chem. 17, 520-552
-        .. [5] T.A. Halgren, "Merck molecular force field. III. Molecular
-               geometries and vibrational frequencies for MMFF94." (1996)
-               J. Comput. Chem. 17, 553-586
-        .. [6] T.A. Halgren and R.B. Nachbar, "Merck molecular force field.
-               IV. Conformational energies and geometries for MMFF94." (1996)
-               J. Comput. Chem. 17, 587-615
-        .. [7] T.A. Halgren, "Merck molecular force field. V. Extension of
-               MMFF94 using experimental data, additional computational data,
-               and empirical rules." (1996) J. Comput. Chem. 17, 616-641
+
+        .. [Halgren1996a] T.A. Halgren, "Merck molecular force field. I. Basis,
+           form, scope, parameterization, and performance of MMFF94." (1996)
+           J. Comput. Chem. 17, 490-519
+
+        .. [Halgren1996b] T.A. Halgren, "Merck molecular force field. II. MMFF94
+           van der Waals and electrostatic parameters for intermolecular
+           interactions." (1996) J. Comput. Chem. 17, 520-552
+
+        .. [Halgren1996c] T.A. Halgren, "Merck molecular force field. III.
+           Molecular geometries and vibrational frequencies for MMFF94." (1996)
+           J. Comput. Chem. 17, 553-586
+
+        .. [Halgren1996d] T.A. Halgren and R.B. Nachbar, "Merck molecular force
+           field. IV. Conformational energies and geometries for MMFF94." (1996)
+           J. Comput. Chem. 17, 587-615
+
+        .. [Halgren1996e] T.A. Halgren, "Merck molecular force field. V.
+           Extension of MMFF94 using experimental data, additional computational
+           data, and empirical rules." (1996) J. Comput. Chem. 17, 616-641
 
         If using the 'MMFF94s' force field please cite the above along with:
-        .. [8] T.A. Halgren, "MMFF VI. MMFF94s option for energy minimization
-               studies." (1999) J. Comput. Chem. 20, 720-729
+
+        .. [Halgren1999] T.A. Halgren, "MMFF VI. MMFF94s option for energy minimization
+           studies." (1999) J. Comput. Chem. 20, 720-729
 
         If using the 'UFF' force field please cite the following:
-        .. [3] Rappe, A.K., Casewit, C.J., Colwell, K.S., Goddard, W.A. III,
-               Skiff, W.M. "UFF, a full periodic table force field for
-               molecular mechanics and molecular dynamics simulations." (1992)
-               J. Am. Chem. Soc. 114, 10024-10039
+
+        .. [Rappe1992] Rappe, A.K., Casewit, C.J., Colwell, K.S., Goddard, W.A.
+           III, Skiff, W.M. "UFF, a full periodic table force field for
+           molecular mechanics and molecular dynamics simulations." (1992)
+           J. Am. Chem. Soc. 114, 10024-10039
 
         If using the 'GAFF' force field please cite the following:
-        .. [3] Wang, J., Wolf, R.M., Caldwell, J.W., Kollman, P.A., Case, D.A.
-               "Development and testing of a general AMBER force field" (2004)
-               J. Comput. Chem. 25, 1157-1174
+
+        .. [Wang2004] Wang, J., Wolf, R.M., Caldwell, J.W., Kollman, P.A.,
+           Case, D.A. "Development and testing of a general AMBER force field"
+           (2004) J. Comput. Chem. 25, 1157-1174
 
         If using the 'Ghemical' force field please cite the following:
-        .. [3] T. Hassinen and M. Perakyla, "New energy terms for reduced
-               protein models implemented in an off-lattice force field" (2001)
-               J. Comput. Chem. 22, 1229-1242
+
+        .. [Hassinen2001] T. Hassinen and M. Perakyla, "New energy terms for
+           reduced protein models implemented in an off-lattice force field"
+           (2001) J. Comput. Chem. 22, 1229-1242
+
         """
         tmp_dir = tempfile.mkdtemp()
         original = clone(self)
@@ -1609,8 +1620,8 @@ class Compound(object):
             Forcefield files to load
         forcefield_name : str, optional, default=None
             Apply a named forcefield to the output file using the `foyer`
-            package, e.g. 'oplsaa'. Forcefields listed here:
-            https://github.com/mosdef-hub/foyer/tree/master/foyer/forcefields
+            package, e.g. 'oplsaa'. `Foyer forcefields`
+            <https://github.com/mosdef-hub/foyer/tree/master/foyer/forcefields>_
         steps : int, optional, default=1000
             Number of energy minimization iterations
         scale_bonds : float, optional, default=1
@@ -1622,7 +1633,6 @@ class Compound(object):
         scale_nonbonded : float, optional, default=1
             Scales epsilon (1 is completely on)
 
-
         Notes
         -----
         Assumes a particular organization for the force groups
@@ -1630,13 +1640,7 @@ class Compound(object):
 
         References
         ----------
-        .. [1] P. Eastman, M. S. Friedrichs, J. D. Chodera, R. J. Radmer,
-               C. M. Bruns, J. P. Ku, K. A. Beauchamp, T. J. Lane,
-               L.-P. Wang, D. Shukla, T. Tye, M. Houston, T. Stich,
-               C. Klein, M. R. Shirts, and V. S. Pande.
-               "OpenMM 4: A Reusable, Extensible, Hardware Independent
-               Library for High Performance Molecular Simulation."
-               J. Chem. Theor. Comput. 9(1): 461-469. (2013).
+        [Eastman2013]_
         """
         foyer = import_("foyer")
 
@@ -1768,48 +1772,27 @@ class Compound(object):
 
         References
         ----------
-        .. [1] O'Boyle, N.M.; Banck, M.; James, C.A.; Morley, C.;
-               Vandermeersch, T.; Hutchison, G.R. "Open Babel: An open
-               chemical toolbox." (2011) J. Cheminf. 3, 33
-        .. [2] Open Babel, version X.X.X http://openbabel.org, (installed
-               Month Year)
+        [OBoyle2011]_
+        [OpenBabel]_
 
         If using the 'MMFF94' force field please also cite the following:
-        .. [3] T.A. Halgren, "Merck molecular force field. I. Basis, form,
-               scope, parameterization, and performance of MMFF94." (1996)
-               J. Comput. Chem. 17, 490-519
-        .. [4] T.A. Halgren, "Merck molecular force field. II. MMFF94 van der
-               Waals and electrostatic parameters for intermolecular
-               interactions." (1996) J. Comput. Chem. 17, 520-552
-        .. [5] T.A. Halgren, "Merck molecular force field. III. Molecular
-               geometries and vibrational frequencies for MMFF94." (1996)
-               J. Comput. Chem. 17, 553-586
-        .. [6] T.A. Halgren and R.B. Nachbar, "Merck molecular force field.
-               IV. Conformational energies and geometries for MMFF94." (1996)
-               J. Comput. Chem. 17, 587-615
-        .. [7] T.A. Halgren, "Merck molecular force field. V. Extension of
-               MMFF94 using experimental data, additional computational data,
-               and empirical rules." (1996) J. Comput. Chem. 17, 616-641
+        [Halgren1996a]_
+        [Halgren1996b]_
+        [Halgren1996c]_
+        [Halgren1996d]_
+        [Halgren1996e]_
 
         If using the 'MMFF94s' force field please cite the above along with:
-        .. [8] T.A. Halgren, "MMFF VI. MMFF94s option for energy minimization
-               studies." (1999) J. Comput. Chem. 20, 720-729
+        [Halgren1999]_
 
         If using the 'UFF' force field please cite the following:
-        .. [3] Rappe, A.K., Casewit, C.J., Colwell, K.S., Goddard, W.A. III,
-               Skiff, W.M. "UFF, a full periodic table force field for
-               molecular mechanics and molecular dynamics simulations." (1992)
-               J. Am. Chem. Soc. 114, 10024-10039
+        [Rappe1992]_
 
         If using the 'GAFF' force field please cite the following:
-        .. [3] Wang, J., Wolf, R.M., Caldwell, J.W., Kollman, P.A., Case, D.A.
-               "Development and testing of a general AMBER force field" (2004)
-               J. Comput. Chem. 25, 1157-1174
+        [Wang2001]_
 
         If using the 'Ghemical' force field please cite the following:
-        .. [3] T. Hassinen and M. Perakyla, "New energy terms for reduced
-               protein models implemented in an off-lattice force field" (2001)
-               J. Comput. Chem. 22, 1229-1242
+        [Hassinen2001]_
         """
         openbabel = import_("openbabel")
         for particle in self.particles():
@@ -1892,8 +1875,8 @@ class Compound(object):
             by the `foyer` package.
         forcefield_name : str, optional, default=None
             Apply a named forcefield to the output file using the `foyer`
-            package, e.g. 'oplsaa'. Forcefields listed here:
-            https://github.com/mosdef-hub/foyer/tree/master/foyer/forcefields
+            package, e.g. 'oplsaa'. `Foyer forcefields
+            <https://github.com/mosdef-hub/foyer/tree/master/foyer/forcefields>`_
         forcefield_debug : bool, optional, default=False
             Choose verbosity level when applying a forcefield through `foyer`.
             Specifically, when missing atom types in the forcefield xml file,
@@ -1914,12 +1897,11 @@ class Compound(object):
             and geometric combining rules respectively.
         foyer_kwargs : dict, optional, default=None
             Keyword arguments to provide to `foyer.Forcefield.apply`.
-        **kwargs
             Depending on the file extension these will be passed to either
             `write_gsd`, `write_hoomdxml`, `write_lammpsdata`,
             `write_mcf`, or `parmed.Structure.save`.
-            See https://parmed.github.io/ParmEd/html/structobj/
-                parmed.structure.Structure.html#parmed.structure.Structure.save
+            See `parmed structure documentation
+            <https://parmed.github.io/ParmEd/html/structobj/parmed.structure.Structure.html#parmed.structure.Structure.save>`_
 
         Other Parameters
         ----------------
@@ -1936,20 +1918,21 @@ class Compound(object):
             Defines the style of atoms to be saved in a LAMMPS data file. The
             following atom styles are currently supported:
             'full', 'atomic', 'charge', 'molecular'
-            See http://lammps.sandia.gov/doc/atom_style.html for more
-            information on atom styles.
+            See `LAMMPS atom style documentation
+            <https://lammps.sandia.gov/doc/atom_style.html>`_ for more
+            information.
         unit_style: str, default='real'
             Defines to unit style to be save in a LAMMPS data file.  Defaults
             to 'real' units. Current styles are supported: 'real', 'lj'. See
-            https://lammps.sandia.gov/doc/99/units.html for more information
-            on unit styles
+            `LAMMPS unit style documentation_
+            <https://lammps.sandia.gov/doc/units.html>`_ for more information.
 
         Notes
         -----
         When saving the compound as a json, only the following arguments are
         used:
-            - filename
-            - show_ports
+        * filename
+        * show_ports
 
         See Also
         --------
