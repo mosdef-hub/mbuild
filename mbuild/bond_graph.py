@@ -150,7 +150,7 @@ class BondGraph(object):
         adj = self._adj
         for node, neighbors in graph._adj.items():
             if self.has_node(node):
-                adj[node].add(neighbor) for neighbor in neighbors:
+                (adj[node].add(neighbor) for neighbor in neighbors)
             elif neighbors:
                 adj[node] = neighbors
 
