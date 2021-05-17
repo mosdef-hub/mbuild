@@ -9,10 +9,34 @@ from mbuild.utils.exceptions import RemovedFuncError
 from mbuild.utils.geometry import wrap_coords
 from mbuild.utils.io import get_fn, import_, run_from_ipython
 from mbuild.utils.jsutils import overwrite_nglview_default
+from mbuild.utils.orderedset import OrderedSet
 from mbuild.utils.validation import assert_port_exists
 
 
 class TestUtils(BaseTest):
+    def test_orderedset(self):
+        oset_empty = OrderedSet()
+
+        assert isinstance(oset_empty, OrderedSet)
+        assert len(oset_empty) == 0
+
+        oset = OrderedSet("heck", 0, 1)
+
+        assert isinstance(oset, OrderedSet)
+        assert len(oset) == 3
+        assert "heck" in oset
+        assert oset[1] == 0
+
+        oset.add("this")
+
+        assert "this" in oset
+
+        oset.discard("heck")
+
+        assert "heck" not in oset
+
+        assert [i for i in oset] == [0, 1, "this"]
+
     def test_assert_port_exists(self, ch2):
         assert_port_exists("up", ch2)
         with pytest.raises(ValueError):
