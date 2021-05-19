@@ -12,6 +12,9 @@ class OrderedSet(MutableSet):
     -------
     add
     discard
+    union
+    intersection
+    difference
     """
 
     def __init__(self, *args):
@@ -22,7 +25,7 @@ class OrderedSet(MutableSet):
         return key in self._data
 
     def __getitem__(self, value):
-        """Get an item at index `value`"""
+        """Get an item at index `value`."""
         return list(self._data)[value]
 
     def __iter__(self):
@@ -40,3 +43,15 @@ class OrderedSet(MutableSet):
     def discard(self, value):
         """Remove a value."""
         self._data.pop(value, None)
+
+    def union(self, iterable):
+        """Return the union of this set and an iterable."""
+        return set(self._data) | set(iterable)
+
+    def intersection(self, iterable):
+        """Return the intersection of this set and an iterable."""
+        return set(self._data) & set(iterable)
+
+    def difference(self, iterable):
+        """Return the difference of this set and an iterable."""
+        return set(self._data) - set(iterable)
