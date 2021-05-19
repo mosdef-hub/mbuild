@@ -50,6 +50,10 @@ class OrderedSet(MutableSet):
         """Remove a value."""
         self._data.pop(value, None)
 
+    def remove(self, value):
+        """Remove a value. Alias for discard."""
+        self.discard(value)
+
     def union(self, iterable):
         """Return the union of this set and an iterable."""
         new = OrderedSet()
