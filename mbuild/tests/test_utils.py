@@ -37,6 +37,28 @@ class TestUtils(BaseTest):
 
         assert [i for i in oset] == [0, 1, "this"]
 
+    def test_orderedset_setmethods(self):
+        oset = OrderedSet(1, 2, 3, 4)
+        oset2 = OrderedSet(2, 4, 6, 8)
+
+        union = oset.union(oset2)
+        union2 = oset2.union(oset)
+
+        assert union == union2
+        assert union == set([1, 2, 3, 4, 6, 8])
+
+        inter = oset.intersection(oset2)
+        inter2 = oset2.intersection(oset)
+
+        assert inter == inter2
+        assert inter == set([2, 4])
+
+        diff = oset.difference(oset2)
+        diff2 = oset2.difference(oset)
+
+        assert diff == set([1, 3])
+        assert diff2 == set([6, 8])
+
     def test_assert_port_exists(self, ch2):
         assert_port_exists("up", ch2)
         with pytest.raises(ValueError):
