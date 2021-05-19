@@ -53,8 +53,7 @@ class OrderedSet(MutableSet):
     def union(self, iterable):
         """Return the union of this set and an iterable."""
         new = OrderedSet()
-        data = {**{i: None for i in self._data},
-                **{i: None for i in iterable}}
+        data = {**{i: None for i in self._data}, **{i: None for i in iterable}}
         new._data = data
         return new
 
