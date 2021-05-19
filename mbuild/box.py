@@ -138,7 +138,7 @@ class Box(object):
             (xy, xz, yz) = tilt_factors
 
         vecs = np.asarray(
-            [Lx, 0.0, 0.0], [Ly * xy, Ly, 0.0], [Lz * xz, Lz * yz, Lz]
+            [[Lx, 0.0, 0.0], [Ly * xy, Ly, 0.0], [Lz * xz, Lz * yz, Lz]]
         )
         (alpha, beta, gamma) = _calc_angles(vecs)
         return cls(
@@ -152,12 +152,15 @@ class Box(object):
         (xhi, yhi, zhi) = hi
         (xy, xz, yz) = tilt_factors
 
-        box_vectors = np.asarray(
-            [xhi - xlo, 0.0, 0.0], [xy, yhi - ylo, 0.0], [xz, yz, zhi - zlo]
-        )
-        _validate_box_vectors(box_vectors)
+        xlo_bound = xlo + min([0.0, xy, xz, xy + xz])
+        xhi_bound = xhi + max([0.0, xy, xz, xy + xz])
+        ylo_bound = ylo + min([0.0, yz])
+        yhi_bound = yhi + max([0.0, yz])
 
-        return cls.from_vectors(vectors=box_vectors, precision=precision)
+        lengths = [xhi_bound - xlo_bound, yhi_bound - ylo_bound, zhi - zlo]
+        return cls.from_lengths_tilt_factors(
+            lengths=lengths, tilt_factors=tilt_factors
+        )
 
     @property
     def vectors(self):
@@ -203,6 +206,11 @@ class Box(object):
     def yz(self):
         """Tilt factor yz of the box."""
         return round(self._yz, self.precision)
+
+    @property
+    def tilt_factors(self):
+        """Return the 3 tilt_factors (xy, xz, yz) of the box."""
+        return self.xy, self.xz, self.yz
 
     @property
     def angles(self):
@@ -261,23 +269,26 @@ class Box(object):
 
     def _from_vecs_to_lengths_tilt_factors(self):
         # vectors should already be aligned by _normalize_box
-        v1 = self._vectors[0, :]
-        v2 = self._vectors[1, :]
-        v3 = self._vectors[2, :]
+        v = np.zeros((3, 3))
+        v[0, :] = self._vectors[0, :]
+        v[1, :] = self._vectors[1, :]
+        v[2, :] = self._vectors[2, :]
 
-        Lx = np.linalg.norm(v1)
-        Ly = np.linalg.norm(v2)
-        Lz = np.linalg.norm(v3)
+        Lx = np.sqrt(np.dot(v[0], v[0]))
+        a2x = np.dot(v[0], v[1]) / Lx
+        Ly = np.sqrt(np.dot(v[1], v[1]) - a2x * a2x)
+        xy = a2x / Ly
+        v0xv1 = np.cross(v[0], v[1])
+        v0xv1mag = np.sqrt(np.dot(v0xv1, v0xv1))
+        Lz = np.dot(v[2], v0xv1) / v0xv1mag
+        a3x = np.dot(v[0], v[2]) / Lx
+        xz = a3x / Lz
+        yz = (np.dot(v[1], v[2]) - a2x * a3x) / (Ly * Lz)
 
-        v1_dot_v2 = np.dot(v1, v2)
-        v1_dot_v3 = np.dot(v1, v3)
-        v2_dot_v3 = np.dot(v2, v3)
-
-        xy = v1_dot_v2 / (Lx * Ly)
-        xz = v1_dot_v3 / (Lx * Lz)
-        yz = (v2_dot_v3 - ((v1_dot_v2 / Lx) * (v1_dot_v3 / Lx))) / (Ly * Lz)
-
-        return Lx, Ly, Lz, xy, xz, yz
+        len_x = np.sqrt(np.dot(v[0], v[0]))
+        len_y = np.sqrt(np.dot(v[1], v[1]))
+        len_z = np.sqrt(np.dot(v[2], v[2]))
+        return len_x, len_y, len_z, xy, xz, yz
 
     def _get_angles(self):
         return _calc_angles(self.vectors)
@@ -310,19 +321,23 @@ def _validate_box_vectors(box_vectors):
 def _lengths_angles_to_vectors(lengths, angles, precision):
     (a, b, c) = lengths
     (alpha, beta, gamma) = np.deg2rad(angles)
+    cos_a = np.clip(np.cos(alpha), -1.0, 1.0)
+    cos_b = np.clip(np.cos(beta), -1.0, 1.0)
+    cos_g = np.clip(np.cos(gamma), -1.0, 1.0)
 
+    sin_a = np.clip(np.sin(alpha), -1.0, 1.0)
+    sin_b = np.clip(np.sin(beta), -1.0, 1.0)
+    sin_g = np.clip(np.sin(gamma), -1.0, 1.0)
     a_vec = np.asarray([a, 0.0, 0.0])
 
-    b_x = b * np.cos(gamma)
-    b_y = b * np.sin(gamma)
+    b_x = b * cos_g
+    b_y = b * sin_g
     b_vec = np.asarray([b_x, b_y, 0.0])
 
-    c_x = c * np.cos(beta)
-    c_cos_y_term = (np.cos(alpha) - (np.cos(beta) * np.cos(gamma))) / np.sin(
-        gamma
-    )
+    c_x = c * cos_b
+    c_cos_y_term = (cos_a - (cos_b * cos_g)) / sin_g
     c_y = c * c_cos_y_term
-    c_z = c * np.sqrt(1 - np.square(np.cos(beta)) - np.square(c_cos_y_term))
+    c_z = c * np.sqrt(1 - np.square(cos_b) - np.square(c_cos_y_term))
     c_vec = np.asarray([c_x, c_y, c_z])
     box_vectors = np.asarray((a_vec, b_vec, c_vec))
     box_vectors.reshape(3, 3)
@@ -400,6 +415,10 @@ def _calc_angles(vectors):
     attribute box_vectors, rounded to 'precision' number of decimal points.
     """
     vector_magnitudes = np.linalg.norm(vectors, axis=1)
+    v = np.zeros((3, 3))
+    v[0, :] = vectors[0, :]
+    v[1, :] = vectors[1, :]
+    v[2, :] = vectors[2, :]
 
     a_dot_b = np.dot(vectors[0], vectors[1])
     b_dot_c = np.dot(vectors[1], vectors[2])
