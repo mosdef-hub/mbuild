@@ -22,7 +22,7 @@ class OrderedSet(MutableSet):
         return key in self._data
 
     def __getitem__(self, value):
-        """Get an item."""
+        """Get an item at index `value`"""
         return list(self._data)[value]
 
     def __iter__(self):
