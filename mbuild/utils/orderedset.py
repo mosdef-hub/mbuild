@@ -18,7 +18,7 @@ class OrderedSet(MutableSet):
         self._data = {value: None for value in args}
 
     def __contains__(self, key):
-        """Determine whether the set contains a key."""
+        """Determine whether the element `key` is in the set."""
         return key in self._data
 
     def __getitem__(self, value):
