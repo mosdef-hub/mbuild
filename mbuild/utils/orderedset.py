@@ -59,7 +59,10 @@ class OrderedSet(MutableSet):
 
     def intersection(self, iterable):
         """Return the intersection of this set and an iterable."""
-        return OrderedSet(*[i for i in self if i in iterable])
+        new = OrderedSet()
+        data = {i: None for i in self._data if i in iterable}
+        new._data = data
+        return new
 
     def difference(self, iterable):
         """Return the difference of this set and an iterable."""
