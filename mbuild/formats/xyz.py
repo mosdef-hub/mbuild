@@ -89,7 +89,7 @@ def read_xyz(filename, compound=None):
     return compound
 
 
-def write_xyz(structure, filename, write_atomtypes=False):
+def write_xyz(structure, filename, write_atomnames=False):
     """Output an XYZ file.
 
     Parameters
@@ -98,7 +98,7 @@ def write_xyz(structure, filename, write_atomtypes=False):
         ParmEd structure object
     filename : str
         Path of the output file
-    write_atomtypes : bool
+    write_atomnames : bool
         Write the `atom.name` attribute of the parmed structure
         to the first column of the xyz file rather than the element
 
@@ -114,7 +114,7 @@ def write_xyz(structure, filename, write_atomtypes=False):
         raise ValueError("Expected a ParmEd structure, got an mbuild.Compound")
 
     xyz = np.array([[atom.xx, atom.xy, atom.xz] for atom in structure.atoms])
-    if write_atomtypes:
+    if write_atomnames:
         names = [atom.name for atom in structure.atoms]
     else:
         names = [atom.element_name for atom in structure.atoms]

@@ -55,7 +55,7 @@ class TestXYZ(BaseTest):
 
     def test_write_atomtypes(self):
         tip3p_water = mb.load(get_fn("tip3p_water.xyz"))
-        tip3p_water.save(filename="test.xyz", write_atomtypes=True)
+        tip3p_water.save(filename="test.xyz", write_atomnames=True)
         lines = []
         with open("test.xyz") as f:
             for line in f:
