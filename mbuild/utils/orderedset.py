@@ -1,5 +1,6 @@
 """Ordered set module."""
 from collections.abc import MutableSet
+from copy import deepcopy
 
 
 class OrderedSet(MutableSet):
@@ -19,6 +20,11 @@ class OrderedSet(MutableSet):
 
     def __init__(self, *args):
         self._data = {value: None for value in args}
+
+    def __repr__(self):
+        """Return the OrderedSet representation."""
+        data = ", ".join([str(i) for i in self._data])
+        return f"{self.__class__.__name__}({data})"
 
     def __contains__(self, key):
         """Determine whether the element `key` is in the set."""
@@ -46,12 +52,15 @@ class OrderedSet(MutableSet):
 
     def union(self, iterable):
         """Return the union of this set and an iterable."""
-        return set(self._data) | set(iterable)
+        newone = deepcopy(self)
+        for i in iterable:
+            newone.add(i)
+        return newone
 
     def intersection(self, iterable):
         """Return the intersection of this set and an iterable."""
-        return set(self._data) & set(iterable)
+        return OrderedSet(*[i for i in self if i in iterable])
 
     def difference(self, iterable):
         """Return the difference of this set and an iterable."""
-        return set(self._data) - set(iterable)
+        return OrderedSet(*[i for i in self if i not in iterable])
