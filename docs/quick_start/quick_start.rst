@@ -12,13 +12,13 @@ The `MoSDeF <https://mosdef.org>`_ software is comprised the following packages:
 
 **Note**: **foyer** and **GMSO** are used together with **mBuild** to create all the required files to conduct the simulations.
 
-In the following examples, a few different types of simulation boxes are constructed using the **MoSDeF** software.
+In the following examples, a few different types of simulation boxes are constructed using the **MoSDeF** software.  
 
 
-Molecular simulations are comprised of many molecules contained in a
-box (NPT and NVT ensembles), or boxes (GEMC and GCMC ensembles).
+Molecular simulations are comprised of many molecules contained in a 
+box (NPT and NVT ensembles), or boxes (GEMC and GCMC ensembles).  
 The **mBuild** software allows for easy generation of the simulation
-box or boxes utilizing only a few lines of python code.
+box or boxes utilizing only a few lines of python code. 
 
 .. only:: html
     The following tutorials are available either as html or interactive jupyter notebooks.
@@ -28,5 +28,6 @@ box or boxes utilizing only a few lines of python code.
 
    load_files
    fill_box_example
-   Box_example
+   Box_example	
    polymer_example
+

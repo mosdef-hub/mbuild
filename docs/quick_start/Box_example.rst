@@ -12,7 +12,7 @@ Import the required mbuild package.
 Orthogonal Box
 ------------------------
 
-Build an empty orthogonal **mBuild** Box (i.e., the angle in degrees are 𝛼 = 90, 𝛽 = 90, 𝛾 = 90) measuring 4.0 nm in all the x, y, and z-dimensions. Note: if the angles are not specified, the system will default to an orthogonal box (i.e., the angle in degrees are 𝛼 = 90, 𝛽 = 90, 𝛾 = 90).
+Build an empty orthogonal **mBuild** Box (i.e., the angle in degrees are 𝛼 = 90, 𝛽 = 90, 𝛾 = 90) measuring 4.0 nm in all the x, y, and z-dimensions. Note: if the angles are not specified, the system will default to an orthogonal box (i.e., the angle in degrees are 𝛼 = 90, 𝛽 = 90, 𝛾 = 90). 
 
 .. code:: ipython3
 

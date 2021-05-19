@@ -24,7 +24,7 @@ Load the "pentane.mol2" file from its directory.
 CIF files
 ------------------------
 
-Build an mbuild.Compound (i.e., the "ETV_triclinic" variable) by loading a `Crystallographic Information File (CIF) <https://www.iucr.org/resources/cif>`_ file and selecting the number of cell units to use in the x, y, and z-dimensions.
+Build an mbuild.Compound (i.e., the "ETV_triclinic" variable) by loading a `Crystallographic Information File (CIF) <https://www.iucr.org/resources/cif>`_ file and selecting the number of cell units to use in the x, y, and z-dimensions.  
 
 
 Import the required mbuild packages.
@@ -43,3 +43,4 @@ The `CIF <https://www.iucr.org/resources/cif>`_ file is loaded with the load_cif
     lattice_cif_ETV_triclinic = load_cif("path_to_cif_file/ETV_triclinic.cif")
     ETV_triclinic = lattice_cif_ETV_triclinic.populate(x=3, y=3, z=3)
     ETV_triclinic.name = 'ETV'
+

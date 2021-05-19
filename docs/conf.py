@@ -28,12 +28,15 @@ MOCK_MODULES = ['numpy',
                 'nglview',
                 'oset',
                 'parmed',
+                'parmed.utils',
+                'parmed.utils.io',
                 'parmed.parameters',
                 'parmed.periodic_table',
                 'scipy',
                 'scipy.spatial',
                 'scipy.constants',
-                'numpy.linalg']
+                'numpy.linalg',
+                'gsd.fl',]
 for mod_name in MOCK_MODULES:
     sys.modules[mod_name] = mock.Mock()
 
