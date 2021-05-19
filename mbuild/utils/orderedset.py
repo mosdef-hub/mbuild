@@ -52,10 +52,11 @@ class OrderedSet(MutableSet):
 
     def union(self, iterable):
         """Return the union of this set and an iterable."""
-        newone = deepcopy(self)
-        for i in iterable:
-            newone.add(i)
-        return newone
+        new = OrderedSet()
+        data = {**{i: None for i in self._data},
+                **{i: None for i in iterable}}
+        new._data = data
+        return new
 
     def intersection(self, iterable):
         """Return the intersection of this set and an iterable."""
