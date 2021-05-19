@@ -23,7 +23,7 @@ class OrderedSet(MutableSet):
 
     def __repr__(self):
         """Return the OrderedSet representation."""
-        data = ", ".join([str(i) for i in self._data])
+        data = ", ".join(str(i) for i in self._data)
         return f"{self.__class__.__name__}({data})"
 
     def __contains__(self, key):
