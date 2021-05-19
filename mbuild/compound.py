@@ -1175,8 +1175,8 @@ class Compound(object):
         mb.Box
             The bounding box for this Compound.
 
-        NOTE
-        ----
+        Notes
+        -----
         Triclinic bounding boxes are supported, but only for Compounds
         that are generated from mb.Lattice's and the resulting
         mb.Lattice.populate method
