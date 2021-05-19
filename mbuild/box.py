@@ -241,7 +241,7 @@ class Box(object):
 
         Based on the box vectors, return the parameters to describe the box in
         terms of the Bravais lattice parameters:
-        
+
             a,b,c = the edges of the Box
             alpha, beta, gamma = angles(tilt) of the parallelepiped, in degrees
 
