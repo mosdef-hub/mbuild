@@ -1,6 +1,5 @@
 """Ordered set module."""
 from collections.abc import MutableSet
-from copy import deepcopy
 
 
 class OrderedSet(MutableSet):
