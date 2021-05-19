@@ -32,7 +32,7 @@ class OrderedSet(MutableSet):
 
     def __getitem__(self, value):
         """Get an item at index `value`."""
-        return self._list[value]
+        return list(self._data)[value]
 
     def __iter__(self):
         """Iterate through the set."""
@@ -42,21 +42,12 @@ class OrderedSet(MutableSet):
         """Return the length."""
         return len(self._data)
 
-    @property
-    def _list(self):
-        try:
-            return self._cached_list
-        except AttributeError:
-            self._cached_list = list(self._data)
-
     def add(self, value):
         """Add a value."""
-        self.__dict__.pop("_cached_list", None)
         self._data[value] = None
 
     def discard(self, value):
         """Remove a value."""
-        self.__dict__.pop("_cached_list", None)
         self._data.pop(value, None)
 
     def remove(self, value):
