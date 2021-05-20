@@ -1492,3 +1492,22 @@ class TestCompound(BaseTest):
         mol = mb.load("COC", smiles=True, backend=backend)
         for particle in mol.particles():
             assert particle.element is not None
+
+    @pytest.mark.skipif(not has_foyer, reason="Foyer is not installed")
+    def test_xyz_setter(self):
+        # Test taken from issue 829
+        import foyer
+
+        # Build a CG hexane with mBuild
+        ethane = mb.Compound()
+        C1 = mb.Compound(name="_CH3")
+        C2 = mb.Compound(name="_CH3")
+
+        ethane.add([C1, C2])
+        ethane.add_bond([C1, C2])
+
+        # This causes a failure on the ff.apply line
+        ethane.xyz = [[0.1, 0, 0], [0.2, 0, 0]]
+        ff = foyer.forcefields.load_TRAPPE_UA()
+        # This fails prior to applying PR # 892
+        ff.apply(ethane)

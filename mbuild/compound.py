@@ -1105,6 +1105,7 @@ class Compound(object):
         arrnx3 : np.ndarray, shape=(n,3), dtype=float
             The new particle positions
         """
+        arrnx3 = np.array(arrnx3)
         if not self.children:
             if not arrnx3.shape[0] == 1:
                 raise ValueError(
