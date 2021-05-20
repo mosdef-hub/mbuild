@@ -19,4 +19,3 @@ dependencies:
     - cairosvg
 sphinx:
   fail_on_warning: false
-
