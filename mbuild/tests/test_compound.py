@@ -1551,7 +1551,7 @@ class TestCompound(BaseTest):
             Compound(periodicity=[True, True])
         with pytest.raises(TypeError):
             Compound(periodicity=[1, 2, 3])
-            
+
     @pytest.mark.skipif(not has_foyer, reason="Foyer is not installed")
     def test_xyz_setter(self):
         # Test taken from issue 829
