@@ -71,33 +71,21 @@ class Alkane(mb.Compound):
 
         # Handle general case of n >= 3
         else:
+            end_groups = [None, None]
             # Adjust length of Polmyer for absence of methyl terminations.
-            if not cap_front:
-                n += 1
-            if not cap_end:
-                n += 1
-            chain = mb.recipes.Polymer(
-                CH2(), n=n - 2, port_labels=("up", "down")
-            )
-            self.add(chain, "chain")
             if cap_front:
-                self.add(CH3(), "methyl_front")
-                mb.force_overlap(
-                    move_this=self["chain"],
-                    from_positions=self["chain"]["up"],
-                    to_positions=self["methyl_front"]["up"],
-                )
-            else:
-                # Hoist port label to Alkane level.
-                self.add(chain["up"], "up", containment=False)
-
+                n -= 1
+                end_groups[0] = CH3()
             if cap_end:
-                self.add(CH3(), "methyl_end")
-                mb.force_overlap(
-                    self["methyl_end"],
-                    self["methyl_end"]["up"],
-                    self["chain"]["down"],
-                )
-            else:
+                n -= 1
+                end_groups[1] = CH3()
+
+            chain = mb.recipes.Polymer(monomers=[CH2()], end_groups=end_groups)
+            chain.build(n, add_hydrogens=False)
+            self.add(chain, "chain")
+            if not cap_front:
                 # Hoist port label to Alkane level.
-                self.add(chain["down"], "down", containment=False)
+                self.add(self["chain"]["up"], "up", containment=False)
+            if not cap_end:
+                # Hoist port label to Alkane level.
+                self.add(self["chain"]["down"], "down", containment=False)
