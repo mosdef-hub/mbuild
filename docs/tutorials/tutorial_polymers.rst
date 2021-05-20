@@ -20,29 +20,29 @@ distance units are nm in mBuild.
 .. code:: ipython3
 
     import mbuild as mb
-    
+
     class CH2(mb.Compound):
         def __init__(self):
             super(CH2, self).__init__()
-            # Add carbon        
+            # Add carbon
             self.add(mb.Particle(name='C', pos=[0,0,0]), label='C[$]')
-            
-            # Add hydrogens 
-            self.add(mb.Particle(name='H', pos=[-0.109, 0, 0.0]), label='HC[$]')    
+
+            # Add hydrogens
+            self.add(mb.Particle(name='H', pos=[-0.109, 0, 0.0]), label='HC[$]')
             self.add(mb.Particle(name='H', pos=[0.109, 0, 0.0]), label='HC[$]')
-            
+
             # Add bonds between the atoms
             self.add_bond((self['C'][0], self['HC'][0]))
             self.add_bond((self['C'][0], self['HC'][1]))
-            
+
             # Add ports anchored to the carbon
             self.add(mb.Port(anchor=self[0]), label='up')
             self.add(mb.Port(anchor=self[0]), label='down')
-            
+
             # Move the ports approximately half a C-C bond length away from the carbon
-            self['up'].translate([0, -0.154/2, 0]) 
-            self['down'].translate([0, 0.154/2, 0]) 
-    
+            self['up'].translate([0, -0.154/2, 0])
+            self['down'].translate([0, 0.154/2, 0])
+
     monomer = CH2()
     monomer.visualize(show_ports=True)
 
@@ -64,37 +64,37 @@ orientation.
 
     import numpy as np
     import mbuild as mb
-    
+
     class CH2(mb.Compound):
         def __init__(self):
             super(CH2, self).__init__()
             # Add carbon
             self.add(mb.Particle(name='C', pos=[0,0,0]), label='C[$]')
-            
-            # Add hydrogens 
-            self.add(mb.Particle(name='H', pos=[-0.109, 0, 0.0]), label='HC[$]')    
+
+            # Add hydrogens
+            self.add(mb.Particle(name='H', pos=[-0.109, 0, 0.0]), label='HC[$]')
             self.add(mb.Particle(name='H', pos=[0.109, 0, 0.0]), label='HC[$]')
-            
+
             # Rotate the hydrogens
             theta = 0.5 * (180 - 109.5) * np.pi / 180
             #mb.rotate(self['HC'][0], theta, around=[0, 1, 0])
             #mb.rotate(self['HC'][1], -theta, around=[0, 1, 0])
             self['HC'][0].rotate( theta, around=[0, 1, 0])
             self['HC'][1].rotate(-theta, around=[0, 1, 0])
-            
+
             # Add bonds between the atoms
             self.add_bond((self['C'][0], self['HC'][0]))
             self.add_bond((self['C'][0], self['HC'][1]))
-            
+
             # Add the ports and appropriately rotate them
             self.add(mb.Port(anchor=self[0]), label='up')
-            self['up'].translate([0, -0.154/2, 0]) 
+            self['up'].translate([0, -0.154/2, 0])
             self['up'].rotate(theta, around=[1, 0, 0])
-            
+
             self.add(mb.Port(anchor=self[0]), label='down')
-            self['down'].translate([0, 0.154/2, 0]) 
-            self['down'].rotate(-theta, around=[1, 0, 0]) 
-    
+            self['down'].translate([0, 0.154/2, 0])
+            self['down'].rotate(-theta, around=[1, 0, 0])
+
     monomer = CH2()
     monomer.visualize(show_ports=True)
 
@@ -117,12 +117,12 @@ make a copy. The ``force_overlap()`` function is used to connect the
             self.add(last_monomer)
             for i in range(3):
                 current_monomer = CH2()
-                mb.force_overlap(move_this=current_monomer, 
-                                 from_positions=current_monomer['up'], 
+                mb.force_overlap(move_this=current_monomer,
+                                 from_positions=current_monomer['up'],
                                  to_positions=last_monomer['down'])
                 self.add(current_monomer)
                 last_monomer = current_monomer
-    
+
     polymer = AlkanePolymer()
     polymer.visualize(show_ports=True)
 
@@ -139,35 +139,35 @@ the class is instantiated.
 
     import numpy as np
     import mbuild as mb
-    
+
     class CH2(mb.Compound):
         def __init__(self):
             super(CH2, self).__init__()
              # Add carbons and hydrogens
             self.add(mb.Particle(name='C', pos=[0,0,0]), label='C[$]')
-            self.add(mb.Particle(name='H', pos=[-0.109, 0, 0.0]), label='HC[$]')    
+            self.add(mb.Particle(name='H', pos=[-0.109, 0, 0.0]), label='HC[$]')
             self.add(mb.Particle(name='H', pos=[0.109, 0, 0.0]), label='HC[$]')
-      
+
             # rotate hydrogens
             theta = 0.5 * (180 - 109.5) * np.pi / 180
             self['HC'][0].rotate(theta, around=[0, 1, 0])
             self['HC'][1].rotate(-theta, around=[0, 1, 0])
-            
+
             # Add bonds between the atoms
             self.add_bond((self['C'][0], self['HC'][0]))
             self.add_bond((self['C'][0], self['HC'][1]))
-            
+
             # Add ports
             self.add(mb.Port(anchor=self[0]), label='up')
-            self['up'].translate([0, -0.154/2, 0]) 
+            self['up'].translate([0, -0.154/2, 0])
             self['up'].rotate(theta, around=[1, 0, 0])
-            
+
             self.add(mb.Port(anchor=self[0]), label='down')
             self['down'].translate([0, 0.154/2, 0])
             self['down'].rotate(np.pi, [0, 1, 0])
-            self['down'].rotate(-theta, around=[1, 0, 0]) 
-    
-    
+            self['down'].rotate(-theta, around=[1, 0, 0])
+
+
     class AlkanePolymer(mb.Compound):
         def __init__(self, chain_length=1):
             super(AlkanePolymer, self).__init__()
@@ -175,9 +175,9 @@ the class is instantiated.
             self.add(last_monomer)
             for i in range (chain_length-1):
                 current_monomer = CH2()
-        
-                mb.force_overlap(move_this=current_monomer, 
-                                 from_positions=current_monomer['up'], 
+
+                mb.force_overlap(move_this=current_monomer,
+                                 from_positions=current_monomer['up'],
                                  to_positions=last_monomer['down'])
                 self.add(current_monomer)
                 last_monomer=current_monomer
@@ -212,26 +212,26 @@ patterns, to which the polymers can be shifted.
 
     # create the polymer
     polymer = mb.lib.recipes.Polymer(CH2(), 10, port_labels=('up', 'down'))
-    
+
     # the pattern we generate puts points in the xy-plane, so we'll rotate the polymer
     # so that it is oriented normal to the xy-plane
     polymer.rotate(np.pi/2, [1, 0, 0])
-    
+
     # define a compound to hold all the polymers
     system = mb.Compound()
-    
+
     # create a pattern of points to fill a disk
-    # patterns are generated between 0 and 1, 
+    # patterns are generated between 0 and 1,
     # and thus need to be scaled to provide appropriate spacing
     pattern_disk = mb.DiskPattern(50)
-    pattern_disk.scale(5) 
-    
+    pattern_disk.scale(5)
+
     # now clone the polymer and move it to the points in the pattern
     for pos in pattern_disk:
         current_polymer = mb.clone(polymer)
         current_polymer.translate(pos)
         system.add(current_polymer)
-        
+
     system.visualize()
 
 Other patterns can be used, e.g., the ``Grid3DPattern``. We can also use
@@ -240,21 +240,21 @@ the rotation commands to randomize the orientation.
 .. code:: ipython3
 
     import random
-    
+
     polymer = mb.lib.recipes.Polymer(CH2(), 10, port_labels=('up', 'down'))
     system = mb.Compound()
     polymer.rotate(np.pi/2, [1, 0, 0])
-    
+
     pattern_disk = mb.Grid3DPattern(5, 5, 5)
     pattern_disk.scale(8.0)
-        
+
     for pos in pattern_disk:
         current_polymer = mb.clone(polymer)
         for around in [(1, 0, 0), (0, 1, 0), (0, 0, 1)]:  # rotate around x, y, and z
             current_polymer.rotate(random.uniform(0, np.pi), around)
         current_polymer.translate(pos)
         system.add(current_polymer)
-    
+
     system.visualize()
 
 ``mBuild`` also provides an interface to ``PACKMOL``, allowing the
@@ -263,7 +263,7 @@ creation of a randomized configuration.
 .. code:: ipython3
 
     polymer = mb.lib.recipes.Polymer(CH2(), 5, port_labels=('up', 'down'))
-    system = mb.fill_box(polymer, n_compounds=100, overlap=1.5, box=[10,10,10]) 
+    system = mb.fill_box(polymer, n_compounds=100, overlap=1.5, box=[10,10,10])
     system.visualize()
 
 Variations
@@ -283,9 +283,9 @@ include routines to exclude such overlaps.
 .. code:: ipython3
 
     import mbuild as mb
-    
+
     import random
-    
+
     class AlkanePolymer(mb.Compound):
         def __init__(self, chain_length=1, delta=0):
             super(AlkanePolymer, self).__init__()
@@ -298,12 +298,11 @@ include routines to exclude such overlaps.
                 current_monomer = mb.clone(monomer_proto)
                 current_monomer['down'].rotate(random.uniform(-delta,delta), [1, 0, 0])
                 current_monomer['down'].rotate(random.uniform(-delta,delta), [0, 1, 0])
-                mb.force_overlap(move_this=current_monomer, 
-                                 from_positions=current_monomer['up'], 
+                mb.force_overlap(move_this=current_monomer,
+                                 from_positions=current_monomer['up'],
                                  to_positions=last_monomer['down'])
                 self.add(current_monomer)
                 last_monomer=current_monomer
-    
+
     polymer = AlkanePolymer(chain_length = 200, delta=0.4)
     polymer.visualize()
-

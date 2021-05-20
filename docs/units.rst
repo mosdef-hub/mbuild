@@ -2,7 +2,7 @@
 Units
 =====
 
-mBuild automatically performs unit conversions in its reader and writer functions. 
+mBuild automatically performs unit conversions in its reader and writer functions.
 When working with an :py:class:`mbuild.Compound`, mBuild uses the following units:
 
 +----------+----------+
