@@ -22,5 +22,3 @@ Hoomdsnapshot
 
 	.. autoexception:: mbuild.formats.hoomd_snapshot.to_hoomdsnapshot
     		:members:
-
-
