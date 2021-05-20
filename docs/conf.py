@@ -29,6 +29,7 @@ MOCK_MODULES = [
     "hoomd.data",
     "hoomd.md",
     "hoomd.md.pair",
+    "hoomd.md.special_pair",
     "numpy",
     "numpy.linalg",
     "mdtraj",
