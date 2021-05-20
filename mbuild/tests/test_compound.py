@@ -1501,7 +1501,7 @@ class TestCompound(BaseTest):
         # Build a CG hexane with mBuild
         ethane = mb.Compound()
         C1 = mb.Compound(name="_CH3")
-        C2 = mb.Compound(name="_CH2")
+        C2 = mb.Compound(name="_CH3")
 
         ethane.add([C1, C2])
         ethane.add_bond([C1, C2])
