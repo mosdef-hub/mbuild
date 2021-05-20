@@ -9,10 +9,56 @@ from mbuild.utils.exceptions import RemovedFuncError
 from mbuild.utils.geometry import wrap_coords
 from mbuild.utils.io import get_fn, import_, run_from_ipython
 from mbuild.utils.jsutils import overwrite_nglview_default
+from mbuild.utils.orderedset import OrderedSet
 from mbuild.utils.validation import assert_port_exists
 
 
 class TestUtils(BaseTest):
+    def test_orderedset(self):
+        oset_empty = OrderedSet()
+
+        assert isinstance(oset_empty, OrderedSet)
+        assert len(oset_empty) == 0
+
+        oset = OrderedSet("heck", 0, 1)
+
+        assert isinstance(oset, OrderedSet)
+        assert len(oset) == 3
+        assert "heck" in oset
+        assert oset[1] == 0
+
+        oset.add("this")
+
+        assert "this" in oset
+
+        oset.discard("heck")
+
+        assert "heck" not in oset
+
+        assert [i for i in oset] == [0, 1, "this"]
+
+    def test_orderedset_setmethods(self):
+        oset = OrderedSet(1, 2, 3, 4)
+        oset2 = OrderedSet(2, 4, 6, 8)
+
+        union = oset.union(oset2)
+        union2 = oset2.union(oset)
+
+        assert union == union2
+        assert union == set([1, 2, 3, 4, 6, 8])
+
+        inter = oset.intersection(oset2)
+        inter2 = oset2.intersection(oset)
+
+        assert inter == inter2
+        assert inter == set([2, 4])
+
+        diff = oset.difference(oset2)
+        diff2 = oset2.difference(oset)
+
+        assert diff == set([1, 3])
+        assert diff2 == set([6, 8])
+
     def test_assert_port_exists(self, ch2):
         assert_port_exists("up", ch2)
         with pytest.raises(ValueError):

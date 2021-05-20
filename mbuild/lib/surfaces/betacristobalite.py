@@ -32,7 +32,7 @@ class Betacristobalite(mb.Compound):
         self.box = mb.Box([5.3888, 4.6669, 1.3200])
 
         count = 0
-        for particle in self.particles():
+        for particle in list(self.particles()):
             if particle.name.startswith("O") and particle.pos[2] > 1.0:
                 count += 1
                 port = mb.Port(

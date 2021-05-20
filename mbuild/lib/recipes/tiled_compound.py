@@ -51,7 +51,7 @@ class TiledCompound(Compound):
         )
 
         if all(n_tiles == 1):
-            self._add_tile(tile, [(0, 0, 0)])
+            self._add_tile(tile, (0, 0, 0))
             self._hoist_ports(tile)
             return  # Don't waste time copying and checking bonds.
 
@@ -65,9 +65,7 @@ class TiledCompound(Compound):
 
         # Replicate and place periodic tiles.
         # -----------------------------------
-        for ijk in it.product(
-            range(n_tiles[0]), range(n_tiles[1]), range(n_tiles[2])
-        ):
+        for ijk in it.product(*[range(i) for i in n_tiles]):
             new_tile = clone(tile)
             new_tile.translate(np.multiply(ijk, np.asarray(tile.box.lengths)))
 
@@ -142,7 +140,8 @@ class TiledCompound(Compound):
 
     def _add_tile(self, new_tile, ijk):
         """Add a tile with a label indicating its tiling position."""
-        tile_label = "{0}_{1}".format(self.name, "-".join(str(d) for d in ijk))
+        i, j, k = ijk
+        tile_label = f"{self.name}_{i}-{j}-{k}"
         self.add(new_tile, label=tile_label, inherit_periodicity=False)
 
     def _hoist_ports(self, new_tile):
