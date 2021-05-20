@@ -26,8 +26,8 @@ box or boxes utilizing only a few lines of python code.
 
 .. toctree::
 
-   load_files
-   fill_box_example
-   Box_example	
-   polymer_example
+   	load_files
+   	Box_example	
+	fill_box_example
+   	polymer_example
 
