@@ -39,6 +39,7 @@ MOCK_MODULES = [
     "scipy",
     "scipy.spatial",
     "scipy.constants",
+    "gsd.fl",
 ]
 for mod_name in MOCK_MODULES:
     sys.modules[mod_name] = mock.Mock()
