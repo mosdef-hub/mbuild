@@ -17,6 +17,4 @@ dependencies:
   - pip:
     - sphinxcontrib-svg2pdfconverter[CairoSVG]
     - cairosvg
-sphinx:
-  fail_on_warning: true
 
