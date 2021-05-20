@@ -22,12 +22,17 @@ import mock
 # documentation root, use os.path.abspath to make it absolute, like shown here.
 
 MOCK_MODULES = [
+    "CairoSVG",
     "ele",
     "ele.element",
     "ele.exceptions",
     "hoomd",
     "hoomd.data",
     "hoomd.md",
+    "hoomd.md.bond",
+    "hoomd.md.angle",
+    "hoomd.md.dihedral",
+    "hoomd.group",
     "hoomd.md.charge",
     "hoomd.md.pair",
     "hoomd.md.special_pair",
