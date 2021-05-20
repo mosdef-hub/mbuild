@@ -42,6 +42,7 @@ MOCK_MODULES = [
     "scipy",
     "scipy.spatial",
     "scipy.constants",
+    "gsd",
     "gsd.fl",
 ]
 for mod_name in MOCK_MODULES:
