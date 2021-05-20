@@ -3,7 +3,7 @@ Installation
 ============
 
 Install with `conda <https://repo.anaconda.com/miniconda/>`_
------------------------------------------------------
+-----------------------------------------------------------------
 ::
 
     $ conda install -c conda-forge mbuild
@@ -38,6 +38,20 @@ in order to get all of the dependencies::
 
 .. note::
     The above installation is for OSX and Unix. If you are using Windows, use environment-win.yml instead of environment-dev.yml
+
+
+Install pre-commit
+------------------
+
+We use [pre-commit](https://pre-commit.com/) to automatically handle our code formatting and this package is included in the dev environment.
+With the ``mbuild-dev`` conda environment active, pre-commit can be installed locally as a git hook by running::
+
+     $ pre-commit install
+
+ 	And (optional) all files can be checked by running::
+
+     $ pre-commit run --all-files
+
 
 Supported Python Versions
 -------------------------
