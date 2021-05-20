@@ -26,6 +26,7 @@ MOCK_MODULES = [
     "ele.element",
     "ele.exceptions",
     "hoomd",
+    "hoomd.data",
     "numpy",
     "numpy.linalg",
     "mdtraj",
