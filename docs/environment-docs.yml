@@ -18,8 +18,5 @@ dependencies:
     - sphinxcontrib-svg2pdfconverter[CairoSVG]
     - cairosvg
 sphinx:
-<<<<<<< HEAD
   fail_on_warning: false
-=======
-  fail_on_warning: true
->>>>>>> 8d84e10730b248513c26c0af9658ee7014fcdfc3
+
