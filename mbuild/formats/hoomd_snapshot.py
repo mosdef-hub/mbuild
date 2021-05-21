@@ -5,7 +5,8 @@ from collections import namedtuple
 import numpy as np
 import parmed as pmd
 
-import mbuild as mb
+from mbuild.box import Box
+from mbuild.compound import Compound, Particle
 from mbuild.utils.geometry import coord_shift
 from mbuild.utils.io import import_
 from mbuild.utils.sorting import natural_sort
@@ -30,14 +31,14 @@ def from_snapshot(snapshot, scale=1.0):
 
     Returns
     -------
-    comp : mb.Compound
+    comp : Compound
 
     Note
     ----
     GSD and HOOMD snapshots center their boxes on the origin (0,0,0), so the
     compound is shifted by half the box lengths
     """
-    comp = mb.Compound()
+    comp = Compound()
     bond_array = snapshot.bonds.group
     n_atoms = snapshot.particles.N
 
@@ -48,11 +49,16 @@ def from_snapshot(snapshot, scale=1.0):
     ):
         # hoomd v2
         box = snapshot.box
-        comp.box = mb.Box(lengths=np.array([box.Lx, box.Ly, box.Lz]) * scale)
+        comp.box = Box.from_lengths_tilt_factors(
+            lengths=np.array([box.Lx, box.Ly, box.Lz]) * scale,
+            tilt_factors=np.array([box.xy, box.xz, box.yz]),
+        )
     else:
         # gsd / hoomd v3
         box = snapshot.configuration.box
-        comp.box = mb.Box(lengths=box[:3] * scale)
+        comp.box = Box.from_lengths_tilt_factors(
+            lengths=box[:3] * scale, tilt_factors=box[3:]
+        )
 
     # GSD and HOOMD snapshots center their boxes on the origin (0,0,0)
     shift = np.array(comp.box.lengths) / 2
@@ -62,7 +68,7 @@ def from_snapshot(snapshot, scale=1.0):
         xyz = snapshot.particles.position[i] * scale + shift
         charge = snapshot.particles.charge[i]
 
-        atom = mb.Particle(name=name, pos=xyz, charge=charge)
+        atom = Particle(name=name, pos=xyz, charge=charge)
         comp.add(atom, label=str(i))
 
     # Add bonds
@@ -128,13 +134,12 @@ def to_hoomdsnapshot(
     -----
     Force field parameters are not written to the hoomd_snapshot
     """
-    if not isinstance(structure, (mb.Compound, pmd.Structure)):
+    if not isinstance(structure, (Compound, pmd.Structure)):
         raise ValueError(
-            "You are trying to create a hoomd.Snapshot from "
-            + "{} ".format(type(structure))
-            + "please pass mb.Compound or pmd.Structure"
+            "You are trying to create a hoomd.Snapshot from a "
+            f"{type(structure)} please pass a Compound or pmd.Structure"
         )
-    elif isinstance(structure, mb.Compound):
+    elif isinstance(structure, Compound):
         structure = structure.to_parmed(**parmed_kwargs)
 
     if not hoomd.context.current:
