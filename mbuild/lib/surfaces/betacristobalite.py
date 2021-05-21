@@ -1,6 +1,4 @@
 """Beta-cristobalite surface."""
-import numpy as np
-
 import mbuild as mb
 
 
@@ -29,7 +27,9 @@ class Betacristobalite(mb.Compound):
             compound=self,
             relative_to_module=self.__module__,
         )
-        self.periodicity = np.array([5.3888, 4.6669, 0.0])
+        self.periodicity = (True, True, False)
+        # 1.3200 taken from boundingbox length rounded to 4 decimal places
+        self.box = mb.Box([5.3888, 4.6669, 1.3200])
 
         count = 0
         for particle in list(self.particles()):
@@ -47,4 +47,4 @@ class Betacristobalite(mb.Compound):
 if __name__ == "__main__":
     single = Betacristobalite()
     multiple = mb.recipes.TiledCompound(single, n_tiles=(2, 1, 1), name="tiled")
-    multiple.save("betacristobalite.mol2")
+    multiple.save("betacristobalite.mol2", overwrite=True)

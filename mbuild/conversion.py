@@ -572,10 +572,7 @@ def from_parmed(
     # Convert box information
     if structure.box is not None:
         warn("All angles are assumed to be 90 degrees")
-        compound.periodicity = structure.box[0:3] / 10
-    else:
-        warn("No box information detected, periodicity is set to [0, 0, 0]")
-        compound.periodicity = np.array([0.0, 0.0, 0.0])
+        compound.box = Box(structure.box[0:3] / 10)
 
     return compound
 
@@ -667,9 +664,7 @@ def from_trajectory(
         compound.add_bond((atom1, atom2))
 
     if np.any(traj.unitcell_lengths) and np.any(traj.unitcell_lengths[0]):
-        compound.periodicity = traj.unitcell_lengths[0]
-    else:
-        compound.periodicity = np.array([0.0, 0.0, 0.0])
+        compound.box = Box(traj.unitcell_lengths[0])
 
     return compound
 
@@ -778,7 +773,7 @@ def from_pybel(
                 pybel_mol.unitcell.GetGamma(),
             ],
         )
-        compound.periodicity = box.lengths
+        compound.box = box
     else:
         if not ignore_box_warn:
             warn(f"No unitcell detected for pybel.Molecule {pybel_mol}")
@@ -935,7 +930,7 @@ def save(
 
     See Also
     --------
-    formats.gsdwrite.write_gsd : Write to GSD format
+    formats.gsdwriter.write_gsd : Write to GSD format
     formats.hoomdxml.write_hoomdxml : Write to Hoomd XML format
     formats.xyzwriter.write_xyz : Write to XYZ format
     formats.lammpsdata.write_lammpsdata : Write to LAMMPS data format
@@ -1147,32 +1142,24 @@ def to_parmed(
     for atom1, atom2 in compound.bonds():
         bond = pmd.Bond(atom_mapping[atom1], atom_mapping[atom2])
         structure.bonds.append(bond)
-    # pad box with .25nm buffers
+
+    # If a box is not explicitly provided:
+    # (1) Grab from compound.box
+    # (2) Grab from compound.get_boundingbox()
     if box is None:
         if compound.box is not None:
             box = deepcopy(compound.box)
         else:
-            box = deepcopy(compound.boundingbox)
-            maxs = np.zeros(3)
-            mins = np.zeros(3)
-            # if periodicty is set, use it before bounding box
-            nonzero_inds = np.where(compound.periodicity != 0)
-            zero_inds = np.where(compound.periodicity == 0)
-            maxs[nonzero_inds] = compound.periodicity[nonzero_inds]
-            # if using bounding box, pad by 0.25 nm
-            maxs[zero_inds] = box.maxs[zero_inds] + 0.25
-            mins[zero_inds] = box.mins[zero_inds] - 0.25
-            box.maxs = maxs
-            box.mins = mins
+            box = compound.get_boundingbox()
+            # Pad by an extra 0.5 nm (0.25 on each side) from bounding box
+            box = Box(lengths=np.array(box.lengths) + 0.5, angles=box.angles)
 
     box_vector = np.empty(6)
-    if box.angles is not None:
-        box_vector[3:6] = box.angles
-    else:
-        box_vector[3] = box_vector[4] = box_vector[5] = 90.0
+    box_vector[3:6] = box.angles
     for dim in range(3):
         box_vector[dim] = box.lengths[dim] * 10
     structure.box = box_vector
+
     return structure
 
 
@@ -1191,10 +1178,9 @@ def to_trajectory(
         Labels of residues in the Compound. Residues are assigned by checking
         against Compound.name.
     box : mb.Box, optional, default=compound.boundingbox (with buffer)
-        Box information to be used when converting to a `Trajectory`. If 'None',
-        a bounding box is used with a 0.5nm buffer in each dimension to avoid
-        overlapping atoms, unless `compound.periodicity` is not None, in which
-        case those values are used for the box lengths.
+        Box information to be used when converting to a `Trajectory`.
+        If 'None', a bounding box is used with a 0.5nm buffer in each
+        dimension to avoid overlapping atoms.
 
     Returns
     -------
@@ -1214,15 +1200,13 @@ def to_trajectory(
     for idx, atom in enumerate(atom_list):
         xyz[0, idx] = atom.pos
 
-    # Unitcell information.
-    unitcell_angles = [90.0, 90.0, 90.0]
     if box is None:
-        unitcell_lengths = np.empty(3)
-        for dim, val in enumerate(compound.periodicity):
-            if val:
-                unitcell_lengths[dim] = val
-            else:
-                unitcell_lengths[dim] = compound.boundingbox.lengths[dim] + 0.5
+        box = compound.box
+
+    # Unitcell information.
+    if box is None:
+        unitcell_lengths = np.array(compound.get_boundingbox().lengths) + 0.5
+        unitcell_angles = [90.0, 90.0, 90.0]
     else:
         unitcell_lengths = box.lengths
         unitcell_angles = box.angles
@@ -1463,35 +1447,13 @@ def to_pybel(
 
     ucell = openbabel.OBUnitCell()
     if box is None:
-        box = compound.boundingbox
-    a, b, c = 10.0 * box.lengths
+        box = compound.get_boundingbox()
+    (a, b, c) = box.lengths
+    a *= 10
+    b *= 10
+    c *= 10
     alpha, beta, gamma = np.radians(box.angles)
-
-    cosa = np.cos(alpha)
-    cosb = np.cos(beta)
-    sinb = np.sin(beta)
-    cosg = np.cos(gamma)
-    sing = np.sin(gamma)
-    mat_coef_y = (cosa - cosb * cosg) / sing
-    mat_coef_z = np.power(sinb, 2, dtype=float) - np.power(
-        mat_coef_y, 2, dtype=float
-    )
-
-    if mat_coef_z > 0.0:
-        mat_coef_z = np.sqrt(mat_coef_z)
-    else:
-        raise Warning(
-            "Non-positive z-vector. Angles {} do not generate a box with the "
-            "z-vector in the positive z direction".format(box.angles)
-        )
-
-    box_vec = [[1, 0, 0], [cosg, sing, 0], [cosb, mat_coef_y, mat_coef_z]]
-    box_vec = np.asarray(box_vec)
-    box_mat = (np.array([a, b, c]) * box_vec.T).T
-    first_vector = openbabel.vector3(*box_mat[0])
-    second_vector = openbabel.vector3(*box_mat[1])
-    third_vector = openbabel.vector3(*box_mat[2])
-    ucell.SetData(first_vector, second_vector, third_vector)
+    ucell.SetData(a, b, c, alpha, beta, gamma)
     mol.CloneData(ucell)
 
     for bond in compound.bonds():

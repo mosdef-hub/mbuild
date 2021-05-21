@@ -18,7 +18,7 @@ class SilicaInterface(Compound):
 
     Parameters
     ----------
-    bulk_silica : mb.Compound
+    bulk_silica : Compound
         Bulk silica from which to cleave an interface
     tile_x : int, optional, default=1
         Number of times to replicate bulk silica in x-direction
@@ -61,20 +61,28 @@ class SilicaInterface(Compound):
         interface is coated.
         """
         O_buffer = self._O_buffer
-        tile_z = int(
-            math.ceil((thickness + 2 * O_buffer) / bulk_silica.periodicity[2])
-        )
+        z_height = bulk_silica.box.lengths[2]
+        tile_z = int(math.ceil((thickness + 2 * O_buffer) / z_height))
         bulk = TiledCompound(bulk_silica, n_tiles=(tile_x, tile_y, tile_z))
 
-        periodicity = (bulk.periodicity[0], bulk.periodicity[1], 0.0)
-        interface = Compound(periodicity=periodicity)
-        for i, p in enumerate(bulk.particles()):
+        interface = Compound(
+            periodicity=(bulk.periodicity[0], bulk.periodicity[1], False)
+        )
+        for i, particle in enumerate(bulk.particles()):
             if (
-                p.name == "Si" and O_buffer < p.pos[2] < (thickness + O_buffer)
-            ) or (p.name == "O" and p.pos[2] < (thickness + 2 * O_buffer)):
-                interface_particle = Compound(name=p.name, pos=p.pos)
-                interface.add(interface_particle, f"{p.name}_{i}")
-        self.add(interface)
+                particle.name == "Si"
+                and O_buffer < particle.pos[2] < (thickness + O_buffer)
+            ) or (
+                particle.name == "O"
+                and particle.pos[2] < (thickness + 2 * O_buffer)
+            ):
+                interface_particle = Compound(
+                    name=particle.name, pos=particle.pos
+                )
+                interface.add(
+                    interface_particle, particle.name + "_{}".format(i)
+                )
+        self.add(interface, inherit_box=True, inherit_periodicity=True)
 
     def _strip_stray_atoms(self):
         """Remove stray atoms and surface pieces."""
@@ -94,7 +102,7 @@ class SilicaInterface(Compound):
                amorphous porous silica." (2015) Phys. Chem. Chem. Phys.
                17, 24683-24695
         """
-        area = self.periodicity[0] * self.periodicity[1]
+        area = self.box.lengths[0] * self.box.lengths[1]
         target = int(oh_density * area)
 
         dangling_Os = [

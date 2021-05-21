@@ -193,7 +193,12 @@ class TestLattice(BaseTest):
             test_lattice.populate(compound_dict=my_type)
 
     @pytest.mark.parametrize(
-        "not_compound", [(1), (mb.Box(lengths=[1, 1, 1])), ("aLattice")]
+        "not_compound",
+        [
+            (1),
+            (mb.Box(lengths=[1, 1, 1], angles=[90.0, 90.0, 90.0])),
+            ("aLattice"),
+        ],
     )
     def test_populate_not_compound(self, not_compound):
         test_lattice = mb.Lattice(lattice_spacing=[1, 1, 1])
@@ -228,7 +233,7 @@ class TestLattice(BaseTest):
 
         assert len(is_true) == len(values_to_check)
 
-    def test_set_periodicity(self):
+    def test_box(self):
         lattice = mb.Lattice(
             lattice_spacing=[1, 1, 1],
             angles=[90, 90, 90],
@@ -241,10 +246,33 @@ class TestLattice(BaseTest):
 
         replication = [2, 5, 9]
         np.testing.assert_allclose(
-            compound_test.periodicity,
+            compound_test.box.lengths,
             np.asarray(
                 [x * y for x, y in zip(replication, lattice.lattice_spacing)]
             ),
+        )
+        np.testing.assert_allclose(
+            compound_test.box.angles, np.asarray([90.0, 90.0, 90.0])
+        )
+
+    def test_box_non_rectangular(self):
+        lattice = mb.Lattice(
+            lattice_spacing=[0.5, 0.5, 1],
+            angles=[90, 90, 120],
+            lattice_points={"A": [[0, 0, 0]]},
+        )
+        compound_test = lattice.populate(
+            compound_dict={"A": mb.Compound()}, x=2, y=2, z=1
+        )
+        replication = [2, 2, 1]
+        np.testing.assert_allclose(
+            compound_test.box.lengths,
+            np.asarray(
+                [x * y for x, y in zip(replication, lattice.lattice_spacing)]
+            ),
+        )
+        np.testing.assert_allclose(
+            compound_test.box.angles, np.asarray([90.0, 90.0, 120.0])
         )
 
     def test_get_box(self):
@@ -259,11 +287,11 @@ class TestLattice(BaseTest):
             x * y for x, y in zip(replication, lattice.lattice_spacing)
         ]
 
-        mybox = lattice.get_populated_box(x=5, y=4, z=3)
+        mylat = lattice.populate(x=5, y=4, z=3)
 
-        assert isinstance(mybox, mb.Box)
-        np.testing.assert_allclose([90, 90, 90], mybox.angles)
-        np.testing.assert_allclose(expected_lengths, mybox.lengths)
+        assert isinstance(mylat.box, mb.Box)
+        np.testing.assert_allclose([90, 90, 90], mylat.box.angles)
+        np.testing.assert_allclose(expected_lengths, mylat.box.lengths)
 
     def test_get_box_non_rectangular(self):
         lattice = mb.Lattice(
@@ -277,8 +305,8 @@ class TestLattice(BaseTest):
             x * y for x, y in zip(replication, lattice.lattice_spacing)
         ]
 
-        mybox = lattice.get_populated_box(x=2, y=2, z=1)
+        mylat = lattice.populate(x=2, y=2, z=1)
 
-        assert isinstance(mybox, mb.Box)
-        np.testing.assert_allclose([90, 90, 120], mybox.angles)
-        np.testing.assert_allclose(expected_lengths, mybox.lengths)
+        assert isinstance(mylat.box, mb.Box)
+        np.testing.assert_allclose([90, 90, 120], mylat.box.angles)
+        np.testing.assert_allclose(expected_lengths, mylat.box.lengths)

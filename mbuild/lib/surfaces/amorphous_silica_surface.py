@@ -1,6 +1,4 @@
 """Amorphous silica surface."""
-import numpy as np
-
 import mbuild as mb
 
 
@@ -16,12 +14,13 @@ class AmorphousSilicaSurface(mb.Compound):
                 compound=self,
                 relative_to_module=self.__module__,
             )
-            self.periodicity = np.array([5.4366, 4.7082, 0.0])
+            self.periodicity = (True, True, False)
+            self.box = mb.Box([5.4366, 4.7082, 1.0])
         else:
             raise ValueError(
                 "Amorphous silica input file with surface "
                 "roughness of {0:.1f} does not exist. If you have "
-                "this structure, please submit a pull request to"
+                "this structure, please submit a pull request to "
                 "add it! ".format(surface_roughness)
             )
         count = 0
