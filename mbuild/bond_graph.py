@@ -41,6 +41,8 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 from collections import defaultdict
 
+from mbuild.utils.orderedset import OrderedSet
+
 
 class BondGraph(object):
     """A graph-like object used to store and manipulate bonding information.
@@ -51,12 +53,12 @@ class BondGraph(object):
     """
 
     def __init__(self):
-        self._adj = defaultdict(set)
+        self._adj = defaultdict(OrderedSet)
 
     def add_node(self, node):
         """Add a node to the bond graph."""
         if not self.has_node(node):
-            self._adj[node] = set()
+            self._adj[node] = OrderedSet()
 
     def remove_node(self, node):
         """Remove a node from the bond graph."""
@@ -109,12 +111,12 @@ class BondGraph(object):
 
     def edges(self):
         """Return all edges in the bond graph."""
-        edges = set()
+        edges = OrderedSet()
         for node, neighbors in self._adj.items():
             for neighbor in neighbors:
                 bond = (
                     (node, neighbor)
-                    if id(node) < id(neighbor)
+                    if self.nodes().index(node) > self.nodes().index(neighbor)
                     else (neighbor, node)
                 )
                 edges.add(bond)
@@ -148,7 +150,7 @@ class BondGraph(object):
         adj = self._adj
         for node, neighbors in graph._adj.items():
             if self.has_node(node):
-                adj[node].union(neighbors)
+                (adj[node].add(neighbor) for neighbor in neighbors)
             elif neighbors:
                 adj[node] = neighbors
 

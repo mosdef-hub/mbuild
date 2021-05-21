@@ -1570,3 +1570,10 @@ class TestCompound(BaseTest):
         ff = foyer.forcefields.load_TRAPPE_UA()
         # This fails prior to applying PR # 892
         ff.apply(ethane)
+
+    def test_ordered_bonds(self):
+        ethane = mb.load("CC", smiles=True)
+        ethane2 = mb.load("CC", smiles=True)
+        for bond2, bond in zip(ethane2.bonds(), ethane.bonds()):
+            assert bond2[0].name == bond[0].name
+            assert all(bond2[0].pos == bond[0].pos)
