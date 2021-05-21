@@ -5,8 +5,8 @@ import pytest
 from foyer.forcefields import forcefields
 
 import mbuild as mb
-from mbuild.box import Box
-from mbuild.compound import Compound
+from mbuild import Box, Compound
+from mbuild.exceptions import MBuildError
 from mbuild.formats import charmm_writer
 from mbuild.formats.charmm_writer import Charmm
 from mbuild.tests.base_test import BaseTest
@@ -1461,9 +1461,7 @@ class TestCharmmWriterData(BaseTest):
             match=r"This writer only currently supports orthogonal boxes "
             "\(i.e., boxes with all 90 degree angles\).",
         ):
-            empty_compound = mb.Box(
-                mins=[1, 1, 1], maxs=[3, 3, 3], angles=[89, 90, 90]
-            )
+            empty_compound = mb.Box(lengths=[2, 2, 2], angles=[89, 90, 90])
 
             specific_ff_to_residue(
                 empty_compound,
@@ -1476,8 +1474,7 @@ class TestCharmmWriterData(BaseTest):
 
     def test_specific_ff_to_empty_box_with_length_0(self, ethane_gomc):
         with pytest.raises(
-            ValueError,
-            match=r"An empty box was specified, with one or more dimensions <= 0.",
+            MBuildError, match=r"The vectors to define the box are co-linear"
         ):
             empty_compound = mb.Box(lengths=[0, 1, 1])
 
@@ -1528,9 +1525,7 @@ class TestCharmmWriterData(BaseTest):
         box_reservior_1 = mb.fill_box(
             compound=[ethane_gomc], box=[1, 1, 1], n_compounds=[1]
         )
-        box_reservior_1.periodicity[0] = 2
-        box_reservior_1.periodicity[1] = 2
-        box_reservior_1.periodicity[1] = 2
+        box_reservior_1.periodicity = (True, True, True)
         box_reservior_2 = mb.fill_box(
             compound=[ethanol_gomc], box=[1, 1, 1], n_compounds=[1]
         )
@@ -2525,7 +2520,7 @@ class TestCharmmWriterData(BaseTest):
                     pass
 
     def test_box_1_empty_test_2(self, two_propanol_ua):
-        empty_compound = Box(mins=[1, 1, 1], maxs=[4, 4, 4])
+        empty_compound = Box(lengths=[3, 3, 3], angles=[90, 90, 90])
 
         charmm = Charmm(
             two_propanol_ua,

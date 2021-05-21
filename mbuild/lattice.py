@@ -2,7 +2,6 @@
 import itertools as it
 import pathlib
 from collections import defaultdict
-from warnings import warn
 
 import numpy as np
 
@@ -49,9 +48,9 @@ def load_cif(file_or_path=None, wrap_coords=False):
         ):
             if wrap_coords:
                 for i, pos in enumerate(coords):
-                    if pos < 0 and pos > -1:
+                    if 0 > pos > -1:
                         coords[i] = coords[i] + 1
-                    elif pos > 1 and pos < 2:
+                    elif 1 < pos < 2:
                         coords[i] = coords[i] - 1
                     else:
                         pass
@@ -236,8 +235,8 @@ class Lattice(object):
         """
         if angles is not None and lattice_vectors is not None:
             raise ValueError(
-                "Overdefined system: angles and lattice_vectors provided. Only "
-                "one of these should be passed."
+                "Overdefined system: angles and lattice_vectors "
+                "provided. Only one of these should be passed."
             )
 
         self._validate_lattice_spacing(lattice_spacing)
@@ -390,7 +389,7 @@ class Lattice(object):
         """
         if lattice_points is None:
             lattice_points = {}
-            lattice_points = {"id": [[0.0 for x in range(self.dimension)]]}
+            lattice_points = {"id": [[0.0 for _ in range(self.dimension)]]}
         elif isinstance(lattice_points, dict):
             pass
         else:
@@ -416,8 +415,8 @@ class Lattice(object):
                     if (coord is None) or (0 > coord) or (coord >= 1):
                         raise ValueError(
                             "Incorrect lattice point fractional coordinates. "
-                            "Coordinates cannot be {}, {}, or {}. You passed "
-                            "{}.".format("None", ">= 1", "< 0", coord)
+                            "Coordinates cannot be None, greater than or equal "
+                            "to one, or negative. You passed {}.".format(coord)
                         )
 
         self.lattice_points = self._check_for_overlap(lattice_points)
@@ -611,7 +610,6 @@ class Lattice(object):
         for key, locations in self.lattice_points.items():
             for coords in locations:
                 for replication in it.product(range(x), range(y), range(z)):
-
                     new_coords = np.asarray(coords, dtype=np.float64)
                     new_coords = np.reshape(new_coords, (1, 3), order="C")
 
@@ -656,14 +654,9 @@ class Lattice(object):
                             key_id, err_type
                         )
                     )
-        # set periodicity, currently assuming rectangular system
-        if not np.all(np.allclose(self.angles, [90.0, 90.0, 90.0])):
-            warn(
-                "Periodicity of non-rectangular lattices are not valid with "
-                "default boxes. Only rectangular lattices are valid."
-            )
-        ret_lattice.periodicity = np.asarray(
-            [a * x, b * y, c * z], dtype=np.float64
+        # Create mbuild.box
+        ret_lattice.box = mb.Box(
+            lengths=[a * x, b * y, c * z], angles=self.angles
         )
 
         # if coordinates are below a certain threshold, set to 0
@@ -673,28 +666,3 @@ class Lattice(object):
         ] = 0.0
 
         return ret_lattice
-
-    def get_populated_box(self, x=1, y=1, z=1):
-        """Get the boundaries of a Lattice as a Box.
-
-        Return an mbuild.Box representing the periodic boundaries of a
-        populated mbuild.Lattice. This is meant to be called in parallel with,
-        and using the same arguments of, a call to mb.Lattice.populate().
-
-        Parameters
-        ----------
-        x : int, optional, default=1
-            How many iterations in the x direction.
-        y : int, optional, default=1
-            How many iterations in the y direction.
-        z : int, optional, default=1
-            How many iterations in the z direction.
-        """
-        x, y, z = self._sanitize_populate_args(x, y, z)
-
-        [a, b, c] = self.lattice_spacing
-
-        return mb.Box(
-            lengths=np.asarray([a * x, b * y, c * z], dtype=np.float64),
-            angles=np.asarray(self.angles),
-        )

@@ -21,8 +21,9 @@ class TestHoomd(BaseTest):
     def test_particles_to_snapshot(self):
         hoomd_snapshot = import_("mbuild.formats.hoomd_snapshot")
         part = mb.Compound(name="Ar")
-        box = mb.fill_box(part, n_compounds=10, box=mb.Box([5, 5, 5]))
-        snap, _ = hoomd_snapshot.to_hoomdsnapshot(box)
+        box = mb.Box(lengths=[5, 5, 5], angles=[90, 90, 90])
+        system = mb.fill_box(part, n_compounds=10, box=box)
+        snap, _ = hoomd_snapshot.to_hoomdsnapshot(system)
 
         assert snap.particles.N == 10
         assert snap.bonds.N == 0
@@ -32,9 +33,12 @@ class TestHoomd(BaseTest):
         hoomd = import_("hoomd")
         hoomd_snapshot = import_("mbuild.formats.hoomd_snapshot")
         part = mb.Compound(name="Ar")
-        box = mb.fill_box(part, n_compounds=10, box=mb.Box([5, 5, 5]))
+        box = mb.Box(lengths=[5, 5, 5], angles=[90, 90, 90])
+        system = mb.fill_box(part, n_compounds=10, box=box)
         init_snap = hoomd.data.make_snapshot(N=10, box=hoomd.data.boxdim(L=10))
-        snap, _ = hoomd_snapshot.to_hoomdsnapshot(box, hoomd_snapshot=init_snap)
+        snap, _ = hoomd_snapshot.to_hoomdsnapshot(
+            system, hoomd_snapshot=init_snap
+        )
 
         assert snap.particles.N == 20
         assert snap.bonds.N == 0
@@ -46,11 +50,12 @@ class TestHoomd(BaseTest):
         hoomd = import_("hoomd")
         hoomd_snapshot = import_("mbuild.formats.hoomd_snapshot")
         part = mb.Compound(name="Ar")
-        box = mb.fill_box(part, n_compounds=10, box=mb.Box([5, 5, 5]))
+        box = mb.Box(lengths=[5, 5, 5], angles=[90, 90, 90])
+        system = mb.fill_box(part, n_compounds=10, box=box)
         init_snap = hoomd.data.make_snapshot(N=0, box=hoomd.data.boxdim(L=10))
         with pytest.raises(RuntimeError):
             snap, _ = hoomd_snapshot.to_hoomdsnapshot(
-                box, hoomd_snapshot=init_snap
+                system, hoomd_snapshot=init_snap
             )
 
     def test_bad_input_to_snapshot(self):
@@ -176,7 +181,7 @@ class TestHoomdXML(BaseTest):
         ethane.save(filename="ethane-opls.hoomdxml", forcefield_name="oplsaa")
 
     def test_save_box(self, ethane):
-        box = mb.Box(lengths=np.array([2.0, 2.0, 2.0]))
+        box = mb.box.Box(lengths=[2.0, 2.0, 2.0], angles=[90, 90, 90])
         ethane.save(filename="ethane-box.hoomdxml", box=box)
 
     def test_save_triclinic_box_(self, ethane):

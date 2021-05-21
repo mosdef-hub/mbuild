@@ -116,7 +116,7 @@ _python_doc_base = "https://docs.python.org/3.7"
 
 intersphinx_mapping = {
     _python_doc_base: None,
-    "https://docs.scipy.org/doc/numpy": None,
+    "https://numpy.org/doc/stable": None,
     "https://docs.scipy.org/doc/scipy/reference": None,
     "https://scikit-learn.org/stable": None,
 }
