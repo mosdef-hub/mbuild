@@ -52,3 +52,21 @@ class TestXYZ(BaseTest):
         assert tip3p_water[1].name == "opls_112"
         assert tip3p_water[2].element is None
         assert tip3p_water[2].name == "opls_112"
+
+    def test_write_atomtypes(self):
+        tip3p_water = mb.load(get_fn("tip3p_water.xyz"))
+        tip3p_water.save(filename="test.xyz", write_atomnames=True)
+        lines = []
+        with open("test.xyz") as f:
+            for line in f:
+                lines.append(line.split())
+        assert lines[2][0] == "opls_111"
+        assert lines[3][0] == "opls_112"
+        assert lines[4][0] == "opls_112"
+        tip3p_water_in = mb.load("test.xyz")
+        assert tip3p_water_in[0].element is None
+        assert tip3p_water_in[0].name == "opls_111"
+        assert tip3p_water_in[1].element is None
+        assert tip3p_water_in[1].name == "opls_112"
+        assert tip3p_water_in[2].element is None
+        assert tip3p_water_in[2].name == "opls_112"
