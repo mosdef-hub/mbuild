@@ -293,23 +293,8 @@ def specific_ff_to_residue(
 
     # calculate the initial number of atoms for later comparison
     if isinstance(structure, mb.Box):
-        if structure.lengths is not None:
-            mb_box_length_0 = structure.lengths[0]
-            mb_box_length_1 = structure.lengths[1]
-            mb_box_length_2 = structure.lengths[2]
-
-        elif structure.mins is not None and structure.maxs is not None:
-            mb_box_mins_0 = structure.mins[0]
-            mb_box_mins_1 = structure.mins[1]
-            mb_box_mins_2 = structure.mins[2]
-
-            mb_box_maxs_0 = structure.maxs[0]
-            mb_box_maxs_1 = structure.maxs[1]
-            mb_box_maxs_2 = structure.maxs[2]
-
-            mb_box_length_0 = mb_box_maxs_0 - mb_box_mins_0
-            mb_box_length_1 = mb_box_maxs_1 - mb_box_mins_1
-            mb_box_length_2 = mb_box_maxs_2 - mb_box_mins_2
+        lengths = structure.lengths
+        angles = structure.angles
 
         if (
             structure.angles[0] != 90
@@ -321,24 +306,9 @@ def specific_ff_to_residue(
                 "(i.e., boxes with all 90 degree angles)."
             )
             raise ValueError(print_error_message)
-
-        # convert the structure to a mbuild.Compound and set the  initial_no_atoms = 0
-        if (
-            structure.lengths is None
-            or mb_box_length_0 <= 0
-            or mb_box_length_1 <= 0
-            or mb_box_length_2 <= 0
-        ):
-            print_error_message = (
-                "An empty box was specified, with one or more dimensions <= 0."
-            )
-            raise ValueError(print_error_message)
-        else:
-            structure = mb.Compound()
-            structure.periodicity[0] = mb_box_length_0
-            structure.periodicity[1] = mb_box_length_1
-            structure.periodicity[2] = mb_box_length_2
-            initial_no_atoms = 0
+        structure = mb.Compound()
+        structure.box = mb.Box(lengths=lengths, angles=angles)
+        initial_no_atoms = 0
 
     # add the FF to the residues
     compound_box_infor = structure.to_parmed(residues=residues)
@@ -355,9 +325,7 @@ def specific_ff_to_residue(
     )
     for j in range(0, no_layers_to_check_for_residues):
         new_compound_iter = mb.Compound()
-        new_compound_iter.periodicity[0] = structure.periodicity[0]
-        new_compound_iter.periodicity[1] = structure.periodicity[1]
-        new_compound_iter.periodicity[2] = structure.periodicity[2]
+        new_compound_iter.periodicity = structure.periodicity
         if structure.name in residues:
             if len(structure.children) == 0:
                 warn(
@@ -437,9 +405,7 @@ def specific_ff_to_residue(
     for i in range(0, len(residues)):
         children_in_iteration = False
         new_compound_iteration = mb.Compound()
-        new_compound_iter.periodicity[0] = structure.periodicity[0]
-        new_compound_iter.periodicity[1] = structure.periodicity[1]
-        new_compound_iter.periodicity[2] = structure.periodicity[2]
+        new_compound_iter.periodicity = structure.periodicity
         new_structure_iteration = pmd.Structure()
         new_structure_iteration.box = compound_box_infor.box
         for child in structure.children:
