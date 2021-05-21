@@ -91,9 +91,10 @@ class Compound(object):
         The position of the Compound in Cartestian space
     charge : float, optional, default=0.0
         Currently not used. Likely removed in next release.
-    periodicity : np.ndarray, shape=(3,), dtype=float, default=[0, 0, 0]
-        The periodic lengths of the Compound in the x, y and z directions.
-        Defaults to zeros which is treated as non-periodic.
+    periodicity : tuple of bools, length=3, optional, default=None
+        Whether the Compound is periodic in the x, y, and z directions.
+        If None is provided, the periodicity is set to (False, False, False)
+        which is non-periodic in all directions.
     port_particle : bool, optional, default=False
         Whether or not this Compound is part of a Port
     box : mb.Box, optional
@@ -155,12 +156,6 @@ class Compound(object):
         else:
             self.name = self.__class__.__name__
 
-        # A periodicity of zero in any direction is treated as non-periodic.
-        if periodicity is None:
-            self._periodicity = np.array([0.0, 0.0, 0.0])
-        else:
-            self._periodicity = np.asarray(periodicity)
-
         if pos is not None:
             self._pos = np.asarray(pos, dtype=float)
         else:
@@ -178,8 +173,12 @@ class Compound(object):
         self._contains_rigid = False
         self._check_if_contains_rigid_bodies = False
 
-        self.box = box
         self.element = element
+        self._box = box
+        if periodicity is not None:
+            self.periodicity = periodicity
+        else:
+            self.periodicity = (False, False, False)
 
         # self.add() must be called after labels and children are initialized.
         if subcompounds:
@@ -570,7 +569,7 @@ class Compound(object):
         label=None,
         containment=True,
         replace=False,
-        inherit_periodicity=True,
+        inherit_periodicity=None,
         inherit_box=False,
         reset_rigid_ids=True,
     ):
@@ -665,18 +664,13 @@ class Compound(object):
             self.labels[label] = new_child
         new_child.referrers.add(self)
 
-        if (
-            inherit_periodicity
-            and isinstance(new_child, Compound)
-            and new_child.periodicity.any()
-        ):
+        if inherit_periodicity and isinstance(new_child, Compound):
             self.periodicity = new_child.periodicity
 
         # If parent has no box --> inherit child box
         # If parent has box --> keep unless inherit_box == True
         # If inherit_box == True, parent box != None, child_box == None,
         # keep parent box anyway and warn
-        # If inherit_box == False, child.box != None, warn
         if self.box is None:
             if new_child.box is not None:
                 self.box = new_child.box
@@ -701,7 +695,10 @@ class Compound(object):
 
         # Check that bounding box is within box after adding compound
         if self.box:
-            if (self.box.lengths < self.boundingbox.lengths).any():
+            if (
+                np.array(self.box.lengths)
+                < np.array(self.get_boundingbox().lengths)
+            ).any():
                 warn(
                     "After adding new Compound, Compound.box.lengths < "
                     "Compound.boundingbox.lengths. There may be particles "
@@ -922,9 +919,7 @@ class Compound(object):
         dmax : float
             The maximum distance between Particles for considering a bond
         """
-        particle_kdtree = PeriodicCKDTree(
-            data=self.xyz, bounds=self.periodicity
-        )
+        particle_kdtree = PeriodicCKDTree(data=self.xyz, box=self.box)
         particle_array = np.array(list(self.particles()))
         added_bonds = list()
         for p1 in self.particles_by_name(name_a):
@@ -1014,7 +1009,14 @@ class Compound(object):
 
     @periodicity.setter
     def periodicity(self, periods):
-        self._periodicity = np.array(periods)
+        if len(list(periods)) != 3:
+            raise ValueError("Periodicity must be of length 3")
+        if not all([isinstance(p, bool) for p in periods]):
+            raise TypeError(
+                "Periodicity values must be True/False; if you are trying to "
+                "set the dimensions, use Compound.box."
+            )
+        self._periodicity = tuple(periods)
 
     @property
     def box(self):
@@ -1032,7 +1034,7 @@ class Compound(object):
             raise ValueError("Ports cannot have a box")
         # Make sure the box is bigger than the bounding box
         if box is not None:
-            if (box.lengths < self.boundingbox.lengths).any():
+            if np.asarray((box.lengths < self.get_boundingbox().lengths)).any():
                 warn(
                     "Compound.box.lengths < Compound.boundingbox.lengths. "
                     "There may be particles outside of the defined "
@@ -1154,19 +1156,70 @@ class Compound(object):
             return np.mean(self.xyz, axis=0)
 
     @property
-    def boundingbox(self):
+    def mins(self):
+        """Return the mimimum x, y, z coordinate of any particle in this compound."""
+        return self.xyz.min(axis=0)
+
+    @property
+    def maxs(self):
+        """Return the maximum x, y, z coordinate of any particle in this compound."""
+        return self.xyz.max(axis=0)
+
+    def get_boundingbox(self):
         """Compute the bounding box of the compound.
+
+        Compute and store the rectangular bounding box of the Compound.
 
         Returns
         -------
         mb.Box
-            The bounding box for this Compound
+            The bounding box for this Compound.
+
+        Notes
+        -----
+        Triclinic bounding boxes are supported, but only for Compounds
+        that are generated from mb.Lattice's and the resulting
+        mb.Lattice.populate method
         """
-        xyz = self.xyz
-        return Box(mins=xyz.min(axis=0), maxs=xyz.max(axis=0))
+        # case where only 1 particle exists
+        is_one_particle = False
+        if self.xyz.shape[0] == 1:
+            is_one_particle = True
+
+        # are any columns all equalivalent values?
+        # an example of this would be a planar molecule
+        # example: all z values are 0.0
+        # from: https://stackoverflow.com/a/14860884
+        # steps: create mask array comparing first value in each column
+        # use np.all with axis=0 to do row columnar comparision
+        has_dimension = [True, True, True]
+        if not is_one_particle:
+            missing_dimensions = np.all(
+                np.isclose(self.xyz, self.xyz[0, :]), axis=0
+            )
+            for i, truthy in enumerate(missing_dimensions):
+                has_dimension[i] = not truthy
+
+        if is_one_particle:
+            v1 = np.asarray([[1.0, 0.0, 0.0]])
+            v2 = np.asarray([[0.0, 1.0, 0.0]])
+            v3 = np.asarray([[0.0, 0.0, 1.0]])
+        else:
+            v1 = np.asarray((self.maxs[0] - self.mins[0], 0.0, 0.0))
+            v2 = np.asarray((0.0, self.maxs[1] - self.mins[1], 0.0))
+            v3 = np.asarray((0.0, 0.0, self.maxs[2] - self.mins[2]))
+        vecs = [v1, v2, v3]
+
+        # handle any missing dimensions (planar molecules)
+        for i, dim in enumerate(has_dimension):
+            if not dim:
+                vecs[i][i] = 1.0
+        return Box.from_vectors(vectors=np.asarray([vecs]).reshape(3, 3))
 
     def min_periodic_distance(self, xyz0, xyz1):
         """Vectorized distance calculation considering minimum image.
+
+        Only implemented for orthorhombic simulation boxes.
 
         Parameters
         ----------
@@ -1182,7 +1235,38 @@ class Compound(object):
             image convention
         """
         d = np.abs(xyz0 - xyz1)
-        d = np.where(d > 0.5 * self.periodicity, self.periodicity - d, d)
+        if self.box is not None:
+            if np.allclose(self.box.angles, 90.0):
+                d = np.where(
+                    d > 0.5 * np.array(self.box.lengths),
+                    np.array(self.box.lengths) - d,
+                    d,
+                )
+            else:
+                raise NotImplementedError(
+                    "Periodic distance calculation is not implemented "
+                    "for non-orthorhombic boxes"
+                )
+        else:
+            """
+            raise MBuildError(f'Cannot calculate minimum periodic distance. '
+                              f'No Box set for {self}')
+            """
+            warn(
+                f"No Box object set for {self}, using rectangular bounding box"
+            )
+            self.box = self.get_boundingbox()
+            if np.allclose(self.box.angles, 90.0):
+                d = np.where(
+                    d > 0.5 * np.array(self.box.lengths),
+                    np.array(self.box.lengths) - d,
+                    d,
+                )
+            else:
+                raise NotImplementedError(
+                    "Periodic distance calculation is not implemented "
+                    "for non-orthorhombic boxes"
+                )
         return np.sqrt((d ** 2).sum(axis=-1))
 
     def particles_in_range(
@@ -1221,9 +1305,7 @@ class Compound(object):
         scipy.spatial.ckdtree : Further details on kd-trees
         """
         if particle_kdtree is None:
-            particle_kdtree = PeriodicCKDTree(
-                data=self.xyz, bounds=self.periodicity
-            )
+            particle_kdtree = PeriodicCKDTree(data=self.xyz, box=self.box)
         _, idxs = particle_kdtree.query(
             compound.pos, k=max_particles, distance_upper_bound=dmax
         )
@@ -1362,7 +1444,7 @@ class Compound(object):
         for element in elements:
             try:
                 widget.add_ball_and_stick(
-                    "_{}".format(element.upper()),
+                    f"_{element.upper()}",
                     aspect_ratio=_ATOMIC_RADII[element.title()] ** 1.5 * scale,
                 )
             except KeyError:
@@ -1372,7 +1454,7 @@ class Compound(object):
                     if particle.name == element
                 ]
                 widget.add_ball_and_stick(
-                    "@{}".format(",".join(ids)),
+                    f"@{','.join(ids)}",
                     aspect_ratio=0.17 ** 1.5 * scale,
                     color="grey",
                 )
@@ -2056,10 +2138,9 @@ class Compound(object):
             checking against Compound.name.
         box : mb.Box, optional, default=self.boundingbox (with buffer)
             Box information to be used when converting to a `Trajectory`.
-            If 'None', a bounding box is used with a 0.5nm buffer in each
-            dimension. to avoid overlapping atoms, unless `self.periodicity`
-            is not None, in which case those values are used for the
-            box lengths.
+            If 'None', self.box is used. If self.box is None,
+            a bounding box is used with a 0.5 nm buffer in each
+            dimension to avoid overlapping atoms.
 
         Returns
         -------
@@ -2067,7 +2148,7 @@ class Compound(object):
 
         See Also
         --------
-        mbuild.conversion.to_trajectory
+        _to_topology
         """
         return conversion.to_trajectory(
             compound=self,
@@ -2113,10 +2194,9 @@ class Compound(object):
         ----------
         box : mb.Box, optional, default=self.boundingbox (with buffer)
             Box information to be used when converting to a `Structure`.
-            If 'None', a bounding box is used with 0.25nm buffers at
-            each face to avoid overlapping atoms, unless `self.periodicity`
-            is not None, in which case those values are used for the
-            box lengths.
+            If 'None', self.box is used. If self.box is None,
+            a bounding box is used with 0.5 nm buffer in each dimension
+            to avoid overlapping atoms.
         title : str, optional, default=self.name
             Title/name of the ParmEd Structure
         residues : str of list of str
@@ -2306,12 +2386,14 @@ class Compound(object):
 
         if self.children:
             descr.append("{:d} particles, ".format(self.n_particles))
-            if any(self.periodicity):
-                descr.append("periodicity: {}, ".format(self.periodicity))
+            if self.box is not None:
+                descr.append("System box: {}, ".format(self.box))
             else:
                 descr.append("non-periodic, ")
         else:
-            descr.append("pos=({: .4f},{: .4f},{: .4f}), ".format(*self.pos))
+            descr.append(
+                "pos=({}), ".format(np.array2string(self.pos, precision=4))
+            )
 
         descr.append("{:d} bonds, ".format(self.n_bonds))
 
@@ -2343,9 +2425,9 @@ class Compound(object):
 
         newone.name = deepcopy(self.name)
         newone._element = deepcopy(self.element)
-        newone.periodicity = deepcopy(self.periodicity)
         newone._pos = deepcopy(self._pos)
         newone.port_particle = deepcopy(self.port_particle)
+        newone._box = deepcopy(self._box)
         newone._check_if_contains_rigid_bodies = deepcopy(
             self._check_if_contains_rigid_bodies
         )
@@ -2391,7 +2473,6 @@ class Compound(object):
                         # Referrers must have been handled already, or the will
                         # be handled
 
-        newone.box = deepcopy(self.box)
         return newone
 
     def _clone_bonds(self, clone_of=None):

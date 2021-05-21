@@ -24,7 +24,7 @@ class TestSilicaInterface(BaseTest):
         assert abs(max(z) - min(z) - thickness) < thickness_tolerance
 
         density_tolerance = 0.1
-        area = interface.periodicity[0] * interface.periodicity[1]
+        area = interface.box.lengths[0] * interface.box.lengths[1]
         oh_count = len(list(interface.particles_by_name("O_surface")))
         assert abs((oh_count / area) - 5.0) < density_tolerance
 

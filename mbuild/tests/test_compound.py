@@ -6,6 +6,7 @@ import parmed as pmd
 import pytest
 
 import mbuild as mb
+from mbuild import Box, Compound, Particle, Port
 from mbuild.exceptions import MBuildError
 from mbuild.tests.base_test import BaseTest
 from mbuild.utils.exceptions import RemovedFuncError
@@ -36,14 +37,14 @@ class TestCompound(BaseTest):
         mb.load(get_fn("methyl.pdb"))
 
     def test_load_conversion(self, ethane, h2o):
-        compound = mb.Compound([ethane, h2o])
+        compound = Compound([ethane, h2o])
         parm = compound.to_parmed()
         traj = compound.to_trajectory()
         belmol = compound.to_pybel()
 
         for topo in [compound, parm, traj, belmol]:
             topo_converted = mb.load(topo)
-            assert isinstance(topo_converted, mb.Compound)
+            assert isinstance(topo_converted, Compound)
             assert topo_converted.n_particles == 11
             assert (
                 len([at for at in topo_converted.particles() if at.name == "C"])
@@ -68,10 +69,10 @@ class TestCompound(BaseTest):
         test = pmd.load_file(get_fn("styrene.mol2"), structure=True)
         assert isinstance(test, pmd.Structure)
         test_converted1 = mb.load(test)
-        test_converted2 = mb.Compound()
+        test_converted2 = Compound()
         test_converted2.from_parmed(test)
 
-        assert isinstance(test_converted1, mb.Compound)
+        assert isinstance(test_converted1, Compound)
         assert test_converted1.n_particles == len(test.atoms)
         assert test_converted2.n_particles == test_converted1.n_particles
         assert test_converted1.n_bonds == len(test.bonds)
@@ -86,7 +87,7 @@ class TestCompound(BaseTest):
         assert np.allclose(test_converted1.xyz, test_converted2.xyz)
 
     def test_load_xyz(self):
-        class MyCompound(mb.Compound):
+        class MyCompound(Compound):
             def __init__(self):
                 super(MyCompound, self).__init__()
 
@@ -144,8 +145,8 @@ class TestCompound(BaseTest):
 
     def test_save_box(self, ch3):
         extensions = [".mol2", ".pdb", ".hoomdxml", ".gro", ".sdf"]
-        box_attributes = ["mins", "maxs", "lengths"]
-        custom_box = mb.Box([0.8, 0.8, 0.8])
+        box_attributes = ["lengths"]
+        custom_box = Box(lengths=[0.8, 0.8, 0.8], angles=[90, 90, 90])
         for ext in extensions:
             outfile_padded = "padded_methyl" + ext
             outfile_custom = "custom_methyl" + ext
@@ -154,8 +155,8 @@ class TestCompound(BaseTest):
             padded_ch3 = mb.load(outfile_padded)
             custom_ch3 = mb.load(outfile_custom)
             for attr in box_attributes:
-                pad_attr = getattr(padded_ch3.boundingbox, attr)
-                custom_attr = getattr(custom_ch3.boundingbox, attr)
+                pad_attr = getattr(padded_ch3.get_boundingbox(), attr)
+                custom_attr = getattr(custom_ch3.get_boundingbox(), attr)
                 assert np.array_equal(pad_attr, custom_attr)
 
     def test_save_overwrite(self, ch3):
@@ -247,7 +248,7 @@ class TestCompound(BaseTest):
         )
 
     def test_save_resnames(self, ch3, h2o):
-        system = mb.Compound([ch3, h2o])
+        system = Compound([ch3, h2o])
         system.save("resnames.gro", residues=["CH3", "H2O"])
         struct = pmd.load_file("resnames.gro")
 
@@ -255,7 +256,7 @@ class TestCompound(BaseTest):
         assert struct.residues[1].name == "H2O"
 
     def test_save_resnames_single(self, c3, n4):
-        system = mb.Compound([c3, n4])
+        system = Compound([c3, n4])
         system.save("resnames_single.gro", residues=["C3", "N4"])
         struct = pmd.load_file("resnames_single.gro")
         assert struct.residues[0].number == 1
@@ -303,7 +304,7 @@ class TestCompound(BaseTest):
                         assert gmx_rule == gmx_rules[combining_rule]
 
     def test_clone_with_box(self, ethane):
-        ethane.box = ethane.boundingbox
+        ethane.box = ethane.get_boundingbox()
         ethane_clone = mb.clone(ethane)
         assert np.all(ethane.xyz == ethane_clone.xyz)
         assert np.all(
@@ -313,29 +314,29 @@ class TestCompound(BaseTest):
         assert len(ethane.children) == len(ethane_clone.children)
 
     def test_batch_add(self, ethane, h2o):
-        compound = mb.Compound()
+        compound = Compound()
         compound.add([ethane, h2o])
         assert compound.n_particles == 8 + 3
         assert compound.n_bonds == 7 + 2
 
     def test_init_with_subcompounds1(self, ethane):
-        compound = mb.Compound(ethane)
+        compound = Compound(ethane)
         assert compound.n_particles == 8
         assert compound.n_bonds == 7
 
     def test_init_with_subcompounds2(self, ethane, h2o):
-        compound = mb.Compound([ethane, h2o])
+        compound = Compound([ethane, h2o])
         assert compound.n_particles == 8 + 3
         assert compound.n_bonds == 7 + 2
 
     def test_init_with_subcompounds3(self, ethane, h2o):
-        compound = mb.Compound([ethane, [h2o, mb.clone(h2o)]])
+        compound = Compound([ethane, [h2o, mb.clone(h2o)]])
         assert compound.n_particles == 8 + 2 * 3
         assert compound.n_bonds == 7 + 2 * 2
 
     def test_init_with_bad_name(self):
         with pytest.raises(ValueError):
-            mb.Compound(name=1)
+            Compound(name=1)
 
     def test_add_wrong_input(self, ethane):
         with pytest.raises(ValueError):
@@ -364,7 +365,7 @@ class TestCompound(BaseTest):
         assert xyz.shape == (12, 3)
 
     def test_xyz_setter_bad_shape(self):
-        single_compound = mb.Compound()
+        single_compound = Compound()
         with pytest.raises(ValueError):
             single_compound.xyz = np.zeros(shape=(4, 10))
         with pytest.raises(ValueError):
@@ -471,7 +472,7 @@ class TestCompound(BaseTest):
         assert ethane._n_particles() == 0
         assert ethane.n_bonds == 0
         for part in ethane.children:
-            assert isinstance(part, mb.Port)
+            assert isinstance(part, Port)
 
     def test_remove_subcompound(self, ethane):
         methyl = ethane.children[0]
@@ -492,8 +493,8 @@ class TestCompound(BaseTest):
         assert len(ethane.children) == 0
 
     def test_remove_no_bond_graph(self):
-        compound = mb.Compound()
-        particle = mb.Compound(name="C", pos=[0, 0, 0])
+        compound = Compound()
+        particle = Compound(name="C", pos=[0, 0, 0])
         compound.add(particle, "test-particle")
         compound.remove(particle)
         assert particle not in compound.particles()
@@ -514,11 +515,11 @@ class TestCompound(BaseTest):
         assert np.array_equal(methane.center, np.array([0, 0, 0]))
         for orientation in np.identity(3):
             separation = 0.2
-            port = mb.Port(anchor=methane[0], orientation=orientation)
+            port = Port(anchor=methane[0], orientation=orientation)
             assert np.allclose(
                 port.center, np.array([0.0, 0.0, 0.0]), atol=1e-15
             )
-            port = mb.Port(
+            port = Port(
                 anchor=methane[0],
                 orientation=orientation,
                 separation=separation,
@@ -528,11 +529,11 @@ class TestCompound(BaseTest):
             )
         np.random.seed(0)
         for orientation in np.random.rand(5, 3):
-            port = mb.Port(anchor=methane[0], orientation=orientation)
+            port = Port(anchor=methane[0], orientation=orientation)
             assert np.allclose(
                 port.center, np.array([0.0, 0.0, 0.0]), atol=1e-15
             )
-            port = mb.Port(
+            port = Port(
                 anchor=methane[0],
                 orientation=orientation,
                 separation=separation,
@@ -544,7 +545,7 @@ class TestCompound(BaseTest):
             )
 
     def test_single_particle(self):
-        part = mb.Particle(name="A")
+        part = Particle(name="A")
         assert part.n_particles == 1
         assert len(list(part.particles())) == 1
         assert part.xyz.shape == (1, 3)
@@ -554,11 +555,11 @@ class TestCompound(BaseTest):
 
     def test_name(self):
         with pytest.raises(ValueError):
-            mb.Compound(name=1)
+            Compound(name=1)
 
     def test_particle_in_particle(self):
-        part = mb.Particle(name="A")
-        parent = mb.Compound(part)
+        part = Particle(name="A")
+        parent = Compound(part)
 
         assert part.n_particles == 1
         assert len(list(part.particles())) == 1
@@ -610,7 +611,7 @@ class TestCompound(BaseTest):
         assert np.allclose(ethane.xyz, new_file.xyz)
 
     def test_update_coordinates_no_hierarchy(self):
-        mycomp = mb.Compound()
+        mycomp = Compound()
         myclone = mb.clone(mycomp)
         myclone.xyz += 1
 
@@ -646,7 +647,7 @@ class TestCompound(BaseTest):
         assert all(chain.n_atoms == 4 for chain in traj.top.chains)
         assert all(chain.n_residues == 1 for chain in traj.top.chains)
 
-        system = mb.Compound([c3, n4])
+        system = Compound([c3, n4])
         traj = system.to_trajectory(residues=["C", "N"])
         assert traj.n_atoms == 2
         assert traj.top.n_bonds == 0
@@ -668,26 +669,29 @@ class TestCompound(BaseTest):
 
     @pytest.mark.skipif(not has_mdtraj, reason="MDTraj not installed")
     def test_box_mdtraj(self, ethane):
-        assert np.allclose(ethane.periodicity, np.zeros(3))
-        traj_boundingbox = ethane.to_trajectory()
+        box = Box(lengths=[4.0, 5.0, 6.0], angles=[90, 90, 90])
+        assert ethane.box is None
+        # (1) Specify box
+        traj = ethane.to_trajectory(box=box)
+        assert np.allclose(traj.unitcell_lengths, [4.0, 5.0, 6.0])
+        # (2) Extract from bounding box
+        assert ethane.box is None
+        traj = ethane.to_trajectory()
         assert np.allclose(
-            traj_boundingbox.unitcell_lengths, ethane.boundingbox.lengths + 0.5
+            # Comparison in nm
+            traj.unitcell_lengths,
+            np.array(ethane.get_boundingbox().lengths) + 0.5,
         )
-
-        ethane.periodicity = [4.0, 5.0, 6.0]
-        assert ethane.periodicity is not None
-        traj_periodicity = ethane.to_trajectory()
-        assert np.allclose(
-            traj_periodicity.unitcell_lengths, ethane.periodicity
+        # (3) Box as part of compound
+        ethane.box = Box.from_mins_maxs_angles(
+            mins=np.zeros(3), maxs=8.0 * np.ones(3), angles=[90.0, 90.0, 90.0]
         )
-
-        box = mb.Box(mins=np.zeros(3), maxs=8.0 * np.zeros(3))
-        traj_box = ethane.to_trajectory(box=box)
-        assert np.allclose(traj_box.unitcell_lengths, box.lengths)
+        traj = ethane.to_trajectory()
+        assert np.allclose(traj.unitcell_lengths, np.asarray([8, 8, 8]))
 
     @pytest.mark.skipif(not has_mdtraj, reason="MDTraj not installed")
     def test_resnames_mdtraj(self, h2o, ethane):
-        system = mb.Compound([h2o, mb.clone(h2o), ethane])
+        system = Compound([h2o, mb.clone(h2o), ethane])
         traj = system.to_trajectory(residues=["Ethane", "H2O"])
         residues = list(traj.top.residues)
         assert traj.n_residues == 3
@@ -714,7 +718,7 @@ class TestCompound(BaseTest):
 
     @pytest.mark.skipif(not has_mdtraj, reason="MDTraj not installed")
     def test_chainnames_mdtraj(self, h2o, ethane):
-        system = mb.Compound([h2o, mb.clone(h2o), ethane])
+        system = Compound([h2o, mb.clone(h2o), ethane])
         traj = system.to_trajectory(chains=["Ethane", "H2O"])
         assert traj.n_chains == 3
 
@@ -729,17 +733,18 @@ class TestCompound(BaseTest):
 
     @pytest.mark.skipif(not has_mdtraj, reason="MDTraj not installed")
     def test_mdtraj_box(self, h2o):
-        compound = mb.Compound()
+        compound = Compound()
         compound.add(h2o)
-        tilted_box = mb.Box(lengths=[2.0, 2.0, 2.0], angles=[60.0, 80.0, 100.0])
+        tilted_box = Box(lengths=[2.0, 2.0, 2.0], angles=[60.0, 80.0, 100.0])
         trajectory = compound.to_trajectory(box=tilted_box)
-        assert (trajectory.unitcell_lengths == [2.0, 2.0, 2.0]).all()
-        assert (trajectory.unitcell_angles == [60.0, 80.0, 100.0]).all()
-        print(trajectory.unitcell_vectors)
+        assert np.all(np.isclose(trajectory.unitcell_lengths, [2.0, 2.0, 2.0]))
+        assert np.all(
+            np.isclose(trajectory.unitcell_angles, [60.0, 80.0, 100.0])
+        )
 
     @pytest.mark.skipif(not has_intermol, reason="InterMol is not installed")
     def test_intermol_conversion1(self, ethane, h2o):
-        compound = mb.Compound([ethane, h2o])
+        compound = Compound([ethane, h2o])
 
         intermol_system = compound.to_intermol()
         assert len(intermol_system.molecule_types) == 1
@@ -753,7 +758,7 @@ class TestCompound(BaseTest):
     @pytest.mark.skipif(not has_intermol, reason="InterMol is not installed")
     def test_intermol_conversion2(self, ethane, h2o):
         # 2 distinct Ethane objects.
-        compound = mb.Compound([ethane, mb.clone(ethane), h2o])
+        compound = Compound([ethane, mb.clone(ethane), h2o])
 
         molecule_types = [ethane.name, h2o.name]
         intermol_system = compound.to_intermol(molecule_types=molecule_types)
@@ -773,7 +778,7 @@ class TestCompound(BaseTest):
         assert len(h2os[0].atoms) == 3
 
     def test_parmed_conversion(self, ethane, h2o):
-        compound = mb.Compound([ethane, h2o])
+        compound = Compound([ethane, h2o])
 
         structure = compound.to_parmed()
         assert structure.title == "Compound"
@@ -792,7 +797,7 @@ class TestCompound(BaseTest):
             structure.atoms
         )
 
-        compound2 = mb.Compound()
+        compound2 = Compound()
         compound2.from_parmed(structure)
 
         assert compound2.n_particles == 11
@@ -808,13 +813,45 @@ class TestCompound(BaseTest):
 
         assert np.allclose(compound2.xyz, compound3.xyz)
 
+    def test_box_parmed(self, ethane):
+        box = Box(lengths=[4.0, 5.0, 6.0], angles=[90, 90, 90])
+        assert ethane.box is None
+        # (1) Specify box
+        pmd = ethane.to_parmed(box=box)
+        assert np.allclose(
+            # Comparison in nm
+            0.1 * pmd.box[0:3],
+            box.lengths,
+        )
+
+        # (2) Extract from bounding box
+        assert ethane.box is None
+        pmd = ethane.to_parmed()
+        assert np.allclose(
+            # Comparison in nm
+            0.1 * pmd.box[0:3],
+            np.array(ethane.get_boundingbox().lengths) + 0.5,
+        )
+
+        # (3) Extract from self.box
+        ethane.box = box
+        pmd = ethane.to_parmed()
+        assert ethane.box is not None
+        assert np.allclose(
+            # Comparison in nm
+            0.1 * pmd.box[0:3],
+            ethane.box.lengths,
+        )
+
     def test_fillbox_then_parmed(self):
         # This test would fail with the old to_parmed code (pre PR #699)
 
-        bead = mb.Compound(name="Ar")
-        box = mb.Box(mins=(2, 2, 2), maxs=(3, 3, 3))
-        bead_box = mb.fill_box(bead, 100, box)
-        bead_box_in_pmd = bead_box.to_parmed()
+        bead = Compound(name="Bead")
+        box = Box.from_mins_maxs_angles(
+            mins=(2, 2, 2), maxs=(3, 3, 3), angles=(90.0, 90.0, 90.0)
+        )
+        bead_box = mb.fill_box(bead, 100, box=[2, 2, 2, 3, 3, 3])
+        bead_box_in_pmd = bead_box.to_parmed(box=box)
 
         assert isinstance(bead_box_in_pmd, pmd.Structure)
         assert len(bead_box_in_pmd.atoms) == 100
@@ -824,7 +861,7 @@ class TestCompound(BaseTest):
         ).all()
 
     def test_resnames_parmed(self, h2o, ethane):
-        system = mb.Compound([h2o, mb.clone(h2o), ethane])
+        system = Compound([h2o, mb.clone(h2o), ethane])
         struct = system.to_parmed(residues=["Ethane", "H2O"])
         assert len(struct.residues) == 3
         assert struct.residues[0].name == "H2O"
@@ -859,36 +896,47 @@ class TestCompound(BaseTest):
         )
 
     def test_parmed_element_guess(self):
-        compound = mb.Particle(name="foobar")
+        compound = Particle(name="foobar")
         with pytest.warns(UserWarning):
             _ = compound.to_parmed()
 
-        compound = mb.Particle(name="XXXXXX")
+        compound = Particle(name="XXXXXX")
         with pytest.warns(UserWarning):
             _ = compound.to_parmed()
 
     def test_parmed_box(self, h2o):
-        compound = mb.Compound()
+        compound = Compound()
         compound.add(h2o)
-        tilted_box = mb.Box(lengths=[2.0, 2.0, 2.0], angles=[60.0, 80.0, 100.0])
+        tilted_box = Box(lengths=[2.0, 2.0, 2.0], angles=[90.0, 90.0, 120.0])
         structure = compound.to_parmed(box=tilted_box)
-        assert all(structure.box == [20.0, 20.0, 20.0, 60.0, 80.0, 100.0])
+        assert np.all(
+            np.isclose(structure.box, [20, 20, 20, 90.0, 90.0, 120.0])
+        )
+
+    def test_parmed_box_with_periodicity(self, h2o):
+        compound = Compound()
+        compound.add(h2o)
+        compound.box = Box(lengths=[2.0, 2.0, 2.0], angles=[90.0, 90.0, 120.0])
+        structure = compound.to_parmed()
+        assert np.all(
+            np.isclose(structure.box, [20, 20, 20, 90.0, 90.0, 120.0])
+        )
 
     def test_min_periodic_dist(self, ethane):
-        compound = mb.Compound(ethane)
+        compound = Compound(ethane)
         C_pos = np.array(
             [atom.pos for atom in list(compound.particles_by_name("C"))]
         )
         assert (
             round(compound.min_periodic_distance(C_pos[0], C_pos[1]), 2) == 0.14
         )
-        compound.periodicity = np.array([0.2, 0.2, 0.2])
+        compound.box = Box(lengths=[0.2, 0.2, 0.2], angles=[90, 90, 90])
         assert (
             round(compound.min_periodic_distance(C_pos[0], C_pos[1]), 2) == 0.06
         )
 
     def test_bond_graph(self, ch3):
-        compound = mb.Compound()
+        compound = Compound()
         compound.add(ch3)
         assert compound.n_bonds == 3
         assert all(
@@ -955,9 +1003,9 @@ class TestCompound(BaseTest):
         assert np.array_equal(orientations, updated_orientations)
 
     def test_charge(self, ch2, ch3):
-        compound = mb.Compound(charge=2.0)
+        compound = Compound(charge=2.0)
         assert compound.charge == 2.0
-        compound2 = mb.Compound()
+        compound2 = Compound()
         assert compound2.charge == 0.0
 
         ch2[0].charge = 0.5
@@ -974,11 +1022,11 @@ class TestCompound(BaseTest):
     def test_charge_subcompounds(self, ch2, ch3):
         ch2[0].charge = 0.5
         ch2[1].charge = -0.25
-        compound = mb.Compound(subcompounds=ch2)
+        compound = Compound(subcompounds=ch2)
         assert compound.charge == 0.25
 
         with pytest.raises(MBuildError):
-            compound = mb.Compound(subcompounds=ch3, charge=1.0)
+            compound = Compound(subcompounds=ch3, charge=1.0)
 
     def test_charge_neutrality_warn(self, benzene):
         benzene[0].charge = 0.25
@@ -1075,7 +1123,7 @@ class TestCompound(BaseTest):
         octane.energy_minimize(forcefield=get_fn("small_oplsaa.xml"))
 
     def test_clone_outside_containment(self, ch2, ch3):
-        compound = mb.Compound()
+        compound = Compound()
         compound.add(ch2)
         mb.force_overlap(ch3, ch3["up"], ch2["up"])
         with pytest.raises(MBuildError):
@@ -1096,7 +1144,7 @@ class TestCompound(BaseTest):
 
     def test_add_bond_remove_ports(self, hydrogen):
         h_clone = mb.clone(hydrogen)
-        h2 = mb.Compound(subcompounds=(hydrogen, h_clone))
+        h2 = Compound(subcompounds=(hydrogen, h_clone))
         assert len(h2.all_ports()) == 2
         assert len(hydrogen.all_ports()) == 1
         assert len(h_clone.all_ports()) == 1
@@ -1108,7 +1156,7 @@ class TestCompound(BaseTest):
 
     def test_remove_bond_add_ports(self, hydrogen):
         h_clone = mb.clone(hydrogen)
-        h2 = mb.Compound(subcompounds=(hydrogen, h_clone))
+        h2 = Compound(subcompounds=(hydrogen, h_clone))
         mb.force_overlap(h_clone, h_clone["up"], hydrogen["up"])
         h2.remove_bond((h2[0], h2[1]))
         assert len(h2.all_ports()) == 2
@@ -1150,15 +1198,15 @@ class TestCompound(BaseTest):
 
     @pytest.mark.skipif(not has_networkx, reason="NetworkX is not installed")
     def test_to_networkx(self):
-        comp = mb.Compound()
+        comp = Compound()
         comp.name = "Parent"
 
         for n in range(2):
-            child = mb.Compound()
+            child = Compound()
             child.name = "c_{}".format(n)
             comp.add(child)
             for m in range(3):
-                child_child = mb.Compound()
+                child_child = Compound()
                 child_child.name = "c_{0}_{1}".format(m, n)
                 child.add(child_child)
 
@@ -1167,11 +1215,11 @@ class TestCompound(BaseTest):
         assert graph.number_of_edges() == 8
         assert graph.number_of_nodes() == 9
 
-        assert all([isinstance(n, mb.Compound) for n in graph.nodes()])
+        assert all([isinstance(n, Compound) for n in graph.nodes()])
 
     @pytest.mark.skipif(not has_networkx, reason="NetworkX is not installed")
     def test_to_networkx_no_hierarchy(self):
-        comp = mb.Compound()
+        comp = Compound()
         comp.name = "Parent"
 
         graph = comp.to_networkx()
@@ -1179,19 +1227,19 @@ class TestCompound(BaseTest):
         assert graph.number_of_edges() == 0
         assert graph.number_of_nodes() == 1
 
-        assert all([isinstance(n, mb.Compound) for n in graph.nodes()])
+        assert all([isinstance(n, Compound) for n in graph.nodes()])
 
     @pytest.mark.skipif(not has_networkx, reason="NetworkX is not installed")
     def test_to_networkx_names_only(self):
-        comp = mb.Compound()
+        comp = Compound()
         comp.name = "Parent"
 
         for n in range(2):
-            child = mb.Compound()
+            child = Compound()
             child.name = "c_{}".format(n)
             comp.add(child)
             for m in range(3):
-                child_child = mb.Compound()
+                child_child = Compound()
                 child_child.name = "c_{0}_{1}".format(m, n)
                 child.add(child_child)
 
@@ -1206,13 +1254,13 @@ class TestCompound(BaseTest):
     def test_from_trajectory(self):
         if has_mdtraj:
             mdtraj = import_("mdtraj")
-        comp = mb.Compound()
+        comp = Compound()
         traj = mdtraj.load(get_fn("spc.pdb"))
         comp.from_trajectory(traj)
         assert comp.children[0].name == "SPC"
 
     def test_from_parmed(self):
-        comp = mb.Compound()
+        comp = Compound()
         struc = pmd.load_file(get_fn("spc.pdb"))
         comp.from_parmed(struc)
         assert comp.children[0].name == "SPC"
@@ -1221,14 +1269,14 @@ class TestCompound(BaseTest):
     def test_complex_from_trajectory(self):
         if has_mdtraj:
             mdtraj = import_("mdtraj")
-        comp = mb.Compound()
+        comp = Compound()
         traj = mdtraj.load(get_fn("pro_but.pdb"))
         comp.from_trajectory(traj)
         assert comp.children[0].children[0].name == "pro"
         assert comp.children[1].children[0].name == "but"
 
     def test_complex_from_parmed(self):
-        comp = mb.Compound()
+        comp = Compound()
         struc = pmd.load_file(get_fn("pro_but.pdb"))
         comp.from_parmed(struc)
         assert comp.children[0].name == "pro"
@@ -1236,15 +1284,15 @@ class TestCompound(BaseTest):
 
     @pytest.mark.skipif(not has_networkx, reason="NetworkX is not installed")
     def test_to_networkx_names_only_with_same_names(self):
-        comp = mb.Compound()
+        comp = Compound()
         comp.name = "compound"
 
         for n in range(2):
-            child = mb.Compound()
+            child = Compound()
             child.name = "sub_compound"
             comp.add(child)
             for m in range(3):
-                child_child = mb.Compound()
+                child_child = Compound()
                 child_child.name = "sub_sub_compound"
                 child.add(child_child)
 
@@ -1273,7 +1321,7 @@ class TestCompound(BaseTest):
     def test_from_pybel(self):
         pybel = import_("pybel")
         benzene = list(pybel.readfile("mol2", get_fn("benzene.mol2")))[0]
-        cmpd = mb.Compound()
+        cmpd = Compound()
         cmpd.from_pybel(benzene)
         assert benzene.OBMol.NumAtoms() == cmpd.n_particles
         assert benzene.OBMol.NumBonds() == cmpd.n_bonds
@@ -1286,7 +1334,9 @@ class TestCompound(BaseTest):
     @pytest.mark.skipif(not has_openbabel, reason="Pybel is not installed")
     def test_to_more_pybel_residues(self, methane, ethane):
         box = mb.fill_box(
-            [methane, ethane], n_compounds=[3, 3], box=mb.Box([10, 10, 10])
+            [methane, ethane],
+            n_compounds=[3, 3],
+            box=Box(lengths=[10, 10, 10], angles=[90.0, 90.0, 90.0]),
         )
         pybel_mol = box.to_pybel(box=None, residues=["Ethane", "Methane"])
         pybel_mol_resnames = {a.name for a in pybel_mol.residues}
@@ -1297,7 +1347,7 @@ class TestCompound(BaseTest):
     def test_from_pybel_residues(self):
         pybel = import_("pybel")
         pybel_mol = list(pybel.readfile("mol2", get_fn("methyl.mol2")))[0]
-        cmpd = mb.Compound()
+        cmpd = Compound()
         cmpd.from_pybel(pybel_mol)
         assert "LIG1" in cmpd.children[0].name
 
@@ -1359,7 +1409,7 @@ class TestCompound(BaseTest):
         assert np.allclose(methane.xyz, sdf_string.xyz, atol=1e-5)
 
     def test_load_multiple_sdf(self, methane):
-        filled = mb.fill_box(methane, n_compounds=10, box=[0, 0, 0, 4, 4, 4])
+        filled = mb.fill_box(methane, n_compounds=10, box=Box([4, 4, 4]))
         filled.save("methane.sdf")
         sdf_string = mb.load("methane.sdf")
 
@@ -1370,57 +1420,56 @@ class TestCompound(BaseTest):
         assert np.allclose(filled.xyz, sdf_string.xyz, atol=1e-5)
 
     def test_box(self):
-        compound = mb.Compound()
+        angles = [90.0, 90.0, 90.0]
+        lengths = [3.0, 3.0, 3.0]
+        compound = Compound()
         assert compound.box == None
-        compound.box = mb.Box([3.0, 3.0, 3.0])
-        assert np.allclose(compound.box.lengths, [3.0, 3.0, 3.0])
-        assert np.allclose(compound.box.angles, [90.0, 90.0, 90])
+        compound.box = Box([3.0, 3.0, 3.0])
+        assert np.allclose(compound.box.lengths, lengths)
+        assert np.allclose(compound.box.angles, angles)
         with pytest.raises(TypeError, match=r"specified as an mbuild.Box"):
             compound.box = "Hello, world"
         with pytest.raises(TypeError, match=r"specified as an mbuild.Box"):
             compound.box = [3.0, 3.0, 3.0]
-        port = mb.Port()
+        port = Port()
         assert port.box == None
         with pytest.raises(ValueError, match=r"cannot have"):
-            port.box = mb.Box([3.0, 3.0, 3.0])
+            port.box = Box(lengths=lengths, angles=angles)
 
-        compound = mb.Compound()
-        subcomp = mb.Compound(box=mb.Box([3.0, 3.0, 3.0]))
+        compound = Compound()
+        subcomp = Compound(box=Box(lengths=lengths, angles=angles))
         compound.add(subcomp)
-        assert np.allclose(compound.box.lengths, [3.0, 3.0, 3.0])
-        assert np.allclose(compound.box.angles, [90.0, 90.0, 90.0])
-        compound = mb.Compound(box=mb.Box([3.0, 3.0, 3.0]))
-        subcomp = mb.Compound(
-            box=mb.Box(lengths=[6.0, 6.0, 6.0], angles=[60.0, 60.0, 120.0])
-        )
+        assert np.allclose(compound.box.lengths, lengths)
+        assert np.allclose(compound.box.angles, angles)
+        compound = Compound(box=Box([3.0, 3.0, 3.0]))
+        subcomp = Compound(box=Box([6.0, 6.0, 6.0], angles=[90.0, 90.0, 120.0]))
         with pytest.warns(UserWarning):
             compound.add(subcomp)
         assert np.allclose(compound.box.lengths, [3.0, 3.0, 3.0])
         assert np.allclose(compound.box.angles, [90.0, 90.0, 90.0])
-        compound = mb.Compound(box=mb.Box([3.0, 3.0, 3.0]))
-        subcomp = mb.Compound(
-            box=mb.Box(lengths=[6.0, 6.0, 6.0], angles=[60.0, 60.0, 120.0])
+        compound = Compound(box=Box(lengths=lengths, angles=angles))
+        subcomp = Compound(
+            box=Box(lengths=[6.0, 6.0, 6.0], angles=[90.0, 90.0, 120.0])
         )
         compound.add(subcomp, inherit_box=True)
         assert np.allclose(compound.box.lengths, [6.0, 6.0, 6.0])
-        assert np.allclose(compound.box.angles, [60.0, 60.0, 120.0])
-        compound = mb.Compound(box=mb.Box([3.0, 3.0, 3.0]))
-        subcomp = mb.Compound()
+        assert np.allclose(compound.box.angles, [90.0, 90.0, 120.0])
+        compound = Compound(box=Box(lengths=lengths, angles=angles))
+        subcomp = Compound()
         with pytest.warns(UserWarning):
             compound.add(subcomp, inherit_box=True)
         assert np.allclose(compound.box.lengths, [3.0, 3.0, 3.0])
         assert np.allclose(compound.box.angles, [90.0, 90.0, 90.0])
-
-        compound = mb.Compound()
-        carbon = mb.Compound(name="C")
+        compound = Compound()
+        carbon = Compound(name="C")
         compound.add(carbon)
-        compound.box = mb.Box([3.0, 3.0, 3.0])
-        nitrogen = mb.Compound(name="N", pos=[4, 3, 3])
+        compound.box = Box(lengths=lengths, angles=angles)
+        nitrogen = Compound(name="N", pos=[4, 3, 3])
         with pytest.warns(UserWarning):
             compound.add(nitrogen)
-        compound.box = mb.Box([5.0, 4.0, 4.0])
+        compound.box = Box(lengths=[5.0, 4.0, 4.0], angles=angles)
         with pytest.warns(UserWarning):
-            compound.box = mb.Box([5.0, 4.0, 2.0])
+            compound.box = Box(lengths=[1.0, 1.0, 1.0], angles=angles)
 
     @pytest.mark.skipif(not has_py3Dmol, reason="Py3Dmol is not installed")
     def test_visualize_py3dmol(self, ethane):
@@ -1439,24 +1488,24 @@ class TestCompound(BaseTest):
     def test_element(self):
         from ele import Elements
 
-        na_compound = mb.Compound(element="Na")
+        na_compound = Compound(element="Na")
         assert na_compound.element == Elements.Na
-        na_compound = mb.Compound(element="NA")
+        na_compound = Compound(element="NA")
         assert na_compound.element == Elements.Na
-        na_compound = mb.Compound(element="na")
+        na_compound = Compound(element="na")
         assert na_compound.element == Elements.Na
-        co_compound = mb.Compound(element="Co")
+        co_compound = Compound(element="Co")
         assert co_compound.element != Elements.Na
 
         na_compound_clone = mb.clone(na_compound)
         assert na_compound_clone.element == Elements.Na
-        container = mb.Compound()
+        container = Compound()
         container.add(na_compound)
         container.add(na_compound_clone)
         for child in container.children:
             assert child.element == Elements.Na
 
-        na_compound = mb.Compound()
+        na_compound = Compound()
         na_compound.element = "Na"
         assert na_compound.element == Elements.Na
 
@@ -1464,18 +1513,18 @@ class TestCompound(BaseTest):
         from ele.exceptions import ElementError
 
         with pytest.raises(ElementError, match=r"No element with symbol"):
-            na_compound = mb.Compound(element="sodium")
+            na_compound = Compound(element="sodium")
         with pytest.raises(ElementError, match=r"No element with symbol"):
-            na_compound = mb.Compound(element="")
+            na_compound = Compound(element="")
 
     def test_get_by_element(self):
         from ele import Elements
         from ele.exceptions import ElementError
 
-        container = mb.Compound()
-        na = mb.Compound(element="Na")
-        na2 = mb.Compound(element="Na")
-        co = mb.Compound(element="Co")
+        container = Compound()
+        na = Compound(element="Na")
+        na2 = Compound(element="Na")
+        co = Compound(element="Co")
         container.add([na, na2, co])
         element_list = [c.element for c in container.particles_by_element("Na")]
         assert len(element_list) == 2
@@ -1492,6 +1541,16 @@ class TestCompound(BaseTest):
         mol = mb.load("COC", smiles=True, backend=backend)
         for particle in mol.particles():
             assert particle.element is not None
+
+    def test_mins_maxs(self, benzene):
+        assert np.allclose(benzene.mins, [-0.2267, -0.15422, 0.0])
+        assert np.allclose(benzene.maxs, [0.20318, 0.34207, 0.0])
+
+    def test_periodicity_raises(self):
+        with pytest.raises(ValueError):
+            Compound(periodicity=[True, True])
+        with pytest.raises(TypeError):
+            Compound(periodicity=[1, 2, 3])
 
     @pytest.mark.skipif(not has_foyer, reason="Foyer is not installed")
     def test_xyz_setter(self):

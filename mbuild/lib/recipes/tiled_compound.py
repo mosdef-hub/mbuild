@@ -5,11 +5,9 @@ import itertools as it
 
 import numpy as np
 
-from mbuild import clone
-from mbuild.compound import Compound
+from mbuild import Box, Compound, Port, clone
 from mbuild.exceptions import MBuildError
 from mbuild.periodic_kdtree import PeriodicCKDTree
-from mbuild.port import Port
 
 
 class TiledCompound(Compound):
@@ -32,11 +30,14 @@ class TiledCompound(Compound):
         super(TiledCompound, self).__init__()
 
         n_tiles = np.asarray(n_tiles)
+        periodicity = np.asarray(tile.periodicity)
         if not np.all(n_tiles > 0):
             raise ValueError("Number of tiles must be positive.")
 
+        if tile.box is None:
+            tile.box = tile.get_boundingbox()
         # Check that the tile is periodic in the requested dimensions.
-        if np.any(np.logical_and(n_tiles != 1, tile.periodicity == 0)):
+        if not np.all(np.logical_or((n_tiles == 1), periodicity)):
             raise ValueError(
                 "Tile not periodic in at least one of the specified dimensions."
             )
@@ -44,7 +45,10 @@ class TiledCompound(Compound):
         if name is None:
             name = tile.name + "-".join(str(d) for d in n_tiles)
         self.name = name
-        self.periodicity = np.array(tile.periodicity * n_tiles)
+        self.periodicity = tile.periodicity
+        self.box = Box(
+            np.array(tile.box.lengths) * n_tiles, angles=tile.box.angles
+        )
 
         if all(n_tiles == 1):
             self._add_tile(tile, (0, 0, 0))
@@ -63,46 +67,53 @@ class TiledCompound(Compound):
         # -----------------------------------
         for ijk in it.product(*[range(i) for i in n_tiles]):
             new_tile = clone(tile)
-            new_tile.translate(np.array(ijk * tile.periodicity))
+            new_tile.translate(np.multiply(ijk, np.asarray(tile.box.lengths)))
+
             self._add_tile(new_tile, ijk)
             self._hoist_ports(new_tile)
 
         # Fix bonds across periodic boundaries.
         # -------------------------------------
         # Cutoff for long bonds is half the shortest periodic distance.
-        bond_dist_thres = min(tile.periodicity[tile.periodicity > 0]) / 2
+        threshold_calc = [np.inf, np.inf, np.inf]
+        for i, truthy in enumerate(tile.periodicity):
+            if truthy:
+                threshold_calc[i] = tile.box.lengths[i]
+            else:
+                continue
+        dist_thresh = np.min(threshold_calc) / 2
 
+        # Create the bounds for the periodicKDtree, non-periodic dimensions are 0
+        bounds = [0, 0, 0]
+        length_array = np.asarray(tile.box.lengths)
+        for i, dim in enumerate(bounds):
+            if tile.periodicity[i]:
+                bounds[i] = self.box.lengths[i]
+            else:
+                continue
         # Bonds that were periodic in the original tile.
-        indices_of_periodic_bonds = set()
+        periodic_bonds = set()
         for particle1, particle2 in tile.bonds():
-            if np.linalg.norm(particle1.pos - particle2.pos) > bond_dist_thres:
-                indices_of_periodic_bonds.add(
-                    (particle1.index, particle2.index)
-                )
+
+            if np.linalg.norm(particle1.pos - particle2.pos) > dist_thresh:
+                periodic_bonds.add((particle1.index, particle2.index))
 
         # Build a periodic kdtree of all particle positions.
-        self.particle_kdtree = PeriodicCKDTree(
-            data=self.xyz, bounds=self.periodicity
-        )
+        self.particle_kdtree = PeriodicCKDTree(data=self.xyz, bounds=bounds)
         all_particles = np.asarray(list(self.particles(include_ports=False)))
 
         # Store bonds to remove/add since we'll be iterating over all bonds.
         bonds_to_remove = set()
         bonds_to_add = set()
         for particle1, particle2 in self.bonds():
-            if (
-                particle1.index,
-                particle2.index,
-            ) not in indices_of_periodic_bonds and (
+            if (particle1.index, particle2.index,) not in periodic_bonds and (
                 particle2.index,
                 particle1.index,
-            ) not in indices_of_periodic_bonds:
+            ) not in periodic_bonds:
                 continue
 
-            if (
-                self.min_periodic_distance(particle1.pos, particle2.pos)
-                > bond_dist_thres
-            ):
+            dist = self.min_periodic_distance(particle1.pos, particle2.pos)
+            if dist > dist_thresh:
                 bonds_to_remove.add((particle1, particle2))
                 image2 = self._find_particle_image(
                     particle1, particle2, all_particles

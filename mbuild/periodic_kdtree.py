@@ -86,9 +86,16 @@ class PeriodicCKDTree(KDTree):
 
     Parameters
     ----------
+    box : mbuild.Box
+        The box object containing the periodicity of the system.
+        A zero value for one of the box lengths mean that the
+        space is not periodic in that dimension.
     bounds : array_like, shape (k,)
-        Size of the periodic box along each spatial dimension.  A negative or
-        zero size for dimension k means that space is not periodic along k.
+        Deprecated. Will be removed in version 0.11. Please use
+        the box argument instead.
+        Size of the periodic box along each spatial dimension.  A
+        negative or zero size for dimension k means that space is not
+        periodic along k.
     data : array-like, shape (n,m)
         The n data points of dimension mto be indexed. This array is not copied
         unless this is necessary to produce a contiguous array of doubles, and
@@ -104,10 +111,23 @@ class PeriodicCKDTree(KDTree):
     point and a data point to half the smallest box dimension.
     """
 
-    def __init__(self, data, leafsize=10, bounds=None):
+    def __init__(self, data, leafsize=10, box=None, bounds=None):
+        if bounds is not None and box is not None:
+            raise ValueError(
+                "Only one of 'bounds' and 'box' may be specified. "
+                "Since 'bounds' is deprecated, please use 'box'."
+            )
         # Map all points to canonical periodic image.
-        if bounds is None:
-            bounds = np.array([0.0, 0.0, 0.0])
+        if box is None:
+            if bounds is None:
+                bounds = np.array([0.0, 0.0, 0.0])
+        elif np.allclose(box.angles, 90.0):
+            bounds = box.lengths
+        else:
+            raise NotImplementedError(
+                "Periodic KCDTree search only implemented"
+                "for orthorhombic periodic boundaries"
+            )
         self.bounds = np.array(bounds)
         self.real_data = np.asarray(data)
 
