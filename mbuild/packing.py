@@ -7,6 +7,7 @@ import sys
 import tempfile
 import warnings
 from distutils.spawn import find_executable
+from itertools import zip_longest
 from subprocess import PIPE, Popen
 
 import numpy as np
@@ -25,7 +26,6 @@ filetype xyz
 output {1}
 seed {2}
 sidemax {3}
-
 """
 PACKMOL_SOLUTE = """
 structure {0}
@@ -147,7 +147,7 @@ def fill_box(
         )
 
     if box is not None:
-        box = _validate_box(box)
+        (box, my_mins, my_maxs) = _validate_box(box)
     if not isinstance(compound, (list, set)):
         compound = [compound]
     if n_compounds is not None and not isinstance(n_compounds, (list, set)):
@@ -179,10 +179,14 @@ def fill_box(
             # Conversion from (amu/(kg/m^3))**(1/3) to nm
             L = (total_mass / density) ** (1 / 3) * 1.1841763
             if aspect_ratio is None:
-                box = _validate_box(Box(3 * [L]))
+                (box, my_mins, my_maxs) = _validate_box(
+                    Box(lengths=[L, L, L], angles=[90.0, 90.0, 90.0])
+                )
             else:
                 L *= np.prod(aspect_ratio) ** (-1 / 3)
-                box = _validate_box(Box([val * L for val in aspect_ratio]))
+                (box, my_mins, my_maxs) = _validate_box(
+                    [val * L for val in aspect_ratio]
+                )
         if n_compounds is None and box is not None:
             if len(compound) == 1:
                 compound_mass = np.sum(
@@ -191,7 +195,10 @@ def fill_box(
                 # Conversion from kg/m^3 / amu * nm^3 to dimensionless units
                 n_compounds = [
                     int(
-                        density / compound_mass * np.prod(box.lengths) * 0.60224
+                        density
+                        / compound_mass
+                        * np.prod(np.asarray(box.lengths))
+                        * 0.60224
                     )
                 ]
             else:
@@ -213,20 +220,25 @@ def fill_box(
                     )
                 # Conversion from kg/m^3 / amu * nm^3 to dimensionless units
                 n_prototypes = int(
-                    density / prototype_mass * np.prod(box.lengths) * 0.60224
+                    density
+                    / prototype_mass
+                    * np.prod(np.asarray(box.lengths))
+                    * 0.60224
                 )
                 n_compounds = list()
                 for c in compound_ratio:
                     n_compounds.append(int(n_prototypes * c))
 
     # Convert nm to angstroms for PACKMOL.
-    box_mins = box.mins * 10
-    box_maxs = box.maxs * 10
+    # TODO how to handle box starts and ends
+    # not really a thing a box would know?
+    box_mins = np.asarray(my_mins) * 10
+    box_maxs = np.asarray(my_maxs) * 10
     overlap *= 10
 
-    # Apply edge buffer
-    box_maxs -= edge * 10
-    box_mins += edge * 10
+    # Apply 0.2nm edge buffer
+    box_maxs = [a_max - (edge * 10) for a_max in box_maxs]
+    box_mins = [a_min + (edge * 10) for a_min in box_mins]
 
     # Build the input file for each compound and call packmol.
     filled_xyz = _new_xyz_file()
@@ -265,7 +277,6 @@ def fill_box(
             filled_xyz.name, update_port_locations=update_port_locations
         )
         filled.box = box
-        filled.periodicity = np.asarray(box.lengths, dtype=np.float32)
 
     # ensure that the temporary files are removed from the machine after filling
     finally:
@@ -282,6 +293,7 @@ def fill_region(
     n_compounds,
     region,
     overlap=0.2,
+    bounds=None,
     seed=12345,
     sidemax=100.0,
     edge=0.2,
@@ -314,6 +326,9 @@ def fill_region(
     fix_orientation : bool or list of bools
         Specify that compounds should not be rotated when filling the box,
         default=False.
+    bounds : list-like of floats [minx, miny, minz, maxx, maxy, maxz], units nm, default=None
+        Bounding within box to pack compounds, if you want to pack within a bounding
+        area that is not the full extent of the region, bounds are required.
     temp_file : str, default=None
         File name to write PACKMOL raw output to.
     update_port_locations : bool, default=False
@@ -326,12 +341,11 @@ def fill_region(
 
     If using mulitple regions and compounds, the nth value in each list are used
     in order.
-    For example, if the third compound will be put in the third region using the
+    For example, the third compound will be put in the third region using the
     third value in n_compounds.
     """
     # check that the user has the PACKMOL binary on their PATH
     _check_packmol(PACKMOL)
-
     if not isinstance(compound, (list, set)):
         compound = [compound]
     if not isinstance(n_compounds, (list, set)):
@@ -352,11 +366,31 @@ def fill_region(
             )
 
     # See if region is a single region or list
+    my_regions = []
     if isinstance(region, Box):  # Cannot iterate over boxes
-        region = [region]
-    elif not any(isinstance(reg, (list, set, Box)) for reg in region):
-        region = [region]
-    region = [_validate_box(reg) for reg in region]
+        my_regions.append(region)
+    # if region is a list of boxes or a list of lists of floats append to my_regions, otherwise the list is expected to be a list of floats
+    elif isinstance(region, list):
+        for reg in region:
+            if isinstance(reg, (list, Box)):
+                my_regions.append(reg)
+            else:
+                raise ValueError(
+                    f"list contents expected to be mbuild.Box or list of floats, provided: {type(reg)}"
+                )
+    else:
+        raise ValueError(
+            f"expected a list of type: list or mbuild.Box, was provided {region} of type: {type(region)}"
+        )
+    container = []
+    if not bounds:
+        bounds = []
+    for bound, reg in zip_longest(bounds, my_regions, fillvalue=None):
+        if bound is None:
+            container.append(reg)
+        else:
+            container.append(bound)
+    container = [_validate_box(bounding) for bounding in container]
 
     # In angstroms for packmol.
     overlap *= 10
@@ -370,9 +404,8 @@ def fill_region(
         input_text = PACKMOL_HEADER.format(
             overlap, filled_xyz.name, seed, sidemax * 10
         )
-
-        for comp, m_compounds, reg, rotate in zip(
-            compound, n_compounds, region, fix_orientation
+        for comp, m_compounds, rotate, items_n in zip(
+            compound, n_compounds, fix_orientation, container
         ):
             m_compounds = int(m_compounds)
 
@@ -380,10 +413,14 @@ def fill_region(
             compound_xyz_list.append(compound_xyz)
 
             comp.save(compound_xyz.name, overwrite=True)
-            reg_mins = reg.mins * 10
-            reg_maxs = reg.maxs * 10
+            # TODO how to handle these mins and maxs of this system
+            # box should not have any idea of mins and maxs
+            my_min = items_n[1]
+            my_max = items_n[2]
+            reg_mins = np.asarray(my_min) * 10.0
+            reg_maxs = np.asarray(my_max) * 10.0
+
             reg_maxs -= edge * 10  # Apply edge buffer
-            reg_mins += edge * 10
             input_text += PACKMOL_BOX.format(
                 compound_xyz.name,
                 m_compounds,
@@ -665,7 +702,7 @@ def solvate(
     # check that the user has the PACKMOL binary on their PATH
     _check_packmol(PACKMOL)
 
-    box = _validate_box(box)
+    (box, min_tmp, max_tmp) = _validate_box(box)
     if not isinstance(solvent, (list, set)):
         solvent = [solvent]
     if not isinstance(n_solvent, (list, set)):
@@ -677,14 +714,14 @@ def solvate(
         raise ValueError("`n_solvent` and `n_solvent` must be of equal length.")
 
     # In angstroms for packmol.
-    box_mins = box.mins * 10
-    box_maxs = box.maxs * 10
+    box_mins = np.asarray(min_tmp) * 10
+    box_maxs = np.asarray(max_tmp) * 10
     overlap *= 10
     center_solute = (box_maxs + box_mins) / 2
 
     # Apply edge buffer
-    box_maxs -= edge * 10
-    box_mins += edge * 10
+    box_maxs = np.subtract(box_maxs, edge * 10)
+    box_mins = np.add(box_mins, edge * 10)
     # Build the input file for each compound and call packmol.
     solvated_xyz = _new_xyz_file()
     solute_xyz = _new_xyz_file()
@@ -695,11 +732,12 @@ def solvate(
         solute.save(solute_xyz.name, overwrite=True)
         input_text = PACKMOL_HEADER.format(
             overlap, solvated_xyz.name, seed, sidemax * 10
-        ) + PACKMOL_SOLUTE.format(solute_xyz.name, *center_solute)
+        ) + PACKMOL_SOLUTE.format(solute_xyz.name, *center_solute.tolist())
 
-        for solv, m_solvent, rotate in zip(solvent, n_solvent, fix_orientation):
+        for (solv, m_solvent, rotate) in zip(
+            solvent, n_solvent, fix_orientation
+        ):
             m_solvent = int(m_solvent)
-
             solvent_xyz = _new_xyz_file()
             solvent_xyz_list.append(solvent_xyz)
 
@@ -747,20 +785,39 @@ def _validate_box(box):
     Returns
     -------
     box : mbuild.Box
+    mins : list-like
+    maxs : list-like
     """
     if isinstance(box, (list, tuple)):
         if len(box) == 3:
-            box = Box(lengths=box)
+            mins = [0.0, 0.0, 0.0]
+            maxs = box
+            box = Box.from_mins_maxs_angles(
+                mins=mins, maxs=maxs, angles=(90.0, 90.0, 90.0)
+            )
         elif len(box) == 6:
-            box = Box(mins=box[:3], maxs=box[3:])
+            mins = box[:3]
+            maxs = box[3:]
+            box = Box.from_mins_maxs_angles(
+                mins=mins, maxs=maxs, angles=(90.0, 90.0, 90.0)
+            )
+        else:
+            raise MBuildError(
+                "Unknown format for `box` parameter. Must pass a"
+                " list/tuple of length 3 (box lengths) or length"
+                " 6 (box mins and maxes) or an mbuild.Box object."
+            )
 
-    if not isinstance(box, Box):
+    elif isinstance(box, Box):
+        mins = [0.0, 0.0, 0.0]
+        maxs = box.lengths
+    else:
         raise MBuildError(
             "Unknown format for `box` parameter. Must pass a list/tuple of "
             "length 3 (box lengths) or length 6 (box mins and maxes) or an "
             "mbuild.Box object."
         )
-    return box
+    return (box, mins, maxs)
 
 
 def _new_xyz_file():

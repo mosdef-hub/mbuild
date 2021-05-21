@@ -2014,13 +2014,13 @@ class GOMCControl:
         )
 
         self.x_dim_box_0 = (
-            charmm_object.box_0.maxs[0] * 10
+            charmm_object.box_0.Lx * 10
         )  # times 10 to convert from nm to Angstroms
         self.y_dim_box_0 = (
-            charmm_object.box_0.maxs[1] * 10
+            charmm_object.box_0.Ly * 10
         )  # times 10 to convert from nm to Angstroms
         self.z_dim_box_0 = (
-            charmm_object.box_0.maxs[2] * 10
+            charmm_object.box_0.Lz * 10
         )  # times 10 to convert from nm to Angstroms
 
         print(
@@ -2038,13 +2038,13 @@ class GOMCControl:
                 and isinstance(charmm_object.filename_box_1, str) is True
             ):
                 self.x_dim_box_1 = (
-                    charmm_object.box_1.maxs[0] * 10
+                    charmm_object.box_1.Lx * 10
                 )  # times 10 to convert from nm to Angstroms
                 self.y_dim_box_1 = (
-                    charmm_object.box_1.maxs[1] * 10
+                    charmm_object.box_1.Ly * 10
                 )  # times 10 to convert from nm to Angstroms
                 self.z_dim_box_1 = (
-                    charmm_object.box_1.maxs[2] * 10
+                    charmm_object.box_1.Lz * 10
                 )  # times 10 to convert from nm to Angstroms
             else:
                 self.x_dim_box_1 = None
@@ -4416,7 +4416,7 @@ class GOMCControl:
             "############################################################################\n"
         )
         data_control_file.write(
-            "#  ========-------------------- INPUT --------------------------=========== \n"
+            "#  ---------------------------- INPUT ------------------------------------- \n"
         )
         data_control_file.write(
             "############################################################################\n"
@@ -4474,7 +4474,7 @@ class GOMCControl:
             "############################################################################\n"
         )
         data_control_file.write(
-            "#  =======--------------------- SYSTEM --------------------------===========\n"
+            "#  ---------------------------- SYSTEM -------------------------------------\n"
         )
         data_control_file.write(
             "############################################################################ \n"
@@ -4891,7 +4891,7 @@ class GOMCControl:
             "############################################################################\n"
         )
         data_control_file.write(
-            "#  =======-------------------- OUTPUT --------------------------=========== \n"
+            "#  --------------------------- OUTPUT ------------------------------------- \n"
         )
         data_control_file.write(
             "############################################################################\n"

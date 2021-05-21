@@ -451,7 +451,7 @@ class TestRigid(BaseTest):
         filled = mb.fill_box(
             rigid_benzene, n_compounds=n_benzenes, box=[0, 0, 0, 4, 4, 4]
         )
-        for particle in filled.children[0].particles():
+        for particle in list(filled.children[0].particles()):
             filled.remove(particle)
 
         assert filled.max_rigid_id == n_benzenes - 2

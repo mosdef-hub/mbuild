@@ -145,3 +145,28 @@ class TestCif(BaseTest):
             points_cif = np.asarray(points_cif)
 
             assert np.all(np.isclose(points_man, points_cif))
+
+    def test_cif_monoclinic_box_properties(self):
+        lattice_cif = load_cif(file_or_path=get_fn("ITG_monoclinic.cif"))
+        periodic_boxed_molecule = lattice_cif.populate(x=1, y=1, z=1)
+        periodic_box = periodic_boxed_molecule.box
+        manual_num_atoms = 168
+        # manual_num_atoms was found using VESTA: https://gist.github.com/ramanishsingh/d712f57b8101eb073cfe010fc3b4edc3
+        # xyz file used: https://gist.github.com/ramanishsingh/154cf03d12e25f3d608e526500453e2e
+        # cif file used: https://gist.github.com/ramanishsingh/2db4ff2a266390242a6a05913d31414a
+        manual_angles = [90.0, 96.29, 90]
+        manual_lengths = [1.27411, 1.26989, 2.09991]
+        assert np.all(np.isclose(manual_lengths, list(periodic_box.lengths)))
+        assert np.all(np.isclose(manual_angles, list(periodic_box.angles)))
+        assert len(periodic_boxed_molecule.children) == manual_num_atoms
+
+    def test_cif_triclinic_box_properties(self):
+        lattice_cif = load_cif(file_or_path=get_fn("ETV_triclinic.cif"))
+        periodic_boxed_molecule = lattice_cif.populate(x=1, y=1, z=1)
+        periodic_box = periodic_boxed_molecule.box
+        manual_num_atoms = 42
+        manual_angles = [105.72, 100.19, 97.02]
+        manual_lengths = [0.87503, 0.96479, 1.02719]
+        assert np.all(np.isclose(manual_lengths, list(periodic_box.lengths)))
+        assert np.all(np.isclose(manual_angles, list(periodic_box.angles)))
+        assert len(periodic_boxed_molecule.children) == manual_num_atoms
