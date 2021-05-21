@@ -78,6 +78,7 @@ class TestVasp(BaseTest):
         assert coord == coord_type
 
     def test_warning_raised(self, copper_cell):
+        copper_cell.box = None
         with pytest.warns(UserWarning):
             write_poscar(copper_cell, "test.poscar", coord_style="direct")
 

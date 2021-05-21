@@ -2,8 +2,8 @@
 import warnings
 from itertools import chain
 
-import ele
 import numpy as np
+from ele import element_from_symbol
 from numpy.linalg import inv, norm
 
 import mbuild as mb
@@ -35,9 +35,9 @@ def write_poscar(
     try:
         atoms = [p.element.symbol for p in compound.particles()]
     except AttributeError:
-        for p in compound.particles():
-            p.element = ele.element_from_symbol(p.name)
-        atoms = [p.element.symbol for p in compound.particles()]
+        atoms = [
+            element_from_symbol(p.name).symbol for p in compound.particles()
+        ]
 
     # This automatically sorts element names alphabetically
     unique_atoms = np.unique(atoms)
@@ -50,9 +50,9 @@ def write_poscar(
     sorted_xyz = compound.xyz[np.argsort(atoms)] * 10
 
     try:
-        lattice = _box_to_lattice(compound.box)
+        lattice = compound.box.vectors
     except AttributeError:
-        lattice = _box_to_lattice(compound.boundingbox)
+        lattice = compound.get_boundingbox().vectors
         if coord_style == "direct":
             warnings.warn(
                 "'direct' coord_style specified, but compound has no box "
@@ -157,44 +157,15 @@ def read_poscar(filename, conversion=0.1):
     else:
         coords = coords.dot(lattice_vectors) * scale
 
-    comp.box = _lattice_to_box(lattice_vectors)
+    comp.box = mb.Box.from_vectors(lattice_vectors)
 
     for i, xyz in enumerate(coords):
         comp.add(
             mb.Particle(
                 name=all_types[i],
-                element=ele.element_from_symbol(all_types[i]),
+                element=element_from_symbol(all_types[i]),
                 pos=xyz * conversion,
             )
         )
 
     return comp
-
-
-def _box_to_lattice(box):
-    """See http://gisaxs.com/index.php/Unit_cell for more info."""
-    lengths = box.maxs - box.mins
-    alpha, beta, gamma = [np.deg2rad(a) for a in box.angles]
-
-    a = np.array([lengths[0], 0, 0])
-    b = np.array([lengths[1] * np.cos(gamma), lengths[1] * np.sin(gamma), 0])
-
-    fraction = (np.cos(alpha) - np.cos(beta) * np.cos(gamma)) / np.sin(gamma)
-    c = np.array(
-        [
-            lengths[2] * np.cos(beta),
-            lengths[2] * fraction,
-            lengths[2] * np.sqrt(1 - np.cos(beta) ** 2 - fraction ** 2),
-        ]
-    )
-    return np.stack((a, b, c))
-
-
-def _lattice_to_box(lattice):
-    a, b, c = lattice
-    alpha = np.rad2deg(np.arccos(b.dot(c) / (norm(b) * norm(c))))
-    beta = np.rad2deg(np.arccos(a.dot(c) / (norm(a) * norm(c))))
-    gamma = np.rad2deg(np.arccos(a.dot(b) / (norm(a) * norm(b))))
-
-    box = mb.Box(lengths=norm(lattice, axis=1), angles=[alpha, beta, gamma])
-    return box
