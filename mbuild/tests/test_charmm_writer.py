@@ -17,7 +17,7 @@ from mbuild.utils.conversion import (
     base10_to_base52_alph,
     base10_to_base62_alph_num,
 )
-from mbuild.utils.io import has_foyer, get_fn
+from mbuild.utils.io import get_fn, has_foyer
 from mbuild.utils.specific_ff_to_residue import specific_ff_to_residue
 
 
@@ -873,9 +873,7 @@ class TestCharmmWriterData(BaseTest):
         )
 
         test_box_ethane_gomc = mb.fill_box(
-            compound=[ethane_gomc],
-            n_compounds=[1],
-            box=[4, 4, 4]
+            compound=[ethane_gomc], n_compounds=[1], box=[4, 4, 4]
         )
 
         charmm = Charmm(
@@ -1258,9 +1256,7 @@ class TestCharmmWriterData(BaseTest):
             match=r"Please enter boxes_for_simulation equal the integer 1 or 2.",
         ):
             test_box_ethane_gomc = mb.fill_box(
-                compound=[ethane_gomc],
-                n_compounds=[1],
-                box=[2, 3, 4]
+                compound=[ethane_gomc], n_compounds=[1], box=[2, 3, 4]
             )
 
             specific_ff_to_residue(
@@ -1275,14 +1271,12 @@ class TestCharmmWriterData(BaseTest):
         with pytest.raises(
             ValueError,
             match=r"Please make sure you are entering the correct foyer FF path, "
-                    "including the FF file name.xml "
-                    "If you are using the pre-build FF files in foyer, "
-                    "only use the string name without any extension.",
+            "including the FF file name.xml "
+            "If you are using the pre-build FF files in foyer, "
+            "only use the string name without any extension.",
         ):
             test_box_ethane_gomc = mb.fill_box(
-                compound=[ethane_gomc],
-                n_compounds=[1],
-                box=[4, 5, 6]
+                compound=[ethane_gomc], n_compounds=[1], box=[4, 5, 6]
             )
 
             specific_ff_to_residue(
@@ -1297,9 +1291,9 @@ class TestCharmmWriterData(BaseTest):
         with pytest.raises(
             ValueError,
             match=r"Please make sure you are entering the correct foyer FF path, "
-                    "including the FF file name.xml "
-                    "If you are using the pre-build FF files in foyer, "
-                    "only use the string name without any extension.",
+            "including the FF file name.xml "
+            "If you are using the pre-build FF files in foyer, "
+            "only use the string name without any extension.",
         ):
             specific_ff_to_residue(
                 ethane_gomc,
@@ -1384,9 +1378,7 @@ class TestCharmmWriterData(BaseTest):
 
     def test_specific_ff_to_residue_ffselection_run(self, ethane_gomc):
         test_box_ethane_gomc = mb.fill_box(
-            compound=[ethane_gomc],
-            n_compounds=[1],
-            box=[4, 5, 6]
+            compound=[ethane_gomc], n_compounds=[1], box=[4, 5, 6]
         )
 
         [
@@ -1843,7 +1835,10 @@ class TestCharmmWriterData(BaseTest):
         use_dihedrals_1 = True
         epsilon_conversion_factor = 1
         lj_unit = 1 / epsilon_conversion_factor
-        dihedral_types_1, unique_dihedral_types_1 = charmm_writer._get_dihedral_types(
+        (
+            dihedral_types_1,
+            unique_dihedral_types_1,
+        ) = charmm_writer._get_dihedral_types(
             structure_ff,
             use_rb_torsions_1,
             use_dihedrals_1,
@@ -1855,7 +1850,10 @@ class TestCharmmWriterData(BaseTest):
         use_rb_torsions_2 = True
         use_dihedrals_2 = False
 
-        dihedral_types_2, unique_dihedral_types_2 = charmm_writer._get_dihedral_types(
+        (
+            dihedral_types_2,
+            unique_dihedral_types_2,
+        ) = charmm_writer._get_dihedral_types(
             structure_ff,
             use_rb_torsions_2,
             use_dihedrals_2,
@@ -1906,7 +1904,10 @@ class TestCharmmWriterData(BaseTest):
         # ******** NOTE*************************
         # ******** NOTE*************************
         # ******** NOTE*************************
-        improper_types_1, unique_improper_types_1 = charmm_writer._get_impropers(
+        (
+            improper_types_1,
+            unique_improper_types_1,
+        ) = charmm_writer._get_impropers(
             structure_ff, epsilon_conversion_factor
         )
 
@@ -2372,9 +2373,7 @@ class TestCharmmWriterData(BaseTest):
         empty_compound = Box(lengths=[4, 5, 6])
 
         test_box_two_propanol_ua_gomc = mb.fill_box(
-            compound=[two_propanol_ua],
-            n_compounds=[1],
-            box=[3, 4, 5]
+            compound=[two_propanol_ua], n_compounds=[1], box=[3, 4, 5]
         )
 
         charmm = Charmm(
@@ -2491,9 +2490,7 @@ class TestCharmmWriterData(BaseTest):
             r"mbuild Box \({}\)".format(type(Box(lengths=[1, 1, 1]))),
         ):
             test_box_two_propanol_ua_gomc = mb.fill_box(
-                compound=[two_propanol_ua],
-                n_compounds=[1],
-                box=[3, 4, 5]
+                compound=[two_propanol_ua], n_compounds=[1], box=[3, 4, 5]
             )
 
             empty_compound = mb.Compound()
@@ -2675,19 +2672,25 @@ class TestCharmmWriterData(BaseTest):
 
     # test cif reader ETA psf writer outputs correct atom and residue numbering using non-orthoganol box
     def test_save_non_othoganol_box_psf(self):
-        lattice_cif_ETV_triclinic = load_cif(file_or_path=get_fn("ETV_triclinic.cif"))
+        lattice_cif_ETV_triclinic = load_cif(
+            file_or_path=get_fn("ETV_triclinic.cif")
+        )
         ETV_triclinic = lattice_cif_ETV_triclinic.populate(x=1, y=1, z=1)
-        ETV_triclinic.name = 'ETV'
+        ETV_triclinic.name = "ETV"
 
-        charmm = Charmm(ETV_triclinic,
-                        'ETV_triclinic',
-                        ff_filename="ETV_triclinic_FF",
-                        forcefield_selection={
-                            ETV_triclinic.name: get_fn("Charmm_writer_testing_only_zeolite.xml")},
-                        residues=[ETV_triclinic.name],
-                        bead_to_atom_name_dict=None,
-                        fix_residue=[ETV_triclinic.name],
-                        )
+        charmm = Charmm(
+            ETV_triclinic,
+            "ETV_triclinic",
+            ff_filename="ETV_triclinic_FF",
+            forcefield_selection={
+                ETV_triclinic.name: get_fn(
+                    "Charmm_writer_testing_only_zeolite.xml"
+                )
+            },
+            residues=[ETV_triclinic.name],
+            bead_to_atom_name_dict=None,
+            fix_residue=[ETV_triclinic.name],
+        )
 
         charmm.write_psf()
 
@@ -2701,11 +2704,29 @@ class TestCharmmWriterData(BaseTest):
                     atom_type_charge_etc_list = []
                     for f_i in range(0, no_O_atoms):
                         atom_type_charge_etc_list.append(
-                            [str(f_i + 1), "SYS", str(f_i + 1), "ETV", "O1", "A", "-0.400000", "15.9994"],
+                            [
+                                str(f_i + 1),
+                                "SYS",
+                                str(f_i + 1),
+                                "ETV",
+                                "O1",
+                                "A",
+                                "-0.400000",
+                                "15.9994",
+                            ],
                         )
                     for f_i in range(no_O_atoms, no_O_atoms + no_Si_atoms):
                         atom_type_charge_etc_list.append(
-                            [str(f_i + 1), "SYS", str(f_i + 1), "ETV", "Si1", "B", "0.800000", "28.0855"],
+                            [
+                                str(f_i + 1),
+                                "SYS",
+                                str(f_i + 1),
+                                "ETV",
+                                "Si1",
+                                "B",
+                                "0.800000",
+                                "28.0855",
+                            ],
                         )
 
                     for j in range(0, len(atom_type_charge_etc_list)):
@@ -2719,19 +2740,25 @@ class TestCharmmWriterData(BaseTest):
 
     # test cif reader ETA pdb writer outputs correct atom and residue numbering using non-orthoganol box
     def test_save_non_othoganol_box_pdb(self):
-        lattice_cif_ETV_triclinic = load_cif(file_or_path=get_fn("ETV_triclinic.cif"))
+        lattice_cif_ETV_triclinic = load_cif(
+            file_or_path=get_fn("ETV_triclinic.cif")
+        )
         ETV_triclinic = lattice_cif_ETV_triclinic.populate(x=1, y=1, z=1)
-        ETV_triclinic.name = 'ETV'
+        ETV_triclinic.name = "ETV"
 
-        charmm = Charmm(ETV_triclinic,
-                        'ETV_triclinic',
-                        ff_filename="ETV_triclinic_FF",
-                        forcefield_selection={
-                            ETV_triclinic.name: get_fn("Charmm_writer_testing_only_zeolite.xml")},
-                        residues=[ETV_triclinic.name],
-                        bead_to_atom_name_dict=None,
-                        fix_residue=[ETV_triclinic.name],
-                        )
+        charmm = Charmm(
+            ETV_triclinic,
+            "ETV_triclinic",
+            ff_filename="ETV_triclinic_FF",
+            forcefield_selection={
+                ETV_triclinic.name: get_fn(
+                    "Charmm_writer_testing_only_zeolite.xml"
+                )
+            },
+            residues=[ETV_triclinic.name],
+            bead_to_atom_name_dict=None,
+            fix_residue=[ETV_triclinic.name],
+        )
 
         charmm.write_pdb()
 
@@ -2755,27 +2782,34 @@ class TestCharmmWriterData(BaseTest):
                     atom_type_res_part_1_list = []
                     for f_i in range(0, no_O_atoms):
                         atom_type_res_part_1_list.append(
-                            ["ATOM", str(f_i + 1), "O1", "ETV", "A", str(f_i + 1)]
+                            [
+                                "ATOM",
+                                str(f_i + 1),
+                                "O1",
+                                "ETV",
+                                "A",
+                                str(f_i + 1),
+                            ]
                         )
                     for f_i in range(no_O_atoms, no_O_atoms + no_Si_atoms):
                         atom_type_res_part_1_list.append(
-                            ["ATOM",  str(f_i + 1), "Si1", "ETV", "A",  str(f_i + 1)]
+                            [
+                                "ATOM",
+                                str(f_i + 1),
+                                "Si1",
+                                "ETV",
+                                "A",
+                                str(f_i + 1),
+                            ]
                         )
 
                     atom_type_res_part_2_list = []
                     for f_i in range(0, no_O_atoms):
-                        atom_type_res_part_2_list.append(
-                            ["1.00", "1.00", "O"]
-                        )
+                        atom_type_res_part_2_list.append(["1.00", "1.00", "O"])
                     for f_i in range(no_O_atoms, no_O_atoms + no_Si_atoms):
-                        atom_type_res_part_2_list.append(
-                            ["1.00", "1.00", "SI"]
-                        )
+                        atom_type_res_part_2_list.append(["1.00", "1.00", "SI"])
 
-                    assert (
-                            out_gomc[i].split()[0:7]
-                            == crystal_box_length_angles
-                    )
+                    assert out_gomc[i].split()[0:7] == crystal_box_length_angles
 
                     for j in range(0, len(atom_type_res_part_1_list)):
                         assert (
@@ -2796,19 +2830,18 @@ class TestCharmmWriterData(BaseTest):
         methane_child_bead = mb.Compound(name="_CH4")
         methane.add(methane_child_bead, inherit_periodicity=False)
 
-        methane_box = mb.fill_box(compound=methane,
-            n_compounds=4,
-            box=[1, 1, 1]
-            )
+        methane_box = mb.fill_box(
+            compound=methane, n_compounds=4, box=[1, 1, 1]
+        )
 
-        charmm = Charmm(methane_box,
-                        'methane_box',
-                        ff_filename="methane_box_FF",
-                        forcefield_selection={
-                            methane.name: 'trappe-ua'},
-                        residues=[methane.name],
-                        bead_to_atom_name_dict={"_CH4":"C"},
-                        )
+        charmm = Charmm(
+            methane_box,
+            "methane_box",
+            ff_filename="methane_box_FF",
+            forcefield_selection={methane.name: "trappe-ua"},
+            residues=[methane.name],
+            bead_to_atom_name_dict={"_CH4": "C"},
+        )
 
         charmm.write_psf()
 
@@ -2819,15 +2852,24 @@ class TestCharmmWriterData(BaseTest):
 
                     no_methane_atoms = 4
                     atom_type_charge_etc_list = []
-                    for f_i in range(0,  no_methane_atoms):
+                    for f_i in range(0, no_methane_atoms):
                         atom_type_charge_etc_list.append(
-                            [str(f_i + 1), "SYS", str(f_i + 1), "MET", "C1", "A", "0.000000", "16.0430"],
+                            [
+                                str(f_i + 1),
+                                "SYS",
+                                str(f_i + 1),
+                                "MET",
+                                "C1",
+                                "A",
+                                "0.000000",
+                                "16.0430",
+                            ],
                         )
 
                     for j in range(0, len(atom_type_charge_etc_list)):
                         assert (
-                                out_gomc[i + 1 + j].split()[0:8]
-                                == atom_type_charge_etc_list[j]
+                            out_gomc[i + 1 + j].split()[0:8]
+                            == atom_type_charge_etc_list[j]
                         )
 
                 else:
@@ -2839,19 +2881,18 @@ class TestCharmmWriterData(BaseTest):
         methane_child_bead = mb.Compound(name="_CH4")
         methane.add(methane_child_bead, inherit_periodicity=False)
 
-        methane_box = mb.fill_box(compound=methane,
-                                  n_compounds=10,
-                                  box=[1, 2, 3]
-                                  )
+        methane_box = mb.fill_box(
+            compound=methane, n_compounds=10, box=[1, 2, 3]
+        )
 
-        charmm = Charmm(methane_box,
-                        'methane_box',
-                        ff_filename="methane_box_FF",
-                        forcefield_selection={
-                            methane.name: 'trappe-ua'},
-                        residues=[methane.name],
-                        bead_to_atom_name_dict={"_CH4":"C"},
-                        )
+        charmm = Charmm(
+            methane_box,
+            "methane_box",
+            ff_filename="methane_box_FF",
+            forcefield_selection={methane.name: "trappe-ua"},
+            residues=[methane.name],
+            bead_to_atom_name_dict={"_CH4": "C"},
+        )
 
         charmm.write_pdb()
 
@@ -2874,28 +2915,30 @@ class TestCharmmWriterData(BaseTest):
                     atom_type_res_part_1_list = []
                     for f_i in range(0, no_methane_atoms):
                         atom_type_res_part_1_list.append(
-                            ["ATOM", str(f_i + 1), "C1", "MET", "A", str(f_i + 1)]
+                            [
+                                "ATOM",
+                                str(f_i + 1),
+                                "C1",
+                                "MET",
+                                "A",
+                                str(f_i + 1),
+                            ]
                         )
 
                     atom_type_res_part_2_list = []
                     for f_i in range(0, no_methane_atoms):
-                        atom_type_res_part_2_list.append(
-                            ["1.00", "0.00", "EP"]
-                        )
+                        atom_type_res_part_2_list.append(["1.00", "0.00", "EP"])
 
-                    assert (
-                            out_gomc[i].split()[0:7]
-                            == crystal_box_length_angles
-                    )
+                    assert out_gomc[i].split()[0:7] == crystal_box_length_angles
 
                     for j in range(0, len(atom_type_res_part_1_list)):
                         assert (
-                                out_gomc[i + 1 + j].split()[0:6]
-                                == atom_type_res_part_1_list[j]
+                            out_gomc[i + 1 + j].split()[0:6]
+                            == atom_type_res_part_1_list[j]
                         )
                         assert (
-                                out_gomc[i + 1 + j].split()[9:12]
-                                == atom_type_res_part_2_list[j]
+                            out_gomc[i + 1 + j].split()[9:12]
+                            == atom_type_res_part_2_list[j]
                         )
 
                 else:
