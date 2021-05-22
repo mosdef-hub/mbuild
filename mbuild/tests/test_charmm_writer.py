@@ -6,7 +6,6 @@ from foyer.forcefields import forcefields
 
 import mbuild as mb
 from mbuild import Box, Compound
-from mbuild.exceptions import MBuildError
 from mbuild.formats import charmm_writer
 from mbuild.formats.charmm_writer import Charmm
 from mbuild.lattice import load_cif
@@ -1285,7 +1284,7 @@ class TestCharmmWriterData(BaseTest):
             )
 
             specific_ff_to_residue(
-                ethane_gomc,
+                test_box_ethane_gomc,
                 forcefield_selection={ethane_gomc.name: "oplsaa.xml"},
                 residues=[ethane_gomc.name],
                 reorder_res_in_pdb_psf=False,

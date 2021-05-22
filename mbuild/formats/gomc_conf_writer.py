@@ -1,6 +1,5 @@
 import datetime
 import os
-import mbuild.box as mb_box
 import mbuild.formats.charmm_writer as mf_charmm
 
 from warnings import warn
@@ -4778,33 +4777,6 @@ class GOMCControl:
             )
             data_control_file.write(" \n")
 
-        if (
-            (self.ensemble_type in ["NPT", "NVT"])
-            and self.FreeEnergyCalc is not None
-            and self.MoleculeType is not None
-            and self.InitialState is not None
-            and self.LambdaVDW is not None
-            and self.LambdaCoulomb is not None
-        ):
-
-            # make list for number of states, LambdaVDW, and Lambda_Coul, and convert the list to string for printing
-            Lambda_states_list = []
-            Lambda_VDW_list = []
-            Lambda_Coul_list = []
-            for lamda_i in range(0, len(self.LambdaVDW)):
-                Lambda_states_list.append(str(lamda_i))
-                Lambda_VDW_list.append(str(self.LambdaVDW[lamda_i]))
-                Lambda_Coul_list.append(str(self.LambdaCoulomb[lamda_i]))
-
-            Lambda_states_str = "\t".join(Lambda_states_list)
-            Lambda_VDW_str = "\t".join(Lambda_VDW_list)
-            Lambda_Coul_str = "\t".join(Lambda_Coul_list)
-
-            data_control_file.write("####################################\n")
-            data_control_file.write(
-                "# FREE ENERGY PARAMETERS (only available in NPT and NVT ensembles) \n"
-            )
-            data_control_file.write("####################################\n")
         if (
             (self.ensemble_type in ["NPT", "NVT"])
             and self.FreeEnergyCalc is not None
