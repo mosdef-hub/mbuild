@@ -204,7 +204,6 @@ def specific_ff_to_residue(
 
     coulomb14scalar_dict = {}
     lj14_scalar_dict = {}
-
     for j in range(0, len(forcefield_keys_list)):
         residue_iteration = forcefield_keys_list[j]
         if user_entered_ff_with_path_dict[residue_iteration]:

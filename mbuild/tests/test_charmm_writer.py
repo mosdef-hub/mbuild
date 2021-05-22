@@ -1274,9 +1274,9 @@ class TestCharmmWriterData(BaseTest):
         with pytest.raises(
             ValueError,
             match=r"Please make sure you are entering the correct foyer FF path, "
-                    "including the FF file name.xml "
-                    "If you are using the pre-build FF files in foyer, "
-                    "only use the string name without any extension.",
+            r"including the FF file name.xml "
+            r"If you are using the pre-build FF files in foyer, "
+            r"only use the string name without any extension.",
         ):
             test_box_ethane_gomc = mb.fill_box(
                 compound=[ethane_gomc],
@@ -1296,9 +1296,9 @@ class TestCharmmWriterData(BaseTest):
         with pytest.raises(
             ValueError,
             match=r"Please make sure you are entering the correct foyer FF path, "
-                    "including the FF file name.xml "
-                    "If you are using the pre-build FF files in foyer, "
-                    "only use the string name without any extension.",
+            r"including the FF file name.xml "
+            r"If you are using the pre-build FF files in foyer, "
+            r"only use the string name without any extension.",
         ):
             specific_ff_to_residue(
                 ethane_gomc,

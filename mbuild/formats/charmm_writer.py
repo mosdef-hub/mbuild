@@ -2110,7 +2110,7 @@ class Charmm:
 
     def write_inp(self):
         """This write_inp function writes the Charmm style parameter (force field) file, which can be utilized
-        in the GOMC and NAMD engines. """
+        in the GOMC and NAMD engines."""
         print("******************************")
         print("")
         print(
