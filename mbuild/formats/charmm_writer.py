@@ -6,8 +6,8 @@ from warnings import warn
 import numpy as np
 from parmed.periodic_table import Element
 from parmed.utils.io import genopen
-import mbuild.box as mb_box
 
+import mbuild.box as mb_box
 from mbuild.box import Box
 from mbuild.compound import Compound
 from mbuild.utils.conversion import (
@@ -1875,10 +1875,15 @@ class Charmm:
 
         # create box 0 vector list and convert from nm to Ang and round to 6 decimals ()
         # First, import the values in nm and rounding to 8 decimals and multiply by 10 to get angstroms
-        box_0_vectors_mod = mb_box._lengths_angles_to_vectors(self.box_0.lengths, self.box_0.angles, 7) * 10
+        box_0_vectors_mod = (
+            mb_box._lengths_angles_to_vectors(
+                self.box_0.lengths, self.box_0.angles, 7
+            )
+            * 10
+        )
         # create box 0 vector list and round to 6 decimals to avoid errors in the gomc_writer script
         # still leaves some floating values in some cases
-        self.box_0_vectors =  np.around(box_0_vectors_mod, decimals=6)
+        self.box_0_vectors = np.around(box_0_vectors_mod, decimals=6)
 
         # Internally use nm
         if self.structure_box_1:
@@ -1894,11 +1899,15 @@ class Charmm:
 
             # create box 1 vector list and convert from nm to Ang and round to 6 decimals (7 decimals in nm)
             # First, import the values in nm and rounding to 7 decimals and multiply by 10 to get angstroms
-            box_1_vectors_mod = mb_box._lengths_angles_to_vectors(self.box_1.lengths, self.box_1.angles, 7) * 10
+            box_1_vectors_mod = (
+                mb_box._lengths_angles_to_vectors(
+                    self.box_1.lengths, self.box_1.angles, 7
+                )
+                * 10
+            )
             # create box 1 vector list and round to 6 decimals to avoid errors in the gomc_writer script
             # still leaves some floating values in some cases
-            self.box_1_vectors =  np.around(box_1_vectors_mod, decimals=6)
-
+            self.box_1_vectors = np.around(box_1_vectors_mod, decimals=6)
 
         # if self.structure_box_1 != None:
         if self.structure_box_1:
@@ -2010,16 +2019,21 @@ class Charmm:
             self.max_residue_no = 9999
             self.max_resname_char = 4
 
-            res_no_chain_iter_corrected= []
+            res_no_chain_iter_corrected = []
             residue_id_list = []
-            residue_id_adder_fixed_struct_wo_bonds = 0 # for example zeolite used as fixed atoms wo bonds
+            residue_id_adder_fixed_struct_wo_bonds = (
+                0  # for example zeolite used as fixed atoms wo bonds
+            )
             for f, PSF_atom_iteration_0 in enumerate(
                 stuct_only_iteration.atoms
             ):
 
                 if f > 0:
-                    if PSF_atom_iteration_0.residue.chain == previous_residue_chain and \
-                            len(PSF_atom_iteration_0.bonds) == 0:
+                    if (
+                        PSF_atom_iteration_0.residue.chain
+                        == previous_residue_chain
+                        and len(PSF_atom_iteration_0.bonds) == 0
+                    ):
                         residue_id_adder_fixed_struct_wo_bonds += 1
 
                 previous_residue_chain = PSF_atom_iteration_0.residue.chain
@@ -2960,8 +2974,8 @@ class Charmm:
                             data.write(info_if_dihedral_error_too_large)
                             print(info_if_dihedral_error_too_large)
                         else:
-                            list_if_abs_max_values_for_dihedral_overall_max = max(
-                                list_if_abs_max_values_for_dihedral_overall
+                            list_if_abs_max_values_for_dihedral_overall_max = (
+                                max(list_if_abs_max_values_for_dihedral_overall)
                             )
                             info_if_dihedral_error_ok = (
                                 "! RB-torsion to CHARMM dihedral conversion error is OK "
@@ -3211,22 +3225,24 @@ class Charmm:
                     stuct_only_iteration.residues[m].name
                 )
 
-            res_no_chain_iter_corrected= []
+            res_no_chain_iter_corrected = []
             residue_id_list = []
             residue_id_adder_fixed_struct_wo_bonds = 0
             for f, PSF_atom_iteration_0 in enumerate(
                 stuct_only_iteration.atoms
             ):
                 if f > 0:
-                    if PSF_atom_iteration_0.residue.chain == previous_residue_chain and \
-                            len(PSF_atom_iteration_0.bonds) == 0:
+                    if (
+                        PSF_atom_iteration_0.residue.chain
+                        == previous_residue_chain
+                        and len(PSF_atom_iteration_0.bonds) == 0
+                    ):
                         residue_id_adder_fixed_struct_wo_bonds += 1
 
                 previous_residue_chain = PSF_atom_iteration_0.residue.chain
 
                 residue_id_int = int(
-                    unique_residue_data_dict[residue_data_list[f]
-                    ]
+                    unique_residue_data_dict[residue_data_list[f]]
                     + residue_id_adder_fixed_struct_wo_bonds
                 )
                 res_id_adder = int(
@@ -3380,7 +3396,12 @@ class Charmm:
                 first_indent % no_dihedrals + " !NPHI: dihedrals\n"
             )
             for i_dihedral, dihedral_iter in enumerate(dihedrals_list):
-                dihedral_atom_1, dihedral_atom_2, dihedral_atom_3, dihedral_atom_4 = (
+                (
+                    dihedral_atom_1,
+                    dihedral_atom_2,
+                    dihedral_atom_3,
+                    dihedral_atom_4,
+                ) = (
                     dihedral_iter.atom1,
                     dihedral_iter.atom2,
                     dihedral_iter.atom3,
@@ -3413,7 +3434,12 @@ class Charmm:
                 first_indent % no_impropers + " !NIMPHI: impropers\n"
             )
             for i_improper, improper_iter in enumerate(impropers_list):
-                improper_atom_1, improper_atom_2, improper_atom_3, improper_atom_4 = (
+                (
+                    improper_atom_1,
+                    improper_atom_2,
+                    improper_atom_3,
+                    improper_atom_4,
+                ) = (
                     improper_iter.atom1,
                     improper_iter.atom2,
                     improper_iter.atom3,
@@ -3696,20 +3722,23 @@ class Charmm:
             locked_occupany_factor = 1.00
             max_no_atoms_in_base10 = 99999  # 99,999 for atoms in psf/pdb
 
-            res_no_chain_iter_corrected= []
+            res_no_chain_iter_corrected = []
             res_chain_iteration_corrected_list = []
             residue_id_list = []
-            residue_id_adder_fixed_struct_wo_bonds = 0  # for example zeolite used as fixed atoms wo bonds
+            residue_id_adder_fixed_struct_wo_bonds = (
+                0  # for example zeolite used as fixed atoms wo bonds
+            )
             for i, atom_iter in enumerate(stuct_only_iteration.atoms):
                 if i > 0:
-                    if atom_iter.residue.chain == previous_residue_chain and \
-                            len(atom_iter.bonds) == 0:
+                    if (
+                        atom_iter.residue.chain == previous_residue_chain
+                        and len(atom_iter.bonds) == 0
+                    ):
                         residue_id_adder_fixed_struct_wo_bonds += 1
 
                 previous_residue_chain = atom_iter.residue.chain
                 residue_id_int = int(
-                    unique_residue_data_dict[residue_data_list[i]
-                    ]
+                    unique_residue_data_dict[residue_data_list[i]]
                     + residue_id_adder_fixed_struct_wo_bonds
                 )
                 res_chain_iteration_corrected_list.append(
