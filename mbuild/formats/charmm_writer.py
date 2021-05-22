@@ -1873,13 +1873,12 @@ class Charmm:
             angles=self.structure_box_0_ff.box[3:6],
         )
 
-        # create box 0 vector list and convert from nm to Ang and round to 6 decimals
-        box_0_vectors_mod = mb_box._lengths_angles_to_vectors(self.box_0.lengths, self.box_0.angles, 8)
-        # create box 0 vector list and convert from nm to Ang and round to 6 decimals
-        print(" test = " + str(mb_box._lengths_angles_to_vectors([1,2,3], [90,90,90], 8)))
-        print(" box_0_vectors_mod = " +str( box_0_vectors_mod))
-        self.box_0_vectors = np.around(box_0_vectors_mod * 10, decimals=6)
-        print("self.box_0_vectors = " + str(self.box_0_vectors))
+        # create box 0 vector list and convert from nm to Ang and round to 6 decimals ()
+        # First, import the values in nm and rounding to 8 decimals and multiply by 10 to get angstroms
+        box_0_vectors_mod = mb_box._lengths_angles_to_vectors(self.box_0.lengths, self.box_0.angles, 7) * 10
+        # create box 0 vector list and round to 6 decimals to avoid errors in the gomc_writer script
+        # still leaves some floating values in some cases
+        self.box_0_vectors =  np.around(box_0_vectors_mod, decimals=6)
 
         # Internally use nm
         if self.structure_box_1:
@@ -1893,11 +1892,13 @@ class Charmm:
                 angles=self.structure_box_1_ff.box[3:6],
             )
 
-            # create box 0 vector list and convert from nm to Ang and round to 6 decimals
-            box_1_vectors_mod = mb_box._lengths_angles_to_vectors(self.box_1.lengths, self.box_1.angles, 6)
-            # create box 0 vector list and convert from nm to Ang and round to 6 decimals
-            print("self.box_0_vectors = " + str(self.box_0_vectors))
-            self.box_1_vectors = np.around(box_1_vectors_mod * 10, decimals=6)
+            # create box 1 vector list and convert from nm to Ang and round to 6 decimals (7 decimals in nm)
+            # First, import the values in nm and rounding to 7 decimals and multiply by 10 to get angstroms
+            box_1_vectors_mod = mb_box._lengths_angles_to_vectors(self.box_1.lengths, self.box_1.angles, 7) * 10
+            # create box 1 vector list and round to 6 decimals to avoid errors in the gomc_writer script
+            # still leaves some floating values in some cases
+            self.box_1_vectors =  np.around(box_1_vectors_mod, decimals=6)
+
 
         # if self.structure_box_1 != None:
         if self.structure_box_1:
