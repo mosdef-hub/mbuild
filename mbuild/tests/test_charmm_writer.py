@@ -524,7 +524,6 @@ class TestCharmmWriterData(BaseTest):
                     pass
 
     def test_save_charmm_ua_psf(self, two_propanol_ua):
-
         charmm = Charmm(
             two_propanol_ua,
             "charmm_data_UA",
@@ -1303,7 +1302,7 @@ class TestCharmmWriterData(BaseTest):
         ):
             specific_ff_to_residue(
                 ethane_gomc,
-                forcefield_selection={ethane_gomc.name: "/home/oplsaa.xml"},
+                forcefield_selection={ethane_gomc.name: "oplsaa.xml"},
                 residues=[ethane_gomc.name],
                 reorder_res_in_pdb_psf=False,
                 boxes_for_simulation=1,

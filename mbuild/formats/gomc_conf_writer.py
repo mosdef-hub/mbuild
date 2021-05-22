@@ -2029,8 +2029,8 @@ class GOMCControl:
             raise ValueError(print_error_message)
         if self.ensemble_type in ["GEMC_NVT", "GEMC_NPT", "GCMC"]:
             if (
-                    charmm_object.filename_box_1 is not None
-                    and isinstance(charmm_object.filename_box_1, str) is True
+                charmm_object.filename_box_1 is not None
+                and isinstance(charmm_object.filename_box_1, str) is True
             ):
                 self.box_1_vectors = charmm_object.box_1_vectors
                 box_1_vectors_char_ok = True

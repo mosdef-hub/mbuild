@@ -7751,16 +7751,16 @@ class TestGOMCControlFileWriter(BaseTest):
                 elif line.startswith('CellBasisVector2 0'):
                     split_line = line.split()
                     assert split_line[1] == '0'
-                    assert split_line[2] == '-1.179126'
-                    assert split_line[3] == '9.575575'
+                    assert split_line[2] == '-1.179131'
+                    assert split_line[3] == '9.575585'
                     assert split_line[4] == '0.0'
 
                 elif line.startswith('CellBasisVector3 0'):
                     split_line = line.split()
                     assert split_line[1] == '0'
-                    assert split_line[2] == '-1.817232'
-                    assert split_line[3] == '-3.027825'
-                    assert split_line[4] == '9.645822'
+                    assert split_line[2] == '-1.817231'
+                    assert split_line[3] == '-3.027821'
+                    assert split_line[4] == '9.645823'
 
                 if line.startswith('CellBasisVector1 1'):
                     split_line = line.split()
@@ -7772,100 +7772,16 @@ class TestGOMCControlFileWriter(BaseTest):
                 elif line.startswith('CellBasisVector2 1'):
                     split_line = line.split()
                     assert split_line[1] == '1'
-                    assert split_line[2] == '-3.537377'
-                    assert split_line[3] == '28.726725'
+                    assert split_line[2] == '-3.537381'
+                    assert split_line[3] == '28.726735'
                     assert split_line[4] == '0.0'
 
                 elif line.startswith('CellBasisVector3 1'):
                     split_line = line.split()
                     assert split_line[1] == '1'
-                    assert split_line[2] == '-5.451697'
-                    assert split_line[3] == '-9.083474'
-                    assert split_line[4] == '28.937465'
+                    assert split_line[2] == '-5.451699'
+                    assert split_line[3] == '-9.083469'
+                    assert split_line[4] == '28.937455'
 
                 else:
                     pass
-
-    def test_box_vector_too_many_char(self):
-
-        methane = mb.Compound(name="MET")
-        methane_child_bead = mb.Compound(name="_CH4")
-        methane.add(methane_child_bead, inherit_periodicity=False)
-
-        methane_box_orth = mb.fill_box(compound=methane,
-                                       n_compounds=10,
-                                       box=[1, 2, 3]
-                                       )
-
-        charmm_bad_box_0 = Charmm(
-            methane_box_orth,
-            "methane_box_0_orth",
-            ff_filename="methane_box_orth_bad_box_0_non_orth",
-            residues=[methane.name],
-            forcefield_selection="trappe-ua"
-        )
-
-        # set the vectors all too long
-        charmm_bad_box_0.box_0_vectors[0][0] = -0.45678901234561
-        charmm_bad_box_0.box_0_vectors[0][1] = -0.45678901234562
-        charmm_bad_box_0.box_0_vectors[0][2] = -0.45678901234563
-        charmm_bad_box_0.box_0_vectors[1][0] = -0.45678901234564
-        charmm_bad_box_0.box_0_vectors[1][1] = -0.45678901234565
-        charmm_bad_box_0.box_0_vectors[1][2] = -0.45678901234566
-        charmm_bad_box_0.box_0_vectors[2][0] = -0.45678901234567
-        charmm_bad_box_0.box_0_vectors[2][1] = -0.45678901234568
-        charmm_bad_box_0.box_0_vectors[2][2] = -0.45678901234569
-
-        charmm_bad_box_1 = Charmm(
-            methane_box_orth,
-            "methane_box_0_orth",
-            structure_box_1=methane_box_orth,
-            filename_box_1="methane_box_1_orth",
-            ff_filename="methane_box_orth_bad_box_1_non_orth",
-            residues=[methane.name],
-            forcefield_selection="trappe-ua"
-        )
-
-        # set the vectors all too long
-        charmm_bad_box_1.box_1_vectors[0][0] = -0.45678901234561
-        charmm_bad_box_1.box_1_vectors[0][1] = -0.45678901234562
-        charmm_bad_box_1.box_1_vectors[0][2] = -0.45678901234563
-        charmm_bad_box_1.box_1_vectors[1][0] = -0.45678901234564
-        charmm_bad_box_1.box_1_vectors[1][1] = -0.45678901234565
-        charmm_bad_box_1.box_1_vectors[1][2] = -0.45678901234566
-        charmm_bad_box_1.box_1_vectors[2][0] = -0.45678901234567
-        charmm_bad_box_1.box_1_vectors[2][1] = -0.45678901234568
-        charmm_bad_box_1.box_1_vectors[2][2] = -0.45678901234569
-
-        # test that it fails with the GEMC_NVT with only 1 box in the Charmm object
-        with pytest.raises(
-            ValueError,
-            match=r"ERROR: At lease one of the individual box {} vectors are too large "
-                  "or greater than {} characters."
-                  "".format(0, 16)
-        ):
-
-            gomc_control.write_gomc_control_file(
-                charmm_bad_box_0,
-                "test_box_vector_too_many_char_box_0",
-                "NVT",
-                100,
-                300,
-            )
-
-        # test that it fails with the GEMC_NPT with only 1 box in the Charmm object
-        with pytest.raises(
-            ValueError,
-                match=r"ERROR: At lease one of the individual box {} vectors are too large "
-                      "or greater than {} characters."
-                      "".format(1, 16)
-        ):
-
-            gomc_control.write_gomc_control_file(
-                charmm_bad_box_1,
-                "test_box_vector_too_many_char_box_1",
-                "GCMC",
-                100,
-                300,
-            )
-
