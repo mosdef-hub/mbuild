@@ -3,15 +3,14 @@ import pytest
 import mbuild as mb
 import mbuild.formats.gomc_conf_writer as gomc_control
 from mbuild.formats.charmm_writer import Charmm
+from mbuild.lattice import load_cif
 from mbuild.tests.base_test import BaseTest
-from mbuild.utils.io import has_foyer
+from mbuild.utils.io import has_foyer, get_fn
 
 
 @pytest.mark.skipif(not has_foyer, reason="Foyer package not installed")
 class TestGOMCControlFileWriter(BaseTest):
-    def test_dict_keys_to_list(
-        self,
-    ):
+    def test_dict_keys_to_list(self,):
         dict = {"a": "1", "b": "2", "c": "3"}
         keys = gomc_control.dict_keys_to_list(dict)
 
@@ -347,13 +346,17 @@ class TestGOMCControlFileWriter(BaseTest):
         assert test_status == "PASSED"
 
     def test_save_basic_NVT(self, ethane_gomc):
+        test_box_ethane_gomc = mb.fill_box(
+            compound=[ethane_gomc],
+            n_compounds=[1],
+            box=[1, 1, 1]
+        )
         charmm = Charmm(
-            ethane_gomc,
+            test_box_ethane_gomc,
             "ethane",
             ff_filename="ethane",
             residues=[ethane_gomc.name],
             forcefield_selection="oplsaa",
-            box_0=[1, 1, 1],
         )
         gomc_control.write_gomc_control_file(
             charmm, "test_save_basic_NVT.conf", "NVT", 10, 300
@@ -430,7 +433,7 @@ class TestGOMCControlFileWriter(BaseTest):
 
                 elif line.startswith("Tolerance "):
                     split_line = line.split()
-                    assert split_line[1] == "0.000010000000"
+                    assert split_line[1] == "1e-05"
 
                 elif line.startswith("1-4scaling "):
                     split_line = line.split()
@@ -514,21 +517,21 @@ class TestGOMCControlFileWriter(BaseTest):
                     assert split_line[1] == "0"
                     print("split_line[2] = " + str(split_line[2]))
                     assert split_line[2] == "10.0"
-                    assert split_line[3] == "0.00"
-                    assert split_line[4] == "0.00"
+                    assert split_line[3] == "0.0"
+                    assert split_line[4] == "0.0"
 
                 elif line.startswith("CellBasisVector2 "):
                     split_line = line.split()
                     assert split_line[1] == "0"
-                    assert split_line[2] == "0.00"
+                    assert split_line[2] == "0.0"
                     assert split_line[3] == "10.0"
-                    assert split_line[4] == "0.00"
+                    assert split_line[4] == "0.0"
 
                 elif line.startswith("CellBasisVector3 "):
                     split_line = line.split()
                     assert split_line[1] == "0"
-                    assert split_line[2] == "0.00"
-                    assert split_line[3] == "0.00"
+                    assert split_line[2] == "0.0"
+                    assert split_line[3] == "0.0"
                     assert split_line[4] == "10.0"
 
                 elif line.startswith("CBMC_First "):
@@ -635,13 +638,17 @@ class TestGOMCControlFileWriter(BaseTest):
                     pass
 
     def test_save_basic_NPT(self, ethane_gomc):
+        test_box_ethane_gomc = mb.fill_box(
+            compound=[ethane_gomc],
+            n_compounds=[1],
+            box=[2, 2, 2]
+        )
         charmm = Charmm(
-            ethane_gomc,
+            test_box_ethane_gomc,
             "ethane",
             ff_filename="ethane",
             residues=[ethane_gomc.name],
             forcefield_selection="oplsaa",
-            box_0=[2, 2, 2],
         )
         gomc_control.write_gomc_control_file(
             charmm, "test_save_basic_NPT.conf", "NPT", 1000, 500
@@ -735,21 +742,21 @@ class TestGOMCControlFileWriter(BaseTest):
                     split_line = line.split()
                     assert split_line[1] == "0"
                     assert split_line[2] == "20.0"
-                    assert split_line[3] == "0.00"
-                    assert split_line[4] == "0.00"
+                    assert split_line[3] == "0.0"
+                    assert split_line[4] == "0.0"
 
                 elif line.startswith("CellBasisVector2 "):
                     split_line = line.split()
                     assert split_line[1] == "0"
-                    assert split_line[2] == "0.00"
+                    assert split_line[2] == "0.0"
                     assert split_line[3] == "20.0"
-                    assert split_line[4] == "0.00"
+                    assert split_line[4] == "0.0"
 
                 elif line.startswith("CellBasisVector3 "):
                     split_line = line.split()
                     assert split_line[1] == "0"
-                    assert split_line[2] == "0.00"
-                    assert split_line[3] == "0.00"
+                    assert split_line[2] == "0.0"
+                    assert split_line[3] == "0.0"
                     assert split_line[4] == "20.0"
 
                 elif line.startswith("RestartFreq "):
@@ -798,16 +805,19 @@ class TestGOMCControlFileWriter(BaseTest):
                     pass
 
     def test_save_basic_GCMC(self, ethane_gomc):
+        test_box_ethane_gomc = mb.fill_box(
+            compound=[ethane_gomc],
+            n_compounds=[1],
+            box=[2, 2, 2]
+        )
         charmm = Charmm(
-            ethane_gomc,
+            test_box_ethane_gomc,
             "ethane_box_0",
-            structure_box_1=ethane_gomc,
+            structure_box_1=test_box_ethane_gomc,
             filename_box_1="ethane_box_1",
             ff_filename="ethane_FF",
             residues=[ethane_gomc.name],
             forcefield_selection="oplsaa",
-            box_0=[2, 2, 2],
-            box_1=[2, 2, 2],
         )
         gomc_control.write_gomc_control_file(
             charmm,
@@ -934,42 +944,42 @@ class TestGOMCControlFileWriter(BaseTest):
                     split_line = line.split()
                     assert split_line[1] == "0"
                     assert split_line[2] == "20.0"
-                    assert split_line[3] == "0.00"
-                    assert split_line[4] == "0.00"
+                    assert split_line[3] == "0.0"
+                    assert split_line[4] == "0.0"
 
                 elif line.startswith("CellBasisVector2 0"):
                     split_line = line.split()
                     assert split_line[1] == "0"
-                    assert split_line[2] == "0.00"
+                    assert split_line[2] == "0.0"
                     assert split_line[3] == "20.0"
-                    assert split_line[4] == "0.00"
+                    assert split_line[4] == "0.0"
 
                 elif line.startswith("CellBasisVector3 0"):
                     split_line = line.split()
                     assert split_line[1] == "0"
-                    assert split_line[2] == "0.00"
-                    assert split_line[3] == "0.00"
+                    assert split_line[2] == "0.0"
+                    assert split_line[3] == "0.0"
                     assert split_line[4] == "20.0"
 
                 elif line.startswith("CellBasisVector1 1"):
                     split_line = line.split()
                     assert split_line[1] == "1"
                     assert split_line[2] == "20.0"
-                    assert split_line[3] == "0.00"
-                    assert split_line[4] == "0.00"
+                    assert split_line[3] == "0.0"
+                    assert split_line[4] == "0.0"
 
                 elif line.startswith("CellBasisVector2 1"):
                     split_line = line.split()
                     assert split_line[1] == "1"
-                    assert split_line[2] == "0.00"
+                    assert split_line[2] == "0.0"
                     assert split_line[3] == "20.0"
-                    assert split_line[4] == "0.00"
+                    assert split_line[4] == "0.0"
 
                 elif line.startswith("CellBasisVector3 1"):
                     split_line = line.split()
                     assert split_line[1] == "1"
-                    assert split_line[2] == "0.00"
-                    assert split_line[3] == "0.00"
+                    assert split_line[2] == "0.0"
+                    assert split_line[3] == "0.0"
                     assert split_line[4] == "20.0"
 
                 elif line.startswith("RestartFreq "):
@@ -1014,16 +1024,19 @@ class TestGOMCControlFileWriter(BaseTest):
                     pass
 
     def test_save_basic_GEMC_NVT(self, ethane_gomc):
+        test_box_ethane_gomc = mb.fill_box(
+            compound=[ethane_gomc],
+            n_compounds=[1],
+            box=[2, 2, 2]
+        )
         charmm = Charmm(
-            ethane_gomc,
+            test_box_ethane_gomc,
             "ethane_box_0",
-            structure_box_1=ethane_gomc,
+            structure_box_1=test_box_ethane_gomc,
             filename_box_1="ethane_box_1",
             ff_filename="ethane_FF",
             residues=[ethane_gomc.name],
             forcefield_selection="oplsaa",
-            box_0=[2, 2, 2],
-            box_1=[2, 2, 2],
         )
         gomc_control.write_gomc_control_file(
             charmm, "test_save_basic_GEMC_NVT.conf", "GEMC_NVT", 1000000, 500
@@ -1092,16 +1105,19 @@ class TestGOMCControlFileWriter(BaseTest):
                     pass
 
     def test_save_basic_GEMC_NPT(self, ethane_gomc):
+        test_box_ethane_gomc = mb.fill_box(
+            compound=[ethane_gomc],
+            n_compounds=[1],
+            box=[2, 2, 2]
+        )
         charmm = Charmm(
-            ethane_gomc,
+            test_box_ethane_gomc,
             "ethane_box_0",
-            structure_box_1=ethane_gomc,
+            structure_box_1=test_box_ethane_gomc,
             filename_box_1="ethane_box_1",
             ff_filename="ethane_FF",
             residues=[ethane_gomc.name],
             forcefield_selection="oplsaa",
-            box_0=[2, 2, 2],
-            box_1=[2, 2, 2],
         )
         gomc_control.write_gomc_control_file(
             charmm,
@@ -1254,8 +1270,8 @@ class TestGOMCControlFileWriter(BaseTest):
                 "FreeEnergyCalc": [True, 50],
                 "MoleculeType": ["ETH", 1],
                 "InitialState": 3,
-                "LambdaVDW": [0.1, 0.2, 0.4, 0.9],
-                "LambdaCoulomb": [0.1, 0.3, 0.8, 0.8],
+                "LambdaVDW": [0.1, 0.2, 0.4, 1.0],
+                "LambdaCoulomb": [0.1, 0.3, 0.8, 1.0],
                 "MEMC_DataInput": [
                     [1, "ETH", ["C1", "C2"], "ETO", ["C1", "C2"]]
                 ],
@@ -1339,7 +1355,7 @@ class TestGOMCControlFileWriter(BaseTest):
 
                 elif line.startswith("Tolerance "):
                     split_line = line.split()
-                    assert split_line[1] == "0.010000000000"
+                    assert split_line[1] == "0.01"
 
                 elif line.startswith("1-4scaling "):
                     split_line = line.split()
@@ -1427,21 +1443,21 @@ class TestGOMCControlFileWriter(BaseTest):
                     split_line = line.split()
                     assert split_line[1] == "0"
                     assert split_line[2] == "40.0"
-                    assert split_line[3] == "0.00"
-                    assert split_line[4] == "0.00"
+                    assert split_line[3] == "0.0"
+                    assert split_line[4] == "0.0"
 
                 elif line.startswith("CellBasisVector2 "):
                     split_line = line.split()
                     assert split_line[1] == "0"
-                    assert split_line[2] == "0.00"
+                    assert split_line[2] == "0.0"
                     assert split_line[3] == "40.0"
-                    assert split_line[4] == "0.00"
+                    assert split_line[4] == "0.0"
 
                 elif line.startswith("CellBasisVector3 "):
                     split_line = line.split()
                     assert split_line[1] == "0"
-                    assert split_line[2] == "0.00"
-                    assert split_line[3] == "0.00"
+                    assert split_line[2] == "0.0"
+                    assert split_line[3] == "0.0"
                     assert split_line[4] == "40.0"
 
                 elif line.startswith("FreeEnergyCalc "):
@@ -1486,14 +1502,14 @@ class TestGOMCControlFileWriter(BaseTest):
                     assert split_line[1] == "0.1"
                     assert split_line[2] == "0.2"
                     assert split_line[3] == "0.4"
-                    assert split_line[4] == "0.9"
+                    assert split_line[4] == "1.0"
 
                 elif line.startswith("LambdaCoulomb "):
                     split_line = line.split()
                     assert split_line[1] == "0.1"
                     assert split_line[2] == "0.3"
                     assert split_line[3] == "0.8"
-                    assert split_line[4] == "0.8"
+                    assert split_line[4] == "1.0"
 
                 elif line.startswith("CBMC_First "):
                     split_line = line.split()
@@ -1598,11 +1614,11 @@ class TestGOMCControlFileWriter(BaseTest):
                 else:
                     pass
 
-    def test_save_NVT_bad_variables_part_1(self, ethane_gomc, ethanol_gomc):
+    def test_save_NVT_bad_lamda_value(self, ethane_gomc, ethanol_gomc):
         test_box_ethane_ethanol = mb.fill_box(
             compound=[ethane_gomc, ethanol_gomc],
             n_compounds=[1, 1],
-            box=[4.0, 4.0, 4.0],
+            box=[1, 1, 1],
         )
 
         charmm = Charmm(
@@ -1611,7 +1627,58 @@ class TestGOMCControlFileWriter(BaseTest):
             ff_filename="ethane_ethanol",
             residues=[ethane_gomc.name, ethanol_gomc.name],
             forcefield_selection="oplsaa",
-            box_0=[1, 1, 1],
+        )
+
+        with pytest.raises(
+            ValueError,
+            match=r"ERROR: The last value in the LambdaCoulomb variable list must be a 1.0",
+        ):
+            gomc_control.write_gomc_control_file(
+                charmm,
+                "test_save_NVT_bad_variables_part_1.conf",
+                "NVT",
+                100,
+                300,
+                input_variables_dict={
+                    "FreeEnergyCalc": [True, 10],
+                    "MoleculeType": ["ETH", 1],
+                    "InitialState": 3,
+                    "LambdaVDW": [0.1, 0.2, 0.4, 1.0],
+                    "LambdaCoulomb": [0.1, 0.3, 0.8, 0.9],
+                }
+            )
+
+        with pytest.raises(
+                ValueError,
+                match=r"ERROR: The last value in the LambdaVDW variable list must be a 1.0",
+        ):
+            gomc_control.write_gomc_control_file(
+                charmm,
+                "test_save_NVT_bad_variables_part_1.conf",
+                "NVT",
+                100,
+                300,
+                input_variables_dict={
+                    "FreeEnergyCalc": [True, 10],
+                    "MoleculeType": ["ETH", 1],
+                    "InitialState": 3,
+                    "LambdaVDW": [0.1, 0.2, 0.4, 0.9],
+                }
+            )
+
+    def test_save_NVT_bad_variables_part_1(self, ethane_gomc, ethanol_gomc):
+        test_box_ethane_ethanol = mb.fill_box(
+            compound=[ethane_gomc, ethanol_gomc],
+            n_compounds=[1, 1],
+            box=[1, 1, 1],
+        )
+
+        charmm = Charmm(
+            test_box_ethane_ethanol,
+            "ethane_ethanol",
+            ff_filename="ethane_ethanol",
+            residues=[ethane_gomc.name, ethanol_gomc.name],
+            forcefield_selection="oplsaa",
         )
 
         with pytest.raises(
@@ -2405,8 +2472,8 @@ class TestGOMCControlFileWriter(BaseTest):
                     "FreeEnergyCalc": "s",
                     "MoleculeType": ["ETH", 1],
                     "InitialState": 1,
-                    "LambdaVDW": [0.1, 0.2, 0.4, 0.9],
-                    "LambdaCoulomb": [0.1, 0.3, 0.8, 0.8],
+                    "LambdaVDW": [0.1, 0.2, 0.4, 1.0],
+                    "LambdaCoulomb": [0.1, 0.3, 0.8, 1.0],
                 },
             )
 
@@ -2427,8 +2494,8 @@ class TestGOMCControlFileWriter(BaseTest):
                     "FreeEnergyCalc": [True, 10000],
                     "MoleculeType": ["ETH", "s"],
                     "InitialState": 1,
-                    "LambdaVDW": [0.1, 0.2, 0.4, 0.9],
-                    "LambdaCoulomb": [0.1, 0.3, 0.8, 0.8],
+                    "LambdaVDW": [0.1, 0.2, 0.4, 1.0],
+                    "LambdaCoulomb": [0.1, 0.3, 0.8, 1.0],
                 },
             )
 
@@ -2449,8 +2516,8 @@ class TestGOMCControlFileWriter(BaseTest):
                     "FreeEnergyCalc": [True, 10000],
                     "MoleculeType": [["ETH"], 1],
                     "InitialState": 1,
-                    "LambdaVDW": [0.1, 0.2, 0.4, 0.9],
-                    "LambdaCoulomb": [0.1, 0.3, 0.8, 0.8],
+                    "LambdaVDW": [0.1, 0.2, 0.4, 1.0],
+                    "LambdaCoulomb": [0.1, 0.3, 0.8, 1.0],
                 },
             )
 
@@ -2471,8 +2538,8 @@ class TestGOMCControlFileWriter(BaseTest):
                     "FreeEnergyCalc": [True, 10000],
                     "MoleculeType": [{"ETH": "1"}, 1],
                     "InitialState": 1,
-                    "LambdaVDW": [0.1, 0.2, 0.4, 0.9],
-                    "LambdaCoulomb": [0.1, 0.3, 0.8, 0.8],
+                    "LambdaVDW": [0.1, 0.2, 0.4, 1.0],
+                    "LambdaCoulomb": [0.1, 0.3, 0.8, 1.0],
                 },
             )
 
@@ -2493,8 +2560,8 @@ class TestGOMCControlFileWriter(BaseTest):
                     "FreeEnergyCalc": [True, 10000],
                     "MoleculeType": ["ETH", 1],
                     "InitialState": "s",
-                    "LambdaVDW": [0.1, 0.2, 0.4, 0.9],
-                    "LambdaCoulomb": [0.1, 0.3, 0.8, 0.8],
+                    "LambdaVDW": [0.1, 0.2, 0.4, 1.0],
+                    "LambdaCoulomb": [0.1, 0.3, 0.8, 1.0],
                 },
             )
 
@@ -2516,7 +2583,7 @@ class TestGOMCControlFileWriter(BaseTest):
                     "MoleculeType": ["ETH", 1],
                     "InitialState": 1,
                     "LambdaVDW": "s",
-                    "LambdaCoulomb": [0.1, 0.3, 0.8, 0.8],
+                    "LambdaCoulomb": [0.1, 0.3, 0.8, 1.0],
                 },
             )
 
@@ -2537,7 +2604,7 @@ class TestGOMCControlFileWriter(BaseTest):
                     "FreeEnergyCalc": [True, 10000],
                     "MoleculeType": ["ETH", 1],
                     "InitialState": 1,
-                    "LambdaVDW": [0.1, 0.2, 0.4, 0.9],
+                    "LambdaVDW": [0.1, 0.2, 0.4, 1.0],
                     "LambdaCoulomb": "s",
                 },
             )
@@ -2899,7 +2966,7 @@ class TestGOMCControlFileWriter(BaseTest):
         test_box_ethane_ethanol = mb.fill_box(
             compound=[ethane_gomc, ethanol_gomc],
             n_compounds=[1, 1],
-            box=[4.0, 4.0, 4.0],
+            box=[1, 1, 1],
         )
 
         charmm = Charmm(
@@ -2908,7 +2975,6 @@ class TestGOMCControlFileWriter(BaseTest):
             ff_filename="ethane_ethanol",
             residues=[ethane_gomc.name, ethanol_gomc.name],
             forcefield_selection="oplsaa",
-            box_0=[1, 1, 1],
         )
 
         with pytest.raises(
@@ -3720,8 +3786,8 @@ class TestGOMCControlFileWriter(BaseTest):
                     "FreeEnergyCalc": [],
                     "MoleculeType": ["ETH", 1],
                     "InitialState": 1,
-                    "LambdaVDW": [0.1, 0.2, 0.4, 0.9],
-                    "LambdaCoulomb": [0.1, 0.3, 0.8, 0.8],
+                    "LambdaVDW": [0.1, 0.2, 0.4, 1.0],
+                    "LambdaCoulomb": [0.1, 0.3, 0.8, 1.0],
                 },
             )
 
@@ -3742,8 +3808,8 @@ class TestGOMCControlFileWriter(BaseTest):
                     "FreeEnergyCalc": [True, 10000],
                     "MoleculeType": ["ETH", []],
                     "InitialState": 1,
-                    "LambdaVDW": [0.1, 0.2, 0.4, 0.9],
-                    "LambdaCoulomb": [0.1, 0.3, 0.8, 0.8],
+                    "LambdaVDW": [0.1, 0.2, 0.4, 1.0],
+                    "LambdaCoulomb": [0.1, 0.3, 0.8, 1.0],
                 },
             )
 
@@ -3764,8 +3830,8 @@ class TestGOMCControlFileWriter(BaseTest):
                     "FreeEnergyCalc": [True, 10000],
                     "MoleculeType": [["ETH"], 1],
                     "InitialState": 1,
-                    "LambdaVDW": [0.1, 0.2, 0.4, 0.9],
-                    "LambdaCoulomb": [0.1, 0.3, 0.8, 0.8],
+                    "LambdaVDW": [0.1, 0.2, 0.4, 1.0],
+                    "LambdaCoulomb": [0.1, 0.3, 0.8, 1.0],
                 },
             )
 
@@ -3786,8 +3852,8 @@ class TestGOMCControlFileWriter(BaseTest):
                     "FreeEnergyCalc": [True, 10000],
                     "MoleculeType": [{"ETH": "1"}, 1],
                     "InitialState": 1,
-                    "LambdaVDW": [0.1, 0.2, 0.4, 0.9],
-                    "LambdaCoulomb": [0.1, 0.3, 0.8, 0.8],
+                    "LambdaVDW": [0.1, 0.2, 0.4, 1.0],
+                    "LambdaCoulomb": [0.1, 0.3, 0.8, 1.0],
                 },
             )
 
@@ -3808,8 +3874,8 @@ class TestGOMCControlFileWriter(BaseTest):
                     "FreeEnergyCalc": [True, 10000],
                     "MoleculeType": ["ETH", 1],
                     "InitialState": [],
-                    "LambdaVDW": [0.1, 0.2, 0.4, 0.9],
-                    "LambdaCoulomb": [0.1, 0.3, 0.8, 0.8],
+                    "LambdaVDW": [0.1, 0.2, 0.4, 1.0],
+                    "LambdaCoulomb": [0.1, 0.3, 0.8, 1.0],
                 },
             )
 
@@ -3831,7 +3897,7 @@ class TestGOMCControlFileWriter(BaseTest):
                     "MoleculeType": ["ETH", 1],
                     "InitialState": 1,
                     "LambdaVDW": [],
-                    "LambdaCoulomb": [0.1, 0.3, 0.8, 0.8],
+                    "LambdaCoulomb": [0.1, 0.3, 0.8, 1.0],
                 },
             )
 
@@ -3852,7 +3918,7 @@ class TestGOMCControlFileWriter(BaseTest):
                     "FreeEnergyCalc": [True, 10000],
                     "MoleculeType": ["ETH", 1],
                     "InitialState": 1,
-                    "LambdaVDW": [0.1, 0.2, 0.4, 0.9],
+                    "LambdaVDW": [0.1, 0.2, 0.4, 1.0],
                     "LambdaCoulomb": [],
                 },
             )
@@ -4214,7 +4280,7 @@ class TestGOMCControlFileWriter(BaseTest):
         test_box_ethane_ethanol = mb.fill_box(
             compound=[ethane_gomc, ethanol_gomc],
             n_compounds=[1, 1],
-            box=[4.0, 4.0, 4.0],
+            box=[1, 1, 1],
         )
 
         charmm = Charmm(
@@ -4223,7 +4289,6 @@ class TestGOMCControlFileWriter(BaseTest):
             ff_filename="ethane_ethanol",
             residues=[ethane_gomc.name, ethanol_gomc.name],
             forcefield_selection="oplsaa",
-            box_0=[1, 1, 1],
         )
 
         try:
@@ -4446,7 +4511,7 @@ class TestGOMCControlFileWriter(BaseTest):
         test_box_ethane_ethanol = mb.fill_box(
             compound=[ethane_gomc, ethanol_gomc],
             n_compounds=[1, 1],
-            box=[4.0, 4.0, 4.0],
+            box=[1, 1, 1],
         )
 
         charmm = Charmm(
@@ -4455,7 +4520,6 @@ class TestGOMCControlFileWriter(BaseTest):
             ff_filename="ethane_ethanol",
             residues=[ethane_gomc.name, ethanol_gomc.name],
             forcefield_selection="oplsaa",
-            box_0=[1, 1, 1],
         )
 
         try:
@@ -4674,7 +4738,7 @@ class TestGOMCControlFileWriter(BaseTest):
         test_box_ethane_ethanol = mb.fill_box(
             compound=[ethane_gomc, ethanol_gomc],
             n_compounds=[1, 1],
-            box=[4.0, 4.0, 4.0],
+            box=[1, 1, 1],
         )
 
         charmm = Charmm(
@@ -4683,7 +4747,6 @@ class TestGOMCControlFileWriter(BaseTest):
             ff_filename="ethane_ethanol",
             residues=[ethane_gomc.name, ethanol_gomc.name],
             forcefield_selection="oplsaa",
-            box_0=[1, 1, 1],
         )
 
         try:
@@ -4697,8 +4760,8 @@ class TestGOMCControlFileWriter(BaseTest):
                     "FreeEnergyCalc": [True, 10000],
                     "MoleculeType": ["ETH", 1],
                     "InitialState": 1,
-                    "LambdaVDW": [0.1, 0.2, 0.4, 0.9],
-                    "LambdaCoulomb": [0.1, 0.3, 0.8, 0.8],
+                    "LambdaVDW": [0.1, 0.2, 0.4, 1.0],
+                    "LambdaCoulomb": [0.1, 0.3, 0.8, 1.0],
                 },
             )
 
@@ -4718,8 +4781,8 @@ class TestGOMCControlFileWriter(BaseTest):
                     "FreeEnergyCalc": [False, 10000],
                     "MoleculeType": ["ETO", 1],
                     "InitialState": 1,
-                    "LambdaVDW": [0.1, 0.2, 0.4, 0.9, 0.99],
-                    "LambdaCoulomb": [0.1, 0.3, 0.8, 0.8, 0.99],
+                    "LambdaVDW": [0.1, 0.2, 0.4, 0.9, 1.0],
+                    "LambdaCoulomb": [0.1, 0.3, 0.8, 0.8, 1.0],
                 },
             )
         except:
@@ -4738,8 +4801,8 @@ class TestGOMCControlFileWriter(BaseTest):
                     "FreeEnergyCalc": [True, 10000],
                     "MoleculeType": ["ETH", 1],
                     "InitialState": 1,
-                    "LambdaVDW": [0.1, 0.2, 0.4, 0.9],
-                    "LambdaCoulomb": [0.1, 0.3, 0.8, 0.8],
+                    "LambdaVDW": [0.1, 0.2, 0.4, 1.0],
+                    "LambdaCoulomb": [0.1, 0.3, 0.8, 1.0],
                 },
             )
 
@@ -4759,8 +4822,8 @@ class TestGOMCControlFileWriter(BaseTest):
                     "FreeEnergyCalc": [False, 10000],
                     "MoleculeType": ["ETO", 1],
                     "InitialState": 1,
-                    "LambdaVDW": [0.1, 0.2, 0.4, 0.9],
-                    "LambdaCoulomb": [0.1, 0.3, 0.8, 0.8],
+                    "LambdaVDW": [0.1, 0.2, 0.4, 1.0],
+                    "LambdaCoulomb": [0.1, 0.3, 0.8, 1.0],
                 },
             )
         except:
@@ -4783,8 +4846,8 @@ class TestGOMCControlFileWriter(BaseTest):
                 input_variables_dict={
                     "MoleculeType": ["ETO", 1],
                     "InitialState": 1,
-                    "LambdaVDW": [0.1, 0.2, 0.4, 0.9],
-                    "LambdaCoulomb": [0.1, 0.3, 0.8, 0.8],
+                    "LambdaVDW": [0.1, 0.2, 0.4, 1.0],
+                    "LambdaCoulomb": [0.1, 0.3, 0.8, 1.0],
                 },
             )
 
@@ -4803,8 +4866,8 @@ class TestGOMCControlFileWriter(BaseTest):
                 input_variables_dict={
                     "FreeEnergyCalc": [False, 10000],
                     "InitialState": 1,
-                    "LambdaVDW": [0.1, 0.2, 0.4, 0.9],
-                    "LambdaCoulomb": [0.1, 0.3, 0.8, 0.8],
+                    "LambdaVDW": [0.1, 0.2, 0.4, 1.0],
+                    "LambdaCoulomb": [0.1, 0.3, 0.8, 1.0],
                 },
             )
 
@@ -4823,8 +4886,8 @@ class TestGOMCControlFileWriter(BaseTest):
                 input_variables_dict={
                     "FreeEnergyCalc": [False, 10000],
                     "MoleculeType": ["ETO", 1],
-                    "LambdaVDW": [0.1, 0.2, 0.4, 0.9],
-                    "LambdaCoulomb": [0.1, 0.3, 0.8, 0.8],
+                    "LambdaVDW": [0.1, 0.2, 0.4, 1.0],
+                    "LambdaCoulomb": [0.1, 0.3, 0.8, 1.0],
                 },
             )
 
@@ -4844,7 +4907,7 @@ class TestGOMCControlFileWriter(BaseTest):
                     "FreeEnergyCalc": [False, 10000],
                     "MoleculeType": ["ETO", 1],
                     "InitialState": 1,
-                    "LambdaCoulomb": [0.1, 0.3, 0.8, 0.8],
+                    "LambdaCoulomb": [0.1, 0.3, 0.8, 1.0],
                 },
             )
 
@@ -4859,7 +4922,7 @@ class TestGOMCControlFileWriter(BaseTest):
                     "FreeEnergyCalc": [False, 10000],
                     "MoleculeType": ["ETO", 1],
                     "InitialState": 1,
-                    "LambdaVDW": [0.1, 0.2, 0.4, 0.9],
+                    "LambdaVDW": [0.1, 0.2, 0.4, 1.0],
                 },
             )
         except:
@@ -4885,8 +4948,8 @@ class TestGOMCControlFileWriter(BaseTest):
                     "FreeEnergyCalc": [1, 10000],
                     "MoleculeType": ["ETO", 1],
                     "InitialState": 1,
-                    "LambdaVDW": [0.1, 0.2, 0.4, 0.9],
-                    "LambdaCoulomb": [0.1, 0.3, 0.8, 0.8],
+                    "LambdaVDW": [0.1, 0.2, 0.4, 1.0],
+                    "LambdaCoulomb": [0.1, 0.3, 0.8, 1.0],
                 },
             )
 
@@ -4907,8 +4970,8 @@ class TestGOMCControlFileWriter(BaseTest):
                     "FreeEnergyCalc": ["1", 10000],
                     "MoleculeType": ["ETO", 1],
                     "InitialState": 1,
-                    "LambdaVDW": [0.1, 0.2, 0.4, 0.9],
-                    "LambdaCoulomb": [0.1, 0.3, 0.8, 0.8],
+                    "LambdaVDW": [0.1, 0.2, 0.4, 1.0],
+                    "LambdaCoulomb": [0.1, 0.3, 0.8, 1.0],
                 },
             )
 
@@ -4929,8 +4992,8 @@ class TestGOMCControlFileWriter(BaseTest):
                     "FreeEnergyCalc": [["1"], 10000],
                     "MoleculeType": ["ETO", 1],
                     "InitialState": 1,
-                    "LambdaVDW": [0.1, 0.2, 0.4, 0.9],
-                    "LambdaCoulomb": [0.1, 0.3, 0.8, 0.8],
+                    "LambdaVDW": [0.1, 0.2, 0.4, 1.0],
+                    "LambdaCoulomb": [0.1, 0.3, 0.8, 1.0],
                 },
             )
 
@@ -4951,8 +5014,8 @@ class TestGOMCControlFileWriter(BaseTest):
                     "FreeEnergyCalc": [{"a": "1"}, 10000],
                     "MoleculeType": ["ETO", 1],
                     "InitialState": 1,
-                    "LambdaVDW": [0.1, 0.2, 0.4, 0.9],
-                    "LambdaCoulomb": [0.1, 0.3, 0.8, 0.8],
+                    "LambdaVDW": [0.1, 0.2, 0.4, 1.0],
+                    "LambdaCoulomb": [0.1, 0.3, 0.8, 1.0],
                 },
             )
 
@@ -4967,7 +5030,7 @@ class TestGOMCControlFileWriter(BaseTest):
                     "FreeEnergyCalc": [False, 10000],
                     "MoleculeType": ["ETO", 1],
                     "InitialState": 1,
-                    "LambdaVDW": [0.1, 0.2, 0.4, 0.9],
+                    "LambdaVDW": [0.1, 0.2, 0.4, 1.0],
                 },
             )
         except:
@@ -4993,8 +5056,8 @@ class TestGOMCControlFileWriter(BaseTest):
                     "FreeEnergyCalc": [True, 1.0],
                     "MoleculeType": ["ETO", 1],
                     "InitialState": 1,
-                    "LambdaVDW": [0.1, 0.2, 0.4, 0.9],
-                    "LambdaCoulomb": [0.1, 0.3, 0.8, 0.8],
+                    "LambdaVDW": [0.1, 0.2, 0.4, 1.0],
+                    "LambdaCoulomb": [0.1, 0.3, 0.8, 1.0],
                 },
             )
 
@@ -5015,8 +5078,8 @@ class TestGOMCControlFileWriter(BaseTest):
                     "FreeEnergyCalc": [True, "1"],
                     "MoleculeType": ["ETO", 1],
                     "InitialState": 1,
-                    "LambdaVDW": [0.1, 0.2, 0.4, 0.9],
-                    "LambdaCoulomb": [0.1, 0.3, 0.8, 0.8],
+                    "LambdaVDW": [0.1, 0.2, 0.4, 1.0],
+                    "LambdaCoulomb": [0.1, 0.3, 0.8, 1.0],
                 },
             )
 
@@ -5037,8 +5100,8 @@ class TestGOMCControlFileWriter(BaseTest):
                     "FreeEnergyCalc": [True, ["1"]],
                     "MoleculeType": ["ETO", 1],
                     "InitialState": 1,
-                    "LambdaVDW": [0.1, 0.2, 0.4, 0.9],
-                    "LambdaCoulomb": [0.1, 0.3, 0.8, 0.8],
+                    "LambdaVDW": [0.1, 0.2, 0.4, 1.0],
+                    "LambdaCoulomb": [0.1, 0.3, 0.8, 1.0],
                 },
             )
 
@@ -5059,8 +5122,8 @@ class TestGOMCControlFileWriter(BaseTest):
                     "FreeEnergyCalc": [True, {"a": "1"}],
                     "MoleculeType": ["ETO", 1],
                     "InitialState": 1,
-                    "LambdaVDW": [0.1, 0.2, 0.4, 0.9],
-                    "LambdaCoulomb": [0.1, 0.3, 0.8, 0.8],
+                    "LambdaVDW": [0.1, 0.2, 0.4, 1.0],
+                    "LambdaCoulomb": [0.1, 0.3, 0.8, 1.0],
                 },
             )
 
@@ -5081,8 +5144,8 @@ class TestGOMCControlFileWriter(BaseTest):
                     "FreeEnergyCalc": [True, 10000, "s"],
                     "MoleculeType": ["ETO", 1],
                     "InitialState": 1,
-                    "LambdaVDW": [0.1, 0.2, 0.4, 0.9],
-                    "LambdaCoulomb": [0.1, 0.3, 0.8, 0.8],
+                    "LambdaVDW": [0.1, 0.2, 0.4, 1.0],
+                    "LambdaCoulomb": [0.1, 0.3, 0.8, 1.0],
                 },
             )
 
@@ -5104,8 +5167,8 @@ class TestGOMCControlFileWriter(BaseTest):
                     "FreeEnergyCalc": [True, 10000],
                     "MoleculeType": [1, 1],
                     "InitialState": 1,
-                    "LambdaVDW": [0.1, 0.2, 0.4, 0.9],
-                    "LambdaCoulomb": [0.1, 0.3, 0.8, 0.8],
+                    "LambdaVDW": [0.1, 0.2, 0.4, 1.0],
+                    "LambdaCoulomb": [0.1, 0.3, 0.8, 1.0],
                 },
             )
 
@@ -5126,8 +5189,8 @@ class TestGOMCControlFileWriter(BaseTest):
                     "FreeEnergyCalc": [True, 10000],
                     "MoleculeType": [[1], 1],
                     "InitialState": 1,
-                    "LambdaVDW": [0.1, 0.2, 0.4, 0.9],
-                    "LambdaCoulomb": [0.1, 0.3, 0.8, 0.8],
+                    "LambdaVDW": [0.1, 0.2, 0.4, 1.0],
+                    "LambdaCoulomb": [0.1, 0.3, 0.8, 1.0],
                 },
             )
 
@@ -5148,8 +5211,8 @@ class TestGOMCControlFileWriter(BaseTest):
                     "FreeEnergyCalc": [True, 10000],
                     "MoleculeType": [{"a": "1"}, 1],
                     "InitialState": 1,
-                    "LambdaVDW": [0.1, 0.2, 0.4, 0.9],
-                    "LambdaCoulomb": [0.1, 0.3, 0.8, 0.8],
+                    "LambdaVDW": [0.1, 0.2, 0.4, 1.0],
+                    "LambdaCoulomb": [0.1, 0.3, 0.8, 1.0],
                 },
             )
 
@@ -5170,8 +5233,8 @@ class TestGOMCControlFileWriter(BaseTest):
                     "FreeEnergyCalc": [True, 10000],
                     "MoleculeType": ["ETO", "1"],
                     "InitialState": 1,
-                    "LambdaVDW": [0.1, 0.2, 0.4, 0.9],
-                    "LambdaCoulomb": [0.1, 0.3, 0.8, 0.8],
+                    "LambdaVDW": [0.1, 0.2, 0.4, 1.0],
+                    "LambdaCoulomb": [0.1, 0.3, 0.8, 1.0],
                 },
             )
 
@@ -5192,8 +5255,8 @@ class TestGOMCControlFileWriter(BaseTest):
                     "FreeEnergyCalc": [True, 10000],
                     "MoleculeType": ["ETO", ["1"]],
                     "InitialState": 1,
-                    "LambdaVDW": [0.1, 0.2, 0.4, 0.9],
-                    "LambdaCoulomb": [0.1, 0.3, 0.8, 0.8],
+                    "LambdaVDW": [0.1, 0.2, 0.4, 1.0],
+                    "LambdaCoulomb": [0.1, 0.3, 0.8, 1.0],
                 },
             )
 
@@ -5214,8 +5277,8 @@ class TestGOMCControlFileWriter(BaseTest):
                     "FreeEnergyCalc": [True, 10000],
                     "MoleculeType": ["ETO", {"a": "1"}],
                     "InitialState": 1,
-                    "LambdaVDW": [0.1, 0.2, 0.4, 0.9],
-                    "LambdaCoulomb": [0.1, 0.3, 0.8, 0.8],
+                    "LambdaVDW": [0.1, 0.2, 0.4, 1.0],
+                    "LambdaCoulomb": [0.1, 0.3, 0.8, 1.0],
                 },
             )
 
@@ -5236,8 +5299,8 @@ class TestGOMCControlFileWriter(BaseTest):
                     "FreeEnergyCalc": [True, 10000],
                     "MoleculeType": ["ETOa", 1],
                     "InitialState": 1,
-                    "LambdaVDW": [0.1, 0.2, 0.4, 0.9],
-                    "LambdaCoulomb": [0.1, 0.3, 0.8, 0.8],
+                    "LambdaVDW": [0.1, 0.2, 0.4, 1.0],
+                    "LambdaCoulomb": [0.1, 0.3, 0.8, 1.0],
                 },
             )
 
@@ -5259,8 +5322,8 @@ class TestGOMCControlFileWriter(BaseTest):
                     "FreeEnergyCalc": [True, 10000],
                     "MoleculeType": ["ETO", 1],
                     "InitialState": "s",
-                    "LambdaVDW": [0.1, 0.2, 0.4, 0.9],
-                    "LambdaCoulomb": [0.1, 0.3, 0.8, 0.8],
+                    "LambdaVDW": [0.1, 0.2, 0.4, 1.0],
+                    "LambdaCoulomb": [0.1, 0.3, 0.8, 1.0],
                 },
             )
 
@@ -5281,8 +5344,8 @@ class TestGOMCControlFileWriter(BaseTest):
                     "FreeEnergyCalc": [True, 10000],
                     "MoleculeType": ["ETO", 1],
                     "InitialState": ["s"],
-                    "LambdaVDW": [0.1, 0.2, 0.4, 0.9],
-                    "LambdaCoulomb": [0.1, 0.3, 0.8, 0.8],
+                    "LambdaVDW": [0.1, 0.2, 0.4, 1.0],
+                    "LambdaCoulomb": [0.1, 0.3, 0.8, 1.0],
                 },
             )
 
@@ -5303,8 +5366,8 @@ class TestGOMCControlFileWriter(BaseTest):
                     "FreeEnergyCalc": [True, 10000],
                     "MoleculeType": ["ETO", 1],
                     "InitialState": {"a": "1"},
-                    "LambdaVDW": [0.1, 0.2, 0.4, 0.9],
-                    "LambdaCoulomb": [0.1, 0.3, 0.8, 0.8],
+                    "LambdaVDW": [0.1, 0.2, 0.4, 1.0],
+                    "LambdaCoulomb": [0.1, 0.3, 0.8, 1.0],
                 },
             )
 
@@ -5325,8 +5388,8 @@ class TestGOMCControlFileWriter(BaseTest):
                     "FreeEnergyCalc": [True, 10000],
                     "MoleculeType": ["ETO", 1],
                     "InitialState": 1.0,
-                    "LambdaVDW": [0.1, 0.2, 0.4, 0.9],
-                    "LambdaCoulomb": [0.1, 0.3, 0.8, 0.8],
+                    "LambdaVDW": [0.1, 0.2, 0.4, 1.0],
+                    "LambdaCoulomb": [0.1, 0.3, 0.8, 1.0],
                 },
             )
 
@@ -5348,8 +5411,8 @@ class TestGOMCControlFileWriter(BaseTest):
                     "FreeEnergyCalc": [True, 10000],
                     "MoleculeType": ["ETO", 1],
                     "InitialState": 1,
-                    "LambdaVDW": ["x", 0.2, 0.4, 0.9],
-                    "LambdaCoulomb": [0.1, 0.3, 0.8, 0.8],
+                    "LambdaVDW": ["x", 0.2, 0.4, 1.0],
+                    "LambdaCoulomb": [0.1, 0.3, 0.8, 1.0],
                 },
             )
 
@@ -5370,8 +5433,8 @@ class TestGOMCControlFileWriter(BaseTest):
                     "FreeEnergyCalc": [True, 10000],
                     "MoleculeType": ["ETO", 1],
                     "InitialState": 1,
-                    "LambdaVDW": [[0.1], 0.2, 0.4, 0.9],
-                    "LambdaCoulomb": [0.1, 0.3, 0.8, 0.8],
+                    "LambdaVDW": [[0.1], 0.2, 0.4, 1.0],
+                    "LambdaCoulomb": [0.1, 0.3, 0.8, 1.0],
                 },
             )
 
@@ -5392,8 +5455,8 @@ class TestGOMCControlFileWriter(BaseTest):
                     "FreeEnergyCalc": [True, 10000],
                     "MoleculeType": ["ETO", 1],
                     "InitialState": 1,
-                    "LambdaVDW": [{"a": "1"}, 0.2, 0.4],
-                    "LambdaCoulomb": [0.1, 0.3, 0.8],
+                    "LambdaVDW": [{"a": "1"}, 0.2, 1.0],
+                    "LambdaCoulomb": [0.1, 0.3, 1.0],
                 },
             )
 
@@ -5415,8 +5478,8 @@ class TestGOMCControlFileWriter(BaseTest):
                     "FreeEnergyCalc": [True, 10000],
                     "MoleculeType": ["ETO", 1],
                     "InitialState": 1,
-                    "LambdaVDW": [0.1, 0.2, 0.4, 0.9],
-                    "LambdaCoulomb": ["x", 0.3, 0.8, 0.8],
+                    "LambdaVDW": [0.1, 0.2, 0.4, 1.0],
+                    "LambdaCoulomb": ["x", 0.3, 0.8, 1.0],
                 },
             )
 
@@ -5437,8 +5500,8 @@ class TestGOMCControlFileWriter(BaseTest):
                     "FreeEnergyCalc": [True, 10000],
                     "MoleculeType": ["ETO", 1],
                     "InitialState": 1,
-                    "LambdaVDW": [0.1, 0.2, 0.4, 0.9],
-                    "LambdaCoulomb": [[0.1], 0.3, 0.8, 0.8],
+                    "LambdaVDW": [0.1, 0.2, 0.4, 1.0],
+                    "LambdaCoulomb": [[0.1], 0.3, 0.8, 1.0],
                 },
             )
 
@@ -5459,8 +5522,8 @@ class TestGOMCControlFileWriter(BaseTest):
                     "FreeEnergyCalc": [True, 10000],
                     "MoleculeType": ["ETO", 1],
                     "InitialState": 1,
-                    "LambdaVDW": [0.1, 0.2, 0.4],
-                    "LambdaCoulomb": [{"a": "1"}, 0.3, 0.8],
+                    "LambdaVDW": [0.1, 0.2, 1.0],
+                    "LambdaCoulomb": [{"a": "1"}, 0.3, 1.0],
                 },
             )
 
@@ -5479,8 +5542,8 @@ class TestGOMCControlFileWriter(BaseTest):
                     "FreeEnergyCalc": [True, 10000],
                     "MoleculeType": ["ETO", 1],
                     "InitialState": 1,
-                    "LambdaVDW": [0.2, 0.4, 0.9],
-                    "LambdaCoulomb": [0.1, 0.3, 0.8, 0.8],
+                    "LambdaVDW": [0.2, 0.4, 1.0],
+                    "LambdaCoulomb": [0.1, 0.3, 0.8, 1.0],
                 },
             )
 
@@ -5498,8 +5561,8 @@ class TestGOMCControlFileWriter(BaseTest):
                     "FreeEnergyCalc": [True, 10000],
                     "MoleculeType": ["ETO", 1],
                     "InitialState": 1,
-                    "LambdaVDW": [0.1, 0.2, 0.4, 0.9],
-                    "LambdaCoulomb": [0.3, 0.8, 0.8],
+                    "LambdaVDW": [0.1, 0.2, 0.4, 1.0],
+                    "LambdaCoulomb": [0.3, 0.8, 1.0],
                 },
             )
 
@@ -7512,7 +7575,8 @@ class TestGOMCControlFileWriter(BaseTest):
                 300,
                 input_variables_dict={
                     "MEMC_DataInput": [
-                        [1, "ETH", ["C1", "C2"], "ETO", ["C1", "C2"]]
+                        [1, "ETH", ["C1", "C2"], "ETO", ["C1", "C2"]],
+                         [1, "ETH", ["C1", "C2"], "ETO", ["C1", "O1"]]
                     ],
                     "ChEmPot": {"ETH": -4000, "ETO": -8000},
                     "DisFreQ": 0.05,
@@ -7647,3 +7711,161 @@ class TestGOMCControlFileWriter(BaseTest):
                 100,
                 300,
             )
+
+    def test_save_non_othoganol_writer(self):
+        lattice_cif_ETV_triclinic = load_cif(file_or_path=get_fn("ETV_triclinic.cif"))
+        ETV_triclinic_1_cell = lattice_cif_ETV_triclinic.populate(x=1, y=1, z=1)
+        ETV_triclinic_1_cell.name = 'ETV_1'
+        ETV_triclinic_3_cell = lattice_cif_ETV_triclinic.populate(x=3, y=3, z=3)
+        ETV_triclinic_3_cell.name = 'ETV_3'
+
+        charmm = Charmm(ETV_triclinic_1_cell,
+                        'ETV_triclinic_1_cell_box_0',
+                        structure_box_1=ETV_triclinic_3_cell,
+                        filename_box_1="ETV_triclinic_3_cell_box_1",
+                        ff_filename="ETV_triclinic_FF",
+                        forcefield_selection={
+                            ETV_triclinic_1_cell.name: get_fn("Charmm_writer_testing_only_zeolite.xml"),
+                            ETV_triclinic_3_cell.name: get_fn("Charmm_writer_testing_only_zeolite.xml")},
+                        residues=[ETV_triclinic_1_cell.name,
+                                  ETV_triclinic_3_cell.name],
+                        bead_to_atom_name_dict=None,
+                        fix_residue=[ETV_triclinic_1_cell.name,
+                                     ETV_triclinic_3_cell.name],
+                        )
+
+        gomc_control.write_gomc_control_file(charmm, 'test_save_non_othoganol_writer.conf',
+                                             'GEMC_NVT', 100000, 300,
+                                             )
+
+        with open('test_save_non_othoganol_writer.conf', 'r') as fp:
+            out_gomc = fp.readlines()
+            for i, line in enumerate(out_gomc):
+                if line.startswith('CellBasisVector1 0'):
+                    split_line = line.split()
+                    assert split_line[1] == '0'
+                    assert split_line[2] == '8.7503'
+                    assert split_line[3] == '0.0'
+                    assert split_line[4] == '0.0'
+
+                elif line.startswith('CellBasisVector2 0'):
+                    split_line = line.split()
+                    assert split_line[1] == '0'
+                    assert split_line[2] == '-1.179126'
+                    assert split_line[3] == '9.575575'
+                    assert split_line[4] == '0.0'
+
+                elif line.startswith('CellBasisVector3 0'):
+                    split_line = line.split()
+                    assert split_line[1] == '0'
+                    assert split_line[2] == '-1.817232'
+                    assert split_line[3] == '-3.027825'
+                    assert split_line[4] == '9.645822'
+
+                if line.startswith('CellBasisVector1 1'):
+                    split_line = line.split()
+                    assert split_line[1] == '1'
+                    assert split_line[2] == '26.2509'
+                    assert split_line[3] == '0.0'
+                    assert split_line[4] == '0.0'
+
+                elif line.startswith('CellBasisVector2 1'):
+                    split_line = line.split()
+                    assert split_line[1] == '1'
+                    assert split_line[2] == '-3.537377'
+                    assert split_line[3] == '28.726725'
+                    assert split_line[4] == '0.0'
+
+                elif line.startswith('CellBasisVector3 1'):
+                    split_line = line.split()
+                    assert split_line[1] == '1'
+                    assert split_line[2] == '-5.451697'
+                    assert split_line[3] == '-9.083474'
+                    assert split_line[4] == '28.937465'
+
+                else:
+                    pass
+
+    def test_box_vector_too_many_char(self):
+
+        methane = mb.Compound(name="MET")
+        methane_child_bead = mb.Compound(name="_CH4")
+        methane.add(methane_child_bead, inherit_periodicity=False)
+
+        methane_box_orth = mb.fill_box(compound=methane,
+                                       n_compounds=10,
+                                       box=[1, 2, 3]
+                                       )
+
+        charmm_bad_box_0 = Charmm(
+            methane_box_orth,
+            "methane_box_0_orth",
+            ff_filename="methane_box_orth_bad_box_0_non_orth",
+            residues=[methane.name],
+            forcefield_selection="trappe-ua"
+        )
+
+        # set the vectors all too long
+        charmm_bad_box_0.box_0_vectors[0][0] = -0.45678901234561
+        charmm_bad_box_0.box_0_vectors[0][1] = -0.45678901234562
+        charmm_bad_box_0.box_0_vectors[0][2] = -0.45678901234563
+        charmm_bad_box_0.box_0_vectors[1][0] = -0.45678901234564
+        charmm_bad_box_0.box_0_vectors[1][1] = -0.45678901234565
+        charmm_bad_box_0.box_0_vectors[1][2] = -0.45678901234566
+        charmm_bad_box_0.box_0_vectors[2][0] = -0.45678901234567
+        charmm_bad_box_0.box_0_vectors[2][1] = -0.45678901234568
+        charmm_bad_box_0.box_0_vectors[2][2] = -0.45678901234569
+
+        charmm_bad_box_1 = Charmm(
+            methane_box_orth,
+            "methane_box_0_orth",
+            structure_box_1=methane_box_orth,
+            filename_box_1="methane_box_1_orth",
+            ff_filename="methane_box_orth_bad_box_1_non_orth",
+            residues=[methane.name],
+            forcefield_selection="trappe-ua"
+        )
+
+        # set the vectors all too long
+        charmm_bad_box_1.box_1_vectors[0][0] = -0.45678901234561
+        charmm_bad_box_1.box_1_vectors[0][1] = -0.45678901234562
+        charmm_bad_box_1.box_1_vectors[0][2] = -0.45678901234563
+        charmm_bad_box_1.box_1_vectors[1][0] = -0.45678901234564
+        charmm_bad_box_1.box_1_vectors[1][1] = -0.45678901234565
+        charmm_bad_box_1.box_1_vectors[1][2] = -0.45678901234566
+        charmm_bad_box_1.box_1_vectors[2][0] = -0.45678901234567
+        charmm_bad_box_1.box_1_vectors[2][1] = -0.45678901234568
+        charmm_bad_box_1.box_1_vectors[2][2] = -0.45678901234569
+
+        # test that it fails with the GEMC_NVT with only 1 box in the Charmm object
+        with pytest.raises(
+            ValueError,
+            match=r"ERROR: At lease one of the individual box {} vectors are too large "
+                  "or greater than {} characters."
+                  "".format(0, 16)
+        ):
+
+            gomc_control.write_gomc_control_file(
+                charmm_bad_box_0,
+                "test_box_vector_too_many_char_box_0",
+                "NVT",
+                100,
+                300,
+            )
+
+        # test that it fails with the GEMC_NPT with only 1 box in the Charmm object
+        with pytest.raises(
+            ValueError,
+                match=r"ERROR: At lease one of the individual box {} vectors are too large "
+                      "or greater than {} characters."
+                      "".format(1, 16)
+        ):
+
+            gomc_control.write_gomc_control_file(
+                charmm_bad_box_1,
+                "test_box_vector_too_many_char_box_1",
+                "GCMC",
+                100,
+                300,
+            )
+
