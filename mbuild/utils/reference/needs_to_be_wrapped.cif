@@ -1,38 +1,38 @@
 #*********************************************************************************
 #
-# Crystallographic Information File for Tetrapropylammonium_ZSM-5 
+# Crystallographic Information File for Tetrapropylammonium_ZSM-5
 #
-# Reference : 
+# Reference :
 #   van Koningsveld, H., van Bekkum, H. and Jansen, J.C.
 #   Acta Crystallogr., B43, 127-132, (1987)
 #
 #
 # CIF downloaded from the IZA-SC Database of Zeolite Structures
 # Ch. Baerlocher and L.B. McCusker,
-# Database of Zeolite Structures: http://www.iza-structure.org/databases/ 
+# Database of Zeolite Structures: http://www.iza-structure.org/databases/
 #
 #**********************************************************************************
 
 
 data_Tetrapropylammonium_ZSM-5
-_chemical_name_systematic 
+_chemical_name_systematic
 '*ZSM-5'
 _chemical_formula_structural
 '|(C12N)4| [Si96O192]'
 _cell_length_a      20.022
 _cell_length_b      19.899
-_cell_length_c      13.383 
-_cell_angle_alpha   90 
-_cell_angle_beta    90 
+_cell_length_c      13.383
+_cell_angle_alpha   90
+_cell_angle_beta    90
 _cell_angle_gamma   90
 _cell_formula_units_Z   1
 
 _space_group.name_H-M_ref   'P n m a'
 _symmetry_space_group_name_H-M   'P n m a'
 _symmetry_space_group_name_Hall  '-P 2ac 2n'
-_space_group.IT_number  62 
+_space_group.IT_number  62
 
- 
+
  loop_
 _atom_site_label
 _atom_site_type_symbol

@@ -1,12 +1,13 @@
-from math import radians
+"""HOOMD xml format."""
+import operator
 from collections import namedtuple
+from math import radians
 
 import numpy as np
-import operator
 
 from mbuild.utils.conversion import RB_to_OPLS
-from mbuild.utils.geometry import coord_shift
 from mbuild.utils.decorators import breaking_change
+from mbuild.utils.geometry import coord_shift
 
 __all__ = ["write_hoomdxml"]
 
@@ -54,9 +55,13 @@ def write_hoomdxml(
 
     Example
     -------
-    ref_values = ethane.save(filename='ethane-opls.hoomdxml', forcefield_name='oplsaa', auto_scale=True)
-    print(ref_values.mass, ref_values.distance, ref_values.energy)
 
+    >>> ref_values = ethane.save(
+    ...     filename='ethane-opls.hoomdxml',
+    ...     forcefield_name='oplsaa',
+    ...     auto_scale=True
+    ...     )
+    >>> print(ref_values.mass, ref_values.distance, ref_values.energy)
 
     Notes
     -----
@@ -69,35 +74,40 @@ def write_hoomdxml(
 
     The following elements may be written if applicable:
 
-    * **pair_coeffs** : Pair coefficients for each particle type (assumes a 12-6 LJ pair style). The following information is written for each particle type:
+    * **pair_coeffs** : Pair coefficients for each particle type (assumes a
+        12-6 LJ pair style). The following information is written for each
+        particle type:
 
-                        * type : particle type
-                        * epsilon : LJ epsilon
-                        * sigma : LJ sigma
+        * type : particle type
+        * epsilon : LJ epsilon
+        * sigma : LJ sigma
 
-    * **bond_coeffs** : Coefficients for each bond type (assumes a harmonic bond style). The following information is written for each bond type:
+    * **bond_coeffs** : Coefficients for each bond type (assumes a harmonic bond
+        style). The following information is written for each bond type:
 
-                        * type : bond type
-                        * k : force constant (units of energy/distance^2)
-                        * r0 : bond rest length (units of distance)
+        * type : bond type
+        * k : force constant (units of energy/distance^2)
+        * r0 : bond rest length (units of distance)
 
     * **bond** : system bonds
-    * **angle_coeffs** : Coefficients for each angle type (assumes a harmonic angle style). The following information is written for each angle type:
+    * **angle_coeffs** : Coefficients for each angle type (assumes a harmonic
+        angle style). The following information is written for each angle type:
 
-                         * type : angle type
-                         * k : force constant (units of energy/radians^2)
-                         * theta : rest angle (units of radians)
+        * type : angle type
+        * k : force constant (units of energy/radians^2)
+        * theta : rest angle (units of radians)
 
     * **angle** : system angles
-    * **dihedral_coeffs** : Coefficients for each dihedral type (assumes an OPLS dihedral style). The following information is written for each dihedral type:
+    * **dihedral_coeffs** : Coefficients for each dihedral type (assumes an
+        OPLS dihedral style). The following information is written for each
+        dihedral type:
 
-                            * type : dihedral type
-                            * k1, k2, k3, k4 : force coefficients (units of energy)
+        * type : dihedral type
+        * k1, k2, k3, k4 : force coefficients (units of energy)
 
     * **dihedral** : system dihedrals
 
     * **body** : ID of the rigid body to which each particle belongs
-
     """
     ref_distance *= 10  # Parmed unit hack
     ref_energy /= 4.184  # Parmed unit hack
@@ -175,9 +185,7 @@ def _write_particle_information(
         Reference mass for conversion to reduced units
     ref_energy : float, default=1.0
         Reference energy for conversion to reduced units
-
     """
-
     xml_file.write('<position units="sigma" num="{}">\n'.format(xyz.shape[0]))
     for pos in xyz:
         xml_file.write("{}\t{}\t{}\n".format(*pos / ref_distance))
@@ -240,9 +248,7 @@ def _write_bond_information(xml_file, structure, ref_distance, ref_energy):
         Reference distance for conversion to reduced units
     ref_energy : float, default=1.0
         Reference energy for conversion to reduced units
-
     """
-
     unique_bond_types = set()
     xml_file.write("<bond>\n")
     for bond in structure.bonds:
@@ -283,9 +289,7 @@ def _write_angle_information(xml_file, structure, ref_energy):
         Parmed structure object
     ref_energy : float, default=1.0
         Reference energy for conversion to reduced units
-
     """
-
     unique_angle_types = set()
     xml_file.write("<angle>\n")
     for angle in structure.angles:
@@ -319,16 +323,11 @@ def _write_dihedral_information(xml_file, structure, ref_energy):
         Parmed structure object
     ref_energy : float, default=1.0
         Reference energy for conversion to reduced units
-
     """
-
     unique_dihedral_types = set()
     xml_file.write("<dihedral>\n")
     for dihedral in structure.rb_torsions:
-        t1, t2 = (
-            dihedral.atom1.type,
-            dihedral.atom2.type,
-        )
+        t1, t2 = (dihedral.atom1.type, dihedral.atom2.type)
         t3, t4 = dihedral.atom3.type, dihedral.atom4.type
         if [t2, t3] == sorted([t2, t3]):
             types_in_dihedral = "-".join((t1, t2, t3, t4))
@@ -388,9 +387,7 @@ def _write_rigid_information(xml_file, rigid_bodies):
         The file object of the hoomdxml file being written
     rigid_bodies : list, len=n_particles
         The rigid body that each particle belongs to (-1 for none)
-
     """
-
     if not all(body is None for body in rigid_bodies):
         xml_file.write("<body>\n")
         for body in rigid_bodies:
@@ -411,7 +408,6 @@ def _write_box_information(xml_file, structure, ref_distance):
         Parmed structure object
     ref_energy : float, default=1.0
         Reference energy for conversion to reduced units
-
     """
     if np.allclose(structure.box[3:6], np.array([90, 90, 90])):
         box_str = '<box units="sigma"  Lx="{}" Ly="{}" Lz="{}"/>\n'

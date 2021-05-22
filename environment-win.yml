@@ -15,15 +15,15 @@ dependencies:
   - nglview>=2.7
   - numpy
   - openbabel>=3.0.0
-  - rdkit
-  - oset
   - packmol=1!18.013
   - parmed>=3.4.0
   - pip
+  - pre-commit
   - protobuf
   - py3Dmol
   - pycifrw
   - pytest>=3.0
   - pytest-cov
   - python<=3.8
+  - rdkit
   - scipy

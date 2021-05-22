@@ -34,4 +34,3 @@ Pattern
 -------
 .. automodule:: mbuild.pattern
     :members:
-
