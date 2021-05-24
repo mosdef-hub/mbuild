@@ -1256,12 +1256,12 @@ class Charmm:
             residue names in the 'residues' list that was entered.
         box_0 : Box
             The Box class that contains the attributes Lx, Ly, Lz for the length
-            of the box 1 in nm. It also contains the xy, xz, and yz Tilt factors
+            of the box 0 (units in nanometers (nm)). It also contains the xy, xz, and yz Tilt factors
             needed to displace an orthogonal box's xy face to its
             parallelepiped structure for box 0.
         box_1 : Box
             The Box class that contains the attributes Lx, Ly, Lz for the length
-            of the box 1 (units in Angstroms (Ang)). It also contains the xy, xz, and yz Tilt factors
+            of the box 1 (units in nanometers (nm)). It also contains the xy, xz, and yz Tilt factors
             needed to displace an orthogonal box's xy face to its
             parallelepiped structure for box 0.
         box_0_vectors : numpy.ndarray, [[float, float, float], [float, float, float], [float, float, float]]
@@ -1934,7 +1934,6 @@ class Charmm:
                                                         self.box_0.angles,
                                                         precision=6
                                                         )
-
 
         # Internally use nm
         if self.structure_box_1:

@@ -1874,10 +1874,10 @@ class GOMCControl:
             simulation, the value will be None.
         box_0_vectors : numpy.ndarray, [[float float float], [float float float], [float float float]]
             Three (3) sets vectors for box 0 each with 3 float values, which represent
-            the vectors for the Charmm-style systems (units in in nanometers (nm))
+            the vectors for the Charmm-style systems (units in Angstroms (Ang))
         box_1_vectors : numpy.ndarray, [[float float float], [float float float], [float float float]]
             Three (3) sets vectors for box 1 each with 3 float values, which represent
-            the vectors for the Charmm-style systems (units in in nanometers (nm))
+            the vectors for the Charmm-style systems (units in Angstroms (Ang))
         coul_1_4 : float or int
             The non-bonded 1-4 coulombic scaling factor, which is the
             same for all the residues/molecules, regardless if
