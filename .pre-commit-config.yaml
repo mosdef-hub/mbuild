@@ -17,7 +17,7 @@ repos:
       name: isort (python)
       args: [--profile=black, --line-length=80]
 - repo: https://github.com/pycqa/pydocstyle
-  rev: '6.0.0'
+  rev: '6.1.1'
   hooks:
     - id: pydocstyle
       exclude: ^(mbuild/tests/|docs/|devtools/|setup.py|mbuild/formats/charmm_writer.py|mbuild/formats/gomc_conf_writer.py|mbuild/utils/specific_ff_to_residue.py)
