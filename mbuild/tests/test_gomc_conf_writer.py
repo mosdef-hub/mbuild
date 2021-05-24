@@ -5,14 +5,12 @@ import mbuild.formats.gomc_conf_writer as gomc_control
 from mbuild.formats.charmm_writer import Charmm
 from mbuild.lattice import load_cif
 from mbuild.tests.base_test import BaseTest
-from mbuild.utils.io import get_fn, has_foyer
+from mbuild.utils.io import has_foyer, get_fn
 
 
 @pytest.mark.skipif(not has_foyer, reason="Foyer package not installed")
 class TestGOMCControlFileWriter(BaseTest):
-    def test_dict_keys_to_list(
-        self,
-    ):
+    def test_dict_keys_to_list(self,):
         dict = {"a": "1", "b": "2", "c": "3"}
         keys = gomc_control.dict_keys_to_list(dict)
 
@@ -349,7 +347,9 @@ class TestGOMCControlFileWriter(BaseTest):
 
     def test_save_basic_NVT(self, ethane_gomc):
         test_box_ethane_gomc = mb.fill_box(
-            compound=[ethane_gomc], n_compounds=[1], box=[1, 1, 1]
+            compound=[ethane_gomc],
+            n_compounds=[1],
+            box=[1, 1, 1]
         )
         charmm = Charmm(
             test_box_ethane_gomc,
@@ -639,7 +639,9 @@ class TestGOMCControlFileWriter(BaseTest):
 
     def test_save_basic_NPT(self, ethane_gomc):
         test_box_ethane_gomc = mb.fill_box(
-            compound=[ethane_gomc], n_compounds=[1], box=[2, 2, 2]
+            compound=[ethane_gomc],
+            n_compounds=[1],
+            box=[2, 2, 2]
         )
         charmm = Charmm(
             test_box_ethane_gomc,
@@ -804,7 +806,9 @@ class TestGOMCControlFileWriter(BaseTest):
 
     def test_save_basic_GCMC(self, ethane_gomc):
         test_box_ethane_gomc = mb.fill_box(
-            compound=[ethane_gomc], n_compounds=[1], box=[2, 2, 2]
+            compound=[ethane_gomc],
+            n_compounds=[1],
+            box=[2, 2, 2]
         )
         charmm = Charmm(
             test_box_ethane_gomc,
@@ -1021,7 +1025,9 @@ class TestGOMCControlFileWriter(BaseTest):
 
     def test_save_basic_GEMC_NVT(self, ethane_gomc):
         test_box_ethane_gomc = mb.fill_box(
-            compound=[ethane_gomc], n_compounds=[1], box=[2, 2, 2]
+            compound=[ethane_gomc],
+            n_compounds=[1],
+            box=[2, 2, 2]
         )
         charmm = Charmm(
             test_box_ethane_gomc,
@@ -1100,7 +1106,9 @@ class TestGOMCControlFileWriter(BaseTest):
 
     def test_save_basic_GEMC_NPT(self, ethane_gomc):
         test_box_ethane_gomc = mb.fill_box(
-            compound=[ethane_gomc], n_compounds=[1], box=[2, 2, 2]
+            compound=[ethane_gomc],
+            n_compounds=[1],
+            box=[2, 2, 2]
         )
         charmm = Charmm(
             test_box_ethane_gomc,
@@ -1637,12 +1645,12 @@ class TestGOMCControlFileWriter(BaseTest):
                     "InitialState": 3,
                     "LambdaVDW": [0.1, 0.2, 0.4, 1.0],
                     "LambdaCoulomb": [0.1, 0.3, 0.8, 0.9],
-                },
+                }
             )
 
         with pytest.raises(
-            ValueError,
-            match=r"ERROR: The last value in the LambdaVDW variable list must be a 1.0",
+                ValueError,
+                match=r"ERROR: The last value in the LambdaVDW variable list must be a 1.0",
         ):
             gomc_control.write_gomc_control_file(
                 charmm,
@@ -1655,7 +1663,7 @@ class TestGOMCControlFileWriter(BaseTest):
                     "MoleculeType": ["ETH", 1],
                     "InitialState": 3,
                     "LambdaVDW": [0.1, 0.2, 0.4, 0.9],
-                },
+                }
             )
 
     def test_save_NVT_bad_variables_part_1(self, ethane_gomc, ethanol_gomc):
@@ -7568,7 +7576,7 @@ class TestGOMCControlFileWriter(BaseTest):
                 input_variables_dict={
                     "MEMC_DataInput": [
                         [1, "ETH", ["C1", "C2"], "ETO", ["C1", "C2"]],
-                        [1, "ETH", ["C1", "C2"], "ETO", ["C1", "O1"]],
+                         [1, "ETH", ["C1", "C2"], "ETO", ["C1", "O1"]]
                     ],
                     "ChEmPot": {"ETH": -4000, "ETO": -8000},
                     "DisFreQ": 0.05,
@@ -7705,85 +7713,75 @@ class TestGOMCControlFileWriter(BaseTest):
             )
 
     def test_save_non_othoganol_writer(self):
-        lattice_cif_ETV_triclinic = load_cif(
-            file_or_path=get_fn("ETV_triclinic.cif")
-        )
+        lattice_cif_ETV_triclinic = load_cif(file_or_path=get_fn("ETV_triclinic.cif"))
         ETV_triclinic_1_cell = lattice_cif_ETV_triclinic.populate(x=1, y=1, z=1)
-        ETV_triclinic_1_cell.name = "ETV_1"
+        ETV_triclinic_1_cell.name = 'ETV_1'
         ETV_triclinic_3_cell = lattice_cif_ETV_triclinic.populate(x=3, y=3, z=3)
-        ETV_triclinic_3_cell.name = "ETV_3"
+        ETV_triclinic_3_cell.name = 'ETV_3'
 
-        charmm = Charmm(
-            ETV_triclinic_1_cell,
-            "ETV_triclinic_1_cell_box_0",
-            structure_box_1=ETV_triclinic_3_cell,
-            filename_box_1="ETV_triclinic_3_cell_box_1",
-            ff_filename="ETV_triclinic_FF",
-            forcefield_selection={
-                ETV_triclinic_1_cell.name: get_fn(
-                    "Charmm_writer_testing_only_zeolite.xml"
-                ),
-                ETV_triclinic_3_cell.name: get_fn(
-                    "Charmm_writer_testing_only_zeolite.xml"
-                ),
-            },
-            residues=[ETV_triclinic_1_cell.name, ETV_triclinic_3_cell.name],
-            bead_to_atom_name_dict=None,
-            fix_residue=[ETV_triclinic_1_cell.name, ETV_triclinic_3_cell.name],
-        )
+        charmm = Charmm(ETV_triclinic_1_cell,
+                        'ETV_triclinic_1_cell_box_0',
+                        structure_box_1=ETV_triclinic_3_cell,
+                        filename_box_1="ETV_triclinic_3_cell_box_1",
+                        ff_filename="ETV_triclinic_FF",
+                        forcefield_selection={
+                            ETV_triclinic_1_cell.name: get_fn("Charmm_writer_testing_only_zeolite.xml"),
+                            ETV_triclinic_3_cell.name: get_fn("Charmm_writer_testing_only_zeolite.xml")},
+                        residues=[ETV_triclinic_1_cell.name,
+                                  ETV_triclinic_3_cell.name],
+                        bead_to_atom_name_dict=None,
+                        fix_residue=[ETV_triclinic_1_cell.name,
+                                     ETV_triclinic_3_cell.name],
+                        )
 
-        gomc_control.write_gomc_control_file(
-            charmm,
-            "test_save_non_othoganol_writer.conf",
-            "GEMC_NVT",
-            100000,
-            300,
-        )
+        gomc_control.write_gomc_control_file(charmm, 'test_save_non_othoganol_writer.conf',
+                                             'GEMC_NVT', 100000, 300,
+                                             )
 
-        with open("test_save_non_othoganol_writer.conf", "r") as fp:
+        with open('test_save_non_othoganol_writer.conf', 'r') as fp:
             out_gomc = fp.readlines()
             for i, line in enumerate(out_gomc):
-                if line.startswith("CellBasisVector1 0"):
+                if line.startswith('CellBasisVector1 0'):
                     split_line = line.split()
-                    assert split_line[1] == "0"
-                    assert split_line[2] == "8.7503"
-                    assert split_line[3] == "0.0"
-                    assert split_line[4] == "0.0"
+                    assert split_line[1] == '0'
+                    assert split_line[2] == '8.7503'
+                    assert split_line[3] == '0.0'
+                    assert split_line[4] == '0.0'
 
-                elif line.startswith("CellBasisVector2 0"):
+                elif line.startswith('CellBasisVector2 0'):
                     split_line = line.split()
-                    assert split_line[1] == "0"
-                    assert split_line[2] == "-1.179131"
-                    assert split_line[3] == "9.575585"
-                    assert split_line[4] == "0.0"
+                    assert split_line[1] == '0'
+                    assert split_line[2] == '-1.179131'
+                    assert split_line[3] == '9.575585'
+                    assert split_line[4] == '0.0'
 
-                elif line.startswith("CellBasisVector3 0"):
+                elif line.startswith('CellBasisVector3 0'):
                     split_line = line.split()
-                    assert split_line[1] == "0"
-                    assert split_line[2] == "-1.817231"
-                    assert split_line[3] == "-3.027821"
-                    assert split_line[4] == "9.645823"
+                    assert split_line[1] == '0'
+                    assert split_line[2] == '-1.817231'
+                    assert split_line[3] == '-3.027821'
+                    assert split_line[4] == '9.645823'
 
-                if line.startswith("CellBasisVector1 1"):
+                if line.startswith('CellBasisVector1 1'):
                     split_line = line.split()
-                    assert split_line[1] == "1"
-                    assert split_line[2] == "26.2509"
-                    assert split_line[3] == "0.0"
-                    assert split_line[4] == "0.0"
+                    assert split_line[1] == '1'
+                    assert split_line[2] == '26.2509'
+                    assert split_line[3] == '0.0'
+                    assert split_line[4] == '0.0'
 
-                elif line.startswith("CellBasisVector2 1"):
+                elif line.startswith('CellBasisVector2 1'):
                     split_line = line.split()
-                    assert split_line[1] == "1"
-                    assert split_line[2] == "-3.537381"
-                    assert split_line[3] == "28.726735"
-                    assert split_line[4] == "0.0"
+                    assert split_line[1] == '1'
+                    assert split_line[2] == '-3.537381'
+                    assert split_line[3] == '28.726735'
+                    assert split_line[4] == '0.0'
 
-                elif line.startswith("CellBasisVector3 1"):
+                elif line.startswith('CellBasisVector3 1'):
                     split_line = line.split()
-                    assert split_line[1] == "1"
-                    assert split_line[2] == "-5.451699"
-                    assert split_line[3] == "-9.083469"
-                    assert split_line[4] == "28.937455"
+                    assert split_line[1] == '1'
+                    assert split_line[2] == '-5.451699'
+                    assert split_line[3] == '-9.083469'
+                    assert split_line[4] == '28.937455'
 
                 else:
                     pass
@@ -7794,16 +7792,17 @@ class TestGOMCControlFileWriter(BaseTest):
         methane_child_bead = mb.Compound(name="_CH4")
         methane.add(methane_child_bead, inherit_periodicity=False)
 
-        methane_box_orth = mb.fill_box(
-            compound=methane, n_compounds=10, box=[1, 2, 3]
-        )
+        methane_box_orth = mb.fill_box(compound=methane,
+                                       n_compounds=10,
+                                       box=[1, 2, 3]
+                                       )
 
         charmm_bad_box_0 = Charmm(
             methane_box_orth,
             "methane_box_0_orth",
             ff_filename="methane_box_orth_bad_box_0_non_orth",
             residues=[methane.name],
-            forcefield_selection="trappe-ua",
+            forcefield_selection="trappe-ua"
         )
 
         # set the vectors all too long
@@ -7824,7 +7823,7 @@ class TestGOMCControlFileWriter(BaseTest):
             filename_box_1="methane_box_1_orth",
             ff_filename="methane_box_orth_bad_box_1_non_orth",
             residues=[methane.name],
-            forcefield_selection="trappe-ua",
+            forcefield_selection="trappe-ua"
         )
 
         # set the vectors all too long
@@ -7842,8 +7841,8 @@ class TestGOMCControlFileWriter(BaseTest):
         with pytest.raises(
             ValueError,
             match=r"ERROR: At lease one of the individual box {} vectors are too large "
-            "or greater than {} characters."
-            "".format(0, 16),
+                  "or greater than {} characters."
+                  "".format(0, 16)
         ):
 
             gomc_control.write_gomc_control_file(
@@ -7857,9 +7856,9 @@ class TestGOMCControlFileWriter(BaseTest):
         # test that it fails with the GEMC_NPT with only 1 box in the Charmm object
         with pytest.raises(
             ValueError,
-            match=r"ERROR: At lease one of the individual box {} vectors are too large "
-            "or greater than {} characters."
-            "".format(1, 16),
+                match=r"ERROR: At lease one of the individual box {} vectors are too large "
+                      "or greater than {} characters."
+                      "".format(1, 16)
         ):
 
             gomc_control.write_gomc_control_file(

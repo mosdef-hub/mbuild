@@ -7,7 +7,6 @@ import numpy as np
 from parmed.periodic_table import Element
 from parmed.utils.io import genopen
 
-import mbuild.box as mb_box
 from mbuild.box import Box
 from mbuild.compound import Compound
 from mbuild.utils.conversion import (
@@ -998,6 +997,58 @@ def unique_atom_naming(
     ]
 
 
+def _lengths_angles_to_vectors(lengths, angles, precision=6):
+    """Converts the length and angles into CellBasisVectors
+
+    Parameters
+    ----------
+    lengths : list-like, shape=(3,), dtype=float
+        Lengths of the edges of the box (user chosen units).
+    angles : list-like, shape=(3,), dtype=float, default=None
+        Angles (in degrees) that define the tilt of the edges of the box. If
+        None is given, angles are assumed to be [90.0, 90.0, 90.0]. These are
+        also known as alpha, beta, gamma in the crystallography community.
+    precision : int, optional, default=6
+        Control the precision of the floating point representation of box
+        attributes. If none provided, the default is 6 decimals.
+
+    Returns
+    -------
+    box_vectors: numpy.ndarray, [[float, float, float], [float, float, float], [float, float, float]]
+        Three (3) sets vectors for box 0 each with 3 float values, which represent
+        the vectors for the Charmm-style systems (units are the same as entered for lengths)
+
+    """
+
+    (a, b, c) = lengths
+
+    (alpha, beta, gamma) = np.deg2rad(angles)
+    cos_a = np.clip(np.cos(alpha), -1.0, 1.0)
+    cos_b = np.clip(np.cos(beta), -1.0, 1.0)
+    cos_g = np.clip(np.cos(gamma), -1.0, 1.0)
+
+    sin_a = np.clip(np.sin(alpha), -1.0, 1.0)
+    sin_b = np.clip(np.sin(beta), -1.0, 1.0)
+    sin_g = np.clip(np.sin(gamma), -1.0, 1.0)
+    a_vec = np.asarray([a, 0.0, 0.0])
+
+    b_x = b * cos_g
+    b_y = b * sin_g
+    b_vec = np.asarray([b_x, b_y, 0.0])
+
+    c_x = c * cos_b
+    c_cos_y_term = (cos_a - (cos_b * cos_g)) / sin_g
+    c_y = c * c_cos_y_term
+    c_z = c * np.sqrt(1 - np.square(cos_b) - np.square(c_cos_y_term))
+    c_vec = np.asarray([c_x, c_y, c_z])
+    box_vectors = np.asarray((a_vec, b_vec, c_vec))
+    box_vectors.reshape(3, 3)
+    # still leaves some floating values in some cases
+    box_vectors = np.around(box_vectors, decimals=precision)
+
+    return box_vectors
+
+
 # Currently the NBFIX is disabled as since only the OPLS and TRAPPE force fields are currently supported
 class Charmm:
     def __init__(
@@ -1873,17 +1924,17 @@ class Charmm:
             angles=self.structure_box_0_ff.box[3:6],
         )
 
-        # create box 0 vector list and convert from nm to Ang and round to 6 decimals ()
-        # First, import the values in nm and rounding to 8 decimals and multiply by 10 to get angstroms
-        box_0_vectors_mod = (
-            mb_box._lengths_angles_to_vectors(
-                self.box_0.lengths, self.box_0.angles, 7
-            )
-            * 10
-        )
-        # create box 0 vector list and round to 6 decimals to avoid errors in the gomc_writer script
-        # still leaves some floating values in some cases
-        self.box_0_vectors = np.around(box_0_vectors_mod, decimals=6)
+        # create box 0 vector list and convert from nm to Ang and round to 6 decimals.
+        # note mbuild standard lengths are in nm, so round to 6+1 = 7 then mutlipy by 10
+        box_0_lengths_ang = (self.box_0.lengths[0] * 10,
+                             self.box_0.lengths[1] * 10,
+                             self.box_0.lengths[2] * 10,
+                             )
+        self.box_0_vectors = _lengths_angles_to_vectors(box_0_lengths_ang,
+                                                        self.box_0.angles,
+                                                        precision=6
+                                                        )
+
 
         # Internally use nm
         if self.structure_box_1:
@@ -1897,17 +1948,16 @@ class Charmm:
                 angles=self.structure_box_1_ff.box[3:6],
             )
 
-            # create box 1 vector list and convert from nm to Ang and round to 6 decimals (7 decimals in nm)
-            # First, import the values in nm and rounding to 7 decimals and multiply by 10 to get angstroms
-            box_1_vectors_mod = (
-                mb_box._lengths_angles_to_vectors(
-                    self.box_1.lengths, self.box_1.angles, 7
-                )
-                * 10
-            )
-            # create box 1 vector list and round to 6 decimals to avoid errors in the gomc_writer script
-            # still leaves some floating values in some cases
-            self.box_1_vectors = np.around(box_1_vectors_mod, decimals=6)
+            # create box 1 vector list and convert from nm to Ang and round to 6 decimals.
+            # note mbuild standard lengths are in nm, so round to 6+1 = 7 then mutlipy by 10
+            box_1_lengths_ang = (self.box_1.lengths[0] * 10,
+                                 self.box_1.lengths[1] * 10,
+                                 self.box_1.lengths[2] * 10,
+                                 )
+            self.box_1_vectors = _lengths_angles_to_vectors(box_1_lengths_ang,
+                                                            self.box_1.angles,
+                                                            precision=6
+                                                            )
 
         # if self.structure_box_1 != None:
         if self.structure_box_1:
@@ -2019,21 +2069,16 @@ class Charmm:
             self.max_residue_no = 9999
             self.max_resname_char = 4
 
-            res_no_chain_iter_corrected = []
+            res_no_chain_iter_corrected= []
             residue_id_list = []
-            residue_id_adder_fixed_struct_wo_bonds = (
-                0  # for example zeolite used as fixed atoms wo bonds
-            )
+            residue_id_adder_fixed_struct_wo_bonds = 0 # for example zeolite used as fixed atoms wo bonds
             for f, PSF_atom_iteration_0 in enumerate(
                 stuct_only_iteration.atoms
             ):
 
                 if f > 0:
-                    if (
-                        PSF_atom_iteration_0.residue.chain
-                        == previous_residue_chain
-                        and len(PSF_atom_iteration_0.bonds) == 0
-                    ):
+                    if PSF_atom_iteration_0.residue.chain == previous_residue_chain and \
+                            len(PSF_atom_iteration_0.bonds) == 0:
                         residue_id_adder_fixed_struct_wo_bonds += 1
 
                 previous_residue_chain = PSF_atom_iteration_0.residue.chain
@@ -2974,8 +3019,8 @@ class Charmm:
                             data.write(info_if_dihedral_error_too_large)
                             print(info_if_dihedral_error_too_large)
                         else:
-                            list_if_abs_max_values_for_dihedral_overall_max = (
-                                max(list_if_abs_max_values_for_dihedral_overall)
+                            list_if_abs_max_values_for_dihedral_overall_max = max(
+                                list_if_abs_max_values_for_dihedral_overall
                             )
                             info_if_dihedral_error_ok = (
                                 "! RB-torsion to CHARMM dihedral conversion error is OK "
@@ -3225,24 +3270,22 @@ class Charmm:
                     stuct_only_iteration.residues[m].name
                 )
 
-            res_no_chain_iter_corrected = []
+            res_no_chain_iter_corrected= []
             residue_id_list = []
             residue_id_adder_fixed_struct_wo_bonds = 0
             for f, PSF_atom_iteration_0 in enumerate(
                 stuct_only_iteration.atoms
             ):
                 if f > 0:
-                    if (
-                        PSF_atom_iteration_0.residue.chain
-                        == previous_residue_chain
-                        and len(PSF_atom_iteration_0.bonds) == 0
-                    ):
+                    if PSF_atom_iteration_0.residue.chain == previous_residue_chain and \
+                            len(PSF_atom_iteration_0.bonds) == 0:
                         residue_id_adder_fixed_struct_wo_bonds += 1
 
                 previous_residue_chain = PSF_atom_iteration_0.residue.chain
 
                 residue_id_int = int(
-                    unique_residue_data_dict[residue_data_list[f]]
+                    unique_residue_data_dict[residue_data_list[f]
+                    ]
                     + residue_id_adder_fixed_struct_wo_bonds
                 )
                 res_id_adder = int(
@@ -3396,12 +3439,7 @@ class Charmm:
                 first_indent % no_dihedrals + " !NPHI: dihedrals\n"
             )
             for i_dihedral, dihedral_iter in enumerate(dihedrals_list):
-                (
-                    dihedral_atom_1,
-                    dihedral_atom_2,
-                    dihedral_atom_3,
-                    dihedral_atom_4,
-                ) = (
+                dihedral_atom_1, dihedral_atom_2, dihedral_atom_3, dihedral_atom_4 = (
                     dihedral_iter.atom1,
                     dihedral_iter.atom2,
                     dihedral_iter.atom3,
@@ -3434,12 +3472,7 @@ class Charmm:
                 first_indent % no_impropers + " !NIMPHI: impropers\n"
             )
             for i_improper, improper_iter in enumerate(impropers_list):
-                (
-                    improper_atom_1,
-                    improper_atom_2,
-                    improper_atom_3,
-                    improper_atom_4,
-                ) = (
+                improper_atom_1, improper_atom_2, improper_atom_3, improper_atom_4 = (
                     improper_iter.atom1,
                     improper_iter.atom2,
                     improper_iter.atom3,
@@ -3722,23 +3755,20 @@ class Charmm:
             locked_occupany_factor = 1.00
             max_no_atoms_in_base10 = 99999  # 99,999 for atoms in psf/pdb
 
-            res_no_chain_iter_corrected = []
+            res_no_chain_iter_corrected= []
             res_chain_iteration_corrected_list = []
             residue_id_list = []
-            residue_id_adder_fixed_struct_wo_bonds = (
-                0  # for example zeolite used as fixed atoms wo bonds
-            )
+            residue_id_adder_fixed_struct_wo_bonds = 0  # for example zeolite used as fixed atoms wo bonds
             for i, atom_iter in enumerate(stuct_only_iteration.atoms):
                 if i > 0:
-                    if (
-                        atom_iter.residue.chain == previous_residue_chain
-                        and len(atom_iter.bonds) == 0
-                    ):
+                    if atom_iter.residue.chain == previous_residue_chain and \
+                            len(atom_iter.bonds) == 0:
                         residue_id_adder_fixed_struct_wo_bonds += 1
 
                 previous_residue_chain = atom_iter.residue.chain
                 residue_id_int = int(
-                    unique_residue_data_dict[residue_data_list[i]]
+                    unique_residue_data_dict[residue_data_list[i]
+                    ]
                     + residue_id_adder_fixed_struct_wo_bonds
                 )
                 res_chain_iteration_corrected_list.append(
