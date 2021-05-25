@@ -997,6 +997,58 @@ def unique_atom_naming(
     ]
 
 
+def _lengths_angles_to_vectors(lengths, angles, precision=6):
+    """Converts the length and angles into CellBasisVectors
+
+    Parameters
+    ----------
+    lengths : list-like, shape=(3,), dtype=float
+        Lengths of the edges of the box (user chosen units).
+    angles : list-like, shape=(3,), dtype=float, default=None
+        Angles (in degrees) that define the tilt of the edges of the box. If
+        None is given, angles are assumed to be [90.0, 90.0, 90.0]. These are
+        also known as alpha, beta, gamma in the crystallography community.
+    precision : int, optional, default=6
+        Control the precision of the floating point representation of box
+        attributes. If none provided, the default is 6 decimals.
+
+    Returns
+    -------
+    box_vectors: numpy.ndarray, [[float, float, float], [float, float, float], [float, float, float]]
+        Three (3) sets vectors for box 0 each with 3 float values, which represent
+        the vectors for the Charmm-style systems (units are the same as entered for lengths)
+
+    """
+
+    (a, b, c) = lengths
+
+    (alpha, beta, gamma) = np.deg2rad(angles)
+    cos_a = np.clip(np.cos(alpha), -1.0, 1.0)
+    cos_b = np.clip(np.cos(beta), -1.0, 1.0)
+    cos_g = np.clip(np.cos(gamma), -1.0, 1.0)
+
+    sin_a = np.clip(np.sin(alpha), -1.0, 1.0)
+    sin_b = np.clip(np.sin(beta), -1.0, 1.0)
+    sin_g = np.clip(np.sin(gamma), -1.0, 1.0)
+    a_vec = np.asarray([a, 0.0, 0.0])
+
+    b_x = b * cos_g
+    b_y = b * sin_g
+    b_vec = np.asarray([b_x, b_y, 0.0])
+
+    c_x = c * cos_b
+    c_cos_y_term = (cos_a - (cos_b * cos_g)) / sin_g
+    c_y = c * c_cos_y_term
+    c_z = c * np.sqrt(1 - np.square(cos_b) - np.square(c_cos_y_term))
+    c_vec = np.asarray([c_x, c_y, c_z])
+    box_vectors = np.asarray((a_vec, b_vec, c_vec))
+    box_vectors.reshape(3, 3)
+    # still leaves some floating values in some cases
+    box_vectors = np.around(box_vectors, decimals=precision)
+
+    return box_vectors
+
+
 # Currently the NBFIX is disabled as since only the OPLS and TRAPPE force fields are currently supported
 class Charmm:
     def __init__(
@@ -1015,8 +1067,6 @@ class Charmm:
         fix_residue_in_box=None,
         ff_filename=None,
         reorder_res_in_pdb_psf=False,
-        box_0=None,
-        box_1=None,
     ):
 
         """Generates a Charmm object that is required to produce the Charmm style parameter
@@ -1122,14 +1172,6 @@ class Charmm:
             its original order, as in the Compound sent to the writer.
             If True, the order of the atoms is reordered based on their
             residue names in the 'residues' list that was entered.
-        box_0 : list, [x-dim, y-dim ,z-dim]
-            A list of 3 positive float values or the dimensions [x, y ,z]
-            for structure_box_0 in nanometers (nm)
-            This is to add/override or change the structures dimensions. Ex: [1,2,3]
-        box_1 : list, [x-dim, y-dim ,z-dim]
-            A list of 3 positive float values or the dimensions [x, y ,z]
-            for structure_box_1 in nanometers (nm)
-            This is to add/override or change the structures dimensions. Ex: [1,2,3]
 
         Attributes
         ----------
@@ -1212,14 +1254,22 @@ class Charmm:
             its original order, as in the Compound sent to the writer.
             If True, the order of the atoms is reordered based on their
             residue names in the 'residues' list that was entered.
-        box_0 : list, [x-dim, y-dim ,z-dim]
-            A list of 3 positive float values or the dimensions [x, y ,z]
-            for structure_box_0 in nanometers (nm)
-            This is to add/override or change the structures dimensions. Ex: [1,2,3]
-        box_1 : list, [x-dim, y-dim ,z-dim]
-            A list of 3 positive float values or the dimensions [x, y ,z]
-            for structure_box_1 in nanometers (nm)
-            This is to add/override or change the structures dimensions. Ex: [1,2,3]
+        box_0 : Box
+            The Box class that contains the attributes Lx, Ly, Lz for the length
+            of the box 0 (units in nanometers (nm)). It also contains the xy, xz, and yz Tilt factors
+            needed to displace an orthogonal box's xy face to its
+            parallelepiped structure for box 0.
+        box_1 : Box
+            The Box class that contains the attributes Lx, Ly, Lz for the length
+            of the box 1 (units in nanometers (nm)). It also contains the xy, xz, and yz Tilt factors
+            needed to displace an orthogonal box's xy face to its
+            parallelepiped structure for box 0.
+        box_0_vectors : numpy.ndarray, [[float, float, float], [float, float, float], [float, float, float]]
+            Three (3) sets vectors for box 0 each with 3 float values, which represent
+            the vectors for the Charmm-style systems (units in Angstroms (Ang))
+        box_1_vectors : numpy.ndarray, [[float, float, float], [float, float, float], [float, float, float]]
+            Three (3) sets vectors for box 1 each with 3 float values, which represent
+            the vectors for the Charmm-style systems (units in Angstroms (Ang))
         structure_box_0_ff : parmed.structure.Structure
             The box 0 structure (structure_box_0) after all the provided
             force fields are applied.
@@ -1348,8 +1398,7 @@ class Charmm:
         self.fix_residue_in_box = fix_residue_in_box
         self.ff_filename = ff_filename
         self.reorder_res_in_pdb_psf = reorder_res_in_pdb_psf
-        self.box_0 = box_0
-        self.box_1 = box_1
+
         # value to check for errors, with  self.input_error = True or False. Set to False initally
         self.input_error = False
 
@@ -1446,11 +1495,6 @@ class Charmm:
             print_error_message = (
                 "ERROR: Please enter the filename_box_1 as a string."
             )
-            raise TypeError(print_error_message)
-
-        if self.structure_box_1 is None and self.box_1 is not None:
-            self.input_error = True
-            print_error_message = "ERROR: box_1 is set to a value but there is not a structure 1 to use it on."
             raise TypeError(print_error_message)
 
         if self.ff_filename is not None:
@@ -1608,36 +1652,6 @@ class Charmm:
                     print_error_message = "ERROR: Please enter the bead_to_atom_name_dict with only string inputs."
                     raise TypeError(print_error_message)
 
-        if self.box_0 is not None:
-            box_length = len(self.box_0)
-            if box_length != 3:
-                self.input_error = True
-                print_error_message = "ERROR: Please enter all 3 values and only 3 values for the box_0 dimensions."
-                raise ValueError(print_error_message)
-            for box_iter in self.box_0:
-                if isinstance(box_iter, str) or box_iter <= 0:
-                    self.input_error = True
-                    print_error_message = (
-                        "ERROR: Please enter float or integer values, which are all "
-                        "positive values for the box_0 dimensions."
-                    )
-                    raise ValueError(print_error_message)
-
-        if self.box_1 is not None:
-            box_length = len(self.box_1)
-            if box_length != 3:
-                self.input_error = True
-                print_error_message = "ERROR: Please enter all 3 values and only 3 values for the box_1 dimensions."
-                raise ValueError(print_error_message)
-            for box_iter in self.box_1:
-                if isinstance(box_iter, str) or box_iter <= 0:
-                    self.input_error = True
-                    print_error_message = (
-                        "ERROR: Please enter float or integer values, which are all "
-                        "positive values for the box_1 dimensions."
-                    )
-                    raise ValueError(print_error_message)
-
         print("******************************")
         print("")
 
@@ -1667,7 +1681,6 @@ class Charmm:
                 forcefield_selection=self.forcefield_selection,
                 residues=self.residues,
                 reorder_res_in_pdb_psf=self.reorder_res_in_pdb_psf,
-                box=self.box_0,
                 boxes_for_simulation=self.boxes_for_simulation,
             )
 
@@ -1684,7 +1697,6 @@ class Charmm:
                 forcefield_selection=self.forcefield_selection,
                 residues=self.residues,
                 reorder_res_in_pdb_psf=self.reorder_res_in_pdb_psf,
-                box=self.box_1,
                 boxes_for_simulation=self.boxes_for_simulation,
             )
 
@@ -1774,7 +1786,6 @@ class Charmm:
                 forcefield_selection=self.forcefield_selection,
                 residues=self.residues,
                 reorder_res_in_pdb_psf=self.reorder_res_in_pdb_psf,
-                box=self.box_0,
                 boxes_for_simulation=self.boxes_for_simulation,
             )
 
@@ -1913,6 +1924,17 @@ class Charmm:
             angles=self.structure_box_0_ff.box[3:6],
         )
 
+        # create box 0 vector list and convert from nm to Ang and round to 6 decimals.
+        # note mbuild standard lengths are in nm, so round to 6+1 = 7 then mutlipy by 10
+        box_0_lengths_ang = (
+            self.box_0.lengths[0] * 10,
+            self.box_0.lengths[1] * 10,
+            self.box_0.lengths[2] * 10,
+        )
+        self.box_0_vectors = _lengths_angles_to_vectors(
+            box_0_lengths_ang, self.box_0.angles, precision=6
+        )
+
         # Internally use nm
         if self.structure_box_1:
             self.box_1 = Box(
@@ -1923,6 +1945,17 @@ class Charmm:
                     ]
                 ),
                 angles=self.structure_box_1_ff.box[3:6],
+            )
+
+            # create box 1 vector list and convert from nm to Ang and round to 6 decimals.
+            # note mbuild standard lengths are in nm, so round to 6+1 = 7 then mutlipy by 10
+            box_1_lengths_ang = (
+                self.box_1.lengths[0] * 10,
+                self.box_1.lengths[1] * 10,
+                self.box_1.lengths[2] * 10,
+            )
+            self.box_1_vectors = _lengths_angles_to_vectors(
+                box_1_lengths_ang, self.box_1.angles, precision=6
             )
 
         # if self.structure_box_1 != None:
@@ -1947,6 +1980,7 @@ class Charmm:
         residues_all_list = [
             atom.residue.name for atom in self.structure_selection.atoms
         ]
+
         self.epsilon_dict = dict(
             [
                 (self.unique_types.index(atom_type), epsilon)
@@ -2034,15 +2068,30 @@ class Charmm:
             self.max_residue_no = 9999
             self.max_resname_char = 4
 
-            ff_name = []
+            res_no_chain_iter_corrected = []
             residue_id_list = []
+            residue_id_adder_fixed_struct_wo_bonds = (
+                0  # for example zeolite used as fixed atoms wo bonds
+            )
             for f, PSF_atom_iteration_0 in enumerate(
                 stuct_only_iteration.atoms
             ):
 
+                if f > 0:
+                    if (
+                        PSF_atom_iteration_0.residue.chain
+                        == previous_residue_chain
+                        and len(PSF_atom_iteration_0.bonds) == 0
+                    ):
+                        residue_id_adder_fixed_struct_wo_bonds += 1
+
+                previous_residue_chain = PSF_atom_iteration_0.residue.chain
+
                 residue_id_int = int(
                     unique_residue_data_dict[residue_data_list[f]]
+                    + residue_id_adder_fixed_struct_wo_bonds
                 )
+
                 res_id_adder = int(
                     (residue_id_int % self.max_residue_no) % self.max_residue_no
                 )
@@ -2051,7 +2100,7 @@ class Charmm:
                 else:
                     res_no_iteration_corrected = res_id_adder
 
-                ff_name.append(res_no_iteration_corrected)
+                res_no_chain_iter_corrected.append(res_no_iteration_corrected)
                 residue_id_list.append(residue_id_int)
 
             # This converts the atom name in the GOMC psf and pdb files to unique atom names
@@ -3225,14 +3274,25 @@ class Charmm:
                     stuct_only_iteration.residues[m].name
                 )
 
-            ff_name = []
+            res_no_chain_iter_corrected = []
             residue_id_list = []
+            residue_id_adder_fixed_struct_wo_bonds = 0
             for f, PSF_atom_iteration_0 in enumerate(
                 stuct_only_iteration.atoms
             ):
+                if f > 0:
+                    if (
+                        PSF_atom_iteration_0.residue.chain
+                        == previous_residue_chain
+                        and len(PSF_atom_iteration_0.bonds) == 0
+                    ):
+                        residue_id_adder_fixed_struct_wo_bonds += 1
+
+                previous_residue_chain = PSF_atom_iteration_0.residue.chain
 
                 residue_id_int = int(
                     unique_residue_data_dict[residue_data_list[f]]
+                    + residue_id_adder_fixed_struct_wo_bonds
                 )
                 res_id_adder = int(
                     (residue_id_int % self.max_residue_no) % self.max_residue_no
@@ -3242,7 +3302,7 @@ class Charmm:
                 else:
                     res_no_iteration_corrected = res_id_adder
 
-                ff_name.append(res_no_iteration_corrected)
+                res_no_chain_iter_corrected.append(res_no_iteration_corrected)
                 residue_id_list.append(residue_id_int)
 
             output_write = genopen(output, "w")
@@ -3320,7 +3380,7 @@ class Charmm:
                 atom_lines_iteration = psf_formating % (
                     i_atom + 1,
                     segment_id,
-                    ff_name[i_atom],
+                    res_no_chain_iter_corrected[i_atom],
                     str(residue_names_list[i_atom])[: self.max_resname_char],
                     individual_atom_names_list[i_atom],
                     atom_type_iter,
@@ -3711,12 +3771,24 @@ class Charmm:
             locked_occupany_factor = 1.00
             max_no_atoms_in_base10 = 99999  # 99,999 for atoms in psf/pdb
 
-            ff_name = []
+            res_no_chain_iter_corrected = []
             res_chain_iteration_corrected_list = []
             residue_id_list = []
+            residue_id_adder_fixed_struct_wo_bonds = (
+                0  # for example zeolite used as fixed atoms wo bonds
+            )
             for i, atom_iter in enumerate(stuct_only_iteration.atoms):
+                if i > 0:
+                    if (
+                        atom_iter.residue.chain == previous_residue_chain
+                        and len(atom_iter.bonds) == 0
+                    ):
+                        residue_id_adder_fixed_struct_wo_bonds += 1
+
+                previous_residue_chain = atom_iter.residue.chain
                 residue_id_int = int(
                     unique_residue_data_dict[residue_data_list[i]]
+                    + residue_id_adder_fixed_struct_wo_bonds
                 )
                 res_chain_iteration_corrected_list.append(
                     base10_to_base26_alph(
@@ -3727,9 +3799,9 @@ class Charmm:
                     (residue_id_int % self.max_residue_no) % self.max_residue_no
                 )
                 if int(res_id_adder) == 0:
-                    ff_name.append(int(self.max_residue_no))
+                    res_no_chain_iter_corrected.append(int(self.max_residue_no))
                 else:
-                    ff_name.append(res_id_adder)
+                    res_no_chain_iter_corrected.append(res_id_adder)
 
                 residue_id_list.append(residue_id_int)
 
@@ -3799,7 +3871,7 @@ class Charmm:
                             atom_alternate_location_list[v],
                             str(residue_names_list[v])[: self.max_resname_char],
                             res_chain_iteration_corrected_list[v],
-                            ff_name[v],
+                            res_no_chain_iter_corrected[v],
                             residue_code_insertion_list[v],
                             x_list[v],
                             y_list[v],
