@@ -75,6 +75,7 @@ different licenses. See those files for their specific terms.
     	structure_building_options
     	tutorials/tutorials
     	data_structures
+	load_data
     	units
     	coordinate_transforms
     	recipes

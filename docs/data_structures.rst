@@ -41,19 +41,6 @@ Lattice
     :members:
 
 
-Load
---------------------
-
-.. automodule:: mbuild.conversion.load
-    :members:
-
-
-Load CIF
---------------------
-
-.. automodule:: mbuild.lattice.load_cif
-    :members:
-
 Port
 ----
 
