@@ -15,8 +15,6 @@ dependencies:
   - nglview>=3
   - numpy
   - openbabel>=3
-  - rdkit
-  - oset
   - packmol>=20
   - parmed>=3.4.0
   - pip
@@ -28,4 +26,5 @@ dependencies:
   - pytest-azurepipelines
   - pytest-cov
   - python<=3.8
+  - rdkit
   - scipy

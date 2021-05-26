@@ -26,7 +26,7 @@ class TestLammpsData(BaseTest):
         for i in cmpd.particles():
             i.name = "_{}".format(i.name)
         structure = cmpd.to_parmed(
-            box=cmpd.boundingbox,
+            box=cmpd.get_boundingbox(),
             residues=set([p.parent.name for p in cmpd.particles()]),
         )
 
@@ -57,7 +57,9 @@ class TestLammpsData(BaseTest):
     @pytest.mark.skipif(not has_foyer, reason="Foyer package not installed")
     @pytest.mark.parametrize("unit_style", ["real", "lj"])
     def test_save_box(self, ethane, unit_style):
-        box = mb.Box(lengths=np.array([2.0, 2.0, 2.0]))
+        box = mb.Box(
+            lengths=np.array([2.0, 2.0, 2.0]), angles=[90.0, 90.0, 90.0]
+        )
         ethane.save(
             filename="ethane-box.lammps",
             forcefield_name="oplsaa",
@@ -145,39 +147,43 @@ class TestLammpsData(BaseTest):
 
         OPLSAA = Forcefield(name="oplsaa")
         structure = OPLSAA.apply(ethane)
-        box = mb.Box(
-            mins=np.array([-1.0, -2.0, -3.0]), maxs=np.array([3.0, 2.0, 1.0])
+        box = mb.Box.from_mins_maxs_angles(
+            mins=np.array([-1.0, -2.0, -3.0]),
+            maxs=np.array([3.0, 2.0, 1.0]),
+            angles=[90.0, 90.0, 90.0],
         )
+        # box = ethane.get_boundingbox()
 
         write_lammpsdata(
             filename="box.lammps",
             structure=structure,
             unit_style="real",
-            mins=[m for m in box.mins],
-            maxs=[m for m in box.maxs],
+            mins=[0.0, 0.0, 0.0],
+            maxs=[m for m in box.lengths],
         )
 
         checked_section = False
+        # NOTE, need to figure out how to handle lo and hi of a compound
         with open("box.lammps", "r") as fi:
             while not checked_section:
                 line = fi.readline()
                 if "xlo" in line:
                     xlo = float(line.split()[0])
                     xhi = float(line.split()[1])
-                    assert np.isclose(xlo, -10.0)
-                    assert np.isclose(xhi, 30.0)
+                    assert np.isclose(xlo, 0.0)
+                    assert np.isclose(xhi, 40.0)
 
                     line = fi.readline()
                     ylo = float(line.split()[0])
                     yhi = float(line.split()[1])
-                    assert np.isclose(ylo, -20.0)
-                    assert np.isclose(yhi, 20.0)
+                    assert np.isclose(ylo, 0.0)
+                    assert np.isclose(yhi, 40.0)
 
                     line = fi.readline()
                     zlo = float(line.split()[0])
                     zhi = float(line.split()[1])
-                    assert np.isclose(zlo, -30.0)
-                    assert np.isclose(zhi, 10.0)
+                    assert np.isclose(zlo, 0.0)
+                    assert np.isclose(zhi, 40.0)
 
                     checked_section = True
 
@@ -225,7 +231,7 @@ class TestLammpsData(BaseTest):
                 if "dihedral types" in line:
                     fi.readline()
                     line = float(fi.readline().split()[1])
-                    assert np.isclose(line, 2.04)
+                    assert np.isclose(float(line), 2.04)
                     line = float(fi.readline().split()[1])
                     assert np.isclose(line, 2.268)
                     line = float(fi.readline().split()[1])

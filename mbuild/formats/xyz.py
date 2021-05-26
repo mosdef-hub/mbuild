@@ -89,7 +89,7 @@ def read_xyz(filename, compound=None):
     return compound
 
 
-def write_xyz(structure, filename):
+def write_xyz(structure, filename, write_atomnames=False):
     """Output an XYZ file.
 
     Parameters
@@ -98,11 +98,14 @@ def write_xyz(structure, filename):
         ParmEd structure object
     filename : str
         Path of the output file
+    write_atomnames : bool
+        Write the `atom.name` attribute of the parmed structure
+        to the first column of the xyz file rather than the element
 
     Notes
     -----
-    Coordatates are written in Angstroms. This follows the convention for the
-    XYZ file format.
+    Coordinates are written in Angstroms. By default, the first column is the
+    element. These choices follow the conventions for the XYZ file format.
 
     The XYZ file format neglects many important details, notably as bonds,
     residues, and box information.
@@ -111,12 +114,15 @@ def write_xyz(structure, filename):
         raise ValueError("Expected a ParmEd structure, got an mbuild.Compound")
 
     xyz = np.array([[atom.xx, atom.xy, atom.xz] for atom in structure.atoms])
-    types = [atom.name for atom in structure.atoms]
+    if write_atomnames:
+        names = [atom.name for atom in structure.atoms]
+    else:
+        names = [atom.element_name for atom in structure.atoms]
 
     with open(filename, "w") as xyz_file:
         xyz_file.write(str(len(structure.atoms)))
         xyz_file.write("\n" + filename + " - created by mBuild\n")
-        for typ, coords in zip(types, xyz):
+        for name, coords in zip(names, xyz):
             xyz_file.write(
-                "{:s} {:11.6f} {:11.6f} {:11.6f}\n".format(typ, *coords)
+                "{:s} {:11.6f} {:11.6f} {:11.6f}\n".format(name, *coords)
             )
