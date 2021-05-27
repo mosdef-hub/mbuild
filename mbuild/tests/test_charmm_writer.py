@@ -6,9 +6,9 @@ from foyer.forcefields import forcefields
 
 import mbuild as mb
 from mbuild import Box, Compound
-from mbuild.exceptions import MBuildError
 from mbuild.formats import charmm_writer
 from mbuild.formats.charmm_writer import Charmm
+from mbuild.lattice import load_cif
 from mbuild.tests.base_test import BaseTest
 from mbuild.utils.conversion import (
     base10_to_base16_alph_num,
@@ -16,7 +16,7 @@ from mbuild.utils.conversion import (
     base10_to_base52_alph,
     base10_to_base62_alph_num,
 )
-from mbuild.utils.io import has_foyer
+from mbuild.utils.io import get_fn, has_foyer
 from mbuild.utils.specific_ff_to_residue import specific_ff_to_residue
 
 
@@ -858,8 +858,6 @@ class TestCharmmWriterData(BaseTest):
                 fix_residue_in_box=None,
                 gomc_fix_bonds_angles=None,
                 reorder_res_in_pdb_psf=False,
-                box_0=[3, 3, 3],
-                box_1=[4, 4, 4],
                 bead_to_atom_name_dict={"_CH3": "C"},
             )
 
@@ -869,12 +867,17 @@ class TestCharmmWriterData(BaseTest):
         test_box_ethane_ethanol_gomc = mb.fill_box(
             compound=[ethanol_gomc, ethane_gomc],
             n_compounds=[1, 1],
-            box=[2.0, 2.0, 2.0],
+            box=[3, 3, 3],
         )
+
+        test_box_ethane_gomc = mb.fill_box(
+            compound=[ethane_gomc], n_compounds=[1], box=[4, 4, 4]
+        )
+
         charmm = Charmm(
             test_box_ethane_ethanol_gomc,
             "residue_reorder_box_sizing_box_0",
-            structure_box_1=ethane_gomc,
+            structure_box_1=test_box_ethane_gomc,
             filename_box_1="residue_reorder_box_sizing_box_1",
             ff_filename=None,
             residues=[ethane_gomc.name, ethanol_gomc.name],
@@ -885,8 +888,6 @@ class TestCharmmWriterData(BaseTest):
             fix_residue_in_box=None,
             gomc_fix_bonds_angles=None,
             reorder_res_in_pdb_psf=True,
-            box_0=[3, 3, 3],
-            box_1=[4, 4, 4],
             bead_to_atom_name_dict={"_CH3": "C"},
         )
         charmm.write_pdb()
@@ -1145,34 +1146,6 @@ class TestCharmmWriterData(BaseTest):
         ) == len(unique_entries_base_62_list)
 
     # Tests for the mbuild.utils.specific_FF_to_residue.Specific_FF_to_residue() function
-    def test_specific_ff_to_box_value_negative(self, ethane_gomc):
-        with pytest.raises(
-            ValueError,
-            match=r"Please enter positive \( > 0\) integers for the box dimensions.",
-        ):
-            specific_ff_to_residue(
-                ethane_gomc,
-                forcefield_selection={ethane_gomc.name: "oplsaa"},
-                residues=[ethane_gomc.name],
-                reorder_res_in_pdb_psf=False,
-                box=[1, -2, 3],
-                boxes_for_simulation=1,
-            )
-
-    def test_specific_ff_to_box_value_str(self, ethane_gomc):
-        with pytest.raises(
-            TypeError,
-            match=r"Please enter positive \( > 0\) integers for the box dimensions.",
-        ):
-            specific_ff_to_residue(
-                ethane_gomc,
-                forcefield_selection={ethane_gomc.name: "oplsaa"},
-                residues=[ethane_gomc.name],
-                reorder_res_in_pdb_psf=False,
-                box=[1, "2", 3],
-                boxes_for_simulation=1,
-            )
-
     def test_specific_ff_ff_is_none(self, ethane_gomc):
         with pytest.raises(
             TypeError,
@@ -1187,7 +1160,6 @@ class TestCharmmWriterData(BaseTest):
                 forcefield_selection=None,
                 residues=[ethane_gomc.name],
                 reorder_res_in_pdb_psf=False,
-                box=None,
                 boxes_for_simulation=1,
             )
 
@@ -1205,7 +1177,6 @@ class TestCharmmWriterData(BaseTest):
                 forcefield_selection={ethane_gomc.name: "oplsaa.pdb"},
                 residues=[ethane_gomc.name],
                 reorder_res_in_pdb_psf=False,
-                box=None,
                 boxes_for_simulation=1,
             )
 
@@ -1227,7 +1198,6 @@ class TestCharmmWriterData(BaseTest):
                 forcefield_selection={ethane_gomc.name: "oplsaa"},
                 residues=[ethane_gomc.name],
                 reorder_res_in_pdb_psf=False,
-                box=None,
                 boxes_for_simulation=2,
             )
 
@@ -1246,7 +1216,6 @@ class TestCharmmWriterData(BaseTest):
                 forcefield_selection="oplsaa",
                 residues=[ethane_gomc.name],
                 reorder_res_in_pdb_psf=False,
-                box=None,
                 boxes_for_simulation=1,
             )
 
@@ -1260,7 +1229,6 @@ class TestCharmmWriterData(BaseTest):
                 forcefield_selection={ethane_gomc.name: "oplsaa"},
                 residues=None,
                 reorder_res_in_pdb_psf=False,
-                box=None,
                 boxes_for_simulation=1,
             )
 
@@ -1277,35 +1245,6 @@ class TestCharmmWriterData(BaseTest):
                 forcefield_selection={ethane_gomc.name: "oplsaa"},
                 residues=[ethane_gomc.name],
                 reorder_res_in_pdb_psf=None,
-                box=None,
-                boxes_for_simulation=1,
-            )
-
-    def test_specific_ff_to_box_one_dim_is_negative(self, ethane_gomc):
-        with pytest.raises(
-            ValueError,
-            match=r"Please enter all 3 values, and only 3 values for the box dimensions.",
-        ):
-            specific_ff_to_residue(
-                ethane_gomc,
-                forcefield_selection={ethane_gomc.name: "oplsaa"},
-                residues=[ethane_gomc.name],
-                reorder_res_in_pdb_psf=False,
-                box=[-2, 3, 4, 5],
-                boxes_for_simulation=1,
-            )
-
-    def test_specific_ff_to_box_one_dim_is_string(self, ethane_gomc):
-        with pytest.raises(
-            ValueError,
-            match=r"Please enter all 3 values, and only 3 values for the box dimensions.",
-        ):
-            specific_ff_to_residue(
-                ethane_gomc,
-                forcefield_selection={ethane_gomc.name: "oplsaa"},
-                residues=[ethane_gomc.name],
-                reorder_res_in_pdb_psf=False,
-                box=["string", 3, 4, 5],
                 boxes_for_simulation=1,
             )
 
@@ -1314,12 +1253,15 @@ class TestCharmmWriterData(BaseTest):
             ValueError,
             match=r"Please enter boxes_for_simulation equal the integer 1 or 2.",
         ):
+            test_box_ethane_gomc = mb.fill_box(
+                compound=[ethane_gomc], n_compounds=[1], box=[2, 3, 4]
+            )
+
             specific_ff_to_residue(
-                ethane_gomc,
+                test_box_ethane_gomc,
                 forcefield_selection={ethane_gomc.name: "oplsaa"},
                 residues=[ethane_gomc.name],
                 reorder_res_in_pdb_psf=False,
-                box=[2, 3, 4],
                 boxes_for_simulation=3,
             )
 
@@ -1327,15 +1269,35 @@ class TestCharmmWriterData(BaseTest):
         with pytest.raises(
             ValueError,
             match=r"Please make sure you are entering the correct foyer FF path, "
-            r"including the FF file name.xml If you are using the pre-build FF "
-            r"files in foyer, please us the forcefield_names variable.",
+            r"including the FF file name.xml "
+            r"If you are using the pre-build FF files in foyer, "
+            r"only use the string name without any extension.",
+        ):
+            test_box_ethane_gomc = mb.fill_box(
+                compound=[ethane_gomc], n_compounds=[1], box=[4, 5, 6]
+            )
+
+            specific_ff_to_residue(
+                test_box_ethane_gomc,
+                forcefield_selection={ethane_gomc.name: "oplsaa.xml"},
+                residues=[ethane_gomc.name],
+                reorder_res_in_pdb_psf=False,
+                boxes_for_simulation=1,
+            )
+
+    def test_specific_ff_wrong_path(self, ethane_gomc):
+        with pytest.raises(
+            ValueError,
+            match=r"Please make sure you are entering the correct foyer FF path, "
+            r"including the FF file name.xml "
+            r"If you are using the pre-build FF files in foyer, "
+            r"only use the string name without any extension.",
         ):
             specific_ff_to_residue(
                 ethane_gomc,
                 forcefield_selection={ethane_gomc.name: "oplsaa.xml"},
                 residues=[ethane_gomc.name],
                 reorder_res_in_pdb_psf=False,
-                box=[4, 5, 6],
                 boxes_for_simulation=1,
             )
 
@@ -1351,7 +1313,6 @@ class TestCharmmWriterData(BaseTest):
                 forcefield_selection={ethane_gomc.name: "oplsaa"},
                 residues=[ethane_gomc.name],
                 reorder_res_in_pdb_psf=False,
-                box=None,
                 boxes_for_simulation=1,
             )
 
@@ -1368,7 +1329,6 @@ class TestCharmmWriterData(BaseTest):
                 forcefield_selection={ethane_gomc.name: "oplsaa"},
                 residues=[ethane_gomc.name],
                 reorder_res_in_pdb_psf=False,
-                box=None,
                 boxes_for_simulation=1.1,
             )
 
@@ -1383,7 +1343,6 @@ class TestCharmmWriterData(BaseTest):
                 forcefield_selection={},
                 residues=[ethane_gomc.name],
                 reorder_res_in_pdb_psf=False,
-                box=None,
                 boxes_for_simulation=1,
             )
 
@@ -1398,23 +1357,6 @@ class TestCharmmWriterData(BaseTest):
                 forcefield_selection={ethane_gomc.name: "oplsaa"},
                 residues=[],
                 reorder_res_in_pdb_psf=False,
-                box=None,
-                boxes_for_simulation=1,
-            )
-
-    def test_specific_ff_wrong_path(self, ethane_gomc):
-        with pytest.raises(
-            ValueError,
-            match=r"Please make sure you are entering the correct foyer FF path, including "
-            r"the FF file name.xml If you are using the pre-build FF files in "
-            r"foyer, please us the forcefield_names variable.",
-        ):
-            specific_ff_to_residue(
-                ethane_gomc,
-                forcefield_selection={ethane_gomc.name: "/home/oplsaa.xml"},
-                residues=[ethane_gomc.name],
-                reorder_res_in_pdb_psf=False,
-                box=None,
                 boxes_for_simulation=1,
             )
 
@@ -1429,18 +1371,21 @@ class TestCharmmWriterData(BaseTest):
                 forcefield_selection={ethane_gomc.name: "xxx"},
                 residues=[ethane_gomc.name],
                 reorder_res_in_pdb_psf=False,
-                box=None,
                 boxes_for_simulation=1,
             )
 
     def test_specific_ff_to_residue_ffselection_run(self, ethane_gomc):
+        test_box_ethane_gomc = mb.fill_box(
+            compound=[ethane_gomc], n_compounds=[1], box=[4, 5, 6]
+        )
+
         [
             test_value_0,
             test_value_1,
             test_value_2,
             test_value_3,
         ] = specific_ff_to_residue(
-            ethane_gomc,
+            test_box_ethane_gomc,
             forcefield_selection={
                 ethane_gomc.name: forcefields.get_ff_path()[0]
                 + "/xml/"
@@ -1448,44 +1393,11 @@ class TestCharmmWriterData(BaseTest):
             },
             residues=[ethane_gomc.name],
             reorder_res_in_pdb_psf=False,
-            box=[4, 5, 6],
             boxes_for_simulation=1,
         )
         assert test_value_1 == {"ETH": 0.5}
         assert test_value_2 == {"ETH": 0.5}
         assert test_value_3 == ["ETH"]
-
-    def test_specific_ff_to_empty_box_with_max_mins(self, ethane_gomc):
-        with pytest.raises(
-            ValueError,
-            match=r"This writer only currently supports orthogonal boxes "
-            "\(i.e., boxes with all 90 degree angles\).",
-        ):
-            empty_compound = mb.Box(lengths=[2, 2, 2], angles=[89, 90, 90])
-
-            specific_ff_to_residue(
-                empty_compound,
-                forcefield_selection={ethane_gomc.name: "oplsaa"},
-                residues=[ethane_gomc.name],
-                reorder_res_in_pdb_psf=False,
-                box=[5, 6, 7],
-                boxes_for_simulation=2,
-            )
-
-    def test_specific_ff_to_empty_box_with_length_0(self, ethane_gomc):
-        with pytest.raises(
-            MBuildError, match=r"The vectors to define the box are co-linear"
-        ):
-            empty_compound = mb.Box(lengths=[0, 1, 1])
-
-            specific_ff_to_residue(
-                empty_compound,
-                forcefield_selection={ethane_gomc.name: "oplsaa"},
-                residues=[ethane_gomc.name],
-                reorder_res_in_pdb_psf=False,
-                box=[5, 6, 7],
-                boxes_for_simulation=2,
-            )
 
     def test_specific_ff_to_no_atoms_in_residue(self):
         with pytest.raises(
@@ -1500,7 +1412,6 @@ class TestCharmmWriterData(BaseTest):
                 forcefield_selection={"empty_compound": "oplsaa"},
                 residues=[],
                 reorder_res_in_pdb_psf=False,
-                box=[5, 6, 7],
                 boxes_for_simulation=1,
             )
 
@@ -1517,7 +1428,6 @@ class TestCharmmWriterData(BaseTest):
                 forcefield_selection={methane_ua_gomc.name: "trappe-ua"},
                 residues=[methane_ua_gomc.name],
                 reorder_res_in_pdb_psf=False,
-                box=None,
                 boxes_for_simulation=1,
             )
 
@@ -1545,7 +1455,6 @@ class TestCharmmWriterData(BaseTest):
             },
             residues=[ethanol_gomc.name, ethane_gomc.name],
             reorder_res_in_pdb_psf=False,
-            box=None,
             boxes_for_simulation=1,
         )
 
@@ -1575,7 +1484,6 @@ class TestCharmmWriterData(BaseTest):
                 forcefield_selection={ethanol_gomc.name: "oplsaa"},
                 residues=[ethanol_gomc.name, ethane_gomc.name],
                 reorder_res_in_pdb_psf=False,
-                box=None,
                 boxes_for_simulation=1,
             )
 
@@ -1665,23 +1573,6 @@ class TestCharmmWriterData(BaseTest):
                 ff_filename=None,
                 residues=[ethane_gomc.name],
                 forcefield_selection={ethane_gomc.name: "oplsaa"},
-            )
-
-    def test_charmm_box_1_not_none_no_structure_box_1(self, ethane_gomc):
-        with pytest.raises(
-            TypeError,
-            match=r"ERROR: box_1 is set to a value but there is not a "
-            r"structure 1 to use it on.",
-        ):
-            Charmm(
-                ethane_gomc,
-                "box_0",
-                structure_box_1=None,
-                filename_box_1=None,
-                ff_filename=None,
-                residues=[ethane_gomc.name],
-                forcefield_selection={ethane_gomc.name: "oplsaa"},
-                box_1=[4, 4, 4],
             )
 
     def test_charmm_gomc_filename_not_string(self, ethane_gomc):
@@ -1875,7 +1766,6 @@ class TestCharmmWriterData(BaseTest):
             },
             residues=[ethanol_gomc.name, two_propanol_gomc.name],
             reorder_res_in_pdb_psf=False,
-            box=None,
             boxes_for_simulation=1,
         )
 
@@ -1936,7 +1826,6 @@ class TestCharmmWriterData(BaseTest):
             },
             residues=[ethyl_ether_gomc.name, methyl_ether_gomc.name],
             reorder_res_in_pdb_psf=False,
-            box=None,
             boxes_for_simulation=1,
         )
 
@@ -2043,7 +1932,6 @@ class TestCharmmWriterData(BaseTest):
             },
             residues=[ethyl_ether_gomc.name, methyl_ether_gomc.name],
             reorder_res_in_pdb_psf=False,
-            box=None,
             boxes_for_simulation=1,
         )
 
@@ -2256,111 +2144,6 @@ class TestCharmmWriterData(BaseTest):
                 bead_to_atom_name_dict={0: "C"},
             )
 
-    def test_box_0_4_dims(self, two_propanol_ua):
-        with pytest.raises(
-            ValueError,
-            match=r"ERROR: Please enter all 3 values and only 3 values for "
-            r"the box_0 dimensions.",
-        ):
-            Charmm(
-                two_propanol_ua,
-                "charmm_data_UA_box_0",
-                ff_filename="charmm_data_UA",
-                residues=[two_propanol_ua.name],
-                forcefield_selection="trappe-ua",
-                bead_to_atom_name_dict={"_CH3": "C"},
-                box_0=[4, 5, 6, 6],
-            )
-
-    def test_box_1_4_dims(self, two_propanol_ua):
-        with pytest.raises(
-            ValueError,
-            match=r"ERROR: Please enter all 3 values and only 3 values for "
-            r"the box_1 dimensions.",
-        ):
-            Charmm(
-                two_propanol_ua,
-                "charmm_data_UA_box_0",
-                structure_box_1=two_propanol_ua,
-                filename_box_1="charmm_data_UA_box_1",
-                ff_filename="charmm_data_UA",
-                residues=[two_propanol_ua.name],
-                forcefield_selection="trappe-ua",
-                bead_to_atom_name_dict={"_CH3": "C"},
-                box_0=[4, 5, 6],
-                box_1=[3, 4, 5, 6],
-            )
-
-    def test_box_0_negative_dims(self, two_propanol_ua):
-        with pytest.raises(
-            ValueError,
-            match=r"ERROR: Please enter float or integer values, which are all "
-            r"positive values for the box_0 dimensions.",
-        ):
-            Charmm(
-                two_propanol_ua,
-                "charmm_data_UA",
-                ff_filename="charmm_data_UA",
-                residues=[two_propanol_ua.name],
-                forcefield_selection="trappe-ua",
-                bead_to_atom_name_dict={"_CH3": "C"},
-                box_0=[-3, 4, 5],
-            )
-
-    def test_box_1_negative_dims(self, two_propanol_ua):
-        with pytest.raises(
-            ValueError,
-            match=r"ERROR: Please enter float or integer values, which are all "
-            r"positive values for the box_1 dimensions.",
-        ):
-            Charmm(
-                two_propanol_ua,
-                "charmm_data_UA_box_0",
-                structure_box_1=two_propanol_ua,
-                filename_box_1="charmm_data_UA_box_1",
-                ff_filename="charmm_data_UA",
-                residues=[two_propanol_ua.name],
-                forcefield_selection="trappe-ua",
-                bead_to_atom_name_dict={"_CH3": "C"},
-                box_0=[4, 5, 6],
-                box_1=[-3, 4, 5],
-            )
-
-    def test_box_0_string_dims(self, two_propanol_ua):
-        with pytest.raises(
-            ValueError,
-            match=r"ERROR: Please enter float or integer values, which are all "
-            r"positive values for the box_0 dimensions.",
-        ):
-            Charmm(
-                two_propanol_ua,
-                "charmm_data_UA",
-                ff_filename="charmm_data_UA",
-                residues=[two_propanol_ua.name],
-                forcefield_selection="trappe-ua",
-                bead_to_atom_name_dict={"_CH3": "C"},
-                box_0=["string", 5, 6],
-            )
-
-    def test_box_1_string_dims(self, two_propanol_ua):
-        with pytest.raises(
-            ValueError,
-            match=r"ERROR: Please enter float or integer values, which are all "
-            r"positive values for the box_1 dimensions.",
-        ):
-            Charmm(
-                two_propanol_ua,
-                "charmm_data_UA_box_0",
-                ff_filename="charmm_data_UA",
-                structure_box_1=two_propanol_ua,
-                filename_box_1="charmm_data_UA_box_1",
-                residues=[two_propanol_ua.name],
-                forcefield_selection="trappe-ua",
-                bead_to_atom_name_dict={"_CH3": "C"},
-                box_0=[4, 5, 6],
-                box_1=["string", 5, 6],
-            )
-
     def test_1_box_residues_not_all_listed_box_0(
         self, ethane_gomc, ethanol_gomc
     ):
@@ -2464,7 +2247,6 @@ class TestCharmmWriterData(BaseTest):
             residues=[two_propanol_ua.name],
             forcefield_selection="trappe-ua",
             bead_to_atom_name_dict={"_CH3": "C"},
-            box_0=[4, 5, 6],
         )
         charmm.write_pdb()
         charmm.write_psf()
@@ -2531,7 +2313,6 @@ class TestCharmmWriterData(BaseTest):
             residues=[two_propanol_ua.name],
             forcefield_selection="trappe-ua",
             bead_to_atom_name_dict={"_CH3": "C"},
-            box_0=[4, 5, 6],
         )
         charmm.write_pdb()
         charmm.write_psf()
@@ -2587,19 +2368,21 @@ class TestCharmmWriterData(BaseTest):
                     pass
 
     def test_box_1_empty_test_3(self, two_propanol_ua):
-        empty_compound = Box(lengths=[2, 2, 2])
+        empty_compound = Box(lengths=[4, 5, 6])
+
+        test_box_two_propanol_ua_gomc = mb.fill_box(
+            compound=[two_propanol_ua], n_compounds=[1], box=[3, 4, 5]
+        )
 
         charmm = Charmm(
             empty_compound,
             "charmm_empty_box",
-            structure_box_1=two_propanol_ua,
+            structure_box_1=test_box_two_propanol_ua_gomc,
             filename_box_1="charmm_filled_box",
             ff_filename="charmm_empty_box",
             residues=[two_propanol_ua.name],
             forcefield_selection="trappe-ua",
             bead_to_atom_name_dict={"_CH3": "C"},
-            box_0=[4, 5, 6],
-            box_1=[3, 4, 5],
         )
         charmm.write_pdb()
         charmm.write_psf()
@@ -2704,18 +2487,20 @@ class TestCharmmWriterData(BaseTest):
             r"If you are providing and empty box, please do so by specifying and "
             r"mbuild Box \({}\)".format(type(Box(lengths=[1, 1, 1]))),
         ):
+            test_box_two_propanol_ua_gomc = mb.fill_box(
+                compound=[two_propanol_ua], n_compounds=[1], box=[3, 4, 5]
+            )
+
             empty_compound = mb.Compound()
             Charmm(
                 empty_compound,
                 "charmm_empty_box",
-                structure_box_1=two_propanol_ua,
+                structure_box_1=test_box_two_propanol_ua_gomc,
                 filename_box_1="charmm_filled_box",
                 ff_filename="charmm_empty_box",
                 residues=[two_propanol_ua.name],
                 forcefield_selection="trappe-ua",
                 bead_to_atom_name_dict={"_CH3": "C"},
-                box_0=[4, 5, 6],
-                box_1=[3, 4, 5],
             )
 
     def test_structure_box_0_not_mb_compound(self, ethane_gomc):
@@ -2882,3 +2667,277 @@ class TestCharmmWriterData(BaseTest):
                         assert (
                             out_gomc[i + 1 + j].split()[4:5] == mass_type_2[j]
                         )
+
+    # test cif reader ETA psf writer outputs correct atom and residue numbering using non-orthoganol box
+    def test_save_non_othoganol_box_psf(self):
+        lattice_cif_ETV_triclinic = load_cif(
+            file_or_path=get_fn("ETV_triclinic.cif")
+        )
+        ETV_triclinic = lattice_cif_ETV_triclinic.populate(x=1, y=1, z=1)
+        ETV_triclinic.name = "ETV"
+
+        charmm = Charmm(
+            ETV_triclinic,
+            "ETV_triclinic",
+            ff_filename="ETV_triclinic_FF",
+            forcefield_selection={
+                ETV_triclinic.name: get_fn(
+                    "Charmm_writer_testing_only_zeolite.xml"
+                )
+            },
+            residues=[ETV_triclinic.name],
+            bead_to_atom_name_dict=None,
+            fix_residue=[ETV_triclinic.name],
+        )
+
+        charmm.write_psf()
+
+        with open("ETV_triclinic.psf", "r") as fp:
+            out_gomc = fp.readlines()
+            for i, line in enumerate(out_gomc):
+                if "42 !NATOM" in line:
+
+                    no_O_atoms = 28
+                    no_Si_atoms = 14
+                    atom_type_charge_etc_list = []
+                    for f_i in range(0, no_O_atoms):
+                        atom_type_charge_etc_list.append(
+                            [
+                                str(f_i + 1),
+                                "SYS",
+                                str(f_i + 1),
+                                "ETV",
+                                "O1",
+                                "A",
+                                "-0.400000",
+                                "15.9994",
+                            ],
+                        )
+                    for f_i in range(no_O_atoms, no_O_atoms + no_Si_atoms):
+                        atom_type_charge_etc_list.append(
+                            [
+                                str(f_i + 1),
+                                "SYS",
+                                str(f_i + 1),
+                                "ETV",
+                                "Si1",
+                                "B",
+                                "0.800000",
+                                "28.0855",
+                            ],
+                        )
+
+                    for j in range(0, len(atom_type_charge_etc_list)):
+                        assert (
+                            out_gomc[i + 1 + j].split()[0:8]
+                            == atom_type_charge_etc_list[j]
+                        )
+
+                else:
+                    pass
+
+    # test cif reader ETA pdb writer outputs correct atom and residue numbering using non-orthoganol box
+    def test_save_non_othoganol_box_pdb(self):
+        lattice_cif_ETV_triclinic = load_cif(
+            file_or_path=get_fn("ETV_triclinic.cif")
+        )
+        ETV_triclinic = lattice_cif_ETV_triclinic.populate(x=1, y=1, z=1)
+        ETV_triclinic.name = "ETV"
+
+        charmm = Charmm(
+            ETV_triclinic,
+            "ETV_triclinic",
+            ff_filename="ETV_triclinic_FF",
+            forcefield_selection={
+                ETV_triclinic.name: get_fn(
+                    "Charmm_writer_testing_only_zeolite.xml"
+                )
+            },
+            residues=[ETV_triclinic.name],
+            bead_to_atom_name_dict=None,
+            fix_residue=[ETV_triclinic.name],
+        )
+
+        charmm.write_pdb()
+
+        with open("ETV_triclinic.pdb", "r") as fp:
+            out_gomc = fp.readlines()
+            for i, line in enumerate(out_gomc):
+
+                if "CRYST1" in line:
+                    crystal_box_length_angles = [
+                        "CRYST1",
+                        "8.750",
+                        "9.648",
+                        "10.272",
+                        "105.72",
+                        "100.19",
+                        "97.02",
+                    ]
+
+                    no_O_atoms = 28
+                    no_Si_atoms = 14
+                    atom_type_res_part_1_list = []
+                    for f_i in range(0, no_O_atoms):
+                        atom_type_res_part_1_list.append(
+                            [
+                                "ATOM",
+                                str(f_i + 1),
+                                "O1",
+                                "ETV",
+                                "A",
+                                str(f_i + 1),
+                            ]
+                        )
+                    for f_i in range(no_O_atoms, no_O_atoms + no_Si_atoms):
+                        atom_type_res_part_1_list.append(
+                            [
+                                "ATOM",
+                                str(f_i + 1),
+                                "Si1",
+                                "ETV",
+                                "A",
+                                str(f_i + 1),
+                            ]
+                        )
+
+                    atom_type_res_part_2_list = []
+                    for f_i in range(0, no_O_atoms):
+                        atom_type_res_part_2_list.append(["1.00", "1.00", "O"])
+                    for f_i in range(no_O_atoms, no_O_atoms + no_Si_atoms):
+                        atom_type_res_part_2_list.append(["1.00", "1.00", "SI"])
+
+                    assert out_gomc[i].split()[0:7] == crystal_box_length_angles
+
+                    for j in range(0, len(atom_type_res_part_1_list)):
+                        assert (
+                            out_gomc[i + 1 + j].split()[0:6]
+                            == atom_type_res_part_1_list[j]
+                        )
+                        assert (
+                            out_gomc[i + 1 + j].split()[9:12]
+                            == atom_type_res_part_2_list[j]
+                        )
+
+                else:
+                    pass
+
+    # test methane UA psf writer outputs correct atom and residue numbering using orthoganol box
+    def test_save_othoganol_methane_ua_psf(self):
+        methane = mb.Compound(name="MET")
+        methane_child_bead = mb.Compound(name="_CH4")
+        methane.add(methane_child_bead, inherit_periodicity=False)
+
+        methane_box = mb.fill_box(
+            compound=methane, n_compounds=4, box=[1, 1, 1]
+        )
+
+        charmm = Charmm(
+            methane_box,
+            "methane_box",
+            ff_filename="methane_box_FF",
+            forcefield_selection={methane.name: "trappe-ua"},
+            residues=[methane.name],
+            bead_to_atom_name_dict={"_CH4": "C"},
+        )
+
+        charmm.write_psf()
+
+        with open("methane_box.psf", "r") as fp:
+            out_gomc = fp.readlines()
+            for i, line in enumerate(out_gomc):
+                if "4 !NATOM" in line:
+
+                    no_methane_atoms = 4
+                    atom_type_charge_etc_list = []
+                    for f_i in range(0, no_methane_atoms):
+                        atom_type_charge_etc_list.append(
+                            [
+                                str(f_i + 1),
+                                "SYS",
+                                str(f_i + 1),
+                                "MET",
+                                "C1",
+                                "A",
+                                "0.000000",
+                                "16.0430",
+                            ],
+                        )
+
+                    for j in range(0, len(atom_type_charge_etc_list)):
+                        assert (
+                            out_gomc[i + 1 + j].split()[0:8]
+                            == atom_type_charge_etc_list[j]
+                        )
+
+                else:
+                    pass
+
+    # test methane UA pdb writer outputs correct atom and residue numbering using orthoganol box
+    def test_save_othoganol_methane_ua_pdb(self):
+        methane = mb.Compound(name="MET")
+        methane_child_bead = mb.Compound(name="_CH4")
+        methane.add(methane_child_bead, inherit_periodicity=False)
+
+        methane_box = mb.fill_box(
+            compound=methane, n_compounds=10, box=[1, 2, 3]
+        )
+
+        charmm = Charmm(
+            methane_box,
+            "methane_box",
+            ff_filename="methane_box_FF",
+            forcefield_selection={methane.name: "trappe-ua"},
+            residues=[methane.name],
+            bead_to_atom_name_dict={"_CH4": "C"},
+        )
+
+        charmm.write_pdb()
+
+        with open("methane_box.pdb", "r") as fp:
+            out_gomc = fp.readlines()
+            for i, line in enumerate(out_gomc):
+
+                if "CRYST1" in line:
+                    crystal_box_length_angles = [
+                        "CRYST1",
+                        "10.000",
+                        "20.000",
+                        "30.000",
+                        "90.00",
+                        "90.00",
+                        "90.00",
+                    ]
+
+                    no_methane_atoms = 4
+                    atom_type_res_part_1_list = []
+                    for f_i in range(0, no_methane_atoms):
+                        atom_type_res_part_1_list.append(
+                            [
+                                "ATOM",
+                                str(f_i + 1),
+                                "C1",
+                                "MET",
+                                "A",
+                                str(f_i + 1),
+                            ]
+                        )
+
+                    atom_type_res_part_2_list = []
+                    for f_i in range(0, no_methane_atoms):
+                        atom_type_res_part_2_list.append(["1.00", "0.00", "EP"])
+
+                    assert out_gomc[i].split()[0:7] == crystal_box_length_angles
+
+                    for j in range(0, len(atom_type_res_part_1_list)):
+                        assert (
+                            out_gomc[i + 1 + j].split()[0:6]
+                            == atom_type_res_part_1_list[j]
+                        )
+                        assert (
+                            out_gomc[i + 1 + j].split()[9:12]
+                            == atom_type_res_part_2_list[j]
+                        )
+
+                else:
+                    pass
