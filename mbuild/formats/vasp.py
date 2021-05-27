@@ -4,7 +4,7 @@ from itertools import chain
 
 import numpy as np
 from ele import element_from_symbol
-from numpy.linalg import inv, norm
+from numpy.linalg import inv
 
 import mbuild as mb
 
