@@ -254,3 +254,8 @@ class TestHoomdXML(BaseTest):
         # The first element is empty, the next element should be ['opls_135', '1.0000', '1.0000']
         assert pair_coeffs[1][1] == "1.0000"
         assert pair_coeffs[1][2] == "1.0000"
+
+    def test_hoomdsimulation_nlist(self, ethane):
+        hoomd_simulation = import_("mbuild.formats.hoomd_simulation")
+        with pytest.raises(ValueError):
+            hoomd_simulation.create_hoomd_simulation(ethane, nlist="tree")
