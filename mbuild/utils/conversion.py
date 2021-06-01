@@ -19,11 +19,11 @@ def RB_to_OPLS(c0, c1, c2, c3, c4, c5):
     -----
     c5 must equal zero, so this conversion is not possible.
 
-    (c0 + c1 + c2 + c3 + c4 + c5) must equal zero, so this conversion is not possible.
+    (c0 + c1 + c2 + c3 + c4 + c5) must equal zero, or this conversion is not possible.
     """
     if np.isclose(c5, 0, 1e-12) is False:
         return ValueError(
-            "c5 must equal zero, so this conversion is not possible."
+            "c5 must equal zero, or this conversion is not possible."
         )
 
     f0 = 2.0 * (c0 + c1 + c2 + c3 + c4 + c5)
