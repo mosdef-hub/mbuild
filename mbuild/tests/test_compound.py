@@ -217,6 +217,7 @@ class TestCompound(BaseTest):
     )
     def test_save_missing_topo_params(self, ff_filename, foyer_kwargs):
         """Test that the user is notified if not all topology parameters are found."""
+        import foyer
         from foyer.tests.utils import get_fn
 
         ethane = mb.load(get_fn("ethane.mol2"))
