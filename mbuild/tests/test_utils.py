@@ -4,7 +4,9 @@ import numpy as np
 import pytest
 
 import mbuild as mb
+
 from mbuild.tests.base_test import BaseTest
+from mbuild.utils.conversion import RB_to_OPLS
 from mbuild.utils.exceptions import RemovedFuncError
 from mbuild.utils.geometry import wrap_coords
 from mbuild.utils.io import get_fn, import_, run_from_ipython
@@ -186,3 +188,20 @@ class TestUtils(BaseTest):
 
     def test_removed_func_error(self):
         RemovedFuncError("old_function", "new_function", "0.0.0", "0.1.0")
+
+
+class TestUtilsConversion(BaseTest):
+    def test_RB_to_OPLS_c5_not_0(self):
+        with pytest.raises(
+                ValueError,
+                match=r"ERROR: c5 must equal zero, so this conversion is not possible.",
+        ):
+            RB_to_OPLS(0.1, -0.1, 0.2, -0.2, 0.3)
+
+    def test_RB_to_OPLS_f0_not_0(self):
+        with pytest.raises(
+                ValueError,
+                match=r"ERROR: f0 = 2 * \(c0 + c1 + c2 + c3 + c4 + c5\) must equal zero, "
+                "so this conversion is not possible.",
+        ):
+            RB_to_OPLS(0.4, -0.1, 0.4, -0.2, 0)
