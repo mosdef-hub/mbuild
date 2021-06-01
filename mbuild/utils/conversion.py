@@ -29,7 +29,7 @@ def RB_to_OPLS(c0, c1, c2, c3, c4, c5):
     f0 = 2.0 * (c0 + c1 + c2 + c3 + c4 + c5)
     if bool(np.isclose(f0, 0, 1e-12)) is False:
         raise ValueError(
-            "ERROR: f0 = 2 * (c0 + c1 + c2 + c3 + c4 + c5) must equal zero, "
+            "ERROR: f0 = 2 * ( c0 + c1 + c2 + c3 + c4 + c5 ) must equal zero, "
             "so this conversion is not possible."
         )
 
