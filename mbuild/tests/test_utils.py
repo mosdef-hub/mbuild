@@ -209,10 +209,10 @@ class TestUtilsConversion(BaseTest):
             match=r"ERROR: f0 = 2 * \(c0 + c1 + c2 + c3 + c4 + c5\) must equal zero, "
             "so this conversion is not possible.",
         ):
-            c0 = 0.1
-            c1 = 0.1
-            c2 = -0.2
-            c3 = 0.2
+            c0 = 0.4
+            c1 = 0.4
+            c2 = -0.1
+            c3 = 0.4
             c4 = -0.2
-            c5 = 0.3
-            RB_to_OPLS(0.4, 0.4, -0.1, 0.4, -0.2, 0)
+            c5 = 0
+            RB_to_OPLS(c0, c1, c2, c3, c4, c5)
