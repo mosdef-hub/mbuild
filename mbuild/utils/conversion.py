@@ -14,11 +14,28 @@ def RB_to_OPLS(c0, c1, c2, c3, c4, c5):
     opls_coeffs : np.array, shape=(4,)
         Array containing the OPLS dihedrals coeffs f1, f2, f3, and f4
         (in kcal/mol)
+
+    Notes:
+    -------
+    c5 must equal zero, so this conversion is not possible.
+
+    "(c0 + c1 + c2 + c3 + c4 + c5) must equal zero, so this conversion is not possible.
     """
-    f1 = (-1.5 * c3) - (2 * c1)
-    f2 = c0 + c1 + c3
-    f3 = -0.5 * c3
-    f4 = -0.25 * c4
+
+    if np.isclose(c5, 0, 1e-12) is False:
+        return ValueError("c5 must equal zero, so this conversion is not possible."
+                          )
+
+    f0 = 2.0 * (c0 + c1 + c2 + c3 + c4 + c5)
+    if np.isclose(f0, 0, 1e-12) is False:
+        return ValueError("f0 = 2 * (c0 + c1 + c2 + c3 + c4 + c5) must equal zero, "
+                          "so this conversion is not possible."
+                          )
+
+    f1 = -2 * c1 - (3 * c3) / 2
+    f2 = -c2 - c4
+    f3 = -c3/2
+    f4 = -c4/4
     return np.array([f1, f2, f3, f4])
 
 
