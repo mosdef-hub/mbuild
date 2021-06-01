@@ -195,7 +195,13 @@ class TestUtilsConversion(BaseTest):
             ValueError,
             match=r"ERROR: c5 must equal zero, so this conversion is not possible.",
         ):
-            RB_to_OPLS(0.1, -0.1, 0.2, -0.2, 0.3)
+            c0 = 0.1
+            c1 = 0.1
+            c1 = -0.2
+            c3 = 0.2
+            c4 = -0.2
+            c5 = 0.3
+            RB_to_OPLS(c0, c1, c2, c3, c4, c5)
 
     def test_RB_to_OPLS_f0_not_0(self):
         with pytest.raises(
@@ -203,4 +209,10 @@ class TestUtilsConversion(BaseTest):
             match=r"ERROR: f0 = 2 * \(c0 + c1 + c2 + c3 + c4 + c5\) must equal zero, "
             "so this conversion is not possible.",
         ):
-            RB_to_OPLS(0.4, -0.1, 0.4, -0.2, 0)
+            c0 = 0.1
+            c1 = 0.1
+            c1 = -0.2
+            c3 = 0.2
+            c4 = -0.2
+            c5 = 0.3
+            RB_to_OPLS(0.4, 0.4, -0.1, 0.4, -0.2, 0)
