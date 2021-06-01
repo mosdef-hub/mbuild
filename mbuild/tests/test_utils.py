@@ -197,7 +197,7 @@ class TestUtilsConversion(BaseTest):
         ):
             c0 = 0.1
             c1 = 0.1
-            c1 = -0.2
+            c2 = -0.2
             c3 = 0.2
             c4 = -0.2
             c5 = 0.3
@@ -211,7 +211,7 @@ class TestUtilsConversion(BaseTest):
         ):
             c0 = 0.1
             c1 = 0.1
-            c1 = -0.2
+            c2 = -0.2
             c3 = 0.2
             c4 = -0.2
             c5 = 0.3
