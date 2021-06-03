@@ -1872,18 +1872,12 @@ class GOMCControl:
         The structure file or PSF file for box 1 in the simulation.  This is only for
             GCMC, GEMC_NVT, and GEMC_NVT simulations. If running a NVT or NPT
             simulation, the value will be None.
-        x_dim_box_0 : float or int
-            The x-dimension of box 0.  Currently, only orthogonal boxes are supported.
-        y_dim_box_0 : float or int
-            The y-dimension of box 0.  Currently, only orthogonal boxes are supported.
-        z_dim_box_0 : float or int
-            The z-dimension of box 0.  Currently, only orthogonal boxes are supported.
-        x_dim_box_1 : float or int
-            The x-dimension of box 1.  Currently, only orthogonal boxes are supported.
-        y_dim_box_1 : float or int
-            The y-dimension of box 1.  Currently, only orthogonal boxes are supported.
-        z_dim_box_1 : float or int
-            The z-dimension of box 1.  Currently, only orthogonal boxes are supported.
+        box_0_vectors : numpy.ndarray, [[float float float], [float float float], [float float float]]
+            Three (3) sets vectors for box 0 each with 3 float values, which represent
+            the vectors for the Charmm-style systems (units in Angstroms (Ang))
+        box_1_vectors : numpy.ndarray, [[float float float], [float float float], [float float float]]
+            Three (3) sets vectors for box 1 each with 3 float values, which represent
+            the vectors for the Charmm-style systems (units in Angstroms (Ang))
         coul_1_4 : float or int
             The non-bonded 1-4 coulombic scaling factor, which is the
             same for all the residues/molecules, regardless if
@@ -2013,43 +2007,49 @@ class GOMCControl:
             charmm_object.all_res_unique_atom_name_dict
         )
 
-        self.x_dim_box_0 = (
-            charmm_object.box_0.Lx * 10
-        )  # times 10 to convert from nm to Angstroms
-        self.y_dim_box_0 = (
-            charmm_object.box_0.Ly * 10
-        )  # times 10 to convert from nm to Angstroms
-        self.z_dim_box_0 = (
-            charmm_object.box_0.Lz * 10
-        )  # times 10 to convert from nm to Angstroms
+        # Get and test and make sure vectors are not too large for the 16 spaces allotted
+        box_vectors_char_limit = 16
+        self.box_0_vectors = charmm_object.box_0_vectors
 
-        print(
-            "charmm_object.filename_box_1 = ",
-            format(str(charmm_object.filename_box_1)),
-        )
-        print(
-            "type(charmm_object.filename_box_1) = ",
-            format(str(type(charmm_object.filename_box_1))),
+        box_0_vectors_char_ok = _check_box_vectors_char_limit(
+            self.box_0_vectors, box_vectors_char_limit
         )
 
+        if box_0_vectors_char_ok == False:
+            self.input_error = True
+            print_error_message = (
+                "ERROR: At lease one of the individual box {} vectors are too large "
+                "or greater than {} characters."
+                "".format(
+                    0,
+                    box_vectors_char_limit,
+                )
+            )
+            raise ValueError(print_error_message)
         if self.ensemble_type in ["GEMC_NVT", "GEMC_NPT", "GCMC"]:
             if (
                 charmm_object.filename_box_1 is not None
                 and isinstance(charmm_object.filename_box_1, str) is True
             ):
-                self.x_dim_box_1 = (
-                    charmm_object.box_1.Lx * 10
-                )  # times 10 to convert from nm to Angstroms
-                self.y_dim_box_1 = (
-                    charmm_object.box_1.Ly * 10
-                )  # times 10 to convert from nm to Angstroms
-                self.z_dim_box_1 = (
-                    charmm_object.box_1.Lz * 10
-                )  # times 10 to convert from nm to Angstroms
+                self.box_1_vectors = charmm_object.box_1_vectors
+
+                box_1_vectors_char_ok = _check_box_vectors_char_limit(
+                    self.box_1_vectors, box_vectors_char_limit
+                )
+
+                if box_1_vectors_char_ok == False:
+                    self.input_error = True
+                    print_error_message = (
+                        "ERROR: At lease one of the individual box {} vectors are too large "
+                        "or greater than {} characters."
+                        "".format(
+                            1,
+                            box_vectors_char_limit,
+                        )
+                    )
+                    raise ValueError(print_error_message)
             else:
-                self.x_dim_box_1 = None
-                self.y_dim_box_1 = None
-                self.z_dim_box_1 = None
+                self.box_1_vectors = None
 
         # check if the ensembles have the correct number of boxes in the charmm object
         if (
@@ -2079,28 +2079,6 @@ class GOMCControl:
                 "".format(ensemble_type, ensemble_type)
             )
             raise ValueError(print_error_message)
-
-        # check the box dimensions
-        ck_box_dim_is_float_or_int_greater_0(
-            self.x_dim_box_0, "x", 0, self.ensemble_type
-        )
-        ck_box_dim_is_float_or_int_greater_0(
-            self.y_dim_box_0, "y", 0, self.ensemble_type
-        )
-        ck_box_dim_is_float_or_int_greater_0(
-            self.z_dim_box_0, "z", 0, self.ensemble_type
-        )
-
-        if self.ensemble_type in ["GEMC_NVT", "GEMC_NPT", "GCMC"]:
-            ck_box_dim_is_float_or_int_greater_0(
-                self.x_dim_box_1, "x", 1, self.ensemble_type
-            )
-            ck_box_dim_is_float_or_int_greater_0(
-                self.y_dim_box_1, "y", 1, self.ensemble_type
-            )
-            ck_box_dim_is_float_or_int_greater_0(
-                self.z_dim_box_1, "z", 1, self.ensemble_type
-            )
 
         # the future control file name is entered now as None
         self.conf_filename = None
@@ -4331,6 +4309,19 @@ class GOMCControl:
                 print_error_message = "ERROR: The LambdaVDW and LambdaCoulomb list must be of equal length."
                 raise ValueError(print_error_message)
 
+        # check self.LambdaVDW and LambdaCoulomb last value is 1.0
+        if self.ensemble_type in ["NVT", "NPT"]:
+            if isinstance(self.LambdaVDW, list):
+                if len(self.LambdaVDW) > 0:
+                    if self.LambdaVDW[-1] != 1.0:
+                        print_error_message = "ERROR: The last value in the LambdaVDW variable list must be a 1.0"
+                        raise ValueError(print_error_message)
+            if isinstance(self.LambdaCoulomb, list):
+                if len(self.LambdaCoulomb) > 0:
+                    if self.LambdaCoulomb[-1] != 1.0:
+                        print_error_message = "ERROR: The last value in the LambdaCoulomb variable list must be a 1.0"
+                        raise ValueError(print_error_message)
+
     # write the control file
     def write_conf_file(self, conf_filename):
         """
@@ -4422,40 +4413,46 @@ class GOMCControl:
             "############################################################################\n"
         )
         data_control_file.write(" \n")
-        data_control_file.write("#########################\n")
+        data_control_file.write("####################################\n")
         data_control_file.write("# enable, step\n")
-        data_control_file.write("#########################\n")
-        data_control_file.write("Restart \t {}\n".format(self.Restart))
+        data_control_file.write("####################################\n")
+        data_control_file.write("{:25s} {}\n".format("Restart", self.Restart))
         data_control_file.write("\n")
         data_control_file.write(
-            "RestartCheckpoint \t {}\n".format(self.RestartCheckpoint)
+            "{:25s} {}\n".format("RestartCheckpoint", self.RestartCheckpoint)
         )
         data_control_file.write("\n")
         data_control_file.write("####################################\n")
         data_control_file.write("# kind {RESTART, RANDOM, INTSEED}\n")
         data_control_file.write("####################################\n")
         if self.PRNG == "RANDOM":
-            data_control_file.write("PRNG \t\t {}\n".format(self.PRNG))
+            data_control_file.write("{:25s} {}\n".format("PRNG", self.PRNG))
         elif isinstance(self.PRNG, int):
             data_control_file.write("PRNG \t\t " + "INTSEED \n")
-            data_control_file.write("Random_Seed \t {}\n".format(self.PRNG))
+            data_control_file.write(
+                "{:25s} {}\n".format("Random_Seed", self.PRNG)
+            )
         data_control_file.write(" \n")
         data_control_file.write("####################################\n")
         data_control_file.write("# FORCE FIELD\n")
         data_control_file.write("####################################\n")
-        data_control_file.write("{}\t\t {}\n".format(self.VDW_type, True))
+        data_control_file.write(
+            "{:25s} {}\n".format(str(self.VDW_type), str(True))
+        )
         data_control_file.write(" \n")
-        data_control_file.write("Parameters \t\t {}\n".format(self.ff_filename))
+        data_control_file.write(
+            "{:25s} {}\n".format("Parameters", self.ff_filename)
+        )
         data_control_file.write("####################################\n")
         data_control_file.write("# INPUT PDB FILES\n")
         data_control_file.write("####################################\n")
         if self.ensemble_type in ["NVT", "NPT", "GEMC_NPT", "GEMC_NVT", "GCMC"]:
             data_control_file.write(
-                "Coordinates 0 \t\t {}\n".format(self.Coordinates_box_0)
+                "{:25s} {}\n".format("Coordinates 0", self.Coordinates_box_0)
             )
         if self.ensemble_type in ["GEMC_NPT", "GEMC_NVT", "GCMC"]:
             data_control_file.write(
-                "Coordinates 1 \t\t {}\n".format(self.Coordinates_box_1)
+                "{:25s} {}\n".format("Coordinates 1", self.Coordinates_box_1)
             )
         data_control_file.write(" \n")
         data_control_file.write("####################################\n")
@@ -4463,11 +4460,11 @@ class GOMCControl:
         data_control_file.write("####################################\n")
         if self.ensemble_type in ["NVT", "NPT", "GEMC_NPT", "GEMC_NVT", "GCMC"]:
             data_control_file.write(
-                "Structure 0 \t\t {}\n".format(self.Structures_box_0)
+                "{:25s} {}\n".format("Structure 0", self.Structures_box_0)
             )
         if self.ensemble_type in ["GEMC_NPT", "GEMC_NVT", "GCMC"]:
             data_control_file.write(
-                "Structure 1 \t\t {}\n".format(self.Structures_box_1)
+                "{:25s} {}\n".format("Structure 1", self.Structures_box_1)
             )
         data_control_file.write(" \n")
         data_control_file.write(
@@ -4481,29 +4478,31 @@ class GOMCControl:
         )
         data_control_file.write(" \n")
         if self.ensemble_type in ["GEMC_NPT", "GEMC_NVT"]:
-            data_control_file.write("##################################\n")
+            data_control_file.write("####################################\n")
             data_control_file.write("# GEMC TYPE \n")
-            data_control_file.write("##################################\n")
+            data_control_file.write("####################################\n")
             if self.ensemble_type in "GEMC_NPT":
                 data_control_file.write("GEMC \t\t NPT \n")
             elif self.ensemble_type in "GEMC_NVT":
                 data_control_file.write("GEMC \t\t NVT \n")
         data_control_file.write(" \n")
-        data_control_file.write("#############################\n")
+        data_control_file.write("####################################\n")
         data_control_file.write("# SIMULATION CONDITION\n")
-        data_control_file.write("#############################\n")
+        data_control_file.write("####################################\n")
         data_control_file.write(
-            "Temperature \t\t {}\n".format(self.Temperature)
+            "{:25s} {}\n".format("Temperature", self.Temperature)
         )
         if self.ensemble_type in ["GEMC_NPT", "NPT"]:
-            data_control_file.write("Pressure \t\t {}\n".format(self.Pressure))
             data_control_file.write(
-                "useConstantArea \t {}\n".format(self.useConstantArea)
+                "{:25s} {}\n".format("Pressure", self.Pressure)
+            )
+            data_control_file.write(
+                "{:25s} {}\n".format("useConstantArea", self.useConstantArea)
             )
 
         if self.ensemble_type in ["GEMC_NPT"] and self.FixVolBox0 is True:
             data_control_file.write(
-                "FixVolBox0 \t\t {}\n".format(self.FixVolBox0)
+                "{:25s} {}\n".format("FixVolBox0", self.FixVolBox0)
             )
 
         if (
@@ -4515,7 +4514,8 @@ class GOMCControl:
             for chem_pot_iter in range(0, len(chem_pot_dict_key_list)):
                 chem_pot_residue_iter = chem_pot_dict_key_list[chem_pot_iter]
                 data_control_file.write(
-                    "ChemPot \t\t {} \t\t {}\n".format(
+                    "{:25s} {:10s} {}\n".format(
+                        "ChemPot",
                         chem_pot_residue_iter,
                         self.ChemPot[chem_pot_residue_iter],
                     )
@@ -4532,48 +4532,57 @@ class GOMCControl:
                     fugacity_iter
                 ]
                 data_control_file.write(
-                    "Fugacity \t\t {} \t\t {}\n".format(
+                    "{:25s} {:10s} {}\n".format(
+                        "Fugacity",
                         fugacity_residue_iter,
                         self.Fugacity[fugacity_residue_iter],
                     )
                 )
 
         data_control_file.write(" \n")
-        data_control_file.write("Potential \t\t {}\n".format(self.Potential))
-        data_control_file.write("LRC \t\t\t {}\n".format(self.LRC))
-        data_control_file.write("Rcut \t\t\t {}\n".format(self.Rcut))
-        data_control_file.write("RcutLow \t\t {}\n".format(self.RcutLow))
+        data_control_file.write(
+            "{:25s} {}\n".format("Potential", self.Potential)
+        )
+        data_control_file.write("{:25s} {}\n".format("LRC", self.LRC))
+        data_control_file.write("{:25s} {}\n".format("Rcut", self.Rcut))
+        data_control_file.write("{:25s} {}\n".format("RcutLow", self.RcutLow))
         if self.Potential == "SWITCH":
-            data_control_file.write("Rswitch \t\t {}\n".format(self.Rswitch))
-        data_control_file.write("Exclude \t\t {}\n".format(self.Exclude))
+            data_control_file.write(
+                "{:25s} {}\n".format("Rswitch", self.Rswitch)
+            )
+        data_control_file.write("{:25s} {}\n".format("Exclude", self.Exclude))
         if self.VDWGeometricSigma is True:
             data_control_file.write(
-                "VDWGeometricSigma \t {}\n".format(self.VDWGeometricSigma)
+                "{:25s} {}\n".format(
+                    "VDWGeometricSigma", self.VDWGeometricSigma
+                )
             )
         data_control_file.write(" \n")
 
-        data_control_file.write("#############################\n")
+        data_control_file.write("####################################\n")
         data_control_file.write("# ELECTROSTATIC   \n")
-        data_control_file.write("#############################\n")
-        data_control_file.write("Ewald \t\t {}\n".format(self.Ewald))
+        data_control_file.write("####################################\n")
+        data_control_file.write("{:25s} {}\n".format("Ewald", self.Ewald))
         data_control_file.write(
-            "ElectroStatic \t {}\n".format(self.ElectroStatic)
+            "{:25s} {}\n".format("ElectroStatic", self.ElectroStatic)
         )
         data_control_file.write(
-            "CachedFourier \t {}\n".format(self.CachedFourier)
+            "{:25s} {}\n".format("CachedFourier", self.CachedFourier)
         )
         data_control_file.write(
-            "Tolerance \t {}\n".format(format(self.Tolerance, ".12f"))
+            "{:25s} {}\n".format("Tolerance", str(self.Tolerance))
         )
         if self.VDW_type in ["ParaTypeMARTINI"]:
             data_control_file.write(
-                "Dielectric \t {}\n".format(format(self.Dielectric))
+                "{:25s} {}\n".format("Dielectric", format(self.Dielectric))
             )
-        data_control_file.write("1-4scaling \t {}\n".format(self.coul_1_4))
+        data_control_file.write(
+            "{:25s} {}\n".format("1-4scaling", self.coul_1_4)
+        )
         data_control_file.write(" \n")
         if self.RcutCoulomb_box_0 is not None:
             data_control_file.write(
-                "RcutCoulomb 0 \t {}\n".format(self.RcutCoulomb_box_0)
+                "{:25s} {}\n".format("RcutCoulomb 0", self.RcutCoulomb_box_0)
             )
         if self.RcutCoulomb_box_1 is not None and self.ensemble_type in [
             "GEMC_NPT",
@@ -4581,59 +4590,67 @@ class GOMCControl:
             "GCMC",
         ]:
             data_control_file.write(
-                "RcutCoulomb 1 \t {}\n".format(self.RcutCoulomb_box_1)
+                "{:25s} {}\n".format("RcutCoulomb 1", self.RcutCoulomb_box_1)
             )
         data_control_file.write(" \n")
 
-        data_control_file.write("################################\n")
+        data_control_file.write("####################################\n")
         data_control_file.write("# PRESSURE CALCULATION\n")
-        data_control_file.write("################################\n")
+        data_control_file.write("####################################\n")
         data_control_file.write(
-            "PressureCalc \t {} \t\t {}\n".format(
-                self.PressureCalc[0], self.PressureCalc[1]
+            "{:25s} {:10s} {}\n".format(
+                "PressureCalc",
+                str(self.PressureCalc[0]),
+                self.PressureCalc[1],
             )
         )
         data_control_file.write(" \n")
 
-        data_control_file.write("################################\n")
+        data_control_file.write("####################################\n")
         data_control_file.write("# STEPS \n")
-        data_control_file.write("################################\n")
-        data_control_file.write("RunSteps \t {}\n".format(self.RunSteps))
-        data_control_file.write("EqSteps \t {}\n".format(self.EqSteps))
-        data_control_file.write("AdjSteps \t {}\n".format(self.AdjSteps))
+        data_control_file.write("####################################\n")
+        data_control_file.write("{:25s} {}\n".format("RunSteps", self.RunSteps))
+        data_control_file.write("{:25s} {}\n".format("EqSteps", self.EqSteps))
+        data_control_file.write("{:25s} {}\n".format("AdjSteps", self.AdjSteps))
         data_control_file.write(" \n")
 
-        data_control_file.write("################################\n")
+        data_control_file.write("####################################\n")
         data_control_file.write("# MOVE FREQUENCY \n")
-        data_control_file.write("################################\n")
-        data_control_file.write("DisFreq \t\t {}\n".format(self.DisFreq))
-        data_control_file.write("RotFreq \t\t {}\n".format(self.RotFreq))
+        data_control_file.write("####################################\n")
+        data_control_file.write("{:25s} {}\n".format("DisFreq", self.DisFreq))
+        data_control_file.write("{:25s} {}\n".format("RotFreq", self.RotFreq))
         data_control_file.write(
-            "IntraSwapFreq \t\t {}\n".format(self.IntraSwapFreq)
+            "{:25s} {}\n".format("IntraSwapFreq", self.IntraSwapFreq)
         )
-        data_control_file.write("SwapFreq \t\t {}\n".format(self.SwapFreq))
+        data_control_file.write("{:25s} {}\n".format("SwapFreq", self.SwapFreq))
         data_control_file.write(
-            "RegrowthFreq \t\t {}\n".format(self.RegrowthFreq)
-        )
-        data_control_file.write(
-            "CrankShaftFreq \t\t {}\n".format(self.CrankShaftFreq)
-        )
-        data_control_file.write("VolFreq \t\t {}\n".format(self.VolFreq))
-        data_control_file.write(
-            "MultiParticleFreq \t {}\n".format(self.MultiParticleFreq)
+            "{:25s} {}\n".format("RegrowthFreq", self.RegrowthFreq)
         )
         data_control_file.write(
-            "IntraMEMC-1Freq \t {}\n".format(self.IntraMEMC_1Freq)
+            "{:25s} {}\n".format("CrankShaftFreq", self.CrankShaftFreq)
         )
-        data_control_file.write("MEMC-1Freq \t\t {}\n".format(self.MEMC_1Freq))
+        data_control_file.write("{:25s} {}\n".format("VolFreq", self.VolFreq))
         data_control_file.write(
-            "IntraMEMC-2Freq \t {}\n".format(self.IntraMEMC_2Freq)
+            "{:25s} {}\n".format("MultiParticleFreq", self.MultiParticleFreq)
         )
-        data_control_file.write("MEMC-2Freq \t\t {}\n".format(self.MEMC_2Freq))
         data_control_file.write(
-            "IntraMEMC-3Freq \t {}\n".format(self.IntraMEMC_3Freq)
+            "{:25s} {}\n".format("IntraMEMC-1Freq", self.IntraMEMC_1Freq)
         )
-        data_control_file.write("MEMC-3Freq \t\t {}\n".format(self.MEMC_3Freq))
+        data_control_file.write(
+            "{:25s} {}\n".format("MEMC-1Freq", self.MEMC_1Freq)
+        )
+        data_control_file.write(
+            "{:25s} {}\n".format("IntraMEMC-2Freq", self.IntraMEMC_2Freq)
+        )
+        data_control_file.write(
+            "{:25s} {}\n".format("MEMC-2Freq", self.MEMC_2Freq)
+        )
+        data_control_file.write(
+            "{:25s} {}\n".format("IntraMEMC-3Freq", self.IntraMEMC_3Freq)
+        )
+        data_control_file.write(
+            "{:25s} {}\n".format("MEMC-3Freq", self.MEMC_3Freq)
+        )
         data_control_file.write(" \n")
 
         # sort and print the MEMC data if MEMC is used for the simulation
@@ -4654,24 +4671,24 @@ class GOMCControl:
 
             for memc_i in range(0, len(self.MEMC_DataInput)):
                 ExchangeRatio_list.append(
-                    str("{} \t\t".format(self.MEMC_DataInput[memc_i][0]))
+                    str("{:10s} \t".format(str(self.MEMC_DataInput[memc_i][0])))
                 )
                 ExchangeLargeKind_list.append(
-                    "{} \t\t".format(self.MEMC_DataInput[memc_i][1])
+                    "{:10s} \t".format(str(self.MEMC_DataInput[memc_i][1]))
                 )
                 LargeKindBackBone_list.append(
-                    "{}   {} \t".format(
-                        self.MEMC_DataInput[memc_i][2][0],
-                        self.MEMC_DataInput[memc_i][2][1],
+                    "{:4s}  {:4s} \t".format(
+                        str(self.MEMC_DataInput[memc_i][2][0]),
+                        str(self.MEMC_DataInput[memc_i][2][1]),
                     )
                 )
                 ExchangeSmallKind_list.append(
-                    "{} \t\t".format(self.MEMC_DataInput[memc_i][3])
+                    "{:10s} \t".format(str(self.MEMC_DataInput[memc_i][3]))
                 )
                 SmallKindBackBone_list.append(
-                    "{}   {} \t".format(
-                        self.MEMC_DataInput[memc_i][4][0],
-                        self.MEMC_DataInput[memc_i][4][1],
+                    "{:4s}  {:4s} \t".format(
+                        str(self.MEMC_DataInput[memc_i][4][0]),
+                        str(self.MEMC_DataInput[memc_i][4][1]),
                     )
                 )
 
@@ -4681,24 +4698,25 @@ class GOMCControl:
             ExchangeSmallKind_str = "".join(ExchangeSmallKind_list)
             SmallKindBackBone_str = "".join(SmallKindBackBone_list)
 
-            data_control_file.write("###############################\n")
+            data_control_file.write("####################################\n")
             data_control_file.write("# MEMC PARAMETER \n")
-            data_control_file.write("###############################\n")
+            data_control_file.write("####################################\n")
             data_control_file.write(
-                "ExchangeVolumeDim \t {}\t{}\t{} \n".format(
+                "{:25s} {}\t{}\t{}\n".format(
+                    "ExchangeVolumeDim",
                     self.ExchangeVolumeDim[0],
                     self.ExchangeVolumeDim[1],
                     self.ExchangeVolumeDim[2],
                 )
             )
             data_control_file.write(
-                "ExchangeRatio \t\t {}\n".format(ExchangeRatio_str)
+                "{:25s} {}\n".format("ExchangeRatio", ExchangeRatio_str)
             )
             data_control_file.write(
-                "ExchangeLargeKind \t {}\n".format(ExchangeLargeKind_str)
+                "{:25s} {}\n".format("ExchangeLargeKind", ExchangeLargeKind_str)
             )
             data_control_file.write(
-                "ExchangeSmallKind \t {}\n".format(ExchangeSmallKind_str)
+                "{:25s} {}\n".format("ExchangeSmallKind", ExchangeSmallKind_str)
             )
             if self.MEMC_DataInput is not None and (
                 self.MEMC_2Freq > 0
@@ -4707,113 +4725,76 @@ class GOMCControl:
                 or self.IntraMEMC_3Freq > 0
             ):
                 data_control_file.write(
-                    "LargeKindBackBone \t {}\n".format(LargeKindBackBone_str)
+                    "{:25s} {}\n".format(
+                        "LargeKindBackBone", LargeKindBackBone_str
+                    )
                 )
             if self.MEMC_DataInput is not None and (
                 self.MEMC_2Freq > 0 or self.IntraMEMC_2Freq > 0
             ):
                 data_control_file.write(
-                    "SmallKindBackBone \t {}\n".format(SmallKindBackBone_str)
+                    "{:25s} {}\n".format(
+                        "SmallKindBackBone", SmallKindBackBone_str
+                    )
                 )
 
         data_control_file.write(" \n")
 
-        data_control_file.write("################################\n")
+        data_control_file.write("####################################\n")
         data_control_file.write(
-            "# BOX DIMENSION #, X, Y, Z    (only orthoganal boxes are currently "
+            "# BOX DIMENSION #, X, Y, Z    (only orthoganol boxes are currently "
             "available in this control file writer)\n"
         )
-        data_control_file.write("################################\n")
+        data_control_file.write("####################################\n")
         data_control_file.write(
-            "CellBasisVector1 0 \t {}\t\t0.00\t\t0.00\n".format(
-                self.x_dim_box_0
+            "{:25s} {:20s} {:20s} {:20s}\n".format(
+                "CellBasisVector1 0",
+                str(self.box_0_vectors[0][0]),
+                str(self.box_0_vectors[0][1]),
+                str(self.box_0_vectors[0][2]),
             )
         )
         data_control_file.write(
-            "CellBasisVector2 0 \t 0.00\t\t{}\t\t0.00\n".format(
-                self.y_dim_box_0
+            "{:25s} {:20s} {:20s} {:20s}\n".format(
+                "CellBasisVector2 0",
+                str(self.box_0_vectors[1][0]),
+                str(self.box_0_vectors[1][1]),
+                str(self.box_0_vectors[1][2]),
             )
         )
         data_control_file.write(
-            "CellBasisVector3 0 \t 0.00\t\t0.00\t\t{}\n".format(
-                self.z_dim_box_0
+            "{:25s} {:20s} {:20s} {:20s}\n".format(
+                "CellBasisVector3 0",
+                str(self.box_0_vectors[2][0]),
+                str(self.box_0_vectors[2][1]),
+                str(self.box_0_vectors[2][2]),
             )
         )
         data_control_file.write(" \n")
         if self.ensemble_type in ["GEMC_NPT", "GEMC_NVT", "GCMC"]:
             data_control_file.write(
-                "CellBasisVector1 1 \t {}\t\t0.00\t\t0.00\n".format(
-                    self.x_dim_box_1
+                "{:25s} {:20s} {:20s} {:20s}\n".format(
+                    "CellBasisVector1 1",
+                    str(self.box_1_vectors[0][0]),
+                    str(self.box_1_vectors[0][1]),
+                    str(self.box_1_vectors[0][2]),
                 )
             )
             data_control_file.write(
-                "CellBasisVector2 1 \t 0.00\t\t{}\t\t0.00\n".format(
-                    self.y_dim_box_1
+                "{:25s} {:20s} {:20s} {:20s}\n".format(
+                    "CellBasisVector2 1",
+                    str(self.box_1_vectors[1][0]),
+                    str(self.box_1_vectors[1][1]),
+                    str(self.box_1_vectors[1][2]),
                 )
             )
             data_control_file.write(
-                "CellBasisVector3 1 \t 0.00\t\t0.00\t\t{}\n".format(
-                    self.z_dim_box_1
+                "{:25s} {:20s} {:20s} {:20s}\n".format(
+                    "CellBasisVector3 1",
+                    str(self.box_1_vectors[2][0]),
+                    str(self.box_1_vectors[2][1]),
+                    str(self.box_1_vectors[2][2]),
                 )
-            )
-            data_control_file.write(" \n")
-
-        if (
-            (self.ensemble_type in ["NPT", "NVT"])
-            and self.FreeEnergyCalc is not None
-            and self.MoleculeType is not None
-            and self.InitialState is not None
-            and self.LambdaVDW is not None
-            and self.LambdaCoulomb is not None
-        ):
-
-            # make list for number of states, LambdaVDW, and Lambda_Coul, and convert the list to string for printing
-            Lambda_states_list = []
-            Lambda_VDW_list = []
-            Lambda_Coul_list = []
-            for lamda_i in range(0, len(self.LambdaVDW)):
-                Lambda_states_list.append(str(lamda_i))
-                Lambda_VDW_list.append(str(self.LambdaVDW[lamda_i]))
-                Lambda_Coul_list.append(str(self.LambdaCoulomb[lamda_i]))
-
-            Lambda_states_str = "\t".join(Lambda_states_list)
-            Lambda_VDW_str = "\t".join(Lambda_VDW_list)
-            Lambda_Coul_str = "\t".join(Lambda_Coul_list)
-
-            data_control_file.write("##############################\n")
-            data_control_file.write(
-                "# FREE ENERGY PARAMETERS (only available in NPT and NVT ensembles) \n"
-            )
-            data_control_file.write("##############################\n")
-            data_control_file.write(
-                "FreeEnergyCalc \t {}\t\t{}\n".format(
-                    self.FreeEnergyCalc[0], self.FreeEnergyCalc[1]
-                )
-            )
-            data_control_file.write(
-                "MoleculeType \t {}\t\t{}\n".format(
-                    self.MoleculeType[0], self.MoleculeType[1]
-                )
-            )
-            data_control_file.write(
-                "InitialState \t {}\n".format(self.InitialState)
-            )
-            data_control_file.write(
-                "ScalePower \t {}\n".format(self.ScalePower)
-            )
-            data_control_file.write(
-                "ScaleAlpha \t {}\n".format(self.ScaleAlpha)
-            )
-            data_control_file.write("MinSigma \t {}\n".format(self.MinSigma))
-            data_control_file.write(
-                "ScaleCoulomb \t {}\n".format(self.ScaleCoulomb)
-            )
-            data_control_file.write(
-                "# States \t {}\n".format(Lambda_states_str)
-            )
-            data_control_file.write("LambdaVDW \t {}\n".format(Lambda_VDW_str))
-            data_control_file.write(
-                "LambdaCoulomb \t {}\n".format(Lambda_Coul_str)
             )
             data_control_file.write(" \n")
 
@@ -4840,51 +4821,62 @@ class GOMCControl:
             if self.LambdaCoulomb is not None:
                 Lambda_Coul_str = "\t".join(Lambda_Coul_list)
 
-            data_control_file.write("##############################\n")
+            data_control_file.write("####################################\n")
             data_control_file.write(
                 "# FREE ENERGY PARAMETERS (only available in NPT and NVT ensembles) \n"
             )
-            data_control_file.write("##############################\n")
+            data_control_file.write("####################################\n")
             data_control_file.write(
-                "FreeEnergyCalc \t {}\t\t{}\n".format(
-                    self.FreeEnergyCalc[0], self.FreeEnergyCalc[1]
+                "{:25s} {:10s} {}\n".format(
+                    "FreeEnergyCalc",
+                    str(self.FreeEnergyCalc[0]),
+                    self.FreeEnergyCalc[1],
                 )
             )
             data_control_file.write(
-                "MoleculeType \t {}\t\t{}\n".format(
-                    self.MoleculeType[0], self.MoleculeType[1]
+                "{:25s} {:10s} {}\n".format(
+                    "MoleculeType",
+                    str(self.MoleculeType[0]),
+                    self.MoleculeType[1],
                 )
             )
             data_control_file.write(
-                "InitialState \t {}\n".format(self.InitialState)
+                "{:25s} {}\n".format("InitialState", self.InitialState)
             )
             data_control_file.write(
-                "ScalePower \t {}\n".format(self.ScalePower)
+                "{:25s} {}\n".format("ScalePower", self.ScalePower)
             )
             data_control_file.write(
-                "ScaleAlpha \t {}\n".format(self.ScaleAlpha)
-            )
-            data_control_file.write("MinSigma \t {}\n".format(self.MinSigma))
-            data_control_file.write(
-                "ScaleCoulomb \t {}\n".format(self.ScaleCoulomb)
+                "{:25s} {}\n".format("ScaleAlpha", self.ScaleAlpha)
             )
             data_control_file.write(
-                "# States \t {}\n".format(Lambda_states_str)
+                "{:25s} {}\n".format("MinSigma", self.MinSigma)
             )
-            data_control_file.write("LambdaVDW \t {}\n".format(Lambda_VDW_str))
+            data_control_file.write(
+                "{:25s} {}\n".format("ScaleCoulomb", self.ScaleCoulomb)
+            )
+            data_control_file.write(
+                "{:25s} {}\n".format("# States", Lambda_states_str)
+            )
+            data_control_file.write(
+                "{:25s} {}\n".format("LambdaVDW", Lambda_VDW_str)
+            )
+
             if self.LambdaCoulomb is not None:
                 data_control_file.write(
-                    "LambdaCoulomb \t {}\n".format(Lambda_Coul_str)
+                    "{:25s} {}\n".format("LambdaCoulomb", Lambda_Coul_str)
                 )
             data_control_file.write(" \n")
 
-        data_control_file.write("##############################\n")
+        data_control_file.write("####################################\n")
         data_control_file.write("# CBMC TRIALS \n")
-        data_control_file.write("##############################\n")
-        data_control_file.write("CBMC_First \t {}\n".format(self.CBMC_First))
-        data_control_file.write("CBMC_Nth \t {}\n".format(self.CBMC_Nth))
-        data_control_file.write("CBMC_Ang \t {}\n".format(self.CBMC_Ang))
-        data_control_file.write("CBMC_Dih \t {}\n".format(self.CBMC_Dih))
+        data_control_file.write("####################################\n")
+        data_control_file.write(
+            "{:25s} {}\n".format("CBMC_First", self.CBMC_First)
+        )
+        data_control_file.write("{:25s} {}\n".format("CBMC_Nth", self.CBMC_Nth))
+        data_control_file.write("{:25s} {}\n".format("CBMC_Ang", self.CBMC_Ang))
+        data_control_file.write("{:25s} {}\n".format("CBMC_Dih", self.CBMC_Dih))
         data_control_file.write(" \n")
 
         data_control_file.write(
@@ -4898,88 +4890,117 @@ class GOMCControl:
         )
         data_control_file.write(" \n")
 
-        data_control_file.write("##########################\n")
+        data_control_file.write("####################################\n")
         data_control_file.write("# statistics filename add\n")
-        data_control_file.write("##########################\n")
-        data_control_file.write("OutputName \t {}\n".format(self.OutputName))
+        data_control_file.write("####################################\n")
+        data_control_file.write(
+            "{:25s} {}\n".format("OutputName", self.OutputName)
+        )
         data_control_file.write(" \n")
 
-        data_control_file.write("#####################################\n")
+        data_control_file.write("####################################\n")
         data_control_file.write("# enable, frequency \n")
-        data_control_file.write("#####################################\n")
+        data_control_file.write("####################################\n")
         data_control_file.write(
-            "RestartFreq  \t\t {}\t\t{}\n".format(
-                self.RestartFreq[0], self.RestartFreq[1]
+            "{:25s} {:10s} {}\n".format(
+                "RestartFreq", str(self.RestartFreq[0]), self.RestartFreq[1]
             )
         )
         data_control_file.write(
-            "CheckpointFreq  \t {}\t\t{}\n".format(
-                self.CheckpointFreq[0], self.CheckpointFreq[1]
+            "{:25s} {:10s} {}\n".format(
+                "CheckpointFreq",
+                str(self.CheckpointFreq[0]),
+                self.CheckpointFreq[1],
             )
         )
         data_control_file.write(
-            "CoordinatesFreq  \t {}\t\t{}\n".format(
-                self.CoordinatesFreq[0], self.CoordinatesFreq[1]
+            "{:25s} {:10s} {}\n".format(
+                "CoordinatesFreq",
+                str(self.CoordinatesFreq[0]),
+                self.CoordinatesFreq[1],
             )
         )
         data_control_file.write(
-            "ConsoleFreq  \t\t {}\t\t{}\n".format(
-                self.ConsoleFreq[0], self.ConsoleFreq[1]
+            "{:25s} {:10s} {}\n".format(
+                "ConsoleFreq", str(self.ConsoleFreq[0]), self.ConsoleFreq[1]
             )
         )
         data_control_file.write(
-            "BlockAverageFreq  \t {}\t\t{}\n".format(
-                self.BlockAverageFreq[0], self.BlockAverageFreq[1]
+            "{:25s} {:10s} {}\n".format(
+                "BlockAverageFreq",
+                str(self.BlockAverageFreq[0]),
+                self.BlockAverageFreq[1],
             )
         )
         data_control_file.write(
-            "HistogramFreq  \t\t {}\t\t{}\n".format(
-                self.HistogramFreq[0], self.HistogramFreq[1]
+            "{:25s} {:10s} {}\n".format(
+                "HistogramFreq",
+                str(self.HistogramFreq[0]),
+                self.HistogramFreq[1],
             )
         )
         data_control_file.write(" \n")
 
-        data_control_file.write("################################\n")
+        data_control_file.write("####################################\n")
         data_control_file.write("# OutHistSettings \n")
-        data_control_file.write("################################\n")
-        data_control_file.write("DistName \t {}\n".format(self.DistName))
-        data_control_file.write("HistName \t {}\n".format(self.HistName))
-        data_control_file.write("RunNumber \t {}\n".format(self.RunNumber))
-        data_control_file.write("RunLetter \t {}\n".format(self.RunLetter))
-        data_control_file.write("SampleFreq \t {}\n".format(self.SampleFreq))
+        data_control_file.write("####################################\n")
+        data_control_file.write("{:25s} {}\n".format("DistName", self.DistName))
+        data_control_file.write("{:25s} {}\n".format("HistName", self.HistName))
+        data_control_file.write(
+            "{:25s} {}\n".format("RunNumber", self.RunNumber)
+        )
+        data_control_file.write(
+            "{:25s} {}\n".format("RunLetter", self.RunLetter)
+        )
+        data_control_file.write(
+            "{:25s} {}\n".format("SampleFreq", self.SampleFreq)
+        )
+        # print("{:10s}:    {}".format(arg, description))
         data_control_file.write(" \n")
 
-        data_control_file.write("################################## \n")
+        data_control_file.write("####################################\n")
         data_control_file.write("# enable: blk avg., fluct. \n")
-        data_control_file.write("################################## \n")
+        data_control_file.write("####################################\n")
         data_control_file.write(
-            "OutEnergy \t\t {}\t\t{}\n".format(
-                self.OutEnergy[0], self.OutEnergy[1]
+            "{:25s} {:10s} {:10s}\n".format(
+                "OutEnergy",
+                str(self.OutEnergy[0]),
+                str(self.OutEnergy[1]),
             )
         )
         data_control_file.write(
-            "OutPressure \t\t {}\t\t{}\n".format(
-                self.OutPressure[0], self.OutPressure[1]
+            "{:25s} {:10s} {:10s}\n".format(
+                "OutPressure",
+                str(self.OutPressure[0]),
+                str(self.OutPressure[1]),
             )
         )
         data_control_file.write(
-            "OutMolNumber \t\t {}\t\t{}\n".format(
-                self.OutMolNumber[0], self.OutMolNumber[1]
+            "{:25s} {:10s} {:10s}\n".format(
+                "OutMolNumber",
+                str(self.OutMolNumber[0]),
+                str(self.OutMolNumber[1]),
             )
         )
         data_control_file.write(
-            "OutDensity \t\t {}\t\t{}\n".format(
-                self.OutDensity[0], self.OutDensity[1]
+            "{:25s} {:10s} {:10s}\n".format(
+                "OutDensity",
+                str(self.OutDensity[0]),
+                str(self.OutDensity[1]),
             )
         )
         data_control_file.write(
-            "OutVolume \t\t {}\t\t{}\n".format(
-                self.OutVolume[0], self.OutVolume[1]
+            "{:25s} {:10s} {:10s}\n".format(
+                "OutVolume",
+                str(self.OutVolume[0]),
+                str(self.OutVolume[1]),
             )
         )
         data_control_file.write(
-            "OutSurfaceTension \t {}\t\t{}\n".format(
-                self.OutSurfaceTension[0], self.OutSurfaceTension[1]
+            "{:25s} {:10s} {:10s}\n".format(
+                "OutSurfaceTension",
+                str(self.OutSurfaceTension[0]),
+                str(self.OutSurfaceTension[1]),
             )
         )
         data_control_file.write("\n")
@@ -5869,6 +5890,32 @@ def ck_box_dim_is_float_or_int_greater_0(
         raise ValueError(print_error_message)
 
     return None
+
+
+def _check_box_vectors_char_limit(vectors, char_limit):
+    """
+    Checks to see if the vectors exceed the specified character limit
+
+    Parameters
+    ----------
+    vectors : numpy.ndarray, [[float, float, float], [float, float, float], [float, float, float]]
+        Three (3) sets vectors for box 0 each with 3 float values, which represent
+        the vectors for the Charmm-style systems (i.e, the CellBasisVectors).
+    char_limit : int
+        The specified number of allowable characters for each individual value in the vectors.
+
+    Returns
+    -------
+    bool:
+        True, if within the allowable character limit
+        False, if not within the allowable character limit
+    """
+
+    for x_i in range(0, 3):
+        for y_i in range(0, 3):
+            if len(str(vectors[x_i][y_i])) > char_limit:
+                return False
+    return True
 
 
 # user callable function to write the GOMC control file

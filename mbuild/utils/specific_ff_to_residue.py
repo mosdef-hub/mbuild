@@ -14,7 +14,6 @@ def specific_ff_to_residue(
     forcefield_selection=None,
     residues=None,
     reorder_res_in_pdb_psf=False,
-    box=None,
     boxes_for_simulation=1,
 ):
 
@@ -46,10 +45,6 @@ def specific_ff_to_residue(
         This option provides the ability to reorder the residues/molecules from the original
         structure's order.  If True, the residues will be reordered as they appear in the residues
         variable.  If False, the order will be the same as entered in the original structure.
-    box: list, default=None
-        list of 3 positive float or integer values or the dimensions [x, y ,z]
-        for structure in nanometers (nm). This is to add/override or change the structures dimensions.
-        Ex: [1,2,3]
     boxes_for_simulation: int [1, 2], default = 1
         Gibbs (GEMC) or grand canonical (GCMC) ensembles are examples of where the boxes_for_simulation would be 2.
         Canonical (NVT) or isothermal–isobaric (NPT) ensembles are example with the boxes_for_simulation equal to 1.
@@ -147,25 +142,6 @@ def specific_ff_to_residue(
         )
         raise TypeError(print_error_message)
 
-    if box is not None:
-        box_ang = []
-        box_length = len(box)
-        if box_length != 3:
-            print_error_message = "Please enter all 3 values, and only 3 values for the box dimensions."
-            raise ValueError(print_error_message)
-        print_error_message_box_positive_values = (
-            "Please enter positive ( > 0) integers for the box dimensions."
-        )
-        for box_iter in box:
-            if not isinstance(box_iter, int) and not isinstance(
-                box_iter, float
-            ):
-                raise TypeError(print_error_message_box_positive_values)
-            if box_iter < 0:
-                raise ValueError(print_error_message_box_positive_values)
-            # change from nm to Angstroms
-            box_ang.append(box_iter * 10)
-
     print_error_message_for_boxes_for_simulatiion = (
         "ERROR: Please enter boxes_for_simulation equal " "the integer 1 or 2."
     )
@@ -232,7 +208,6 @@ def specific_ff_to_residue(
         residue_iteration = forcefield_keys_list[j]
         if user_entered_ff_with_path_dict[residue_iteration]:
             ff_for_residue_iteration = ff_data[residue_iteration]
-
             try:
                 read_xlm_iteration = minidom.parse(ff_for_residue_iteration)
 
@@ -241,7 +216,7 @@ def specific_ff_to_residue(
                     "Please make sure you are entering the correct foyer FF path, "
                     "including the FF file name.xml "
                     "If you are using the pre-build FF files in foyer, "
-                    "please us the forcefield_names variable."
+                    "only use the string name without any extension."
                 )
                 raise ValueError(print_error_message)
         elif not user_entered_ff_with_path_dict[residue_iteration]:
@@ -296,16 +271,6 @@ def specific_ff_to_residue(
         lengths = structure.lengths
         angles = structure.angles
 
-        if (
-            structure.angles[0] != 90
-            or structure.angles[1] != 90
-            or structure.angles[2] != 90
-        ):
-            print_error_message = (
-                "This writer only currently supports orthogonal boxes "
-                "(i.e., boxes with all 90 degree angles)."
-            )
-            raise ValueError(print_error_message)
         structure = mb.Compound()
         structure.box = mb.Box(lengths=lengths, angles=angles)
         initial_no_atoms = 0
@@ -429,11 +394,6 @@ def specific_ff_to_residue(
                 new_compound_iteration, residues=[residues[i]]
             )
             new_structure = new_structure + new_structure_iteration
-
-    if box is not None:
-        new_structure.box[0] = box_ang[0]
-        new_structure.box[1] = box_ang[1]
-        new_structure.box[2] = box_ang[2]
 
     structure = new_structure
 
