@@ -31,4 +31,3 @@ box or boxes utilizing only a few lines of python code.
    	Box_example
 	fill_box_example
    	polymer_example
-
