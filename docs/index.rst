@@ -20,7 +20,7 @@ complex molecular systems for molecular simulations.
 
 
 mBuild is a part of the MoSDeF ecosystem
--------
+----------------------------------------
 
 The **mBuild** software, in conjunction with the other `Molecular Simulation Design Framework (MoSDeF) <https://mosdef.org>`_ tools, supports a wide range of
 simulation engines, including `Cassandra <https://cassandra.nd.edu>`_, `GPU Optimized Monte Carlo (GOMC) <http://gomc.eng.wayne.edu>`_, `GROMACS <https://www.gromacs.org>`_,
@@ -70,15 +70,15 @@ different licenses. See those files for their specific terms.
 .. toctree::
     	installation
     	docker
-    	quick_start
+	example_system
     	quick_start/quick_start
-    	structure_building_options
     	tutorials/tutorials
     	data_structures
 	load_data
     	units
     	coordinate_transforms
+	recipe_development
     	recipes
-	sim_engine_writers/sim_engine_writers
+	writers/writers
     	citing_mbuild
     	older_documentation

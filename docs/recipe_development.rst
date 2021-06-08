@@ -10,7 +10,7 @@ mBuild has been developed with this in mind, in the form of a plug-in system.
 Detailed below are the specifications of this system, how to convert an existing Python project into an mBuild-discoverable plug-in, and an example.
 
 Entry Points
---------
+------------
 
 The basis of the plug-in system in mBuild is the `setuptools.entry_points package <https://packaging.python.org/guides/creating-and-discovering-plugins/#using-package-metadata>`_.
 This allows other packages to register themselves with the ``entry_point`` group we defined in mBuild, so they are accessible through the ``mbuild.recipes`` location.
@@ -21,7 +21,7 @@ It will then be accessible from inside mBuild as a plug-in via `mbuild.recipes.m
 The call ``import mbuild`` discovers all plug-ins that fit the ``entry_point`` group specification and makes them available under ``mbuild.recipes``.
 
 Registering a Recipe
-________
+____________________
 
 Here we consider the case that a user already has a Python project set up with a structure similar to the layout below.
 
@@ -102,7 +102,7 @@ Since the ``setup.py`` file is located in the top folder of the python project, 
 
 
 Putting it all together
-________
+_______________________
 
 Finally, we have ``FCC = mbuild_fcc.mbuild_fcc:FCC``.
 
@@ -121,7 +121,7 @@ Note that this command will install this example from source in an editable form
 
 
 Trying it Out
-_________
+_____________
 
 To test that you set up your plug-in correctly, try importing mBuild:
 

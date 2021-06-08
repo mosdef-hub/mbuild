@@ -1,9 +1,9 @@
 Fill Box
-========================
+========
 
 
 All-Atom (AA) Hexane and Ethanol System
-------------------------
+---------------------------------------
 
 **Note**: `foyer <https://foyer.mosdef.org/en/stable/>`_ is used in conjunction with **mBuild** in the following example to demonstrate how all the `MoSDeF <https://mosdef.org>`_ software integrates to generate a simulation box.
 
@@ -46,7 +46,7 @@ and will be an orthogonal box measuring 5.0 nm in all the x, y, and z-dimensions
 
 
 United Atom (UA) Methane System
-------------------------
+-------------------------------
 
 **Note**: `foyer <https://foyer.mosdef.org/en/stable/>`_ is used in conjunction with **mBuild** in the following example to demonstrate how all the `MoSDeF <https://mosdef.org>`_ software integrates to generate a simulation box.  The `TraPPE <http://trappe.oit.umn.edu>`_ force field (FF) comes standard with the `foyer <https://foyer.mosdef.org/en/stable/>`_ software package.
 
@@ -76,3 +76,4 @@ The orthogonal liquid box contains 1230 methane molecules and measures 4.5 nm in
                           n_compounds=1230,
                           box=[4.5, 4.5, 4.5]
                           )
+

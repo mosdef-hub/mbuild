@@ -21,6 +21,7 @@ The **mBuild** software allows for easy generation of the simulation
 box or boxes utilizing only a few lines of python code.
 
 .. only:: html
+
     The following tutorials are available either as html or interactive jupyter notebooks.
 
 
@@ -30,3 +31,4 @@ box or boxes utilizing only a few lines of python code.
    	Box_example
 	fill_box_example
    	polymer_example
+
