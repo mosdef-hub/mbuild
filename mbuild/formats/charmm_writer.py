@@ -1382,21 +1382,21 @@ class Charmm:
     """
 
     def __init__(
-            self,
-            structure_box_0,
-            filename_box_0,
-            structure_box_1=None,
-            filename_box_1=None,
-            non_bonded_type="LJ",
-            forcefield_selection=None,
-            residues=None,
-            detect_forcefield_style=True,
-            gomc_fix_bonds_angles=None,
-            bead_to_atom_name_dict=None,
-            fix_residue=None,
-            fix_residue_in_box=None,
-            ff_filename=None,
-            reorder_res_in_pdb_psf=False,
+        self,
+        structure_box_0,
+        filename_box_0,
+        structure_box_1=None,
+        filename_box_1=None,
+        non_bonded_type="LJ",
+        forcefield_selection=None,
+        residues=None,
+        detect_forcefield_style=True,
+        gomc_fix_bonds_angles=None,
+        bead_to_atom_name_dict=None,
+        fix_residue=None,
+        fix_residue_in_box=None,
+        ff_filename=None,
+        reorder_res_in_pdb_psf=False,
     ):
 
         # set all input variables to the class

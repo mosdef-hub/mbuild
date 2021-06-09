@@ -2,7 +2,7 @@
 File Writers
 ----------------------------------------------
 
-The mBuild software also supports simulation engine-specific file writers.  These writers create a complete set of simulation writers to input files or a partial set of file writers, where the other required files are generated via another means or Python package.  
+The mBuild software also supports simulation engine-specific file writers.  These writers create a complete set of simulation writers to input files or a partial set of file writers, where the other required files are generated via another means or Python package.
 
 mBuild utilizes ParmEd to write ``Compound`` information to a variety of file
 formats (e.g. PDB, MOL2, GRO.  The full list of formats supported by ParmEd
@@ -17,7 +17,7 @@ field XML files (used by the `Foyer package <https://github.com/mosdef-hub/foyer
 to the ``save`` function if Foyer is installed. If a force field is applied to a
 Compound, the mBuild internal writers will also write angle and dihedral information
 to the file in addition to labelling atoms by the atom types specified by the force
-field.  The CHARMM-style GOMC writers are the exception to this default rule since 
+field.  The CHARMM-style GOMC writers are the exception to this default rule since
 they need a force field to build the files, as the files depend on the force field parameters (Example: charge and MW in the PSF files).
 
 The simulation engine writers that use mBuild or are contained in the mBuild software:

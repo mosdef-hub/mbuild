@@ -1966,13 +1966,14 @@ class GOMCControl:
     Cite: Potoff, Jeffrey; Schwiebert, Loren; et. al. GOMC Documentation.
     https://raw.githubusercontent.com/GOMC-WSU/GOMC/master/GOMC_Manual.pdf, 2021.
     """
+
     def __init__(
-            self,
-            charmm_object,
-            ensemble_type,
-            RunSteps,
-            Temperature,
-            input_variables_dict=None,
+        self,
+        charmm_object,
+        ensemble_type,
+        RunSteps,
+        Temperature,
+        input_variables_dict=None,
     ):
 
         # set this to check and see if all the input pass

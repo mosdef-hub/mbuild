@@ -76,4 +76,3 @@ The orthogonal liquid box contains 1230 methane molecules and measures 4.5 nm in
                           n_compounds=1230,
                           box=[4.5, 4.5, 4.5]
                           )
-

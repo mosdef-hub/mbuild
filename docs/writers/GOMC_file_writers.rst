@@ -8,12 +8,12 @@ CHARMM-style PDB, PSF, and Force Field File Writers
 	.. autoclass:: mbuild.formats.charmm_writer.Charmm
 		:special-members: __init__
 		:members:
-		
+
 
 
 
 GOMC Control File Writer
---------------------------------------------------------		
+--------------------------------------------------------
 
 	.. automodule:: mbuild.formats.gomc_conf_writer
     		:members: write_gomc_control_file
