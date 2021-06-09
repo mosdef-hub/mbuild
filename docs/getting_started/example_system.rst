@@ -16,7 +16,7 @@ by adjusting a variable or two::
     pattern = Random2DPattern(20)  # A random arrangement of 20 pieces on a 2D surface.
     brush_layer = BrushLayer(chain_lenth=20, pattern=pattern, tile_x=3, tile_y=2)
 
-.. image:: images/pmpc.png
+.. image:: ../images/pmpc.png
     :align: center
     :scale: 50%
     :alt: Zwitterionic brushes on beta-cristobalite substrate

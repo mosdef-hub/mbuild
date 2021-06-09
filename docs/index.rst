@@ -39,18 +39,31 @@ The `MoSDeF <https://mosdef.org>`_ software is comprised the following packages:
     * `GMSO <https://gmso.mosdef.org/en/stable/>`_ -- Flexible storage of chemical topology for molecular simulation
 
 
+.. toctree::
+	:caption: Getting Started
+    	:maxdepth: 2
+
+	getting_started/example_system
+	getting_started/installation/installation_toc
+    	getting_started/quick_start/quick_start
+	getting_started/writers/writers
 
 .. toctree::
-	example_system
-	installation/installation_toc
-    	units
-    	quick_start/quick_start
-    	tutorials/tutorials
-	recipe_development
-    	data_structures
-	load_data
-    	coordinate_transforms
-    	recipes
-	writers/writers
-    	citing_mbuild
-    	older_documentation
+	:caption: Topic Guides
+    	:maxdepth: 2
+
+	topic_guides/tutorials/tutorials
+	topic_guides/recipe_development
+    	topic_guides/data_structures
+	topic_guides/load_data
+    	topic_guides/coordinate_transforms
+    	topic_guides/recipes
+
+.. toctree::
+    	:caption: Reference
+    	:maxdepth: 2
+
+	reference/units
+    	reference/citing_mbuild
+    	reference/older_documentation
+
