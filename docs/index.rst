@@ -42,15 +42,14 @@ The `MoSDeF <https://mosdef.org>`_ software is comprised the following packages:
 
 .. toctree::
 	example_system
-    	installation
-    	docker
+	installation/installation_toc
+    	units
     	quick_start/quick_start
     	tutorials/tutorials
+	recipe_development
     	data_structures
 	load_data
-    	units
     	coordinate_transforms
-	recipe_development
     	recipes
 	writers/writers
     	citing_mbuild

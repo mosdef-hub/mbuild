@@ -47,9 +47,3 @@ Port
 .. autoclass:: mbuild.Port
 	:members:
 
-Polymer
---------
-
-.. autoclass:: mbuild.lib.recipes.polymer.Polymer
-	:members:
-	:noindex:

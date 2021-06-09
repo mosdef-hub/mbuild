@@ -9,11 +9,19 @@ Load
 --------------------
 
 .. automodule:: mbuild.conversion.load
-    :members:
+    	:members:
 
 
 Load CIF
 --------------------
 
 .. automodule:: mbuild.lattice.load_cif
-    :members:
+    	:members:
+
+
+Lattice
+--------------------
+
+.. automodule:: mbuild.lattice
+    	:members:
+	:noindex:

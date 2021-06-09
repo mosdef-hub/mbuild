@@ -1,4 +1,4 @@
-Example system
+Example System
 ===============
 
 Components in dashed boxes are drawn by hand using, e.g.,
