@@ -32,24 +32,24 @@ Box
 ---
 
 .. autoclass:: mbuild.Box
-	:members: 
+	:members:
 
 Lattice
 -------
 
 .. autoclass:: mbuild.Lattice
-	:members: 
+	:members:
 
 
 Port
 ----
 
 .. autoclass:: mbuild.Port
-	:members: 
+	:members:
 
 Polymer
 --------
 
 .. autoclass:: mbuild.lib.recipes.polymer.Polymer
-	:members: 
+	:members:
 	:noindex:
