@@ -17,6 +17,7 @@ complex molecular systems for molecular dynamics simulations.
   structures from smaller components.
 
 To learn more, get started or contribute, check out our [website](http://mbuild.mosdef.org).
+![mosdef_graphic](docs/images/mosdef_graphic.pdf)
 
 If you use this package, please cite [our paper](http://dx.doi.org/10.1007/978-981-10-1128-3_5
 ). The BibTeX reference is
