@@ -47,12 +47,12 @@ The `MoSDeF <https://mosdef.org>`_ software is comprised the following packages:
 	getting_started/installation/installation_toc
     	getting_started/quick_start/quick_start
 	getting_started/writers/writers
+	getting_started/tutorials/tutorials
 
 .. toctree::
 	:caption: Topic Guides
     	:maxdepth: 2
 
-	topic_guides/tutorials/tutorials
 	topic_guides/recipe_development
     	topic_guides/data_structures
 	topic_guides/load_data
