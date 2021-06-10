@@ -257,5 +257,10 @@ class TestHoomdXML(BaseTest):
 
     def test_hoomdsimulation_nlist(self, ethane):
         hoomd_simulation = import_("mbuild.formats.hoomd_simulation")
+        hoomd = import_("hoomd")
+        hoomd.md = import_("hoomd.md")
+
         with pytest.raises(ValueError):
-            hoomd_simulation.create_hoomd_simulation(ethane, nlist="tree")
+            hoomd_simulation.create_hoomd_simulation(
+                ethane, nlist=hoomd.md.nlist.tree
+            )
