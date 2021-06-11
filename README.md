@@ -19,12 +19,12 @@ complex molecular systems for molecular dynamics simulations.
 To learn more, get started or contribute, check out our [website](http://mbuild.mosdef.org).
 ### mBuild within the MoSDeF Ecosystem-.jpeg representation
 <p align="center">
-  <img src="docs/images/mosdef_graphic.jpeg?raw=true" alt="mBuild within the MoSDeF Ecosystem"/>
+  <img src="docs/images/mosdef_graphic.jpeg?raw=true" alt="mBuild within the MoSDeF Ecosystem" width="1000" height="1000"/>
 </p>
 
 ### mBuild within the MoSDeF Ecosystem-.svg representation
 <p align="center">
-  <img src="docs/images/mosdef.svg?raw=true" alt="mBuild within the MoSDeF Ecosystem"/>
+  <img src="docs/images/mosdef.svg?raw=true" alt="mBuild within the MoSDeF Ecosystem" width="1000" height="1000"/>
 </p>
 
 If you use this package, please cite [our paper](http://dx.doi.org/10.1007/978-981-10-1128-3_5
