@@ -62,6 +62,7 @@ def OPLS_to_RB(f1, f2, f3, f4):
     c5 = 0
     return np.array([c0, c1, c2, c3, c4, c5])
 
+
 def RB_to_CHARMM(c0, c1, c2, c3, c4, c5):
     r"""Convert Ryckaert-Bellemans (RB) type dihedrals to CHARMM type.
 
