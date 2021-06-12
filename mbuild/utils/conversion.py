@@ -40,6 +40,28 @@ def RB_to_OPLS(c0, c1, c2, c3, c4, c5):
     return np.array([f1, f2, f3, f4])
 
 
+def OPLS_to_RB(f1, f2, f3, f4):
+    """Convert OPLS type to Ryckaert-Bellemans type dihedrals.
+
+    Parameters
+    ----------
+    f1, f2, f3, f4 : OPLS dihedrals coeffs (in kcal/mol)
+
+    Returns
+    -------
+    RB_coeffs : np.array, shape=(6,)
+        Array containing the Ryckaert-Bellemans dihedrals
+        coeffs c0, c1, c2, c3, c4, and c5 (in kcal/mol)
+
+    """
+    c0 = f2 + (f1 + f3) / 2
+    c1 = (-f1 + 3 * f3) / 2
+    c2 = -f2 + 4 * f4
+    c3 = -2 * f3
+    c4 = -4 * f4
+    c5 = 0
+    return np.array([c0, c1, c2, c3, c4, c5])
+
 def RB_to_CHARMM(c0, c1, c2, c3, c4, c5):
     r"""Convert Ryckaert-Bellemans (RB) type dihedrals to CHARMM type.
 
