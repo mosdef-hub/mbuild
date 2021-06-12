@@ -3,7 +3,7 @@ import numpy as np
 
 
 def RB_to_OPLS(c0, c1, c2, c3, c4, c5):
-    """Convert Ryckaert-Bellemans type dihedrals to OPLS type.
+    r"""Convert Ryckaert-Bellemans type dihedrals to OPLS type.
 
     .. math::
     RB_torsions &= c0 + c1*cos(psi) + c2*cos(psi)^2 + c3*cos(psi)^3 + \\
@@ -51,7 +51,7 @@ def RB_to_OPLS(c0, c1, c2, c3, c4, c5):
 
 
 def OPLS_to_RB(f1, f2, f3, f4):
-    """Convert OPLS type to Ryckaert-Bellemans type dihedrals.
+    r"""Convert OPLS type to Ryckaert-Bellemans type dihedrals.
 
     .. math::
     OPLS_torsions &= f1/2*(1+cos(t)) + f2/2*(1-cos(2*t)) + \\
