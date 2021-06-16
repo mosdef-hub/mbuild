@@ -31,13 +31,13 @@ def RB_to_OPLS(c0, c1, c2, c3, c4, c5):
 
     (c0 + c1 + c2 + c3 + c4 + c5) must equal zero, or this conversion is not possible.
     """
-    if bool(np.isclose(c5, 0, 1e-12)) is False:
+    if bool(np.isclose(c5, 0, atol=1e-12, rtol=0)) is False:
         raise ValueError(
             "ERROR: c5 must equal zero, so this conversion is not possible."
         )
 
     f0 = 2.0 * (c0 + c1 + c2 + c3 + c4 + c5)
-    if bool(np.isclose(f0, 0, 1e-12)) is False:
+    if bool(np.isclose(f0, 0, atol=1e-12, rtol=0)) is False:
         raise ValueError(
             "ERROR: f0 = 2 * (c0 + c1 + c2 + c3 + c4 + c5) must equal zero, "
             "so this conversion is not possible."
