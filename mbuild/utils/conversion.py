@@ -1,6 +1,7 @@
 """mBuild conversion utilities."""
-import numpy as np
 from warnings import warn
+
+import numpy as np
 
 
 def RB_to_OPLS(c0, c1, c2, c3, c4, c5, test_mode=False):
@@ -60,11 +61,11 @@ def RB_to_OPLS(c0, c1, c2, c3, c4, c5, test_mode=False):
     f0 = 2.0 * (c0 + c1 + c2 + c3 + c4 + c5)
 
     if bool(np.isclose(c5, 0, atol=1e-12, rtol=0)) is False:
-        text_c5_not_zero = "c5 must equal zero, so this conversion is not possible."
+        text_c5_not_zero = (
+            "c5 must equal zero, so this conversion is not possible."
+        )
         if test_mode is False:
-            raise ValueError(
-                "ERROR: {}".format(text_c5_not_zero)
-            )
+            raise ValueError("ERROR: {}".format(text_c5_not_zero))
         if test_mode is True:
             warn(
                 "WARNING: {}"
@@ -73,20 +74,18 @@ def RB_to_OPLS(c0, c1, c2, c3, c4, c5, test_mode=False):
             )
 
     if bool(np.isclose(f0, 0, atol=1e-12, rtol=0)) is False:
-        text_f0_not_zero = "f0 = 2 * (c0 + c1 + c2 + c3 + c4 + c5) must equal zero, " \
-                           "so this conversion is not possible."
+        text_f0_not_zero = (
+            "f0 = 2 * (c0 + c1 + c2 + c3 + c4 + c5) must equal zero, "
+            "so this conversion is not possible."
+        )
         if test_mode is False:
-            raise ValueError(
-                "ERROR: {}".format(text_f0_not_zero)
-            )
+            raise ValueError("ERROR: {}".format(text_f0_not_zero))
         if test_mode is True:
             warn(
                 "WARNING: {}"
                 "However, the conversion will not fail, and is a warning only "
                 "because it is in tesing mode.".format(text_f0_not_zero)
             )
-
-
 
     f1 = -2 * c1 - (3 * c3) / 2
     f2 = -c2 - c4
