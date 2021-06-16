@@ -512,3 +512,27 @@ class TestUtilsConversion(BaseTest):
         assert bool(np.isclose(c3, reversed_RB_coeffs[3], atol=1e-12, rtol=0))
         assert bool(np.isclose(c4, reversed_RB_coeffs[4], atol=1e-12, rtol=0))
         assert bool(np.isclose(c5, reversed_RB_coeffs[5], atol=1e-12, rtol=0))
+
+    # Test Number 13 test same as 12 with test_mode=True
+    c0 = 5.77183
+    c1 = -2.67148
+    c2 = 0.95814
+    c3 = -4.05848
+    c4 = -(c0 + c1 + c2 + c3)
+    c5 = 0
+
+    opls_coeffs = RB_to_OPLS(c0, c1, c2, c3, c4, c5)
+    reversed_RB_coeffs = OPLS_to_RB(
+        opls_coeffs[1],
+        opls_coeffs[2],
+        opls_coeffs[3],
+        opls_coeffs[4],
+        test_mode=True,
+    )
+
+    assert bool(np.isclose(c0, reversed_RB_coeffs[0], atol=1e-12, rtol=0))
+    assert bool(np.isclose(c1, reversed_RB_coeffs[1], atol=1e-12, rtol=0))
+    assert bool(np.isclose(c2, reversed_RB_coeffs[2], atol=1e-12, rtol=0))
+    assert bool(np.isclose(c3, reversed_RB_coeffs[3], atol=1e-12, rtol=0))
+    assert bool(np.isclose(c4, reversed_RB_coeffs[4], atol=1e-12, rtol=0))
+    assert bool(np.isclose(c5, reversed_RB_coeffs[5], atol=1e-12, rtol=0))
