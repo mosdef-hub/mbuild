@@ -52,7 +52,7 @@ def RB_to_OPLS(c0, c1, c2, c3, c4, c5, test_mode=False):
     """
     if test_mode not in [True, False]:
         raise ValueError(
-            "ERROR: test_mode is {}, which is not bool.  "
+            "ERROR: test_mode is {}, which is not bool. "
             "Please enter a bool (True or False) for the RB_to_OPLS "
             "functions test_mode option."
             "".format(str(test_mode))

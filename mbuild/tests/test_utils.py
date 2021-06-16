@@ -220,7 +220,10 @@ class TestUtilsConversion(BaseTest):
     def test_RB_to_OPLS_test_mode_not_True_False_No_1(self):
         with pytest.raises(
             ValueError,
-            match=r"ERROR: c5 must equal zero, so this conversion is not possible.",
+            match=r"ERROR: test_mode is {}, which is not bool. "
+            "Please enter a bool \(True or False\) for the RB_to_OPLS "
+            "functions test_mode option."
+            "".format("x")
         ):
             c0 = 0.1
             c1 = 0.1
@@ -229,19 +232,6 @@ class TestUtilsConversion(BaseTest):
             c4 = -0.2
             c5 = 0.3
             RB_to_OPLS(c0, c1, c2, c3, c4, c5, test_mode="x")
-
-    def test_RB_to_OPLS_test_mode_not_True_False_No_2(self):
-        with pytest.raises(
-            ValueError,
-            match=r"ERROR: c5 must equal zero, so this conversion is not possible.",
-        ):
-            c0 = 0.1
-            c1 = 0.1
-            c2 = -0.2
-            c3 = -0.1
-            c4 = -0.2
-            c5 = 0.3
-            RB_to_OPLS(c0, c1, c2, c3, c4, c5, test_mode=["s"])
 
     def test_RB_to_OPLS_and_back_random_values(self):
         # Note the sum of c0 to c5 must be zero for these test.
