@@ -36,7 +36,7 @@ def RB_to_OPLS(c0, c1, c2, c3, c4, c5, test_mode=False):
 
     Returns
     -------
-    opls_coeffs : np.array, shape=(4,)
+    opls_coeffs : np.array, shape=(5,)
         Array containing the OPLS dihedrals coeffs f0, f1, f2, f3, and f4
         (in kcal/mol).
         NOTE: fO IS NOT IN THE OPLS DIHEDRAL EQUATION AND IS ONLY USED
