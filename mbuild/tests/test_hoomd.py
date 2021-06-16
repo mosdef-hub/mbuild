@@ -171,6 +171,16 @@ class TestHoomd(BaseTest):
             rsnap = f[0]
         assert np.array_equal(snap.particles.position, rsnap.particles.position)
 
+    def test_hoomdsimulation_nlist(self, ethane):
+        hoomd_simulation = import_("mbuild.formats.hoomd_simulation")
+        hoomd = import_("hoomd")
+        hoomd.md = import_("hoomd.md")
+
+        with pytest.raises(ValueError):
+            hoomd_simulation.create_hoomd_simulation(
+                ethane, nlist=hoomd.md.nlist.tree
+            )
+
 
 class TestHoomdXML(BaseTest):
     def test_save(self, ethane):
@@ -254,13 +264,3 @@ class TestHoomdXML(BaseTest):
         # The first element is empty, the next element should be ['opls_135', '1.0000', '1.0000']
         assert pair_coeffs[1][1] == "1.0000"
         assert pair_coeffs[1][2] == "1.0000"
-
-    def test_hoomdsimulation_nlist(self, ethane):
-        hoomd_simulation = import_("mbuild.formats.hoomd_simulation")
-        hoomd = import_("hoomd")
-        hoomd.md = import_("hoomd.md")
-
-        with pytest.raises(ValueError):
-            hoomd_simulation.create_hoomd_simulation(
-                ethane, nlist=hoomd.md.nlist.tree
-            )
