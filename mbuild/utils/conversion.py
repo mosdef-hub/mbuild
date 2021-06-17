@@ -90,7 +90,7 @@ def OPLS_to_RB(f0, f1, f2, f3, f4):
         coeffs c0, c1, c2, c3, c4, and c5 (in kcal/mol)
 
     """
-    c0 = f0/2 + f2 + (f1 + f3) / 2
+    c0 = f0 / 2 + f2 + (f1 + f3) / 2
     c1 = (-f1 + 3 * f3) / 2
     c2 = -f2 + 4 * f4
     c3 = -2 * f3
