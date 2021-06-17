@@ -247,7 +247,7 @@ class TestUtilsConversion(BaseTest):
             (5.77183, -2.67148, 0.95814, -4.05848, -0.00001, 0),
         ],
     )
-    def test_RB_to_OPLS_and_back_random_values(self):
+    def test_RB_to_OPLS_and_back_random_values(self, c0, c1, c2, c3, c4, c5):
         # Note the sum of c0 to c5 must be zero for these test.
         # However, this may not be true for real dihedrals.
 
