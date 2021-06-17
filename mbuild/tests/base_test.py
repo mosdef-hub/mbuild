@@ -293,6 +293,12 @@ class BaseTest:
 
     @pytest.fixture
     def gilmerite(self):
+        """Structure taken from:
+
+        Sarp H., Cerny R., European Journal of Mineralogy, 11 (1999) p.549-555,
+        Gilmarite, Cu3(AsO4)(OH)3, a new mineral:, its description and crystal
+        structure.
+        """
         gilmerite = mb.Compound()
         gilmerite.box = mb.Box(
             lengths=[5.44500017, 5.87300015, 5.10400009],
