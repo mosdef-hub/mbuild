@@ -618,10 +618,10 @@ def write_lammpsdata(
                         data.write(
                             "{}\t{:.5f}\t{:.5f}\t\t{:.5f}\t\t{:.5f}\t# {}\t{}\t{}\t{}\n".format(
                                 idx,
+                                opls_coeffs[0],
                                 opls_coeffs[1],
                                 opls_coeffs[2],
                                 opls_coeffs[3],
-                                opls_coeffs[4],
                                 params[8],
                                 params[9],
                                 params[10],

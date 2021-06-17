@@ -4,7 +4,7 @@ from warnings import warn
 import numpy as np
 
 
-def RB_to_OPLS(c0, c1, c2, c3, c4, c5, test_mode=False):
+def RB_to_OPLS(c0, c1, c2, c3, c4, c5):
     r"""Convert Ryckaert-Bellemans type dihedrals to OPLS type.
 
     .. math::
@@ -20,25 +20,11 @@ def RB_to_OPLS(c0, c1, c2, c3, c4, c5, test_mode=False):
     Parameters
     ----------
     c0, c1, c2, c3, c4, c5 : Ryckaert-Belleman coefficients (in kcal/mol)
-    test_mode : bool, default=False
-        Test mode is used to evaluate existing dihedral xml files without
-        ending the loops with a 'ValueError' if this function will not work
-        for a specific dihedral. This option is needed since every dihedral
-        is not guaranteed to convert to OPLS due to the OPLS dihedral lacking
-        a 5th power cos term in the OPLS dihedral and lacking a function
-        constant (f0 = 0 or f0 must always be zero).
-        test_mode SHOULD BE FALSE FOR ALL CASES, EXCEPT TESTING THE XML  FILE FOR ACCURACY.
-        False = The function will fail with a ValueError if the RB-torsions
-        5th power cos term is not zero (c5 != 0) and the OPLS constant term
-        is not zero (f0 != 0).
-        True = The function will fail with a ValueError if the RB-torsions
-        5th power cos term is not zero (c5 != 0) and the OPLS constant term
-        is not zero (f0 != 0).
 
     Returns
     -------
-    opls_coeffs : np.array, shape=(5,)
-        Array containing the OPLS dihedrals coeffs f0, f1, f2, f3, and f4
+    opls_coeffs : np.array, shape=(4,)
+        Array containing the OPLS dihedrals coeffs f1, f2, f3, and f4
         (in kcal/mol).
         NOTE: fO IS NOT IN THE OPLS DIHEDRAL EQUATION AND IS ONLY USED
         TO TEST IF THIS FUNCTION CAN BE UTILIZED. ONE OF THE
@@ -50,48 +36,20 @@ def RB_to_OPLS(c0, c1, c2, c3, c4, c5, test_mode=False):
 
     (c0 + c1 + c2 + c3 + c4 + c5) must equal zero, or this conversion is not possible.
     """
-    if test_mode not in [True, False]:
-        raise ValueError(
-            "ERROR: test_mode is {}, which is not bool. "
-            "Please enter a bool, True or False, for the RB_to_OPLS "
-            "functions test_mode option."
-            "".format(str(test_mode))
-        )
+    if bool(np.isclose(c5, 0, atol=1e-12, rtol=0)) is False:
+        raise ValueError("ERROR: c5 must equal zero, so this conversion is not possible."
+                         "".format(text_c5_not_zero))
 
     f0 = 2.0 * (c0 + c1 + c2 + c3 + c4 + c5)
-
-    if bool(np.isclose(c5, 0, atol=1e-12, rtol=0)) is False:
-        text_c5_not_zero = (
-            "c5 must equal zero, so this conversion is not possible."
-        )
-        if test_mode is False:
-            raise ValueError("ERROR: {}".format(text_c5_not_zero))
-        if test_mode is True:
-            warn(
-                "WARNING: {}"
-                "However, the conversion will not fail, and is a warning only "
-                "because it is in tesing mode.".format(text_c5_not_zero)
-            )
-
     if bool(np.isclose(f0, 0, atol=1e-12, rtol=0)) is False:
-        text_f0_not_zero = (
-            "f0 = 2 * (c0 + c1 + c2 + c3 + c4 + c5) must equal zero, "
-            "so this conversion is not possible."
-        )
-        if test_mode is False:
-            raise ValueError("ERROR: {}".format(text_f0_not_zero))
-        if test_mode is True:
-            warn(
-                "WARNING: {}"
-                "However, the conversion will not fail, and is a warning only "
-                "because it is in tesing mode.".format(text_f0_not_zero)
-            )
+        raise ValueError("ERROR: f0 = 2 * (c0 + c1 + c2 + c3 + c4 + c5) must equal zero, "
+                         "so this conversion is not possible.".format(text_f0_not_zero))
 
     f1 = -2 * c1 - (3 * c3) / 2
     f2 = -c2 - c4
     f3 = -c3 / 2
     f4 = -c4 / 4
-    return np.array([f0, f1, f2, f3, f4])
+    return np.array([f1, f2, f3, f4])
 
 
 def OPLS_to_RB(f1, f2, f3, f4):
