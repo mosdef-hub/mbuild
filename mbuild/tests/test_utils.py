@@ -234,7 +234,7 @@ class TestUtilsConversion(BaseTest):
         "c0, c1, c2, c3, c4, c5",
         [
             (-8.2723, 0.2263, 10.22, -3.208, 1.034, 0.0),
-            ( -0.363, 2.726, 2.849, 7.373, -12.585, 0),
+            (-0.363, 2.726, 2.849, 7.373, -12.585, 0),
             (0, -2.3927, 0, 9.17, -6.7773, 0),
             (10, 2.37, 0, 0, -12.37, 0),
             (2.10, -8.22, 1.22, 7.20, -2.3, 0),
@@ -259,12 +259,21 @@ class TestUtilsConversion(BaseTest):
             opls_coeffs[3],
         )
 
-        assert not np.all(np.isclose(c0, reversed_RB_coeffs[0], atol=1e-10, rtol=0))
-        assert not np.all(np.isclose(c1, reversed_RB_coeffs[1], atol=1e-10, rtol=0))
-        assert not np.all(np.isclose(c2, reversed_RB_coeffs[2], atol=1e-10, rtol=0))
-        assert not np.all(np.isclose(c3, reversed_RB_coeffs[3], atol=1e-10, rtol=0))
-        assert not np.all(np.isclose(c4, reversed_RB_coeffs[4], atol=1e-10, rtol=0))
-        assert not np.all(np.isclose(c5, reversed_RB_coeffs[5], atol=1e-10, rtol=0))
-
-
-
+        assert not np.all(
+            np.isclose(c0, reversed_RB_coeffs[0], atol=1e-10, rtol=0)
+        )
+        assert not np.all(
+            np.isclose(c1, reversed_RB_coeffs[1], atol=1e-10, rtol=0)
+        )
+        assert not np.all(
+            np.isclose(c2, reversed_RB_coeffs[2], atol=1e-10, rtol=0)
+        )
+        assert not np.all(
+            np.isclose(c3, reversed_RB_coeffs[3], atol=1e-10, rtol=0)
+        )
+        assert not np.all(
+            np.isclose(c4, reversed_RB_coeffs[4], atol=1e-10, rtol=0)
+        )
+        assert not np.all(
+            np.isclose(c5, reversed_RB_coeffs[5], atol=1e-10, rtol=0)
+        )
