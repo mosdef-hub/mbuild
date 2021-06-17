@@ -204,13 +204,13 @@ class TestUtilsConversion(BaseTest):
             RB_to_OPLS(c0, c1, c2, c3, c4, c5)
 
     def test_RB_to_OPLS_f0_not_0_within_tolerance(self):
-            c0 = 0.4
-            c1 = 0.4
-            c2 = -0.1
-            c3 = 0.4
-            c4 = -0.2
-            c5 = 0
-            RB_to_OPLS(c0, c1, c2, c3, c4, c5)
+        c0 = 0.4
+        c1 = 0.4
+        c2 = -0.1
+        c3 = 0.4
+        c4 = -0.2
+        c5 = 0
+        RB_to_OPLS(c0, c1, c2, c3, c4, c5)
 
     def test_RB_to_OPLS_error_tol_not_float(self):
         with pytest.raises(

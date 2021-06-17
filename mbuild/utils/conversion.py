@@ -1,7 +1,8 @@
 """mBuild conversion utilities."""
+from warnings import warn
+
 import numpy as np
 
-from warnings import warn
 
 def RB_to_OPLS(c0, c1, c2, c3, c4, c5, error_tol=1e-4):
     r"""Convert Ryckaert-Bellemans type dihedrals to OPLS type.
