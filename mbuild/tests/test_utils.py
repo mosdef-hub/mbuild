@@ -221,13 +221,8 @@ class TestUtilsConversion(BaseTest):
         with pytest.raises(
             ValueError,
             match=r"ERROR: test_mode is {}, which is not bool. "
-<<<<<<< HEAD
                   "Please enter a bool, True or False, for the RB_to_OPLS "
                   "functions test_mode option.".format("x"),
-=======
-            "Please enter a bool \(True or False\) for the RB_to_OPLS "
-            "functions test_mode option.".format("x"),
->>>>>>> 362256a2f74ec21e56925fa02cef0916b05c52a9
         ):
             c0 = 0.1
             c1 = 0.1
