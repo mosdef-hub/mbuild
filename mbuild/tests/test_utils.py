@@ -540,4 +540,3 @@ class TestUtilsConversion(BaseTest):
     assert bool(np.isclose(c3, reversed_RB_coeffs[3], atol=1e-12, rtol=0))
     assert bool(np.isclose(c4, reversed_RB_coeffs[4], atol=1e-12, rtol=0))
     assert bool(np.isclose(c5, reversed_RB_coeffs[5], atol=1e-12, rtol=0))
-
