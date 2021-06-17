@@ -1,7 +1,6 @@
 """mBuild conversion utilities."""
-from warnings import warn
-
 import numpy as np
+from warnings import warn
 
 
 def RB_to_OPLS(c0, c1, c2, c3, c4, c5, error_tol=1e-4):
@@ -46,13 +45,13 @@ def RB_to_OPLS(c0, c1, c2, c3, c4, c5, error_tol=1e-4):
     else:
         raise TypeError("ERROR: The error_tol variable must be a float.")
 
-    if not np.all(np.isclose(c5, 0, atol=error_tol, rtol=0)) is False:
+    if not np.all(np.isclose(c5, 0, atol=error_tol, rtol=0)):
         raise ValueError(
             "ERROR: c5 must equal zero, so this conversion is not possible."
         )
 
     f0 = 2.0 * (c0 + c1 + c2 + c3 + c4 + c5)
-    if not np.all(np.isclose(f0, 0, atol=error_tol, rtol=0)) is False:
+    if not np.all(np.isclose(f0, 0, atol=error_tol, rtol=0)):
         warn(
             "WARNING: f0 = 2 * (c0 + c1 + c2 + c3 + c4 + c5) is not zero. "
             "The f0 term is the constant for the OPLS dihedral. This is OK for "
