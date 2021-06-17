@@ -217,6 +217,19 @@ class TestUtilsConversion(BaseTest):
             c5 = 0
             RB_to_OPLS(c0, c1, c2, c3, c4, c5)
 
+    def test_RB_to_OPLS_error_tol_not_float(self):
+        with pytest.raises(
+            ValueError,
+            match=r"ERROR: The error_tol variable must be a float.",
+        ):
+            c0 = 0.1
+            c1 = 0.1
+            c2 = -0.2
+            c3 = -0.1
+            c4 = -0.2
+            c5 = 0.3
+            RB_to_OPLS(c0, c1, c2, c3, c4, c5, error_tol='s')
+
     def test_RB_to_OPLS_and_back_random_values(self):
         # Note the sum of c0 to c5 must be zero for these test.
         # However, this may not be true for real dihedrals.
@@ -237,12 +250,12 @@ class TestUtilsConversion(BaseTest):
             opls_coeffs[3],
         )
 
-        assert bool(np.isclose(c0, reversed_RB_coeffs[0], atol=1e-12, rtol=0))
-        assert bool(np.isclose(c1, reversed_RB_coeffs[1], atol=1e-12, rtol=0))
-        assert bool(np.isclose(c2, reversed_RB_coeffs[2], atol=1e-12, rtol=0))
-        assert bool(np.isclose(c3, reversed_RB_coeffs[3], atol=1e-12, rtol=0))
-        assert bool(np.isclose(c4, reversed_RB_coeffs[4], atol=1e-12, rtol=0))
-        assert bool(np.isclose(c5, reversed_RB_coeffs[5], atol=1e-12, rtol=0))
+        assert bool(np.isclose(c0, reversed_RB_coeffs[0], atol=1e-10, rtol=0))
+        assert bool(np.isclose(c1, reversed_RB_coeffs[1], atol=1e-10, rtol=0))
+        assert bool(np.isclose(c2, reversed_RB_coeffs[2], atol=1e-10, rtol=0))
+        assert bool(np.isclose(c3, reversed_RB_coeffs[3], atol=1e-10, rtol=0))
+        assert bool(np.isclose(c4, reversed_RB_coeffs[4], atol=1e-10, rtol=0))
+        assert bool(np.isclose(c5, reversed_RB_coeffs[5], atol=1e-10, rtol=0))
 
         # Test Number 2
         c0 = -0.363
@@ -260,12 +273,12 @@ class TestUtilsConversion(BaseTest):
             opls_coeffs[3],
         )
 
-        assert bool(np.isclose(c0, reversed_RB_coeffs[0], atol=1e-12, rtol=0))
-        assert bool(np.isclose(c1, reversed_RB_coeffs[1], atol=1e-12, rtol=0))
-        assert bool(np.isclose(c2, reversed_RB_coeffs[2], atol=1e-12, rtol=0))
-        assert bool(np.isclose(c3, reversed_RB_coeffs[3], atol=1e-12, rtol=0))
-        assert bool(np.isclose(c4, reversed_RB_coeffs[4], atol=1e-12, rtol=0))
-        assert bool(np.isclose(c5, reversed_RB_coeffs[5], atol=1e-12, rtol=0))
+        assert bool(np.isclose(c0, reversed_RB_coeffs[0], atol=1e-10, rtol=0))
+        assert bool(np.isclose(c1, reversed_RB_coeffs[1], atol=1e-10, rtol=0))
+        assert bool(np.isclose(c2, reversed_RB_coeffs[2], atol=1e-10, rtol=0))
+        assert bool(np.isclose(c3, reversed_RB_coeffs[3], atol=1e-10, rtol=0))
+        assert bool(np.isclose(c4, reversed_RB_coeffs[4], atol=1e-10, rtol=0))
+        assert bool(np.isclose(c5, reversed_RB_coeffs[5], atol=1e-10, rtol=0))
 
         # Test Number 3
         c0 = 0
@@ -283,12 +296,12 @@ class TestUtilsConversion(BaseTest):
             opls_coeffs[3],
         )
 
-        assert bool(np.isclose(c0, reversed_RB_coeffs[0], atol=1e-12, rtol=0))
-        assert bool(np.isclose(c1, reversed_RB_coeffs[1], atol=1e-12, rtol=0))
-        assert bool(np.isclose(c2, reversed_RB_coeffs[2], atol=1e-12, rtol=0))
-        assert bool(np.isclose(c3, reversed_RB_coeffs[3], atol=1e-12, rtol=0))
-        assert bool(np.isclose(c4, reversed_RB_coeffs[4], atol=1e-12, rtol=0))
-        assert bool(np.isclose(c5, reversed_RB_coeffs[5], atol=1e-12, rtol=0))
+        assert bool(np.isclose(c0, reversed_RB_coeffs[0], atol=1e-10, rtol=0))
+        assert bool(np.isclose(c1, reversed_RB_coeffs[1], atol=1e-10, rtol=0))
+        assert bool(np.isclose(c2, reversed_RB_coeffs[2], atol=1e-10, rtol=0))
+        assert bool(np.isclose(c3, reversed_RB_coeffs[3], atol=1e-10, rtol=0))
+        assert bool(np.isclose(c4, reversed_RB_coeffs[4], atol=1e-10, rtol=0))
+        assert bool(np.isclose(c5, reversed_RB_coeffs[5], atol=1e-10, rtol=0))
 
         # Test Number 4
         c0 = 10
@@ -306,12 +319,12 @@ class TestUtilsConversion(BaseTest):
             opls_coeffs[3],
         )
 
-        assert bool(np.isclose(c0, reversed_RB_coeffs[0], atol=1e-12, rtol=0))
-        assert bool(np.isclose(c1, reversed_RB_coeffs[1], atol=1e-12, rtol=0))
-        assert bool(np.isclose(c2, reversed_RB_coeffs[2], atol=1e-12, rtol=0))
-        assert bool(np.isclose(c3, reversed_RB_coeffs[3], atol=1e-12, rtol=0))
-        assert bool(np.isclose(c4, reversed_RB_coeffs[4], atol=1e-12, rtol=0))
-        assert bool(np.isclose(c5, reversed_RB_coeffs[5], atol=1e-12, rtol=0))
+        assert bool(np.isclose(c0, reversed_RB_coeffs[0], atol=1e-10, rtol=0))
+        assert bool(np.isclose(c1, reversed_RB_coeffs[1], atol=1e-10, rtol=0))
+        assert bool(np.isclose(c2, reversed_RB_coeffs[2], atol=1e-10, rtol=0))
+        assert bool(np.isclose(c3, reversed_RB_coeffs[3], atol=1e-10, rtol=0))
+        assert bool(np.isclose(c4, reversed_RB_coeffs[4], atol=1e-10, rtol=0))
+        assert bool(np.isclose(c5, reversed_RB_coeffs[5], atol=1e-10, rtol=0))
 
         # Test Number 5
         c0 = 2.10
@@ -329,12 +342,12 @@ class TestUtilsConversion(BaseTest):
             opls_coeffs[3],
         )
 
-        assert bool(np.isclose(c0, reversed_RB_coeffs[0], atol=1e-12, rtol=0))
-        assert bool(np.isclose(c1, reversed_RB_coeffs[1], atol=1e-12, rtol=0))
-        assert bool(np.isclose(c2, reversed_RB_coeffs[2], atol=1e-12, rtol=0))
-        assert bool(np.isclose(c3, reversed_RB_coeffs[3], atol=1e-12, rtol=0))
-        assert bool(np.isclose(c4, reversed_RB_coeffs[4], atol=1e-12, rtol=0))
-        assert bool(np.isclose(c5, reversed_RB_coeffs[5], atol=1e-12, rtol=0))
+        assert bool(np.isclose(c0, reversed_RB_coeffs[0], atol=1e-10, rtol=0))
+        assert bool(np.isclose(c1, reversed_RB_coeffs[1], atol=1e-10, rtol=0))
+        assert bool(np.isclose(c2, reversed_RB_coeffs[2], atol=1e-10, rtol=0))
+        assert bool(np.isclose(c3, reversed_RB_coeffs[3], atol=1e-10, rtol=0))
+        assert bool(np.isclose(c4, reversed_RB_coeffs[4], atol=1e-10, rtol=0))
+        assert bool(np.isclose(c5, reversed_RB_coeffs[5], atol=1e-10, rtol=0))
 
         # Test Number 6
         c0 = -12
@@ -352,12 +365,12 @@ class TestUtilsConversion(BaseTest):
             opls_coeffs[3],
         )
 
-        assert bool(np.isclose(c0, reversed_RB_coeffs[0], atol=1e-12, rtol=0))
-        assert bool(np.isclose(c1, reversed_RB_coeffs[1], atol=1e-12, rtol=0))
-        assert bool(np.isclose(c2, reversed_RB_coeffs[2], atol=1e-12, rtol=0))
-        assert bool(np.isclose(c3, reversed_RB_coeffs[3], atol=1e-12, rtol=0))
-        assert bool(np.isclose(c4, reversed_RB_coeffs[4], atol=1e-12, rtol=0))
-        assert bool(np.isclose(c5, reversed_RB_coeffs[5], atol=1e-12, rtol=0))
+        assert bool(np.isclose(c0, reversed_RB_coeffs[0], atol=1e-10, rtol=0))
+        assert bool(np.isclose(c1, reversed_RB_coeffs[1], atol=1e-10, rtol=0))
+        assert bool(np.isclose(c2, reversed_RB_coeffs[2], atol=1e-10, rtol=0))
+        assert bool(np.isclose(c3, reversed_RB_coeffs[3], atol=1e-10, rtol=0))
+        assert bool(np.isclose(c4, reversed_RB_coeffs[4], atol=1e-10, rtol=0))
+        assert bool(np.isclose(c5, reversed_RB_coeffs[5], atol=1e-10, rtol=0))
 
         # Test Number 7
         c0 = -0.3936
@@ -375,12 +388,12 @@ class TestUtilsConversion(BaseTest):
             opls_coeffs[3],
         )
 
-        assert bool(np.isclose(c0, reversed_RB_coeffs[0], atol=1e-12, rtol=0))
-        assert bool(np.isclose(c1, reversed_RB_coeffs[1], atol=1e-12, rtol=0))
-        assert bool(np.isclose(c2, reversed_RB_coeffs[2], atol=1e-12, rtol=0))
-        assert bool(np.isclose(c3, reversed_RB_coeffs[3], atol=1e-12, rtol=0))
-        assert bool(np.isclose(c4, reversed_RB_coeffs[4], atol=1e-12, rtol=0))
-        assert bool(np.isclose(c5, reversed_RB_coeffs[5], atol=1e-12, rtol=0))
+        assert bool(np.isclose(c0, reversed_RB_coeffs[0], atol=1e-10, rtol=0))
+        assert bool(np.isclose(c1, reversed_RB_coeffs[1], atol=1e-10, rtol=0))
+        assert bool(np.isclose(c2, reversed_RB_coeffs[2], atol=1e-10, rtol=0))
+        assert bool(np.isclose(c3, reversed_RB_coeffs[3], atol=1e-10, rtol=0))
+        assert bool(np.isclose(c4, reversed_RB_coeffs[4], atol=1e-10, rtol=0))
+        assert bool(np.isclose(c5, reversed_RB_coeffs[5], atol=1e-10, rtol=0))
 
         # Test Number 8
         c0 = -8.7
@@ -398,12 +411,12 @@ class TestUtilsConversion(BaseTest):
             opls_coeffs[3],
         )
 
-        assert bool(np.isclose(c0, reversed_RB_coeffs[0], atol=1e-12, rtol=0))
-        assert bool(np.isclose(c1, reversed_RB_coeffs[1], atol=1e-12, rtol=0))
-        assert bool(np.isclose(c2, reversed_RB_coeffs[2], atol=1e-12, rtol=0))
-        assert bool(np.isclose(c3, reversed_RB_coeffs[3], atol=1e-12, rtol=0))
-        assert bool(np.isclose(c4, reversed_RB_coeffs[4], atol=1e-12, rtol=0))
-        assert bool(np.isclose(c5, reversed_RB_coeffs[5], atol=1e-12, rtol=0))
+        assert bool(np.isclose(c0, reversed_RB_coeffs[0], atol=1e-10, rtol=0))
+        assert bool(np.isclose(c1, reversed_RB_coeffs[1], atol=1e-10, rtol=0))
+        assert bool(np.isclose(c2, reversed_RB_coeffs[2], atol=1e-10, rtol=0))
+        assert bool(np.isclose(c3, reversed_RB_coeffs[3], atol=1e-10, rtol=0))
+        assert bool(np.isclose(c4, reversed_RB_coeffs[4], atol=1e-10, rtol=0))
+        assert bool(np.isclose(c5, reversed_RB_coeffs[5], atol=1e-10, rtol=0))
 
         # Test Number 9
         c0 = -12
@@ -421,12 +434,12 @@ class TestUtilsConversion(BaseTest):
             opls_coeffs[3],
         )
 
-        assert bool(np.isclose(c0, reversed_RB_coeffs[0], atol=1e-12, rtol=0))
-        assert bool(np.isclose(c1, reversed_RB_coeffs[1], atol=1e-12, rtol=0))
-        assert bool(np.isclose(c2, reversed_RB_coeffs[2], atol=1e-12, rtol=0))
-        assert bool(np.isclose(c3, reversed_RB_coeffs[3], atol=1e-12, rtol=0))
-        assert bool(np.isclose(c4, reversed_RB_coeffs[4], atol=1e-12, rtol=0))
-        assert bool(np.isclose(c5, reversed_RB_coeffs[5], atol=1e-12, rtol=0))
+        assert bool(np.isclose(c0, reversed_RB_coeffs[0], atol=1e-10, rtol=0))
+        assert bool(np.isclose(c1, reversed_RB_coeffs[1], atol=1e-10, rtol=0))
+        assert bool(np.isclose(c2, reversed_RB_coeffs[2], atol=1e-10, rtol=0))
+        assert bool(np.isclose(c3, reversed_RB_coeffs[3], atol=1e-10, rtol=0))
+        assert bool(np.isclose(c4, reversed_RB_coeffs[4], atol=1e-10, rtol=0))
+        assert bool(np.isclose(c5, reversed_RB_coeffs[5], atol=1e-10, rtol=0))
 
         # Test Number 10
         c0 = 10.22
@@ -444,12 +457,12 @@ class TestUtilsConversion(BaseTest):
             opls_coeffs[3],
         )
 
-        assert bool(np.isclose(c0, reversed_RB_coeffs[0], atol=1e-12, rtol=0))
-        assert bool(np.isclose(c1, reversed_RB_coeffs[1], atol=1e-12, rtol=0))
-        assert bool(np.isclose(c2, reversed_RB_coeffs[2], atol=1e-12, rtol=0))
-        assert bool(np.isclose(c3, reversed_RB_coeffs[3], atol=1e-12, rtol=0))
-        assert bool(np.isclose(c4, reversed_RB_coeffs[4], atol=1e-12, rtol=0))
-        assert bool(np.isclose(c5, reversed_RB_coeffs[5], atol=1e-12, rtol=0))
+        assert bool(np.isclose(c0, reversed_RB_coeffs[0], atol=1e-10, rtol=0))
+        assert bool(np.isclose(c1, reversed_RB_coeffs[1], atol=1e-10, rtol=0))
+        assert bool(np.isclose(c2, reversed_RB_coeffs[2], atol=1e-10, rtol=0))
+        assert bool(np.isclose(c3, reversed_RB_coeffs[3], atol=1e-10, rtol=0))
+        assert bool(np.isclose(c4, reversed_RB_coeffs[4], atol=1e-10, rtol=0))
+        assert bool(np.isclose(c5, reversed_RB_coeffs[5], atol=1e-10, rtol=0))
 
         # Test Number 11
         c0 = 3.28629
@@ -467,12 +480,12 @@ class TestUtilsConversion(BaseTest):
             opls_coeffs[3],
         )
 
-        assert bool(np.isclose(c0, reversed_RB_coeffs[0], atol=1e-12, rtol=0))
-        assert bool(np.isclose(c1, reversed_RB_coeffs[1], atol=1e-12, rtol=0))
-        assert bool(np.isclose(c2, reversed_RB_coeffs[2], atol=1e-12, rtol=0))
-        assert bool(np.isclose(c3, reversed_RB_coeffs[3], atol=1e-12, rtol=0))
-        assert bool(np.isclose(c4, reversed_RB_coeffs[4], atol=1e-12, rtol=0))
-        assert bool(np.isclose(c5, reversed_RB_coeffs[5], atol=1e-12, rtol=0))
+        assert bool(np.isclose(c0, reversed_RB_coeffs[0], atol=1e-10, rtol=0))
+        assert bool(np.isclose(c1, reversed_RB_coeffs[1], atol=1e-10, rtol=0))
+        assert bool(np.isclose(c2, reversed_RB_coeffs[2], atol=1e-10, rtol=0))
+        assert bool(np.isclose(c3, reversed_RB_coeffs[3], atol=1e-10, rtol=0))
+        assert bool(np.isclose(c4, reversed_RB_coeffs[4], atol=1e-10, rtol=0))
+        assert bool(np.isclose(c5, reversed_RB_coeffs[5], atol=1e-10, rtol=0))
 
         # Test Number 12
         c0 = 5.77183
@@ -490,9 +503,9 @@ class TestUtilsConversion(BaseTest):
             opls_coeffs[3],
         )
 
-        assert bool(np.isclose(c0, reversed_RB_coeffs[0], atol=1e-12, rtol=0))
-        assert bool(np.isclose(c1, reversed_RB_coeffs[1], atol=1e-12, rtol=0))
-        assert bool(np.isclose(c2, reversed_RB_coeffs[2], atol=1e-12, rtol=0))
-        assert bool(np.isclose(c3, reversed_RB_coeffs[3], atol=1e-12, rtol=0))
-        assert bool(np.isclose(c4, reversed_RB_coeffs[4], atol=1e-12, rtol=0))
-        assert bool(np.isclose(c5, reversed_RB_coeffs[5], atol=1e-12, rtol=0))
+        assert bool(np.isclose(c0, reversed_RB_coeffs[0], atol=1e-10, rtol=0))
+        assert bool(np.isclose(c1, reversed_RB_coeffs[1], atol=1e-10, rtol=0))
+        assert bool(np.isclose(c2, reversed_RB_coeffs[2], atol=1e-10, rtol=0))
+        assert bool(np.isclose(c3, reversed_RB_coeffs[3], atol=1e-10, rtol=0))
+        assert bool(np.isclose(c4, reversed_RB_coeffs[4], atol=1e-10, rtol=0))
+        assert bool(np.isclose(c5, reversed_RB_coeffs[5], atol=1e-10, rtol=0))

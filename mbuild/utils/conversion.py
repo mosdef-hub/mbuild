@@ -2,7 +2,7 @@
 import numpy as np
 
 
-def RB_to_OPLS(c0, c1, c2, c3, c4, c5):
+def RB_to_OPLS(c0, c1, c2, c3, c4, c5, error_tol=1e-4):
     r"""Convert Ryckaert-Bellemans type dihedrals to OPLS type.
 
     .. math::
@@ -18,6 +18,9 @@ def RB_to_OPLS(c0, c1, c2, c3, c4, c5):
     Parameters
     ----------
     c0, c1, c2, c3, c4, c5 : Ryckaert-Belleman coefficients (in kcal/mol)
+    error_tol : float, default=1e-4
+        The acceptable absolute tolerance between the RB to OPLS conversion.
+        Any value entered is converted to an absolute value.
 
     Returns
     -------
@@ -34,13 +37,20 @@ def RB_to_OPLS(c0, c1, c2, c3, c4, c5):
 
     (c0 + c1 + c2 + c3 + c4 + c5) must equal zero, or this conversion is not possible.
     """
-    if bool(np.isclose(c5, 0, atol=1e-12, rtol=0)) is False:
+    if isinstance(error_tol, float):
+        error_tol = abs(error_tol)
+    else:
+        raise TypeError(
+            "ERROR: The error_tol variable must be a float."
+        )
+
+    if bool(np.isclose(c5, 0, atol=error_tol, rtol=0)) is False:
         raise ValueError(
             "ERROR: c5 must equal zero, so this conversion is not possible."
         )
 
     f0 = 2.0 * (c0 + c1 + c2 + c3 + c4 + c5)
-    if bool(np.isclose(f0, 0, atol=1e-12, rtol=0)) is False:
+    if bool(np.isclose(f0, 0, atol=error_tol, rtol=0)) is False:
         raise ValueError(
             "ERROR: f0 = 2 * (c0 + c1 + c2 + c3 + c4 + c5) must equal zero, "
             "so this conversion is not possible."
