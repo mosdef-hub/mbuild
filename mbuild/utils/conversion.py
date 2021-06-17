@@ -11,7 +11,7 @@ def RB_to_OPLS(c0, c1, c2, c3, c4, c5, error_tol=1e-4):
                 &= c4*cos(psi)^4 + c5*cos(5*psi)^5
 
     .. math::
-    OPLS_torsions &= f1/2*(1+cos(t)) + f2/2*(1-cos(2*t)) + \\
+    OPLS_torsions &= f0 + f1/2*(1+cos(t)) + f2/2*(1-cos(2*t)) + \\
                   &= f3/2*(1+cos(3*t)) + f4/2(1-cos(4*t))
 
     where :math:`psi = t - pi = t - 180 degrees`
@@ -26,7 +26,7 @@ def RB_to_OPLS(c0, c1, c2, c3, c4, c5, error_tol=1e-4):
     Returns
     -------
     opls_coeffs : np.array, shape=(5,)
-        Array containing the OPLS dihedrals coeffs f1, f2, f3, and f4
+        Array containing the OPLS dihedrals coeffs f0, f1, f2, f3, and f4
         (in kcal/mol).
 
 
@@ -69,7 +69,7 @@ def OPLS_to_RB(f0, f1, f2, f3, f4):
     r"""Convert OPLS type to Ryckaert-Bellemans type dihedrals.
 
     .. math::
-    OPLS_torsions &= f1/2*(1+cos(t)) + f2/2*(1-cos(2*t)) + \\
+    OPLS_torsions &= f0 + f1/2*(1+cos(t)) + f2/2*(1-cos(2*t)) + \\
                   &= f3/2*(1+cos(3*t)) + f4/2(1-cos(4*t))
 
     .. math::
@@ -80,7 +80,7 @@ def OPLS_to_RB(f0, f1, f2, f3, f4):
 
     Parameters
     ----------
-    f1, f2, f3, f4 : OPLS dihedrals coeffs (in kcal/mol)
+    f0, f1, f2, f3, f4 : OPLS dihedrals coeffs (in kcal/mol)
 
     Returns
     -------
