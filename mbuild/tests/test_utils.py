@@ -228,7 +228,7 @@ class TestUtilsConversion(BaseTest):
             c3 = -0.1
             c4 = -0.2
             c5 = 0.3
-            RB_to_OPLS(c0, c1, c2, c3, c4, c5, error_tol='s')
+            RB_to_OPLS(c0, c1, c2, c3, c4, c5, error_tol="s")
 
     def test_RB_to_OPLS_and_back_random_values(self):
         # Note the sum of c0 to c5 must be zero for these test.
