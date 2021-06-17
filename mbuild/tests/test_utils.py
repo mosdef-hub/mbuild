@@ -227,7 +227,6 @@ class TestUtilsConversion(BaseTest):
 
     @pytest.mark.parametrize(
         "c0, c1, c2, c3, c4, c5",
-        [
             (-8.2723, 0.2263, 10.22, -3.208, 1.034, 0.0),
             (-0.363, 2.726, 2.849, 7.373, -12.585, 0),
             (0, -2.3927, 0, 9.17, -6.7773, 0),
@@ -241,11 +240,10 @@ class TestUtilsConversion(BaseTest):
             (3.28629, 7.44211, 1.85995, -14.67569, 2.08734, 0),
             (5.77183, -2.67148, 0.95814, -4.05848, -0.00001, 0),
             (5.77183, -2.67148, 0.95814, -4.05848, 20, 0),
-        ],
     )
     def test_RB_to_OPLS_and_back_random_values(self, c0, c1, c2, c3, c4, c5):
-        # Note the sum of c0 to c5 must be zero for these test.
         # However, this may not be true for real dihedrals.
+        test_error_tol = 1e-10
 
         opls_coeffs = RB_to_OPLS(c0, c1, c2, c3, c4, c5)
         reversed_RB_coeffs = OPLS_to_RB(
@@ -257,20 +255,20 @@ class TestUtilsConversion(BaseTest):
         )
 
         assert not np.all(
-            np.isclose(c0, reversed_RB_coeffs[0], atol=1e-10, rtol=0)
+            np.isclose(c0, reversed_RB_coeffs[0], atol=test_error_tol, rtol=0)
         )
         assert not np.all(
-            np.isclose(c1, reversed_RB_coeffs[1], atol=1e-10, rtol=0)
+            np.isclose(c1, reversed_RB_coeffs[1], atol=test_error_tol, rtol=0)
         )
         assert not np.all(
-            np.isclose(c2, reversed_RB_coeffs[2], atol=1e-10, rtol=0)
+            np.isclose(c2, reversed_RB_coeffs[2], atol=test_error_tol, rtol=0)
         )
         assert not np.all(
-            np.isclose(c3, reversed_RB_coeffs[3], atol=1e-10, rtol=0)
+            np.isclose(c3, reversed_RB_coeffs[3], atol=test_error_tol, rtol=0)
         )
         assert not np.all(
-            np.isclose(c4, reversed_RB_coeffs[4], atol=1e-10, rtol=0)
+            np.isclose(c4, reversed_RB_coeffs[4], atol=test_error_tol, rtol=0)
         )
         assert not np.all(
-            np.isclose(c5, reversed_RB_coeffs[5], atol=1e-10, rtol=0)
+            np.isclose(c5, reversed_RB_coeffs[5], atol=test_error_tol, rtol=0)
         )
