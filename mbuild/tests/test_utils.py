@@ -231,10 +231,10 @@ class TestUtilsConversion(BaseTest):
 
         opls_coeffs = RB_to_OPLS(c0, c1, c2, c3, c4, c5)
         reversed_RB_coeffs = OPLS_to_RB(
+            opls_coeffs[0],
             opls_coeffs[1],
             opls_coeffs[2],
             opls_coeffs[3],
-            opls_coeffs[4],
         )
 
         assert bool(np.isclose(c0, reversed_RB_coeffs[0], atol=1e-12, rtol=0))
@@ -254,10 +254,10 @@ class TestUtilsConversion(BaseTest):
 
         opls_coeffs = RB_to_OPLS(c0, c1, c2, c3, c4, c5)
         reversed_RB_coeffs = OPLS_to_RB(
+            opls_coeffs[0],
             opls_coeffs[1],
             opls_coeffs[2],
             opls_coeffs[3],
-            opls_coeffs[4],
         )
 
         assert bool(np.isclose(c0, reversed_RB_coeffs[0], atol=1e-12, rtol=0))
@@ -277,10 +277,10 @@ class TestUtilsConversion(BaseTest):
 
         opls_coeffs = RB_to_OPLS(c0, c1, c2, c3, c4, c5)
         reversed_RB_coeffs = OPLS_to_RB(
+            opls_coeffs[0],
             opls_coeffs[1],
             opls_coeffs[2],
             opls_coeffs[3],
-            opls_coeffs[4],
         )
 
         assert bool(np.isclose(c0, reversed_RB_coeffs[0], atol=1e-12, rtol=0))
@@ -300,10 +300,10 @@ class TestUtilsConversion(BaseTest):
 
         opls_coeffs = RB_to_OPLS(c0, c1, c2, c3, c4, c5)
         reversed_RB_coeffs = OPLS_to_RB(
+            opls_coeffs[0],
             opls_coeffs[1],
             opls_coeffs[2],
             opls_coeffs[3],
-            opls_coeffs[4],
         )
 
         assert bool(np.isclose(c0, reversed_RB_coeffs[0], atol=1e-12, rtol=0))
@@ -323,10 +323,10 @@ class TestUtilsConversion(BaseTest):
 
         opls_coeffs = RB_to_OPLS(c0, c1, c2, c3, c4, c5)
         reversed_RB_coeffs = OPLS_to_RB(
+            opls_coeffs[0],
             opls_coeffs[1],
             opls_coeffs[2],
             opls_coeffs[3],
-            opls_coeffs[4],
         )
 
         assert bool(np.isclose(c0, reversed_RB_coeffs[0], atol=1e-12, rtol=0))
@@ -346,10 +346,10 @@ class TestUtilsConversion(BaseTest):
 
         opls_coeffs = RB_to_OPLS(c0, c1, c2, c3, c4, c5)
         reversed_RB_coeffs = OPLS_to_RB(
+            opls_coeffs[0],
             opls_coeffs[1],
             opls_coeffs[2],
             opls_coeffs[3],
-            opls_coeffs[4],
         )
 
         assert bool(np.isclose(c0, reversed_RB_coeffs[0], atol=1e-12, rtol=0))
@@ -369,10 +369,10 @@ class TestUtilsConversion(BaseTest):
 
         opls_coeffs = RB_to_OPLS(c0, c1, c2, c3, c4, c5)
         reversed_RB_coeffs = OPLS_to_RB(
+            opls_coeffs[0],
             opls_coeffs[1],
             opls_coeffs[2],
             opls_coeffs[3],
-            opls_coeffs[4],
         )
 
         assert bool(np.isclose(c0, reversed_RB_coeffs[0], atol=1e-12, rtol=0))
@@ -392,10 +392,10 @@ class TestUtilsConversion(BaseTest):
 
         opls_coeffs = RB_to_OPLS(c0, c1, c2, c3, c4, c5)
         reversed_RB_coeffs = OPLS_to_RB(
+            opls_coeffs[0],
             opls_coeffs[1],
             opls_coeffs[2],
             opls_coeffs[3],
-            opls_coeffs[4],
         )
 
         assert bool(np.isclose(c0, reversed_RB_coeffs[0], atol=1e-12, rtol=0))
@@ -415,10 +415,10 @@ class TestUtilsConversion(BaseTest):
 
         opls_coeffs = RB_to_OPLS(c0, c1, c2, c3, c4, c5)
         reversed_RB_coeffs = OPLS_to_RB(
+            opls_coeffs[0],
             opls_coeffs[1],
             opls_coeffs[2],
             opls_coeffs[3],
-            opls_coeffs[4],
         )
 
         assert bool(np.isclose(c0, reversed_RB_coeffs[0], atol=1e-12, rtol=0))
@@ -438,10 +438,10 @@ class TestUtilsConversion(BaseTest):
 
         opls_coeffs = RB_to_OPLS(c0, c1, c2, c3, c4, c5)
         reversed_RB_coeffs = OPLS_to_RB(
+            opls_coeffs[0],
             opls_coeffs[1],
             opls_coeffs[2],
             opls_coeffs[3],
-            opls_coeffs[4],
         )
 
         assert bool(np.isclose(c0, reversed_RB_coeffs[0], atol=1e-12, rtol=0))
@@ -461,10 +461,10 @@ class TestUtilsConversion(BaseTest):
 
         opls_coeffs = RB_to_OPLS(c0, c1, c2, c3, c4, c5)
         reversed_RB_coeffs = OPLS_to_RB(
+            opls_coeffs[0],
             opls_coeffs[1],
             opls_coeffs[2],
             opls_coeffs[3],
-            opls_coeffs[4],
         )
 
         assert bool(np.isclose(c0, reversed_RB_coeffs[0], atol=1e-12, rtol=0))
@@ -484,10 +484,10 @@ class TestUtilsConversion(BaseTest):
 
         opls_coeffs = RB_to_OPLS(c0, c1, c2, c3, c4, c5)
         reversed_RB_coeffs = OPLS_to_RB(
+            opls_coeffs[0],
             opls_coeffs[1],
             opls_coeffs[2],
             opls_coeffs[3],
-            opls_coeffs[4],
         )
 
         assert bool(np.isclose(c0, reversed_RB_coeffs[0], atol=1e-12, rtol=0))
