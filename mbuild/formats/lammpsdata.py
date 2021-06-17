@@ -606,7 +606,7 @@ def write_lammpsdata(
                         )
                     elif unit_style == "lj":
                         data.write("#\tf1\tf2\tf3\tf4 (all lj reduced units)\n")
-                    for params, opls_coeffsidx in sorted_dihedral_types.items():
+                    for params, idx in sorted_dihedral_types.items():
                          opls_coeffs = RB_to_OPLS(
                             params[0],
                             params[1],
