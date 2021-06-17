@@ -40,9 +40,7 @@ def RB_to_OPLS(c0, c1, c2, c3, c4, c5, error_tol=1e-4):
     if isinstance(error_tol, float):
         error_tol = abs(error_tol)
     else:
-        raise TypeError(
-            "ERROR: The error_tol variable must be a float."
-        )
+        raise TypeError("ERROR: The error_tol variable must be a float.")
 
     if bool(np.isclose(c5, 0, atol=error_tol, rtol=0)) is False:
         raise ValueError(
