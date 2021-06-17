@@ -219,7 +219,7 @@ class TestUtilsConversion(BaseTest):
 
     def test_RB_to_OPLS_error_tol_not_float(self):
         with pytest.raises(
-            ValueError,
+            TypeError,
             match=r"ERROR: The error_tol variable must be a float.",
         ):
             c0 = 0.1
