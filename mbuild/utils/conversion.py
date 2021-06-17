@@ -1,6 +1,7 @@
 """mBuild conversion utilities."""
 import numpy as np
 
+from warnings import warn
 
 def RB_to_OPLS(c0, c1, c2, c3, c4, c5, error_tol=1e-4):
     r"""Convert Ryckaert-Bellemans type dihedrals to OPLS type.
@@ -24,7 +25,7 @@ def RB_to_OPLS(c0, c1, c2, c3, c4, c5, error_tol=1e-4):
 
     Returns
     -------
-    opls_coeffs : np.array, shape=(4,)
+    opls_coeffs : np.array, shape=(5,)
         Array containing the OPLS dihedrals coeffs f1, f2, f3, and f4
         (in kcal/mol).
 
@@ -51,19 +52,20 @@ def RB_to_OPLS(c0, c1, c2, c3, c4, c5, error_tol=1e-4):
 
     f0 = 2.0 * (c0 + c1 + c2 + c3 + c4 + c5)
     if not np.all(np.isclose(f0, 0, atol=error_tol, rtol=0)) is False:
-        raise ValueError(
-            "ERROR: f0 = 2 * (c0 + c1 + c2 + c3 + c4 + c5) must equal zero, "
-            "so this conversion is not possible."
+        warn(
+            "WARNING: f0 = 2 * (c0 + c1 + c2 + c3 + c4 + c5) is not zero. "
+            "The f0 term is the constant for the OPLS dihedral. This is OK for "
+            "molecular dynamics (MD), but not for Monte Carlo (MC) simulations."
         )
 
     f1 = -2 * c1 - (3 * c3) / 2
     f2 = -c2 - c4
     f3 = -c3 / 2
     f4 = -c4 / 4
-    return np.array([f1, f2, f3, f4])
+    return np.array([f0, f1, f2, f3, f4])
 
 
-def OPLS_to_RB(f1, f2, f3, f4):
+def OPLS_to_RB(f0, f1, f2, f3, f4):
     r"""Convert OPLS type to Ryckaert-Bellemans type dihedrals.
 
     .. math::
@@ -87,7 +89,7 @@ def OPLS_to_RB(f1, f2, f3, f4):
         coeffs c0, c1, c2, c3, c4, and c5 (in kcal/mol)
 
     """
-    c0 = f2 + (f1 + f3) / 2
+    c0 = f0 + f2 + (f1 + f3) / 2
     c1 = (-f1 + 3 * f3) / 2
     c2 = -f2 + 4 * f4
     c3 = -2 * f3

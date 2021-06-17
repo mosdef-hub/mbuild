@@ -203,12 +203,7 @@ class TestUtilsConversion(BaseTest):
             c5 = 0.3
             RB_to_OPLS(c0, c1, c2, c3, c4, c5)
 
-    def test_RB_to_OPLS_f0_not_0(self):
-        with pytest.raises(
-            ValueError,
-            match=r"ERROR: f0 \= 2 \* \(c0 \+ c1 \+ c2 \+ c3 \+ c4 \+ c5\) must equal zero, "
-            "so this conversion is not possible.",
-        ):
+    def test_RB_to_OPLS_f0_not_0_within_tolerance(self):
             c0 = 0.4
             c1 = 0.4
             c2 = -0.1
@@ -253,10 +248,10 @@ class TestUtilsConversion(BaseTest):
 
         opls_coeffs = RB_to_OPLS(c0, c1, c2, c3, c4, c5)
         reversed_RB_coeffs = OPLS_to_RB(
-            opls_coeffs[0],
             opls_coeffs[1],
             opls_coeffs[2],
             opls_coeffs[3],
+            opls_coeffs[4],
         )
 
         assert not np.all(
