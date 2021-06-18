@@ -43,9 +43,10 @@ def RB_to_OPLS(c0, c1, c2, c3, c4, c5, error_tol=1e-4):
     (MD) SIMULATIONS. THIS FUNCTION TESTS IF f0 IS ZERO (f0=0).
 
     WARNING: The f0 term is the constant for the OPLS dihedral equation.
-    If the f0 term is not zero, the dihedral is not an exact conversion
-    from RB-torsions to an OPLS dihedral, which means the whole dihedral
-    potential energy is shifted by f0 the value.
+    If the f0 term is not zero, the dihedral is not an exact conversion;
+    since this constant does not contribute to the force equation,
+    this should provide matching results for MD, but the energy for each
+    diheral will be shifted by the f0/2 the value.
     """
     try:
         error_tol = abs(float(error_tol))
