@@ -2218,6 +2218,55 @@ class GOMCControl:
         ]
         self.MEMC_DataInput = default_input_variables_dict["MEMC_DataInput"]
 
+        # auto calculate the best EqSteps (number of Equilbrium Steps) and Adj_Steps (number of AdjSteps Steps)
+        self.EqSteps = scale_gen_freq_for_run_steps_int(
+            self.EqSteps, self.RunSteps
+        )
+
+        self.AdjSteps = scale_gen_freq_for_run_steps_int(
+            self.AdjSteps, self.RunSteps
+        )
+
+        # auto calculate the best RestartFreq  for the number of self.RunSteps
+        self.RestartFreq = scale_gen_freq_for_run_steps_list_bool_int(
+            self.RestartFreq, self.RunSteps
+        )
+
+        # auto calculate the best CheckpointFreq  for the number of self.RunSteps
+        self.CheckpointFreq = scale_gen_freq_for_run_steps_list_bool_int(
+            self.CheckpointFreq, self.RunSteps
+        )
+
+        # auto calculate the best CoordinatesFreq  for the number of self.RunSteps
+        self.CoordinatesFreq = scale_gen_freq_for_run_steps_list_bool_int(
+            self.CoordinatesFreq, self.RunSteps
+        )
+
+        # auto calculate the best ConsoleFreq  for the number of self.RunSteps
+        self.ConsoleFreq = scale_gen_freq_for_run_steps_list_bool_int(
+            self.ConsoleFreq, self.RunSteps
+        )
+
+        # auto calculate the best PressureCalc  for the number of self.RunSteps
+        self.PressureCalc = scale_gen_freq_for_run_steps_list_bool_int(
+            self.PressureCalc, self.RunSteps
+        )
+
+        # auto calculate the best BlockAverageFreq  for the number of self.RunSteps
+        self.BlockAverageFreq = scale_gen_freq_for_run_steps_list_bool_int(
+            self.BlockAverageFreq, self.RunSteps
+        )
+
+        # auto calculate the best HistogramFreq  for the number of self.RunSteps
+        self.HistogramFreq = scale_gen_freq_for_run_steps_list_bool_int(
+            self.HistogramFreq, self.RunSteps
+        )
+
+        # auto calculate the best SampleFreq  for the number of self.RunSteps
+        self.SampleFreq = scale_gen_freq_for_run_steps_int(
+            self.SampleFreq, self.RunSteps
+        )
+
         if input_variables_dict is None:
             self.input_variables_dict = {}
         elif isinstance(input_variables_dict, dict) is True:
@@ -3964,55 +4013,6 @@ class GOMCControl:
             print(
                 "INFO: All the input variable passed the initial error checking"
             )
-
-        # auto calculate the best EqSteps (number of Equilbrium Steps) and Adj_Steps (number of AdjSteps Steps)
-        self.EqSteps = scale_gen_freq_for_run_steps_int(
-            self.EqSteps, self.RunSteps
-        )
-
-        self.AdjSteps = scale_gen_freq_for_run_steps_int(
-            self.AdjSteps, self.RunSteps
-        )
-
-        # auto calculate the best RestartFreq  for the number of self.RunSteps
-        self.RestartFreq = scale_gen_freq_for_run_steps_list_bool_int(
-            self.RestartFreq, self.RunSteps
-        )
-
-        # auto calculate the best CheckpointFreq  for the number of self.RunSteps
-        self.CheckpointFreq = scale_gen_freq_for_run_steps_list_bool_int(
-            self.CheckpointFreq, self.RunSteps
-        )
-
-        # auto calculate the best CoordinatesFreq  for the number of self.RunSteps
-        self.CoordinatesFreq = scale_gen_freq_for_run_steps_list_bool_int(
-            self.CoordinatesFreq, self.RunSteps
-        )
-
-        # auto calculate the best ConsoleFreq  for the number of self.RunSteps
-        self.ConsoleFreq = scale_gen_freq_for_run_steps_list_bool_int(
-            self.ConsoleFreq, self.RunSteps
-        )
-
-        # auto calculate the best PressureCalc  for the number of self.RunSteps
-        self.PressureCalc = scale_gen_freq_for_run_steps_list_bool_int(
-            self.PressureCalc, self.RunSteps
-        )
-
-        # auto calculate the best BlockAverageFreq  for the number of self.RunSteps
-        self.BlockAverageFreq = scale_gen_freq_for_run_steps_list_bool_int(
-            self.BlockAverageFreq, self.RunSteps
-        )
-
-        # auto calculate the best HistogramFreq  for the number of self.RunSteps
-        self.HistogramFreq = scale_gen_freq_for_run_steps_list_bool_int(
-            self.HistogramFreq, self.RunSteps
-        )
-
-        # auto calculate the best SampleFreq  for the number of self.RunSteps
-        self.SampleFreq = scale_gen_freq_for_run_steps_int(
-            self.SampleFreq, self.RunSteps
-        )
 
         # check to make sure the VDW FF (ParaTypeCHARMM) is not true for multiple ones
         # (i.e., ParaTypeCHARMM, ParaTypeMie, ParaTypeMARTINI)
