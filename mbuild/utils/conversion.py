@@ -47,7 +47,7 @@ def RB_to_OPLS(c0, c1, c2, c3, c4, c5, error_tol=1e-4):
     If the f0 term is not zero, the dihedral is not an exact conversion;
     since this constant does not contribute to the force equation,
     this should provide matching results for MD, but the energy for each
-    dihedral will be shifted by the real f0/2 value.
+    dihedral will be shifted by the f0/2 value.
     """
     try:
         error_tol = abs(float(error_tol))
@@ -67,7 +67,7 @@ def RB_to_OPLS(c0, c1, c2, c3, c4, c5, error_tol=1e-4):
             "Since the f0 term is not zero, the dihedral is not an exact conversion; "
             "since this constant does not contribute to the force equation, "
             "this should provide matching results for MD, but the energy for each "
-            "dihedral will be shifted by the real f0/2 value."
+            "dihedral will be shifted by the f0/2 value."
         )
 
     f1 = -2 * c1 - (3 * c3) / 2
