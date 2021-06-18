@@ -35,15 +35,23 @@ def RB_to_OPLS(c0, c1, c2, c3, c4, c5, error_tol=1e-4):
     -----
     c5 must equal zero, or this conversion is not possible.
 
-    (c0 + c1 + c2 + c3 + c4 + c5) must equal zero, or this conversion is not possible.
+    (c0 + c1 + c2 + c3 + c4 + c5) must equal zero, to have the exact
+    energies represented in the dihedral.
 
-    NOTE: fO IS NOT IN THE OPLS DIHEDRAL EQUATION AND IS ONLY USED
-    TO TEST IF THIS FUNCTION CAN BE UTILIZED. ONE OF THE
-    CONDITIONS OF CONVERSION IS f0 MUST BE ZERO (f0=0).
+    NOTE: fO IS TYPICALLY NOT IN THE OPLS DIHEDRAL EQUATION AND IS
+    ONLY USED TO TEST IF THIS FUNCTION CAN BE UTILIZED, AND
+    DETERMINE THE fO VALUE FOR LATER ENERGY SCALING IN MOLECULAR DYNAMICS
+    (MD) SIMULATIONS. THIS FUNCTION TESTS IF f0 IS ZERO (f0=0).
+
+    WARNING: The f0 term is the constant for the OPLS dihedral equation.
+    If the f0 = 2 * (c0 + c1 + c2 + c3 + c4 + c5) term is non-zero,
+    it is OK for molecular dynamics (MD), but not for
+    Monte Carlo (MC) simulations. For MD, the energy from the non-zero
+    f0 term can be added after the simulation to all of the effected dihedrals.
     """
-    if isinstance(error_tol, float):
-        error_tol = abs(error_tol)
-    else:
+    try:
+        error_tol = abs(float(error_tol))
+    except:
         raise TypeError("ERROR: The error_tol variable must be a float.")
 
     if not np.all(np.isclose(c5, 0, atol=error_tol, rtol=0)):
@@ -66,7 +74,7 @@ def RB_to_OPLS(c0, c1, c2, c3, c4, c5, error_tol=1e-4):
     return np.array([f0, f1, f2, f3, f4])
 
 
-def OPLS_to_RB(f0, f1, f2, f3, f4):
+def OPLS_to_RB(f0, f1, f2, f3, f4, error_tol=1e-4):
     r"""Convert OPLS type to Ryckaert-Bellemans type dihedrals.
 
     .. math::
@@ -82,6 +90,9 @@ def OPLS_to_RB(f0, f1, f2, f3, f4):
     Parameters
     ----------
     f0, f1, f2, f3, f4 : OPLS dihedrals coeffs (in kcal/mol)
+    error_tol : float, default=1e-4
+        The acceptable absolute tolerance, which the f0 term can be from zero
+        without throwing a warning.
 
     Returns
     -------
@@ -89,8 +100,31 @@ def OPLS_to_RB(f0, f1, f2, f3, f4):
         Array containing the Ryckaert-Bellemans dihedrals
         coeffs c0, c1, c2, c3, c4, and c5 (in kcal/mol)
 
+    Notes
+    -----
+    NOTE: fO IS TYPICALLY NOT IN THE OPLS DIHEDRAL EQUATION (i.e., f0=0).
+
+    WARNING: The f0 term is the constant for the OPLS dihedral equation,
+    which is converted to a constant for the RB torsions equation (i.e., the c0 term).
+    If the f0 term is zero, it is OK for molecular dynamics (MD) but may
+    not be for Monte Carlo (MC) simulations. The user will have to determine if this
+    is OK for their MC simulations.
     """
-    c0 = f0/2 + f2 + (f1 + f3) / 2
+    try:
+        error_tol = abs(float(error_tol))
+    except:
+        raise TypeError("ERROR: The error_tol variable must be a float.")
+
+    if np.all(np.isclose(f0, 0, atol=error_tol, rtol=0)):
+        warn(
+            "WARNING: The f0 term is the constant for the OPLS dihedral equation, "
+            "which is converted to a constant for the RB torsions equation (i.e., the c0 term). "
+            "If the f0 term is zero, it is OK for molecular dynamics (MD) but may "
+            "not be for Monte Carlo (MC) simulations. The user will have to determine if this "
+            "is OK for their MC simulations."
+        )
+
+    c0 = f2 + (f0 + f1 + f3) / 2
     c1 = (-f1 + 3 * f3) / 2
     c2 = -f2 + 4 * f4
     c3 = -2 * f3

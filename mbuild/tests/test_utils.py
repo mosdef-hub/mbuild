@@ -204,6 +204,7 @@ class TestUtilsConversion(BaseTest):
             RB_to_OPLS(c0, c1, c2, c3, c4, c5)
 
     def test_RB_to_OPLS_f0_not_0_within_tolerance(self):
+        # should throw a warning that f0 is not zero
         c0 = 0.4
         c1 = 0.4
         c2 = -0.1
@@ -276,3 +277,24 @@ class TestUtilsConversion(BaseTest):
         assert np.all(
             np.isclose(c5, reversed_RB_coeffs[5], atol=test_error_tol, rtol=0)
         )
+
+    def test_OPLS_to_RB_error_tol_not_float(self):
+        with pytest.raises(
+            TypeError,
+            match=r"ERROR: The error_tol variable must be a float.",
+        ):
+            f0 = 0.1
+            f1 = 0.1
+            f2 = -0.2
+            f3 = -0.1
+            f4 = 0.2
+            OPLS_to_RB(f0, f1, f2, f3, f4, error_tol="s")
+
+    def test_OPLS_to_RB_f0_is_zero(self):
+        # should throw a warning that f0 is zero
+            f0 = 0
+            f1 = 0.1
+            f2 = -0.2
+            f3 = -0.1
+            f4 = 0.2
+            OPLS_to_RB(f0, f1, f2, f3, f4)
