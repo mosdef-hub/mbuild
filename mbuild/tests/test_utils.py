@@ -243,8 +243,8 @@ class TestUtilsConversion(BaseTest):
             (5.77183, -2.67148, 0.95814, -4.05848, -0.00001, 0),
             (5.77183, -2.67148, 0.95814, -4.05848, 20, 0),
             (10.1, 10.1, 10.1, 10.1, 10.1, 0),
-            (-5.5, -5.5,-5.5, -5.5, -5.5, 0),
-        ]
+            (-5.5, -5.5, -5.5, -5.5, -5.5, 0),
+        ],
     )
     def test_RB_to_OPLS_and_back_random_values(self, c0, c1, c2, c3, c4, c5):
         # However, this may not be true for real dihedrals.
@@ -292,9 +292,9 @@ class TestUtilsConversion(BaseTest):
 
     def test_OPLS_to_RB_f0_is_zero(self):
         # should throw a warning that f0 is zero
-            f0 = 0
-            f1 = 0.1
-            f2 = -0.2
-            f3 = -0.1
-            f4 = 0.2
-            OPLS_to_RB(f0, f1, f2, f3, f4)
+        f0 = 0
+        f1 = 0.1
+        f2 = -0.2
+        f3 = -0.1
+        f4 = 0.2
+        OPLS_to_RB(f0, f1, f2, f3, f4)
