@@ -7901,7 +7901,6 @@ class TestGOMCControlFileWriter(BaseTest):
                 "HistogramFreq": [True, 9],
                 "SampleFreq": 11,
                 "VDWGeometricSigma": True,
-
             },
         )
 
@@ -7910,8 +7909,8 @@ class TestGOMCControlFileWriter(BaseTest):
             for i, line in enumerate(out_gomc):
                 if line.startswith("PressureCalc "):
                     split_line = line.split()
-                    print('split_line[1] = {}'.format(split_line[1]))
-                    print('split_line[2] = {}'.format(split_line[2]))
+                    print("split_line[1] = {}".format(split_line[1]))
+                    print("split_line[2] = {}".format(split_line[2]))
                     assert split_line[1] == "True"
                     assert split_line[2] == "1"
 
