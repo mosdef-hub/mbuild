@@ -7899,6 +7899,7 @@ class TestGOMCControlFileWriter(BaseTest):
                 "ConsoleFreq": [True, 7],
                 "BlockAverageFreq": [True, 8],
                 "HistogramFreq": [True, 9],
+                "SampleFreq": 11,
                 "VDWGeometricSigma": True,
 
             },
@@ -7951,3 +7952,11 @@ class TestGOMCControlFileWriter(BaseTest):
                     split_line = line.split()
                     assert split_line[1] == "True"
                     assert split_line[2] == "9"
+
+                elif line.startswith("SampleFreq "):
+                    split_line = line.split()
+                    assert split_line[1] == "11"
+
+                elif line.startswith("VDWGeometricSigma "):
+                    split_line = line.split()
+                    assert split_line[1] == "True"
