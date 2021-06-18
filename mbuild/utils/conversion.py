@@ -44,10 +44,9 @@ def RB_to_OPLS(c0, c1, c2, c3, c4, c5, error_tol=1e-4):
     (MD) SIMULATIONS. THIS FUNCTION TESTS IF f0 IS ZERO (f0=0).
 
     WARNING: The f0 term is the constant for the OPLS dihedral equation.
-    If the f0 term is not zero, the dihedral is not an exact conversion;
-    since this constant does not contribute to the force equation,
-    this should provide matching results for MD, but the energy for each
-    dihedral will be shifted by the f0/2 value.
+    If the f0 term is not zero, the dihedral is not an exact conversion
+    from RB-torsions to an OPLS dihedral, which means the whole dihedral
+    potential energy is shifted by f0 the value.
     """
     try:
         error_tol = abs(float(error_tol))
@@ -62,11 +61,11 @@ def RB_to_OPLS(c0, c1, c2, c3, c4, c5, error_tol=1e-4):
     f0 = 2.0 * (c0 + c1 + c2 + c3 + c4 + c5)
     if not np.all(np.isclose(f0, 0, atol=error_tol, rtol=0)):
         warn(
-            "WARNING: The f0 term is the constant for the OPLS dihedral equation. "
-            "If the f0 term is not zero, the dihedral is not an exact conversion; "
-            "since this constant does not contribute to the force equation, "
-            "this should provide matching results for MD, but the energy for each "
-            "dihedral will be shifted by the f0/2 value."
+            "WARNING: f0 = 2 * (c0 + c1 + c2 + c3 + c4 + c5) is not zero. "
+            "The f0 term is the constant for the OPLS dihedral. "
+            "Since the f0 term is not zero, the dihedral is not an exact conversion "
+            "from RB-torsions to an OPLS dihedral, which means the whole dihedral "
+            "potential energy is shifted by f0 the value."
         )
 
     f1 = -2 * c1 - (3 * c3) / 2
@@ -109,8 +108,10 @@ def OPLS_to_RB(f0, f1, f2, f3, f4, error_tol=1e-4):
     WARNING: The f0 term is the constant for the OPLS dihedral equation,
     which is converted and added to a constant for the RB torsions equation via the c0 coefficient.
     If the f0 term is zero in the OPLS dihedral form or set to zero in this equation,
-    the dihedral is may not be an exact conversion, which means the whole dihedral
-    potential energy is shifted by real f0/2 the value.
+    the dihedral is not an exact conversion;
+    since this constant does not contribute to the force equation,
+    this should provide matching results for MD, but the energy for each
+    dihedral will be shifted by the f0/2 value.
     """
     try:
         error_tol = abs(float(error_tol))
@@ -122,8 +123,10 @@ def OPLS_to_RB(f0, f1, f2, f3, f4, error_tol=1e-4):
             "WARNING: The f0 term is the constant for the OPLS dihedral equation, "
             "which is converted and added to a constant for the RB torsions equation via the c0 coefficient. "
             "If the f0 term is zero in the OPLS dihedral form or set to zero in this equation, "
-            "the dihedral is may not be an exact conversion, which means the whole dihedral "
-            "potential energy is shifted by real f0/2 the value."
+            "the dihedral is not an exact conversion; "
+            "since this constant does not contribute to the force equation, "
+            "this should provide matching results for MD, but the energy for each "
+            "dihedral will be shifted by the f0/2 value."
         )
 
     c0 = f2 + (f0 + f1 + f3) / 2
