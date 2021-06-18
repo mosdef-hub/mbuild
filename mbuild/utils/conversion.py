@@ -44,9 +44,10 @@ def RB_to_OPLS(c0, c1, c2, c3, c4, c5, error_tol=1e-4):
     (MD) SIMULATIONS. THIS FUNCTION TESTS IF f0 IS ZERO (f0=0).
 
     WARNING: The f0 term is the constant for the OPLS dihedral equation.
-    If the f0 term is not zero, the dihedral is not an exact conversion
-    from RB-torsions to an OPLS dihedral, which means the whole dihedral
-    potential energy is shifted by f0/2 the value.
+    If the f0 term is not zero, the dihedral is not an exact conversion;
+    since this constant does not contribute to the force equation,
+    this should provide matching results for MD, but the energy for each
+    dihedral will be shifted by the real f0/2 value.
     """
     try:
         error_tol = abs(float(error_tol))
@@ -63,9 +64,10 @@ def RB_to_OPLS(c0, c1, c2, c3, c4, c5, error_tol=1e-4):
         warn(
             "WARNING: f0 = 2 * (c0 + c1 + c2 + c3 + c4 + c5) is not zero. "
             "The f0 term is the constant for the OPLS dihedral. "
-            "Since the f0 term is not zero, the dihedral is not an exact conversion "
-            "from RB-torsions to an OPLS dihedral, which means the whole dihedral "
-            "potential energy is shifted by f0/2 the value."
+            "Since the f0 term is not zero, the dihedral is not an exact conversion; "
+            "since this constant does not contribute to the force equation, "
+            "this should provide matching results for MD, but the energy for each "
+            "dihedral will be shifted by the real f0/2 value."
         )
 
     f1 = -2 * c1 - (3 * c3) / 2
@@ -111,7 +113,7 @@ def OPLS_to_RB(f0, f1, f2, f3, f4, error_tol=1e-4):
     the dihedral is not an exact conversion;
     since this constant does not contribute to the force equation,
     this should provide matching results for MD, but the energy for each
-    dihedral will be shifted by the f0/2 value.
+    dihedral will be shifted by the real f0/2 value.
     """
     try:
         error_tol = abs(float(error_tol))
@@ -126,7 +128,7 @@ def OPLS_to_RB(f0, f1, f2, f3, f4, error_tol=1e-4):
             "the dihedral is not an exact conversion; "
             "since this constant does not contribute to the force equation, "
             "this should provide matching results for MD, but the energy for each "
-            "dihedral will be shifted by the f0/2 value."
+            "dihedral will be shifted by the real f0/2 value."
         )
 
     c0 = f2 + (f0 + f1 + f3) / 2
