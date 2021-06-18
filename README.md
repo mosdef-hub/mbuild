@@ -2,7 +2,6 @@
 
 [![Gitter chat](https://badges.gitter.im/mosdef-hub/gitter.svg)](https://gitter.im/mosdef-hub/Lobby)
 [![AZP Build Status](https://dev.azure.com/mosdef/mbuild/_apis/build/status/mosdef-hub.mbuild?branchName=master)](https://dev.azure.com/mosdef/mbuild/_build/latest?definitionId=1&branchName=master)
-[![PyPI Version](https://badge.fury.io/py/mbuild.svg)](https://pypi.python.org/pypi/mbuild)
 [![Anaconda Badge](https://anaconda.org/conda-forge/mbuild/badges/version.svg)](https://anaconda.org/conda-forge/mbuild)
 [![codecov](https://codecov.io/gh/mosdef-hub/mbuild/branch/master/graph/badge.svg)](https://codecov.io/gh/mosdef-hub/mbuild)
 
@@ -22,19 +21,6 @@ To learn more, get started or contribute, check out our [website](http://mbuild.
 <p align="center">
   <img src="docs/images/mosdef.svg?raw=true" alt="mBuild within the MoSDeF Ecosystem" width="500" height="500"/>
 </p>
-
-If you use this package, please cite [our paper](http://dx.doi.org/10.1007/978-981-10-1128-3_5
-). The BibTeX reference is
-```
-@article{Klein2016mBuild,
-      author = "Klein, Christoph and Sallai, János and Jones, Trevor J. and Iacovella, Christopher R. and McCabe, Clare and Cummings, Peter T.",
-      title = "A Hierarchical, Component Based Approach to Screening Properties of Soft Matter",
-      booktitle = "Foundations of Molecular Modeling and Simulation",
-      series = "Molecular Modeling and Simulation: Applications and Perspectives",
-      year = "2016",
-      doi = "http://dx.doi.org/10.1007/978-981-10-1128-3_5"
-}
-```
 
 
 The `mBuild` package is part of the [Molecular Simulation Design Framework (MoSDeF) project](http://mosdef.org/).
@@ -96,6 +82,21 @@ Some users have graciously contributed recipes for particular systems, including
 * [Nanodroplets on graphene](https://github.com/ftiet/droplet-builder)
 * [Coarse-grained DNA](https://github.com/zijiewu3/mbuild_ONA)
 * [Lipid bilayers](https://github.com/uppittu11/mbuild_bilayer)
+
+#### Citing mBuild
+
+If you use this package, please cite [our paper](http://dx.doi.org/10.1007/978-981-10-1128-3_5
+). The BibTeX reference is
+```
+@article{Klein2016mBuild,
+      author = "Klein, Christoph and Sallai, János and Jones, Trevor J. and Iacovella, Christopher R. and McCabe, Clare and Cummings, Peter T.",
+      title = "A Hierarchical, Component Based Approach to Screening Properties of Soft Matter",
+      booktitle = "Foundations of Molecular Modeling and Simulation",
+      series = "Molecular Modeling and Simulation: Applications and Perspectives",
+      year = "2016",
+      doi = "http://dx.doi.org/10.1007/978-981-10-1128-3_5"
+}
+```
 
 #### [![License](https://img.shields.io/badge/license-MIT-blue.svg)](http://opensource.org/licenses/MIT)
 
