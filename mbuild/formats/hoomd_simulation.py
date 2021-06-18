@@ -38,6 +38,7 @@ def create_hoomd_simulation(
     pppm_kwargs={"Nx": 8, "Ny": 8, "Nz": 8, "order": 4},
     init_snap=None,
     restart=None,
+    nlist=hoomd.md.nlist.cell,
 ):
     """Convert a parametrized pmd.Structure to hoomd.SimulationContext.
 
@@ -70,6 +71,10 @@ def create_hoomd_simulation(
         restart.gsd contain the same types. The ParmEd structure is still used
         to initialize the forces, but restart.gsd is used to initialize the
         system state (e.g., particle positions, momenta, etc).
+    nlist : hoomd.md.nlist, default=hoomd.md.nlist.cell
+        Type of neighborlist to use, see
+        https://hoomd-blue.readthedocs.io/en/stable/module-md-nlist.html
+        for more information.
 
     Returns
     -------
@@ -144,7 +149,7 @@ def create_hoomd_simulation(
         hoomd_objects.append(hoomd_system)
         print("Simulation initialized from restart file")
 
-    nl = hoomd.md.nlist.cell()
+    nl = nlist()
     nl.reset_exclusions(exclusions=["1-2", "1-3"])
     hoomd_objects.append(nl)
 
