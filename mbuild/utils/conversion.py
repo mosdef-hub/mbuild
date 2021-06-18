@@ -1,7 +1,6 @@
 """mBuild conversion utilities."""
-from warnings import warn
-
 import numpy as np
+from warnings import warn
 
 
 def RB_to_OPLS(c0, c1, c2, c3, c4, c5, error_tol=1e-4):
@@ -110,8 +109,6 @@ def OPLS_to_RB(f0, f1, f2, f3, f4, error_tol=1e-4):
     If the f0 term is zero in the OPLS dihedral form or set to zero in this equation,
     the dihedral is may not be an exact conversion, which means the whole dihedral
     potential energy is shifted by real f0/2 the value.
-
-
     """
     try:
         error_tol = abs(float(error_tol))

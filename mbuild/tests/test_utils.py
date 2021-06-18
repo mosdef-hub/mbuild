@@ -292,9 +292,9 @@ class TestUtilsConversion(BaseTest):
 
     def test_OPLS_to_RB_f0_is_zero(self):
         # should throw a warning that f0 is zero
-        f0 = 0
-        f1 = 0.1
-        f2 = -0.2
-        f3 = -0.1
-        f4 = 0.2
-        OPLS_to_RB(f0, f1, f2, f3, f4)
+            f0 = 0
+            f1 = 0.1
+            f2 = -0.2
+            f3 = -0.1
+            f4 = 0.2
+            OPLS_to_RB(f0, f1, f2, f3, f4)
