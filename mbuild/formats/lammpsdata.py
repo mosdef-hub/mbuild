@@ -36,6 +36,7 @@ def write_lammpsdata(
     unit_style="real",
     mins=None,
     maxs=None,
+    pair_coeff_label=None,
     detect_forcefield_style=True,
     nbfix_in_data_file=True,
     use_urey_bradleys=False,
@@ -69,6 +70,9 @@ def write_lammpsdata(
         minimum box dimension in x, y, z directions
     maxs : list
         maximum box dimension in x, y, z directions
+    pair_coeff_label : str
+        Provide a custom label to the pair_coeffs section in the lammps data
+        file. Defaults to None, which means a suitable default will be chosen.
     detect_forcefield_style: boolean
         If True, format lammpsdata parameters based on the contents of
         the parmed Structure
@@ -326,7 +330,7 @@ def write_lammpsdata(
         # Box data
         # NOTE: Needs better logic handling maxs and mins of a bounding box
         # NOTE: JBG, "this should be a method/attribute of Compound?"
-        if np.allclose(box.angles, 90) and (mins is None):
+        if np.allclose(box.angles, 90.0, atol=1e-5) and (mins is None):
             for i, dim in enumerate(["x", "y", "z"]):
                 data.write(
                     "{0:.6f} {1:.6f} {2}lo {2}hi\n".format(
@@ -365,10 +369,17 @@ def write_lammpsdata(
             data.write("{0:.6f} {1:.6f} {2:6f} xy xz yz\n".format(xy, xz, yz))
 
         # Mass data
-        masses = (
-            np.array([atom.mass for atom in structure.atoms])
-            / mass_conversion_factor
-        )
+        if not forcefield:
+            masses = (
+                np.array([atom.mass for atom in structure.atoms])
+                / mass_conversion_factor
+            )
+        else:
+            masses = (
+                np.array([atom.atom_type.mass for atom in structure.atoms])
+                / mass_conversion_factor
+            )
+
         mass_dict = dict(
             [
                 (unique_types.index(atom_type) + 1, mass)
@@ -478,10 +489,17 @@ def write_lammpsdata(
                             round(epsilon, 8),
                         )
                 if nbfix_in_data_file:
-                    data.write("\nPairIJ Coeffs # modified lj\n")
+                    if pair_coeff_label:
+                        data.write(
+                            "\nPairIJ Coeffs # {}\n".format(pair_coeff_label)
+                        )
+                    else:
+                        data.write("\nPairIJ Coeffs # modified lj\n")
+
                     data.write(
                         "# type1 type2\tepsilon (kcal/mol)\tsigma (Angstrom)\n"
                     )
+
                     for (type1, type2), (sigma, epsilon) in coeffs.items():
                         data.write(
                             "{0} \t{1} \t{2} \t\t{3}\t\t# {4}\t{5}\n".format(
@@ -494,7 +512,13 @@ def write_lammpsdata(
                             )
                         )
                 else:
-                    data.write("\nPair Coeffs # lj\n\n")
+                    if pair_coeff_label:
+                        data.write(
+                            "\nPair Coeffs # {} \n\n".format(pair_coeff_label)
+                        )
+                    else:
+                        data.write("\nPair Coeffs # lj\n\n")
+
                     for idx, epsilon in sorted(epsilon_dict.items()):
                         data.write(
                             "{}\t{:.5f}\t{:.5f}\n".format(
@@ -670,7 +694,7 @@ def write_lammpsdata(
                     )
 
         # Atom data
-        data.write("\nAtoms\n\n")
+        data.write("\nAtoms # {}\n\n".format(atom_style))
         if atom_style == "atomic":
             atom_line = "{index:d}\t{type_index:d}\t{x:.6f}\t{y:.6f}\t{z:.6f}\n"
         elif atom_style == "charge":
