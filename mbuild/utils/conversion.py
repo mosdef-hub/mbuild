@@ -1,6 +1,7 @@
 """mBuild conversion utilities."""
-import numpy as np
 from warnings import warn
+
+import numpy as np
 
 
 def RB_to_OPLS(
