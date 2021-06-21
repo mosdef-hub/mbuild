@@ -110,7 +110,7 @@ def OPLS_to_RB(f0, f1, f2, f3, f4, error_tol=1e-4):
     -----
     NOTE: fO IS TYPICALLY NOT IN THE OPLS DIHEDRAL EQUATION (i.e., f0=0).
 
-    WARNING: The f0 term is the constant for the OPLS dihedral equation,
+    .. warning:: The f0 term is the constant for the OPLS dihedral equation,
     which is converted and added to a constant for the RB torsions equation via the c0 coefficient.
     If the f0 term is zero in the OPLS dihedral form or set to zero in this equation,
     the dihedral is not an exact conversion;
