@@ -216,7 +216,7 @@ class TestUtilsConversion(BaseTest):
     def test_RB_to_OPLS_f0_not_0_within_tolerance_error(self):
         text_for_error_tol = (
             "f0 = 2 * (c0 + c1 + c2 + c3 + c4 + c5) is not zero. "
-            "The f0 term is the constant for the OPLS dihedral. "
+            "The f0/2 term is the constant for the OPLS dihedral. "
             "Since the f0 term is not zero, the dihedral is not an "
             "exact conversion; since this constant does not contribute "
             "to the force equation, this should provide matching results "
