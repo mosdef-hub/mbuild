@@ -4,7 +4,9 @@ from warnings import warn
 import numpy as np
 
 
-def RB_to_OPLS(c0, c1, c2, c3, c4, c5, error_tol=1e-4, value_error_out_of_tol=True):
+def RB_to_OPLS(
+    c0, c1, c2, c3, c4, c5, error_tol=1e-4, value_error_out_of_tol=True
+):
     r"""Convert Ryckaert-Bellemans type dihedrals to OPLS type.
 
     .. math::
@@ -73,22 +75,20 @@ def RB_to_OPLS(c0, c1, c2, c3, c4, c5, error_tol=1e-4, value_error_out_of_tol=Tr
         )
 
     f0 = 2.0 * (c0 + c1 + c2 + c3 + c4 + c5)
-    if not np.all(np.isclose(f0/2, 0, atol=error_tol, rtol=0)):
-        text_for_error_tol = "f0 = 2 * (c0 + c1 + c2 + c3 + c4 + c5) is not zero. " \
-                             "The f0 term is the constant for the OPLS dihedral. " \
-                             "Since the f0 term is not zero, the dihedral is not an " \
-                             "exact conversion; since this constant does not contribute " \
-                             "to the force equation, this should provide matching results " \
-                             "for MD, but the energy for each dihedral will be shifted " \
-                             "by the f0/2 value."
+    if not np.all(np.isclose(f0 / 2, 0, atol=error_tol, rtol=0)):
+        text_for_error_tol = (
+            "f0 = 2 * (c0 + c1 + c2 + c3 + c4 + c5) is not zero. "
+            "The f0 term is the constant for the OPLS dihedral. "
+            "Since the f0 term is not zero, the dihedral is not an "
+            "exact conversion; since this constant does not contribute "
+            "to the force equation, this should provide matching results "
+            "for MD, but the energy for each dihedral will be shifted "
+            "by the f0/2 value."
+        )
         if value_error_out_of_tol is True:
-            raise ValueError(
-                "{}".format(text_for_error_tol)
-            )
+            raise ValueError("{}".format(text_for_error_tol))
         elif value_error_out_of_tol is False:
-            warn(
-                "WARNING: {}".format(text_for_error_tol)
-            )
+            warn("WARNING: {}".format(text_for_error_tol))
 
     f1 = -2 * c1 - (3 * c3) / 2
     f2 = -c2 - c4
@@ -141,7 +141,7 @@ def OPLS_to_RB(f0, f1, f2, f3, f4, error_tol=1e-4):
     except:
         raise TypeError("ERROR: The error_tol variable must be a float.")
 
-    if np.all(np.isclose(f0/2, 0, atol=error_tol, rtol=0)):
+    if np.all(np.isclose(f0 / 2, 0, atol=error_tol, rtol=0)):
         warn(
             "WARNING: The f0/2 term is the constant for the OPLS dihedral equation, "
             "which is added to a constant for the RB torsions equation via the c0 coefficient. "

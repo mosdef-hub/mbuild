@@ -214,16 +214,18 @@ class TestUtilsConversion(BaseTest):
         RB_to_OPLS(c0, c1, c2, c3, c4, c5, value_error_out_of_tol=False)
 
     def test_RB_to_OPLS_f0_not_0_within_tolerance_error(self):
-        text_for_error_tol = "f0 = 2 * (c0 + c1 + c2 + c3 + c4 + c5) is not zero. " \
-                             "The f0 term is the constant for the OPLS dihedral. " \
-                             "Since the f0 term is not zero, the dihedral is not an " \
-                             "exact conversion; since this constant does not contribute " \
-                             "to the force equation, this should provide matching results " \
-                             "for MD, but the energy for each dihedral will be shifted " \
-                             "by the f0/2 value."
+        text_for_error_tol = (
+            "f0 = 2 * (c0 + c1 + c2 + c3 + c4 + c5) is not zero. "
+            "The f0 term is the constant for the OPLS dihedral. "
+            "Since the f0 term is not zero, the dihedral is not an "
+            "exact conversion; since this constant does not contribute "
+            "to the force equation, this should provide matching results "
+            "for MD, but the energy for each dihedral will be shifted "
+            "by the f0/2 value."
+        )
         with pytest.raises(
             TypeError,
-                f"{text_for_error_tol}",
+            f"{text_for_error_tol}",
         ):
             c0 = 0.4
             c1 = 0.4
@@ -244,12 +246,21 @@ class TestUtilsConversion(BaseTest):
             c3 = -0.1
             c4 = -0.2
             c5 = 0.0
-            RB_to_OPLS(c0, c1, c2, c3, c4, c5, error_tol="s", value_error_out_of_tol=False)
+            RB_to_OPLS(
+                c0,
+                c1,
+                c2,
+                c3,
+                c4,
+                c5,
+                error_tol="s",
+                value_error_out_of_tol=False,
+            )
 
     def test_RB_to_OPLS_text_for_error_tol_not_bool(self):
         with pytest.raises(
             TypeError,
-            match= f"The text_for_error_tol variable must be a bool, is type {type('s')}.",
+            match=f"The text_for_error_tol variable must be a bool, is type {type('s')}.",
         ):
             c0 = 0.1
             c1 = 0.1
@@ -257,7 +268,7 @@ class TestUtilsConversion(BaseTest):
             c3 = -0.1
             c4 = -0.2
             c5 = 0.0
-            RB_to_OPLS(c0, c1, c2, c3, c4, c5, value_error_out_of_tol='s')
+            RB_to_OPLS(c0, c1, c2, c3, c4, c5, value_error_out_of_tol="s")
 
     @pytest.mark.parametrize(
         "c0, c1, c2, c3, c4, c5",
@@ -283,7 +294,9 @@ class TestUtilsConversion(BaseTest):
         # However, this may not be true for real dihedrals.
         test_error_tol = 1e-10
 
-        opls_coeffs = RB_to_OPLS(c0, c1, c2, c3, c4, c5, value_error_out_of_tol=False)
+        opls_coeffs = RB_to_OPLS(
+            c0, c1, c2, c3, c4, c5, value_error_out_of_tol=False
+        )
         reversed_RB_coeffs = OPLS_to_RB(
             opls_coeffs[0],
             opls_coeffs[1],
