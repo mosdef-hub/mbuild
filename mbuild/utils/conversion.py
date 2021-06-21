@@ -43,7 +43,8 @@ def RB_to_OPLS(c0, c1, c2, c3, c4, c5, error_tol=1e-4):
     DETERMINE THE fO VALUE FOR LATER ENERGY SCALING IN MOLECULAR DYNAMICS
     (MD) SIMULATIONS. THIS FUNCTION TESTS IF f0 IS ZERO (f0=0).
 
-    WARNING: The f0 term is the constant for the OPLS dihedral equation.
+    .. warning:: The f0 term is the constant for the OPLS dihedral equation 
+        and is only used to test... will be shifted by the :math:`\frac{f_{0}}{2}`
     If the f0 term is not zero, the dihedral is not an exact conversion;
     since this constant does not contribute to the force equation,
     this should provide matching results for MD, but the energy for each
