@@ -53,7 +53,9 @@ def RB_to_OPLS(c0, c1, c2, c3, c4, c5, error_tol=1e-4):
     try:
         error_tol = abs(float(error_tol))
     except:
-        raise TypeError(f"The error_tol variable must be a float, is type {type(error_tol)}.")
+        raise TypeError(
+            f"The error_tol variable must be a float, is type {type(error_tol)}."
+        )
 
     if not np.all(np.isclose(c5, 0, atol=error_tol, rtol=0)):
         raise ValueError(
