@@ -84,7 +84,7 @@ def OPLS_to_RB(f0, f1, f2, f3, f4, error_tol=1e-4):
     r"""Convert OPLS type to Ryckaert-Bellemans type dihedrals.
 
     .. math::
-    OPLS_torsions &= f0/2 + f1/2*(1+cos(t)) + f2/2*(1-cos(2*t)) + \\
+    OPLS_torsions &= \frac{f_0}{2} + \frac{f_1}{2}*(1+cos(t)) + f2/2*(1-cos(2*t)) + \\
                   &= f3/2*(1+cos(3*t)) + f4/2*(1-cos(4*t))
 
     .. math::
