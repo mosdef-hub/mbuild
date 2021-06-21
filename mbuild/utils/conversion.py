@@ -116,7 +116,7 @@ def OPLS_to_RB(f0, f1, f2, f3, f4, error_tol=1e-4):
     the dihedral is not an exact conversion;
     since this constant does not contribute to the force equation,
     this should provide matching results for MD, but the energy for each
-    dihedral will be shifted by the real f0/2 value.
+    dihedral will be shifted by the real :math:`\frac{f_0}{2} value.
     """
     try:
         error_tol = abs(float(error_tol))
