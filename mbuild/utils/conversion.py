@@ -88,7 +88,7 @@ def OPLS_to_RB(f0, f1, f2, f3, f4, error_tol=1e-4):
                   &= f3/2*(1+cos(3*t)) + f4/2*(1-cos(4*t))
 
     .. math::
-    RB_torsions &= c0 + c1*cos(psi) + c2*cos(psi)^2 + c3*cos(psi)^3 + \\
+    RB_{torsions} &= c_0 + c_1*cos(psi) + c_2*cos(psi)^2 + c_3*cos(psi)^3 + \\
                 &= c4*cos(psi)^4 + c5*cos(5*psi)^5
 
     where :math:`psi = t - pi = t - 180 degrees`
