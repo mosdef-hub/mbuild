@@ -1,4 +1,5 @@
 import difflib
+from warnings import warn
 
 import numpy as np
 import pytest
@@ -12,7 +13,6 @@ from mbuild.utils.io import get_fn, import_, run_from_ipython
 from mbuild.utils.jsutils import overwrite_nglview_default
 from mbuild.utils.orderedset import OrderedSet
 from mbuild.utils.validation import assert_port_exists
-from warnings import warn
 
 
 class TestUtils(BaseTest):
