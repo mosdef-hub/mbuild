@@ -5,13 +5,13 @@ import numpy as np
 
 
 def RB_to_OPLS(
-    c0, c1, c2, c3, c4, c5, error_tol=1e-4, value_error_out_of_tol=True
+    c0, c1, c2, c3, c4, c5, error_tol=1e-4, error_if_outside_tol=True
 ):
     r"""Convert Ryckaert-Bellemans type dihedrals to OPLS type.
 
     .. math::
     RB_{torsions} &= c_0 + c_1*cos(psi) + c_2*cos(psi)^2 + c_3*cos(psi)^3 + \\
-                  &= c4*cos(psi)^4 + c5*cos(5*psi)^5
+                  &= c_4*cos(psi)^4 + c_5*cos(psi)^5
 
     .. math::
     OPLS_torsions &= \frac{f_0}{2} + \frac{f_1}{2}*(1+cos(t)) + \frac{f_2}{2}*(1-cos(2*t)) + \\
@@ -25,11 +25,11 @@ def RB_to_OPLS(
     error_tol : float, default=1e-4
         The acceptable absolute tolerance between the RB to OPLS conversion.
         Any value entered is converted to an absolute value.
-    value_error_out_of_tol : bool, default=True
+    error_if_outside_tol : bool, default=True
         This variable determines whether to provide a ValueError if the RB to OPLS
-        conversion is greater than the error_tol term (i.e., value_error_out_of_tol=True),
+        conversion is greater than the error_tol term (i.e., error_if_outside_tol=True),
         or a warning if the RB to OPLS conversion is greater than the error_tol term
-        (i.e., value_error_out_of_tol=False).
+        (i.e., error_if_outside_tol=False).
 
     Returns
     -------
@@ -52,21 +52,18 @@ def RB_to_OPLS(
 
     .. warning:: The :math:`\frac{f_{0}}{2}` term is the constant for the OPLS dihedral equation
         and is only used to test... will be shifted by the :math:`\frac{f_{0}}{2}`
-    If the f0 term is not zero, the dihedral is not an exact conversion;
-    since this constant does not contribute to the force equation,
-    this should provide matching results for MD, but the energy for each
-    dihedral will be shifted by the :math:`\frac{f_{0}}{2}` value.
+        If the f0 term is not zero, the dihedral is not an exact conversion;
+        since this constant does not contribute to the force equation,
+        this should provide matching results for MD, but the energy for each
+        dihedral will be shifted by the :math:`\frac{f_{0}}{2}` value.
     """
-    try:
-        error_tol = abs(float(error_tol))
-    except:
-        raise TypeError(
-            f"The error_tol variable must be a float, is type {type(error_tol)}."
-        )
+    if not isinstance(error_tol, float):
+        raise TypeError(f"The error_tol variable must be a float, is type {type(error_tol)}.")
+    error_tol = abs(error_tol)
 
-    if not isinstance(value_error_out_of_tol, bool):
+    if not isinstance(error_if_outside_tol, bool):
         raise TypeError(
-            f"The text_for_error_tol variable must be a bool, is type {type(value_error_out_of_tol)}."
+            f"The text_for_error_tol variable must be a bool, is type {type(error_if_outside_tol)}."
         )
 
     if not np.all(np.isclose(c5, 0, atol=1e-10, rtol=0)):
@@ -85,9 +82,9 @@ def RB_to_OPLS(
             "for MD, but the energy for each dihedral will be shifted "
             "by the f0/2 value."
         )
-        if value_error_out_of_tol is True:
+        if error_if_outside_tol is True:
             raise ValueError(text_for_error_tol)
-        elif value_error_out_of_tol is False:
+        elif error_if_outside_tol is False:
             warn(text_for_error_tol)
 
     f1 = -2 * c1 - (3 * c3) / 2
@@ -106,7 +103,7 @@ def OPLS_to_RB(f0, f1, f2, f3, f4, error_tol=1e-4):
 
     .. math::
     RB_{torsions} &= c_0 + c_1*cos(psi) + c_2*cos(psi)^2 + c_3*cos(psi)^3 + \\
-                  &= c4*cos(psi)^4 + c5*cos(5*psi)^5
+                  &= c_4*cos(psi)^4 + c_5*cos(psi)^5
 
     where :math:`psi = t - pi = t - 180 degrees`
 
@@ -129,17 +126,16 @@ def OPLS_to_RB(f0, f1, f2, f3, f4, error_tol=1e-4):
     NOTE: fO IS TYPICALLY NOT IN THE OPLS DIHEDRAL EQUATION (i.e., f0=0).
 
     .. warning:: The :math:`\frac{f_{0}}{2}` term is the constant for the OPLS dihedral equation,
-    which is and added to a constant for the RB torsions equation via the c0 coefficient.
-    If the f0 term is zero in the OPLS dihedral form or is force set to zero in this equation,
-    the dihedral is may not an exact conversion;
-    since this constant does not contribute to the force equation,
-    this should provide matching results for MD, but the energy for each
-    dihedral will be shifted by the real :math:`\frac{f_{0}}{2}` value.
+        which is and added to a constant for the RB torsions equation via the c0 coefficient.
+        If the f0 term is zero in the OPLS dihedral form or is force set to zero in this equation,
+        the dihedral is may not an exact conversion;
+        since this constant does not contribute to the force equation,
+        this should provide matching results for MD, but the energy for each
+        dihedral will be shifted by the real :math:`\frac{f_{0}}{2}` value.
     """
-    try:
-        error_tol = abs(float(error_tol))
-    except:
-        raise TypeError("The error_tol variable must be a float.")
+    if not isinstance(error_tol, float):
+        raise TypeError(f"The error_tol variable must be a float, is type {type(error_tol)}.")
+    error_tol = abs(error_tol)
 
     if np.all(np.isclose(f0 / 2, 0, atol=error_tol, rtol=0)):
         warn(
@@ -165,25 +161,25 @@ def RB_to_CHARMM(c0, c1, c2, c3, c4, c5):
     r"""Convert Ryckaert-Bellemans (RB) type dihedrals to CHARMM type.
 
     .. math::
-        RB_torsions &= c0 + c1*cos(psi) + c2*cos(psi)^2 + c3*cos(psi)^3 + \\
-                    &= c4*cos(psi)^4 + c5*cos(5*psi)^5
+        RB_torsions &= c_0 + c_1*cos(psi) + c_2*cos(psi)^2 + c_3*cos(psi)^3 + \\
+                    &= c_4*cos(psi)^4 + c_5*cos(psi)^5
 
     where :math:`psi = t - pi = t - 180 degrees`
 
     .. math::
-        CHARMM_torsions &= K0 * (1 + cos(n0*t - d0)) + \\
-                        &= K1 * (1 + cos(n1*t - d1)) + \\
-                        &= K2 * (1 + cos(n2*t - d2)) + \\
-                        &= K3 * (1 + cos(n3*t - d3)) + \\
-                        &= K4 * (1 + cos(n4*t - d4)) + \\
-                        &= K5 * (1 + cos(n5*t - d5))
+        CHARMM_torsions &= K_0 * (1 + cos(n_0*t - d_0)) + \\
+                        &= K_1 * (1 + cos(n_1*t - d_1)) + \\
+                        &= K_2 * (1 + cos(n_2*t - d_2)) + \\
+                        &= K_3 * (1 + cos(n_3*t - d_3)) + \\
+                        &= K_4 * (1 + cos(n_4*t - d_4)) + \\
+                        &= K_5 * (1 + cos(n_5*t - d_5))
 
-        CHARMM_torsions &= K0 +
-                        &= K1 * (1 + cos(n1*t - d1)) + \\
-                        &= K2 * (1 + cos(n2*t - d2)) + \\
-                        &= K3 * (1 + cos(n3*t - d3)) + \\
-                        &= K4 * (1 + cos(n4*t - d4)) + \\
-                        &= K5 * (1 + cos(n5*t - d5))
+        CHARMM_torsions &= K_0 +
+                        &= K_1 * (1 + cos(n_1*t - d_1)) + \\
+                        &= K_2 * (1 + cos(n_2*t - d_2)) + \\
+                        &= K_3 * (1 + cos(n_3*t - d_3)) + \\
+                        &= K_4 * (1 + cos(n_4*t - d_4)) + \\
+                        &= K_5 * (1 + cos(n_5*t - d_5))
 
     Parameters
     ----------

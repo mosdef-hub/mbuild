@@ -223,7 +223,7 @@ class TestUtilsConversion(BaseTest):
             c3 = 0.4
             c4 = -0.2
             c5 = 0
-            RB_to_OPLS(c0, c1, c2, c3, c4, c5, value_error_out_of_tol=False)
+            RB_to_OPLS(c0, c1, c2, c3, c4, c5, error_if_outside_tol=False)
 
     def test_RB_to_OPLS_f0_not_0_within_tolerance_error(self):
         text_for_error_tol = (
@@ -267,7 +267,7 @@ class TestUtilsConversion(BaseTest):
                 c4,
                 c5,
                 error_tol="s",
-                value_error_out_of_tol=False,
+                error_if_outside_tol=False,
             )
 
     def test_RB_to_OPLS_text_for_error_tol_not_bool(self):
@@ -281,7 +281,7 @@ class TestUtilsConversion(BaseTest):
             c3 = -0.1
             c4 = -0.2
             c5 = 0.0
-            RB_to_OPLS(c0, c1, c2, c3, c4, c5, value_error_out_of_tol="s")
+            RB_to_OPLS(c0, c1, c2, c3, c4, c5, error_if_outside_tol="s")
 
     @pytest.mark.parametrize(
         "c0, c1, c2, c3, c4, c5",
@@ -308,7 +308,7 @@ class TestUtilsConversion(BaseTest):
         test_error_tol = 1e-10
 
         opls_coeffs = RB_to_OPLS(
-            c0, c1, c2, c3, c4, c5, value_error_out_of_tol=False
+            c0, c1, c2, c3, c4, c5, error_if_outside_tol=False
         )
         reversed_RB_coeffs = OPLS_to_RB(
             opls_coeffs[0],
@@ -340,7 +340,7 @@ class TestUtilsConversion(BaseTest):
     def test_OPLS_to_RB_error_tol_not_float(self):
         with pytest.raises(
             TypeError,
-            match=r"The error_tol variable must be a float.",
+            match=f"The error_tol variable must be a float, is type {type('s')}.",
         ):
             f0 = 0.1
             f1 = 0.1
