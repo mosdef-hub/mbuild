@@ -76,7 +76,7 @@ def RB_to_OPLS(
 
     f0 = 2.0 * (c0 + c1 + c2 + c3 + c4 + c5)
     if not np.all(np.isclose(f0 / 2, 0, atol=error_tol, rtol=0)):
-        text_for_error_tol = ("f0 = 2 * (c0 + c1 + c2 + c3 + c4 + c5) is not zero. "
+        text_for_error_tol = ("f0 = 2 * ( c0 + c1 + c2 + c3 + c4 + c5 ) is not zero. "
                              "The f0/2 term is the constant for the OPLS dihedral. "
                              "Since the f0 term is not zero, the dihedral is not an "
                              "exact conversion; since this constant does not contribute "
