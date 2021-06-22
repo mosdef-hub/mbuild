@@ -204,19 +204,18 @@ class TestUtilsConversion(BaseTest):
             c5 = 0.3
             RB_to_OPLS(c0, c1, c2, c3, c4, c5)
 
+
     def test_RB_to_OPLS_f0_not_0_within_tolerance_warn(self):
         # should throw a warning that f0 is not zero
-        text_for_error_tol = (
-            "f0 = 2 * (c0 + c1 + c2 + c3 + c4 + c5) is not zero. "
-            "The f0/2 term is the constant for the OPLS dihedral. "
-            "Since the f0 term is not zero, the dihedral is not an "
-            "exact conversion; since this constant does not contribute "
-            "to the force equation, this should provide matching results "
-            "for MD, but the energy for each dihedral will be shifted "
-            "by the f0/2 value."
+        text_for_error_tol = ("f0 = 2 * (c0 + c1 + c2 + c3 + c4 + c5) is not zero. "
+                             "The f0/2 term is the constant for the OPLS dihedral. "
+                             "Since the f0 term is not zero, the dihedral is not an "
+                             "exact conversion; since this constant does not contribute "
+                             "to the force equation, this should provide matching results "
+                             "for MD, but the energy for each dihedral will be shifted "
+                             "by the f0/2 value."
         )
-        with pytest.warns(UserWarning):
-            warn(f"{text_for_error_tol}", UserWarning)
+        with pytest.warns(UserWarning, match=text_for_error_tol):
             c0 = 0.4
             c1 = 0.4
             c2 = -0.1
@@ -226,18 +225,17 @@ class TestUtilsConversion(BaseTest):
             RB_to_OPLS(c0, c1, c2, c3, c4, c5, value_error_out_of_tol=False)
 
     def test_RB_to_OPLS_f0_not_0_within_tolerance_error(self):
-        text_for_error_tol = (
-            "f0 = 2 * (c0 + c1 + c2 + c3 + c4 + c5) is not zero. "
-            "The f0/2 term is the constant for the OPLS dihedral. "
-            "Since the f0 term is not zero, the dihedral is not an "
-            "exact conversion; since this constant does not contribute "
-            "to the force equation, this should provide matching results "
-            "for MD, but the energy for each dihedral will be shifted "
-            "by the f0/2 value."
-        )
+        text_for_error_tol = ("f0 = 2 * (c0 + c1 + c2 + c3 + c4 + c5) is not zero. "
+                             "The f0/2 term is the constant for the OPLS dihedral. "
+                             "Since the f0 term is not zero, the dihedral is not an "
+                             "exact conversion; since this constant does not contribute "
+                             "to the force equation, this should provide matching results "
+                             "for MD, but the energy for each dihedral will be shifted "
+                             "by the f0/2 value.")
+
         with pytest.raises(
             TypeError,
-            f"{text_for_error_tol}",
+            match=f"{text_for_error_tol}",
         ):
             c0 = 0.4
             c1 = 0.4
@@ -351,7 +349,7 @@ class TestUtilsConversion(BaseTest):
     def test_OPLS_to_RB_f0_is_zero(self):
         # should throw a warning that f0 is zero
         text_for_error_tol = (
-            "WARNING: The f0/2 term is the constant for the OPLS dihedral equation, "
+            "The f0/2 term is the constant for the OPLS dihedral equation, "
             "which is added to a constant for the RB torsions equation via the c0 coefficient. "
             "The f0 term is zero in the OPLS dihedral form or is force set to zero in this equation, "
             "so the dihedral is may not an exact conversion; "
@@ -359,8 +357,7 @@ class TestUtilsConversion(BaseTest):
             "this should provide matching results for MD, but the energy for each"
             "dihedral will be shifted by the real f0/2 value."
         )
-        with pytest.warns(UserWarning):
-            warn(f"{text_for_error_tol}", UserWarning)
+        with pytest.warns(UserWarning, match=text_for_error_tol):
             f0 = 0
             f1 = 0.1
             f2 = -0.2
