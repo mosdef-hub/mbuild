@@ -58,7 +58,9 @@ def RB_to_OPLS(
         dihedral will be shifted by the :math:`\frac{f_{0}}{2}` value.
     """
     if not isinstance(error_tol, float):
-        raise TypeError(f"The error_tol variable must be a float, is type {type(error_tol)}.")
+        raise TypeError(
+            f"The error_tol variable must be a float, is type {type(error_tol)}."
+        )
     error_tol = abs(error_tol)
 
     if not isinstance(error_if_outside_tol, bool):
@@ -134,7 +136,9 @@ def OPLS_to_RB(f0, f1, f2, f3, f4, error_tol=1e-4):
         dihedral will be shifted by the real :math:`\frac{f_{0}}{2}` value.
     """
     if not isinstance(error_tol, float):
-        raise TypeError(f"The error_tol variable must be a float, is type {type(error_tol)}.")
+        raise TypeError(
+            f"The error_tol variable must be a float, is type {type(error_tol)}."
+        )
     error_tol = abs(error_tol)
 
     if np.all(np.isclose(f0 / 2, 0, atol=error_tol, rtol=0)):
