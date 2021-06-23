@@ -614,7 +614,7 @@ def write_lammpsdata(
                             params[3],
                             params[4],
                             params[5],
-                            value_error_out_of_tol=False,
+                            error_if_outside_tolerance=False,
                         )
                         data.write(
                             "{}\t{:.5f}\t{:.5f}\t\t{:.5f}\t\t{:.5f}\t# {}\t{}\t{}\t{}\n".format(

@@ -206,7 +206,7 @@ class TestUtilsConversion(BaseTest):
 
     def test_RB_to_OPLS_f0_not_0_within_tolerance_warn(self):
         # should throw a warning that f0 is not zero
-        text_for_error_tol = (
+        text_for_error_tolerance = (
             "f0 \= 2 \* \( c0 \+ c1 \+ c2 \+ c3 \+ c4 \+ c5 \) is not zero. "
             "The f0/2 term is the constant for the OPLS dihedral. "
             "Since the f0 term is not zero, the dihedral is not an "
@@ -216,17 +216,17 @@ class TestUtilsConversion(BaseTest):
             "by the f0/2 value."
         )
 
-        with pytest.warns(UserWarning, match=f"{text_for_error_tol}"):
+        with pytest.warns(UserWarning, match=f"{text_for_error_tolerance}"):
             c0 = 0.4
             c1 = 0.4
             c2 = -0.1
             c3 = 0.4
             c4 = -0.2
             c5 = 0
-            RB_to_OPLS(c0, c1, c2, c3, c4, c5, error_if_outside_tol=False)
+            RB_to_OPLS(c0, c1, c2, c3, c4, c5, error_if_outside_tolerance=False)
 
     def test_RB_to_OPLS_f0_not_0_within_tolerance_error(self):
-        text_for_error_tol = (
+        text_for_error_tolerance = (
             "f0 \= 2 \* \( c0 \+ c1 \+ c2 \+ c3 \+ c4 \+ c5 \) is not zero. "
             "The f0/2 term is the constant for the OPLS dihedral. "
             "Since the f0 term is not zero, the dihedral is not an "
@@ -238,7 +238,7 @@ class TestUtilsConversion(BaseTest):
 
         with pytest.raises(
             TypeError,
-            match=f"{text_for_error_tol}",
+            match=f"{text_for_error_tolerance}",
         ):
             c0 = 0.4
             c1 = 0.4
@@ -251,7 +251,7 @@ class TestUtilsConversion(BaseTest):
     def test_RB_to_OPLS_f0_not_0_within_tolerance_error(self):
         with pytest.raises(
             TypeError,
-            match=f"The error_tol variable must be a float, is type {type('s')}.",
+            match=f"The error_tolerance variable must be a float, is type {type('s')}.",
         ):
             c0 = 0.1
             c1 = 0.1
@@ -266,14 +266,14 @@ class TestUtilsConversion(BaseTest):
                 c3,
                 c4,
                 c5,
-                error_tol="s",
-                error_if_outside_tol=False,
+                error_tolerance="s",
+                error_if_outside_tolerance=False,
             )
 
-    def test_RB_to_OPLS_text_for_error_tol_not_bool(self):
+    def test_RB_to_OPLS_text_for_error_tolerance_not_bool(self):
         with pytest.raises(
             TypeError,
-            match=f"The text_for_error_tol variable must be a bool, is type {type('s')}.",
+            match=f"The text_for_error_tolerance variable must be a bool, is type {type('s')}.",
         ):
             c0 = 0.1
             c1 = 0.1
@@ -281,7 +281,7 @@ class TestUtilsConversion(BaseTest):
             c3 = -0.1
             c4 = -0.2
             c5 = 0.0
-            RB_to_OPLS(c0, c1, c2, c3, c4, c5, error_if_outside_tol="s")
+            RB_to_OPLS(c0, c1, c2, c3, c4, c5, error_if_outside_tolerance="s")
 
     @pytest.mark.parametrize(
         "c0, c1, c2, c3, c4, c5",
@@ -305,10 +305,10 @@ class TestUtilsConversion(BaseTest):
     )
     def test_RB_to_OPLS_and_back_random_values(self, c0, c1, c2, c3, c4, c5):
         # However, this may not be true for real dihedrals.
-        test_error_tol = 1e-10
+        test_error_tolerance = 1e-10
 
         opls_coeffs = RB_to_OPLS(
-            c0, c1, c2, c3, c4, c5, error_if_outside_tol=False
+            c0, c1, c2, c3, c4, c5, error_if_outside_tolerance=False
         )
         reversed_RB_coeffs = OPLS_to_RB(
             opls_coeffs[0],
@@ -319,39 +319,39 @@ class TestUtilsConversion(BaseTest):
         )
 
         assert np.all(
-            np.isclose(c0, reversed_RB_coeffs[0], atol=test_error_tol, rtol=0)
+            np.isclose(c0, reversed_RB_coeffs[0], atol=test_error_tolerance, rtol=0)
         )
         assert np.all(
-            np.isclose(c1, reversed_RB_coeffs[1], atol=test_error_tol, rtol=0)
+            np.isclose(c1, reversed_RB_coeffs[1], atol=test_error_tolerance, rtol=0)
         )
         assert np.all(
-            np.isclose(c2, reversed_RB_coeffs[2], atol=test_error_tol, rtol=0)
+            np.isclose(c2, reversed_RB_coeffs[2], atol=test_error_tolerance, rtol=0)
         )
         assert np.all(
-            np.isclose(c3, reversed_RB_coeffs[3], atol=test_error_tol, rtol=0)
+            np.isclose(c3, reversed_RB_coeffs[3], atol=test_error_tolerance, rtol=0)
         )
         assert np.all(
-            np.isclose(c4, reversed_RB_coeffs[4], atol=test_error_tol, rtol=0)
+            np.isclose(c4, reversed_RB_coeffs[4], atol=test_error_tolerance, rtol=0)
         )
         assert np.all(
-            np.isclose(c5, reversed_RB_coeffs[5], atol=test_error_tol, rtol=0)
+            np.isclose(c5, reversed_RB_coeffs[5], atol=test_error_tolerance, rtol=0)
         )
 
-    def test_OPLS_to_RB_error_tol_not_float(self):
+    def test_OPLS_to_RB_error_tolerance_not_float(self):
         with pytest.raises(
             TypeError,
-            match=f"The error_tol variable must be a float, is type {type('s')}.",
+            match=f"The error_tolerance variable must be a float, is type {type('s')}.",
         ):
             f0 = 0.1
             f1 = 0.1
             f2 = -0.2
             f3 = -0.1
             f4 = 0.2
-            OPLS_to_RB(f0, f1, f2, f3, f4, error_tol="s")
+            OPLS_to_RB(f0, f1, f2, f3, f4, error_tolerance="s")
 
     def test_OPLS_to_RB_f0_is_zero(self):
         # should throw a warning that f0 is zero
-        text_for_error_tol = (
+        text_for_error_tolerance = (
             "The f0/2 term is the constant for the OPLS dihedral equation, "
             "which is added to a constant for the RB torsions equation via the c0 coefficient. "
             "The f0 term is zero in the OPLS dihedral form or is force set to zero in this equation, "
@@ -360,7 +360,7 @@ class TestUtilsConversion(BaseTest):
             "this should provide matching results for MD, but the energy for each"
             "dihedral will be shifted by the real f0/2 value."
         )
-        with pytest.warns(UserWarning, match=text_for_error_tol):
+        with pytest.warns(UserWarning, match=text_for_error_tolerance):
             f0 = 0
             f1 = 0.1
             f2 = -0.2

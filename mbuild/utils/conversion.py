@@ -5,7 +5,7 @@ import numpy as np
 
 
 def RB_to_OPLS(
-    c0, c1, c2, c3, c4, c5, error_tol=1e-4, error_if_outside_tol=True
+    c0, c1, c2, c3, c4, c5, error_tolerance=1e-4, error_if_outside_tolerance=True
 ):
     r"""Convert Ryckaert-Bellemans type dihedrals to OPLS type.
 
@@ -22,14 +22,14 @@ def RB_to_OPLS(
     Parameters
     ----------
     c0, c1, c2, c3, c4, c5 : Ryckaert-Belleman coefficients (in kcal/mol)
-    error_tol : float, default=1e-4
+    error_tolerance : float, default=1e-4
         The acceptable absolute tolerance between the RB to OPLS conversion.
         Any value entered is converted to an absolute value.
-    error_if_outside_tol : bool, default=True
+    error_if_outside_tolerance : bool, default=True
         This variable determines whether to provide a ValueError if the RB to OPLS
-        conversion is greater than the error_tol term (i.e., error_if_outside_tol=True),
-        or a warning if the RB to OPLS conversion is greater than the error_tol term
-        (i.e., error_if_outside_tol=False).
+        conversion is greater than the error_tolerance term (i.e., error_if_outside_tolerance=True),
+        or a warning if the RB to OPLS conversion is greater than the error_tolerance term
+        (i.e., error_if_outside_tolerance=False).
 
     Returns
     -------
@@ -57,15 +57,15 @@ def RB_to_OPLS(
         this should provide matching results for MD, but the energy for each
         dihedral will be shifted by the :math:`\frac{f_{0}}{2}` value.
     """
-    if not isinstance(error_tol, float):
+    if not isinstance(error_tolerance, float):
         raise TypeError(
-            f"The error_tol variable must be a float, is type {type(error_tol)}."
+            f"The error_tolerance variable must be a float, is type {type(error_tolerance)}."
         )
-    error_tol = abs(error_tol)
+    error_tolerance = abs(error_tolerance)
 
-    if not isinstance(error_if_outside_tol, bool):
+    if not isinstance(error_if_outside_tolerance, bool):
         raise TypeError(
-            f"The text_for_error_tol variable must be a bool, is type {type(error_if_outside_tol)}."
+            f"The text_for_error_tolerance variable must be a bool, is type {type(error_if_outside_tolerance)}."
         )
 
     if not np.all(np.isclose(c5, 0, atol=1e-10, rtol=0)):
@@ -74,8 +74,8 @@ def RB_to_OPLS(
         )
 
     f0 = 2.0 * (c0 + c1 + c2 + c3 + c4 + c5)
-    if not np.all(np.isclose(f0 / 2, 0, atol=error_tol, rtol=0)):
-        text_for_error_tol = (
+    if not np.all(np.isclose(f0 / 2, 0, atol=error_tolerance, rtol=0)):
+        text_for_error_tolerance = (
             "f0 = 2 * ( c0 + c1 + c2 + c3 + c4 + c5 ) is not zero. "
             "The f0/2 term is the constant for the OPLS dihedral. "
             "Since the f0 term is not zero, the dihedral is not an "
@@ -84,10 +84,10 @@ def RB_to_OPLS(
             "for MD, but the energy for each dihedral will be shifted "
             "by the f0/2 value."
         )
-        if error_if_outside_tol is True:
-            raise ValueError(text_for_error_tol)
-        elif error_if_outside_tol is False:
-            warn(text_for_error_tol)
+        if error_if_outside_tolerance is True:
+            raise ValueError(text_for_error_tolerance)
+        elif error_if_outside_tolerance is False:
+            warn(text_for_error_tolerance)
 
     f1 = -2 * c1 - (3 * c3) / 2
     f2 = -c2 - c4
@@ -96,7 +96,7 @@ def RB_to_OPLS(
     return np.array([f0, f1, f2, f3, f4])
 
 
-def OPLS_to_RB(f0, f1, f2, f3, f4, error_tol=1e-4):
+def OPLS_to_RB(f0, f1, f2, f3, f4, error_tolerance=1e-4):
     r"""Convert OPLS type to Ryckaert-Bellemans type dihedrals.
 
     .. math::
@@ -112,7 +112,7 @@ def OPLS_to_RB(f0, f1, f2, f3, f4, error_tol=1e-4):
     Parameters
     ----------
     f0, f1, f2, f3, f4 : OPLS dihedrals coeffs (in kcal/mol)
-    error_tol : float, default=1e-4
+    error_tolerance : float, default=1e-4
         The acceptable absolute tolerance between the OPLS to RB conversion
         without throwing a warning. Any value entered is converted to an
         absolute value.
@@ -135,13 +135,13 @@ def OPLS_to_RB(f0, f1, f2, f3, f4, error_tol=1e-4):
         this should provide matching results for MD, but the energy for each
         dihedral will be shifted by the real :math:`\frac{f_{0}}{2}` value.
     """
-    if not isinstance(error_tol, float):
+    if not isinstance(error_tolerance, float):
         raise TypeError(
-            f"The error_tol variable must be a float, is type {type(error_tol)}."
+            f"The error_tolerance variable must be a float, is type {type(error_tolerance)}."
         )
-    error_tol = abs(error_tol)
+    error_tolerance = abs(error_tolerance)
 
-    if np.all(np.isclose(f0 / 2, 0, atol=error_tol, rtol=0)):
+    if np.all(np.isclose(f0 / 2, 0, atol=error_tolerance, rtol=0)):
         warn(
             "The f0/2 term is the constant for the OPLS dihedral equation, "
             "which is added to a constant for the RB torsions equation via the c0 coefficient. "

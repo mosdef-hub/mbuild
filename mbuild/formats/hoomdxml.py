@@ -369,7 +369,7 @@ def _write_dihedral_information(xml_file, structure, ref_energy):
         scnb,
     ) in unique_dihedral_types:
         opls_coeffs = RB_to_OPLS(
-            c0, c1, c2, c3, c4, c5, value_error_out_of_tol=False
+            c0, c1, c2, c3, c4, c5, error_if_outside_tolerance=False
         )
         opls_coeffs /= ref_energy
         xml_file.write(
