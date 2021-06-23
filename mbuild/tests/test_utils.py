@@ -319,22 +319,34 @@ class TestUtilsConversion(BaseTest):
         )
 
         assert np.all(
-            np.isclose(c0, reversed_RB_coeffs[0], atol=test_error_tolerance, rtol=0)
+            np.isclose(
+                c0, reversed_RB_coeffs[0], atol=test_error_tolerance, rtol=0
+            )
         )
         assert np.all(
-            np.isclose(c1, reversed_RB_coeffs[1], atol=test_error_tolerance, rtol=0)
+            np.isclose(
+                c1, reversed_RB_coeffs[1], atol=test_error_tolerance, rtol=0
+            )
         )
         assert np.all(
-            np.isclose(c2, reversed_RB_coeffs[2], atol=test_error_tolerance, rtol=0)
+            np.isclose(
+                c2, reversed_RB_coeffs[2], atol=test_error_tolerance, rtol=0
+            )
         )
         assert np.all(
-            np.isclose(c3, reversed_RB_coeffs[3], atol=test_error_tolerance, rtol=0)
+            np.isclose(
+                c3, reversed_RB_coeffs[3], atol=test_error_tolerance, rtol=0
+            )
         )
         assert np.all(
-            np.isclose(c4, reversed_RB_coeffs[4], atol=test_error_tolerance, rtol=0)
+            np.isclose(
+                c4, reversed_RB_coeffs[4], atol=test_error_tolerance, rtol=0
+            )
         )
         assert np.all(
-            np.isclose(c5, reversed_RB_coeffs[5], atol=test_error_tolerance, rtol=0)
+            np.isclose(
+                c5, reversed_RB_coeffs[5], atol=test_error_tolerance, rtol=0
+            )
         )
 
     def test_OPLS_to_RB_error_tolerance_not_float(self):

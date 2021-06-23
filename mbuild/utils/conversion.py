@@ -5,7 +5,14 @@ import numpy as np
 
 
 def RB_to_OPLS(
-    c0, c1, c2, c3, c4, c5, error_tolerance=1e-4, error_if_outside_tolerance=True
+    c0,
+    c1,
+    c2,
+    c3,
+    c4,
+    c5,
+    error_tolerance=1e-4,
+    error_if_outside_tolerance=True,
 ):
     r"""Convert Ryckaert-Bellemans type dihedrals to OPLS type.
 
