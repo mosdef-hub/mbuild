@@ -561,33 +561,18 @@ def _write_dihedral_information(
 
         mcf_file.write("{:d}\n".format(len(dihedrals)))
         for i, dihedral in enumerate(dihedrals):
-            # Sorting here to match LEAP behavior
-            # See https://github.com/choderalab/openmoltools/issues/24
-            # If atom types are identical, too bad.
-            if dihedral.improper:
-                improper_atoms = [
-                    dihedral.atom1,
-                    dihedral.atom2,
-                    dihedral.atom4,
-                ]
-                improper_atoms.sort(key=lambda x: x.type)
-                atom1 = improper_atoms[0]
-                atom2 = improper_atoms[1]
-                atom3 = dihedral.atom3
-                atom4 = improper_atoms[2]
-            else:
-                atom1 = dihedral.atom1
-                atom2 = dihedral.atom2
-                atom3 = dihedral.atom3
-                atom4 = dihedral.atom4
+            # 2021 Jun 24 Ryan S. DeFever
+            # Removed improper sorting for reproducibility;
+            # The atom order provided in the parmed.Structure
+            # is written to the MCF file.
             mcf_file.write(
                 "{:<4d}  {:<4d}  {:<4d}  {:<4d}  {:<4d}"
                 "  {:s}  {:s}\n".format(
                     i + 1,
-                    atom1.idx + 1,
-                    atom2.idx + 1,
-                    atom3.idx + 1,
-                    atom4.idx + 1,
+                    dihedral.atom1.idx + 1,
+                    dihedral.atom2.idx + 1,
+                    dihedral.atom3.idx + 1,
+                    dihedral.atom4.idx + 1,
                     dihedral_style,
                     dihedral_parms[i],
                 )
