@@ -44,6 +44,7 @@ def write_lammpsdata(
     sigma_conversion_factor=None,
     epsilon_conversion_factor=None,
     mass_conversion_factor=None,
+
 ):
     """Output a LAMMPS data file.
 
@@ -100,6 +101,11 @@ def write_lammpsdata(
     https://github.com/mdtraj/mdtraj/blob/master/mdtraj/formats/lammpstrj.py
     for details.
     """
+
+    # Define constants for conversions
+    KCAL_TO_KJ = 4.184
+    NM2_TO_ANG2 = 100.0
+    NM_TO_ANG = 10.0
 
     if atom_style not in ["atomic", "charge", "molecular", "full"]:
         raise ValueError(
@@ -231,7 +237,7 @@ def write_lammpsdata(
         if epsilon_use_default:
             epsilon_conversion_factor = np.max(
                 [atom.epsilon for atom in structure.atoms]
-            )
+            ) 
             if epsilon_conversion_factor == 0:
                 epsilon_conversion_factor = 1
                 warnings.warn(
@@ -632,8 +638,8 @@ def write_lammpsdata(
                         data.write(
                             "{}\t{}\t\t{}\t\t# {}\t{}\n".format(
                                 idx,
-                                params[0] * 4.184 * 100.0 * 2.0,
-                                params[1] / 10.0,
+                                params[0] * KCAL_TO_KJ * NM2_TO_ANG2 * 2.0,
+                                params[1] / NM_TO_ANG,
                                 params[2][0],
                                 params[2][1],
                             )
@@ -670,14 +676,19 @@ def write_lammpsdata(
 
                 else:
                     data.write("\nAngle Coeffs # harmonic\n")
-                    data.write("#\treduced_k\t\ttheteq(deg)\n")
+
+                    if unit_style == "lj":
+                        data.write("#\treduced_k\t\ttheteq(deg)\n")
+                    else:
+                        data.write("#\tk(kcal/mol/rad^2)\t\ttheteq(deg)\n")
+
                     for params, idx in sorted_angle_types.items():
                         # If the user specified LJ unit style, revert the internal conversion of k by ParmEd
                         if unit_style == "lj":
                             data.write(
                                 "{}\t{}\t\t{:.5f}\t# {}\t{}\t{}\n".format(
                                     idx,
-                                    params[0] * 4.184 * 2.0,
+                                    params[0] * KCAL_TO_KJ * 2.0,
                                     params[1],
                                     params[3][0],
                                     params[2],
@@ -800,9 +811,9 @@ def write_lammpsdata(
                         type_index=unique_types.index(types[i]) + 1,
                         zero=structure.atoms[i].residue.idx,
                         charge=charges[i],
-                        x=coords[0] / 10.0,
-                        y=coords[1] / 10.0,
-                        z=coords[2] / 10.0,
+                        x=coords[0] / NM_TO_ANG,
+                        y=coords[1] / NM_TO_ANG,
+                        z=coords[2] / NM_TO_ANG,
                     )
                 )
             else:
