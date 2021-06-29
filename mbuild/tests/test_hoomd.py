@@ -10,35 +10,102 @@ from mbuild.utils.io import get_fn, has_foyer, has_gsd, has_hoomd, import_
 
 @pytest.mark.skipif(not has_hoomd, reason="HOOMD is not installed")
 class TestHoomd(BaseTest):
+    def test_compound_from_snapshot(self, ethane):
+        from mbuild.formats.hoomd_snapshot import (
+            from_snapshot,
+            to_hoomdsnapshot,
+        )
+
+        lengths = [5, 5, 5]
+        filled = mb.fill_box(ethane, n_compounds=5, box=mb.Box(lengths))
+        snap, _ = to_hoomdsnapshot(filled)
+        new_filled = from_snapshot(snap, scale=0.1)
+
+        assert filled.n_bonds == new_filled.n_bonds
+        assert filled.n_particles == new_filled.n_particles
+
+        assert np.array_equal(filled.box.angles, new_filled.box.angles)
+        assert np.array_equal(filled.box.lengths, new_filled.box.lengths)
+
+        for i in range(filled.n_particles):
+            assert np.allclose(filled[i].pos, new_filled[i].pos)
+
+    @pytest.mark.skipif(not has_gsd, reason="gsd is not installed")
+    def test_compound_from_gsdsnapshot(self, ethane):
+        from mbuild.formats.hoomd_snapshot import (
+            from_snapshot,
+            to_hoomdsnapshot,
+        )
+
+        gsd = import_("gsd")
+
+        lengths = [5, 5, 5]
+        filled = mb.fill_box(ethane, n_compounds=5, box=mb.Box(lengths))
+        snap, _ = to_hoomdsnapshot(filled)
+
+        # copy attributes from the snapshot to a gsd snapshot
+        gsd_snap = gsd.hoomd.Snapshot()
+        gsd_snap.particles.N = snap.particles.N
+        gsd_snap.particles.types = snap.particles.types
+        gsd_snap.particles.typeid = snap.particles.typeid
+        gsd_snap.particles.position = snap.particles.position
+        gsd_snap.configuration.box = np.array(
+            [
+                snap.box.Lx,
+                snap.box.Ly,
+                snap.box.Lz,
+                snap.box.xy,
+                snap.box.xy,
+                snap.box.yz,
+            ]
+        )
+        gsd_snap.bonds.N = snap.bonds.N
+        gsd_snap.bonds.group = snap.bonds.group
+        gsd_snap.particles.charge = snap.particles.charge
+        gsd_snap.validate()
+
+        new_filled = from_snapshot(gsd_snap, scale=0.1)
+
+        assert filled.n_bonds == new_filled.n_bonds
+        assert filled.n_particles == new_filled.n_particles
+
+        assert np.array_equal(filled.box.angles, new_filled.box.angles)
+        assert np.array_equal(filled.box.lengths, new_filled.box.lengths)
+
+        for i in range(filled.n_particles):
+            assert np.allclose(filled[i].pos, new_filled[i].pos)
+
     def test_compound_to_snapshot(self, ethane):
-        hoomd_snapshot = import_("mbuild.formats.hoomd_snapshot")
-        snap, _ = hoomd_snapshot.to_hoomdsnapshot(ethane)
+        from mbuild.formats.hoomd_snapshot import to_hoomdsnapshot
+
+        snap, _ = to_hoomdsnapshot(ethane)
 
         assert snap.particles.N == 8
         assert snap.bonds.N == 7
         assert snap.angles.N == 0
 
     def test_particles_to_snapshot(self):
-        hoomd_snapshot = import_("mbuild.formats.hoomd_snapshot")
+        from mbuild.formats.hoomd_snapshot import to_hoomdsnapshot
+
         part = mb.Compound(name="Ar")
         box = mb.Box(lengths=[5, 5, 5], angles=[90, 90, 90])
         system = mb.fill_box(part, n_compounds=10, box=box)
-        snap, _ = hoomd_snapshot.to_hoomdsnapshot(system)
+        snap, _ = to_hoomdsnapshot(system)
 
         assert snap.particles.N == 10
         assert snap.bonds.N == 0
         assert snap.angles.N == 0
 
     def test_snapshot_from_initial(self):
-        hoomd = import_("hoomd")
-        hoomd_snapshot = import_("mbuild.formats.hoomd_snapshot")
+        import hoomd
+
+        from mbuild.formats.hoomd_snapshot import to_hoomdsnapshot
+
         part = mb.Compound(name="Ar")
         box = mb.Box(lengths=[5, 5, 5], angles=[90, 90, 90])
         system = mb.fill_box(part, n_compounds=10, box=box)
         init_snap = hoomd.data.make_snapshot(N=10, box=hoomd.data.boxdim(L=10))
-        snap, _ = hoomd_snapshot.to_hoomdsnapshot(
-            system, hoomd_snapshot=init_snap
-        )
+        snap, _ = to_hoomdsnapshot(system, hoomd_snapshot=init_snap)
 
         assert snap.particles.N == 20
         assert snap.bonds.N == 0
@@ -47,26 +114,28 @@ class TestHoomd(BaseTest):
         assert (snap.box.xy, snap.box.xz, snap.box.yz) == (0, 0, 0)
 
     def test_empty_initial_snapshot(self):
-        hoomd = import_("hoomd")
-        hoomd_snapshot = import_("mbuild.formats.hoomd_snapshot")
+        import hoomd
+
+        from mbuild.formats.hoomd_snapshot import to_hoomdsnapshot
+
         part = mb.Compound(name="Ar")
         box = mb.Box(lengths=[5, 5, 5], angles=[90, 90, 90])
         system = mb.fill_box(part, n_compounds=10, box=box)
         init_snap = hoomd.data.make_snapshot(N=0, box=hoomd.data.boxdim(L=10))
         with pytest.raises(RuntimeError):
-            snap, _ = hoomd_snapshot.to_hoomdsnapshot(
-                system, hoomd_snapshot=init_snap
-            )
+            snap, _ = to_hoomdsnapshot(system, hoomd_snapshot=init_snap)
 
     def test_bad_input_to_snapshot(self):
-        hoomd_snapshot = import_("mbuild.formats.hoomd_snapshot")
+        from mbuild.formats.hoomd_snapshot import to_hoomdsnapshot
+
         with pytest.raises(ValueError):
-            hoomd_snapshot.to_hoomdsnapshot("fake_object")
+            to_hoomdsnapshot("fake_object")
 
     def test_non_param_struc_to_snapshot(self, ethane):
-        hoomd_snapshot = import_("mbuild.formats.hoomd_snapshot")
+        from mbuild.formats.hoomd_snapshot import to_hoomdsnapshot
+
         structure = ethane.to_parmed()
-        snap, _ = hoomd_snapshot.to_hoomdsnapshot(structure)
+        snap, _ = to_hoomdsnapshot(structure)
 
         assert snap.particles.N == 8
         assert snap.bonds.N == 7
@@ -74,11 +143,13 @@ class TestHoomd(BaseTest):
 
     @pytest.mark.skipif(not has_foyer, reason="Foyer is not installed")
     def test_param_structure_to_snapshot(self, ethane):
-        hoomd_snapshot = import_("mbuild.formats.hoomd_snapshot")
-        forcefield = import_("foyer.forcefield")
-        ff = forcefield.Forcefield(name="oplsaa")
+        from foyer.forcefield import Forcefield
+
+        from mbuild.formats.hoomd_snapshot import to_hoomdsnapshot
+
+        ff = Forcefield(name="oplsaa")
         structure = ff.apply(ethane)
-        snap, _ = hoomd_snapshot.to_hoomdsnapshot(structure)
+        snap, _ = to_hoomdsnapshot(structure)
 
         assert snap.particles.N == 8
         assert snap.bonds.N == 7
@@ -87,25 +158,29 @@ class TestHoomd(BaseTest):
         assert snap.pairs.N == 9
 
     def test_bad_input_to_hoomdsimulation(self):
-        hoomd_simulation = import_("mbuild.formats.hoomd_simulation")
+        from mbuild.formats.hoomd_simulation import create_hoomd_simulation
+
         with pytest.raises(ValueError):
-            hoomd_simulation.create_hoomd_simulation("fake_object")
+            create_hoomd_simulation("fake_object")
 
     def test_compound_to_hoomdsimulation(self, ethane):
-        hoomd_simulation = import_("mbuild.formats.hoomd_simulation")
+        from mbuild.formats.hoomd_simulation import create_hoomd_simulation
+
         with pytest.raises(ValueError):
-            hoomd_simulation.create_hoomd_simulation(ethane)
+            create_hoomd_simulation(ethane)
 
     @pytest.mark.skipif(not has_foyer, reason="Foyer is not installed")
     def test_structure_to_hoomdsimulation(self, ethane):
-        forcefield = import_("foyer.forcefield")
-        hoomd = import_("hoomd")
-        hoomd_simulation = import_("mbuild.formats.hoomd_simulation")
-        ff = forcefield.Forcefield(name="oplsaa")
+        import hoomd
+        from foyer.forcefield import Forcefield
+
+        from mbuild.formats.hoomd_simulation import create_hoomd_simulation
+
+        ff = Forcefield(name="oplsaa")
         structure = ff.apply(ethane)
         sim = hoomd.context.SimulationContext()
         with sim:
-            hoomd_simulation.create_hoomd_simulation(structure)
+            create_hoomd_simulation(structure)
 
             sim_forces = hoomd.context.current.forces
             pair_force = import_("hoomd.md.pair")
@@ -126,18 +201,20 @@ class TestHoomd(BaseTest):
 
     @pytest.mark.skipif(not has_foyer, reason="Foyer is not installed")
     def test_lj_to_hoomdsimulation(self):
-        hoomd = import_("hoomd")
-        hoomd_simulation = import_("mbuild.formats.hoomd_simulation")
-        forcefield = import_("foyer.forcefield")
+        import hoomd
+        from foyer.forcefield import Forcefield
+
+        from mbuild.formats.hoomd_simulation import create_hoomd_simulation
+
         box = mb.Compound()
         box.add(mb.Compound(name="Ar", pos=[1, 1, 1]))
         box.add(mb.Compound(name="Ar", pos=[1, 1, 1]))
-        ff = forcefield.Forcefield(forcefield_files=get_fn("lj.xml"))
+        ff = Forcefield(forcefield_files=get_fn("lj.xml"))
         structure = ff.apply(box)
         structure.box = [10, 10, 10, 90, 90, 90]
         sim = hoomd.context.SimulationContext()
         with sim:
-            hoomd_simulation.create_hoomd_simulation(structure)
+            create_hoomd_simulation(structure)
             sim_forces = hoomd.context.current.forces
             pair_force = import_("hoomd.md.pair")
 
@@ -146,19 +223,21 @@ class TestHoomd(BaseTest):
     @pytest.mark.skipif(not has_foyer, reason="Foyer is not installed")
     @pytest.mark.skipif(not has_gsd, reason="GSD is not installed")
     def test_hoomdsimulation_restart(self):
-        hoomd = import_("hoomd")
-        hoomd_simulation = import_("mbuild.formats.hoomd_simulation")
-        forcefield = import_("foyer.forcefield")
-        gsd = import_("gsd.hoomd")
+        import gsd.hoomd
+        import hoomd
+        from foyer.forcefield import Forcefield
+
+        from mbuild.formats.hoomd_simulation import create_hoomd_simulation
+
         box = mb.Compound()
         box.add(mb.Compound(name="Ar", pos=[1, 1, 1]))
         box.add(mb.Compound(name="Ar", pos=[1, 1, 1]))
-        ff = forcefield.Forcefield(forcefield_files=get_fn("lj.xml"))
+        ff = Forcefield(forcefield_files=get_fn("lj.xml"))
         structure = ff.apply(box)
         structure.box = [10, 10, 10, 90, 90, 90]
         sim = hoomd.context.SimulationContext()
         with sim:
-            hoomd_obj, ref_vals = hoomd_simulation.create_hoomd_simulation(
+            hoomd_obj, ref_vals = create_hoomd_simulation(
                 structure, restart=get_fn("restart.gsd")
             )
             sim_forces = hoomd.context.current.forces
@@ -167,7 +246,7 @@ class TestHoomd(BaseTest):
             assert isinstance(sim_forces[0], pair_force.lj)
 
         snap = hoomd_obj[0]
-        with gsd.open(get_fn("restart.gsd")) as f:
+        with gsd.hoomd.open(get_fn("restart.gsd")) as f:
             rsnap = f[0]
         assert np.array_equal(snap.particles.position, rsnap.particles.position)
 
@@ -261,6 +340,7 @@ class TestHoomdXML(BaseTest):
             _.split("\t")
             for _ in xml_file[0].find("pair_coeffs").text.splitlines()
         ]
-        # The first element is empty, the next element should be ['opls_135', '1.0000', '1.0000']
+        # The first element is empty, the next element should be
+        # ['opls_135', '1.0000', '1.0000']
         assert pair_coeffs[1][1] == "1.0000"
         assert pair_coeffs[1][2] == "1.0000"
