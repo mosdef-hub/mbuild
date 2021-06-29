@@ -227,9 +227,12 @@ def write_lammpsdata(
             sigma_conversion_factor = np.max(
                 [atom.sigma for atom in structure.atoms]
             )
+            warn(
+                    "Assuming sigma conversion factor of " + str(sigma_conversion_factor)
+                )
             if sigma_conversion_factor == 0:
                 sigma_conversion_factor = 1
-                warnings.warn(
+                warn(
                     "sigma conversion factor cannot be inferred from the maximum sigma value in the ParmEd Structure. "
                     "Setting the sigma conversion factor to 1"
                 )
@@ -238,9 +241,12 @@ def write_lammpsdata(
             epsilon_conversion_factor = np.max(
                 [atom.epsilon for atom in structure.atoms]
             ) 
+            warn(
+                    "Assuming epsilon conversion factor of " + str(epsilon_conversion_factor)
+                )
             if epsilon_conversion_factor == 0:
                 epsilon_conversion_factor = 1
-                warnings.warn(
+                warn(
                     "epsilon conversion factor cannot be inferred from the maximum epsilon value in the ParmEd Structure. "
                     "Setting the epsilon conversion factor to 1"
                 )
@@ -249,9 +255,12 @@ def write_lammpsdata(
             mass_conversion_factor = np.max(
                 [atom.mass for atom in structure.atoms]
             )
+            warn(
+                    "Assuming mass conversion factor of " + str(mass_conversion_factor)
+                )
             if mass_conversion_factor == 0:
                 mass_conversion_factor = 1
-                warnings.warn(
+                warn(
                     "mass conversion factor cannot be inferred from the maximum mass value in the ParmEd Structure. "
                     "Setting the mass conversion factor to 1"
                 )
