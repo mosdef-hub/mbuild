@@ -6,7 +6,6 @@ from mbuild.formats.lammpsdata import write_lammpsdata
 from mbuild.tests.base_test import BaseTest
 from mbuild.utils.io import get_fn, has_foyer
 
-
 @pytest.mark.skipif(not has_foyer, reason="Foyer package not installed")
 class TestLammpsData(BaseTest):
     def test_save(self, ethane):
@@ -291,7 +290,6 @@ class TestLammpsData(BaseTest):
                     bonds = list()
                     bonds.append(float(fi.readline().split()[1]))
                     bonds.append(float(fi.readline().split()[1]))
-                    print(bonds)
                     assert np.allclose(
                         sorted(bonds), [41624460.4032, 52807151.8448]
                     )
