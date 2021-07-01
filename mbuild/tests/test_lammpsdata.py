@@ -59,6 +59,36 @@ class TestLammpsData(BaseTest):
         assert found_dihedrals
 
     @pytest.mark.skipif(not has_foyer, reason="Foyer package not installed")
+    def test_singleterm_charmm(self):
+        from foyer import Forcefield
+
+        from mbuild.formats.lammpsdata import write_lammpsdata
+
+        cmpd = mb.load(get_fn("charmm_dihedral.mol2"))
+        for i in cmpd.particles():
+            i.name = "_{}".format(i.name)
+        structure = cmpd.to_parmed(
+            box=cmpd.boundingbox,
+            residues=set([p.parent.name for p in cmpd.particles()]),
+        )
+        ff = Forcefield(forcefield_files=[get_fn("charmm_truncated_singleterm.xml")])
+        structure = ff.apply(structure, assert_dihedral_params=False)
+        write_lammpsdata(structure, "charmm_dihedral_singleterm.lammps")
+        out_lammps = open("charmm_dihedral_singleterm.lammps", "r").readlines()
+        found_dihedrals = False
+        for i, line in enumerate(out_lammps):
+            if "Dihedral Coeffs" in line:
+                assert "# charmm" in line
+                assert "#k, n, phi, weight" in out_lammps[i + 1]
+                assert len(out_lammps[i + 2].split("#")[0].split()) == 5
+                assert float(out_lammps[i + 2].split("#")[0].split()[4]) == float("1.0")
+                found_dihedrals = True
+            else:
+                pass
+        assert found_dihedrals
+
+
+    @pytest.mark.skipif(not has_foyer, reason="Foyer package not installed")
     def test_charmm_improper(self):
         from foyer import Forcefield
 
