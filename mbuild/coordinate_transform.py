@@ -750,7 +750,7 @@ def y_axis_transform(
         point_on_x_axis=point_on_y_axis,
         point_on_xy_plane=point_on_xy_plane,
     )
-    compound.rotate(theta=np.pi/2, around=(0,0,1))
+    compound.rotate(theta=np.pi / 2, around=(0, 0, 1))
 
 
 def z_axis_transform(
@@ -775,4 +775,4 @@ def z_axis_transform(
         point_on_x_axis=point_on_z_axis,
         point_on_xy_plane=point_on_zx_plane,
     )
-    compound.rotate(theta=np.pi*1.5, around=(0, 1, 0))
+    compound.rotate(theta=np.pi * 1.5, around=(0, 1, 0))
