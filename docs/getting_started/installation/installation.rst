@@ -43,12 +43,12 @@ in order to get all of the dependencies::
 Install pre-commit
 ------------------
 
-We use [pre-commit](https://pre-commit.com/) to automatically handle our code formatting and this package is included in the dev environment.
+We use `pre-commit <https://pre-commit.com/>`_ to automatically handle our code formatting and this package is included in the dev environment.
 With the ``mbuild-dev`` conda environment active, pre-commit can be installed locally as a git hook by running::
 
      $ pre-commit install
 
- 	And (optional) all files can be checked by running::
+And (optional) all files can be checked by running::
 
      $ pre-commit run --all-files
 
