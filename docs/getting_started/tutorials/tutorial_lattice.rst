@@ -37,7 +37,7 @@ The following notebook provides a thorough walkthrough to using the
 
 -  *IN PROGRESS* **Generation of lattice structure from crystallographic
    index file (CIF).**
-	
+
    -  Please also see the :ref:`QuickStart_Load_files` section for other ways to load files.
    -  Although this feature is not currently implemented, this
       functionality can be extended.
