@@ -292,6 +292,56 @@ class BaseTest:
         return cscl_compound
 
     @pytest.fixture
+    def gilmerite(self):
+        """Structure taken from:
+
+        Sarp H., Cerny R., European Journal of Mineralogy, 11 (1999) p.549-555,
+        Gilmarite, Cu3(AsO4)(OH)3, a new mineral:, its description and crystal
+        structure.
+        """
+        gilmerite = mb.Compound()
+        gilmerite.box = mb.Box(
+            lengths=[5.44500017, 5.87300015, 5.10400009],
+            angles=[114.94999695, 93.05000305, 91.91999817],
+        )
+        gilmerite.add(
+            mb.Particle(
+                name="As", pos=[5.43783569e-01, 1.54457900e-04, 4.61488000e-05]
+            )
+        )
+        gilmerite.add(
+            mb.Particle(name="Cu", pos=[0.00615697, 0.28454988, 0.14878373])
+        )
+        gilmerite.add(
+            mb.Particle(name="Cu", pos=[0.28204174, 0.13594167, 0.16465892])
+        )
+        gilmerite.add(
+            mb.Particle(name="Cu", pos=[0.28377297, 0.43348074, 0.17854972])
+        )
+        gilmerite.add(
+            mb.Particle(name="O", pos=[0.08094841, 0.14370937, 0.03276565])
+        )
+        gilmerite.add(
+            mb.Particle(name="O", pos=[0.08451646, 0.45650253, 0.03415011])
+        )
+        gilmerite.add(
+            mb.Particle(name="O", pos=[0.36793642, 0.28482277, 0.07106915])
+        )
+        gilmerite.add(
+            mb.Particle(name="O", pos=[0.39833167, -0.00501952, 0.08583677])
+        )
+        gilmerite.add(
+            mb.Particle(name="O", pos=[0.17415644, 0.27864442, 0.24828055])
+        )
+        gilmerite.add(
+            mb.Particle(name="O", pos=[0.24149659, -0.00539473, 0.29073744])
+        )
+        gilmerite.add(
+            mb.Particle(name="O", pos=[0.45795937, 0.36822546, 0.30135167])
+        )
+        return gilmerite
+
+    @pytest.fixture
     def ethane_gomc(self):
         ethane_gomc = mb.load("CC", smiles=True)
         ethane_gomc.name = "ETH"

@@ -15,7 +15,7 @@ class TestPar(BaseTest):
         for i in cmpd.particles():
             i.name = "_{}".format(i.name)
         structure = cmpd.to_parmed(
-            box=cmpd.boundingbox,
+            box=cmpd.get_boundingbox(),
             residues=set([p.parent.name for p in cmpd.particles()]),
         )
 

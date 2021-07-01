@@ -5,7 +5,8 @@ from collections import namedtuple
 import numpy as np
 import parmed as pmd
 
-import mbuild as mb
+from mbuild.box import Box
+from mbuild.compound import Compound, Particle
 from mbuild.utils.geometry import coord_shift
 from mbuild.utils.io import import_
 from mbuild.utils.sorting import natural_sort
@@ -13,7 +14,68 @@ from mbuild.utils.sorting import natural_sort
 hoomd = import_("hoomd")
 hoomd.data = import_("hoomd.data")
 
-__all__ = ["to_hoomdsnapshot"]
+__all__ = ["to_hoomdsnapshot", "from_snapshot"]
+
+
+def from_snapshot(snapshot, scale=1.0):
+    """Convert a Snapshot to a Compound.
+
+    Snapshot can be a hoomd.data.Snapshot or a gsd.hoomd.Snapshot.
+
+    Parameters
+    ----------
+    snapshot : hoomd._hoomd.SnapshotSystemData_float or gsd.hoomd.Snapshot
+        Snapshot from which to build the mbuild Compound.
+    scale : float, optional, default 1.0
+        Value by which to scale the length values
+
+    Returns
+    -------
+    comp : Compound
+
+    Note
+    ----
+    GSD and HOOMD snapshots center their boxes on the origin (0,0,0), so the
+    compound is shifted by half the box lengths
+    """
+    comp = Compound()
+    bond_array = snapshot.bonds.group
+    n_atoms = snapshot.particles.N
+
+    if "SnapshotSystemData_float" in dir(hoomd._hoomd) and isinstance(
+        snapshot, hoomd._hoomd.SnapshotSystemData_float
+    ):
+        # hoomd v2
+        box = snapshot.box
+        comp.box = Box.from_lengths_tilt_factors(
+            lengths=np.array([box.Lx, box.Ly, box.Lz]) * scale,
+            tilt_factors=np.array([box.xy, box.xz, box.yz]),
+        )
+    else:
+        # gsd / hoomd v3
+        box = snapshot.configuration.box
+        comp.box = Box.from_lengths_tilt_factors(
+            lengths=box[:3] * scale, tilt_factors=box[3:]
+        )
+
+    # GSD and HOOMD snapshots center their boxes on the origin (0,0,0)
+    shift = np.array(comp.box.lengths) / 2
+    # Add particles
+    for i in range(n_atoms):
+        name = snapshot.particles.types[snapshot.particles.typeid[i]]
+        xyz = snapshot.particles.position[i] * scale + shift
+        charge = snapshot.particles.charge[i]
+
+        atom = Particle(name=name, pos=xyz, charge=charge)
+        comp.add(atom, label=str(i))
+
+    # Add bonds
+    particle_dict = {idx: p for idx, p in enumerate(comp.particles())}
+    for i in range(bond_array.shape[0]):
+        atom1 = int(bond_array[i][0])
+        atom2 = int(bond_array[i][1])
+        comp.add_bond([particle_dict[atom1], particle_dict[atom2]])
+    return comp
 
 
 def to_hoomdsnapshot(
@@ -70,13 +132,12 @@ def to_hoomdsnapshot(
     -----
     Force field parameters are not written to the hoomd_snapshot
     """
-    if not isinstance(structure, (mb.Compound, pmd.Structure)):
+    if not isinstance(structure, (Compound, pmd.Structure)):
         raise ValueError(
-            "You are trying to create a hoomd.Snapshot from "
-            + "{} ".format(type(structure))
-            + "please pass mb.Compound or pmd.Structure"
+            "You are trying to create a hoomd.Snapshot from a "
+            f"{type(structure)} please pass a Compound or pmd.Structure"
         )
-    elif isinstance(structure, mb.Compound):
+    elif isinstance(structure, Compound):
         structure = structure.to_parmed(**parmed_kwargs)
 
     if not hoomd.context.current:
