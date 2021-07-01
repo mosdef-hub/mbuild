@@ -551,7 +551,7 @@ def rotate_around_x(compound, theta):
         The angle by which to rotate the compound.
     """
     raise RemovedFuncError(
-        "rotate_around_x()", "Compound.rotate_around_x()", "0.7.0", "0.11.0"
+        "rotate_around_x()", "Compound.rotate()", "0.7.0", "0.11.0"
     )
 
 
@@ -566,7 +566,7 @@ def rotate_around_y(compound, theta):
         The angle by which to rotate the compound.
     """
     raise RemovedFuncError(
-        "rotate_around_y()", "Compound.rotate_around_y()", "0.7.0", "0.11.0"
+        "rotate_around_y()", "Compound.rotate()", "0.7.0", "0.11.0"
     )
 
 
@@ -581,7 +581,7 @@ def rotate_around_z(compound, theta):
         The angle by which to rotate the compound.
     """
     raise RemovedFuncError(
-        "rotate_around_z()", "Compound.rotate_around_z()", "0.7.0", "0.11.0"
+        "rotate_around_z()", "Compound.rotate()", "0.7.0", "0.11.0"
     )
 
 
