@@ -52,6 +52,7 @@ class TestLammpsData(BaseTest):
                 assert "# charmm" in line
                 assert "#k, n, phi, weight" in out_lammps[i + 1]
                 assert len(out_lammps[i + 2].split("#")[0].split()) == 5
+                assert float(out_lammps[i + 2].split("#")[0].split()[4]) == float("1.0")
                 found_dihedrals = True
             else:
                 pass
