@@ -1,3 +1,5 @@
+.. _QuickStart_Load_files:
+
 Load files
 ========================
 
@@ -43,3 +45,8 @@ The `CIF <https://www.iucr.org/resources/cif>`_ file is loaded with the load_cif
     lattice_cif_ETV_triclinic = load_cif("path_to_cif_file/ETV_triclinic.cif")
     ETV_triclinic = lattice_cif_ETV_triclinic.populate(x=3, y=3, z=3)
     ETV_triclinic.name = 'ETV'
+
+
+Other file types
+------------------------
+mBuild also supports loading data or files via hoomd_snapshot, gsd, smarts strings, and parmed structures.
