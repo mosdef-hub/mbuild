@@ -15,7 +15,7 @@ Import the required mbuild package.
 
 
 Construct an all-atom (AA) hexane and ethanol using the OPLS-AA force field (FF),
-which is comes as a standard `foyer <https://foyer.mosdef.org/en/stable/>`_ force field (FF).
+which is comes as a standard `foyer <https://foyer.mosdef.org/en/stable/>`_ force field.
 The hexane and ethanol molecules will be created using `smiles strings <https://www.daylight.com/dayhtml/doc/theory/theory.smiles.html>`_.
 The hexane and ethanol residues will be named HEX and ETO, respectively.
 Lastly, the hexane and ethanol molecule's configuration will be energy minimized, properly reorienting the molecule to the specified FF, which is sometimes needed for some simulation engines to ensure the initial configuration energy is not too high.
@@ -26,12 +26,12 @@ Lastly, the hexane and ethanol molecule's configuration will be energy minimized
 
     hexane = mb.load('CCCCCC', smiles=True)
     hexane.name = 'HEX'
-    hexane.energy_minimize(forcefield='oplsaa' , steps=10**4)
+    hexane.energy_minimize(forcefield='oplsaa', steps=10**4)
 
 
     ethanol = mb.load('CCO', smiles=True)
     ethanol.name = 'ETO'
-    ethanol.energy_minimize(forcefield='oplsaa' , steps=10**4)
+    ethanol.energy_minimize(forcefield='oplsaa', steps=10**4)
 
 
 The liquid box is built to a density of 680 kg/m^3, with a 50/50 mol ratio of hexane and ethanol,
@@ -67,6 +67,7 @@ allow a user-selected residue name (mbuild.Compound.name). If the methane is bui
     methane_child_bead = mb.Compound(name="_CH4")
     methane.add(methane_child_bead, inherit_periodicity=False)
 
+Note: the inherit_periodicity is an optional boolean (default=True), which replaces the periodicity of self with the periodicity of the Compound being added.
 
 The orthogonal liquid box contains 1230 methane molecules and measures 4.5 nm in all the x, y, and z-dimensions.
 
