@@ -71,7 +71,9 @@ class TestLammpsData(BaseTest):
             box=cmpd.boundingbox,
             residues=set([p.parent.name for p in cmpd.particles()]),
         )
-        ff = Forcefield(forcefield_files=[get_fn("charmm_truncated_singleterm.xml")])
+        ff = Forcefield(
+            forcefield_files=[get_fn("charmm_truncated_singleterm.xml")]
+        )
         structure = ff.apply(structure, assert_dihedral_params=False)
         write_lammpsdata(structure, "charmm_dihedral_singleterm.lammps")
         out_lammps = open("charmm_dihedral_singleterm.lammps", "r").readlines()
@@ -81,12 +83,13 @@ class TestLammpsData(BaseTest):
                 assert "# charmm" in line
                 assert "#k, n, phi, weight" in out_lammps[i + 1]
                 assert len(out_lammps[i + 2].split("#")[0].split()) == 5
-                assert float(out_lammps[i + 2].split("#")[0].split()[4]) == float("1.0")
+                assert float(
+                    out_lammps[i + 2].split("#")[0].split()[4]
+                ) == float("1.0")
                 found_dihedrals = True
             else:
                 pass
         assert found_dihedrals
-
 
     @pytest.mark.skipif(not has_foyer, reason="Foyer package not installed")
     def test_charmm_improper(self):
