@@ -17,6 +17,7 @@ by adjusting a variable or two::
 .. image:: ../images/pmpc.png
     :width: 100 %
     :align: center
+    :alt: Zwitterionic brushes on beta-cristobalite substrate
 
 .. image:: https://img.shields.io/badge/license-MIT-blue.svg
     :target: http://opensource.org/licenses/MIT
