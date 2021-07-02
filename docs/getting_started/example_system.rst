@@ -15,10 +15,8 @@ by adjusting a variable or two::
     brush_layer = BrushLayer(chain_lenth=20, pattern=pattern, tile_x=3, tile_y=2)
 
 .. image:: ../images/pmpc.png
+    :width: 100 %
     :align: center
-    :width: 20 cm
-    :height: 12 cm
-    :alt: Zwitterionic brushes on beta-cristobalite substrate
 
 .. image:: https://img.shields.io/badge/license-MIT-blue.svg
     :target: http://opensource.org/licenses/MIT
