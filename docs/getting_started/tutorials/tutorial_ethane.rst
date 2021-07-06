@@ -78,7 +78,7 @@ it as a component to build more complex molecules later.
     import mbuild as mb
 
     class CH3(mb.Compound):
-        def __init__(self): 
+        def __init__(self):
             super(CH3, self).__init__()
 
             mb.load('ch3.pdb', compound=self)
