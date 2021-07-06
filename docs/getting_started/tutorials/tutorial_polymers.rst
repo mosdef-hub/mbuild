@@ -192,8 +192,8 @@ Using mBuild’s Polymer Class
 
 ``mBuild`` provides a prebuilt class to perform this basic
 functionality. Since it is designed to be more general, it takes as an
-argument not just the replicates (n), ``sequence`` ('A' for a single monomer or 'AB' for two different monomers). 
-Then, it binds them together by removing atom/bead via specifying its index number (indices). 
+argument not just the replicates (n), ``sequence`` ('A' for a single monomer or 'AB' for two different monomers).
+Then, it binds them together by removing atom/bead via specifying its index number (indices).
 A graphical description of the polymer builder creating ports, then bonding them together is provided below.
 
 .. image:: ../../images/polymer_image.png
@@ -203,9 +203,9 @@ A graphical description of the polymer builder creating ports, then bonding them
 
 Building a Simple Hexane
 ----------------------------
-A simple hexane molecule is built using mBuild's packaged polymer builder.  
-This is done by loading a methane molecule via a smiles string, specifying 
-The indices are explicitly selected, so the molecule builds out in the proper directions and does not overlap. 
+A simple hexane molecule is built using mBuild's packaged polymer builder.
+This is done by loading a methane molecule via a smiles string, specifying
+The indices are explicitly selected, so the molecule builds out in the proper directions and does not overlap.
 
 .. code:: ipython3
 
@@ -225,19 +225,19 @@ The indices are explicitly selected, so the molecule builds out in the proper di
 
 Using Multiple Monomers and Capping the Ends of a Polymer
 ----------------------------
-This example uses methyl ether and methane monomers to build a polymer, capping it with fluorinated and alcohol end groups.  
+This example uses methyl ether and methane monomers to build a polymer, capping it with fluorinated and alcohol end groups.
 The monomers are combined together in the 'AB' sequence two times (n=2), which means the polymer will contain 2 of each monomer.
-The end groups are added via the ``add_end_groups`` attribute, specifying the atom to use (``index``), the distance of the bond (``separation``), 
-the location of each end group (``label``), and if the tail end group is duplicated to the head of the polymer (``duplicate``).  
-The indices are explicitly selected, so the molecule builds out in the proper directions and does not overlap. 
+The end groups are added via the ``add_end_groups`` attribute, specifying the atom to use (``index``), the distance of the bond (``separation``),
+the location of each end group (``label``), and if the tail end group is duplicated to the head of the polymer (``duplicate``).
+The indices are explicitly selected, so the molecule builds out in the proper directions and does not overlap.
 
 .. code:: ipython3
 
     import mbuild as mb
     from mbuild.lib.recipes.polymer import Polymer
 
-    comp_1 = mb.load('C', smiles=True) 
-    comp_2 = mb.load('COC', smiles=True) 
+    comp_1 = mb.load('C', smiles=True)
+    comp_2 = mb.load('COC', smiles=True)
     chain = Polymer()
 
     chain.add_monomer(compound=comp_1,
@@ -311,7 +311,7 @@ the rotation commands to randomize the orientation.
 
     import random
 
-    comp = mb.load('C', smiles=True) 
+    comp = mb.load('C', smiles=True)
     polymer = Polymer()
 
     polymer.add_monomer(compound=comp,
