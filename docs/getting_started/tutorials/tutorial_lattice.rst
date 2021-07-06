@@ -79,10 +79,10 @@ ever get stuck, remember to use the python built-in ``help()`` method!
    equivalent. These are the lattice parameters :math:`a, b, c` when
    viewing crystallographic information.
 
-   For Example: 
+   For Example:
 
    .. code:: ipython3
-       
+
        lattice_spacing = [0.5, 0.5, 0.5]
 
 -  **``Lattice.lattice_vectors``**
@@ -102,7 +102,7 @@ ever get stuck, remember to use the python built-in ``help()`` method!
    For example: Cubic Cell
 
    .. code:: ipython3
-       
+
        lattice_vectors = [[1, 0, 0], [0, 1, 0], [0, 0, 1]]
 
 -  **``Lattice.angles``**
@@ -111,10 +111,10 @@ ever get stuck, remember to use the python built-in ``help()`` method!
    the lattice. Commonly referred to as :math:`\alpha, \beta, \gamma` in
    the definition of the lattice parameters.
 
-   For example: Cubic Cell 
+   For example: Cubic Cell
 
    .. code:: ipython3
-       
+
        angles = [90, 90, 90]
 
 -  **``Lattice.lattice_points``**
@@ -139,9 +139,9 @@ ever get stuck, remember to use the python built-in ``help()`` method!
 
    .. code:: ipython3
 
-       lattice_points = {'A' : [[0, 0, 0]], 
-                         'B' : [[0.5, 0.5, 0]], 
-                         'C' : [[0.5, 0, 0.5]], 
+       lattice_points = {'A' : [[0, 0, 0]],
+                         'B' : [[0.5, 0.5, 0]],
+                         'C' : [[0.5, 0, 0.5]],
                          'D' : [[0, 0.5, 0.5]]}
 
    For Example: FCC All Same
