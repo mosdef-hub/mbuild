@@ -1055,8 +1055,9 @@ class Charmm:
     (force field), PDB, PSF files, which are usable in the GOMC and NAMD engines.
     Additionally, this Charmm object is also used in generating the GOMC control file.
 
-    Outputs a GOMC data file The units are as follows
+    The units for the GOMC data files.
         * Mw = g/mol
+        * charge = e
         * Harmonic bonds : Kb = kcal/mol, b0 = Angstroms
         * Harmonic angles : Ktheta = kcal/mole/rad**2 , Theta0 = degrees
         * Dihedral angles: Ktheta = kcal/mole, n = interger (unitless), delta = degrees
