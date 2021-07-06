@@ -193,14 +193,12 @@ replications in the x, y, and z directions.
           a = mbuild.Compound(name='A')
           compound_dict = {'A' : a}
 
-Putting it all together
-=======================
-
-Below contains some examples of homogeneous and heterogeneous 2D and 3D
-lattice structures using the ``Lattice`` class.
 
 Example Lattice Systems
 -----------------------
+
+Below contains some examples of homogeneous and heterogeneous 2D and 3D
+lattice structures using the ``Lattice`` class.
 
 Simple Cubic (SC)
 ~~~~~~~~~~~~~~~~~
