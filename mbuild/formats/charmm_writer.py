@@ -1060,9 +1060,15 @@ class Charmm:
         * Harmonic bonds : Kb = kcal/mol, b0 = Angstroms
         * Harmonic angles : Ktheta = kcal/mole/rad**2 , Theta0 = degrees
         * Dihedral angles: Ktheta = kcal/mole, n = interger (unitless), delta = degrees
-        * nonbonded : epsilon = kcal/mol, Rmin = Angstroms, n = interger (unitless)
+        * Improper angles (currently unavailable) : TBD
+        * LJ-NONBONDED : epsilon = kcal/mol, Rmin/2 = Angstroms
+        * Mie-NONBONDED (currently unavailable): epsilon = K, sigma = Angstroms, n = interger (unitless)
+        * Buckingham-NONBONDED (currently unavailable): epsilon = K, sigma = Angstroms, n = interger (unitless)
+        * LJ-NBFIX (currently unavailable) : epsilon = kcal/mol, Rmin = Angstroms
+        * Mie-NBFIX (currently unavailable) : same as Mie-NONBONDED
+        * Buckingham-NBFIX (currently unavailable) : same as Buckingham-NONBONDED
 
-    Note: units are the same at the LAMMPS real units.  The atom style
+    Note: units are the same as the NAMD units and the LAMMPS real units.  The atom style
     is the same as the lammps 'full' atom style format.
 
     Parameters
