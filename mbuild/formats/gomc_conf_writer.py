@@ -1942,17 +1942,26 @@ class GOMCControl:
 
     Notes
     -------
-    The attribute default values and the specific ensembles they are
-    also available with can be accessed by the running
-    print_valid_ensemble_input_variables('NPT', description = True)
-    command, as the information is dynamically contained here.
+    The user input variables (input_variables_dict) and the specific
+    ensembles.
 
     The details of the required inputs for the selected
-    ensembles can be found by the following function,
+    ensembles can be found by running this python workbook,
+
     >>> print_valid_required_input_variables('NVT', description = True)
+
     which prints the required inputs with their subsection description
     for the selected 'NVT' ensemble (other ensembles can be set as well).
-    The box units imported are in nm (standard MoSDeF units).
+
+    The details of the input variables for the selected
+    ensembles can be found by running this python workbook,
+
+    >>> print_valid_ensemble_input_variables('NPT', description = True)
+
+    which prints the input variables with their subsection description
+    for the selected 'NPT' ensemble (other ensembles can be set as well).
+
+    Note: The box units imported are in nm (standard MoSDeF units).
     The units for this writer are auto-scaled to Angstroms, so they
     can be directly used in the GOMC or NAMD engines.
 
@@ -1961,8 +1970,8 @@ class GOMCControl:
     Note: all of the move fractions must sum to 1, or the control file
     writer will fail.
 
-    The attribute variables and text extracted with permission from the GOMC
-    manual version 2.60. Some of the text was modified from its original version.
+    The input variables (input_variables_dict) and text extracted with permission from
+    the GOMC manual version 2.60. Some of the text was modified from its original version.
     Cite: Potoff, Jeffrey; Schwiebert, Loren; et. al. GOMC Documentation.
     https://raw.githubusercontent.com/GOMC-WSU/GOMC/master/GOMC_Manual.pdf, 2021.
     """
