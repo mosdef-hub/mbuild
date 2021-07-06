@@ -35,8 +35,8 @@ The following notebook provides a thorough walkthrough to using the
       know the vectors that span the unit cell, that can also be
       provided.
 
--  *IN PROGRESS* **Generation of lattice structure from crystallographic
-   index file (CIF).**
+-  **Generation of lattice structure from crystallographic**
+   index file (CIF).
 
    -  Please also see the :ref:`QuickStart_Load_files` section for other ways to load files.
    -  Although this feature is not currently implemented, this
@@ -79,7 +79,11 @@ ever get stuck, remember to use the python built-in ``help()`` method!
    equivalent. These are the lattice parameters :math:`a, b, c` when
    viewing crystallographic information.
 
-   For Example: ``python3   lattice_spacing = [.5, .5, .5]``
+   For Example: 
+
+   .. code:: ipython3
+       
+       lattice_spacing = [0.5, 0.5, 0.5]
 
 -  **``Lattice.lattice_vectors``**
 
@@ -96,7 +100,10 @@ ever get stuck, remember to use the python built-in ``help()`` method!
    the vectors, the ``Lattice`` object will calculate them for the user.
 
    For example: Cubic Cell
-   ``python3   lattice_vectors = [[1, 0, 0], [0, 1, 0], [0, 0, 1]]``
+
+   .. code:: ipython3
+       
+       lattice_vectors = [[1, 0, 0], [0, 1, 0], [0, 0, 1]]
 
 -  **``Lattice.angles``**
 
@@ -104,7 +111,11 @@ ever get stuck, remember to use the python built-in ``help()`` method!
    the lattice. Commonly referred to as :math:`\alpha, \beta, \gamma` in
    the definition of the lattice parameters.
 
-   For example: Cubic Cell ``python3   angles = [90, 90, 90]``
+   For example: Cubic Cell 
+
+   .. code:: ipython3
+       
+       angles = [90, 90, 90]
 
 -  **``Lattice.lattice_points``**
 
@@ -125,10 +136,20 @@ ever get stuck, remember to use the python built-in ``help()`` method!
    ids for each lattice_point.
 
    For Example: FCC All Unique
-   ``python3   lattice_points = {'A' : [[0, 0, 0]], 'B' : [[0.5, 0.5, 0]], 'C' : [[0.5, 0, 0.5]], 'D' : [[0, 0.5, 0.5]]}``
+
+   .. code:: ipython3
+
+       lattice_points = {'A' : [[0, 0, 0]], 
+                         'B' : [[0.5, 0.5, 0]], 
+                         'C' : [[0.5, 0, 0.5]], 
+                         'D' : [[0, 0.5, 0.5]]}
 
    For Example: FCC All Same
-   ``python3   lattice_points = {'A' : [[0, 0, 0], [0.5, 0.5, 0], [0.5, 0, 0.5], [0, 0.5, 0.5]] }``
+
+   .. code:: ipython3
+
+       lattice_points = {'A' : [[0, 0, 0], [0.5, 0.5, 0], [0.5, 0, 0.5], [0, 0.5, 0.5]] }
+
 
 ``Lattice`` Public Methods
 --------------------------
@@ -162,16 +183,15 @@ replications in the x, y, and z directions.
 
       compound_dict = {‘A’ : a, ‘B’ : b, ‘C’ : c, ‘D’ : d}
 
-      ::
+      For Example: FCC All Same
 
+      .. code:: ipython3
 
-         For Example: FCC All Same
-         ```python3
-         lattice_points = {'A' : [[0, 0, 0], [0.5, 0.5, 0], [0.5, 0, 0.5], [0, 0.5, 0.5]] }
+          lattice_points = {'A' : [[0, 0, 0], [0.5, 0.5, 0], [0.5, 0, 0.5], [0, 0.5, 0.5]] }
 
-         # compound dictionary
-         a = mbuild.Compound(name='A')
-         compound_dict = {'A' : a}
+          # compound dictionary
+          a = mbuild.Compound(name='A')
+          compound_dict = {'A' : a}
 
 Putting it all together
 =======================
@@ -309,7 +329,7 @@ Graphene (2D)
     import nglview as nv
 
     # define all necessary lattice parameters
-    spacings = [0.246, 0.246, 0]
+    spacings = [0.246, 0.246, 0.335]
     angles = [90, 90, 120]
     points = [[0, 0, 0], [1/3, 2/3, 0]]
 
