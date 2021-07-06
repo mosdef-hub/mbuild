@@ -1360,10 +1360,10 @@ class Charmm:
 
     Notes
     -----
-    Impropers and NBFIX are not currenly supported
-    Currently the NBFIX is disabled as since only the OPLS and TRAPPE force fields are supported
-    OPLS and CHARMM forcefield styles are supported, AMBER forcefield styles are NOT supported.
-    Impropers and Urey-Bradleys are not supported for GOMC
+    Impropers, Urey-Bradleys, and NBFIX are not currenly supported.
+    Currently the NBFIX is disabled as since only the OPLS and TRAPPE force fields are supported.
+    OPLS and CHARMM forcefield styles are supported (without impropers),
+    AMBER forcefield styles are NOT supported.
 
     The atom typing is currently provided via a base 52 numbering (capital and lowercase lettering).
     This base 52 numbering allows for (52)^4 unique atom types.
@@ -1377,7 +1377,7 @@ class Charmm:
     Single Box system: Enter residues = [], but the accompanying structure (structure_box_0)
     must be an empty mb.Box. However, when doing this, the forcefield_selection
     must be supplied, or it will provide an error
-    (i.e., forcefield_selection can not be equal to None)
+    (i.e., forcefield_selection can not be equal to None).
     Dual Box System: Enter an empty mb.Box structure for either structure_box_0 or
     structure_box_1.
 
