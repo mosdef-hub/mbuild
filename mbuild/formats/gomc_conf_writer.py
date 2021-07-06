@@ -5975,18 +5975,18 @@ def write_gomc_control_file(
     input_variables_dict=None,
 ):
     """
-    The usable command that creates the ``GOMCControl`` object and write
+    The usable command that creates the ``GOMCControl`` object and writes
     the GOMC control file via the ``GOMCControl.write_conf_file`` function.
 
     Constructs the GOMC GOMCControl object with the defaults,
-    or adding additional data in the input_variable section
-    Default setting for the GOMC configuraion files are based upon the
-    a educated guess which should result in reasonable sampling for a
+    or adding additional data in the input_variable section.
+    Default setting for the GOMC configuraion files are based upon
+    an educated guess, which should result in reasonable sampling for a
     given ensemble/simulation type. However, there is no guarantee that
     the default setting will provide the best or adequate sampling for
     the selected system. The user has the option to modify the
-    configuration/contorl files based on the simulation specifics or in to
-    optimize the system beyond the standard settings.  These override
+    configuration/control files based on the simulation specifics or to
+    optimize the system beyond the standard settings. These override
     options are available via the keyword arguments in input_variable_dict.
 
     Parameters
@@ -6559,9 +6559,7 @@ def write_gomc_control_file(
     Notes
     -------
     The user input variables (input_variables_dict) and the specific
-    ensembles they are also available with can be accessed by the running
-    print_valid_ensemble_input_variables('NPT', description = True)
-    command, as the information is dynamically contained here.
+    ensembles.
 
     The details of the required inputs for the selected
     ensembles can be found by running this python workbook,
@@ -6571,12 +6569,15 @@ def write_gomc_control_file(
     which prints the required inputs with their subsection description
     for the selected 'NVT' ensemble (other ensembles can be set as well).
 
-    The details of the required inputs for the selected
-    ensembles can be found by the following function,
-    >>> print_valid_required_input_variables('NVT', description = True)
-    which prints the required inputs with their subsection description
-    for the selected 'NVT' ensemble (other ensembles can be set as well).
-    The box units imported are in nm (standard MoSDeF units).
+    The details of the input variables for the selected
+    ensembles can be found by running this python workbook,
+
+    >>> print_valid_ensemble_input_variables('NPT', description = True)
+
+    which prints the input variables with their subsection description
+    for the selected 'NPT' ensemble (other ensembles can be set as well).
+
+    Note: The box units imported are in nm (standard MoSDeF units).
     The units for this writer are auto-scaled to Angstroms, so they
     can be directly used in the GOMC or NAMD engines.
 
