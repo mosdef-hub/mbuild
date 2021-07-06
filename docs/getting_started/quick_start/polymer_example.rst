@@ -23,7 +23,7 @@ Set the "chain" as a Polymer class, adding "comp_1" and "comp_2" as the monomers
     comp_2 = mb.load('COC', smiles=True) # mBuild compound of the monomer unit
     chain = Polymer()
     chain.add_monomer(compound=comp_1,
-                      indices=[2, -1],
+                      indices=[2, -2],
                       separation=.15,
                       replace=True)
 
