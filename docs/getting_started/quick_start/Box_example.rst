@@ -16,7 +16,7 @@ Build an empty orthogonal **mBuild** Box (i.e., the angle in degrees are ùõº = 
 
 .. code:: ipython3
 
-    empty_box = mb.load(lengths=[4.0, 4.0, 4.0], angles=[90, 90, 90])
+    empty_box = mb.Box(lengths=[4.0, 4.0, 4.0], angles=[90, 90, 90])
 
 
 Non-Orthogonal Box
@@ -26,4 +26,4 @@ Build an empty non-orthogonal **mBuild** Box (i.e., the angle in degrees are ùõ
 
 .. code:: ipython3
 
-    empty_box = mb.load(lengths=[4.0, 4.0, 5.0], angles=[90, 90, 120])
+    empty_box = mb.Box(lengths=[4.0, 4.0, 5.0], angles=[90, 90, 120])
