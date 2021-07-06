@@ -192,13 +192,76 @@ Using mBuild’s Polymer Class
 
 ``mBuild`` provides a prebuilt class to perform this basic
 functionality. Since it is designed to be more general, it takes as an
-argument not just the chain length, but also the monomer and the port
-labels (e.g., ‘up’ and ‘down’, since these labels are user defined).
+argument not just the replicates (n), ``sequence`` ('A' for a single monomer or 'AB' for two different monomers). 
+Then, it binds them together by removing atom/bead via specifying its index number (indices). 
+A graphical description of the polymer builder creating ports, then bonding them together is provided below.
+
+.. image:: ../../images/polymer_image.png
+    :width: 100 %
+    :align: center
+
+
+Building a Simple Hexane
+----------------------------
+A simple hexane molecule is built using mBuild's packaged polymer builder.  
+This is done by loading a methane molecule via a smiles string, specifying 
+The indices are explicitly selected, so the molecule builds out in the proper directions and does not overlap. 
 
 .. code:: ipython3
 
-    polymer = mb.lib.recipes.Polymer(CH2(), 10, port_labels=('up', 'down'))
-    polymer.visualize()
+    import mbuild as mb
+    from mbuild.lib.recipes.polymer import Polymer
+
+    comp = mb.load('C', smiles=True) # mBuild compound of the monomer unit
+    chain = Polymer()
+
+    chain.add_monomer(compound=comp,
+                      indices=[1, -2],
+                      separation=.15,
+                      replace=True)
+
+    chain.build(n=6, sequence='A')
+
+
+Using Multiple Monomers and Capping the Ends of a Polymer
+----------------------------
+This example uses methyl ether and methane monomers to build a polymer, capping it with fluorinated and alcohol end groups.  
+The monomers are combined together in the 'AB' sequence two times (n=2), which means the polymer will contain 2 of each monomer.
+The end groups are added via the ``add_end_groups`` attribute, specifying the atom to use (``index``), the distance of the bond (``separation``), 
+the location of each end group (``label``), and if the tail end group is duplicated to the head of the polymer (``duplicate``).  
+The indices are explicitly selected, so the molecule builds out in the proper directions and does not overlap. 
+
+.. code:: ipython3
+
+    import mbuild as mb
+    from mbuild.lib.recipes.polymer import Polymer
+
+    comp_1 = mb.load('C', smiles=True) 
+    comp_2 = mb.load('COC', smiles=True) 
+    chain = Polymer()
+
+    chain.add_monomer(compound=comp_1,
+                      indices=[1, -1],
+                      separation=.15,
+                      replace=True)
+
+    chain.add_monomer(compound=comp_2,
+                      indices=[3, -1],
+                      separation=.15,
+                      replace=True)
+
+
+    chain.add_end_groups(mb.load('O',smiles=True), # Capping off this polymer with an Alcohol
+                         index=1,
+                         separation=0.15, label="head", duplicate=False)
+
+    chain.add_end_groups(mb.load('F',smiles=True), # Capping off this polymer with a Fluorine
+                         index=1,
+                         separation=0.18, label="tail", duplicate=False)
+
+
+    chain.build(n=2, sequence='AB')
+    chain.visualize(show_ports=True).show()
 
 Building a System of Alkanes
 ----------------------------
@@ -210,8 +273,15 @@ patterns, to which the polymers can be shifted.
 
 .. code:: ipython3
 
-    # create the polymer
-    polymer = mb.lib.recipes.Polymer(CH2(), 10, port_labels=('up', 'down'))
+    comp = mb.load('C', smiles=True) # mBuild compound of the monomer unit
+    polymer = Polymer()
+
+    polymer.add_monomer(compound=comp,
+                        indices=[1, -2],
+                        separation=.15,
+                        replace=True)
+
+    polymer.build(n=10, sequence='A')
 
     # the pattern we generate puts points in the xy-plane, so we'll rotate the polymer
     # so that it is oriented normal to the xy-plane
@@ -241,7 +311,16 @@ the rotation commands to randomize the orientation.
 
     import random
 
-    polymer = mb.lib.recipes.Polymer(CH2(), 10, port_labels=('up', 'down'))
+    comp = mb.load('C', smiles=True) 
+    polymer = Polymer()
+
+    polymer.add_monomer(compound=comp,
+                        indices=[1, -2],
+                        separation=.15,
+                        replace=True)
+
+    polymer.build(n=10, sequence='A')
+
     system = mb.Compound()
     polymer.rotate(np.pi/2, [1, 0, 0])
 
@@ -257,12 +336,22 @@ the rotation commands to randomize the orientation.
 
     system.visualize()
 
+
 ``mBuild`` also provides an interface to ``PACKMOL``, allowing the
 creation of a randomized configuration.
 
 .. code:: ipython3
 
-    polymer = mb.lib.recipes.Polymer(CH2(), 5, port_labels=('up', 'down'))
+    comp = mb.load('C', smiles=True) # mBuild compound of the monomer unit
+    polymer = Polymer()
+
+    polymer.add_monomer(compound=comp,
+                        indices=[1, -2],
+                        separation=.15,
+                        replace=True)
+
+    polymer.build(n=5, sequence='A')
+
     system = mb.fill_box(polymer, n_compounds=100, overlap=1.5, box=[10,10,10])
     system.visualize()
 
