@@ -44,7 +44,7 @@ carbon atom:
 Now we have a methyl group loaded up and centered. In order to connect
 ``Compounds`` in mBuild, we make use of a special type of ``Compound``:
 the ``Port``. A ``Port`` is a ``Compound`` with two sets of four “ghost”
-``Particles``. In addition ``Ports`` have an ``anchor`` attribute which
+``Particles``. In addition, ``Ports`` have an ``anchor`` attribute which
 typically points to a particle that the ``Port`` should be associated
 with. In our methyl group, the ``Port`` should be anchored to the carbon
 atom so that we can now form bonds to this carbon:
