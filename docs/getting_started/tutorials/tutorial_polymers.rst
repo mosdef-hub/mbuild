@@ -193,7 +193,7 @@ Using mBuild’s Polymer Class
 ``mBuild`` provides a prebuilt class to perform this basic
 functionality. Since it is designed to be more general, it takes as an
 argument not just the replicates (``n``), ``sequence`` ('A' for a single monomer or 'AB' for two different monomers).
-Then, it binds them together by removing atom/bead via specifying its index number (indices).
+Then, it binds them together by removing atom/bead via specifying its index number (``indices``).
 A graphical description of the polymer builder creating ports, then bonding them together is provided below.
 
 .. image:: ../../images/polymer_image.png
