@@ -157,7 +157,7 @@ The ``Lattice`` class also contains methods that are responsible for
 applying ``Compounds`` to the lattice points, with user defined cell
 replications in the x, y, and z directions.
 
--  **``Lattice.populate(compound_dict=None, x=1, y=1, z=1)``**
+-  **Lattice.populate(compound_dict=None, x=1, y=1, z=1)**
 
    This method uses the ``Lattice`` object to place ``Compounds`` at the
    specified ``lattice_points``. There are 4 optional inputs for this
