@@ -116,7 +116,7 @@ ever get stuck, remember to use the python built-in ``help()`` method!
 
        angles = [90, 90, 90]
 
--  **``Lattice.lattice_points``**
+-  **Lattice.lattice_points**
 
    ``lattice_points`` can be the most common source of confusion when
    creating a crystal structure. In crystallographic terms, this is the
