@@ -226,7 +226,7 @@ The indices are explicitly selected, so the molecule builds out in the proper di
 Using Multiple Monomers and Capping the Ends of a Polymer
 ---------------------------------------------------------
 This example uses methyl ether and methane monomers to build a polymer, capping it with fluorinated and alcohol end groups.
-The monomers are combined together in the 'AB' sequence two times (n=2), which means the polymer will contain 2 of each monomer.
+The monomers are combined together in the 'AB' sequence two times (n=2), which means the polymer will contain 2 of each monomer (ABAB).
 The end groups are added via the ``add_end_groups`` attribute, specifying the atom to use (``index``), the distance of the bond (``separation``),
 the location of each end group (``label``), and if the tail end group is duplicated to the head of the polymer (``duplicate``).
 The indices are explicitly selected, so the molecule builds out in the proper directions and does not overlap.
