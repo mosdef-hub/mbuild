@@ -20,7 +20,7 @@ The following notebook provides a thorough walkthrough to using the
       its data structure.
    -  The ‘repeat’ cell can be as large as the user defines useful.
    -  The components that occupy the lattice points are
-      ``mbuild.Compound's``.
+      ``mbuild.Compound``s.
 
       -  This allows the user to build any system since compounds are
          only a representation of matter in this design.
