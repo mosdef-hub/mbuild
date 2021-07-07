@@ -91,7 +91,7 @@ The last step is to edit the ``setup.py`` file such that the plug-in can be regi
         ...
     )
 
-The important section is the ``entry_points`` argument. Here we define the entry_point group we want to register with: ``"mbuild.recipes"``.
+The important section is the ``entry_points`` argument. Here we define the entry_point group we want to register with: ``"mbuild.plugins"``.
 Finally, we tell Python what name to use when accessing this plug-in.
 Earlier, we decided to call it ``FCC``.
 This is denoted here by the name before the assignment operator ``FCC =``.
