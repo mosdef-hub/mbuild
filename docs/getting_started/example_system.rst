@@ -6,7 +6,7 @@ Components in dashed boxes are drawn by hand using, e.g., `Avogadro <https://avo
 This allows `mBuild <https://mbuild.mosdef.org/en/stable/>`_ to generate chemical structures in a piecemeal fashion by creating or importing molecular sections, adding ports, and connecting the ports to form bonds.
 Together with `Signac <https://signac.io>`_, this functionality enables an automatic and dynamic method for generating chemical systems, allowing large-scale chemical and materials screening with minimal user interaction.
 
-Ultimately, complex systems structures can be created with just a line or two
+Ultimately, complex systems can be created with just a line or two
 of code. Additionally, this approach seamlessly exposes tunable parameters within
 the hierarchy so you can actually create whole families of structures
 by adjusting a variable or two::
