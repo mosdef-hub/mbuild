@@ -1,7 +1,7 @@
 Polymer
 ========================
 
-Use two (2) different monomer units, A and B, to construct a polymer, capping it with the carboxylic acid and amine end group.
+Use two (2) different monomer units, A and B, to construct a polymer, capping it with a carboxylic acid and amine end group.
 
 
 Import the required mbuild packages.
