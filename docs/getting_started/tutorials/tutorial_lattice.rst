@@ -83,7 +83,7 @@ ever get stuck, remember to use the python built-in ``help()`` method!
 
        lattice_spacing = [0.5, 0.5, 0.5]
 
--  **``Lattice.lattice_vectors``**
+-  **Lattice.lattice_vectors**
 
    ``lattice_vectors`` is a 3x3 array that defines the vectors that
    encapsulate the repeat cell. This is an optional value that the user
