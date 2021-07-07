@@ -9,7 +9,7 @@ The following notebook provides a thorough walkthrough to using the
 
 -  **Variable-dimension crystal structures**
 
-   -  ``Lattice`` can support the dimensionality of ``mBuild``, which
+   -  ``Lattice`` supports the dimensionality of ``mBuild``, which
       means that the systems can be in 1D, 2D, or 3D. Replace the
       necessary vector components with 0 to emulate the dimensionality
       of interest.
