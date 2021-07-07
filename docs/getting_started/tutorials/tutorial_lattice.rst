@@ -92,7 +92,8 @@ ever get stuck, remember to use the python built-in ``help()`` method!
    provided. If neither is passed in, the default value are the vectors
    that encase a cubic lattice.
 
-   **Note**, most users will **not** have to use these to build their
+.. note::
+    Most users will **not** have to use these to build their
    lattice structure of interest. It will usually be easier for the
    users to provide the 3 Bravais angles instead. If the user then wants
    the vectors, the ``Lattice`` object will calculate them for the user.
