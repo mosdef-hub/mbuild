@@ -6,7 +6,7 @@ There may be cases where your ``Compounds`` and/or building scripts can be gener
 Such objects would be a valuable resource for many researchers, and might justify development of a Python package that could be distributed to the community.
 
 
-mBuild has been developed with this in mind, in the form of a plug-in system.
+``mBuild`` has been developed with this in mind, in the form of a plug-in system.
 Detailed below are the specifications of this system, how to convert an existing Python project into an mBuild-discoverable plug-in, and an example.
 
 Entry Points
