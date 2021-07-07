@@ -123,7 +123,7 @@ ever get stuck, remember to use the python built-in ``help()`` method!
    minimum basis set of points in space that define where the points in
    the lattice exist. This requires that the user does not over define
    the system.
-   
+
    .. note::
        MIT's OpenCourseWare has an excellent PDF for more information
        `here <https://ocw.mit.edu/courses/earth-atmospheric-and-planetary-sciences/12-108-structure-of-earth-materials-fall-2004/lecture-notes/lec7.pdf>`_
