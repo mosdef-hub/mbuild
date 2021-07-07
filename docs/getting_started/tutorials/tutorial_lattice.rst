@@ -67,7 +67,7 @@ As we can see, there are quite a few attributes and parameters that make
 up this class. There are also a lot of inline examples as well. If you
 ever get stuck, remember to use the python built-in ``help()`` method!
 
--  **``Lattice.lattice_spacing``**
+-  **Lattice.lattice_spacing**
 
    This data structure is a (3,) array that details the lengths of the
    repeat cell for the crystal. You can either use a ``numpy`` array
