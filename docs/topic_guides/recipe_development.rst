@@ -98,7 +98,7 @@ This is denoted here by the name before the assignment operator ``FCC =``.
 Next, we pass the location of the file with our plug-in: ``mbuild_fcc.mbuild_fcc`` as if we were located at the ``setup.py`` file.
 Then, we provide the name of the class within that Python file we want to make discoverable ``:FCC``.
 
-Since the ``setup.py`` file is located in the top folder of the python project, the first ``mbuild_fcc`` is the name of the folder, and the second is the name of the python file. The colon (:) is used when accessing the class from the python file itself.
+Since the ``setup.py`` file is located in the top folder of the python project, the first ``mbuild_fcc`` is the name of the folder, and the second is the name of the python file. The colon (``:``) is used when accessing the class that is in the python file itself.
 
 
 Putting it all together
