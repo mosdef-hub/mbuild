@@ -16,7 +16,7 @@ The `MoSDeF <https://mosdef.org>`_ software is comprised the following packages:
 In the following examples, a few different types of simulation boxes are constructed using the **MoSDeF** software.
 
 
-Molecular simulations are comprised of many molecules contained in a
+Molecular simulations are usually comprised of many molecules contained in a
 box (NPT and NVT ensembles), or boxes (GEMC and GCMC ensembles).
 The **mBuild** software allows for easy generation of the simulation
 box or boxes utilizing only a few lines of python code.
