@@ -14,7 +14,7 @@ By default, many mBuild functions will only write coordinate and bond informatio
 i.e. no angles or dihedrals, and no atom typing is performed (atom names are used
 as atom types). However, force fields can be applied to Compounds by passing force
 field XML files (used by the `Foyer package <https://github.com/mosdef-hub/foyer>`_)
-to the ``save`` function if Foyer is installed. If a force field is applied to a
+to the ``Compound.save`` function if Foyer is installed. If a force field is applied to a
 Compound, the mBuild internal writers will also write angle and dihedral information
 to the file in addition to labelling atoms by the atom types specified by the force
 field.  The CHARMM-style GOMC writers are the exception to this default rule since
