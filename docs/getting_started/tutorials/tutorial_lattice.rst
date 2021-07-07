@@ -38,7 +38,6 @@ The following notebook provides a thorough walkthrough to using the
 -  **Generation of lattice structure from `crystallographic index files (CIF) <https://www.iucr.org/resources/cif/documentation>`_ **
 
    -  Please also see the :ref:`QuickStart_Load_files` section for other ways to load files.
-   -  Although this feature is not currently implemented, this
       functionality can be extended.
 
 -  *IN PROGRESS* **Template recipes to generate common crystal
