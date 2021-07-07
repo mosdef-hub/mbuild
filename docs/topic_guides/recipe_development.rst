@@ -15,7 +15,7 @@ Entry Points
 The basis of the plug-in system in mBuild is the `setuptools.entry_points package <https://packaging.python.org/guides/creating-and-discovering-plugins/#using-package-metadata>`_.
 This allows other packages to register themselves with the ``entry_point`` group we defined in mBuild, so they are accessible through the ``mbuild.recipes`` location.
 Imagine you have a class named ``my_foo`` that inherits from ``mb.Compound``.
-It is currently inside of a project `my_project` and is accessed via a direct import, i.e. `from my_project import my_foo`.
+It is currently inside of a project ``my_project`` and is accessed via a direct import, i.e. ``from my_project import my_foo``.
 You can register this class as an entry point associated with `mbuild.recipes`.
 It will then be accessible from inside mBuild as a plug-in via `mbuild.recipes.my_foo` and a direct import will be unncessary.
 The call ``import mbuild`` discovers all plug-ins that fit the ``entry_point`` group specification and makes them available under ``mbuild.recipes``.
