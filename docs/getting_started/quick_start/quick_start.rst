@@ -22,7 +22,7 @@ The **mBuild** library allows for easy generation of the simulation
 box or boxes utilizing only a few lines of python code.
 
 
-The following tutorials are available either as html or interactive jupyter notebooks.
+The following tutorials are available either as html or interactive `jupyter <https://jupyter.org/>`_ notebooks.
 
 
 .. toctree::
