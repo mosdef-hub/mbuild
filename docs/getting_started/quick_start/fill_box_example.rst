@@ -52,10 +52,10 @@ and will be in an orthogonal box measuring 5.0 nm in the x, y, and z-dimensions.
 United Atom (UA) Methane System
 -------------------------------
 
-.. note:: 
-    `foyer <https://foyer.mosdef.org/en/stable/>`_ is used in conjunction with ``mBuild`` in 
-    the following example to demonstrate how the `MoSDeF <https://mosdef.org>`_ libraries 
-    integrate to generate a simulation box.  A subset of the `TraPPE-United Atom <http://trappe.oit.umn.edu>`_ 
+.. note::
+    `foyer <https://foyer.mosdef.org/en/stable/>`_ is used in conjunction with ``mBuild`` in
+    the following example to demonstrate how the `MoSDeF <https://mosdef.org>`_ libraries
+    integrate to generate a simulation box.  A subset of the `TraPPE-United Atom <http://trappe.oit.umn.edu>`_
     force field (FF) comes standard with the `foyer <https://foyer.mosdef.org/en/stable/>`_ software package.
 
 Import the required mbuild package.
