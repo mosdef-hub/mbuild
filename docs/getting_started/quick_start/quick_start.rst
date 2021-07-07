@@ -18,7 +18,7 @@ In the following examples, a few different types of simulation boxes are constru
 
 Molecular simulations are usually comprised of many molecules contained in a
 box (NPT and NVT ensembles), or boxes (GEMC and GCMC ensembles).
-The **mBuild** software allows for easy generation of the simulation
+The **mBuild** library allows for easy generation of the simulation
 box or boxes utilizing only a few lines of python code.
 
 
