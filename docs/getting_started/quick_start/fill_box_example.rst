@@ -75,7 +75,9 @@ allow a user-selected residue name (``mbuild.Compound.name``). If the methane is
     methane_child_bead = mb.Compound(name="_CH4")
     methane.add(methane_child_bead, inherit_periodicity=False)
 
-Note: the inherit_periodicity is an optional boolean (default=True), which replaces the periodicity of self with the periodicity of the Compound being added.
+.. note:: 
+    The ``inherit_periodicity`` flag is an optional boolean (default=True), which replaces 
+    the periodicity of self with the periodicity of the Compound being added.
 
 The orthogonal liquid box contains 1230 methane molecules and measures 4.5 nm in all the x, y, and z-dimensions.
 
