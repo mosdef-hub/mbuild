@@ -5,7 +5,10 @@ Fill Box
 All-Atom (AA) Hexane and Ethanol System
 ---------------------------------------
 
-**Note**: `foyer <https://foyer.mosdef.org/en/stable/>`_ is used in conjunction with **mBuild** in the following example to demonstrate how all the `MoSDeF <https://mosdef.org>`_ software integrates to generate a simulation box.
+.. note:: 
+    `foyer <https://foyer.mosdef.org/en/stable/>`_ is used in conjunction with ``mBuild`` in 
+    the following example to demonstrate how the `MoSDeF <https://mosdef.org>`_ 
+    libraries can be used together to generate a simulation box.
 
 Import the required mbuild package.
 
