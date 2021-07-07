@@ -36,7 +36,7 @@ Set the "chain" as a ``Polymer`` class, adding "comp_1" and "comp_2" as the mono
                       replace=True)
 
 
-Select the carboxylic acid and an amine end groups that we want to use for the head and tail of the polymer.
+Select the carboxylic acid and amine end groups that we want to use for the head and tail of the polymer.
 Then, build the polymer with three (3) iterations of the AB sequence, and the selected head and tail end groups.
 
 
