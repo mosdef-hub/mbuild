@@ -10,7 +10,8 @@ The `MoSDeF <https://mosdef.org>`_ software is comprised the following packages:
     * `foyer <https://foyer.mosdef.org/en/stable/>`_ -- A package for atom-typing as well as applying and disseminating forcefields
     * `GMSO <https://gmso.mosdef.org/en/stable/>`_ -- Flexible storage of chemical topology for molecular simulation
 
-**Note**: **foyer** and **GMSO** are used together with **mBuild** to create all the required files to conduct the simulations.
+.. note::
+    **foyer** and **GMSO** are used together with **mBuild** to create all the required files to conduct the simulations. Run time parameters for a simulation engine need to be created by the user.
 
 In the following examples, a few different types of simulation boxes are constructed using the **MoSDeF** software.
 
