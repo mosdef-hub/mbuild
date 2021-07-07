@@ -13,7 +13,7 @@ Import the required mbuild packages.
 
 
 
-Create the monomer units "comp_1" and "comp_2" using `smiles strings <https://www.daylight.com/dayhtml/doc/theory/theory.smiles.html>`_.
+Create the monomer units "comp_1" and "comp_2" using `SMILES strings <https://www.daylight.com/dayhtml/doc/theory/theory.smiles.html>`_.
 Set the "chain" as a Polymer class, adding "comp_1" and "comp_2" as the monomers A and B to the Polymer. Note: Setting the indices identifies which atoms will be removed and have ports created in their place.
 
 
