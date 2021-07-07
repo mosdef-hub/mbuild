@@ -79,7 +79,7 @@ The second is to select the name of the plug-in itself.
 It is considered good practice to name it the name of your ``class``.
 In this case, we will name the plug-in ``FCC``.
 
-The last step is to edit the ``setup.py`` file such that the plug-in can be registered under the entry_point group ``mbuild.recipes``.
+The last step is to edit the ``setup.py`` file such that the plug-in can be registered under the entry_point group ``mbuild.plugins``.
 
 ::
 
