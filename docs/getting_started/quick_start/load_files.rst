@@ -38,7 +38,7 @@ Import the required mbuild packages.
 
 
 
-The `CIF <https://www.iucr.org/resources/cif>`_ file is loaded with the load_cif_command. Next, three (3) cell units shall be built for all the x, y, and z-dimensions with the populate function.  Finally, the `CIF <https://www.iucr.org/resources/cif>`_'s residues are named 'ETV'.
+The `CIF <https://www.iucr.org/resources/cif>`_ file is loaded using the ``load_cif`` function. Next, three (3) cell units shall be built for all the x, y, and z-dimensions with the populate function.  Finally, the `CIF <https://www.iucr.org/resources/cif>`_'s residues are named 'ETV'.
 
 .. code:: ipython3
 
