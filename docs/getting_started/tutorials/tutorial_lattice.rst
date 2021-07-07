@@ -104,7 +104,7 @@ ever get stuck, remember to use the python built-in ``help()`` method!
 
        lattice_vectors = [[1, 0, 0], [0, 1, 0], [0, 0, 1]]
 
--  **``Lattice.angles``**
+-  **Lattice.angles**
 
    ``angles`` is a (3,) array that defines the three Bravais angles of
    the lattice. Commonly referred to as :math:`\alpha, \beta, \gamma` in
