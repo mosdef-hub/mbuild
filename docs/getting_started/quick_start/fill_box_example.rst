@@ -35,7 +35,8 @@ Lastly, the hexane and ethanol molecule's configuration will be energy minimized
     ethanol = mb.load('CCO', smiles=True)
     ethanol.name = 'ETO'
     ethanol.energy_minimize(forcefield='oplsaa', steps=10**4)
-
+.. note::
+    The energy minimize step requires the `foyer <https://foyer.mosdef.org/en/stable/>`_ package.
 
 The liquid box is built to a density of 680 kg/m^3, with a 50/50 mol ratio of hexane and ethanol,
 and will be an orthogonal box measuring 5.0 nm in all the x, y, and z-dimensions.
