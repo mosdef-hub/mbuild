@@ -2,7 +2,7 @@
 Loading Data
 ===============
 
-Data is input into mBuild in a few different ways or from different file types.
+Data is input into ``mBuild`` in a few different ways or from different file types.
 
 
 Load
