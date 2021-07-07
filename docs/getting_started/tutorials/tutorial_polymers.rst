@@ -203,7 +203,7 @@ A graphical description of the polymer builder creating ports, then bonding them
 
 Building a Simple Hexane
 ----------------------------
-A simple hexane molecule is built using mBuild's packaged polymer builder.
+A simple hexane molecule is built using ``mBuild``'s packaged polymer builder.
 This is done by loading a methane molecule via a smiles string, specifying
 The indices are explicitly selected, so the molecule builds out in the proper directions and does not overlap.
 
