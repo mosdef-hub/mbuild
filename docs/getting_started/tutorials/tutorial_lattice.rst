@@ -146,7 +146,8 @@ ever get stuck, remember to use the python built-in ``help()`` method!
        lattice_points = {'A' : [[0, 0, 0]],
                          'B' : [[0.5, 0.5, 0]],
                          'C' : [[0.5, 0, 0.5]],
-                         'D' : [[0, 0.5, 0.5]]}
+                         'D' : [[0, 0.5, 0.5]]
+                         }
 
    For Example: FCC All Same
 
@@ -179,26 +180,31 @@ replications in the x, y, and z directions.
 
       For Example: FCC All Unique
 
-      .. code:: ipython3
+          .. code:: ipython3
 
-          lattice_points = {‘A’ : [[0, 0, 0]], ‘B’ : [[0.5, 0.5, 0]], ‘C’ : [[0.5, 0, 0.5]], ‘D’ :[[0, 0.5, 0.5]]}
+            lattice_points = {'A' : [[0, 0, 0]],
+                              'B' : [[0.5, 0.5, 0]],
+                              'C' : [[0.5, 0, 0.5]],
+                              'D' : [[0, 0.5, 0.5]]
+                              }
 
-          # compound dictionary
-          a = mbuild.Compound(name=‘A’)
-          b = mbuild.Compound(name=‘B’)
-          c = mbuild.Compound(name=‘C’)
-          d = mbuild.Compound(name=‘D’)
-          compound_dict = {‘A’ : a, ‘B’ : b, ‘C’ : c, ‘D’ : d}
+            # compound dictionary
+            a = mbuild.Compound(name='A')
+            b = mbuild.Compound(name='B')
+            c = mbuild.Compound(name='C')
+            d = mbuild.Compound(name='D')
+            compound_dict = {'A' : a, 'B' : b, 'C' : c, 'D' : d}
+
 
       For Example: FCC All Same
 
-      .. code:: ipython3
+          .. code:: ipython3
 
-          lattice_points = {'A' : [[0, 0, 0], [0.5, 0.5, 0], [0.5, 0, 0.5], [0, 0.5, 0.5]] }
+            lattice_points = {'A' : [[0, 0, 0], [0.5, 0.5, 0], [0.5, 0, 0.5], [0, 0.5, 0.5]] }
 
-          # compound dictionary
-          a = mbuild.Compound(name='A')
-          compound_dict = {'A' : a}
+            # compound dictionary
+            a = mbuild.Compound(name='A')
+            compound_dict = {'A' : a}
 
 
 Example Lattice Systems
