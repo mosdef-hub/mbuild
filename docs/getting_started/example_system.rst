@@ -2,7 +2,7 @@ Example System
 ===============
 
 Components in dashed boxes are drawn by hand using, e.g., `Avogadro <https://avogadro.cc>`_ or generated elsewhere.
-`mBuild <https://mbuild.mosdef.org/en/stable/>`_ builds up complex systems from simple building blocks through simple attachment sites, called ``Port``s (i.e., connection points). Each building block is a python class that can be customized or created through the pre-built options in the ``mBuild`` library (``mbuild.lib``). A hierarchical structure of parents and children is created through these classes, which can be easily parsed or modified.
+`mBuild <https://mbuild.mosdef.org/en/stable/>`_ builds up complex systems from simple building blocks through simple attachment sites, called a ``Port`` (i.e., connection points). Each building block is a python class that can be customized or created through the pre-built options in the ``mBuild`` library ( ``mbuild.lib`` ). A hierarchical structure of parents and children is created through these classes, which can be easily parsed or modified.
 This allows `mBuild <https://mbuild.mosdef.org/en/stable/>`_ to generate chemical structures in a piecemeal fashion by creating or importing molecular sections, adding ports, and connecting the ports to form bonds.
 Together with `Signac <https://signac.io>`_, this functionality enables an automatic and dynamic method for generating chemical systems, allowing large-scale chemical and materials screening with minimal user interaction.
 
