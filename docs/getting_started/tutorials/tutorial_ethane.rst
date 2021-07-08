@@ -17,7 +17,7 @@ As you probably noticed while creating your methane molecule in the last
 tutorial, manually adding ``Particles`` and ``Bonds`` to a ``Compound``
 is a bit cumbersome. The easiest way to create small, reusable
 components, such as methyls, amines or monomers, is to hand draw them
-using software like `Avogadro <http://avogadro.cc/wiki/Main_Page>`__ and
+using software like `Avogadro <https://avogadro.cc/>`__ and
 export them as either a .pdb or .mol2 file (the file should contain
 connectivity information).
 

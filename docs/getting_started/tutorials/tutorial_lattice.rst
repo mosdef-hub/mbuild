@@ -18,9 +18,10 @@ The following notebook provides a thorough walkthrough to using the
 
    -  ``Lattice`` can support an indefinite amount of lattice points in
       its data structure.
-   -  The ‘repeat’ cell can be as large as the user defines useful.
-   -  The components that occupy the lattice points are
-      ``mbuild.Compound``s.
+
+   -  The `repeat` cell can be as large as the user defines useful.
+
+   -  The components that occupy the lattice points are ``mbuild.Compound`` objects.
 
       -  This allows the user to build any system since compounds are
          only a representation of matter in this design.
@@ -35,10 +36,10 @@ The following notebook provides a thorough walkthrough to using the
       know the vectors that span the unit cell, that can also be
       provided.
 
--  **Generation of lattice structure from `crystallographic index files (CIF) <https://www.iucr.org/resources/cif/documentation>`_ **
+-  **Generation of lattice structure from
+   `crystallographic index file (CIF) <https://www.iucr.org/resources/cif/documentation>`_ formats**
 
    -  Please also see the :ref:`QuickStart_Load_files` section for other ways to load files.
-      functionality can be extended.
 
 -  *IN PROGRESS* **Template recipes to generate common crystal
    structures (FCC, BCC, HEX, etc)**
@@ -92,11 +93,11 @@ ever get stuck, remember to use the python built-in ``help()`` method!
    provided. If neither is passed in, the default value are the vectors
    that encase a cubic lattice.
 
-.. note::
-    Most users will **not** have to use these to build their
-   lattice structure of interest. It will usually be easier for the
-   users to provide the 3 Bravais angles instead. If the user then wants
-   the vectors, the ``Lattice`` object will calculate them for the user.
+   .. note::
+       Most users will **not** have to use these to build their
+       lattice structure of interest. It will usually be easier for the
+       users to provide the 3 Bravais angles instead. If the user then wants
+       the vectors, the ``Lattice`` object will calculate them for the user.
 
    For example: Cubic Cell
 
@@ -176,15 +177,18 @@ replications in the x, y, and z directions.
       to place at that lattice point(s) will be used. An example will
       use the FCC examples from above. They have been copied below:
 
-      For Example: FCC All Unique \``\` python3 lattice_points = {‘A’ :
-      [[0, 0, 0]], ‘B’ : [[0.5, 0.5, 0]], ‘C’ : [[0.5, 0, 0.5]], ‘D’ :
-      [[0, 0.5, 0.5]]}
+      For Example: FCC All Unique
 
-      # compound dictionary a = mbuild.Compound(name=‘A’) b =
-      mbuild.Compound(name=‘B’) c = mbuild.Compound(name=‘C’) d =
-      mbuild.Compound(name=‘D’)
+      .. code:: ipython3
 
-      compound_dict = {‘A’ : a, ‘B’ : b, ‘C’ : c, ‘D’ : d}
+          lattice_points = {‘A’ : [[0, 0, 0]], ‘B’ : [[0.5, 0.5, 0]], ‘C’ : [[0.5, 0, 0.5]], ‘D’ :[[0, 0.5, 0.5]]}
+
+          # compound dictionary
+          a = mbuild.Compound(name=‘A’)
+          b = mbuild.Compound(name=‘B’)
+          c = mbuild.Compound(name=‘C’)
+          d = mbuild.Compound(name=‘D’)
+          compound_dict = {‘A’ : a, ‘B’ : b, ‘C’ : c, ‘D’ : d}
 
       For Example: FCC All Same
 

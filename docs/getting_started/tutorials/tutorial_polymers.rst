@@ -233,8 +233,8 @@ The indices are explicitly selected, so the molecule builds out in the proper di
 
 .. code:: ipython3
 
-    import mbuild as mb
     from mbuild.lib.recipes.polymer import Polymer
+    import mbuild as mb
 
     comp_1 = mb.load('C', smiles=True)
     comp_2 = mb.load('COC', smiles=True)
@@ -261,7 +261,7 @@ The indices are explicitly selected, so the molecule builds out in the proper di
 
 
     chain.build(n=2, sequence='AB')
-    chain.visualize(show_ports=True).show()
+    chain.visualize(show_ports=True)
 
 Building a System of Alkanes
 ----------------------------

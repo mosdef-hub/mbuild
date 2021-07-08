@@ -18,10 +18,3 @@ Load CIF
 .. automodule:: mbuild.lattice.load_cif
     	:members:
 
-
-Lattice
---------------------
-
-.. automodule:: mbuild.lattice
-    	:members:
-	:noindex:

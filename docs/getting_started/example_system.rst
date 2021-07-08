@@ -14,10 +14,14 @@ by adjusting a variable or two::
     pattern = Random2DPattern(20)  # A random arrangement of 20 pieces on a 2D surface.
     brush_layer = BrushLayer(chain_lenth=20, pattern=pattern, tile_x=3, tile_y=2)
 
-.. image:: ../images/pmpc.png
+.. figure:: ../images/pmpc.png
     :width: 100 %
     :align: center
-    :alt: Zwitterionic brushes on beta-cristobalite substrate
+
+    **Zwitterionic brushes on beta-cristobalite substrate.** Example system that can be created using mBuild.
+    Components in dashed boxes are created from some external tool like Avogadro or SMILES strings.
+    Components in solid boxes are created from these smaller dashed components and then constructed into larger,
+    more complex systems using mBuild functionality.
 
 .. image:: https://img.shields.io/badge/license-MIT-blue.svg
     :target: http://opensource.org/licenses/MIT

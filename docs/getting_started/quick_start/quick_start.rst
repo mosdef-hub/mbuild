@@ -13,7 +13,7 @@ The `MoSDeF <https://mosdef.org>`_ software is comprised the following packages:
 .. note::
     **foyer** and **GMSO** are used together with **mBuild** to create all the required files to conduct the simulations. Run time parameters for a simulation engine need to be created by the user.
 
-In the following examples, a few different types of simulation boxes are constructed using the **MoSDeF** software.
+In the following examples, different types of simulation boxes are constructed using the **MoSDeF** software.
 
 
 Molecular simulations are usually comprised of many molecules contained in a

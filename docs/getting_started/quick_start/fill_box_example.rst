@@ -23,7 +23,8 @@ The hexane and ethanol molecules will be created using `smiles strings <https://
 The hexane and ethanol residues will be named HEX and ETO, respectively.
 Lastly, the hexane and ethanol molecule's configuration will be energy minimized, properly reorienting the molecule to the specified FF, which is sometimes needed for some simulation engines to ensure the initial configuration energy is not too high.
 
-**Note**: The energy minimize step requires the `foyer <https://foyer.mosdef.org/en/stable/>`_ package.
+.. note::
+    The energy minimize step requires the `foyer <https://foyer.mosdef.org/en/stable/>`_ package.
 
 .. code:: ipython3
 
