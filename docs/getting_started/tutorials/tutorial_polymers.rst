@@ -196,10 +196,14 @@ argument not just the replicates (``n``), ``sequence`` ('A' for a single monomer
 Then, it binds them together by removing atom/bead via specifying its index number (``indices``).
 A graphical description of the polymer builder creating ports, then bonding them together is provided below.
 
-.. image:: ../../images/polymer_image.png
+.. figure:: ../../images/polymer_image.png
     :width: 100 %
     :align: center
 
+    **Polymer builder class example.** This shows how to define the atoms, which are replaced with ports.  The ports are then bonded together between the monomers.  Additionally, these ports can be utilized for adding different end groups moieties to the polymer.
+
+.. note::
+    The port locations may be critical to ensure the molecule is not overlapping when it is built.
 
 Building a Simple Hexane
 ----------------------------
