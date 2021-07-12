@@ -759,9 +759,9 @@ def write_lammpsdata(
                     data.write("#k, n, phi, weight\n")
                     for params, idx in sorted_dihedral_types.items():
                         data.write(
-                            "{}\t{:.5f}\t{:d}\t{:d}\t{:.5f}\t# {}\t{}\t{}\t{}\n".format(
+                            "{}\t{:.5f}\t{:d}\t{:.2f}\t{:.5f}\t# {}\t{}\t{}\t{}\n".format(
                                 idx,
-                                params[0],
+                                params[0] * KCAL_TO_KJ,
                                 params[1],
                                 params[2],
                                 params[3],
@@ -1026,7 +1026,7 @@ def _get_angle_types(
 def _get_dihedral_types(
     structure, use_rb_torsions, use_dihedrals, epsilon_conversion_factor
 ):
-    lj_unit = 1 / epsilon_conversion_factor
+    lj_unit = 1. / epsilon_conversion_factor
     if use_rb_torsions:
         unique_dihedral_types = dict(
             enumerate(
@@ -1082,9 +1082,9 @@ def _get_dihedral_types(
                 for dih_type in dihedral.type:
                     charmm_dihedrals.append(
                         (
-                            round(dih_type.phi_k * lj_unit, 3),
+                            dih_type.phi_k * lj_unit,
                             int(round(dih_type.per, 0)),
-                            int(round(dih_type.phase, 0)),
+                            round(dih_type.phase, 3),
                             round(weight, 4),
                             round(dih_type.scee, 1),
                             round(dih_type.scnb, 1),
