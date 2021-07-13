@@ -274,6 +274,12 @@ Body-centered Cubic (BCC)
     # visualize
     cscl_lattice.visualize()
 
+.. figure:: ../../images/lattice_BCC_CsCl_image.png
+    :width: 40 %
+    :align: center
+
+    **CsCl body-centered cubic (BCC) structure**
+
 Face-centered Cubic (FCC)
 ~~~~~~~~~~~~~~~~~~~~~~~~~
 
@@ -300,6 +306,12 @@ Face-centered Cubic (FCC)
 
     # visualize
     cu_lattice.visualize()
+
+.. figure:: ../../images/lattice_FCC_Cu_image.png
+    :width: 40 %
+    :align: center
+
+    **Cu face-centered cubic (FCC) structure**
 
 Diamond (Cubic)
 ~~~~~~~~~~~~~~~
@@ -329,6 +341,12 @@ Diamond (Cubic)
     # visualize
     si_lattice.visualize()
 
+.. figure:: ../../images/lattice_Diamond_cubic_Si_image.png
+    :width: 40 %
+    :align: center
+
+    **Si diamond (Cubic) structure**
+
 Graphene (2D)
 ~~~~~~~~~~~~~
 
@@ -356,3 +374,9 @@ Graphene (2D)
 
     # visualize
     graphene.visualize()
+
+.. figure:: ../../images/lattice_graphene_2D_image.png
+    :width: 40 %
+    :align: center
+
+    **Graphene (2D) structure**
