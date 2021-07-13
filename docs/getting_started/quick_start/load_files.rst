@@ -49,4 +49,4 @@ The `CIF <https://www.iucr.org/resources/cif>`_ file is loaded using the ``load_
 
 Other file types
 ------------------------
-mBuild also supports :ref:`loading_data` or files via hoomd_snapshot, GSD, SMILES strings, and ParmEd structures. 
+mBuild also supports :ref:`loading_data` or files via hoomd_snapshot, GSD, SMILES strings, and ParmEd structures.
