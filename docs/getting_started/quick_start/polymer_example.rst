@@ -13,8 +13,8 @@ Import the required mbuild packages.
 
 
 
-Create the monomer units "comp_1" and "comp_2" using `SMILES strings <https://www.daylight.com/dayhtml/doc/theory/theory.smiles.html>`_.
-Set the "chain" as a ``Polymer`` class, adding "comp_1" and "comp_2" as the monomers A and B to the polymer.
+Create the monomer units `comp_1` and `comp_2` using `SMILES strings <https://www.daylight.com/dayhtml/doc/theory/theory.smiles.html>`_.
+Set the `chain` as a ``Polymer`` class, adding `comp_1` and `comp_2` as the monomers A and B to the polymer.
 
 .. note::
     Setting the indices identifies which atoms will be removed and have ports created in their place.
@@ -55,3 +55,11 @@ Then, build the polymer with three (3) iterations of the AB sequence, and the se
 		         label="tail")
 
     chain.build(n=3, sequence='AB')
+    chain.visualize()
+
+
+.. figure:: ../../images/polymer_example_image.png
+    :width: 60 %
+    :align: center
+
+    This **example polymer** is 3 of the AB sequences together with carboxylic acid and amine end groups.

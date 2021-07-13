@@ -36,8 +36,7 @@ The following notebook provides a thorough walkthrough to using the
       know the vectors that span the unit cell, that can also be
       provided.
 
--  **Generation of lattice structure from
-   `crystallographic index file (CIF) <https://www.iucr.org/resources/cif/documentation>`_ formats**
+-  **Generation of lattice structure from crystallographic index file** `(CIF) <https://www.iucr.org/resources/cif/documentation>`_ **formats**
 
    -  Please also see the :ref:`QuickStart_Load_files` section for other ways to load files.
 
@@ -169,7 +168,7 @@ replications in the x, y, and z directions.
    specified ``lattice_points``. There are 4 optional inputs for this
    class.
 
-   -  **``compound_dict``** This input is another dictionary that
+   -  ``compound_dict`` inputs another dictionary that
       defines a relationship between the ``lattice_points`` and the
       ``Compounds`` that the user wants to populate the lattice with.
       The ``dict.keys`` of this dictionary must be the same as the
@@ -222,7 +221,6 @@ Simple Cubic (SC)
 
     import mbuild as mb
     import numpy as np
-    import nglview as nv
 
     # define all necessary lattice parameters
     spacings = [0.3359, 0.3359, 0.3359]
@@ -239,7 +237,13 @@ Simple Cubic (SC)
     po_lattice = sc_lattice.populate(compound_dict={'Po' : po}, x=2, y=2, z=2)
 
     # visualize
-    nv.show_parmed(po_lattice.to_parmed())
+    po_lattice.visualize()
+
+.. figure:: ../../images/lattice_SC_polonium_image.png
+    :width: 40 %
+    :align: center
+
+    **Polonium simple cubic (SC) structure**
 
 Body-centered Cubic (BCC)
 ~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -250,7 +254,6 @@ Body-centered Cubic (BCC)
 
     import mbuild as mb
     import numpy as np
-    import nglview as nv
 
     # define all necessary lattice parameters
     spacings = [0.4123, 0.4123, 0.4123]
@@ -269,7 +272,7 @@ Body-centered Cubic (BCC)
     cscl_lattice = bcc_lattice.populate(compound_dict={'A' : cl, 'B' : cs}, x=2, y=2, z=2)
 
     # visualize
-    nv.show_parmed(cscl_lattice.to_parmed())
+    cscl_lattice.visualize()
 
 Face-centered Cubic (FCC)
 ~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -280,7 +283,6 @@ Face-centered Cubic (FCC)
 
     import mbuild as mb
     import numpy as np
-    import nglview as nv
 
     # define all necessary lattice parameters
     spacings = [0.36149, 0.36149, 0.36149]
@@ -297,7 +299,7 @@ Face-centered Cubic (FCC)
     cu_lattice = fcc_lattice.populate(compound_dict={'A' : cu}, x=2, y=2, z=2)
 
     # visualize
-    nv.show_parmed(cu_lattice.to_parmed())
+    cu_lattice.visualize()
 
 Diamond (Cubic)
 ~~~~~~~~~~~~~~~
@@ -308,7 +310,6 @@ Diamond (Cubic)
 
     import mbuild as mb
     import numpy as np
-    import nglview as nv
 
     # define all necessary lattice parameters
     spacings = [0.54309, 0.54309, 0.54309]
@@ -326,7 +327,7 @@ Diamond (Cubic)
     si_lattice = diamond_lattice.populate(compound_dict={'A' : si}, x=2, y=2, z=2)
 
     # visualize
-    nv.show_parmed(si_lattice.to_parmed())
+    si_lattice.visualize()
 
 Graphene (2D)
 ~~~~~~~~~~~~~
@@ -337,7 +338,7 @@ Graphene (2D)
 
     import mbuild as mb
     import numpy as np
-    import nglview as nv
+
 
     # define all necessary lattice parameters
     spacings = [0.246, 0.246, 0.335]
@@ -354,4 +355,4 @@ Graphene (2D)
     graphene = graphene_lattice.populate(compound_dict={'A' : c}, x=5, y=5, z=1)
 
     # visualize
-    nv.show_parmed(graphene.to_parmed())
+    graphene.visualize()

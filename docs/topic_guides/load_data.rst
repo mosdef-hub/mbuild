@@ -1,3 +1,5 @@
+.. _loading_data:
+
 ===============
 Loading Data
 ===============

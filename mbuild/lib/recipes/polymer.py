@@ -69,7 +69,7 @@ class Polymer(Compound):
         methods before calling the build() method.
 
         Example
-        --------
+        -------
         >>> chain = Polymer()
         >>> chain.add_monomer(mb.Compound)
         >>> chain.add_end_groups(mb.Compound)

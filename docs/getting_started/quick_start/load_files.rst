@@ -7,7 +7,7 @@ Load files
 mol2 files
 ------------------------
 
-Create an mbuild.Compound (i.e., the "pentane" variable) by loading a molecule from a `mol2 <http://chemyang.ccnu.edu.cn/ccb/server/AIMMS/mol2.pdf>`_ file.
+Create an ``mbuild.Compound`` (i.e., the "pentane" variable) by loading a molecule from a `mol2 <http://chemyang.ccnu.edu.cn/ccb/server/AIMMS/mol2.pdf>`_ file.
 
 Import the required mbuild packages.
 
@@ -26,7 +26,7 @@ Load the "pentane.mol2" file from its directory.
 CIF files
 ------------------------
 
-Build an mbuild.Compound (i.e., the "ETV_triclinic" variable) by loading a `Crystallographic Information File (CIF) <https://www.iucr.org/resources/cif>`_ file and selecting the number of cell units to populate in the x, y, and z-dimensions.
+Build an ``mbuild.Compound`` (i.e., the "ETV_triclinic" variable) by loading a `Crystallographic Information File (CIF) <https://www.iucr.org/resources/cif>`_ file and selecting the number of cell units to populate in the x, y, and z-dimensions.
 
 
 Import the required mbuild packages.
@@ -49,4 +49,4 @@ The `CIF <https://www.iucr.org/resources/cif>`_ file is loaded using the ``load_
 
 Other file types
 ------------------------
-mBuild also supports loading data or files via hoomd_snapshot, GSD, SMILES strings, and ParmEd structures.
+mBuild also supports :ref:`loading_data` or files via hoomd_snapshot, GSD, SMILES strings, and ParmEd structures. 
