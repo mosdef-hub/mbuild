@@ -106,31 +106,32 @@ def write_lammpsdata(
     unique_bond_types: an enumarated OrderedDict of unique bond types for all
         bonds in the structure.
         Defined by bond parameters and component atomtypes, in order:
-            k : bond.type.k
-            req : bond.type.req
-            atomtypes : sorted((bond.atom1.type, bond.atom2.type))
+        --- k : bond.type.k
+        --- req : bond.type.req
+        --- atomtypes : sorted((bond.atom1.type, bond.atom2.type))
     unique_angle_types: an enumerated OrderedDict of unique angle types for all
         angles in the structure.
         Defined by angle parameters and component atomtypes, in order:
-            k : angle.type.k
-            theteq : angle.type.theteq
-            vertex atomtype: angle.atom2.type
-            atomtypes: sorted((bond.atom1.type, bond.atom3.type))
+        --- k : angle.type.k
+        --- theteq : angle.type.theteq
+        --- vertex atomtype: angle.atom2.type
+        --- atomtypes: sorted((bond.atom1.type, bond.atom3.type))
+
     unique_dihedral_types: an enumerated OrderedDict of unique dihedrals type
         for all dihedrals in the structure.
         Defined by dihedral parameters and component atomtypes, in order:
-            c0 : dihedral.type.c0
-            c1 : dihedral.type.c1
-            c2 : dihedral.type.c2
-            c3 : dihedral.type.c3
-            c4 : dihedral.type.c4
-            c5 : dihedral.type.c5
-            scee : dihedral.type.scee
-            scnb : dihedral.type.scnb
-            atomtype 1 : dihedral.atom1.type
-            atomtype 2 : dihedral.atom2.type
-            atomtype 3 : dihedral.atom3.type
-            atomtype 4 : dihedral.atom4.type
+        --- c0 : dihedral.type.c0
+        --- c1 : dihedral.type.c1
+        --- c2 : dihedral.type.c2
+        --- c3 : dihedral.type.c3
+        --- c4 : dihedral.type.c4
+        --- c5 : dihedral.type.c5
+        --- scee : dihedral.type.scee
+        --- scnb : dihedral.type.scnb
+        --- atomtype 1 : dihedral.atom1.type
+        --- atomtype 2 : dihedral.atom2.type
+        --- atomtype 3 : dihedral.atom3.type
+        --- atomtype 4 : dihedral.atom4.type
     """
     if atom_style not in ["atomic", "charge", "molecular", "full"]:
         raise ValueError(

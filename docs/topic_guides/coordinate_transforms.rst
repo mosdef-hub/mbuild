@@ -1,5 +1,5 @@
 ==========================
-Coordinate transformations
+Coordinate Transformations
 ==========================
 The following utility functions provide mechanisms for spatial transformations for mbuild compounds:
 
