@@ -1,7 +1,6 @@
 """Cassandra Molecular Connectivity format.
 
-https://cassandra-mc.readthedocs.io/en/latest/guides/input_files.html#
-molecular-connectivity-file
+https://cassandra-mc.readthedocs.io/en/latest/guides/input_files.html#molecular-connectivity-file
 """
 from __future__ import division
 

@@ -90,7 +90,8 @@ def create_hoomd_simulation(
     pmd.Structure, you will not have angle, dihedral, or force field
     information. You may be better off creating a hoomd.Snapshot.
     Reference units should be expected to convert parmed Structure units:
-        angstroms, kcal/mol, and daltons
+
+    --- angstroms, kcal/mol, and daltons
     """
     if isinstance(structure, mb.Compound):
         raise ValueError(

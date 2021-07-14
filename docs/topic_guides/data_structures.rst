@@ -25,22 +25,24 @@ Compound
 --------
 
 .. autoclass:: mbuild.Compound
-    :members:
+	:members:
 
-Port
-----
-
-.. autoclass:: mbuild.Port
-    :members:
 
 Box
 ---
 
 .. autoclass:: mbuild.Box
-    :members:
+	:members:
 
 Lattice
 -------
 
 .. autoclass:: mbuild.Lattice
-    :members:
+	:members:
+
+
+Port
+----
+
+.. autoclass:: mbuild.Port
+	:members:
