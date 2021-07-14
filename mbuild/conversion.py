@@ -56,7 +56,7 @@ def load(
     Parameters
     ----------
     filename_or_object : str, mdtraj.Trajectory, parmed.Structure,
-            mbuild.Compound, pybel.Molecule,
+        mbuild.Compound, pybel.Molecule,
         Name of the file or topology from which to load atom and bond
         information.
     relative_to_module : str, optional, default=None
@@ -83,7 +83,7 @@ def load(
     ignore_box_warn : bool, optional, default=False
         If True, ignore warning if no box is present. Defaults to True when
         loading from SMILES
-    **kwargs : keyword arguments
+    ``**kwargs`` : keyword arguments
         Key word arguments passed to mdTraj, RDKit, or pybel for loading.
 
     Returns
