@@ -397,10 +397,17 @@ def write_lammpsdata(
                 / mass_conversion_factor
             )
         else:
-            masses = (
-                np.array([atom.atom_type.mass for atom in structure.atoms])
-                / mass_conversion_factor
-            )
+            tmp_masses = list()
+            for atom in structure.atoms:
+                # handle case where atomtype does not contain a mass
+                try:
+                    tmp_masses.append(atom.atom_type.mass)
+                except AttributeError:
+                    warn(
+                        f"No mass or defined atomtype for atom: {atom}. Using atom mass of {atom.mass / mass_conversion_factor}"
+                    )
+                    tmp_masses.append(atom.mass)
+            masses = np.asarray(tmp_masses) / mass_conversion_factor
 
         mass_dict = dict(
             [
@@ -450,7 +457,7 @@ def write_lammpsdata(
                 params = ParameterSet.from_structure(structure)
                 # Sort keys (maybe they should be sorted in ParmEd)
                 new_nbfix_types = OrderedDict()
-                for key, val in params.nbfix_types.items():
+                for key in params.nbfix_types.keys():
                     sorted_key = tuple(sorted(key))
                     if sorted_key in new_nbfix_types:
                         warn("Sorted key matches an existing key")
