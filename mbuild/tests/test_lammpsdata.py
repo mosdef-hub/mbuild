@@ -20,6 +20,22 @@ class TestLammpsData(BaseTest):
             unit_style=unit_style,
         )
 
+    @pytest.mark.parametrize("pair_coeff_label", [None, "lj", "lj/coul/cut"])
+    def test_save_pair_coeff_label(self, ethane, pair_coeff_label):
+        ethane.save(
+            filename="ethane-opls.lammps",
+            forcefield_name="oplsaa",
+            unit_style="real",
+            pair_coeff_label=pair_coeff_label,
+        )
+        with open("ethane-opls.lammps", "r") as fp:
+            for line in fp:
+                if "Pair Coeffs" in line:
+                    if pair_coeff_label is None:
+                        assert "# lj" in line
+                    else:
+                        assert "# {}".format(pair_coeff_label) in line
+
     @pytest.mark.skipif(not has_foyer, reason="Foyer package not installed")
     def test_save_charmm(self):
         from foyer import Forcefield
@@ -227,6 +243,17 @@ class TestLammpsData(BaseTest):
             filename="triclinic-box.lammps", forcefield_name="oplsaa", box=box
         )
 
+    def test_save_orthorhombic_box(self, ethane):
+        box = mb.Box(lengths=np.array([2.0, 2.0, 2.0]))
+        ethane.save(
+            filename="ortho-box.lammps", forcefield_name="oplsaa", box=box
+        )
+        with open("ortho-box.lammps", "r") as fi:
+            for line in fi:
+                assert "xy" not in line
+                assert "xz" not in line
+                assert "yz" not in line
+
     @pytest.mark.parametrize(
         "atom_style, n_columns",
         [("full", 7), ("atomic", 5), ("molecular", 6), ("charge", 6)],
@@ -241,6 +268,8 @@ class TestLammpsData(BaseTest):
                     first_atom_line = next(f)
                     columns = first_atom_line.split("\t")
                     assert len(columns) == n_columns
+                else:
+                    assert "# " + atom_style in line
 
     def test_resid(self, ethane, methane):
         structure = ethane.to_parmed() + methane.to_parmed()
@@ -388,6 +417,7 @@ class TestLammpsData(BaseTest):
             while not checked_section:
                 line = fi.readline()
                 if "Pair Coeffs" in line:
+                    fi.readline()
                     fi.readline()
                     line = fi.readline().split()
                     epsilon = float(line[1])
