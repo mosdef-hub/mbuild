@@ -65,8 +65,10 @@ class TestCharmmWriterData(BaseTest):
                     assert out_gomc[i + 2].split()[4:5] == ["opls_140_ETH"]
 
                 elif (
-                    "!atom_types 	 Kb	b0 		  atoms_types_per_utilized_FF"
-                    in line
+                    "!atom_types" in line
+                    and "Kb" in line
+                    and "b0" in line
+                    and "atoms_types_per_utilized_FF" in line
                 ):
                     bond_types = [
                         ["A", "B", "340.0", "1.09"],
@@ -100,8 +102,10 @@ class TestCharmmWriterData(BaseTest):
                         )
 
                 elif (
-                    "!atom_types 		Ktheta	Theta0			  atoms_types_per_utilized_FF"
-                    in line
+                    "!atom_types" in line
+                    and "Ktheta" in line
+                    and "Theta0" in line
+                    and "atoms_types_per_utilized_FF" in line
                 ):
                     angle_types = [
                         ["A", "A", "B", "37.5", "110.70000"],
@@ -135,8 +139,11 @@ class TestCharmmWriterData(BaseTest):
                         )
 
                 elif (
-                    "!atom_types 			Kchi		n	delta		  atoms_types_per_utilized_FF"
-                    in line
+                    "!atom_types" in line
+                    and "Kchi" in line
+                    and "n" in line
+                    and "delta" in line
+                    and "atoms_types_per_utilized_FF" in line
                 ):
                     dihed_types = [
                         ["B", "A", "A", "B", "0.300000", "0", "90.0"],
@@ -389,8 +396,10 @@ class TestCharmmWriterData(BaseTest):
                         )
 
                 elif (
-                    "!atom_types 	 Kb	b0 		  atoms_types_per_utilized_FF"
-                    in line
+                    "!atom_types" in line
+                    and "Kb" in line
+                    and "b0" in line
+                    and "atoms_types_per_utilized_FF" in line
                 ):
                     bond_types = [
                         ["C", "D", "600.40152964", "0.945"],
@@ -418,12 +427,15 @@ class TestCharmmWriterData(BaseTest):
                     assert total_bonds_evaluated_reorg == bond_types
 
                 elif (
-                    "!atom_types 		Ktheta	Theta0			  atoms_types_per_utilized_FF"
+                    "!atom_types" in line
+                    and "Ktheta" in line
+                    and "Theta0" in line
+                    and "atoms_types_per_utilized_FF" in line
                     in line
                 ):
                     angle_types = [
                         ["A", "B", "A", "62.10013026", "112.00007"],
-                        ["A", "B", "D", "50.0775", "109.46989"],
+                        ["A", "B", "D", "50.07754422", "109.46989"],
                         ["B", "D", "C", "55.04555449", "108.49987"],
                     ]
                     total_angles_evaluated = []
@@ -447,8 +459,11 @@ class TestCharmmWriterData(BaseTest):
                     assert total_angles_evaluated_reorg == angle_types
 
                 elif (
-                    "!atom_types 			Kchi		n	delta		  atoms_types_per_utilized_FF"
-                    in line
+                    "!atom_types" in line
+                    and "Kchi" in line
+                    and "n" in line
+                    and "delta" in line
+                    and "atoms_types_per_utilized_FF" in line
                 ):
                     dihedral_types = [
                         ["A", "B", "D", "C", "0.647232", "0", "90.0"],
@@ -702,8 +717,10 @@ class TestCharmmWriterData(BaseTest):
                         )
 
                 elif (
-                    "!atom_types 	 Kb	b0 		  atoms_types_per_utilized_FF"
-                    in line
+                    "!atom_types" in line
+                    and "Kb" in line
+                    and "b0" in line
+                    and "atoms_types_per_utilized_FF" in line
                 ):
                     bond_types = [
                         ["D", "G", "340.0", "1.09"],
@@ -730,7 +747,10 @@ class TestCharmmWriterData(BaseTest):
                     assert len(total_fixed_bonds) == 2
 
                 elif (
-                    "!atom_types 		Ktheta	Theta0			  atoms_types_per_utilized_FF"
+                    "!atom_types" in line
+                    and "Ktheta" in line
+                    and "Theta0" in line
+                    and "atoms_types_per_utilized_FF" in line
                     in line
                 ):
                     fixed_angle_types = [
@@ -753,7 +773,7 @@ class TestCharmmWriterData(BaseTest):
                                 out_gomc[i + 1 + j].split("!")[0].split()[0:4]
                             )
                     assert (
-                        total_angles_evaluated.sort()
+                        fixed_angle_types.sort()
                         == total_angles_evaluated.sort()
                     )
                     assert len(total_fixed_angles) == len(fixed_angle_types)
@@ -824,6 +844,343 @@ class TestCharmmWriterData(BaseTest):
                             out_gomc[i + 1 + j].split()[9:12]
                             == atom_type_res_part_2_list[j]
                         )
+
+                else:
+                    pass
+
+    def test_charmm_pdb_fix_bonds_only(
+        self, ethane_gomc, ethanol_gomc
+    ):
+        test_box_ethane_propane = mb.fill_box(
+            compound=[ethane_gomc, ethanol_gomc],
+            n_compounds=[1, 1],
+            box=[2.0, 2.0, 2.0],
+        )
+        charmm = Charmm(
+            test_box_ethane_propane,
+            "Test_fixes_bonds_only",
+            ff_filename="Test_fixes_bonds_only",
+            residues=[ethanol_gomc.name, ethane_gomc.name],
+            forcefield_selection="oplsaa",
+            gomc_fix_bonds=[ethane_gomc.name],
+        )
+        charmm.write_inp()
+
+        with open("Test_fixes_bonds_only.inp", "r") as fp:
+            out_gomc = fp.readlines()
+            for i, line in enumerate(out_gomc):
+                if ("!atom_types" in line
+                    and "Kb" in line
+                    and "b0" in line
+                    and "atoms_types_per_utilized_FF" in line
+                ):
+                    bond_types = [
+                        ["D", "G", "340.0", "1.09"],
+                        ["E", "G", "320.0", "1.41"],
+                        ["E", "F", "553.0", "0.945"],
+                        ["A", "C", "999999999999", "1.09"],
+                        ["B", "D", "340.0", "1.09"],
+                        ["A", "A", "999999999999", "1.529"],
+                        ["B", "G", "268.0", "1.529"],
+                    ]
+                    total_bonds_evaluated = []
+                    total_fixed_bonds = []
+                    for j in range(0, 7):
+                        total_bonds_evaluated.append(
+                            out_gomc[i + 1 + j].split("!")[0].split()[0:4]
+                        )
+                        if out_gomc[i + 1 + j].split("!")[0].split()[2:3] == [
+                            "999999999999"
+                        ]:
+                            total_fixed_bonds.append(
+                                out_gomc[i + 1 + j].split("!")[0].split()[0:4]
+                            )
+                    assert total_bonds_evaluated.sort() == bond_types.sort()
+                    assert len(total_fixed_bonds) == 2
+
+                elif (
+                    "!atom_types" in line
+                    and "Ktheta" in line
+                    and "Theta0" in line
+                    and "atoms_types_per_utilized_FF" in line
+                ):
+                    fixed_angle_types = []
+                    total_angles_evaluated = []
+                    total_fixed_angles = []
+                    for j in range(0, 9):
+                        if len(fixed_angle_types) > 0:
+                            if out_gomc[i + 1 + j].split("!")[0].split()[0:4] == (
+                                fixed_angle_types[0] or fixed_angle_types[1]
+                            ):
+                                total_angles_evaluated.append(
+                                    out_gomc[i + 1 + j].split("!")[0].split()[0:4]
+                                )
+                        if out_gomc[i + 1 + j].split("!")[0].split()[3:4] == [
+                            "999999999999"
+                        ]:
+                            total_fixed_angles.append(
+                                out_gomc[i + 1 + j].split("!")[0].split()[0:4]
+                            )
+                    assert (
+                        fixed_angle_types.sort()
+                        == total_angles_evaluated.sort()
+                    )
+                    assert len(total_fixed_angles) == len(fixed_angle_types)
+
+                else:
+                    pass
+
+    def test_charmm_pdb_fix_bonds_only_and_fix_bonds_angles(
+            self, ethane_gomc, ethanol_gomc
+    ):
+        test_box_ethane_propane = mb.fill_box(
+            compound=[ethane_gomc, ethanol_gomc],
+            n_compounds=[1, 1],
+            box=[2.0, 2.0, 2.0],
+        )
+        charmm = Charmm(
+            test_box_ethane_propane,
+            "Test_fixes_bonds_only_and_fix_bonds_angles",
+            ff_filename="Test_fixes_bonds_only_and_fix_bonds_angles",
+            residues=[ethanol_gomc.name, ethane_gomc.name],
+            forcefield_selection="oplsaa",
+            gomc_fix_bonds=[ethane_gomc.name],
+            gomc_fix_bonds_angles=[ethane_gomc.name],
+        )
+        charmm.write_inp()
+
+        with open("Test_fixes_bonds_only_and_fix_bonds_angles.inp", "r") as fp:
+            out_gomc = fp.readlines()
+            for i, line in enumerate(out_gomc):
+                if ("!atom_types" in line
+                    and "Kb" in line
+                    and "b0" in line
+                    and "atoms_types_per_utilized_FF" in line
+                ):
+                    bond_types = [
+                        ["D", "G", "340.0", "1.09"],
+                        ["E", "G", "320.0", "1.41"],
+                        ["E", "F", "553.0", "0.945"],
+                        ["A", "C", "999999999999", "1.09"],
+                        ["B", "D", "340.0", "1.09"],
+                        ["A", "A", "999999999999", "1.529"],
+                        ["B", "G", "268.0", "1.529"],
+                    ]
+                    total_bonds_evaluated = []
+                    total_fixed_bonds = []
+                    for j in range(0, 7):
+                        total_bonds_evaluated.append(
+                            out_gomc[i + 1 + j].split("!")[0].split()[0:4]
+                        )
+                        if out_gomc[i + 1 + j].split("!")[0].split()[2:3] == [
+                            "999999999999"
+                        ]:
+                            total_fixed_bonds.append(
+                                out_gomc[i + 1 + j].split("!")[0].split()[0:4]
+                            )
+                    assert total_bonds_evaluated.sort() == bond_types.sort()
+                    assert len(total_fixed_bonds) == 2
+
+                elif (
+                    "!atom_types" in line
+                    and "Ktheta" in line
+                    and "Theta0" in line
+                    and "atoms_types_per_utilized_FF" in line
+                ):
+                    fixed_angle_types = [
+                        ["A", "A", "C", "999999999999", "110.70000"],
+                        ["C", "A", "C", "999999999999", "107.80000"],
+                    ]
+                    total_angles_evaluated = []
+                    total_fixed_angles = []
+                    for j in range(0, 9):
+                        if out_gomc[i + 1 + j].split("!")[0].split()[0:4] == (
+                                fixed_angle_types[0] or fixed_angle_types[1]
+                        ):
+                            total_angles_evaluated.append(
+                                out_gomc[i + 1 + j].split("!")[0].split()[0:4]
+                            )
+                        if out_gomc[i + 1 + j].split("!")[0].split()[3:4] == [
+                            "999999999999"
+                        ]:
+                            total_fixed_angles.append(
+                                out_gomc[i + 1 + j].split("!")[0].split()[0:4]
+                            )
+                    assert (
+                            fixed_angle_types.sort()
+                            == total_angles_evaluated.sort()
+                    )
+                    assert len(total_fixed_angles) == len(fixed_angle_types)
+
+                else:
+                    pass
+
+    def test_charmm_pdb_fix_angles_only(
+        self, ethane_gomc, ethanol_gomc
+    ):
+        test_box_ethane_propane = mb.fill_box(
+            compound=[ethane_gomc, ethanol_gomc],
+            n_compounds=[1, 1],
+            box=[2.0, 2.0, 2.0],
+        )
+        charmm = Charmm(
+            test_box_ethane_propane,
+            "Test_fixes_angles_only",
+            ff_filename="Test_fixes_angles_only",
+            residues=[ethanol_gomc.name, ethane_gomc.name],
+            forcefield_selection="oplsaa",
+            gomc_fix_angles=[ethane_gomc.name],
+        )
+        charmm.write_inp()
+
+        with open("Test_fixes_angles_only.inp", "r") as fp:
+            out_gomc = fp.readlines()
+            for i, line in enumerate(out_gomc):
+                if (
+                    "!atom_types" in line
+                    and "Kb" in line
+                    and "b0" in line
+                    and "atoms_types_per_utilized_FF" in line
+                ):
+                    bond_types = [
+                        ["D", "G", "340.0", "1.09"],
+                        ["E", "G", "320.0", "1.41"],
+                        ["E", "F", "553.0", "0.945"],
+                        ["A", "C", "340.0", "1.09"],
+                        ["B", "D", "340.0", "1.09"],
+                        ["A", "A", "268.0", "1.529"],
+                        ["B", "G", "268.0", "1.529"],
+                    ]
+                    total_bonds_evaluated = []
+                    total_fixed_bonds = []
+                    for j in range(0, 7):
+                        total_bonds_evaluated.append(
+                            out_gomc[i + 1 + j].split("!")[0].split()[0:4]
+                        )
+                        if out_gomc[i + 1 + j].split("!")[0].split()[2:3] == [
+                            "999999999999"
+                        ]:
+                            total_fixed_bonds.append(
+                                out_gomc[i + 1 + j].split("!")[0].split()[0:4]
+                            )
+                    assert total_bonds_evaluated.sort() == bond_types.sort()
+                    assert len(total_fixed_bonds) == 0
+
+                elif (
+                    "!atom_types" in line
+                    and "Ktheta" in line
+                    and "Theta0" in line
+                    and "atoms_types_per_utilized_FF" in line
+                ):
+                    fixed_angle_types = [
+                        ["A", "A", "C", "999999999999", "110.70000"],
+                        ["C", "A", "C", "999999999999", "107.80000"],
+                    ]
+                    total_angles_evaluated = []
+                    total_fixed_angles = []
+                    for j in range(0, 9):
+                        if out_gomc[i + 1 + j].split("!")[0].split()[0:4] == (
+                            fixed_angle_types[0] or fixed_angle_types[1]
+                        ):
+                            total_angles_evaluated.append(
+                                out_gomc[i + 1 + j].split("!")[0].split()[0:4]
+                            )
+                        if out_gomc[i + 1 + j].split("!")[0].split()[3:4] == [
+                            "999999999999"
+                        ]:
+                            total_fixed_angles.append(
+                                out_gomc[i + 1 + j].split("!")[0].split()[0:4]
+                            )
+                    assert (
+                        fixed_angle_types.sort()
+                        == total_angles_evaluated.sort()
+                    )
+                    assert len(total_fixed_angles) == len(fixed_angle_types)
+
+                else:
+                    pass
+
+    def test_charmm_pdb_fix_angles_only_and_fix_bonds_angles(
+            self, ethane_gomc, ethanol_gomc
+    ):
+        test_box_ethane_propane = mb.fill_box(
+            compound=[ethane_gomc, ethanol_gomc],
+            n_compounds=[1, 1],
+            box=[2.0, 2.0, 2.0],
+        )
+        charmm = Charmm(
+            test_box_ethane_propane,
+            "Test_fixes_angles_only_and_fix_bonds_angles",
+            ff_filename="Test_fixes_angles_only_and_fix_bonds_angles",
+            residues=[ethanol_gomc.name, ethane_gomc.name],
+            forcefield_selection="oplsaa",
+            gomc_fix_angles=[ethane_gomc.name],
+            gomc_fix_bonds_angles=[ethane_gomc.name],
+        )
+        charmm.write_inp()
+
+        with open("Test_fixes_angles_only_and_fix_bonds_angles.inp", "r") as fp:
+            out_gomc = fp.readlines()
+            for i, line in enumerate(out_gomc):
+                if ("!atom_types" in line
+                    and "Kb" in line
+                    and "b0" in line
+                    and "atoms_types_per_utilized_FF" in line
+                ):
+                    bond_types = [
+                        ["D", "G", "340.0", "1.09"],
+                        ["E", "G", "320.0", "1.41"],
+                        ["E", "F", "553.0", "0.945"],
+                        ["A", "C", "999999999999", "1.09"],
+                        ["B", "D", "340.0", "1.09"],
+                        ["A", "A", "999999999999", "1.529"],
+                        ["B", "G", "268.0", "1.529"],
+                    ]
+                    total_bonds_evaluated = []
+                    total_fixed_bonds = []
+                    for j in range(0, 7):
+                        total_bonds_evaluated.append(
+                            out_gomc[i + 1 + j].split("!")[0].split()[0:4]
+                        )
+                        if out_gomc[i + 1 + j].split("!")[0].split()[2:3] == [
+                            "999999999999"
+                        ]:
+                            total_fixed_bonds.append(
+                                out_gomc[i + 1 + j].split("!")[0].split()[0:4]
+                            )
+                    assert total_bonds_evaluated.sort() == bond_types.sort()
+                    assert len(total_fixed_bonds) == 2
+
+                elif (
+                    "!atom_types" in line
+                    and "Ktheta" in line
+                    and "Theta0" in line
+                    and "atoms_types_per_utilized_FF" in line
+                ):
+                    fixed_angle_types = [
+                        ["A", "A", "C", "999999999999", "110.70000"],
+                        ["C", "A", "C", "999999999999", "107.80000"],
+                    ]
+                    total_angles_evaluated = []
+                    total_fixed_angles = []
+                    for j in range(0, 9):
+                        if out_gomc[i + 1 + j].split("!")[0].split()[0:4] == (
+                                fixed_angle_types[0] or fixed_angle_types[1]
+                        ):
+                            total_angles_evaluated.append(
+                                out_gomc[i + 1 + j].split("!")[0].split()[0:4]
+                            )
+                        if out_gomc[i + 1 + j].split("!")[0].split()[3:4] == [
+                            "999999999999"
+                        ]:
+                            total_fixed_angles.append(
+                                out_gomc[i + 1 + j].split("!")[0].split()[0:4]
+                            )
+                    assert (
+                            fixed_angle_types.sort()
+                            == total_angles_evaluated.sort()
+                    )
+                    assert len(total_fixed_angles) == len(fixed_angle_types)
 
                 else:
                     pass
@@ -2005,8 +2362,8 @@ class TestCharmmWriterData(BaseTest):
     def test_gomc_fix_bonds_angles_string(self, two_propanol_ua):
         with pytest.raises(
             TypeError,
-            match=r"ERROR: Please enter the residues that have fixed angles and "
-            r"bonds \(gomc_fix_bonds_angles\) in a list format.",
+            match=r"ERROR: Please enter the residues names in the \({}\) variable "
+                  r"are in a list format.".format("gomc_fix_bonds_angles")
         ):
             Charmm(
                 two_propanol_ua,
@@ -2022,7 +2379,7 @@ class TestCharmmWriterData(BaseTest):
         with pytest.raises(
             ValueError,
             match=r"ERROR: Please ensure that all the residue names in the "
-            r"gomc_fix_bonds_angles list are also in the residues list.",
+            r"{} list are also in the residues list.".format("gomc_fix_bonds_angles"),
         ):
             Charmm(
                 two_propanol_ua,
@@ -2032,6 +2389,70 @@ class TestCharmmWriterData(BaseTest):
                 forcefield_selection="trappe-ua",
                 bead_to_atom_name_dict={"_CH3": "C"},
                 gomc_fix_bonds_angles=["WNG"],
+            )
+
+    def test_gomc_fix_bonds_string(self, two_propanol_ua):
+        with pytest.raises(
+            TypeError,
+            match=r"ERROR: Please enter the residues names in the \({}\) variable "
+                  r"are in a list format.".format("gomc_fix_bonds")
+        ):
+            Charmm(
+                two_propanol_ua,
+                "charmm_data_UA",
+                ff_filename="charmm_data_UA",
+                residues=[two_propanol_ua.name],
+                forcefield_selection="trappe-ua",
+                bead_to_atom_name_dict={"_CH3": "C"},
+                gomc_fix_bonds="two_propanol_ua.name",
+            )
+
+    def test_gomc_fix_bonds_residue_not_in_system(self, two_propanol_ua):
+        with pytest.raises(
+            ValueError,
+            match=r"ERROR: Please ensure that all the residue names in the "
+            r"{} list are also in the residues list.".format("gomc_fix_bonds"),
+        ):
+            Charmm(
+                two_propanol_ua,
+                "charmm_data_UA",
+                ff_filename="charmm_data_UA",
+                residues=[two_propanol_ua.name],
+                forcefield_selection="trappe-ua",
+                bead_to_atom_name_dict={"_CH3": "C"},
+                gomc_fix_bonds=["WNG"],
+            )
+
+    def test_gomc_fix_angles_string(self, two_propanol_ua):
+        with pytest.raises(
+            TypeError,
+            match=r"ERROR: Please enter the residues names in the \({}\) variable "
+                  r"are in a list format.".format("gomc_fix_angles")
+        ):
+            Charmm(
+                two_propanol_ua,
+                "charmm_data_UA",
+                ff_filename="charmm_data_UA",
+                residues=[two_propanol_ua.name],
+                forcefield_selection="trappe-ua",
+                bead_to_atom_name_dict={"_CH3": "C"},
+                gomc_fix_angles="two_propanol_ua.name",
+            )
+
+    def test_gomc_fix_angles_residue_not_in_system(self, two_propanol_ua):
+        with pytest.raises(
+            ValueError,
+            match=r"ERROR: Please ensure that all the residue names in the "
+            r"{} list are also in the residues list.".format("gomc_fix_angles"),
+        ):
+            Charmm(
+                two_propanol_ua,
+                "charmm_data_UA",
+                ff_filename="charmm_data_UA",
+                residues=[two_propanol_ua.name],
+                forcefield_selection="trappe-ua",
+                bead_to_atom_name_dict={"_CH3": "C"},
+                gomc_fix_angles=["WNG"],
             )
 
     def test_fix_residue_string(self, two_propanol_ua):
