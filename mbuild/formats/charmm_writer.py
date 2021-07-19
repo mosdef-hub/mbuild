@@ -1269,16 +1269,24 @@ class Charmm:
         for the GOMC engine and it changes the residue's bond constants (Kbs)
         and angle constants (Kthetas) values to 999999999999 in the
         FF file (i.e., the .inp file).
+        If the residues are listed in either the gomc_fix_angles or the gomc_fix_bonds_angles
+        lists, the angles will be fixed for that residue.
+        If the residues are listed in either the gomc_fix_bonds or the gomc_fix_bonds_angles
+        lists, the bonds will be fixed for that residue.
     gomc_fix_bonds : list, default = None
         When list of residues is provided, the selected residues will have
         their bonds fixed in the GOMC engine.  This is specifically
         for the GOMC engine and it changes the residue's bond constants (Kbs)
         values to 999999999999 in the FF file (i.e., the .inp file).
+        If the residues are listed in either the gomc_fix_bonds or the gomc_fix_bonds_angles
+        lists, the bonds will be fixed for that residue.
     gomc_fix_angles : list, default = None
         When list of residues is provided, the selected residues will have
         their angles fixed in the GOMC engine.  This is specifically
         for the GOMC engine and it changes the residue's angle constants (Kthetas)
         values to 999999999999 in the FF file (i.e., the .inp file).
+        If the residues are listed in either the gomc_fix_angles or the gomc_fix_bonds_angles
+        lists, the angles will be fixed for that residue.
     bead_to_atom_name_dict : dict, optional, default =None
         For all atom names/elements/beads with 2 or less digits, this converts
         the atom name in the GOMC psf and pdb files to a unique atom name,
@@ -1646,7 +1654,7 @@ class Charmm:
             )
             raise TypeError(print_error_message)
 
-        check_fixed_lists(self.gomc_fix_bonds_angles,'gomc_fix_bonds_angles', self.residues)
+        check_fixed_lists(self.gomc_fix_bonds_angles, 'gomc_fix_bonds_angles', self.residues)
         check_fixed_lists(self.gomc_fix_bonds, 'gomc_fix_bonds', self.residues)
         check_fixed_lists(self.gomc_fix_angles, 'gomc_fix_angles', self.residues)
 
@@ -2570,8 +2578,8 @@ class Charmm:
                         bond_format = "{}\t{}\t{}\t{}\t\t! {}\t{}\n"
                         if (
                             ((self.gomc_fix_bonds_angles is not None) and (
-                            (params[3] and params[4])
-                            in self.gomc_fix_bonds_angles))
+                                    (params[3] and params[4])
+                                    in self.gomc_fix_bonds_angles))
                             or (((self.gomc_fix_bonds is not None) and (
                             (params[3] and params[4])
                             in self.gomc_fix_bonds)))
@@ -2642,11 +2650,11 @@ class Charmm:
 
                         if (
                             ((self.gomc_fix_bonds_angles is not None) and (
-                            (params[4] and params[5] and params[6]))
-                            in self.gomc_fix_bonds_angles)
+                                    (params[4] and params[5] and params[6]))
+                             in self.gomc_fix_bonds_angles)
                             or ((self.gomc_fix_angles is not None) and (
                             (params[4] and params[5] and params[6]))
-                            in self.gomc_fix_angles)
+                                in self.gomc_fix_angles)
                         ):
                             fix_angle_k_value = "999999999999"
                             angle_format = (
