@@ -2551,7 +2551,7 @@ class Charmm:
 
                 data.write("\n* masses\n\n")
                 data.write(
-                    "! atom_types \tmass \t\t  atomTypeForceFieldName_ResidueName "
+                    "!atom_types \tmass \t\t  atomTypeForceFieldName_ResidueName "
                     + "(i.e., atoms_type_per_utilized_FF)  \n"
                 )
                 for atom_type, mass in self.mass_dict.items():
