@@ -430,8 +430,7 @@ class TestCharmmWriterData(BaseTest):
                     "!atom_types" in line
                     and "Ktheta" in line
                     and "Theta0" in line
-                    and "atoms_types_per_utilized_FF" in line
-                    in line
+                    and "atoms_types_per_utilized_FF" in line in line
                 ):
                     angle_types = [
                         ["A", "B", "A", "62.10013026", "112.00007"],
@@ -750,8 +749,7 @@ class TestCharmmWriterData(BaseTest):
                     "!atom_types" in line
                     and "Ktheta" in line
                     and "Theta0" in line
-                    and "atoms_types_per_utilized_FF" in line
-                    in line
+                    and "atoms_types_per_utilized_FF" in line in line
                 ):
                     fixed_angle_types = [
                         ["A", "A", "C", "999999999999", "110.70000"],
@@ -848,9 +846,7 @@ class TestCharmmWriterData(BaseTest):
                 else:
                     pass
 
-    def test_charmm_pdb_fix_bonds_only(
-        self, ethane_gomc, ethanol_gomc
-    ):
+    def test_charmm_pdb_fix_bonds_only(self, ethane_gomc, ethanol_gomc):
         test_box_ethane_propane = mb.fill_box(
             compound=[ethane_gomc, ethanol_gomc],
             n_compounds=[1, 1],
@@ -869,7 +865,8 @@ class TestCharmmWriterData(BaseTest):
         with open("Test_fixes_bonds_only.inp", "r") as fp:
             out_gomc = fp.readlines()
             for i, line in enumerate(out_gomc):
-                if ("!atom_types" in line
+                if (
+                    "!atom_types" in line
                     and "Kb" in line
                     and "b0" in line
                     and "atoms_types_per_utilized_FF" in line
@@ -909,11 +906,13 @@ class TestCharmmWriterData(BaseTest):
                     total_fixed_angles = []
                     for j in range(0, 9):
                         if len(fixed_angle_types) > 0:
-                            if out_gomc[i + 1 + j].split("!")[0].split()[0:4] == (
-                                fixed_angle_types[0] or fixed_angle_types[1]
-                            ):
+                            if out_gomc[i + 1 + j].split("!")[0].split()[
+                                0:4
+                            ] == (fixed_angle_types[0] or fixed_angle_types[1]):
                                 total_angles_evaluated.append(
-                                    out_gomc[i + 1 + j].split("!")[0].split()[0:4]
+                                    out_gomc[i + 1 + j]
+                                    .split("!")[0]
+                                    .split()[0:4]
                                 )
                         if out_gomc[i + 1 + j].split("!")[0].split()[3:4] == [
                             "999999999999"
@@ -931,7 +930,7 @@ class TestCharmmWriterData(BaseTest):
                     pass
 
     def test_charmm_pdb_fix_bonds_only_and_fix_bonds_angles(
-            self, ethane_gomc, ethanol_gomc
+        self, ethane_gomc, ethanol_gomc
     ):
         test_box_ethane_propane = mb.fill_box(
             compound=[ethane_gomc, ethanol_gomc],
@@ -952,7 +951,8 @@ class TestCharmmWriterData(BaseTest):
         with open("Test_fixes_bonds_only_and_fix_bonds_angles.inp", "r") as fp:
             out_gomc = fp.readlines()
             for i, line in enumerate(out_gomc):
-                if ("!atom_types" in line
+                if (
+                    "!atom_types" in line
                     and "Kb" in line
                     and "b0" in line
                     and "atoms_types_per_utilized_FF" in line
@@ -995,7 +995,7 @@ class TestCharmmWriterData(BaseTest):
                     total_fixed_angles = []
                     for j in range(0, 9):
                         if out_gomc[i + 1 + j].split("!")[0].split()[0:4] == (
-                                fixed_angle_types[0] or fixed_angle_types[1]
+                            fixed_angle_types[0] or fixed_angle_types[1]
                         ):
                             total_angles_evaluated.append(
                                 out_gomc[i + 1 + j].split("!")[0].split()[0:4]
@@ -1007,17 +1007,15 @@ class TestCharmmWriterData(BaseTest):
                                 out_gomc[i + 1 + j].split("!")[0].split()[0:4]
                             )
                     assert (
-                            fixed_angle_types.sort()
-                            == total_angles_evaluated.sort()
+                        fixed_angle_types.sort()
+                        == total_angles_evaluated.sort()
                     )
                     assert len(total_fixed_angles) == len(fixed_angle_types)
 
                 else:
                     pass
 
-    def test_charmm_pdb_fix_angles_only(
-        self, ethane_gomc, ethanol_gomc
-    ):
+    def test_charmm_pdb_fix_angles_only(self, ethane_gomc, ethanol_gomc):
         test_box_ethane_propane = mb.fill_box(
             compound=[ethane_gomc, ethanol_gomc],
             n_compounds=[1, 1],
@@ -1101,7 +1099,7 @@ class TestCharmmWriterData(BaseTest):
                     pass
 
     def test_charmm_pdb_fix_angles_only_and_fix_bonds_angles(
-            self, ethane_gomc, ethanol_gomc
+        self, ethane_gomc, ethanol_gomc
     ):
         test_box_ethane_propane = mb.fill_box(
             compound=[ethane_gomc, ethanol_gomc],
@@ -1122,7 +1120,8 @@ class TestCharmmWriterData(BaseTest):
         with open("Test_fixes_angles_only_and_fix_bonds_angles.inp", "r") as fp:
             out_gomc = fp.readlines()
             for i, line in enumerate(out_gomc):
-                if ("!atom_types" in line
+                if (
+                    "!atom_types" in line
                     and "Kb" in line
                     and "b0" in line
                     and "atoms_types_per_utilized_FF" in line
@@ -1165,7 +1164,7 @@ class TestCharmmWriterData(BaseTest):
                     total_fixed_angles = []
                     for j in range(0, 9):
                         if out_gomc[i + 1 + j].split("!")[0].split()[0:4] == (
-                                fixed_angle_types[0] or fixed_angle_types[1]
+                            fixed_angle_types[0] or fixed_angle_types[1]
                         ):
                             total_angles_evaluated.append(
                                 out_gomc[i + 1 + j].split("!")[0].split()[0:4]
@@ -1177,8 +1176,8 @@ class TestCharmmWriterData(BaseTest):
                                 out_gomc[i + 1 + j].split("!")[0].split()[0:4]
                             )
                     assert (
-                            fixed_angle_types.sort()
-                            == total_angles_evaluated.sort()
+                        fixed_angle_types.sort()
+                        == total_angles_evaluated.sort()
                     )
                     assert len(total_fixed_angles) == len(fixed_angle_types)
 
@@ -2363,7 +2362,7 @@ class TestCharmmWriterData(BaseTest):
         with pytest.raises(
             TypeError,
             match=r"ERROR: Please enter the residues names in the \({}\) variable "
-                  r"are in a list format.".format("gomc_fix_bonds_angles")
+            r"are in a list format.".format("gomc_fix_bonds_angles"),
         ):
             Charmm(
                 two_propanol_ua,
@@ -2379,7 +2378,9 @@ class TestCharmmWriterData(BaseTest):
         with pytest.raises(
             ValueError,
             match=r"ERROR: Please ensure that all the residue names in the "
-            r"{} list are also in the residues list.".format("gomc_fix_bonds_angles"),
+            r"{} list are also in the residues list.".format(
+                "gomc_fix_bonds_angles"
+            ),
         ):
             Charmm(
                 two_propanol_ua,
@@ -2395,7 +2396,7 @@ class TestCharmmWriterData(BaseTest):
         with pytest.raises(
             TypeError,
             match=r"ERROR: Please enter the residues names in the \({}\) variable "
-                  r"are in a list format.".format("gomc_fix_bonds")
+            r"are in a list format.".format("gomc_fix_bonds"),
         ):
             Charmm(
                 two_propanol_ua,
@@ -2427,7 +2428,7 @@ class TestCharmmWriterData(BaseTest):
         with pytest.raises(
             TypeError,
             match=r"ERROR: Please enter the residues names in the \({}\) variable "
-                  r"are in a list format.".format("gomc_fix_angles")
+            r"are in a list format.".format("gomc_fix_angles"),
         ):
             Charmm(
                 two_propanol_ua,

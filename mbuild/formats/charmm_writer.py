@@ -1048,7 +1048,10 @@ def _lengths_angles_to_vectors(lengths, angles, precision=6):
 
     return box_vectors
 
-def check_fixed_lists(fixed_residues_list, fixed_residues_variable_name, residues):
+
+def check_fixed_lists(
+    fixed_residues_list, fixed_residues_variable_name, residues
+):
     """Check the GOMC fixed bonds and angles lists for input errors.
 
     Parameters
@@ -1071,7 +1074,7 @@ def check_fixed_lists(fixed_residues_list, fixed_residues_variable_name, residue
     """
 
     if fixed_residues_list is not None and not isinstance(
-            fixed_residues_list, list
+        fixed_residues_list, list
     ):
         print_error_message = (
             "ERROR: Please enter the residues names in the ({}) variable "
@@ -1084,7 +1087,9 @@ def check_fixed_lists(fixed_residues_list, fixed_residues_variable_name, residue
             if gomc_fix_i not in residues:
                 print_error_message = (
                     "ERROR: Please ensure that all the residue names in the "
-                    "{} list are also in the residues list.".format(fixed_residues_variable_name)
+                    "{} list are also in the residues list.".format(
+                        fixed_residues_variable_name
+                    )
                 )
                 raise ValueError(print_error_message)
             elif not isinstance(gomc_fix_i, str):
@@ -1094,7 +1099,8 @@ def check_fixed_lists(fixed_residues_list, fixed_residues_variable_name, residue
                 print(
                     "INFORMATION: The following residues will have these fixed parameters: "
                     + "gomc_fix_bonds = {}".format(fixed_residues_list)
-            )
+                )
+
 
 # Currently the NBFIX is disabled as since only the OPLS and TRAPPE force fields are currently supported
 class Charmm:
@@ -1654,9 +1660,13 @@ class Charmm:
             )
             raise TypeError(print_error_message)
 
-        check_fixed_lists(self.gomc_fix_bonds_angles, 'gomc_fix_bonds_angles', self.residues)
-        check_fixed_lists(self.gomc_fix_bonds, 'gomc_fix_bonds', self.residues)
-        check_fixed_lists(self.gomc_fix_angles, 'gomc_fix_angles', self.residues)
+        check_fixed_lists(
+            self.gomc_fix_bonds_angles, "gomc_fix_bonds_angles", self.residues
+        )
+        check_fixed_lists(self.gomc_fix_bonds, "gomc_fix_bonds", self.residues)
+        check_fixed_lists(
+            self.gomc_fix_angles, "gomc_fix_angles", self.residues
+        )
 
         if self.fix_residue is not None and not isinstance(
             self.fix_residue, list
@@ -2577,12 +2587,19 @@ class Charmm:
                     for params, idx in unique_bond_types.items():
                         bond_format = "{}\t{}\t{}\t{}\t\t! {}\t{}\n"
                         if (
-                            ((self.gomc_fix_bonds_angles is not None) and (
+                            (self.gomc_fix_bonds_angles is not None)
+                            and (
+                                (params[3] and params[4])
+                                in self.gomc_fix_bonds_angles
+                            )
+                        ) or (
+                            (
+                                (self.gomc_fix_bonds is not None)
+                                and (
                                     (params[3] and params[4])
-                                    in self.gomc_fix_bonds_angles))
-                            or (((self.gomc_fix_bonds is not None) and (
-                            (params[3] and params[4])
-                            in self.gomc_fix_bonds)))
+                                    in self.gomc_fix_bonds
+                                )
+                            )
                         ):
                             fix_bond_k_value = "999999999999"
                             data.write(
@@ -2649,12 +2666,13 @@ class Charmm:
                     for params, idx in unique_angle_types.items():
 
                         if (
-                            ((self.gomc_fix_bonds_angles is not None) and (
-                                    (params[4] and params[5] and params[6]))
-                             in self.gomc_fix_bonds_angles)
-                            or ((self.gomc_fix_angles is not None) and (
-                            (params[4] and params[5] and params[6]))
-                                in self.gomc_fix_angles)
+                            (self.gomc_fix_bonds_angles is not None)
+                            and ((params[4] and params[5] and params[6]))
+                            in self.gomc_fix_bonds_angles
+                        ) or (
+                            (self.gomc_fix_angles is not None)
+                            and ((params[4] and params[5] and params[6]))
+                            in self.gomc_fix_angles
                         ):
                             fix_angle_k_value = "999999999999"
                             angle_format = (
