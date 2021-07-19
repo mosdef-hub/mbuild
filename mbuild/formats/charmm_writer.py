@@ -1269,24 +1269,16 @@ class Charmm:
         for the GOMC engine and it changes the residue's bond constants (Kbs)
         and angle constants (Kthetas) values to 999999999999 in the
         FF file (i.e., the .inp file).
-        If the residues are listed in either the gomc_fix_angles or the gomc_fix_bonds_angles
-        lists, the angles will be fixed for that residue.
-        If the residues are listed in either the gomc_fix_bonds or the gomc_fix_bonds_angles
-        lists, the bonds will be fixed for that residue.
     gomc_fix_bonds : list, default = None
         When list of residues is provided, the selected residues will have
         their bonds fixed in the GOMC engine.  This is specifically
         for the GOMC engine and it changes the residue's bond constants (Kbs)
         values to 999999999999 in the FF file (i.e., the .inp file).
-        If the residues are listed in either the gomc_fix_bonds or the gomc_fix_bonds_angles
-        lists, the bonds will be fixed for that residue.
     gomc_fix_angles : list, default = None
         When list of residues is provided, the selected residues will have
         their angles fixed in the GOMC engine.  This is specifically
         for the GOMC engine and it changes the residue's angle constants (Kthetas)
         values to 999999999999 in the FF file (i.e., the .inp file).
-        If the residues are listed in either the gomc_fix_angles or the gomc_fix_bonds_angles
-        lists, the angles will be fixed for that residue.
     bead_to_atom_name_dict : dict, optional, default =None
         For all atom names/elements/beads with 2 or less digits, this converts
         the atom name in the GOMC psf and pdb files to a unique atom name,
