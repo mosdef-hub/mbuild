@@ -421,7 +421,7 @@ class TestCoordinateTransform(BaseTest):
         spun_points = _spin(points, np.pi / 2, [0, 0, 1])
         assert np.allclose(spun_points, new_points_should_be, atol=1e-15)
 
-    def test_xyz_axis_transform(self):
+    def test_x_axis_transform(self):
         rot_by_compound = mb.Compound(name="rot_by_compound")
         b = mb.Compound(name="b")
         c = mb.Compound(name="c")
@@ -436,3 +436,15 @@ class TestCoordinateTransform(BaseTest):
         x_axis_transform(rot_by_compound, b, c, d)
         x_axis_transform(rot_by_array, array1, array2, array3)
         assert np.array_equal(rot_by_compound.pos, rot_by_array.pos)
+
+    def test_y_axis_transform(self, h2o):
+        init_xyz = h2o.xyz
+        for i in range(4):
+            y_axis_transform(h2o)
+        assert np.allclose(h2o.xyz, init_xyz, atol=1e-4)
+
+    def test_z_axis_transform(self, h2o):
+        init_xyz = h2o.xyz
+        for i in range(4):
+            z_axis_transform(h2o)
+        assert np.allclose(h2o.xyz, init_xyz, atol=1e-4)

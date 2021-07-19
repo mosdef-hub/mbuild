@@ -1,0 +1,33 @@
+<ForceField>
+  <AtomTypes>
+    <Type name="ca" class="ca" element="C" mass="12.01078" def="[C;X3;r6]1[C&amp;X3,N&amp;X2,P&amp;X2][C&amp;X3,N&amp;X2,P&amp;X2][C&amp;X3,N&amp;X2,P&amp;X2][C&amp;X3,N&amp;X2,P&amp;X2][C&amp;X3,N&amp;X2,P&amp;X2]1" desc="Sp2 C in pure aromatic systems" doi="10.1002/jcc/20035" overrides="">
+      <!--Note: original overrides="cz,c2,cc_r5,cc_r6,ce"-->
+    </Type>
+    <Type name="f" class="f" element="F" mass="18.99840325" def="F" desc="Fluorine" doi="10.1002/jcc/20035" overrides=""/>
+    <Type name="ha" class="ha" element="H" mass="1.007947" def="H[C;!X4]" desc="H bonded to aromatic carbon" doi="10.1002/jcc/20035" overrides=""/>
+  </AtomTypes>
+  <NonbondedForce coulomb14scale="1.0" lj14scale="0.5">
+    <Atom type="ca" charge="0.0" sigma="0.34" epsilon="0.359824"/>
+    <Atom type="f" charge="0.0" sigma="0.3118" epsilon="0.255224"/>
+    <Atom type="ha" charge="0.0" sigma="0.26" epsilon="0.06276"/>
+  </NonbondedForce>
+  <HarmonicBondForce>
+    <Bond type1="ca" type2="ca" length="0.1398" k="385848.5"/>
+    <Bond type1="ca" type2="f" length="0.1349" k="299407.0"/>
+    <Bond type1="ca" type2="ha" length="0.1086" k="289365.4"/>
+  </HarmonicBondForce>
+  <HarmonicAngleForce>
+    <Angle type1="ca" type2="ca" type3="ca" angle="2.0947441682" k="557.309"/>
+    <Angle type1="ca" type2="ca" type3="f" angle="2.0762436782" k="561.493"/>
+    <Angle type1="ca" type2="ca" type3="ha" angle="2.0923007073" k="403.338"/>
+  </HarmonicAngleForce>
+  <PeriodicTorsionForce>
+    <Proper type1="ca" type2="ca" type3="ca" type4="ca" periodicity1="2" phase1="3.14159265" k1="15.167"/>
+    <Proper type1="ca" type2="ca" type3="ca" type4="f" periodicity1="2" phase1="3.14159265" k1="15.167"/>
+    <Improper type1="ca" type2="ca" type3="ca" type4="f" periodicity1="2" phase1="3.14159265" k1="4.602"/>
+    <Proper type1="ca" type2="ca" type3="ca" type4="ha" periodicity1="2" phase1="3.14159265" k1="15.167"/>
+    <Improper type1="ca" type2="ca" type3="ca" type4="ha" periodicity1="2" phase1="3.14159265" k1="4.602"/>
+    <Proper type1="f" type2="ca" type3="ca" type4="ha" periodicity1="2" phase1="3.14159265" k1="15.167"/>
+    <Proper type1="ha" type2="ca" type3="ca" type4="ha" periodicity1="2" phase1="3.14159265" k1="15.167"/>
+  </PeriodicTorsionForce>
+</ForceField>

@@ -6,9 +6,12 @@ dependencies:
   - ipywidgets
   - mock
   - nbsphinx
+  - lark-parser
+  - requests
   - numpydoc
   - pip
   - sphinx
+  - ele
   - sphinx_rtd_theme
   - widgetsnbextension
   - pip:

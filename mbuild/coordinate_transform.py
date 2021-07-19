@@ -551,7 +551,7 @@ def rotate_around_x(compound, theta):
         The angle by which to rotate the compound.
     """
     raise RemovedFuncError(
-        "rotate_around_x()", "Compound.rotate_around_x()", "0.7.0", "0.11.0"
+        "rotate_around_x()", "Compound.rotate()", "0.7.0", "0.11.0"
     )
 
 
@@ -566,7 +566,7 @@ def rotate_around_y(compound, theta):
         The angle by which to rotate the compound.
     """
     raise RemovedFuncError(
-        "rotate_around_y()", "Compound.rotate_around_y()", "0.7.0", "0.11.0"
+        "rotate_around_y()", "Compound.rotate()", "0.7.0", "0.11.0"
     )
 
 
@@ -581,7 +581,7 @@ def rotate_around_z(compound, theta):
         The angle by which to rotate the compound.
     """
     raise RemovedFuncError(
-        "rotate_around_z()", "Compound.rotate_around_z()", "0.7.0", "0.11.0"
+        "rotate_around_z()", "Compound.rotate()", "0.7.0", "0.11.0"
     )
 
 
@@ -750,7 +750,7 @@ def y_axis_transform(
         point_on_x_axis=point_on_y_axis,
         point_on_xy_plane=point_on_xy_plane,
     )
-    rotate_around_z(compound, np.pi / 2)
+    compound.rotate(theta=np.pi / 2, around=(0, 0, 1))
 
 
 def z_axis_transform(
@@ -775,4 +775,4 @@ def z_axis_transform(
         point_on_x_axis=point_on_z_axis,
         point_on_xy_plane=point_on_zx_plane,
     )
-    rotate_around_y(compound, np.pi * 3 / 2)
+    compound.rotate(theta=np.pi * 1.5, around=(0, 1, 0))

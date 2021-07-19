@@ -208,6 +208,7 @@ class TestCompound(BaseTest):
                 overwrite=True,
             )
 
+    @pytest.mark.skipif(not has_foyer, reason="Foyer is not installed")
     @pytest.mark.parametrize(
         "ff_filename,foyer_kwargs",
         [

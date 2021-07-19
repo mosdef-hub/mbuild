@@ -7869,3 +7869,93 @@ class TestGOMCControlFileWriter(BaseTest):
                 100,
                 300,
             )
+
+    def test_adjustment_steps(self, ethane_gomc):
+        test_box_ethane_gomc = mb.fill_box(
+            compound=[ethane_gomc], n_compounds=[1], box=[2, 2, 2]
+        )
+        charmm = Charmm(
+            test_box_ethane_gomc,
+            "ethane_box_0",
+            structure_box_1=None,
+            filename_box_1=None,
+            ff_filename="ethane_FF",
+            residues=[ethane_gomc.name],
+            forcefield_selection="oplsaa",
+        )
+        gomc_control.write_gomc_control_file(
+            charmm,
+            "test_adjustment_steps.conf",
+            "NVT",
+            100000,
+            500,
+            input_variables_dict={
+                "PressureCalc": [True, 1],
+                "AdjSteps": 2,
+                "EqSteps": 3,
+                "CoordinatesFreq": [True, 4],
+                "RestartFreq": [True, 5],
+                "CheckpointFreq": [True, 6],
+                "ConsoleFreq": [True, 7],
+                "BlockAverageFreq": [True, 8],
+                "HistogramFreq": [True, 9],
+                "SampleFreq": 11,
+                "VDWGeometricSigma": True,
+            },
+        )
+
+        with open("test_adjustment_steps.conf", "r") as fp:
+            out_gomc = fp.readlines()
+            for i, line in enumerate(out_gomc):
+                if line.startswith("PressureCalc "):
+                    split_line = line.split()
+                    print("split_line[1] = {}".format(split_line[1]))
+                    print("split_line[2] = {}".format(split_line[2]))
+                    assert split_line[1] == "True"
+                    assert split_line[2] == "1"
+
+                elif line.startswith("AdjSteps "):
+                    split_line = line.split()
+                    assert split_line[1] == "2"
+
+                elif line.startswith("EqSteps "):
+                    split_line = line.split()
+                    assert split_line[1] == "3"
+
+                elif line.startswith("CoordinatesFreq "):
+                    split_line = line.split()
+                    assert split_line[1] == "True"
+                    assert split_line[2] == "4"
+
+                elif line.startswith("RestartFreq "):
+                    split_line = line.split()
+                    assert split_line[1] == "True"
+                    assert split_line[2] == "5"
+
+                elif line.startswith("CheckpointFreq "):
+                    split_line = line.split()
+                    assert split_line[1] == "True"
+                    assert split_line[2] == "6"
+
+                elif line.startswith("ConsoleFreq "):
+                    split_line = line.split()
+                    assert split_line[1] == "True"
+                    assert split_line[2] == "7"
+
+                elif line.startswith("BlockAverageFreq "):
+                    split_line = line.split()
+                    assert split_line[1] == "True"
+                    assert split_line[2] == "8"
+
+                elif line.startswith("HistogramFreq "):
+                    split_line = line.split()
+                    assert split_line[1] == "True"
+                    assert split_line[2] == "9"
+
+                elif line.startswith("SampleFreq "):
+                    split_line = line.split()
+                    assert split_line[1] == "11"
+
+                elif line.startswith("VDWGeometricSigma "):
+                    split_line = line.split()
+                    assert split_line[1] == "True"

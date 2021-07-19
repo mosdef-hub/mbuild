@@ -38,6 +38,7 @@ def create_hoomd_simulation(
     pppm_kwargs={"Nx": 8, "Ny": 8, "Nz": 8, "order": 4},
     init_snap=None,
     restart=None,
+    nlist=hoomd.md.nlist.cell,
 ):
     """Convert a parametrized pmd.Structure to hoomd.SimulationContext.
 
@@ -70,6 +71,10 @@ def create_hoomd_simulation(
         restart.gsd contain the same types. The ParmEd structure is still used
         to initialize the forces, but restart.gsd is used to initialize the
         system state (e.g., particle positions, momenta, etc).
+    nlist : hoomd.md.nlist, default=hoomd.md.nlist.cell
+        Type of neighborlist to use, see
+        https://hoomd-blue.readthedocs.io/en/stable/module-md-nlist.html
+        for more information.
 
     Returns
     -------
@@ -85,7 +90,8 @@ def create_hoomd_simulation(
     pmd.Structure, you will not have angle, dihedral, or force field
     information. You may be better off creating a hoomd.Snapshot.
     Reference units should be expected to convert parmed Structure units:
-        angstroms, kcal/mol, and daltons
+
+    --- angstroms, kcal/mol, and daltons
     """
     if isinstance(structure, mb.Compound):
         raise ValueError(
@@ -144,7 +150,7 @@ def create_hoomd_simulation(
         hoomd_objects.append(hoomd_system)
         print("Simulation initialized from restart file")
 
-    nl = hoomd.md.nlist.cell()
+    nl = nlist()
     nl.reset_exclusions(exclusions=["1-2", "1-3"])
     hoomd_objects.append(nl)
 
@@ -430,9 +436,10 @@ def _init_hoomd_rb_torsions(structure, ref_energy=1.0):
             dihedral_type.c3 / ref_energy,
             dihedral_type.c4 / ref_energy,
             dihedral_type.c5 / ref_energy,
+            error_if_outside_tolerance=False,
         )
         rb_torsion.dihedral_coeff.set(
-            name, k1=F_coeffs[0], k2=F_coeffs[1], k3=F_coeffs[2], k4=F_coeffs[3]
+            name, k1=F_coeffs[1], k2=F_coeffs[2], k3=F_coeffs[3], k4=F_coeffs[4]
         )
 
     return rb_torsion

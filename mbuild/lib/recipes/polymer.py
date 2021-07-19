@@ -68,8 +68,8 @@ class Polymer(Compound):
         a Polymer() instance, then call the add_monomer() and add_end_group()
         methods before calling the build() method.
 
-        Example:
-        --------
+        Example
+        -------
         >>> chain = Polymer()
         >>> chain.add_monomer(mb.Compound)
         >>> chain.add_end_groups(mb.Compound)

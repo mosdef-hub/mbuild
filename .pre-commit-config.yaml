@@ -1,3 +1,13 @@
+ci:
+    autofix_commit_msg: |
+        [pre-commit.ci] auto fixes from pre-commit.com hooks
+
+        for more information, see https://pre-commit.ci
+    autofix_prs: true
+    autoupdate_commit_msg: '[pre-commit.ci] pre-commit autoupdate'
+    autoupdate_schedule: weekly
+    skip: []
+    submodules: false
 repos:
 - repo: https://github.com/pre-commit/pre-commit-hooks
   rev: v4.0.1
@@ -6,12 +16,12 @@ repos:
     - id: end-of-file-fixer
     - id: trailing-whitespace
 - repo: https://github.com/psf/black
-  rev: 21.5b1
+  rev: 21.6b0
   hooks:
     - id: black
       args: [--line-length=80]
 - repo: https://github.com/pycqa/isort
-  rev: 5.8.0
+  rev: 5.9.2
   hooks:
     - id: isort
       name: isort (python)
