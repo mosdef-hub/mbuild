@@ -1570,6 +1570,8 @@ class TestGOMCControlFileWriter(BaseTest):
                 "Pressure": 10,
                 "useConstantArea": True,
                 "FixVolBox0": True,
+                'RcutCoulomb_box_0': 14,
+                'RcutCoulomb_box_1': 14,
             },
         )
 
@@ -1591,6 +1593,8 @@ class TestGOMCControlFileWriter(BaseTest):
                                    'MEMC-3Freq': False,
                                    'useConstantArea': False,
                                    'FixVolBox0': False,
+                                   'RcutCoulomb_box_0': False,
+                                   'RcutCoulomb_box_1': False,
                                    }
             out_gomc = fp.readlines()
             for i, line in enumerate(out_gomc):
@@ -1679,6 +1683,16 @@ class TestGOMCControlFileWriter(BaseTest):
                     split_line = line.split()
                     assert split_line[1] == "True"
 
+                elif line.startswith("RcutCoulomb 0 "):
+                    variables_read_dict['RcutCoulomb_box_0'] = True
+                    split_line = line.split()
+                    assert split_line[2] == '14'
+
+                elif line.startswith("RcutCoulomb 1 "):
+                    variables_read_dict['RcutCoulomb_box_1'] = True
+                    split_line = line.split()
+                    assert split_line[2] == '14'
+
                 else:
                     pass
 
@@ -1699,6 +1713,8 @@ class TestGOMCControlFileWriter(BaseTest):
                                        'MEMC-3Freq': True,
                                        'useConstantArea': True,
                                        'FixVolBox0': True,
+                                       'RcutCoulomb_box_0': True,
+                                       'RcutCoulomb_box_1': True,
                                        }
 
     def test_save_change_most_variable_NVT(self, ethane_gomc, ethanol_gomc):
