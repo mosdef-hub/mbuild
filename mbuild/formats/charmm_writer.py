@@ -1049,17 +1049,19 @@ def _lengths_angles_to_vectors(lengths, angles, precision=6):
     return box_vectors
 
 
-def check_fixed_lists(
-    fixed_residues_list, fixed_residues_variable_name, residues
+def _check_fixed_bonds_angles_lists(
+    fixed_residues_bonds_angles_list, fixed_bonds_angles_residues_variable_name, residues
 ):
     """Check the GOMC fixed bonds and angles lists for input errors.
 
     Parameters
     ----------
-    fixed_residues_list : list of strings, [str, ..., str]
-        A list of the residues to be fixed for the GOMC simulation engine.
+    fixed_residues_bonds_angles_list : list of strings, [str, ..., str]
+        A list of the residues (i.e., molecules since GOMC currently considers a
+        a whole molecule as a residue) to have their bonds and/or angles held
+        rigid/fixed for the GOMC simulation engine.
         In GOMC, the residues currently the molecules.
-    fixed_residues_variable_name : str
+    fixed_bonds_angles_residues_variable_name : str
         The name of the varible used as a string, which string, which will be
         in the error and information outputs.
     residues : list, [str, ..., str]
@@ -1073,22 +1075,22 @@ def check_fixed_lists(
     Provides a ValueError or TypeError if the input is not correct.
     """
 
-    if fixed_residues_list is not None and not isinstance(
-        fixed_residues_list, list
+    if fixed_residues_bonds_angles_list is not None and not isinstance(
+        fixed_residues_bonds_angles_list, list
     ):
         print_error_message = (
             "ERROR: Please enter the residues names in the ({}) variable "
-            "are in a list format.".format(fixed_residues_variable_name)
+            "are in a list format.".format(fixed_bonds_angles_residues_variable_name)
         )
         raise TypeError(print_error_message)
 
-    if isinstance(fixed_residues_list, list):
-        for gomc_fix_i in fixed_residues_list:
+    if isinstance(fixed_residues_bonds_angles_list, list):
+        for gomc_fix_i in fixed_residues_bonds_angles_list:
             if gomc_fix_i not in residues:
                 print_error_message = (
                     "ERROR: Please ensure that all the residue names in the "
                     "{} list are also in the residues list.".format(
-                        fixed_residues_variable_name
+                        fixed_bonds_angles_residues_variable_name
                     )
                 )
                 raise ValueError(print_error_message)
@@ -1098,7 +1100,7 @@ def check_fixed_lists(
             else:
                 print(
                     "INFORMATION: The following residues will have these fixed parameters: "
-                    + "gomc_fix_bonds = {}".format(fixed_residues_list)
+                    + "gomc_fix_bonds = {}".format(fixed_residues_bonds_angles_list)
                 )
 
 
@@ -1660,11 +1662,11 @@ class Charmm:
             )
             raise TypeError(print_error_message)
 
-        check_fixed_lists(
+        _check_fixed_bonds_angles_lists(
             self.gomc_fix_bonds_angles, "gomc_fix_bonds_angles", self.residues
         )
-        check_fixed_lists(self.gomc_fix_bonds, "gomc_fix_bonds", self.residues)
-        check_fixed_lists(
+        _check_fixed_bonds_angles_lists(self.gomc_fix_bonds, "gomc_fix_bonds", self.residues)
+        _check_fixed_bonds_angles_lists(
             self.gomc_fix_angles, "gomc_fix_angles", self.residues
         )
 

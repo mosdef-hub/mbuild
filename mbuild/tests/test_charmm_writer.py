@@ -216,11 +216,11 @@ class TestCharmmWriterData(BaseTest):
                 else:
                     pass
 
-        assert masses_read == True
-        assert bonds_read == True
-        assert angles_read == True
-        assert dihedrals_read == True
-        assert nonbondeds_read == True
+        assert masses_read
+        assert bonds_read
+        assert angles_read
+        assert dihedrals_read
+        assert nonbondeds_read
 
     def test_save_charmm_psf(self, ethane_gomc):
         charmm = Charmm(
@@ -329,7 +329,7 @@ class TestCharmmWriterData(BaseTest):
                 else:
                     pass
 
-        assert charges_read == True
+        assert charges_read
 
     def test_save_charmm_pdb(self, ethane_gomc):
         charmm = Charmm(
@@ -381,7 +381,7 @@ class TestCharmmWriterData(BaseTest):
                 else:
                     pass
 
-        assert pdb_read == True
+        assert pdb_read
 
     def test_save_charmm_ua_gomc_ff(self, two_propanol_ua):
         charmm = Charmm(
@@ -584,11 +584,11 @@ class TestCharmmWriterData(BaseTest):
                 else:
                     pass
 
-        assert masses_read == True
-        assert bonds_read == True
-        assert angles_read == True
-        assert dihedrals_read == True
-        assert nonbondeds_read == True
+        assert masses_read
+        assert bonds_read
+        assert angles_read
+        assert dihedrals_read
+        assert nonbondeds_read
 
     def test_save_charmm_ua_psf(self, two_propanol_ua):
         charmm = Charmm(
@@ -669,7 +669,7 @@ class TestCharmmWriterData(BaseTest):
                 else:
                     pass
 
-        assert read_psf == True
+        assert read_psf
 
     def test_save_charmm_ua_pdb(self, two_propanol_ua):
         charmm = Charmm(
@@ -716,7 +716,7 @@ class TestCharmmWriterData(BaseTest):
                 else:
                     pass
 
-        assert read_pdb == True
+        assert read_pdb
 
     def test_charmm_pdb_fix_angle_bond_fix_atoms(
         self, ethane_gomc, ethanol_gomc
@@ -849,9 +849,9 @@ class TestCharmmWriterData(BaseTest):
                 else:
                     pass
 
-        assert masses_read == True
-        assert bonds_read == True
-        assert angles_read == True
+        assert masses_read
+        assert bonds_read
+        assert angles_read
 
         with open("Test_fixes_angle_bond_atoms.pdb", "r") as fp:
             read_pdb_part_1 = False
@@ -924,8 +924,8 @@ class TestCharmmWriterData(BaseTest):
                 else:
                     pass
 
-        assert read_pdb_part_1 == True
-        assert read_pdb_part_2 == True
+        assert read_pdb_part_1
+        assert read_pdb_part_2
 
     def test_charmm_pdb_fix_bonds_only(self, ethane_gomc, ethanol_gomc):
         test_box_ethane_propane = mb.fill_box(
@@ -1014,8 +1014,8 @@ class TestCharmmWriterData(BaseTest):
                 else:
                     pass
 
-        bonds_read == True
-        angles_read == True
+        assert bonds_read
+        assert angles_read
 
     def test_charmm_pdb_fix_bonds_only_and_fix_bonds_angles(
         self, ethane_gomc, ethanol_gomc
@@ -1107,8 +1107,8 @@ class TestCharmmWriterData(BaseTest):
                 else:
                     pass
 
-        bonds_read == True
-        angles_read == True
+        assert bonds_read
+        assert angles_read
 
     def test_charmm_pdb_fix_angles_only(self, ethane_gomc, ethanol_gomc):
         test_box_ethane_propane = mb.fill_box(
@@ -1197,8 +1197,8 @@ class TestCharmmWriterData(BaseTest):
                 else:
                     pass
 
-        bonds_read == True
-        angles_read == True
+        assert bonds_read
+        assert angles_read
 
     def test_charmm_pdb_fix_angles_only_and_fix_bonds_angles(
         self, ethane_gomc, ethanol_gomc
@@ -1290,8 +1290,8 @@ class TestCharmmWriterData(BaseTest):
                 else:
                     pass
 
-        bonds_read == True
-        angles_read == True
+        assert bonds_read
+        assert angles_read
 
     def test_charmm_pdb_no_differenc_1_4_coul_scalars(
         self, two_propanol_ua, ethane_gomc
@@ -1425,7 +1425,7 @@ class TestCharmmWriterData(BaseTest):
                 else:
                     pass
 
-        assert pdb_box_0_read == True
+        assert pdb_box_0_read
 
         with open("residue_reorder_box_sizing_box_1.pdb", "r") as fp:
             pdb_box_1_read = False
@@ -1445,7 +1445,7 @@ class TestCharmmWriterData(BaseTest):
                 else:
                     pass
 
-        assert pdb_box_1_read == True
+        assert pdb_box_1_read
 
     # test utils base 10 to base 16 converter
     def test_base_10_to_base_16(self):
@@ -2178,7 +2178,7 @@ class TestCharmmWriterData(BaseTest):
                 else:
                     pass
 
-        assert pdb_read == True
+        assert pdb_read
 
     def test_ff_selection_list(self, two_propanol_ua):
         with pytest.raises(
@@ -2814,7 +2814,7 @@ class TestCharmmWriterData(BaseTest):
                 else:
                     pass
 
-        assert pdb_read == True
+        assert pdb_read
 
         with open("charmm_filled_box.pdb", "r") as fp:
             pdb_read = False
@@ -2850,7 +2850,7 @@ class TestCharmmWriterData(BaseTest):
                 else:
                     pass
 
-        assert pdb_read == True
+        assert pdb_read
 
     def test_box_1_empty_test_2(self, two_propanol_ua):
         empty_compound = Box(lengths=[3, 3, 3], angles=[90, 90, 90])
@@ -2888,7 +2888,7 @@ class TestCharmmWriterData(BaseTest):
                 else:
                     pass
 
-        assert pdb_read == True
+        assert pdb_read
 
         with open("charmm_filled_box.pdb", "r") as fp:
             pdb_read = False
@@ -2924,7 +2924,7 @@ class TestCharmmWriterData(BaseTest):
                 else:
                     pass
 
-        assert pdb_read == True
+        assert pdb_read
 
     def test_box_1_empty_test_3(self, two_propanol_ua):
         empty_compound = Box(lengths=[4, 5, 6])
@@ -2966,7 +2966,7 @@ class TestCharmmWriterData(BaseTest):
                 else:
                     pass
 
-        assert pdb_part_1_read == True
+        assert pdb_part_1_read
 
         with open("charmm_filled_box.pdb", "r") as fp:
             pdb_part_2_read = False
@@ -3002,7 +3002,7 @@ class TestCharmmWriterData(BaseTest):
                 else:
                     pass
 
-        assert pdb_part_2_read == True
+        assert pdb_part_2_read
 
     def test_box_1_empty_test_4(self):
         empty_compound_box_0 = Box(lengths=[2, 2, 2])
@@ -3239,7 +3239,7 @@ class TestCharmmWriterData(BaseTest):
                             out_gomc[i + 1 + j].split()[4:5] == mass_type_2[j]
                         )
 
-        assert masses_read == True
+        assert masses_read
 
     # test cif reader ETA psf writer outputs correct atom and residue numbering using non-orthoganol box
     def test_save_non_othoganol_box_psf(self):
@@ -3310,7 +3310,7 @@ class TestCharmmWriterData(BaseTest):
                 else:
                     pass
 
-        assert psf_read == True
+        assert psf_read
 
     # test cif reader ETA pdb writer outputs correct atom and residue numbering using non-orthoganol box
     def test_save_non_othoganol_box_pdb(self):
@@ -3400,7 +3400,7 @@ class TestCharmmWriterData(BaseTest):
                 else:
                     pass
 
-        assert pdb_read == True
+        assert pdb_read
 
     # test methane UA psf writer outputs correct atom and residue numbering using orthoganol box
     def test_save_othoganol_methane_ua_psf(self):
@@ -3454,7 +3454,7 @@ class TestCharmmWriterData(BaseTest):
                 else:
                     pass
 
-        assert psf_read == True
+        assert psf_read
 
     # test methane UA pdb writer outputs correct atom and residue numbering using orthoganol box
     def test_save_othoganol_methane_ua_pdb(self):
@@ -3526,4 +3526,4 @@ class TestCharmmWriterData(BaseTest):
                 else:
                     pass
 
-        assert pdb_read == True
+        assert pdb_read
