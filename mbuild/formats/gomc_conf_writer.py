@@ -4598,9 +4598,7 @@ class GOMCControl:
             )
         data_control_file.write("{:25s} {}\n".format("Exclude", self.Exclude))
         data_control_file.write(
-            "{:25s} {}\n".format(
-                "VDWGeometricSigma", self.VDWGeometricSigma
-            )
+            "{:25s} {}\n".format("VDWGeometricSigma", self.VDWGeometricSigma)
         )
         data_control_file.write(" \n")
 
