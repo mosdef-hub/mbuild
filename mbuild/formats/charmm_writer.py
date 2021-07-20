@@ -1050,7 +1050,9 @@ def _lengths_angles_to_vectors(lengths, angles, precision=6):
 
 
 def _check_fixed_bonds_angles_lists(
-    fixed_residues_bonds_angles_list, fixed_bonds_angles_residues_variable_name, residues
+    fixed_residues_bonds_angles_list,
+    fixed_bonds_angles_residues_variable_name,
+    residues,
 ):
     """Check the GOMC fixed bonds and angles lists for input errors.
 
@@ -1080,7 +1082,9 @@ def _check_fixed_bonds_angles_lists(
     ):
         print_error_message = (
             "ERROR: Please enter the residues names in the ({}) variable "
-            "are in a list format.".format(fixed_bonds_angles_residues_variable_name)
+            "are in a list format.".format(
+                fixed_bonds_angles_residues_variable_name
+            )
         )
         raise TypeError(print_error_message)
 
@@ -1100,7 +1104,9 @@ def _check_fixed_bonds_angles_lists(
             else:
                 print(
                     "INFORMATION: The following residues will have these fixed parameters: "
-                    + "gomc_fix_bonds = {}".format(fixed_residues_bonds_angles_list)
+                    + "gomc_fix_bonds = {}".format(
+                        fixed_residues_bonds_angles_list
+                    )
                 )
 
 
@@ -1665,7 +1671,9 @@ class Charmm:
         _check_fixed_bonds_angles_lists(
             self.gomc_fix_bonds_angles, "gomc_fix_bonds_angles", self.residues
         )
-        _check_fixed_bonds_angles_lists(self.gomc_fix_bonds, "gomc_fix_bonds", self.residues)
+        _check_fixed_bonds_angles_lists(
+            self.gomc_fix_bonds, "gomc_fix_bonds", self.residues
+        )
         _check_fixed_bonds_angles_lists(
             self.gomc_fix_angles, "gomc_fix_angles", self.residues
         )
