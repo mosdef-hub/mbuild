@@ -9,7 +9,7 @@ The following notebook provides a thorough walkthrough to using the
 
 -  **Variable-dimension crystal structures**
 
-   -  ``Lattice`` can support the dimensionality of ``mBuild``, which
+   -  ``Lattice`` supports the dimensionality of ``mBuild``, which
       means that the systems can be in 1D, 2D, or 3D. Replace the
       necessary vector components with 0 to emulate the dimensionality
       of interest.
@@ -18,9 +18,10 @@ The following notebook provides a thorough walkthrough to using the
 
    -  ``Lattice`` can support an indefinite amount of lattice points in
       its data structure.
-   -  The ‘repeat’ cell can be as large as the user defines useful.
-   -  The components that occupy the lattice points are
-      ``mbuild.Compound's``.
+
+   -  The `repeat` cell can be as large as the user defines useful.
+
+   -  The components that occupy the lattice points are ``mbuild.Compound`` objects.
 
       -  This allows the user to build any system since compounds are
          only a representation of matter in this design.
@@ -35,11 +36,9 @@ The following notebook provides a thorough walkthrough to using the
       know the vectors that span the unit cell, that can also be
       provided.
 
--  *IN PROGRESS* **Generation of lattice structure from crystallographic
-   index file (CIF)**
+-  **Generation of lattice structure from crystallographic index file** `(CIF) <https://www.iucr.org/resources/cif/documentation>`_ **formats**
 
-   -  Although this feature is not currently implemented, this
-      functionality can be extended.
+   -  Please also see the :ref:`QuickStart_Load_files` section for other ways to load files.
 
 -  *IN PROGRESS* **Template recipes to generate common crystal
    structures (FCC, BCC, HEX, etc)**
@@ -68,7 +67,7 @@ As we can see, there are quite a few attributes and parameters that make
 up this class. There are also a lot of inline examples as well. If you
 ever get stuck, remember to use the python built-in ``help()`` method!
 
--  **``Lattice.lattice_spacing``**
+-  **Lattice.lattice_spacing**
 
    This data structure is a (3,) array that details the lengths of the
    repeat cell for the crystal. You can either use a ``numpy`` array
@@ -78,9 +77,13 @@ ever get stuck, remember to use the python built-in ``help()`` method!
    equivalent. These are the lattice parameters :math:`a, b, c` when
    viewing crystallographic information.
 
-   For Example: ``python3   lattice_spacing = [.5, .5, .5]``
+   For Example:
 
--  **``Lattice.lattice_vectors``**
+   .. code:: ipython3
+
+       lattice_spacing = [0.5, 0.5, 0.5]
+
+-  **Lattice.lattice_vectors**
 
    ``lattice_vectors`` is a 3x3 array that defines the vectors that
    encapsulate the repeat cell. This is an optional value that the user
@@ -89,29 +92,41 @@ ever get stuck, remember to use the python built-in ``help()`` method!
    provided. If neither is passed in, the default value are the vectors
    that encase a cubic lattice.
 
-   **Note**, most users will **not** have to use these to build their
-   lattice structure of interest. It will usually be easier for the
-   users to provide the 3 Bravais angles instead. If the user then wants
-   the vectors, the ``Lattice`` object will calculate them for the user.
+   .. note::
+       Most users will **not** have to use these to build their
+       lattice structure of interest. It will usually be easier for the
+       users to provide the 3 Bravais angles instead. If the user then wants
+       the vectors, the ``Lattice`` object will calculate them for the user.
 
    For example: Cubic Cell
-   ``python3   lattice_vectors = [[1, 0, 0], [0, 1, 0], [0, 0, 1]]``
 
--  **``Lattice.angles``**
+   .. code:: ipython3
+
+       lattice_vectors = [[1, 0, 0], [0, 1, 0], [0, 0, 1]]
+
+-  **Lattice.angles**
 
    ``angles`` is a (3,) array that defines the three Bravais angles of
    the lattice. Commonly referred to as :math:`\alpha, \beta, \gamma` in
    the definition of the lattice parameters.
 
-   For example: Cubic Cell ``python3   angles = [90, 90, 90]``
+   For example: Cubic Cell
 
--  **``Lattice.lattice_points``**
+   .. code:: ipython3
+
+       angles = [90, 90, 90]
+
+-  **Lattice.lattice_points**
 
    ``lattice_points`` can be the most common source of confusion when
    creating a crystal structure. In crystallographic terms, this is the
    minimum basis set of points in space that define where the points in
    the lattice exist. This requires that the user does not over define
    the system.
+
+   .. note::
+       MIT's OpenCourseWare has an excellent PDF for more information
+       `here <https://ocw.mit.edu/courses/earth-atmospheric-and-planetary-sciences/12-108-structure-of-earth-materials-fall-2004/lecture-notes/lec7.pdf>`_
 
    The other tricky issue that can come up is the data structure itself.
    ``lattice_points`` is a dictionary where the ``dict.key`` items are
@@ -124,10 +139,21 @@ ever get stuck, remember to use the python built-in ``help()`` method!
    ids for each lattice_point.
 
    For Example: FCC All Unique
-   ``python3   lattice_points = {'A' : [[0, 0, 0]], 'B' : [[0.5, 0.5, 0]], 'C' : [[0.5, 0, 0.5]], 'D' : [[0, 0.5, 0.5]]}``
+
+   .. code:: ipython3
+
+       lattice_points = {'A' : [[0, 0, 0]],
+                         'B' : [[0.5, 0.5, 0]],
+                         'C' : [[0.5, 0, 0.5]],
+                         'D' : [[0, 0.5, 0.5]]
+                         }
 
    For Example: FCC All Same
-   ``python3   lattice_points = {'A' : [[0, 0, 0], [0.5, 0.5, 0], [0.5, 0, 0.5], [0, 0.5, 0.5]] }``
+
+   .. code:: ipython3
+
+       lattice_points = {'A' : [[0, 0, 0], [0.5, 0.5, 0], [0.5, 0, 0.5], [0, 0.5, 0.5]] }
+
 
 ``Lattice`` Public Methods
 --------------------------
@@ -136,13 +162,13 @@ The ``Lattice`` class also contains methods that are responsible for
 applying ``Compounds`` to the lattice points, with user defined cell
 replications in the x, y, and z directions.
 
--  **``Lattice.populate(compound_dict=None, x=1, y=1, z=1)``**
+-  **Lattice.populate(compound_dict=None, x=1, y=1, z=1)**
 
    This method uses the ``Lattice`` object to place ``Compounds`` at the
    specified ``lattice_points``. There are 4 optional inputs for this
    class.
 
-   -  **``compound_dict``** This input is another dictionary that
+   -  ``compound_dict`` inputs another dictionary that
       defines a relationship between the ``lattice_points`` and the
       ``Compounds`` that the user wants to populate the lattice with.
       The ``dict.keys`` of this dictionary must be the same as the
@@ -151,35 +177,40 @@ replications in the x, y, and z directions.
       to place at that lattice point(s) will be used. An example will
       use the FCC examples from above. They have been copied below:
 
-      For Example: FCC All Unique \``\` python3 lattice_points = {‘A’ :
-      [[0, 0, 0]], ‘B’ : [[0.5, 0.5, 0]], ‘C’ : [[0.5, 0, 0.5]], ‘D’ :
-      [[0, 0.5, 0.5]]}
+      For Example: FCC All Unique
 
-      # compound dictionary a = mbuild.Compound(name=‘A’) b =
-      mbuild.Compound(name=‘B’) c = mbuild.Compound(name=‘C’) d =
-      mbuild.Compound(name=‘D’)
+          .. code:: ipython3
 
-      compound_dict = {‘A’ : a, ‘B’ : b, ‘C’ : c, ‘D’ : d}
+            lattice_points = {'A' : [[0, 0, 0]],
+                              'B' : [[0.5, 0.5, 0]],
+                              'C' : [[0.5, 0, 0.5]],
+                              'D' : [[0, 0.5, 0.5]]
+                              }
 
-      ::
+            # compound dictionary
+            a = mbuild.Compound(name='A')
+            b = mbuild.Compound(name='B')
+            c = mbuild.Compound(name='C')
+            d = mbuild.Compound(name='D')
+            compound_dict = {'A' : a, 'B' : b, 'C' : c, 'D' : d}
 
 
-         For Example: FCC All Same
-         ```python3
-         lattice_points = {'A' : [[0, 0, 0], [0.5, 0.5, 0], [0.5, 0, 0.5], [0, 0.5, 0.5]] }
+      For Example: FCC All Same
 
-         # compound dictionary
-         a = mbuild.Compound(name='A')
-         compound_dict = {'A' : a}
+          .. code:: ipython3
 
-Putting it all together
-=======================
+            lattice_points = {'A' : [[0, 0, 0], [0.5, 0.5, 0], [0.5, 0, 0.5], [0, 0.5, 0.5]] }
 
-Below contains some examples of homogeneous and heterogeneous 2D and 3D
-lattice structures using the ``Lattice`` class.
+            # compound dictionary
+            a = mbuild.Compound(name='A')
+            compound_dict = {'A' : a}
+
 
 Example Lattice Systems
 -----------------------
+
+Below contains some examples of homogeneous and heterogeneous 2D and 3D
+lattice structures using the ``Lattice`` class.
 
 Simple Cubic (SC)
 ~~~~~~~~~~~~~~~~~
@@ -190,7 +221,6 @@ Simple Cubic (SC)
 
     import mbuild as mb
     import numpy as np
-    import nglview as nv
 
     # define all necessary lattice parameters
     spacings = [0.3359, 0.3359, 0.3359]
@@ -207,7 +237,13 @@ Simple Cubic (SC)
     po_lattice = sc_lattice.populate(compound_dict={'Po' : po}, x=2, y=2, z=2)
 
     # visualize
-    nv.show_parmed(po_lattice.to_parmed())
+    po_lattice.visualize()
+
+.. figure:: ../../images/lattice_SC_polonium_image.png
+    :width: 40 %
+    :align: center
+
+    **Polonium simple cubic (SC) structure**
 
 Body-centered Cubic (BCC)
 ~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -218,7 +254,6 @@ Body-centered Cubic (BCC)
 
     import mbuild as mb
     import numpy as np
-    import nglview as nv
 
     # define all necessary lattice parameters
     spacings = [0.4123, 0.4123, 0.4123]
@@ -237,7 +272,13 @@ Body-centered Cubic (BCC)
     cscl_lattice = bcc_lattice.populate(compound_dict={'A' : cl, 'B' : cs}, x=2, y=2, z=2)
 
     # visualize
-    nv.show_parmed(cscl_lattice.to_parmed())
+    cscl_lattice.visualize()
+
+.. figure:: ../../images/lattice_BCC_CsCl_image.png
+    :width: 40 %
+    :align: center
+
+    **CsCl body-centered cubic (BCC) structure**
 
 Face-centered Cubic (FCC)
 ~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -248,7 +289,6 @@ Face-centered Cubic (FCC)
 
     import mbuild as mb
     import numpy as np
-    import nglview as nv
 
     # define all necessary lattice parameters
     spacings = [0.36149, 0.36149, 0.36149]
@@ -265,7 +305,13 @@ Face-centered Cubic (FCC)
     cu_lattice = fcc_lattice.populate(compound_dict={'A' : cu}, x=2, y=2, z=2)
 
     # visualize
-    nv.show_parmed(cu_lattice.to_parmed())
+    cu_lattice.visualize()
+
+.. figure:: ../../images/lattice_FCC_Cu_image.png
+    :width: 40 %
+    :align: center
+
+    **Cu face-centered cubic (FCC) structure**
 
 Diamond (Cubic)
 ~~~~~~~~~~~~~~~
@@ -276,7 +322,6 @@ Diamond (Cubic)
 
     import mbuild as mb
     import numpy as np
-    import nglview as nv
 
     # define all necessary lattice parameters
     spacings = [0.54309, 0.54309, 0.54309]
@@ -294,7 +339,13 @@ Diamond (Cubic)
     si_lattice = diamond_lattice.populate(compound_dict={'A' : si}, x=2, y=2, z=2)
 
     # visualize
-    nv.show_parmed(si_lattice.to_parmed())
+    si_lattice.visualize()
+
+.. figure:: ../../images/lattice_Diamond_cubic_Si_image.png
+    :width: 40 %
+    :align: center
+
+    **Si diamond (Cubic) structure**
 
 Graphene (2D)
 ~~~~~~~~~~~~~
@@ -305,10 +356,10 @@ Graphene (2D)
 
     import mbuild as mb
     import numpy as np
-    import nglview as nv
+
 
     # define all necessary lattice parameters
-    spacings = [0.246, 0.246, 0]
+    spacings = [0.246, 0.246, 0.335]
     angles = [90, 90, 120]
     points = [[0, 0, 0], [1/3, 2/3, 0]]
 
@@ -322,4 +373,10 @@ Graphene (2D)
     graphene = graphene_lattice.populate(compound_dict={'A' : c}, x=5, y=5, z=1)
 
     # visualize
-    nv.show_parmed(graphene.to_parmed())
+    graphene.visualize()
+
+.. figure:: ../../images/lattice_graphene_2D_image.png
+    :width: 40 %
+    :align: center
+
+    **Graphene (2D) structure**

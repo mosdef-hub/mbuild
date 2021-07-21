@@ -1,0 +1,43 @@
+<ForceField><AtomTypes>
+    <Type class="CTL1" element="_CTL1" mass="12.011" name="CTL1" def="[_CTL1]"/>
+    <Type class="OSL" element="_OSL" mass="16.008" name="OSL" def="[_OSL]"/>
+    <Type class="PL" element="_PL" mass="15" name="PL" def="[_PL]"/>
+    <Type class="OSLP" element="_OSLP" mass="16.008" name="OSLP" def="[_OSLP]"/>
+  </AtomTypes>
+  <HarmonicBondForce>
+    <Bond k="1.00000" length="1" type1="CTL1" type2="CTL1"/>
+    <Bond k="2" length="2." type1="CTL1" type2="OSL"/>
+    <Bond k="3.00000" length="3" type1="CTL1" type2="PL"/>
+    <Bond k="4.00000" length="4" type1="CTL1" type2="OSLP"/>
+    <Bond k="5.00000" length="5" type1="OSL" type2="PL"/>
+    <Bond k="6.00000" length="6" type1="OSL" type2="OSL"/>
+    <Bond k="7.00000" length="7" type1="OSL" type2="OSLP"/>
+    <Bond k="8.00000" length="8" type1="PL" type2="OSLP"/>
+    <Bond k="9.00000" length="9" type1="PL" type2="PL"/>
+    <Bond k="10.00000" length="10." type1="OSLP" type2="OSLP"/>
+  </HarmonicBondForce>
+  <HarmonicAngleForce>
+    <Angle angle="1.93732" k="418.40000" type1="CTL1" type2="OSL" type3="PL"/>
+    <Angle angle="2.93732" k="518.40000" type1="CTL1" type2="OSL" type3="OSLP"/>
+    <Angle angle="3.93732" k="618.40000" type1="OSLP" type2="OSL" type3="PL"/>
+    <Angle angle="4.93732" k="718.40000" type1="OSLP" type2="CTL1" type3="OSL"/>
+  </HarmonicAngleForce>
+  <AmoebaUreyBradleyForce>
+    <UreyBradley d="0.21400" k="20920.00000" class1="CTL1" class2="OSL" class3="PL"/>
+     </AmoebaUreyBradleyForce>
+  <PeriodicTorsionForce>
+      <Proper k1="69.00000" periodicity1="1" phase1="0.00000" type1="PL" type2="OSL" type3="CTL1" type4="OSLP"/>
+  </PeriodicTorsionForce>
+  <CustomTorsionForce energy="k*(theta-theta0)^2">
+    <PerTorsionParameter name="k"/>
+    <PerTorsionParameter name="theta0"/>
+    <Improper k="200.83200" theta0="0.00000" type1="PL" type2="OSL" type3="CTL1" type4="OSLP"/>
+    <Improper k="300.83200" theta0="1.00000" type1="OSL" type2="PL" type3="CTL1" type4="OSLP"/>
+ </CustomTorsionForce>
+  <NonbondedForce coulomb14scale="1.0" lj14scale="1.0">
+    <Atom epsilon="1.192464" sigma="1.04000135244450124" type="CTL1" charge="0.0"/>
+    <Atom epsilon="2.192464" sigma="2.04000135244450124" type="OSL" charge="0.0"/>
+    <Atom epsilon="3.192464" sigma="3.04000135244450124" type="PL" charge="0.0"/>
+    <Atom epsilon="4.192464" sigma="4.04000135244450124" type="OSLP" charge="0.0"/>
+    </NonbondedForce>
+  </ForceField>

@@ -20,25 +20,41 @@ class TestLammpsData(BaseTest):
             unit_style=unit_style,
         )
 
+    @pytest.mark.parametrize("pair_coeff_label", [None, "lj", "lj/coul/cut"])
+    def test_save_pair_coeff_label(self, ethane, pair_coeff_label):
+        ethane.save(
+            filename="ethane-opls.lammps",
+            forcefield_name="oplsaa",
+            unit_style="real",
+            pair_coeff_label=pair_coeff_label,
+        )
+        with open("ethane-opls.lammps", "r") as fp:
+            for line in fp:
+                if "Pair Coeffs" in line:
+                    if pair_coeff_label is None:
+                        assert "# lj" in line
+                    else:
+                        assert "# {}".format(pair_coeff_label) in line
+
     @pytest.mark.skipif(not has_foyer, reason="Foyer package not installed")
     def test_save_charmm(self):
+        from foyer import Forcefield
+
+        from mbuild.formats.lammpsdata import write_lammpsdata
+
         cmpd = mb.load(get_fn("charmm_dihedral.mol2"))
         for i in cmpd.particles():
             i.name = "_{}".format(i.name)
         structure = cmpd.to_parmed(
-            box=cmpd.boundingbox,
+            box=cmpd.get_boundingbox(),
             residues=set([p.parent.name for p in cmpd.particles()]),
         )
-
-        from foyer import Forcefield
-
         ff = Forcefield(forcefield_files=[get_fn("charmm_truncated.xml")])
         structure = ff.apply(structure, assert_dihedral_params=False)
-
-        from mbuild.formats.lammpsdata import write_lammpsdata
-
         write_lammpsdata(structure, "charmm_dihedral.lammps")
         out_lammps = open("charmm_dihedral.lammps", "r").readlines()
+        found_angles = False
+        found_dihedrals = False
         for i, line in enumerate(out_lammps):
             if "Angle Coeffs" in line:
                 assert "# charmm" in line
@@ -47,17 +63,136 @@ class TestLammpsData(BaseTest):
                     in out_lammps[i + 1]
                 )
                 assert len(out_lammps[i + 2].split("#")[0].split()) == 5
+                found_angles = True
             elif "Dihedral Coeffs" in line:
                 assert "# charmm" in line
                 assert "#k, n, phi, weight" in out_lammps[i + 1]
                 assert len(out_lammps[i + 2].split("#")[0].split()) == 5
+                found_dihedrals = True
             else:
                 pass
+        assert found_angles
+        assert found_dihedrals
+
+    @pytest.mark.skipif(not has_foyer, reason="Foyer package not installed")
+    def test_singleterm_charmm(self):
+        from foyer import Forcefield
+
+        from mbuild.formats.lammpsdata import write_lammpsdata
+
+        cmpd = mb.load(get_fn("charmm_dihedral.mol2"))
+        for i in cmpd.particles():
+            i.name = "_{}".format(i.name)
+        structure = cmpd.to_parmed(
+            box=cmpd.get_boundingbox(),
+            residues=set([p.parent.name for p in cmpd.particles()]),
+        )
+        ff = Forcefield(
+            forcefield_files=[get_fn("charmm_truncated_singleterm.xml")]
+        )
+        structure = ff.apply(structure, assert_dihedral_params=False)
+        write_lammpsdata(structure, "charmm_dihedral_singleterm.lammps")
+        out_lammps = open("charmm_dihedral_singleterm.lammps", "r").readlines()
+        found_dihedrals = False
+        for i, line in enumerate(out_lammps):
+            if "Dihedral Coeffs" in line:
+                assert "# charmm" in line
+                assert "#k, n, phi, weight" in out_lammps[i + 1]
+                assert len(out_lammps[i + 2].split("#")[0].split()) == 5
+                assert float(
+                    out_lammps[i + 2].split("#")[0].split()[4]
+                ) == float("1.0")
+                found_dihedrals = True
+            else:
+                pass
+        assert found_dihedrals
+
+    @pytest.mark.skipif(not has_foyer, reason="Foyer package not installed")
+    def test_charmm_improper(self):
+        from foyer import Forcefield
+
+        import mbuild as mb
+        from mbuild.formats.lammpsdata import write_lammpsdata
+
+        system = mb.Compound()
+        first = mb.Particle(name="_CTL2", pos=[-1, 0, 0])
+        second = mb.Particle(name="_CL", pos=[0, 0, 0])
+        third = mb.Particle(name="_OBL", pos=[1, 0, 0])
+        fourth = mb.Particle(name="_OHL", pos=[0, 1, 0])
+
+        system.add([first, second, third, fourth])
+
+        system.add_bond((first, second))
+        system.add_bond((second, third))
+        system.add_bond((second, fourth))
+
+        ff = Forcefield(forcefield_files=[get_fn("charmm36_cooh.xml")])
+        struc = ff.apply(
+            system,
+            assert_angle_params=False,
+            assert_dihedral_params=False,
+            assert_improper_params=False,
+        )
+
+        write_lammpsdata(struc, "charmm_improper.lammps")
+        out_lammps = open("charmm_improper.lammps", "r").readlines()
+        found_impropers = False
+        for i, line in enumerate(out_lammps):
+            if "Improper Coeffs" in line:
+                assert "# harmonic" in line
+                assert "k, phi" in out_lammps[i + 1]
+                assert len(out_lammps[i + 2].split("#")[0].split()) == 3
+                found_impropers = True
+        assert found_impropers
+
+    @pytest.mark.skipif(not has_foyer, reason="Foyer package not installed")
+    def test_amber(self):
+        from foyer import Forcefield
+
+        from mbuild.formats.lammpsdata import write_lammpsdata
+
+        cmpd = mb.load("C1(=CC=CC=C1)F", smiles=True)
+
+        ff = Forcefield(forcefield_files=[get_fn("gaff_test.xml")])
+        structure = ff.apply(cmpd)
+
+        write_lammpsdata(
+            structure, "amber.lammps", zero_dihedral_weighting_factor=True
+        )
+        out_lammps = open("amber.lammps", "r").readlines()
+        found_angles = False
+        found_dihedrals = False
+        found_impropers = False
+        for i, line in enumerate(out_lammps):
+            if "Angle Coeffs" in line:
+                assert "# harmonic" in line
+                assert "#\treduced_k\t\ttheteq(deg)" in out_lammps[i + 1]
+                assert len(out_lammps[i + 2].split("#")[0].split()) == 3
+                found_angles = True
+            elif "Dihedral Coeffs" in line:
+                assert "# charmm" in line
+                assert "#k, n, phi, weight" in out_lammps[i + 1]
+                assert len(out_lammps[i + 2].split("#")[0].split()) == 5
+                assert float(out_lammps[i + 2].split("#")[0].split()[4]) == 0.0
+                found_dihedrals = True
+            elif "Improper Coeffs" in line:
+                assert "# cvff" in line
+                assert "#K, d, n" in out_lammps[i + 1]
+                assert len(out_lammps[i + 2].split("#")[0].split()) == 4
+                assert out_lammps[i + 2].split("#")[0].split()[2] == "-1"
+                found_impropers = True
+            else:
+                pass
+        assert found_angles
+        assert found_dihedrals
+        assert found_impropers
 
     @pytest.mark.skipif(not has_foyer, reason="Foyer package not installed")
     @pytest.mark.parametrize("unit_style", ["real", "lj"])
     def test_save_box(self, ethane, unit_style):
-        box = mb.Box(lengths=np.array([2.0, 2.0, 2.0]))
+        box = mb.Box(
+            lengths=np.array([2.0, 2.0, 2.0]), angles=[90.0, 90.0, 90.0]
+        )
         ethane.save(
             filename="ethane-box.lammps",
             forcefield_name="oplsaa",
@@ -108,6 +243,17 @@ class TestLammpsData(BaseTest):
             filename="triclinic-box.lammps", forcefield_name="oplsaa", box=box
         )
 
+    def test_save_orthorhombic_box(self, ethane):
+        box = mb.Box(lengths=np.array([2.0, 2.0, 2.0]))
+        ethane.save(
+            filename="ortho-box.lammps", forcefield_name="oplsaa", box=box
+        )
+        with open("ortho-box.lammps", "r") as fi:
+            for line in fi:
+                assert "xy" not in line
+                assert "xz" not in line
+                assert "yz" not in line
+
     @pytest.mark.parametrize(
         "atom_style, n_columns",
         [("full", 7), ("atomic", 5), ("molecular", 6), ("charge", 6)],
@@ -122,6 +268,8 @@ class TestLammpsData(BaseTest):
                     first_atom_line = next(f)
                     columns = first_atom_line.split("\t")
                     assert len(columns) == n_columns
+                else:
+                    assert "# " + atom_style in line
 
     def test_resid(self, ethane, methane):
         structure = ethane.to_parmed() + methane.to_parmed()
@@ -145,39 +293,43 @@ class TestLammpsData(BaseTest):
 
         OPLSAA = Forcefield(name="oplsaa")
         structure = OPLSAA.apply(ethane)
-        box = mb.Box(
-            mins=np.array([-1.0, -2.0, -3.0]), maxs=np.array([3.0, 2.0, 1.0])
+        box = mb.Box.from_mins_maxs_angles(
+            mins=np.array([-1.0, -2.0, -3.0]),
+            maxs=np.array([3.0, 2.0, 1.0]),
+            angles=[90.0, 90.0, 90.0],
         )
+        # box = ethane.get_boundingbox()
 
         write_lammpsdata(
             filename="box.lammps",
             structure=structure,
             unit_style="real",
-            mins=[m for m in box.mins],
-            maxs=[m for m in box.maxs],
+            mins=[0.0, 0.0, 0.0],
+            maxs=[m for m in box.lengths],
         )
 
         checked_section = False
+        # NOTE, need to figure out how to handle lo and hi of a compound
         with open("box.lammps", "r") as fi:
             while not checked_section:
                 line = fi.readline()
                 if "xlo" in line:
                     xlo = float(line.split()[0])
                     xhi = float(line.split()[1])
-                    assert np.isclose(xlo, -10.0)
-                    assert np.isclose(xhi, 30.0)
+                    assert np.isclose(xlo, 0.0)
+                    assert np.isclose(xhi, 40.0)
 
                     line = fi.readline()
                     ylo = float(line.split()[0])
                     yhi = float(line.split()[1])
-                    assert np.isclose(ylo, -20.0)
-                    assert np.isclose(yhi, 20.0)
+                    assert np.isclose(ylo, 0.0)
+                    assert np.isclose(yhi, 40.0)
 
                     line = fi.readline()
                     zlo = float(line.split()[0])
                     zhi = float(line.split()[1])
-                    assert np.isclose(zlo, -30.0)
-                    assert np.isclose(zhi, 10.0)
+                    assert np.isclose(zlo, 0.0)
+                    assert np.isclose(zhi, 40.0)
 
                     checked_section = True
 
@@ -225,7 +377,7 @@ class TestLammpsData(BaseTest):
                 if "dihedral types" in line:
                     fi.readline()
                     line = float(fi.readline().split()[1])
-                    assert np.isclose(line, 2.04)
+                    assert np.isclose(float(line), 2.04)
                     line = float(fi.readline().split()[1])
                     assert np.isclose(line, 2.268)
                     line = float(fi.readline().split()[1])
@@ -265,6 +417,7 @@ class TestLammpsData(BaseTest):
             while not checked_section:
                 line = fi.readline()
                 if "Pair Coeffs" in line:
+                    fi.readline()
                     fi.readline()
                     line = fi.readline().split()
                     epsilon = float(line[1])

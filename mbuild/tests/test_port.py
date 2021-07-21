@@ -13,12 +13,16 @@ class TestPattern(BaseTest):
     def test_port_shift(self, ethane):
         ethane.translate_to(np.ones(3))
         port = mb.Port(anchor=ethane)
-        assert [ethane.center[i] == xyz for i, xyz in enumerate(port.center)]
+        assert [
+            ethane.center[i] == coord for i, coord in enumerate(port.center)
+        ]
 
     def test_port_init_shift_0(self, ethane):
         ethane.translate_to(np.ones(3))
         port = mb.Port(anchor=ethane, separation=0)
-        assert [ethane.center[i] == xyz for i, xyz in enumerate(port.center)]
+        assert [
+            ethane.center[i] == coord for i, coord in enumerate(port.center)
+        ]
 
     def test_port_init_shift(self, ethane):
         ethane.translate_to(np.ones(3))
@@ -63,7 +67,7 @@ class TestPattern(BaseTest):
         port_no_anchor = mb.Port()
         with pytest.warns(UserWarning):
             separation = port_no_anchor.separation
-            assert separation is None
+        assert separation is None
 
     def test_update_separation(self, ethane, hexane):
         port = mb.Port(anchor=ethane, separation=0.7)
@@ -81,7 +85,7 @@ class TestPattern(BaseTest):
 
         port_used = hexane.labels["propyl2"].labels["down"]
         with pytest.warns(UserWarning):
-            port_used.update_orientation((0, 1, 0))
+            port_used.update_orientation([0, 1, 0])
 
     def test_access_labels(self):
         port = mb.Port()

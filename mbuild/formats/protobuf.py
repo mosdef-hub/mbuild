@@ -4,9 +4,10 @@ A language-agnostic data serialization format developed by Google
 https://developers.google.com/protocol-buffers
 """
 import ele
+import numpy as np
 from google.protobuf.text_format import Merge, PrintMessage
 
-import mbuild as mb
+from mbuild import Box, Compound
 from mbuild.formats import compound_pb2
 
 __all__ = ["write_pb2", "read_pb2"]
@@ -94,9 +95,11 @@ def _mb_to_proto(cmpd, proto):
     proto.pos.x, proto.pos.y, proto.pos.z = cmpd.pos
     proto.charge = cmpd.charge
     proto.id = id(cmpd)
-    proto.periodicity.x, proto.periodicity.y, proto.periodicity.z = (
-        cmpd.periodicity
-    )
+    (
+        proto.periodicity.x,
+        proto.periodicity.y,
+        proto.periodicity.z,
+    ) = cmpd.periodicity
     if cmpd.element:
         proto.element.name = cmpd.element.name
         proto.element.symbol = cmpd.element.symbol
@@ -150,19 +153,20 @@ def _proto_to_mb(proto):
     ----------
     proto: compound_pb2.Compound()
     """
-    if proto.element.symbol is "":
+    if proto.element.symbol == "":
         elem = None
     else:
         elem = ele.element_from_symbol(proto.element.symbol)
-    return mb.Compound(
+    lengths = [proto.periodicity.x, proto.periodicity.y, proto.periodicity.z]
+    if np.all(np.array(lengths) != 0):
+        box = Box(lengths)
+    else:
+        box = None
+    return Compound(
         name=proto.name,
         pos=[proto.pos.x, proto.pos.y, proto.pos.z],
         charge=proto.charge,
-        periodicity=[
-            proto.periodicity.x,
-            proto.periodicity.y,
-            proto.periodicity.z,
-        ],
+        box=box,
         element=elem,
     )
 

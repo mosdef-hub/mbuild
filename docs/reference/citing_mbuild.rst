@@ -26,4 +26,4 @@ If you use mBuild for your research, please cite `our paper <http://doi.org/10.1
         url         = "https://doi.org/10.1007/978-981-10-1128-3_5"
     }
 
-Download as :download:`BibTeX <files/mbuild_citation.bib>` or :download:`RIS <files/mbuild_citation.ris>`
+Download as :download:`BibTeX <../files/mbuild_citation.bib>` or :download:`RIS <../files/mbuild_citation.ris>`

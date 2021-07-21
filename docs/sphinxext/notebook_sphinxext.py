@@ -53,8 +53,7 @@ def export_python(wd, name):
 
 
 class NotebookDirective(Directive):
-    """Insert an evaluated notebook into a document
-    """
+    """Insert an evaluated notebook into a document"""
 
     required_arguments = 1
     optional_arguments = 1
@@ -82,6 +81,7 @@ class NotebookDirective(Directive):
 
         shutil.copyfile(nb_abs_path, "{wd}/{name}.ipynb".format(**fmt))
 
+        # TODO: Actually save evaluated notebook
         shutil.copyfile(nb_abs_path, "{wd}/{name}_eval.ipynb".format(**fmt))
 
         html = export_html(**fmt)
