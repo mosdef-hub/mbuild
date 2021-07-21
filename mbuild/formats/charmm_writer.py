@@ -1050,22 +1050,32 @@ def _lengths_angles_to_vectors(lengths, angles, precision=6):
 
 
 def _check_fixed_bonds_angles_lists(
-    fixed_residues_bonds_angles_list,
-    fixed_bonds_angles_residues_variable_name,
+    gomc_fix_bonds_and_or_angles,
+    gomc_fix_bonds_and_or_angles_selection,
     residues,
 ):
     """Check the GOMC fixed bonds and angles lists for input errors.
 
     Parameters
     ----------
-    fixed_residues_bonds_angles_list : list of strings, [str, ..., str]
+    gomc_fix_bonds_and_or_angles : list of strings, [str, ..., str]
         A list of the residues (i.e., molecules since GOMC currently considers a
         a whole molecule as a residue) to have their bonds and/or angles held
         rigid/fixed for the GOMC simulation engine.
-        In GOMC, the residues currently the molecules.
-    fixed_bonds_angles_residues_variable_name : str
-        The name of the varible used as a string, which string, which will be
-        in the error and information outputs.
+        The `gomc_fix_bonds_angles`, `gomc_fix_bonds`, `gomc_fix_angles` are the only possible
+        variables from the `Charmm` object to be entered.
+        In GOMC, the residues currently are the same for every bead or atom in
+        the molecules. Therefore, when the residue is selected, the whole molecule
+        is selected.
+    gomc_fix_bonds_and_or_angles_selection : str
+        The name of the variable that is used but formatted as a string, which is fed
+        to the error and information outputs. The
+        `gomc_fix_bonds_angles`, `gomc_fix_bonds`, `gomc_fix_angles` are the only possible
+        variables from the `Charmm` object to be entered.
+        Whichever variable you choose, the variable name is just input as a
+        string here. For example, if `gomc_fix_bonds_and_or_angles` is equal to
+        gomc_fix_bonds_angles, then this should be 'gomc_fix_bonds_angles'
+        (i.e., `gomc_fix_bonds_and_or_angles_selection` = 'gomc_fix_bonds_angles').
     residues : list, [str, ..., str]
         Labels of unique residues in the Compound. Residues are assigned by
         checking against Compound.name.  Only supply residue names as 4 character
@@ -1077,24 +1087,24 @@ def _check_fixed_bonds_angles_lists(
     Provides a ValueError or TypeError if the input is not correct.
     """
 
-    if fixed_residues_bonds_angles_list is not None and not isinstance(
-        fixed_residues_bonds_angles_list, list
+    if gomc_fix_bonds_and_or_angles is not None and not isinstance(
+        gomc_fix_bonds_and_or_angles, list
     ):
         print_error_message = (
-            "ERROR: Please enter the residues names in the ({}) variable "
-            "are in a list format.".format(
-                fixed_bonds_angles_residues_variable_name
+            "ERROR: Please ensure the residue names in the ({}) variable "
+            "are in a list.".format(
+                gomc_fix_bonds_and_or_angles_selection
             )
         )
         raise TypeError(print_error_message)
 
-    if isinstance(fixed_residues_bonds_angles_list, list):
-        for gomc_fix_i in fixed_residues_bonds_angles_list:
+    if isinstance(gomc_fix_bonds_and_or_angles, list):
+        for gomc_fix_i in gomc_fix_bonds_and_or_angles:
             if gomc_fix_i not in residues:
                 print_error_message = (
                     "ERROR: Please ensure that all the residue names in the "
                     "{} list are also in the residues list.".format(
-                        fixed_bonds_angles_residues_variable_name
+                        gomc_fix_bonds_and_or_angles_selection
                     )
                 )
                 raise ValueError(print_error_message)
@@ -1105,7 +1115,7 @@ def _check_fixed_bonds_angles_lists(
                 print(
                     "INFORMATION: The following residues will have these fixed parameters: "
                     + "gomc_fix_bonds = {}".format(
-                        fixed_residues_bonds_angles_list
+                        gomc_fix_bonds_and_or_angles
                     )
                 )
 

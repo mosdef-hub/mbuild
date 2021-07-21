@@ -2482,8 +2482,8 @@ class TestCharmmWriterData(BaseTest):
     def test_gomc_fix_bonds_angles_string(self, two_propanol_ua):
         with pytest.raises(
             TypeError,
-            match=r"ERROR: Please enter the residues names in the \({}\) variable "
-            r"are in a list format.".format("gomc_fix_bonds_angles"),
+            match=r"ERROR: Please ensure the residue names in the \({}\) variable "
+            r"are in a list.".format("gomc_fix_bonds_angles"),
         ):
             Charmm(
                 two_propanol_ua,
@@ -2516,8 +2516,8 @@ class TestCharmmWriterData(BaseTest):
     def test_gomc_fix_bonds_string(self, two_propanol_ua):
         with pytest.raises(
             TypeError,
-            match=r"ERROR: Please enter the residues names in the \({}\) variable "
-            r"are in a list format.".format("gomc_fix_bonds"),
+            match=r"ERROR: Please ensure the residue names in the \({}\) variable "
+            r"are in a list.".format("gomc_fix_bonds"),
         ):
             Charmm(
                 two_propanol_ua,
@@ -2548,8 +2548,8 @@ class TestCharmmWriterData(BaseTest):
     def test_gomc_fix_angles_string(self, two_propanol_ua):
         with pytest.raises(
             TypeError,
-            match=r"ERROR: Please enter the residues names in the \({}\) variable "
-            r"are in a list format.".format("gomc_fix_angles"),
+            match=r"ERROR: Please ensure the residue names in the \({}\) variable "
+            r"are in a list.".format("gomc_fix_angles"),
         ):
             Charmm(
                 two_propanol_ua,
