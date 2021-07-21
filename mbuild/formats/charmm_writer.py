@@ -1092,9 +1092,7 @@ def _check_fixed_bonds_angles_lists(
     ):
         print_error_message = (
             "ERROR: Please ensure the residue names in the ({}) variable "
-            "are in a list.".format(
-                gomc_fix_bonds_and_or_angles_selection
-            )
+            "are in a list.".format(gomc_fix_bonds_and_or_angles_selection)
         )
         raise TypeError(print_error_message)
 
@@ -1114,9 +1112,7 @@ def _check_fixed_bonds_angles_lists(
             else:
                 print(
                     "INFORMATION: The following residues will have these fixed parameters: "
-                    + "gomc_fix_bonds = {}".format(
-                        gomc_fix_bonds_and_or_angles
-                    )
+                    + "gomc_fix_bonds = {}".format(gomc_fix_bonds_and_or_angles)
                 )
 
 
