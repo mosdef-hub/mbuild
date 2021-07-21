@@ -1279,7 +1279,9 @@ class Charmm:
         the parmed structure_box_0 and structure_box_1
     gomc_fix_bonds_angles : list, default = None
         When list of residues is provided, the selected residues will have
-        their bonds and angles fixed in the GOMC engine.  This is specifically
+        their bonds and angles fixed and will ignore the relative bond energies and
+        related angle energies in the GOMC engine. Note that GOMC
+        does not sample bond stretching. This is specifically
         for the GOMC engine and it changes the residue's bond constants (Kbs)
         and angle constants (Kthetas) values to 999999999999 in the
         FF file (i.e., the .inp file).
@@ -1287,20 +1289,26 @@ class Charmm:
         lists, the angles will be fixed for that residue.
         If the residues are listed in either the gomc_fix_bonds or the gomc_fix_bonds_angles
         lists, the bonds will be fixed for that residue.
+        NOTE if this option is utilized it may cause issues if using the FF file in NAMD.
     gomc_fix_bonds : list, default = None
-        When list of residues is provided, the selected residues will have
-        their bonds fixed in the GOMC engine.  This is specifically
+        When list of residues is provided, the selected residues will have their
+        relative bond energies ignored in the GOMC engine. Note that GOMC
+        does not sample bond stretching. This is specifically
         for the GOMC engine and it changes the residue's bond constants (Kbs)
         values to 999999999999 in the FF file (i.e., the .inp file).
         If the residues are listed in either the gomc_fix_bonds or the gomc_fix_bonds_angles
-        lists, the bonds will be fixed for that residue.
+        lists, the relative bond energy will be ignored.
+        NOTE if this option is utilized it may cause issues if using the FF file in NAMD.
     gomc_fix_angles : list, default = None
         When list of residues is provided, the selected residues will have
-        their angles fixed in the GOMC engine.  This is specifically
-        for the GOMC engine and it changes the residue's angle constants (Kthetas)
-        values to 999999999999 in the FF file (i.e., the .inp file).
+        their angles fixed and will ignore the related angle energies in the GOMC engine.
+        This is specifically for the GOMC engine and it changes the residue's angle
+        constants (Kthetas) values to 999999999999 in the FF file (i.e., the .inp file),
+        which fixes the angles and ignores related angle energy.
         If the residues are listed in either the gomc_fix_angles or the gomc_fix_bonds_angles
-        lists, the angles will be fixed for that residue.
+        lists, the angles will be fixed and the related angle energy will be ignored
+        for that residue.
+        NOTE if this option is utilized it may cause issues if using the FF file in NAMD.
     bead_to_atom_name_dict : dict, optional, default =None
         For all atom names/elements/beads with 2 or less digits, this converts
         the atom name in the GOMC psf and pdb files to a unique atom name,
