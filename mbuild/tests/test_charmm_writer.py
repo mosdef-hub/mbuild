@@ -42,13 +42,21 @@ class TestCharmmWriterData(BaseTest):
         charmm.write_inp()
 
         with open("charmm_data.inp", "r") as fp:
+            masses_read = False
+            bonds_read = False
+            angles_read = False
+            dihedrals_read = False
+            nonbondeds_read = False
             out_gomc = fp.readlines()
             for i, line in enumerate(out_gomc):
 
                 if (
-                    "! atom_types 	mass 		  atomTypeForceFieldName_ResidueName"
-                    " (i.e., atoms_type_per_utilized_FF)" in line
+                    "!atom_types" in line
+                    and "mass" in line
+                    and "atomTypeForceFieldName_ResidueName" in line
+                    and "(i.e., atoms_type_per_utilized_FF)" in line
                 ):
+                    masses_read = True
                     assert len(out_gomc[i + 1].split("!")[0].split()) == 3
                     assert out_gomc[i + 1].split("!")[0].split()[0:3] == [
                         "*",
@@ -65,9 +73,12 @@ class TestCharmmWriterData(BaseTest):
                     assert out_gomc[i + 2].split()[4:5] == ["opls_140_ETH"]
 
                 elif (
-                    "!atom_types 	 Kb	b0 		  atoms_types_per_utilized_FF"
-                    in line
+                    "!atom_types" in line
+                    and "Kb" in line
+                    and "b0" in line
+                    and "atoms_types_per_utilized_FF" in line
                 ):
+                    bonds_read = True
                     bond_types = [
                         ["A", "B", "340.0", "1.09"],
                         ["A", "A", "268.0", "1.529"],
@@ -100,9 +111,12 @@ class TestCharmmWriterData(BaseTest):
                         )
 
                 elif (
-                    "!atom_types 		Ktheta	Theta0			  atoms_types_per_utilized_FF"
-                    in line
+                    "!atom_types" in line
+                    and "Ktheta" in line
+                    and "Theta0" in line
+                    and "atoms_types_per_utilized_FF" in line
                 ):
+                    angles_read = True
                     angle_types = [
                         ["A", "A", "B", "37.5", "110.70000"],
                         ["B", "A", "B", "33.0", "107.80000"],
@@ -135,9 +149,13 @@ class TestCharmmWriterData(BaseTest):
                         )
 
                 elif (
-                    "!atom_types 			Kchi		n	delta		  atoms_types_per_utilized_FF"
-                    in line
+                    "!atom_types" in line
+                    and "Kchi" in line
+                    and "n" in line
+                    and "delta" in line
+                    and "atoms_types_per_utilized_FF" in line
                 ):
+                    dihedrals_read = True
                     dihed_types = [
                         ["B", "A", "A", "B", "0.300000", "0", "90.0"],
                         ["B", "A", "A", "B", "0.000000", "1", "180.0"],
@@ -156,9 +174,15 @@ class TestCharmmWriterData(BaseTest):
                         )
 
                 elif (
-                    "!atype 	ignored	epsilon 	Rmin/2 		ignored	eps,1-4		Rmin/2,1-4"
-                    "		  atom_type_per_utilized_FF" in line
+                    "!atype" in line
+                    and "ignored	epsilon" in line
+                    and "Rmin/2" in line
+                    and "ignored" in line
+                    and "eps,1-4" in line
+                    and "Rmin/2,1-4" in line
+                    and "atom_type_per_utilized_FF" in line
                 ):
+                    nonbondeds_read = True
                     nb_types = [
                         [
                             "A",
@@ -192,6 +216,12 @@ class TestCharmmWriterData(BaseTest):
                 else:
                     pass
 
+        assert masses_read
+        assert bonds_read
+        assert angles_read
+        assert dihedrals_read
+        assert nonbondeds_read
+
     def test_save_charmm_psf(self, ethane_gomc):
         charmm = Charmm(
             ethane_gomc,
@@ -203,9 +233,11 @@ class TestCharmmWriterData(BaseTest):
         charmm.write_psf()
 
         with open("charmm_data.psf", "r") as fp:
+            charges_read = False
             out_gomc = fp.readlines()
             for i, line in enumerate(out_gomc):
                 if "8 !NATOM" in line:
+                    charges_read = True
                     atom_type_charge_etc_list = [
                         [
                             "1",
@@ -297,6 +329,8 @@ class TestCharmmWriterData(BaseTest):
                 else:
                     pass
 
+        assert charges_read
+
     def test_save_charmm_pdb(self, ethane_gomc):
         charmm = Charmm(
             ethane_gomc,
@@ -308,9 +342,11 @@ class TestCharmmWriterData(BaseTest):
         charmm.write_pdb()
 
         with open("charmm_data.pdb", "r") as fp:
+            pdb_read = False
             out_gomc = fp.readlines()
             for i, line in enumerate(out_gomc):
                 if "CRYST1" in line:
+                    pdb_read = True
                     atom_type_res_part_1_list = [
                         ["ATOM", "1", "C1", "ETH", "A", "1"],
                         ["ATOM", "2", "C2", "ETH", "A", "1"],
@@ -345,6 +381,8 @@ class TestCharmmWriterData(BaseTest):
                 else:
                     pass
 
+        assert pdb_read
+
     def test_save_charmm_ua_gomc_ff(self, two_propanol_ua):
         charmm = Charmm(
             two_propanol_ua,
@@ -357,12 +395,20 @@ class TestCharmmWriterData(BaseTest):
         charmm.write_inp()
 
         with open("charmm_data_UA.inp", "r") as fp:
+            masses_read = False
+            bonds_read = False
+            angles_read = False
+            dihedrals_read = False
+            nonbondeds_read = False
             out_gomc = fp.readlines()
             for i, line in enumerate(out_gomc):
                 if (
-                    "! atom_types 	mass 		  atomTypeForceFieldName_ResidueName "
-                    "(i.e., atoms_type_per_utilized_FF)" in line
+                    "!atom_types" in line
+                    and "mass" in line
+                    and "atomTypeForceFieldName_ResidueName" in line
+                    and "(i.e., atoms_type_per_utilized_FF)" in line
                 ):
+                    masses_read = True
                     atom_types_1 = [
                         ["*", "A", "15.035000"],
                         ["*", "B", "13.019000"],
@@ -389,9 +435,12 @@ class TestCharmmWriterData(BaseTest):
                         )
 
                 elif (
-                    "!atom_types 	 Kb	b0 		  atoms_types_per_utilized_FF"
-                    in line
+                    "!atom_types" in line
+                    and "Kb" in line
+                    and "b0" in line
+                    and "atoms_types_per_utilized_FF" in line
                 ):
+                    bonds_read = True
                     bond_types = [
                         ["C", "D", "600.40152964", "0.945"],
                         ["B", "D", "600.40152964", "1.43"],
@@ -418,12 +467,15 @@ class TestCharmmWriterData(BaseTest):
                     assert total_bonds_evaluated_reorg == bond_types
 
                 elif (
-                    "!atom_types 		Ktheta	Theta0			  atoms_types_per_utilized_FF"
-                    in line
+                    "!atom_types" in line
+                    and "Ktheta" in line
+                    and "Theta0" in line
+                    and "atoms_types_per_utilized_FF" in line in line
                 ):
+                    angles_read = True
                     angle_types = [
                         ["A", "B", "A", "62.10013026", "112.00007"],
-                        ["A", "B", "D", "50.0775", "109.46989"],
+                        ["A", "B", "D", "50.07754422", "109.46989"],
                         ["B", "D", "C", "55.04555449", "108.49987"],
                     ]
                     total_angles_evaluated = []
@@ -447,9 +499,13 @@ class TestCharmmWriterData(BaseTest):
                     assert total_angles_evaluated_reorg == angle_types
 
                 elif (
-                    "!atom_types 			Kchi		n	delta		  atoms_types_per_utilized_FF"
-                    in line
+                    "!atom_types" in line
+                    and "Kchi" in line
+                    and "n" in line
+                    and "delta" in line
+                    and "atoms_types_per_utilized_FF" in line
                 ):
+                    dihedrals_read = True
                     dihedral_types = [
                         ["A", "B", "D", "C", "0.647232", "0", "90.0"],
                         ["A", "B", "D", "C", "-0.392135", "1", "180.0"],
@@ -468,9 +524,15 @@ class TestCharmmWriterData(BaseTest):
                         )
 
                 elif (
-                    "!atype 	ignored	epsilon 	Rmin/2 		ignored	eps,1-4		Rmin/2,1-4		  "
-                    "atom_type_per_utilized_FF" in line
+                    "!atype" in line
+                    and "ignored	epsilon" in line
+                    and "Rmin/2" in line
+                    and "ignored" in line
+                    and "eps,1-4" in line
+                    and "Rmin/2,1-4" in line
+                    and "atom_type_per_utilized_FF" in line
                 ):
+                    nonbondeds_read = True
                     nb_types = [
                         [
                             "A",
@@ -522,6 +584,12 @@ class TestCharmmWriterData(BaseTest):
                 else:
                     pass
 
+        assert masses_read
+        assert bonds_read
+        assert angles_read
+        assert dihedrals_read
+        assert nonbondeds_read
+
     def test_save_charmm_ua_psf(self, two_propanol_ua):
         charmm = Charmm(
             two_propanol_ua,
@@ -534,9 +602,11 @@ class TestCharmmWriterData(BaseTest):
         charmm.write_psf()
 
         with open("charmm_data_UA.psf", "r") as fp:
+            read_psf = False
             out_gomc = fp.readlines()
             for i, line in enumerate(out_gomc):
                 if "5 !NATOM" in line:
+                    read_psf = True
                     atom_type_charge_etc_list = [
                         [
                             "1",
@@ -599,6 +669,8 @@ class TestCharmmWriterData(BaseTest):
                 else:
                     pass
 
+        assert read_psf
+
     def test_save_charmm_ua_pdb(self, two_propanol_ua):
         charmm = Charmm(
             two_propanol_ua,
@@ -611,9 +683,11 @@ class TestCharmmWriterData(BaseTest):
         charmm.write_pdb()
 
         with open("charmm_data_UA.pdb", "r") as fp:
+            read_pdb = False
             out_gomc = fp.readlines()
             for i, line in enumerate(out_gomc):
                 if "CRYST1" in line:
+                    read_pdb = True
                     atom_type_res_part_1_list = [
                         ["ATOM", "1", "C1", "POL", "A", "1"],
                         ["ATOM", "2", "BD1", "POL", "A", "1"],
@@ -642,6 +716,8 @@ class TestCharmmWriterData(BaseTest):
                 else:
                     pass
 
+        assert read_pdb
+
     def test_charmm_pdb_fix_angle_bond_fix_atoms(
         self, ethane_gomc, ethanol_gomc
     ):
@@ -664,12 +740,18 @@ class TestCharmmWriterData(BaseTest):
         charmm.write_pdb()
 
         with open("Test_fixes_angle_bond_atoms.inp", "r") as fp:
+            masses_read = False
+            bonds_read = False
+            angles_read = False
             out_gomc = fp.readlines()
             for i, line in enumerate(out_gomc):
                 if (
-                    "! atom_types 	mass 		  atomTypeForceFieldName_ResidueName "
-                    "(i.e., atoms_type_per_utilized_FF)" in line
+                    "!atom_types" in line
+                    and "mass" in line
+                    and "atomTypeForceFieldName_ResidueName" in line
+                    and "(i.e., atoms_type_per_utilized_FF)" in line
                 ):
+                    masses_read = True
                     mass_type_1 = [
                         ["*", "A", "12.010780"],
                         ["*", "C", "1.007947"],
@@ -702,9 +784,12 @@ class TestCharmmWriterData(BaseTest):
                         )
 
                 elif (
-                    "!atom_types 	 Kb	b0 		  atoms_types_per_utilized_FF"
-                    in line
+                    "!atom_types" in line
+                    and "Kb" in line
+                    and "b0" in line
+                    and "atoms_types_per_utilized_FF" in line
                 ):
+                    bonds_read = True
                     bond_types = [
                         ["D", "G", "340.0", "1.09"],
                         ["E", "G", "320.0", "1.41"],
@@ -730,9 +815,12 @@ class TestCharmmWriterData(BaseTest):
                     assert len(total_fixed_bonds) == 2
 
                 elif (
-                    "!atom_types 		Ktheta	Theta0			  atoms_types_per_utilized_FF"
-                    in line
+                    "!atom_types" in line
+                    and "Ktheta" in line
+                    and "Theta0" in line
+                    and "atoms_types_per_utilized_FF" in line in line
                 ):
+                    angles_read = True
                     fixed_angle_types = [
                         ["A", "A", "C", "999999999999", "110.70000"],
                         ["C", "A", "C", "999999999999", "107.80000"],
@@ -753,7 +841,7 @@ class TestCharmmWriterData(BaseTest):
                                 out_gomc[i + 1 + j].split("!")[0].split()[0:4]
                             )
                     assert (
-                        total_angles_evaluated.sort()
+                        fixed_angle_types.sort()
                         == total_angles_evaluated.sort()
                     )
                     assert len(total_fixed_angles) == len(fixed_angle_types)
@@ -761,10 +849,17 @@ class TestCharmmWriterData(BaseTest):
                 else:
                     pass
 
+        assert masses_read
+        assert bonds_read
+        assert angles_read
+
         with open("Test_fixes_angle_bond_atoms.pdb", "r") as fp:
+            read_pdb_part_1 = False
+            read_pdb_part_2 = False
             out_gomc = fp.readlines()
             for i, line in enumerate(out_gomc):
                 if "CRYST1" in line:
+                    read_pdb_part_1 = True
                     assert out_gomc[i].split()[0:7] == [
                         "CRYST1",
                         "20.000",
@@ -776,6 +871,7 @@ class TestCharmmWriterData(BaseTest):
                     ]
 
                 if "CRYST1" in line:
+                    read_pdb_part_2 = True
                     atom_type_res_part_1_list = [
                         ["ATOM", "1", "C1", "ETH", "A", "1"],
                         ["ATOM", "2", "C2", "ETH", "A", "1"],
@@ -827,6 +923,375 @@ class TestCharmmWriterData(BaseTest):
 
                 else:
                     pass
+
+        assert read_pdb_part_1
+        assert read_pdb_part_2
+
+    def test_charmm_pdb_fix_bonds_only(self, ethane_gomc, ethanol_gomc):
+        test_box_ethane_propane = mb.fill_box(
+            compound=[ethane_gomc, ethanol_gomc],
+            n_compounds=[1, 1],
+            box=[2.0, 2.0, 2.0],
+        )
+        charmm = Charmm(
+            test_box_ethane_propane,
+            "Test_fixes_bonds_only",
+            ff_filename="Test_fixes_bonds_only",
+            residues=[ethanol_gomc.name, ethane_gomc.name],
+            forcefield_selection="oplsaa",
+            gomc_fix_bonds=[ethane_gomc.name],
+        )
+        charmm.write_inp()
+
+        with open("Test_fixes_bonds_only.inp", "r") as fp:
+            bonds_read = False
+            angles_read = False
+            out_gomc = fp.readlines()
+            for i, line in enumerate(out_gomc):
+                if (
+                    "!atom_types" in line
+                    and "Kb" in line
+                    and "b0" in line
+                    and "atoms_types_per_utilized_FF" in line
+                ):
+                    bonds_read = True
+                    bond_types = [
+                        ["D", "G", "340.0", "1.09"],
+                        ["E", "G", "320.0", "1.41"],
+                        ["E", "F", "553.0", "0.945"],
+                        ["A", "C", "999999999999", "1.09"],
+                        ["B", "D", "340.0", "1.09"],
+                        ["A", "A", "999999999999", "1.529"],
+                        ["B", "G", "268.0", "1.529"],
+                    ]
+                    total_bonds_evaluated = []
+                    total_fixed_bonds = []
+                    for j in range(0, 7):
+                        total_bonds_evaluated.append(
+                            out_gomc[i + 1 + j].split("!")[0].split()[0:4]
+                        )
+                        if out_gomc[i + 1 + j].split("!")[0].split()[2:3] == [
+                            "999999999999"
+                        ]:
+                            total_fixed_bonds.append(
+                                out_gomc[i + 1 + j].split("!")[0].split()[0:4]
+                            )
+                    assert total_bonds_evaluated.sort() == bond_types.sort()
+                    assert len(total_fixed_bonds) == 2
+
+                elif (
+                    "!atom_types" in line
+                    and "Ktheta" in line
+                    and "Theta0" in line
+                    and "atoms_types_per_utilized_FF" in line
+                ):
+                    angles_read = True
+                    fixed_angle_types = []
+                    total_angles_evaluated = []
+                    total_fixed_angles = []
+                    for j in range(0, 9):
+                        if len(fixed_angle_types) > 0:
+                            if out_gomc[i + 1 + j].split("!")[0].split()[
+                                0:4
+                            ] == (fixed_angle_types[0] or fixed_angle_types[1]):
+                                total_angles_evaluated.append(
+                                    out_gomc[i + 1 + j]
+                                    .split("!")[0]
+                                    .split()[0:4]
+                                )
+                        if out_gomc[i + 1 + j].split("!")[0].split()[3:4] == [
+                            "999999999999"
+                        ]:
+                            total_fixed_angles.append(
+                                out_gomc[i + 1 + j].split("!")[0].split()[0:4]
+                            )
+                    assert (
+                        fixed_angle_types.sort()
+                        == total_angles_evaluated.sort()
+                    )
+                    assert len(total_fixed_angles) == len(fixed_angle_types)
+
+                else:
+                    pass
+
+        assert bonds_read
+        assert angles_read
+
+    def test_charmm_pdb_fix_bonds_only_and_fix_bonds_angles(
+        self, ethane_gomc, ethanol_gomc
+    ):
+        test_box_ethane_propane = mb.fill_box(
+            compound=[ethane_gomc, ethanol_gomc],
+            n_compounds=[1, 1],
+            box=[2.0, 2.0, 2.0],
+        )
+        charmm = Charmm(
+            test_box_ethane_propane,
+            "Test_fixes_bonds_only_and_fix_bonds_angles",
+            ff_filename="Test_fixes_bonds_only_and_fix_bonds_angles",
+            residues=[ethanol_gomc.name, ethane_gomc.name],
+            forcefield_selection="oplsaa",
+            gomc_fix_bonds=[ethane_gomc.name],
+            gomc_fix_bonds_angles=[ethane_gomc.name],
+        )
+        charmm.write_inp()
+
+        with open("Test_fixes_bonds_only_and_fix_bonds_angles.inp", "r") as fp:
+            bonds_read = False
+            angles_read = False
+            out_gomc = fp.readlines()
+            for i, line in enumerate(out_gomc):
+                if (
+                    "!atom_types" in line
+                    and "Kb" in line
+                    and "b0" in line
+                    and "atoms_types_per_utilized_FF" in line
+                ):
+                    bonds_read = True
+                    bond_types = [
+                        ["D", "G", "340.0", "1.09"],
+                        ["E", "G", "320.0", "1.41"],
+                        ["E", "F", "553.0", "0.945"],
+                        ["A", "C", "999999999999", "1.09"],
+                        ["B", "D", "340.0", "1.09"],
+                        ["A", "A", "999999999999", "1.529"],
+                        ["B", "G", "268.0", "1.529"],
+                    ]
+                    total_bonds_evaluated = []
+                    total_fixed_bonds = []
+                    for j in range(0, 7):
+                        total_bonds_evaluated.append(
+                            out_gomc[i + 1 + j].split("!")[0].split()[0:4]
+                        )
+                        if out_gomc[i + 1 + j].split("!")[0].split()[2:3] == [
+                            "999999999999"
+                        ]:
+                            total_fixed_bonds.append(
+                                out_gomc[i + 1 + j].split("!")[0].split()[0:4]
+                            )
+                    assert total_bonds_evaluated.sort() == bond_types.sort()
+                    assert len(total_fixed_bonds) == 2
+
+                elif (
+                    "!atom_types" in line
+                    and "Ktheta" in line
+                    and "Theta0" in line
+                    and "atoms_types_per_utilized_FF" in line
+                ):
+                    angles_read = True
+                    fixed_angle_types = [
+                        ["A", "A", "C", "999999999999", "110.70000"],
+                        ["C", "A", "C", "999999999999", "107.80000"],
+                    ]
+                    total_angles_evaluated = []
+                    total_fixed_angles = []
+                    for j in range(0, 9):
+                        if out_gomc[i + 1 + j].split("!")[0].split()[0:4] == (
+                            fixed_angle_types[0] or fixed_angle_types[1]
+                        ):
+                            total_angles_evaluated.append(
+                                out_gomc[i + 1 + j].split("!")[0].split()[0:4]
+                            )
+                        if out_gomc[i + 1 + j].split("!")[0].split()[3:4] == [
+                            "999999999999"
+                        ]:
+                            total_fixed_angles.append(
+                                out_gomc[i + 1 + j].split("!")[0].split()[0:4]
+                            )
+                    assert (
+                        fixed_angle_types.sort()
+                        == total_angles_evaluated.sort()
+                    )
+                    assert len(total_fixed_angles) == len(fixed_angle_types)
+
+                else:
+                    pass
+
+        assert bonds_read
+        assert angles_read
+
+    def test_charmm_pdb_fix_angles_only(self, ethane_gomc, ethanol_gomc):
+        test_box_ethane_propane = mb.fill_box(
+            compound=[ethane_gomc, ethanol_gomc],
+            n_compounds=[1, 1],
+            box=[2.0, 2.0, 2.0],
+        )
+        charmm = Charmm(
+            test_box_ethane_propane,
+            "Test_fixes_angles_only",
+            ff_filename="Test_fixes_angles_only",
+            residues=[ethanol_gomc.name, ethane_gomc.name],
+            forcefield_selection="oplsaa",
+            gomc_fix_angles=[ethane_gomc.name],
+        )
+        charmm.write_inp()
+
+        with open("Test_fixes_angles_only.inp", "r") as fp:
+            bonds_read = False
+            angles_read = False
+            out_gomc = fp.readlines()
+            for i, line in enumerate(out_gomc):
+                if (
+                    "!atom_types" in line
+                    and "Kb" in line
+                    and "b0" in line
+                    and "atoms_types_per_utilized_FF" in line
+                ):
+                    bonds_read = True
+                    bond_types = [
+                        ["D", "G", "340.0", "1.09"],
+                        ["E", "G", "320.0", "1.41"],
+                        ["E", "F", "553.0", "0.945"],
+                        ["A", "C", "340.0", "1.09"],
+                        ["B", "D", "340.0", "1.09"],
+                        ["A", "A", "268.0", "1.529"],
+                        ["B", "G", "268.0", "1.529"],
+                    ]
+                    total_bonds_evaluated = []
+                    total_fixed_bonds = []
+                    for j in range(0, 7):
+                        total_bonds_evaluated.append(
+                            out_gomc[i + 1 + j].split("!")[0].split()[0:4]
+                        )
+                        if out_gomc[i + 1 + j].split("!")[0].split()[2:3] == [
+                            "999999999999"
+                        ]:
+                            total_fixed_bonds.append(
+                                out_gomc[i + 1 + j].split("!")[0].split()[0:4]
+                            )
+                    assert total_bonds_evaluated.sort() == bond_types.sort()
+                    assert len(total_fixed_bonds) == 0
+
+                elif (
+                    "!atom_types" in line
+                    and "Ktheta" in line
+                    and "Theta0" in line
+                    and "atoms_types_per_utilized_FF" in line
+                ):
+                    angles_read = True
+                    fixed_angle_types = [
+                        ["A", "A", "C", "999999999999", "110.70000"],
+                        ["C", "A", "C", "999999999999", "107.80000"],
+                    ]
+                    total_angles_evaluated = []
+                    total_fixed_angles = []
+                    for j in range(0, 9):
+                        if out_gomc[i + 1 + j].split("!")[0].split()[0:4] == (
+                            fixed_angle_types[0] or fixed_angle_types[1]
+                        ):
+                            total_angles_evaluated.append(
+                                out_gomc[i + 1 + j].split("!")[0].split()[0:4]
+                            )
+                        if out_gomc[i + 1 + j].split("!")[0].split()[3:4] == [
+                            "999999999999"
+                        ]:
+                            total_fixed_angles.append(
+                                out_gomc[i + 1 + j].split("!")[0].split()[0:4]
+                            )
+                    assert (
+                        fixed_angle_types.sort()
+                        == total_angles_evaluated.sort()
+                    )
+                    assert len(total_fixed_angles) == len(fixed_angle_types)
+
+                else:
+                    pass
+
+        assert bonds_read
+        assert angles_read
+
+    def test_charmm_pdb_fix_angles_only_and_fix_bonds_angles(
+        self, ethane_gomc, ethanol_gomc
+    ):
+        test_box_ethane_propane = mb.fill_box(
+            compound=[ethane_gomc, ethanol_gomc],
+            n_compounds=[1, 1],
+            box=[2.0, 2.0, 2.0],
+        )
+        charmm = Charmm(
+            test_box_ethane_propane,
+            "Test_fixes_angles_only_and_fix_bonds_angles",
+            ff_filename="Test_fixes_angles_only_and_fix_bonds_angles",
+            residues=[ethanol_gomc.name, ethane_gomc.name],
+            forcefield_selection="oplsaa",
+            gomc_fix_angles=[ethane_gomc.name],
+            gomc_fix_bonds_angles=[ethane_gomc.name],
+        )
+        charmm.write_inp()
+
+        with open("Test_fixes_angles_only_and_fix_bonds_angles.inp", "r") as fp:
+            bonds_read = False
+            angles_read = False
+            out_gomc = fp.readlines()
+            for i, line in enumerate(out_gomc):
+                if (
+                    "!atom_types" in line
+                    and "Kb" in line
+                    and "b0" in line
+                    and "atoms_types_per_utilized_FF" in line
+                ):
+                    bonds_read = True
+                    bond_types = [
+                        ["D", "G", "340.0", "1.09"],
+                        ["E", "G", "320.0", "1.41"],
+                        ["E", "F", "553.0", "0.945"],
+                        ["A", "C", "999999999999", "1.09"],
+                        ["B", "D", "340.0", "1.09"],
+                        ["A", "A", "999999999999", "1.529"],
+                        ["B", "G", "268.0", "1.529"],
+                    ]
+                    total_bonds_evaluated = []
+                    total_fixed_bonds = []
+                    for j in range(0, 7):
+                        total_bonds_evaluated.append(
+                            out_gomc[i + 1 + j].split("!")[0].split()[0:4]
+                        )
+                        if out_gomc[i + 1 + j].split("!")[0].split()[2:3] == [
+                            "999999999999"
+                        ]:
+                            total_fixed_bonds.append(
+                                out_gomc[i + 1 + j].split("!")[0].split()[0:4]
+                            )
+                    assert total_bonds_evaluated.sort() == bond_types.sort()
+                    assert len(total_fixed_bonds) == 2
+
+                elif (
+                    "!atom_types" in line
+                    and "Ktheta" in line
+                    and "Theta0" in line
+                    and "atoms_types_per_utilized_FF" in line
+                ):
+                    angles_read = True
+                    fixed_angle_types = [
+                        ["A", "A", "C", "999999999999", "110.70000"],
+                        ["C", "A", "C", "999999999999", "107.80000"],
+                    ]
+                    total_angles_evaluated = []
+                    total_fixed_angles = []
+                    for j in range(0, 9):
+                        if out_gomc[i + 1 + j].split("!")[0].split()[0:4] == (
+                            fixed_angle_types[0] or fixed_angle_types[1]
+                        ):
+                            total_angles_evaluated.append(
+                                out_gomc[i + 1 + j].split("!")[0].split()[0:4]
+                            )
+                        if out_gomc[i + 1 + j].split("!")[0].split()[3:4] == [
+                            "999999999999"
+                        ]:
+                            total_fixed_angles.append(
+                                out_gomc[i + 1 + j].split("!")[0].split()[0:4]
+                            )
+                    assert (
+                        fixed_angle_types.sort()
+                        == total_angles_evaluated.sort()
+                    )
+                    assert len(total_fixed_angles) == len(fixed_angle_types)
+
+                else:
+                    pass
+
+        assert bonds_read
+        assert angles_read
 
     def test_charmm_pdb_no_differenc_1_4_coul_scalars(
         self, two_propanol_ua, ethane_gomc
@@ -893,9 +1358,11 @@ class TestCharmmWriterData(BaseTest):
         charmm.write_pdb()
 
         with open("residue_reorder_box_sizing_box_0.pdb", "r") as fp:
+            pdb_box_0_read = False
             out_gomc = fp.readlines()
             for i, line in enumerate(out_gomc):
                 if "CRYST1" in line:
+                    pdb_box_0_read = True
                     assert out_gomc[i].split()[0:7] == [
                         "CRYST1",
                         "30.000",
@@ -905,7 +1372,7 @@ class TestCharmmWriterData(BaseTest):
                         "90.00",
                         "90.00",
                     ]
-                if "CRYST1" in line:
+
                     atom_type_res_part_1_list = [
                         ["ATOM", "1", "C1", "ETH", "A", "1"],
                         ["ATOM", "2", "C2", "ETH", "A", "1"],
@@ -958,10 +1425,14 @@ class TestCharmmWriterData(BaseTest):
                 else:
                     pass
 
+        assert pdb_box_0_read
+
         with open("residue_reorder_box_sizing_box_1.pdb", "r") as fp:
+            pdb_box_1_read = False
             out_gomc = fp.readlines()
             for i, line in enumerate(out_gomc):
                 if "CRYST1" in line:
+                    pdb_box_1_read = True
                     assert out_gomc[i].split()[0:7] == [
                         "CRYST1",
                         "40.000",
@@ -973,6 +1444,8 @@ class TestCharmmWriterData(BaseTest):
                     ]
                 else:
                     pass
+
+        assert pdb_box_1_read
 
     # test utils base 10 to base 16 converter
     def test_base_10_to_base_16(self):
@@ -1672,9 +2145,11 @@ class TestCharmmWriterData(BaseTest):
         charmm.write_pdb()
 
         with open("ffselection_string.pdb", "r") as fp:
+            pdb_read = False
             out_gomc = fp.readlines()
             for i, line in enumerate(out_gomc):
                 if "CRYST1" in line:
+                    pdb_read = True
                     atom_type_res_part_1_list = [
                         ["ATOM", "1", "C1", "POL", "A", "1"],
                         ["ATOM", "2", "BD1", "POL", "A", "1"],
@@ -1702,6 +2177,8 @@ class TestCharmmWriterData(BaseTest):
 
                 else:
                     pass
+
+        assert pdb_read
 
     def test_ff_selection_list(self, two_propanol_ua):
         with pytest.raises(
@@ -2005,8 +2482,8 @@ class TestCharmmWriterData(BaseTest):
     def test_gomc_fix_bonds_angles_string(self, two_propanol_ua):
         with pytest.raises(
             TypeError,
-            match=r"ERROR: Please enter the residues that have fixed angles and "
-            r"bonds \(gomc_fix_bonds_angles\) in a list format.",
+            match=r"ERROR: Please ensure the residue names in the \({}\) variable "
+            r"are in a list.".format("gomc_fix_bonds_angles"),
         ):
             Charmm(
                 two_propanol_ua,
@@ -2022,7 +2499,9 @@ class TestCharmmWriterData(BaseTest):
         with pytest.raises(
             ValueError,
             match=r"ERROR: Please ensure that all the residue names in the "
-            r"gomc_fix_bonds_angles list are also in the residues list.",
+            r"{} list are also in the residues list.".format(
+                "gomc_fix_bonds_angles"
+            ),
         ):
             Charmm(
                 two_propanol_ua,
@@ -2032,6 +2511,70 @@ class TestCharmmWriterData(BaseTest):
                 forcefield_selection="trappe-ua",
                 bead_to_atom_name_dict={"_CH3": "C"},
                 gomc_fix_bonds_angles=["WNG"],
+            )
+
+    def test_gomc_fix_bonds_string(self, two_propanol_ua):
+        with pytest.raises(
+            TypeError,
+            match=r"ERROR: Please ensure the residue names in the \({}\) variable "
+            r"are in a list.".format("gomc_fix_bonds"),
+        ):
+            Charmm(
+                two_propanol_ua,
+                "charmm_data_UA",
+                ff_filename="charmm_data_UA",
+                residues=[two_propanol_ua.name],
+                forcefield_selection="trappe-ua",
+                bead_to_atom_name_dict={"_CH3": "C"},
+                gomc_fix_bonds="two_propanol_ua.name",
+            )
+
+    def test_gomc_fix_bonds_residue_not_in_system(self, two_propanol_ua):
+        with pytest.raises(
+            ValueError,
+            match=r"ERROR: Please ensure that all the residue names in the "
+            r"{} list are also in the residues list.".format("gomc_fix_bonds"),
+        ):
+            Charmm(
+                two_propanol_ua,
+                "charmm_data_UA",
+                ff_filename="charmm_data_UA",
+                residues=[two_propanol_ua.name],
+                forcefield_selection="trappe-ua",
+                bead_to_atom_name_dict={"_CH3": "C"},
+                gomc_fix_bonds=["WNG"],
+            )
+
+    def test_gomc_fix_angles_string(self, two_propanol_ua):
+        with pytest.raises(
+            TypeError,
+            match=r"ERROR: Please ensure the residue names in the \({}\) variable "
+            r"are in a list.".format("gomc_fix_angles"),
+        ):
+            Charmm(
+                two_propanol_ua,
+                "charmm_data_UA",
+                ff_filename="charmm_data_UA",
+                residues=[two_propanol_ua.name],
+                forcefield_selection="trappe-ua",
+                bead_to_atom_name_dict={"_CH3": "C"},
+                gomc_fix_angles="two_propanol_ua.name",
+            )
+
+    def test_gomc_fix_angles_residue_not_in_system(self, two_propanol_ua):
+        with pytest.raises(
+            ValueError,
+            match=r"ERROR: Please ensure that all the residue names in the "
+            r"{} list are also in the residues list.".format("gomc_fix_angles"),
+        ):
+            Charmm(
+                two_propanol_ua,
+                "charmm_data_UA",
+                ff_filename="charmm_data_UA",
+                residues=[two_propanol_ua.name],
+                forcefield_selection="trappe-ua",
+                bead_to_atom_name_dict={"_CH3": "C"},
+                gomc_fix_angles=["WNG"],
             )
 
     def test_fix_residue_string(self, two_propanol_ua):
@@ -2252,9 +2795,11 @@ class TestCharmmWriterData(BaseTest):
         charmm.write_psf()
 
         with open("charmm_empty_box.pdb", "r") as fp:
+            pdb_read = False
             out_gomc = fp.readlines()
             for i, line in enumerate(out_gomc):
                 if "CRYST1" in line:
+                    pdb_read = True
                     assert out_gomc[i].split()[0:7] == [
                         "CRYST1",
                         "20.000",
@@ -2269,10 +2814,14 @@ class TestCharmmWriterData(BaseTest):
                 else:
                     pass
 
+        assert pdb_read
+
         with open("charmm_filled_box.pdb", "r") as fp:
+            pdb_read = False
             out_gomc = fp.readlines()
             for i, line in enumerate(out_gomc):
                 if "CRYST1" in line:
+                    pdb_read = True
                     atom_type_res_part_1_list = [
                         ["ATOM", "1", "C1", "POL", "A", "1"],
                         ["ATOM", "2", "BD1", "POL", "A", "1"],
@@ -2300,6 +2849,8 @@ class TestCharmmWriterData(BaseTest):
 
                 else:
                     pass
+
+        assert pdb_read
 
     def test_box_1_empty_test_2(self, two_propanol_ua):
         empty_compound = Box(lengths=[3, 3, 3], angles=[90, 90, 90])
@@ -2318,9 +2869,11 @@ class TestCharmmWriterData(BaseTest):
         charmm.write_psf()
 
         with open("charmm_empty_box.pdb", "r") as fp:
+            pdb_read = False
             out_gomc = fp.readlines()
             for i, line in enumerate(out_gomc):
                 if "CRYST1" in line:
+                    pdb_read = True
                     assert out_gomc[i].split()[0:7] == [
                         "CRYST1",
                         "30.000",
@@ -2335,10 +2888,14 @@ class TestCharmmWriterData(BaseTest):
                 else:
                     pass
 
+        assert pdb_read
+
         with open("charmm_filled_box.pdb", "r") as fp:
+            pdb_read = False
             out_gomc = fp.readlines()
             for i, line in enumerate(out_gomc):
                 if "CRYST1" in line:
+                    pdb_read = True
                     atom_type_res_part_1_list = [
                         ["ATOM", "1", "C1", "POL", "A", "1"],
                         ["ATOM", "2", "BD1", "POL", "A", "1"],
@@ -2366,6 +2923,8 @@ class TestCharmmWriterData(BaseTest):
 
                 else:
                     pass
+
+        assert pdb_read
 
     def test_box_1_empty_test_3(self, two_propanol_ua):
         empty_compound = Box(lengths=[4, 5, 6])
@@ -2388,9 +2947,11 @@ class TestCharmmWriterData(BaseTest):
         charmm.write_psf()
 
         with open("charmm_empty_box.pdb", "r") as fp:
+            pdb_part_1_read = False
             out_gomc = fp.readlines()
             for i, line in enumerate(out_gomc):
                 if "CRYST1" in line:
+                    pdb_part_1_read = True
                     assert out_gomc[i].split()[0:7] == [
                         "CRYST1",
                         "40.000",
@@ -2405,10 +2966,14 @@ class TestCharmmWriterData(BaseTest):
                 else:
                     pass
 
+        assert pdb_part_1_read
+
         with open("charmm_filled_box.pdb", "r") as fp:
+            pdb_part_2_read = False
             out_gomc = fp.readlines()
             for i, line in enumerate(out_gomc):
                 if "CRYST1" in line:
+                    pdb_part_2_read = True
                     atom_type_res_part_1_list = [
                         ["ATOM", "1", "C1", "POL", "A", "1"],
                         ["ATOM", "2", "BD1", "POL", "A", "1"],
@@ -2436,6 +3001,8 @@ class TestCharmmWriterData(BaseTest):
 
                 else:
                     pass
+
+        assert pdb_part_2_read
 
     def test_box_1_empty_test_4(self):
         empty_compound_box_0 = Box(lengths=[2, 2, 2])
@@ -2645,12 +3212,16 @@ class TestCharmmWriterData(BaseTest):
         charmm.write_inp()
 
         with open("charmm_data.inp", "r") as fp:
+            masses_read = False
             out_gomc = fp.readlines()
             for i, line in enumerate(out_gomc):
                 if (
-                    "! atom_types 	mass 		  atomTypeForceFieldName_ResidueName "
-                    "(i.e., atoms_type_per_utilized_FF)" in line
+                    "!atom_types" in line
+                    and "mass" in line
+                    and "atomTypeForceFieldName_ResidueName" in line
+                    and "(i.e., atoms_type_per_utilized_FF)" in line
                 ):
+                    masses_read = True
                     mass_type_1 = [
                         ["*", "A", "12.010780"],
                         ["*", "B", "1.007947"],
@@ -2667,6 +3238,8 @@ class TestCharmmWriterData(BaseTest):
                         assert (
                             out_gomc[i + 1 + j].split()[4:5] == mass_type_2[j]
                         )
+
+        assert masses_read
 
     # test cif reader ETA psf writer outputs correct atom and residue numbering using non-orthoganol box
     def test_save_non_othoganol_box_psf(self):
@@ -2693,10 +3266,11 @@ class TestCharmmWriterData(BaseTest):
         charmm.write_psf()
 
         with open("ETV_triclinic.psf", "r") as fp:
+            psf_read = False
             out_gomc = fp.readlines()
             for i, line in enumerate(out_gomc):
                 if "42 !NATOM" in line:
-
+                    psf_read = True
                     no_O_atoms = 28
                     no_Si_atoms = 14
                     atom_type_charge_etc_list = []
@@ -2736,6 +3310,8 @@ class TestCharmmWriterData(BaseTest):
                 else:
                     pass
 
+        assert psf_read
+
     # test cif reader ETA pdb writer outputs correct atom and residue numbering using non-orthoganol box
     def test_save_non_othoganol_box_pdb(self):
         lattice_cif_ETV_triclinic = load_cif(
@@ -2761,10 +3337,12 @@ class TestCharmmWriterData(BaseTest):
         charmm.write_pdb()
 
         with open("ETV_triclinic.pdb", "r") as fp:
+            pdb_read = False
             out_gomc = fp.readlines()
             for i, line in enumerate(out_gomc):
 
                 if "CRYST1" in line:
+                    pdb_read = True
                     crystal_box_length_angles = [
                         "CRYST1",
                         "8.750",
@@ -2822,6 +3400,8 @@ class TestCharmmWriterData(BaseTest):
                 else:
                     pass
 
+        assert pdb_read
+
     # test methane UA psf writer outputs correct atom and residue numbering using orthoganol box
     def test_save_othoganol_methane_ua_psf(self):
         methane = mb.Compound(name="MET")
@@ -2844,10 +3424,11 @@ class TestCharmmWriterData(BaseTest):
         charmm.write_psf()
 
         with open("methane_box.psf", "r") as fp:
+            psf_read = False
             out_gomc = fp.readlines()
             for i, line in enumerate(out_gomc):
                 if "4 !NATOM" in line:
-
+                    psf_read = True
                     no_methane_atoms = 4
                     atom_type_charge_etc_list = []
                     for f_i in range(0, no_methane_atoms):
@@ -2873,6 +3454,8 @@ class TestCharmmWriterData(BaseTest):
                 else:
                     pass
 
+        assert psf_read
+
     # test methane UA pdb writer outputs correct atom and residue numbering using orthoganol box
     def test_save_othoganol_methane_ua_pdb(self):
         methane = mb.Compound(name="MET")
@@ -2895,10 +3478,11 @@ class TestCharmmWriterData(BaseTest):
         charmm.write_pdb()
 
         with open("methane_box.pdb", "r") as fp:
+            pdb_read = False
             out_gomc = fp.readlines()
             for i, line in enumerate(out_gomc):
-
                 if "CRYST1" in line:
+                    pdb_read = True
                     crystal_box_length_angles = [
                         "CRYST1",
                         "10.000",
@@ -2941,3 +3525,5 @@ class TestCharmmWriterData(BaseTest):
 
                 else:
                     pass
+
+        assert pdb_read

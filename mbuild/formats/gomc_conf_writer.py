@@ -4597,12 +4597,9 @@ class GOMCControl:
                 "{:25s} {}\n".format("Rswitch", self.Rswitch)
             )
         data_control_file.write("{:25s} {}\n".format("Exclude", self.Exclude))
-        if self.VDWGeometricSigma is True:
-            data_control_file.write(
-                "{:25s} {}\n".format(
-                    "VDWGeometricSigma", self.VDWGeometricSigma
-                )
-            )
+        data_control_file.write(
+            "{:25s} {}\n".format("VDWGeometricSigma", self.VDWGeometricSigma)
+        )
         data_control_file.write(" \n")
 
         data_control_file.write("####################################\n")
