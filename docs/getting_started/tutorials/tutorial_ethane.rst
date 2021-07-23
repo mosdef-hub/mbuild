@@ -17,7 +17,7 @@ As you probably noticed while creating your methane molecule in the last
 tutorial, manually adding ``Particles`` and ``Bonds`` to a ``Compound``
 is a bit cumbersome. The easiest way to create small, reusable
 components, such as methyls, amines or monomers, is to hand draw them
-using software like `Avogadro <http://avogadro.cc/wiki/Main_Page>`__ and
+using software like `Avogadro <https://avogadro.cc/>`__ and
 export them as either a .pdb or .mol2 file (the file should contain
 connectivity information).
 
@@ -39,12 +39,12 @@ carbon atom:
     import mbuild as mb
 
     ch3 = mb.load('ch3.pdb')
-    mb.translate(ch3, -ch3[0].pos)  # Move carbon to origin.
+    ch3.translate(-ch3[0].pos)  # Move carbon to origin.
 
 Now we have a methyl group loaded up and centered. In order to connect
 ``Compounds`` in mBuild, we make use of a special type of ``Compound``:
 the ``Port``. A ``Port`` is a ``Compound`` with two sets of four “ghost”
-``Particles``. In addition ``Ports`` have an ``anchor`` attribute which
+``Particles`` that assist in bond creation. In addition, ``Ports`` have an ``anchor`` attribute which
 typically points to a particle that the ``Port`` should be associated
 with. In our methyl group, the ``Port`` should be anchored to the carbon
 atom so that we can now form bonds to this carbon:
@@ -54,13 +54,13 @@ atom so that we can now form bonds to this carbon:
     import mbuild as mb
 
     ch3 = mb.load('ch3.pdb')
-    mb.translate(ch3, -ch3[0].pos)  # Move carbon to origin.
+    ch3.translate(-ch3[0].pos)  # Move carbon to origin.
 
     port = mb.Port(anchor=ch3[0])
     ch3.add(port, label='up')
 
     # Place the port at approximately half a C-C bond length.
-    mb.translate(ch3['up'], [0, -0.07, 0])
+    ch3['up'].translate([0, -0.07, 0])
 
 By default, ``Ports`` are never output from the mBuild structure.
 However, it can be useful to look at a molecule with the ``Ports`` to
@@ -82,12 +82,12 @@ it as a component to build more complex molecules later.
             super(CH3, self).__init__()
 
             mb.load('ch3.pdb', compound=self)
-            mb.translate(self, -self[0].pos)  # Move carbon to origin.
+            self.translate(-self[0].pos)  # Move carbon to origin.
 
             port = mb.Port(anchor=self[0])
             self.add(port, label='up')
             # Place the port at approximately half a C-C bond length.
-            mb.translate(self['up'], [0, -0.07, 0])
+            self['up'].translate([0, -0.07, 0])
 
 When two ``Ports`` are connected, they are forced to overlap in space
 and their parent ``Compounds`` are rotated and translated by the same

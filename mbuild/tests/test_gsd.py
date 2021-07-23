@@ -2,6 +2,7 @@ import numpy as np
 import pytest
 
 import mbuild as mb
+from mbuild import Box
 from mbuild.tests.base_test import BaseTest
 from mbuild.utils.io import has_foyer, has_gsd
 
@@ -19,14 +20,14 @@ class TestGSD(BaseTest):
     @pytest.mark.skipif(not has_foyer, reason="Foyer package not installed")
     @pytest.mark.skipif(not has_gsd, reason="GSD package not installed")
     def test_save_box(self, ethane):
-        box = mb.Box(lengths=np.array([2.0, 2.0, 2.0]))
+        box = Box(lengths=[2.0, 2.0, 2.0], angles=[90.0, 90.0, 90.0])
         ethane.save(
             filename="ethane-box.gsd", forcefield_name="oplsaa", box=box
         )
 
     @pytest.mark.skipif(not has_foyer, reason="Foyer package not installed")
     def test_save_triclinic_box_(self, ethane):
-        box = mb.Box(lengths=np.array([2.0, 2.0, 2.0]), angles=[60, 70, 80])
+        box = Box(lengths=np.array([2.0, 2.0, 2.0]), angles=[60, 70, 80])
         ethane.save(
             filename="triclinic-box.gsd", forcefield_name="oplsaa", box=box
         )
@@ -37,13 +38,13 @@ class TestGSD(BaseTest):
         from collections import OrderedDict
 
         import gsd
-        import gsd.pygsd
+        import gsd.hoomd
 
         from mbuild.utils.sorting import natural_sort
 
         ethane.save(filename="ethane.gsd", forcefield_name="oplsaa")
-        gsd_file = gsd.pygsd.GSDFile(open("ethane.gsd", "rb"))
-        frame = gsd.hoomd.HOOMDTrajectory(gsd_file).read_frame(0)
+        with gsd.hoomd.open("ethane.gsd", mode="rb") as f:
+            frame = f[0]
 
         assert frame.configuration.step == 0
         assert frame.configuration.dimensions == 3
@@ -81,50 +82,57 @@ class TestGSD(BaseTest):
     @pytest.mark.skipif(not has_gsd, reason="GSD package not installed")
     def test_box(self, ethane):
         import gsd
-        import gsd.pygsd
+        import gsd.hoomd
 
-        box = mb.Box(lengths=[1.0, 2.0, 3.0])
-        ethane.save(filename="ethane.gsd", forcefield_name="oplsaa", box=box)
-        gsd_file = gsd.pygsd.GSDFile(open("ethane.gsd", "rb"))
-        frame = gsd.hoomd.HOOMDTrajectory(gsd_file).read_frame(0)
+        lengths = [2.0, 3.0, 4.0]
+        ethane.box = Box(lengths=[2.0, 3.0, 4.0])
+
+        ethane.save(filename="ethane.gsd", forcefield_name="oplsaa")
+        with gsd.hoomd.open("ethane.gsd", mode="rb") as f:
+            frame = f[0]
 
         box_from_gsd = frame.configuration.box.astype(float)
-        assert np.array_equal(box_from_gsd[:3], box.lengths * 10)
+        (lx, ly, lz) = ethane.box.lengths
+        lx *= 10
+        ly *= 10
+        lz *= 10
+        assert np.array_equal(box_from_gsd[:3], [lx, ly, lz])
         assert not np.any(box_from_gsd[3:])
 
-        ethane.periodicity = [1.0, 2.0, 3.0]
+        ethane.periodicity = (True, True, True)
         ethane.save(filename="ethane-periodicity.gsd", forcefield_name="oplsaa")
-        gsd_file = gsd.pygsd.GSDFile(open("ethane-periodicity.gsd", "rb"))
-        frame = gsd.hoomd.HOOMDTrajectory(gsd_file).read_frame(0)
+        with gsd.hoomd.open("ethane-periodicity.gsd", mode="rb") as f:
+            frame = f[0]
         box_from_gsd_periodic = frame.configuration.box.astype(float)
         assert np.array_equal(box_from_gsd, box_from_gsd_periodic)
 
-        box = mb.Box(lengths=np.array([2.0, 2.0, 2.0]), angles=[60, 70, 80])
+        box = Box(lengths=np.array([2.0, 2.0, 2.0]), angles=[92, 104, 119])
+        # check that providing a box to save overwrites compound.box
         ethane.save(
             filename="triclinic-box.gsd", forcefield_name="oplsaa", box=box
         )
-        gsd_file = gsd.pygsd.GSDFile(open("triclinic-box.gsd", "rb"))
-        frame = gsd.hoomd.HOOMDTrajectory(gsd_file).read_frame(0)
+        with gsd.hoomd.open("triclinic-box.gsd", mode="rb") as f:
+            frame = f[0]
         lx, ly, lz, xy, xz, yz = frame.configuration.box
 
         a = lx
         b = np.sqrt(ly ** 2 + xy ** 2)
         c = np.sqrt(lz ** 2 + xz ** 2 + yz ** 2)
 
-        assert np.isclose(np.cos(np.radians(60)), (xy * xz + ly * yz) / (b * c))
-        assert np.isclose(np.cos(np.radians(70)), xz / c)
-        assert np.isclose(np.cos(np.radians(80)), xy / b)
+        assert np.isclose(np.cos(np.radians(92)), (xy * xz + ly * yz) / (b * c))
+        assert np.isclose(np.cos(np.radians(104)), xz / c)
+        assert np.isclose(np.cos(np.radians(119)), xy / b)
 
     @pytest.mark.skipif(not has_foyer, reason="Foyer package not installed")
     @pytest.mark.skipif(not has_gsd, reason="GSD package not installed")
     def test_rigid(self, benzene):
         import gsd
-        import gsd.pygsd
+        import gsd.hoomd
 
         benzene.label_rigid_bodies(rigid_particles="C")
         benzene.save(filename="benzene.gsd", forcefield_name="oplsaa")
-        gsd_file = gsd.pygsd.GSDFile(open("benzene.gsd", "rb"))
-        frame = gsd.hoomd.HOOMDTrajectory(gsd_file).read_frame(0)
+        with gsd.hoomd.open("benzene.gsd", mode="rb") as f:
+            frame = f[0]
 
         rigid_bodies = frame.particles.body
         expected_bodies = [
@@ -138,12 +146,12 @@ class TestGSD(BaseTest):
     @pytest.mark.skipif(not has_gsd, reason="GSD package not installed")
     def test_bonded(self, ethane):
         import gsd
-        import gsd.pygsd
+        import gsd.hoomd
         from foyer import Forcefield
 
         ethane.save(filename="ethane.gsd", forcefield_name="oplsaa")
-        gsd_file = gsd.pygsd.GSDFile(open("ethane.gsd", "rb"))
-        frame = gsd.hoomd.HOOMDTrajectory(gsd_file).read_frame(0)
+        with gsd.hoomd.open("ethane.gsd", mode="rb") as f:
+            frame = f[0]
 
         structure = ethane.to_parmed()
         forcefield = Forcefield(name="oplsaa")
@@ -232,12 +240,12 @@ class TestGSD(BaseTest):
     @pytest.mark.skipif(not has_gsd, reason="GSD package not installed")
     def test_pairs(self, benzene):
         import gsd
-        import gsd.pygsd
+        import gsd.hoomd
         from foyer import Forcefield
 
         benzene.save(filename="benzene.gsd", forcefield_name="oplsaa")
-        gsd_file = gsd.pygsd.GSDFile(open("benzene.gsd", "rb"))
-        frame = gsd.hoomd.HOOMDTrajectory(gsd_file).read_frame(0)
+        with gsd.hoomd.open("benzene.gsd", mode="rb") as f:
+            frame = f[0]
 
         structure = benzene.to_parmed()
         forcefield = Forcefield(name="oplsaa")
@@ -250,13 +258,13 @@ class TestGSD(BaseTest):
     @pytest.mark.skipif(not has_gsd, reason="GSD package not installed")
     def test_units(self, ethane):
         import gsd
-        import gsd.pygsd
+        import gsd.hoomd
 
         ref_distance = 3.5
         ref_energy = 0.066
         ref_mass = 12.011
 
-        box = mb.Box(lengths=[1.0, 2.0, 3.0])
+        box = Box(lengths=[2.0, 3.0, 4.0], angles=[90.0, 90.0, 90.0])
         ethane.save(
             filename="ethane.gsd",
             forcefield_name="oplsaa",
@@ -265,21 +273,19 @@ class TestGSD(BaseTest):
             ref_mass=ref_mass,
             box=box,
         )
-        gsd_file = gsd.pygsd.GSDFile(open("ethane.gsd", "rb"))
-        frame = gsd.hoomd.HOOMDTrajectory(gsd_file).read_frame(0)
+        with gsd.hoomd.open("ethane.gsd", mode="rb") as f:
+            frame = f[0]
 
         box_from_gsd = frame.configuration.box.astype(float)
         assert np.array_equal(
             np.round(box_from_gsd[:3], decimals=5),
-            np.round(box.lengths * 10 / ref_distance, decimals=5),
+            np.round(np.asarray(box.lengths) * 10 / ref_distance, 5),
         )
 
         mass_dict = {"C": 12.011, "H": 1.008}
         masses = frame.particles.mass.astype(float)
-        for mass, particle in zip(masses, ethane.particles()):
-            assert round(mass, 3) == round(
-                mass_dict[particle.name] / ref_mass, 3
-            )
+        for mass, p in zip(masses, ethane.particles()):
+            assert round(mass, 3) == round(mass_dict[p.name] / ref_mass, 3)
 
         charge_dict = {"C": -0.18, "H": 0.06}
         charges = frame.particles.charge.astype(float)
@@ -299,14 +305,15 @@ class TestGSD(BaseTest):
     @pytest.mark.skipif(not has_gsd, reason="GSD package not installed")
     def test_box_dimensions(self, benzene):
         import gsd
+        import gsd.hoomd
 
         n_benzenes = 10
         filled = mb.fill_box(
             benzene, n_compounds=n_benzenes, box=[0, 0, 0, 4, 4, 4]
         )
         filled.save(filename="benzene.gsd")
-        gsd_file = gsd.pygsd.GSDFile(open("benzene.gsd", "rb"))
-        frame = gsd.hoomd.HOOMDTrajectory(gsd_file).read_frame(0)
+        with gsd.hoomd.open("benzene.gsd", mode="rb") as f:
+            frame = f[0]
         positions = frame.particles.position.astype(float)
         for coords in positions:
             assert coords.max() < 20

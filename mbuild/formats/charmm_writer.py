@@ -132,7 +132,7 @@ def _get_angle_type_key(
 
 
 def _get_dihedral_rb_torsion_key(dihedral, epsilon_conversion_factor):
-    """ Get the dihedral_type key for a Ryckaert-Bellemans (RB) dihedrals/torsions
+    """Get the dihedral_type key for a Ryckaert-Bellemans (RB) dihedrals/torsions
 
     Parameters
     ----------
@@ -224,7 +224,7 @@ def _get_dihedral_rb_torsion_key(dihedral, epsilon_conversion_factor):
 
 
 def _get_improper_type_key(improper, epsilon_conversion_factor):
-    """ Get the improper_type key for the harmonic improper
+    """Get the improper_type key for the harmonic improper
 
     Parameters
     ----------
@@ -289,7 +289,7 @@ def _get_improper_type_key(improper, epsilon_conversion_factor):
 def _get_unique_bond_types(
     structure, sigma_conversion_factor, epsilon_conversion_factor
 ):
-    """ Get the unique bond types for a structure in a dictionary
+    """Get the unique bond types for a structure in a dictionary
 
     Parameters
     ----------
@@ -332,7 +332,7 @@ def _get_unique_bond_types(
 def _get_unique_angle_types(
     structure, sigma_conversion_factor, epsilon_conversion_factor
 ):
-    """ Get the unique angle types for a structure and return a dictionary
+    """Get the unique angle types for a structure and return a dictionary
 
     Parameters
     ----------
@@ -376,7 +376,7 @@ def _get_unique_angle_types(
 
 
 def _get_unique_rb_torsion_types(structure, epsilon_conversion_factor):
-    """ Get the unique rb torsion types for a structure and return a dictionary
+    """Get the unique rb torsion types for a structure and return a dictionary
 
     Parameters
     ----------
@@ -425,7 +425,7 @@ def _get_unique_rb_torsion_types(structure, epsilon_conversion_factor):
 
 
 def _get_unique_improper_types(structure, epsilon_conversion_factor):
-    """ Get the unique improper types for a structure  and return a dictionary
+    """Get the unique improper types for a structure  and return a dictionary
 
     Parameters
     ----------
@@ -584,7 +584,7 @@ def _get_angle_types(
                      (angle_k_constant, angle_theta_o, angle_center_atom_type_2,
                      (angle_end_atom_type_1, angle_end_atom_type_3),
                      angle_residue_atom_1, angle_residue_atom_2, angle_residue_atom_3), n])
-        """
+    """
 
     if use_urey_bradleys:
         print_warn_text = (
@@ -788,7 +788,7 @@ def _get_impropers(structure, epsilon_conversion_factor):
           improper_atom_1_res_type, (improper_atom_2_res_type,
           improper_atom_3_res_type, improper_atom_4_res_type)
          ), n ])
-         """
+    """
     unique_improper_types = _get_unique_improper_types(
         structure, epsilon_conversion_factor
     )
@@ -997,8 +997,490 @@ def unique_atom_naming(
     ]
 
 
+def _lengths_angles_to_vectors(lengths, angles, precision=6):
+    """Converts the length and angles into CellBasisVectors
+
+    Parameters
+    ----------
+    lengths : list-like, shape=(3,), dtype=float
+        Lengths of the edges of the box (user chosen units).
+    angles : list-like, shape=(3,), dtype=float, default=None
+        Angles (in degrees) that define the tilt of the edges of the box. If
+        None is given, angles are assumed to be [90.0, 90.0, 90.0]. These are
+        also known as alpha, beta, gamma in the crystallography community.
+    precision : int, optional, default=6
+        Control the precision of the floating point representation of box
+        attributes. If none provided, the default is 6 decimals.
+
+    Returns
+    -------
+    box_vectors: numpy.ndarray, [[float, float, float], [float, float, float], [float, float, float]]
+        Three (3) sets vectors for box 0 each with 3 float values, which represent
+        the vectors for the Charmm-style systems (units are the same as entered for lengths)
+
+    """
+
+    (a, b, c) = lengths
+
+    (alpha, beta, gamma) = np.deg2rad(angles)
+    cos_a = np.clip(np.cos(alpha), -1.0, 1.0)
+    cos_b = np.clip(np.cos(beta), -1.0, 1.0)
+    cos_g = np.clip(np.cos(gamma), -1.0, 1.0)
+
+    sin_a = np.clip(np.sin(alpha), -1.0, 1.0)
+    sin_b = np.clip(np.sin(beta), -1.0, 1.0)
+    sin_g = np.clip(np.sin(gamma), -1.0, 1.0)
+    a_vec = np.asarray([a, 0.0, 0.0])
+
+    b_x = b * cos_g
+    b_y = b * sin_g
+    b_vec = np.asarray([b_x, b_y, 0.0])
+
+    c_x = c * cos_b
+    c_cos_y_term = (cos_a - (cos_b * cos_g)) / sin_g
+    c_y = c * c_cos_y_term
+    c_z = c * np.sqrt(1 - np.square(cos_b) - np.square(c_cos_y_term))
+    c_vec = np.asarray([c_x, c_y, c_z])
+    box_vectors = np.asarray((a_vec, b_vec, c_vec))
+    box_vectors.reshape(3, 3)
+    # still leaves some floating values in some cases
+    box_vectors = np.around(box_vectors, decimals=precision)
+
+    return box_vectors
+
+
+def _check_fixed_bonds_angles_lists(
+    gomc_fix_bonds_and_or_angles,
+    gomc_fix_bonds_and_or_angles_selection,
+    residues,
+):
+    """Check the GOMC fixed bonds and angles lists for input errors.
+
+    Parameters
+    ----------
+    gomc_fix_bonds_and_or_angles : list of strings, [str, ..., str]
+        A list of the residues (i.e., molecules since GOMC currently considers a
+        a whole molecule as a residue) to have their bonds and/or angles held
+        rigid/fixed for the GOMC simulation engine.
+        The `gomc_fix_bonds_angles`, `gomc_fix_bonds`, `gomc_fix_angles` are the only possible
+        variables from the `Charmm` object to be entered.
+        In GOMC, the residues currently are the same for every bead or atom in
+        the molecules. Therefore, when the residue is selected, the whole molecule
+        is selected.
+    gomc_fix_bonds_and_or_angles_selection : str
+        The name of the variable that is used but formatted as a string, which is fed
+        to the error and information outputs. The
+        `gomc_fix_bonds_angles`, `gomc_fix_bonds`, `gomc_fix_angles` are the only possible
+        variables from the `Charmm` object to be entered.
+        Whichever variable you choose, the variable name is just input as a
+        string here. For example, if `gomc_fix_bonds_and_or_angles` is equal to
+        gomc_fix_bonds_angles, then this should be 'gomc_fix_bonds_angles'
+        (i.e., `gomc_fix_bonds_and_or_angles_selection` = 'gomc_fix_bonds_angles').
+    residues : list, [str, ..., str]
+        Labels of unique residues in the Compound. Residues are assigned by
+        checking against Compound.name.  Only supply residue names as 4 character
+        strings, as the residue names are truncated to 4 characters to fit in the
+        psf and pdb file.
+
+    Returns
+    -------
+    Provides a ValueError or TypeError if the input is not correct.
+    """
+
+    if gomc_fix_bonds_and_or_angles is not None and not isinstance(
+        gomc_fix_bonds_and_or_angles, list
+    ):
+        print_error_message = (
+            "ERROR: Please ensure the residue names in the ({}) variable "
+            "are in a list.".format(gomc_fix_bonds_and_or_angles_selection)
+        )
+        raise TypeError(print_error_message)
+
+    if isinstance(gomc_fix_bonds_and_or_angles, list):
+        for gomc_fix_i in gomc_fix_bonds_and_or_angles:
+            if gomc_fix_i not in residues:
+                print_error_message = (
+                    "ERROR: Please ensure that all the residue names in the "
+                    "{} list are also in the residues list.".format(
+                        gomc_fix_bonds_and_or_angles_selection
+                    )
+                )
+                raise ValueError(print_error_message)
+            elif not isinstance(gomc_fix_i, str):
+                print_error_message = "ERROR: Please enter a fix_res_bonds list with only string values."
+                raise TypeError(print_error_message)
+            else:
+                print(
+                    "INFORMATION: The following residues will have these fixed parameters: "
+                    + "gomc_fix_bonds = {}".format(gomc_fix_bonds_and_or_angles)
+                )
+
+
 # Currently the NBFIX is disabled as since only the OPLS and TRAPPE force fields are currently supported
 class Charmm:
+    """Generates a Charmm object that is required to produce the Charmm style parameter
+    (force field), PDB, PSF files, which are usable in the GOMC and NAMD engines.
+    Additionally, this Charmm object is also used in generating the GOMC control file.
+
+    The units for the GOMC data files.
+        * Mw = g/mol
+        * charge = e
+        * Harmonic bonds : Kb = kcal/mol, b0 = Angstroms
+        * Harmonic angles : Ktheta = kcal/mole/rad**2 , Theta0 = degrees
+        * Dihedral angles: Ktheta = kcal/mole, n = interger (unitless), delta = degrees
+        * Improper angles (currently unavailable) : TBD
+        * LJ-NONBONDED : epsilon = kcal/mol, Rmin/2 = Angstroms
+        * Mie-NONBONDED (currently unavailable): epsilon = K, sigma = Angstroms, n = interger (unitless)
+        * Buckingham-NONBONDED (currently unavailable): epsilon = K, sigma = Angstroms, n = interger (unitless)
+        * LJ-NBFIX (currently unavailable) : epsilon = kcal/mol, Rmin = Angstroms
+        * Mie-NBFIX (currently unavailable) : same as Mie-NONBONDED
+        * Buckingham-NBFIX (currently unavailable) : same as Buckingham-NONBONDED
+
+    Note: units are the same as the NAMD units and the LAMMPS real units.  The atom style
+    is the same as the lammps 'full' atom style format.
+
+    Parameters
+    ----------
+    structure_box_0 : mbuild Compound object (mbuild.Compound) or mbuild Box object (mbuild.Box);
+        If the structure has atoms/beads it must be an mbuild Compound.
+        If the structure is empty it must be and mbuild Box object.
+        Note: If 1 structures are provided (i.e., only structure_box_0),
+        it must be an mbuild Compound.
+        Note: If 2 structures are provided,
+        only 1 structure can be an empty box (i.e., either structure_box_0 or structure_box_1)
+    filename_box_0 : str
+        The file name of the output file for structure_box_0.  Note: the extension should
+        not be provided, as multiple extension (.pdb and .psf) are added to this name.
+    structure_box_1 : mbuild Compound object (mbuild.Compound) or mbuild Box object (mbuild.Box), default = None;
+        If the structure has atoms/beads it must be an mbuild Compound.
+        Note: When running a GEMC or GCMC simulation the box 1 stucture should be input
+        here.  Otherwise, there is no guarantee that any of the atom type and force field
+        information will all work together correctly with box 0, if it is built separately.
+        Note: If 2 structures are provided, only 1 structure can be an empty box
+        (i.e., either structure_box_0 or structure_box_1).
+    filename_box_1 : str , default = None
+        The file name of the output file for structure_box_1 (Ex: for GCMC or GEMC simulations
+        which have mulitiple simulation boxes).  Note: the extension should
+        not be provided, as multiple extension (.pdb and .psf) are added to this name.
+        Note: When running a GEMC or GCMC simulation the box 1 stucture should be input
+        here.  Otherwise, there is no guarantee that any of the atom type and force field
+        information will all work together correctly with box 0, if it is built separately.
+    non_bonded_type : str, default = 'LJ' (i.e., Lennard-Jones )
+        Specify the type of non-bonded potential for the GOMC force field files.
+        Note: Currently, on the 'LJ' potential is supported.
+    residues : list, [str, ..., str]
+        Labels of unique residues in the Compound. Residues are assigned by
+        checking against Compound.name.  Only supply residue names as 4 character
+        strings, as the residue names are truncated to 4 characters to fit in the
+        psf and pdb file.
+    forcefield_selection : str or dictionary, default = None
+        Apply a forcefield to the output file by selecting a force field XML file with
+        its path or by using the standard force field name provided the `foyer` package.
+        Note: to write the NAMD/GOMC force field, pdb, and psf files, the
+        residues and forcefields must be provided in a str or
+        dictionary.  If a dictionary is provided all residues must
+        be specified to a force field.
+        * Example dict for FF file: {'ETH' : 'oplsaa.xml', 'OCT': 'path_to_file/trappe-ua.xml'}
+
+        * Example str for FF file: 'path_to file/trappe-ua.xml'
+
+        * Example dict for standard FF names : {'ETH' : 'oplsaa', 'OCT': 'trappe-ua'}
+
+        * Example str for standard FF names: 'trappe-ua'
+
+        * Example of a mixed dict with both : {'ETH' : 'oplsaa', 'OCT': 'path_to_file/'trappe-ua.xml'}
+    detect_forcefield_style : boolean, default = True
+        If True, format NAMD/GOMC/LAMMPS parameters based on the contents of
+        the parmed structure_box_0 and structure_box_1.
+    gomc_fix_bonds_angles : list, default = None
+        When list of residues is provided, the selected residues will have
+        their bonds and angles fixed in the GOMC engine.  This is specifically
+        for the GOMC engine and it changes the residue's bond constants (Kbs)
+        and angle constants (Kthetas) values to 999999999999 in the
+        FF file (i.e., the .inp file).
+    bead_to_atom_name_dict : dict, optional, default =None
+        For all atom names/elements/beads with 2 or less digits, this converts
+        the atom name in the GOMC psf and pdb files to a unique atom name,
+        provided they do not exceed 3844 atoms (62^2) of the same name/element/bead
+        per residue. For all atom names/elements/beads with 3 digits, this converts
+        the atom name in the GOMC psf and pdb files to a unique atom name,
+        provided they do not exceed 62 of the same name/element pre residue.
+
+        * Example dictionary: {'_CH3':'C', '_CH2':'C', '_CH':'C', '_HC':'C'}
+
+        * Example name structure: {atom_type: first_part_pf atom name_without_numbering}
+
+    fix_residue : list  or None, default = None
+        Changes occcur in the pdb file only.
+        When residues are listed here, all the atoms in the residue are
+        fixed and can not move via setting the Beta values in the PDB
+        file to 1.00.
+        If neither fix_residue or fix_residue_in_box lists a
+        residue or both equal None, then the Beta values for all the atoms
+        in the residue are free to move in the simulation and Beta values
+        in the PDB file is set to 0.00
+    fix_residue_in_box : list  or None, default = None
+        Changes occcur in the pdb file only.
+        When residues are listed here, all the atoms in the residue
+        can move within the box but cannot be transferred between boxes
+        via setting the Beta values in the PDB file to 2.00.
+        If neither fix_residue or fix_residue_in_box lists a
+        residue or both equal None, then the Beta values for all the atoms
+        in the residue are free to move in the simulation and Beta values
+        in the PDB file is set to 0.00
+    ff_filename : str, default =None
+        If a string, it will write the  force field files that work in
+        GOMC and NAMD structures.
+    reorder_res_in_pdb_psf : bool, default =False
+        If False, the order of of the atoms in the pdb file is kept in
+        its original order, as in the Compound sent to the writer.
+        If True, the order of the atoms is reordered based on their
+        residue names in the 'residues' list that was entered.
+
+    Attributes
+    ----------
+    input_error : bool
+        This error is typically incurred from an error in the user's input values.
+        However, it could also be due to a bug, provided the user is inputting
+        the data as this Class intends.
+    structure_box_0 : mbuild.compound.Compound
+        The mbuild Compound for the input box 0
+    structure_box_1 : mbuild.compound.Compound or None, default = None
+        The mbuild Compound for the input box 1
+    filename_box_0 : str
+        The file name of the output file for structure_box_0.  Note: the extension should
+        not be provided, as multiple extension (.pdb and .psf) are added to this name.
+    filename_box_1 : str or None , default = None
+        The file name of the output file for structure_box_1.  Note: the extension should
+        not be provided, as multiple extension (.pdb and .psf) are added to this name.
+        (i.e., either structure_box_0 or structure_box_1).
+    non_bonded_type : str, default = 'LJ' (i.e., Lennard-Jones )
+        Specify the type of non-bonded potential for the GOMC force field files.
+        Note: Currently, on the 'LJ' potential is supported.
+    residues : list, [str, ..., str]
+        Labels of unique residues in the Compound. Residues are assigned by
+        checking against Compound.name.  Only supply residue names as 4 character
+        strings, as the residue names are truncated to 4 characters to fit in the
+        psf and pdb file.
+    forcefield_selection : str or dictionary, default = None
+        Apply a forcefield to the output file by selecting a force field XML file with
+        its path or by using the standard force field name provided the `foyer` package.
+        Note: to write the NAMD/GOMC force field, pdb, and psf files, the
+        residues and forcefields must be provided in a str or
+        dictionary.  If a dictionary is provided all residues must
+        be specified to a force field.
+
+        * Example dict for FF file: {'ETH' : 'oplsaa.xml', 'OCT': 'path_to_file/trappe-ua.xml'}
+
+        * Example str for FF file: 'path_to file/trappe-ua.xml'
+
+        * Example dict for standard FF names : {'ETH' : 'oplsaa', 'OCT': 'trappe-ua'}
+
+        * Example str for standard FF names: 'trappe-ua'
+
+        * Example of a mixed dict with both : {'ETH' : 'oplsaa', 'OCT': 'path_to_file/'trappe-ua.xml'}
+
+    detect_forcefield_style : bool, default = True
+        If True, format NAMD/GOMC/LAMMPS parameters based on the contents of
+        the parmed structure_box_0 and structure_box_1
+    gomc_fix_bonds_angles : list, default = None
+        When list of residues is provided, the selected residues will have
+        their bonds and angles fixed and will ignore the relative bond energies and
+        related angle energies in the GOMC engine. Note that GOMC
+        does not sample bond stretching. This is specifically
+        for the GOMC engine and it changes the residue's bond constants (Kbs)
+        and angle constants (Kthetas) values to 999999999999 in the
+        FF file (i.e., the .inp file).
+        If the residues are listed in either the gomc_fix_angles or the gomc_fix_bonds_angles
+        lists, the angles will be fixed for that residue.
+        If the residues are listed in either the gomc_fix_bonds or the gomc_fix_bonds_angles
+        lists, the bonds will be fixed for that residue.
+        NOTE if this option is utilized it may cause issues if using the FF file in NAMD.
+    gomc_fix_bonds : list, default = None
+        When list of residues is provided, the selected residues will have their
+        relative bond energies ignored in the GOMC engine. Note that GOMC
+        does not sample bond stretching. This is specifically
+        for the GOMC engine and it changes the residue's bond constants (Kbs)
+        values to 999999999999 in the FF file (i.e., the .inp file).
+        If the residues are listed in either the gomc_fix_bonds or the gomc_fix_bonds_angles
+        lists, the relative bond energy will be ignored.
+        NOTE if this option is utilized it may cause issues if using the FF file in NAMD.
+    gomc_fix_angles : list, default = None
+        When list of residues is provided, the selected residues will have
+        their angles fixed and will ignore the related angle energies in the GOMC engine.
+        This is specifically for the GOMC engine and it changes the residue's angle
+        constants (Kthetas) values to 999999999999 in the FF file (i.e., the .inp file),
+        which fixes the angles and ignores related angle energy.
+        If the residues are listed in either the gomc_fix_angles or the gomc_fix_bonds_angles
+        lists, the angles will be fixed and the related angle energy will be ignored
+        for that residue.
+        NOTE if this option is utilized it may cause issues if using the FF file in NAMD.
+    bead_to_atom_name_dict : dict, optional, default =None
+        For all atom names/elements/beads with 2 or less digits, this converts
+        the atom name in the GOMC psf and pdb files to a unique atom name,
+        provided they do not exceed 3844 atoms (62^2) of the same name/element/bead
+        per residue. For all atom names/elements/beads with 3 digits, this converts
+        the atom name in the GOMC psf and pdb files to a unique atom name,
+        provided they do not exceed 62 of the same name/element pre residue.
+
+        * Example dictionary: {'_CH3':'C', '_CH2':'C', '_CH':'C', '_HC':'C'}
+
+        * Example name structure: {atom_type: first_part_pf atom name_without_numbering}
+
+    fix_residue : list  or None, default = None
+        Changes occcur in the pdb file only.
+        When residues are listed here, all the atoms in the residue are
+        fixed and can not move via setting the Beta values in the PDB
+        file to 1.00.
+        If neither fix_residue or fix_residue_in_box lists a
+        residue or both equal None, then the Beta values for all the atoms
+        in the residue are free to move in the simulation and Beta values
+        in the PDB file is set to 0.00
+    fix_residue_in_box : list  or None, default = None
+        Changes occcur in the pdb file only.
+        When residues are listed here, all the atoms in the residue
+        can move within the box but cannot be transferred between boxes
+        via setting the Beta values in the PDB file to 2.00.
+        If neither fix_residue or fix_residue_in_box lists a
+        residue or both equal None, then the Beta values for all the atoms
+        in the residue are free to move in the simulation and Beta values
+        in the PDB file is set to 0.00
+    ff_filename : str, default =None
+        If a string, it will write the  force field files that work in
+        GOMC and NAMD structures.
+    reorder_res_in_pdb_psf : bool, default =False
+        If False, the order of of the atoms in the pdb file is kept in
+        its original order, as in the Compound sent to the writer.
+        If True, the order of the atoms is reordered based on their
+        residue names in the 'residues' list that was entered.
+    box_0 : Box
+        The Box class that contains the attributes Lx, Ly, Lz for the length
+        of the box 0 (units in nanometers (nm)). It also contains the xy, xz, and yz Tilt factors
+        needed to displace an orthogonal box's xy face to its
+        parallelepiped structure for box 0.
+    box_1 : Box
+        The Box class that contains the attributes Lx, Ly, Lz for the length
+        of the box 1 (units in nanometers (nm)). It also contains the xy, xz, and yz Tilt factors
+        needed to displace an orthogonal box's xy face to its
+        parallelepiped structure for box 0.
+    box_0_vectors : numpy.ndarray, [[float, float, float], [float, float, float], [float, float, float]]
+        Three (3) sets vectors for box 0 each with 3 float values, which represent
+        the vectors for the Charmm-style systems (units in Angstroms (Ang))
+    box_1_vectors : numpy.ndarray, [[float, float, float], [float, float, float], [float, float, float]]
+        Three (3) sets vectors for box 1 each with 3 float values, which represent
+        the vectors for the Charmm-style systems (units in Angstroms (Ang))
+    structure_box_0_ff : parmed.structure.Structure
+        The box 0 structure (structure_box_0) after all the provided
+        force fields are applied.
+    structure_box_1_ff : parmed.structure.Structure
+        The box 0 structure (structure_box_0) after all the provided
+        force fields are applied. This only exists if the box 1 structure
+        (structure_box_1) is provided.
+    coulomb14scalar_dict_box_0 : dict
+        The residue/moleclues (key) of box 0 and their corresponding
+        coulombic 1-4 scalers (value).  Note: NAMD and GOMC can only have one (1)
+        value for the coulombic 1-4 scalers, as they both only accept a
+        single value in the NAMD and GOMC control files.
+    coulomb14scalar_dict_box_1 : dict
+        The residue/moleclues  (key) of box 1 and their corresponding
+        coulombic 1-4 scalers (value).  Note: NAMD and GOMC can only have one (1)
+        value for the coulombic 1-4 scalers, as they both only accept a
+        single value in the NAMD and GOMC control files.
+        This only exists if the box 1 structure (structure_box_1) is provided.
+    LJ14scalar_dict_box_0 : dict
+        The residue/moleclues (key) of box 0 and their corresponding
+        Lennard-Jones (LJ) 1-4 scalers (value).  Note: NAMD and GOMC can have
+        multiple values for the LJ 1-4 scalers, since they are provided as an
+        individual input for each atom type in the force field (.inp) file.
+    LJ14scalar_dict_box_1 : dict
+        The residue/moleclues (key) of box 1 and their corresponding
+        Lennard-Jones (LJ) 1-4 scalers (value).  Note: NAMD and GOMC can have
+        multiple values for the LJ 1-4 scalers, since they are provided as an
+        individual input for each atom type in the force field (.inp) file.
+        This only exists if the box 1 structure (structure_box_1) is provided.
+    residues_applied_list_box_0 : list
+        The residues in box 0 that were found and had the force fields applied to them.
+    residues_applied_list_box_1 : list
+        The residues in box 1 that were found and had the force fields applied to them.
+        This only exists if the box 1 structure (structure_box_1) is provided.
+    boxes_for_simulation : int, [0, 1]
+        The number of boxes used when writing the Charmm object and force fielding
+        the system. If only box 0 is provided, the value is 0. If box 0 and box 1
+        are provided, the value is 1.
+    epsilon_dict : dict {str: float or int}
+        The uniquely numbered atom type (key) and it's non-bonded epsilon
+        coefficient (value).
+    sigma_dict : dict {str: float or int}
+        The uniquely numbered atom type (key) and it's non-bonded sigma
+        coefficient (value).
+    LJ_1_4_dict : dict {str: float or int}
+        The uniquely numbered atom type (key) and it's non-bonded 1-4
+        Lennard-Jones, LJ, scaling factor (value).
+    coul_1_4 : float or int
+        The non-bonded 1-4 coulombic scaling factor, which is the
+        same for all the residues/molecules, regardless if
+        differenct force fields are utilized.  Note: if
+        1-4 coulombic scaling factor is not the same for all
+        molecules the Charmm object will fail with an error.
+    combined_1_4_coul_dict_per_residue : dict, {str: float or int}
+        The residue name/molecule (key) and it's non-bonded 1-4 coulombic
+        scaling factor (value).
+    forcefield_dict : dict
+        The uniquely numbered atom type (key) with it's corresponding
+        foyer atom typing and residue name.  The residue name is added
+        to provide a distinction between other residues with the same
+        atom types.  This allows the CHARMM force field to fix the
+        bonds and angles specific residues without effecting other
+        residues with the same atom types.
+    all_individual_atom_names_list : list
+        A list of all the atom names for the combined structures
+        (box 0 and box 1 (if supplied)), in order.
+    all_residue_names_List : list
+        A list of all the residue names for the combined structures
+        (box 0 and box 1 (if supplied)), in order.
+    max_residue_no : int
+        The maximum number that the residue number will count to
+        before restarting the counting back to 1, which is predetermined
+        by the PDB format. This is a constant, which equals 9999
+    max_resname_char : int
+        The maximum number of characters allowed in the residue name,
+        which is predetermined by the PDB format. This is a constant,
+        which equals 4.
+    all_res_unique_atom_name_dict : dict, {str : [str, ..., str]}
+        A dictionary that provides the residue names (keys) and a list
+        of the unique atom names in the residue (value), for the
+        combined structures (box 0 and box 1 (if supplied)).
+
+    Notes
+    -----
+    Impropers, Urey-Bradleys, and NBFIX are not currenly supported.
+    Currently the NBFIX is disabled as since only the OPLS and TRAPPE force fields are supported.
+    OPLS and CHARMM forcefield styles are supported (without impropers),
+    AMBER forcefield styles are NOT supported.
+
+    The atom typing is currently provided via a base 52 numbering (capital and lowercase lettering).
+    This base 52 numbering allows for (52)^4 unique atom types.
+
+    Unique atom names are provided if the system do not exceed 3844 atoms (62^2) of the same
+    name/bead per residue (base 62 numbering). For all atom names/elements with 3 or less digits,
+    this converts the atom name in the GOMC psf and pdb files to a unique atom name,
+    provided they do not exceed 62 of the same name/element pre residue.
+
+    Generating an empty box (i.e., pdb and psf files):
+    Single Box system: Enter residues = [], but the accompanying structure (structure_box_0)
+    must be an empty mb.Box. However, when doing this, the forcefield_selection
+    must be supplied, or it will provide an error
+    (i.e., forcefield_selection can not be equal to None).
+    Dual Box System: Enter an empty mb.Box structure for either structure_box_0 or
+    structure_box_1.
+
+    In this current FF/psf/pdb writer, a residue type is essentially a molecule type.
+    Therefore, it can only correctly write systems where every bead/atom in the molecule
+    has the same residue name, and the residue name is specific to that molecule type.
+    For example: a protein molecule with many residue names is not currently supported,
+    but is planned to be supported in the future.
+    """
+
     def __init__(
         self,
         structure_box_0,
@@ -1010,328 +1492,14 @@ class Charmm:
         residues=None,
         detect_forcefield_style=True,
         gomc_fix_bonds_angles=None,
+        gomc_fix_bonds=None,
+        gomc_fix_angles=None,
         bead_to_atom_name_dict=None,
         fix_residue=None,
         fix_residue_in_box=None,
         ff_filename=None,
         reorder_res_in_pdb_psf=False,
-        box_0=None,
-        box_1=None,
     ):
-
-        """Generates a Charmm object that is required to produce the Charmm style parameter
-        (force field), PDB, PSF files, which are usable in the GOMC and NAMD engines.
-        Additionally, this Charmm object is also used in generating the GOMC control file.
-
-        Outputs a GOMC data file The units are as follows
-            * Mw = g/mol
-            * Harmonic bonds : Kb = kcal/mol, b0 = Angstroms
-            * Harmonic angles : Ktheta = kcal/mole/rad**2 , Theta0 = degrees
-            * Dihedral angles: Ktheta = kcal/mole, n = interger (unitless), delta = degrees
-            * nonbonded : epsilon = kcal/mol, Rmin = Angstroms, n = interger (unitless)
-            Note: units are the same at the LAMMPS real units.  The atom style
-            is the same as the lammps 'full' atom style format.
-
-        Parameters
-        ----------
-        structure_box_0 : mbuild Compound object (mbuild.Compound) or mbuild Box object (mbuild.Box);
-            If the structure has atoms/beads it must be an mbuild Compound.
-            If the structure is empty it must be and mbuild Box object.
-            Note: If 1 structures are provided (i.e., only structure_box_0),
-            it must be an mbuild Compound.
-            Note: If 2 structures are provided,
-            only 1 structure can be an empty box (i.e., either structure_box_0 or structure_box_1)
-        filename_box_0 : str
-            The file name of the output file for structure_box_0.  Note: the extension should
-            not be provided, as multiple extension (.pdb and .psf) are added to this name.
-        structure_box_1 : mbuild Compound object (mbuild.Compound) or mbuild Box object (mbuild.Box), default = None;
-            If the structure has atoms/beads it must be an mbuild Compound.
-            Note: When running a GEMC or GCMC simulation the box 1 stucture should be input
-            here.  Otherwise, there is no guarantee that any of the atom type and force field
-            information will all work together correctly with box 0, if it is built separately.
-            Note: If 2 structures are provided, only 1 structure can be an empty box
-            (i.e., either structure_box_0 or structure_box_1).
-        filename_box_1 : str , default = None
-            The file name of the output file for structure_box_1 (Ex: for GCMC or GEMC simulations
-            which have mulitiple simulation boxes).  Note: the extension should
-            not be provided, as multiple extension (.pdb and .psf) are added to this name.
-            Note: When running a GEMC or GCMC simulation the box 1 stucture should be input
-            here.  Otherwise, there is no guarantee that any of the atom type and force field
-            information will all work together correctly with box 0, if it is built separately.
-        non_bonded_type : str, default = 'LJ' (i.e., Lennard-Jones )
-            Specify the type of non-bonded potential for the GOMC force field files.
-            Note: Currently, on the 'LJ' potential is supported.
-        residues : list, [str, ..., str]
-            Labels of unique residues in the Compound. Residues are assigned by
-            checking against Compound.name.  Only supply residue names as 4 character
-            strings, as the residue names are truncated to 4 characters to fit in the
-            psf and pdb file.
-        forcefield_selection : str or dictionary, default = None
-            Apply a forcefield to the output file by selecting a force field XML file with
-            its path or by using the standard force field name provided the `foyer` package.
-            Note: to write the NAMD/GOMC force field, pdb, and psf files, the
-            residues and forcefields must be provided in a str or
-            dictionary.  If a dictionary is provided all residues must
-            be specified to a force field.
-                Example dict for FF file: {'ETH' : 'oplsaa.xml', 'OCT': 'path_to_file/trappe-ua.xml'}
-                Example str for FF file: 'path_to file/trappe-ua.xml'
-                Example dict for standard FF names : {'ETH' : 'oplsaa', 'OCT': 'trappe-ua'}
-                Example str for standard FF names: 'trappe-ua'
-                Example of a mixed dict with both : {'ETH' : 'oplsaa', 'OCT': 'path_to_file/'trappe-ua.xml'}
-        detect_forcefield_style : boolean, default = True
-            If True, format NAMD/GOMC/LAMMPS parameters based on the contents of
-            the parmed structure_box_0 and structure_box_1
-        gomc_fix_bonds_angles : list, default = None
-            When list of residues is provided, the selected residues will have
-            their bonds and angles fixed in the GOMC engine.  This is specifically
-            for the GOMC engine and it changes the residue's bond constants (Kbs)
-            and angle constants (Kthetas) values to 999999999999 in the
-            FF file (i.e., the .inp file).
-        bead_to_atom_name_dict : dict, optional, default =None
-            For all atom names/elements/beads with 2 or less digits, this converts
-            the atom name in the GOMC psf and pdb files to a unique atom name,
-            provided they do not exceed 3844 atoms (62^2) of the same name/element/bead
-            per residue. For all atom names/elements/beads with 3 digits, this converts
-            the atom name in the GOMC psf and pdb files to a unique atom name,
-            provided they do not exceed 62 of the same name/element pre residue.
-            Example dictionary: {'_CH3':'C', '_CH2':'C', '_CH':'C', '_HC':'C'}
-            Example name structure: {atom_type: first_part_pf atom name_without_numbering}
-        fix_residue : list  or None, default = None
-            Changes occcur in the pdb file only.
-            When residues are listed here, all the atoms in the residue are
-            fixed and can not move via setting the Beta values in the PDB
-            file to 1.00.
-            If neither fix_residue or fix_residue_in_box lists a
-            residue or both equal None, then the Beta values for all the atoms
-            in the residue are free to move in the simulation and Beta values
-            in the PDB file is set to 0.00
-        fix_residue_in_box : list  or None, default = None
-            Changes occcur in the pdb file only.
-            When residues are listed here, all the atoms in the residue
-            can move within the box but cannot be transferred between boxes
-            via setting the Beta values in the PDB file to 2.00.
-            If neither fix_residue or fix_residue_in_box lists a
-            residue or both equal None, then the Beta values for all the atoms
-            in the residue are free to move in the simulation and Beta values
-            in the PDB file is set to 0.00
-        ff_filename : str, default =None
-            If a string, it will write the  force field files that work in
-            GOMC and NAMD structures.
-        reorder_res_in_pdb_psf : bool, default =False
-            If False, the order of of the atoms in the pdb file is kept in
-            its original order, as in the Compound sent to the writer.
-            If True, the order of the atoms is reordered based on their
-            residue names in the 'residues' list that was entered.
-        box_0 : list, [x-dim, y-dim ,z-dim]
-            A list of 3 positive float values or the dimensions [x, y ,z]
-            for structure_box_0 in nanometers (nm)
-            This is to add/override or change the structures dimensions. Ex: [1,2,3]
-        box_1 : list, [x-dim, y-dim ,z-dim]
-            A list of 3 positive float values or the dimensions [x, y ,z]
-            for structure_box_1 in nanometers (nm)
-            This is to add/override or change the structures dimensions. Ex: [1,2,3]
-
-        Attributes
-        ----------
-        input_error : bool
-            This error is typically incurred from an error in the user's input values.
-            However, it could also be due to a bug, provided the user is inputting
-            the data as this Class intends.
-        structure_box_0 : mbuild.compound.Compound
-            The mbuild Compound for the input box 0
-        structure_box_1 : mbuild.compound.Compound or None, default = None
-            The mbuild Compound for the input box 1
-        filename_box_0 : str
-            The file name of the output file for structure_box_0.  Note: the extension should
-            not be provided, as multiple extension (.pdb and .psf) are added to this name.
-        filename_box_1 : str or None , default = None
-            The file name of the output file for structure_box_1.  Note: the extension should
-            not be provided, as multiple extension (.pdb and .psf) are added to this name.
-            (i.e., either structure_box_0 or structure_box_1).
-        non_bonded_type : str, default = 'LJ' (i.e., Lennard-Jones )
-            Specify the type of non-bonded potential for the GOMC force field files.
-            Note: Currently, on the 'LJ' potential is supported.
-        residues : list, [str, ..., str]
-            Labels of unique residues in the Compound. Residues are assigned by
-            checking against Compound.name.  Only supply residue names as 4 character
-            strings, as the residue names are truncated to 4 characters to fit in the
-            psf and pdb file.
-        forcefield_selection : str or dictionary, default = None
-            Apply a forcefield to the output file by selecting a force field XML file with
-            its path or by using the standard force field name provided the `foyer` package.
-            Note: to write the NAMD/GOMC force field, pdb, and psf files, the
-            residues and forcefields must be provided in a str or
-            dictionary.  If a dictionary is provided all residues must
-            be specified to a force field.
-                Example dict for FF file: {'ETH' : 'oplsaa.xml', 'OCT': 'path_to_file/trappe-ua.xml'}
-                Example str for FF file: 'path_to file/trappe-ua.xml'
-                Example dict for standard FF names : {'ETH' : 'oplsaa', 'OCT': 'trappe-ua'}
-                Example str for standard FF names: 'trappe-ua'
-                Example of a mixed dict with both : {'ETH' : 'oplsaa', 'OCT': 'path_to_file/'trappe-ua.xml'}
-        detect_forcefield_style : bool, default = True
-            If True, format NAMD/GOMC/LAMMPS parameters based on the contents of
-            the parmed structure_box_0 and structure_box_1
-        gomc_fix_bonds_angles : list, default = None
-            When list of residues is provided, the selected residues will have
-            their bonds and angles fixed in the GOMC engine.  This is specifically
-            for the GOMC engine and it changes the residue's bond constants (Kbs)
-            and angle constants (Kthetas) values to 999999999999 in the
-            FF file (i.e., the .inp file).
-        bead_to_atom_name_dict : dict, optional, default =None
-            For all atom names/elements/beads with 2 or less digits, this converts
-            the atom name in the GOMC psf and pdb files to a unique atom name,
-            provided they do not exceed 3844 atoms (62^2) of the same name/element/bead
-            per residue. For all atom names/elements/beads with 3 digits, this converts
-            the atom name in the GOMC psf and pdb files to a unique atom name,
-            provided they do not exceed 62 of the same name/element pre residue.
-            Example dictionary: {'_CH3':'C', '_CH2':'C', '_CH':'C', '_HC':'C'}
-            Example name structure: {atom_type: first_part_pf atom name_without_numbering}
-        fix_residue : list  or None, default = None
-            Changes occcur in the pdb file only.
-            When residues are listed here, all the atoms in the residue are
-            fixed and can not move via setting the Beta values in the PDB
-            file to 1.00.
-            If neither fix_residue or fix_residue_in_box lists a
-            residue or both equal None, then the Beta values for all the atoms
-            in the residue are free to move in the simulation and Beta values
-            in the PDB file is set to 0.00
-        fix_residue_in_box : list  or None, default = None
-            Changes occcur in the pdb file only.
-            When residues are listed here, all the atoms in the residue
-            can move within the box but cannot be transferred between boxes
-            via setting the Beta values in the PDB file to 2.00.
-            If neither fix_residue or fix_residue_in_box lists a
-            residue or both equal None, then the Beta values for all the atoms
-            in the residue are free to move in the simulation and Beta values
-            in the PDB file is set to 0.00
-        ff_filename : str, default =None
-            If a string, it will write the  force field files that work in
-            GOMC and NAMD structures.
-        reorder_res_in_pdb_psf : bool, default =False
-            If False, the order of of the atoms in the pdb file is kept in
-            its original order, as in the Compound sent to the writer.
-            If True, the order of the atoms is reordered based on their
-            residue names in the 'residues' list that was entered.
-        box_0 : list, [x-dim, y-dim ,z-dim]
-            A list of 3 positive float values or the dimensions [x, y ,z]
-            for structure_box_0 in nanometers (nm)
-            This is to add/override or change the structures dimensions. Ex: [1,2,3]
-        box_1 : list, [x-dim, y-dim ,z-dim]
-            A list of 3 positive float values or the dimensions [x, y ,z]
-            for structure_box_1 in nanometers (nm)
-            This is to add/override or change the structures dimensions. Ex: [1,2,3]
-        structure_box_0_ff : parmed.structure.Structure
-            The box 0 structure (structure_box_0) after all the provided
-            force fields are applied.
-        structure_box_1_ff : parmed.structure.Structure
-            The box 0 structure (structure_box_0) after all the provided
-            force fields are applied. This only exists if the box 1 structure
-            (structure_box_1) is provided.
-        coulomb14scalar_dict_box_0 : dict
-            The residue/moleclues (key) of box 0 and their corresponding
-            coulombic 1-4 scalers (value).  Note: NAMD and GOMC can only have one (1)
-            value for the coulombic 1-4 scalers, as they both only accept a
-            single value in the NAMD and GOMC control files.
-        coulomb14scalar_dict_box_1 : dict
-            The residue/moleclues  (key) of box 1 and their corresponding
-            coulombic 1-4 scalers (value).  Note: NAMD and GOMC can only have one (1)
-            value for the coulombic 1-4 scalers, as they both only accept a
-            single value in the NAMD and GOMC control files.
-            This only exists if the box 1 structure (structure_box_1) is provided.
-        LJ14scalar_dict_box_0 : dict
-            The residue/moleclues (key) of box 0 and their corresponding
-            Lennard-Jones (LJ) 1-4 scalers (value).  Note: NAMD and GOMC can have
-            multiple values for the LJ 1-4 scalers, since they are provided as an
-            individual input for each atom type in the force field (.inp) file.
-        LJ14scalar_dict_box_1 : dict
-            The residue/moleclues (key) of box 1 and their corresponding
-            Lennard-Jones (LJ) 1-4 scalers (value).  Note: NAMD and GOMC can have
-            multiple values for the LJ 1-4 scalers, since they are provided as an
-            individual input for each atom type in the force field (.inp) file.
-            This only exists if the box 1 structure (structure_box_1) is provided.
-        residues_applied_list_box_0 : list
-            The residues in box 0 that were found and had the force fields applied to them.
-        residues_applied_list_box_1 : list
-            The residues in box 1 that were found and had the force fields applied to them.
-            This only exists if the box 1 structure (structure_box_1) is provided.
-        boxes_for_simulation : int, [0, 1]
-            The number of boxes used when writing the Charmm object and force fielding
-            the system. If only box 0 is provided, the value is 0. If box 0 and box 1
-            are provided, the value is 1.
-        epsilon_dict : dict {str: float or int}
-            The uniquely numbered atom type (key) and it's non-bonded epsilon
-            coefficient (value).
-        sigma_dict : dict {str: float or int}
-            The uniquely numbered atom type (key) and it's non-bonded sigma
-            coefficient (value).
-        LJ_1_4_dict : dict {str: float or int}
-            The uniquely numbered atom type (key) and it's non-bonded 1-4
-            Lennard-Jones, LJ, scaling factor (value).
-        coul_1_4 : float or int
-            The non-bonded 1-4 coulombic scaling factor, which is the
-            same for all the residues/molecules, regardless if
-            differenct force fields are utilized.  Note: if
-            1-4 coulombic scaling factor is not the same for all
-            molecules the Charmm object will fail with an error.
-        combined_1_4_coul_dict_per_residue : dict, {str: float or int}
-            The residue name/molecule (key) and it's non-bonded 1-4 coulombic
-            scaling factor (value).
-        forcefield_dict : dict
-            The uniquely numbered atom type (key) with it's corresponding
-            foyer atom typing and residue name.  The residue name is added
-            to provide a distinction between other residues with the same
-            atom types.  This allows the CHARMM force field to fix the
-            bonds and angles specific residues without effecting other
-            residues with the same atom types.
-        all_individual_atom_names_list : list
-            A list of all the atom names for the combined structures
-            (box 0 and box 1 (if supplied)), in order.
-        all_residue_names_List : list
-            A list of all the residue names for the combined structures
-            (box 0 and box 1 (if supplied)), in order.
-        max_residue_no : int
-            The maximum number that the residue number will count to
-            before restarting the counting back to 1, which is predetermined
-            by the PDB format. This is a constant, which equals 9999
-        max_resname_char : int
-            The maximum number of characters allowed in the residue name,
-            which is predetermined by the PDB format. This is a constant,
-            which equals 4.
-        all_res_unique_atom_name_dict : dict, {str : [str, ..., str]}
-            A dictionary that provides the residue names (keys) and a list
-            of the unique atom names in the residue (value), for the
-            combined structures (box 0 and box 1 (if supplied)).
-
-        Notes
-        -----
-        Impropers and NBFIX are not currenly supported
-        Currently the NBFIX is disabled as since only the OPLS and TRAPPE force fields are supported
-        OPLS and CHARMM forcefield styles are supported, AMBER forcefield styles are NOT supported.
-        Impropers and Urey-Bradleys are not supported for GOMC
-
-        The atom typing is currently provided via a base 52 numbering (capital and lowercase lettering).
-        This base 52 numbering allows for (52)^4 unique atom types.
-
-        Unique atom names are provided if the system do not exceed 3844 atoms (62^2) of the same
-        name/bead per residue (base 62 numbering). For all atom names/elements with 3 or less digits,
-        this converts the atom name in the GOMC psf and pdb files to a unique atom name,
-        provided they do not exceed 62 of the same name/element pre residue.
-
-        Generating an empty box (i.e., pdb and psf files):
-            Single Box system: Enter residues = [], but the accompanying structure (structure_box_0)
-            must be an empty mb.Box. However, when doing this, the forcefield_selection
-            must be supplied, or it will provide an error
-            (i.e., forcefield_selection can not be equal to None)
-            Dual Box System: Enter an empty mb.Box structure for either structure_box_0 or
-            structure_box_1.
-
-        In this current FF/psf/pdb writer, a residue type is essentially a molecule type.
-        Therefore, it can only correctly write systems where every bead/atom in the molecule
-        has the same residue name, and the residue name is specific to that molecule type.
-        For example: a protein molecule with many residue names is not currently supported,
-        but is planned to be supported in the future.
-
-        """
 
         # set all input variables to the class
         self.structure_box_0 = structure_box_0
@@ -1343,13 +1511,14 @@ class Charmm:
         self.residues = residues
         self.detect_forcefield_style = detect_forcefield_style
         self.gomc_fix_bonds_angles = gomc_fix_bonds_angles
+        self.gomc_fix_bonds = gomc_fix_bonds
+        self.gomc_fix_angles = gomc_fix_angles
         self.bead_to_atom_name_dict = bead_to_atom_name_dict
         self.fix_residue = fix_residue
         self.fix_residue_in_box = fix_residue_in_box
         self.ff_filename = ff_filename
         self.reorder_res_in_pdb_psf = reorder_res_in_pdb_psf
-        self.box_0 = box_0
-        self.box_1 = box_1
+
         # value to check for errors, with  self.input_error = True or False. Set to False initally
         self.input_error = False
 
@@ -1448,11 +1617,6 @@ class Charmm:
             )
             raise TypeError(print_error_message)
 
-        if self.structure_box_1 is None and self.box_1 is not None:
-            self.input_error = True
-            print_error_message = "ERROR: box_1 is set to a value but there is not a structure 1 to use it on."
-            raise TypeError(print_error_message)
-
         if self.ff_filename is not None:
             if not isinstance(self.ff_filename, str):
                 self.input_error = True
@@ -1518,35 +1682,15 @@ class Charmm:
             )
             raise TypeError(print_error_message)
 
-        if self.gomc_fix_bonds_angles is not None and not isinstance(
-            self.gomc_fix_bonds_angles, list
-        ):
-            self.input_error = True
-            print_error_message = (
-                "ERROR: Please enter the residues that have fixed angles "
-                "and bonds (gomc_fix_bonds_angles) in a list format."
-            )
-            raise TypeError(print_error_message)
-
-        if isinstance(self.gomc_fix_bonds_angles, list):
-            for gomc_fix_bonds_angles_i in self.gomc_fix_bonds_angles:
-                if gomc_fix_bonds_angles_i not in self.residues:
-                    self.input_error = True
-                    print_error_message = (
-                        "ERROR: Please ensure that all the residue names in the "
-                        "gomc_fix_bonds_angles list are also in the residues list."
-                    )
-                    raise ValueError(print_error_message)
-                elif not isinstance(gomc_fix_bonds_angles_i, str):
-                    self.input_error = True
-                    print_error_message = "ERROR: Please enter a fix_res_bonds_angle list with only string values."
-                    raise TypeError(print_error_message)
-                else:
-                    print(
-                        "INFORMATION: The following residues will have fixed bonds"
-                        + " and angles: gomc_fix_bonds_angles = "
-                        + str(self.gomc_fix_bonds_angles)
-                    )
+        _check_fixed_bonds_angles_lists(
+            self.gomc_fix_bonds_angles, "gomc_fix_bonds_angles", self.residues
+        )
+        _check_fixed_bonds_angles_lists(
+            self.gomc_fix_bonds, "gomc_fix_bonds", self.residues
+        )
+        _check_fixed_bonds_angles_lists(
+            self.gomc_fix_angles, "gomc_fix_angles", self.residues
+        )
 
         if self.fix_residue is not None and not isinstance(
             self.fix_residue, list
@@ -1608,36 +1752,6 @@ class Charmm:
                     print_error_message = "ERROR: Please enter the bead_to_atom_name_dict with only string inputs."
                     raise TypeError(print_error_message)
 
-        if self.box_0 is not None:
-            box_length = len(self.box_0)
-            if box_length != 3:
-                self.input_error = True
-                print_error_message = "ERROR: Please enter all 3 values and only 3 values for the box_0 dimensions."
-                raise ValueError(print_error_message)
-            for box_iter in self.box_0:
-                if isinstance(box_iter, str) or box_iter <= 0:
-                    self.input_error = True
-                    print_error_message = (
-                        "ERROR: Please enter float or integer values, which are all "
-                        "positive values for the box_0 dimensions."
-                    )
-                    raise ValueError(print_error_message)
-
-        if self.box_1 is not None:
-            box_length = len(self.box_1)
-            if box_length != 3:
-                self.input_error = True
-                print_error_message = "ERROR: Please enter all 3 values and only 3 values for the box_1 dimensions."
-                raise ValueError(print_error_message)
-            for box_iter in self.box_1:
-                if isinstance(box_iter, str) or box_iter <= 0:
-                    self.input_error = True
-                    print_error_message = (
-                        "ERROR: Please enter float or integer values, which are all "
-                        "positive values for the box_1 dimensions."
-                    )
-                    raise ValueError(print_error_message)
-
         print("******************************")
         print("")
 
@@ -1667,7 +1781,6 @@ class Charmm:
                 forcefield_selection=self.forcefield_selection,
                 residues=self.residues,
                 reorder_res_in_pdb_psf=self.reorder_res_in_pdb_psf,
-                box=self.box_0,
                 boxes_for_simulation=self.boxes_for_simulation,
             )
 
@@ -1684,7 +1797,6 @@ class Charmm:
                 forcefield_selection=self.forcefield_selection,
                 residues=self.residues,
                 reorder_res_in_pdb_psf=self.reorder_res_in_pdb_psf,
-                box=self.box_1,
                 boxes_for_simulation=self.boxes_for_simulation,
             )
 
@@ -1774,7 +1886,6 @@ class Charmm:
                 forcefield_selection=self.forcefield_selection,
                 residues=self.residues,
                 reorder_res_in_pdb_psf=self.reorder_res_in_pdb_psf,
-                box=self.box_0,
                 boxes_for_simulation=self.boxes_for_simulation,
             )
 
@@ -1902,25 +2013,50 @@ class Charmm:
             ]
         )
 
+        # normalize by sigma
         self.box_0 = Box(
             lengths=np.array(
-                [0.1 * val for val in self.structure_box_0_ff.box[0:3]]
+                [
+                    (0.1 * val) / self.sigma_conversion_factor
+                    for val in self.structure_box_0_ff.box[0:3]
+                ]
             ),
             angles=self.structure_box_0_ff.box[3:6],
         )
-        # Divide by conversion factor
-        self.box_0.maxs /= self.sigma_conversion_factor
+
+        # create box 0 vector list and convert from nm to Ang and round to 6 decimals.
+        # note mbuild standard lengths are in nm, so round to 6+1 = 7 then mutlipy by 10
+        box_0_lengths_ang = (
+            self.box_0.lengths[0] * 10,
+            self.box_0.lengths[1] * 10,
+            self.box_0.lengths[2] * 10,
+        )
+        self.box_0_vectors = _lengths_angles_to_vectors(
+            box_0_lengths_ang, self.box_0.angles, precision=6
+        )
 
         # Internally use nm
         if self.structure_box_1:
             self.box_1 = Box(
                 lengths=np.array(
-                    [0.1 * val for val in self.structure_box_1_ff.box[0:3]]
+                    [
+                        (0.1 * val) / self.sigma_conversion_factor
+                        for val in self.structure_box_1_ff.box[0:3]
+                    ]
                 ),
                 angles=self.structure_box_1_ff.box[3:6],
             )
-            # Divide by conversion factor
-            self.box_1.maxs /= self.sigma_conversion_factor
+
+            # create box 1 vector list and convert from nm to Ang and round to 6 decimals.
+            # note mbuild standard lengths are in nm, so round to 6+1 = 7 then mutlipy by 10
+            box_1_lengths_ang = (
+                self.box_1.lengths[0] * 10,
+                self.box_1.lengths[1] * 10,
+                self.box_1.lengths[2] * 10,
+            )
+            self.box_1_vectors = _lengths_angles_to_vectors(
+                box_1_lengths_ang, self.box_1.angles, precision=6
+            )
 
         # if self.structure_box_1 != None:
         if self.structure_box_1:
@@ -1944,6 +2080,7 @@ class Charmm:
         residues_all_list = [
             atom.residue.name for atom in self.structure_selection.atoms
         ]
+
         self.epsilon_dict = dict(
             [
                 (self.unique_types.index(atom_type), epsilon)
@@ -2031,15 +2168,30 @@ class Charmm:
             self.max_residue_no = 9999
             self.max_resname_char = 4
 
-            ff_name = []
+            res_no_chain_iter_corrected = []
             residue_id_list = []
+            residue_id_adder_fixed_struct_wo_bonds = (
+                0  # for example zeolite used as fixed atoms wo bonds
+            )
             for f, PSF_atom_iteration_0 in enumerate(
                 stuct_only_iteration.atoms
             ):
 
+                if f > 0:
+                    if (
+                        PSF_atom_iteration_0.residue.chain
+                        == previous_residue_chain
+                        and len(PSF_atom_iteration_0.bonds) == 0
+                    ):
+                        residue_id_adder_fixed_struct_wo_bonds += 1
+
+                previous_residue_chain = PSF_atom_iteration_0.residue.chain
+
                 residue_id_int = int(
                     unique_residue_data_dict[residue_data_list[f]]
+                    + residue_id_adder_fixed_struct_wo_bonds
                 )
+
                 res_id_adder = int(
                     (residue_id_int % self.max_residue_no) % self.max_residue_no
                 )
@@ -2048,7 +2200,7 @@ class Charmm:
                 else:
                     res_no_iteration_corrected = res_id_adder
 
-                ff_name.append(res_no_iteration_corrected)
+                res_no_chain_iter_corrected.append(res_no_iteration_corrected)
                 residue_id_list.append(residue_id_int)
 
             # This converts the atom name in the GOMC psf and pdb files to unique atom names
@@ -2120,8 +2272,8 @@ class Charmm:
         )
 
     def write_inp(self):
-        """ This write_inp function writes the Charmm style parameter (force field) file, which can be utilized
-         in the GOMC and NAMD engines. """
+        """This write_inp function writes the Charmm style parameter (force field) file, which can be utilized
+        in the GOMC and NAMD engines."""
         print("******************************")
         print("")
         print(
@@ -2423,7 +2575,7 @@ class Charmm:
 
                 data.write("\n* masses\n\n")
                 data.write(
-                    "! atom_types \tmass \t\t  atomTypeForceFieldName_ResidueName "
+                    "!atom_types \tmass \t\t  atomTypeForceFieldName_ResidueName "
                     + "(i.e., atoms_type_per_utilized_FF)  \n"
                 )
                 for atom_type, mass in self.mass_dict.items():
@@ -2458,9 +2610,20 @@ class Charmm:
                         )
                     for params, idx in unique_bond_types.items():
                         bond_format = "{}\t{}\t{}\t{}\t\t! {}\t{}\n"
-                        if (self.gomc_fix_bonds_angles is not None) and (
-                            (params[3] and params[4])
-                            in self.gomc_fix_bonds_angles
+                        if (
+                            (self.gomc_fix_bonds_angles is not None)
+                            and (
+                                (params[3] and params[4])
+                                in self.gomc_fix_bonds_angles
+                            )
+                        ) or (
+                            (
+                                (self.gomc_fix_bonds is not None)
+                                and (
+                                    (params[3] and params[4])
+                                    in self.gomc_fix_bonds
+                                )
+                            )
                         ):
                             fix_bond_k_value = "999999999999"
                             data.write(
@@ -2526,9 +2689,14 @@ class Charmm:
                     )
                     for params, idx in unique_angle_types.items():
 
-                        if (self.gomc_fix_bonds_angles is not None) and (
-                            (params[4] and params[5] and params[6])
+                        if (
+                            (self.gomc_fix_bonds_angles is not None)
+                            and ((params[4] and params[5] and params[6]))
                             in self.gomc_fix_bonds_angles
+                        ) or (
+                            (self.gomc_fix_angles is not None)
+                            and ((params[4] and params[5] and params[6]))
+                            in self.gomc_fix_angles
                         ):
                             fix_angle_k_value = "999999999999"
                             angle_format = (
@@ -2971,8 +3139,8 @@ class Charmm:
                             data.write(info_if_dihedral_error_too_large)
                             print(info_if_dihedral_error_too_large)
                         else:
-                            list_if_abs_max_values_for_dihedral_overall_max = max(
-                                list_if_abs_max_values_for_dihedral_overall
+                            list_if_abs_max_values_for_dihedral_overall_max = (
+                                max(list_if_abs_max_values_for_dihedral_overall)
                             )
                             info_if_dihedral_error_ok = (
                                 "! RB-torsion to CHARMM dihedral conversion error is OK "
@@ -3066,8 +3234,8 @@ class Charmm:
         # **********************************
 
     def write_psf(self):
-        """ This write_psf function writes the Charmm style PSF (topology) file, which can be utilized
-                 in the GOMC and NAMD engines. """
+        """This write_psf function writes the Charmm style PSF (topology) file, which can be utilized
+        in the GOMC and NAMD engines."""
         # **********************************
         # **********************************
         # psf writer (start)
@@ -3222,14 +3390,25 @@ class Charmm:
                     stuct_only_iteration.residues[m].name
                 )
 
-            ff_name = []
+            res_no_chain_iter_corrected = []
             residue_id_list = []
+            residue_id_adder_fixed_struct_wo_bonds = 0
             for f, PSF_atom_iteration_0 in enumerate(
                 stuct_only_iteration.atoms
             ):
+                if f > 0:
+                    if (
+                        PSF_atom_iteration_0.residue.chain
+                        == previous_residue_chain
+                        and len(PSF_atom_iteration_0.bonds) == 0
+                    ):
+                        residue_id_adder_fixed_struct_wo_bonds += 1
+
+                previous_residue_chain = PSF_atom_iteration_0.residue.chain
 
                 residue_id_int = int(
                     unique_residue_data_dict[residue_data_list[f]]
+                    + residue_id_adder_fixed_struct_wo_bonds
                 )
                 res_id_adder = int(
                     (residue_id_int % self.max_residue_no) % self.max_residue_no
@@ -3239,7 +3418,7 @@ class Charmm:
                 else:
                     res_no_iteration_corrected = res_id_adder
 
-                ff_name.append(res_no_iteration_corrected)
+                res_no_chain_iter_corrected.append(res_no_iteration_corrected)
                 residue_id_list.append(residue_id_int)
 
             output_write = genopen(output, "w")
@@ -3317,7 +3496,7 @@ class Charmm:
                 atom_lines_iteration = psf_formating % (
                     i_atom + 1,
                     segment_id,
-                    ff_name[i_atom],
+                    res_no_chain_iter_corrected[i_atom],
                     str(residue_names_list[i_atom])[: self.max_resname_char],
                     individual_atom_names_list[i_atom],
                     atom_type_iter,
@@ -3382,7 +3561,12 @@ class Charmm:
                 first_indent % no_dihedrals + " !NPHI: dihedrals\n"
             )
             for i_dihedral, dihedral_iter in enumerate(dihedrals_list):
-                dihedral_atom_1, dihedral_atom_2, dihedral_atom_3, dihedral_atom_4 = (
+                (
+                    dihedral_atom_1,
+                    dihedral_atom_2,
+                    dihedral_atom_3,
+                    dihedral_atom_4,
+                ) = (
                     dihedral_iter.atom1,
                     dihedral_iter.atom2,
                     dihedral_iter.atom3,
@@ -3415,7 +3599,12 @@ class Charmm:
                 first_indent % no_impropers + " !NIMPHI: impropers\n"
             )
             for i_improper, improper_iter in enumerate(impropers_list):
-                improper_atom_1, improper_atom_2, improper_atom_3, improper_atom_4 = (
+                (
+                    improper_atom_1,
+                    improper_atom_2,
+                    improper_atom_3,
+                    improper_atom_4,
+                ) = (
                     improper_iter.atom1,
                     improper_iter.atom2,
                     improper_iter.atom3,
@@ -3554,8 +3743,8 @@ class Charmm:
         # **********************************
 
     def write_pdb(self):
-        """ This write_psf function writes the Charmm style PDB (coordinate file), which can be utilized
-                         in the GOMC and NAMD engines. """
+        """This write_psf function writes the Charmm style PDB (coordinate file), which can be utilized
+        in the GOMC and NAMD engines."""
         # **********************************
         # **********************************
         # pdb writer (start)
@@ -3698,12 +3887,24 @@ class Charmm:
             locked_occupany_factor = 1.00
             max_no_atoms_in_base10 = 99999  # 99,999 for atoms in psf/pdb
 
-            ff_name = []
+            res_no_chain_iter_corrected = []
             res_chain_iteration_corrected_list = []
             residue_id_list = []
+            residue_id_adder_fixed_struct_wo_bonds = (
+                0  # for example zeolite used as fixed atoms wo bonds
+            )
             for i, atom_iter in enumerate(stuct_only_iteration.atoms):
+                if i > 0:
+                    if (
+                        atom_iter.residue.chain == previous_residue_chain
+                        and len(atom_iter.bonds) == 0
+                    ):
+                        residue_id_adder_fixed_struct_wo_bonds += 1
+
+                previous_residue_chain = atom_iter.residue.chain
                 residue_id_int = int(
                     unique_residue_data_dict[residue_data_list[i]]
+                    + residue_id_adder_fixed_struct_wo_bonds
                 )
                 res_chain_iteration_corrected_list.append(
                     base10_to_base26_alph(
@@ -3714,9 +3915,9 @@ class Charmm:
                     (residue_id_int % self.max_residue_no) % self.max_residue_no
                 )
                 if int(res_id_adder) == 0:
-                    ff_name.append(int(self.max_residue_no))
+                    res_no_chain_iter_corrected.append(int(self.max_residue_no))
                 else:
-                    ff_name.append(res_id_adder)
+                    res_no_chain_iter_corrected.append(res_id_adder)
 
                 residue_id_list.append(residue_id_int)
 
@@ -3786,7 +3987,7 @@ class Charmm:
                             atom_alternate_location_list[v],
                             str(residue_names_list[v])[: self.max_resname_char],
                             res_chain_iteration_corrected_list[v],
-                            ff_name[v],
+                            res_no_chain_iter_corrected[v],
                             residue_code_insertion_list[v],
                             x_list[v],
                             y_list[v],

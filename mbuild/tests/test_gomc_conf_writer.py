@@ -3,13 +3,16 @@ import pytest
 import mbuild as mb
 import mbuild.formats.gomc_conf_writer as gomc_control
 from mbuild.formats.charmm_writer import Charmm
+from mbuild.lattice import load_cif
 from mbuild.tests.base_test import BaseTest
-from mbuild.utils.io import has_foyer
+from mbuild.utils.io import get_fn, has_foyer
 
 
 @pytest.mark.skipif(not has_foyer, reason="Foyer package not installed")
 class TestGOMCControlFileWriter(BaseTest):
-    def test_dict_keys_to_list(self,):
+    def test_dict_keys_to_list(
+        self,
+    ):
         dict = {"a": "1", "b": "2", "c": "3"}
         keys = gomc_control.dict_keys_to_list(dict)
 
@@ -345,286 +348,411 @@ class TestGOMCControlFileWriter(BaseTest):
         assert test_status == "PASSED"
 
     def test_save_basic_NVT(self, ethane_gomc):
+        test_box_ethane_gomc = mb.fill_box(
+            compound=[ethane_gomc], n_compounds=[1], box=[1, 1, 1]
+        )
         charmm = Charmm(
-            ethane_gomc,
+            test_box_ethane_gomc,
             "ethane",
             ff_filename="ethane",
             residues=[ethane_gomc.name],
             forcefield_selection="oplsaa",
-            box_0=[1, 1, 1],
         )
         gomc_control.write_gomc_control_file(
             charmm, "test_save_basic_NVT.conf", "NVT", 10, 300
         )
 
         with open("test_save_basic_NVT.conf", "r") as fp:
+            variables_read_dict = {
+                "Restart": False,
+                "PRNG": False,
+                "ParaTypeCHARMM": False,
+                "Parameters": False,
+                "Coordinates": False,
+                "Structure": False,
+                "Temperature": False,
+                "Potential": False,
+                "LRC": False,
+                "Rcut": False,
+                "RcutLow": False,
+                "VDWGeometricSigma": False,
+                "Exclude": False,
+                "Ewald": False,
+                "ElectroStatic": False,
+                "CachedFourier": False,
+                "Tolerance": False,
+                "1-4scaling": False,
+                "PressureCalc": False,
+                "RunSteps": False,
+                "EqSteps": False,
+                "AdjSteps": False,
+                "DisFreq": False,
+                "RotFreq": False,
+                "IntraSwapFreq": False,
+                "SwapFreq": False,
+                "RegrowthFreq": False,
+                "CrankShaftFreq": False,
+                "VolFreq": False,
+                "MultiParticleFreq": False,
+                "IntraMEMC-1Freq": False,
+                "MEMC-1Freq": False,
+                "IntraMEMC-2Freq": False,
+                "MEMC-2Freq": False,
+                "IntraMEMC-3Freq": False,
+                "MEMC-3Freq": False,
+                "CellBasisVector1": False,
+                "CellBasisVector2": False,
+                "CellBasisVector3": False,
+                "CBMC_First": False,
+                "CBMC_Nth": False,
+                "CBMC_Ang": False,
+                "CBMC_Dih": False,
+                "OutputName": False,
+                "RestartFreq": False,
+                "CheckpointFreq": False,
+                "CoordinatesFreq": False,
+                "ConsoleFreq": False,
+                "BlockAverageFreq": False,
+                "HistogramFreq": False,
+                "DistName": False,
+                "HistName": False,
+                "RunNumber": False,
+                "RunLetter": False,
+                "SampleFreq": False,
+                "OutEnergy": False,
+                "OutPressure": False,
+                "OutMolNumber": False,
+                "OutDensity": False,
+                "OutVolume": False,
+                "OutSurfaceTension": False,
+            }
             out_gomc = fp.readlines()
             for i, line in enumerate(out_gomc):
                 if line.startswith("Restart "):
+                    variables_read_dict["Restart"] = True
                     split_line = line.split()
                     assert split_line[1] == "False"
 
                 elif line.startswith("PRNG "):
+                    variables_read_dict["PRNG"] = True
                     split_line = line.split()
                     assert split_line[1] == "RANDOM"
 
                 elif line.startswith("ParaTypeCHARMM "):
+                    variables_read_dict["ParaTypeCHARMM"] = True
                     split_line = line.split()
                     assert split_line[1] == "True"
 
                 elif line.startswith("Parameters "):
+                    variables_read_dict["Parameters"] = True
                     split_line = line.split()
                     assert split_line[1] == "ethane.inp"
 
                 elif line.startswith("Coordinates "):
+                    variables_read_dict["Coordinates"] = True
                     split_line = line.split()
                     assert split_line[1] == "0"
                     assert split_line[2] == "ethane.pdb"
 
                 elif line.startswith("Structure "):
+                    variables_read_dict["Structure"] = True
                     split_line = line.split()
                     assert split_line[1] == "0"
                     assert split_line[2] == "ethane.psf"
 
                 elif line.startswith("Temperature "):
+                    variables_read_dict["Temperature"] = True
                     split_line = line.split()
                     assert split_line[1] == "300"
 
                 elif line.startswith("Potential "):
+                    variables_read_dict["Potential"] = True
                     split_line = line.split()
                     assert split_line[1] == "VDW"
 
                 elif line.startswith("LRC "):
+                    variables_read_dict["LRC"] = True
                     split_line = line.split()
                     assert split_line[1] == "True"
 
                 elif line.startswith("Rcut "):
+                    variables_read_dict["Rcut"] = True
                     split_line = line.split()
                     assert split_line[1] == "10"
 
                 elif line.startswith("RcutLow "):
+                    variables_read_dict["RcutLow"] = True
                     split_line = line.split()
                     assert split_line[1] == "1"
 
                 elif line.startswith("VDWGeometricSigma "):
+                    variables_read_dict["VDWGeometricSigma"] = True
                     split_line = line.split()
                     assert split_line[1] == "False"
 
                 elif line.startswith("Exclude "):
+                    variables_read_dict["Exclude"] = True
                     split_line = line.split()
                     assert split_line[1] == "1-3"
 
                 elif line.startswith("Ewald "):
+                    variables_read_dict["Ewald"] = True
                     split_line = line.split()
                     assert split_line[1] == "True"
 
                 elif line.startswith("ElectroStatic "):
+                    variables_read_dict["ElectroStatic"] = True
                     split_line = line.split()
                     assert split_line[1] == "True"
 
                 elif line.startswith("CachedFourier "):
+                    variables_read_dict["CachedFourier"] = True
                     split_line = line.split()
                     assert split_line[1] == "False"
 
                 elif line.startswith("Tolerance "):
+                    variables_read_dict["Tolerance"] = True
                     split_line = line.split()
-                    assert split_line[1] == "0.000010000000"
+                    assert split_line[1] == "1e-05"
 
                 elif line.startswith("1-4scaling "):
+                    variables_read_dict["1-4scaling"] = True
                     split_line = line.split()
                     assert split_line[1] == "0.5"
 
                 elif line.startswith("PressureCalc "):
+                    variables_read_dict["PressureCalc"] = True
                     split_line = line.split()
                     assert split_line[1] == "True"
                     assert split_line[2] == "1"
 
                 elif line.startswith("RunSteps "):
+                    variables_read_dict["RunSteps"] = True
                     split_line = line.split()
                     assert split_line[1] == "10"
 
                 elif line.startswith("EqSteps "):
+                    variables_read_dict["EqSteps"] = True
                     split_line = line.split()
                     assert split_line[1] == "1"
 
                 elif line.startswith("AdjSteps "):
+                    variables_read_dict["AdjSteps"] = True
                     split_line = line.split()
                     assert split_line[1] == "1"
 
                 elif line.startswith("DisFreq "):
+                    variables_read_dict["DisFreq"] = True
                     split_line = line.split()
                     assert split_line[1] == "0.15"
 
                 elif line.startswith("RotFreq "):
+                    variables_read_dict["RotFreq"] = True
                     split_line = line.split()
                     assert split_line[1] == "0.15"
 
                 elif line.startswith("IntraSwapFreq "):
+                    variables_read_dict["IntraSwapFreq"] = True
                     split_line = line.split()
                     assert split_line[1] == "0.3"
 
                 elif line.startswith("SwapFreq "):
+                    variables_read_dict["SwapFreq"] = True
                     split_line = line.split()
                     assert split_line[1] == "0.0"
 
                 elif line.startswith("RegrowthFreq "):
+                    variables_read_dict["RegrowthFreq"] = True
                     split_line = line.split()
                     assert split_line[1] == "0.3"
 
                 elif line.startswith("CrankShaftFreq "):
+                    variables_read_dict["CrankShaftFreq"] = True
                     split_line = line.split()
                     assert split_line[1] == "0.1"
 
                 elif line.startswith("VolFreq "):
+                    variables_read_dict["VolFreq"] = True
                     split_line = line.split()
                     assert split_line[1] == "0.0"
 
                 elif line.startswith("MultiParticleFreq "):
+                    variables_read_dict["MultiParticleFreq"] = True
                     split_line = line.split()
                     assert split_line[1] == "0.0"
 
                 elif line.startswith("IntraMEMC-1Freq "):
+                    variables_read_dict["IntraMEMC-1Freq"] = True
                     split_line = line.split()
                     assert split_line[1] == "0.0"
 
                 elif line.startswith("MEMC-1Freq "):
+                    variables_read_dict["MEMC-1Freq"] = True
                     split_line = line.split()
                     assert split_line[1] == "0.0"
 
                 elif line.startswith("IntraMEMC-2Freq "):
+                    variables_read_dict["IntraMEMC-2Freq"] = True
                     split_line = line.split()
                     assert split_line[1] == "0.0"
 
                 elif line.startswith("MEMC-2Freq "):
+                    variables_read_dict["MEMC-2Freq"] = True
                     split_line = line.split()
                     assert split_line[1] == "0.0"
 
                 elif line.startswith("IntraMEMC-3Freq "):
+                    variables_read_dict["IntraMEMC-3Freq"] = True
                     split_line = line.split()
                     assert split_line[1] == "0.0"
 
                 elif line.startswith("MEMC-3Freq "):
+                    variables_read_dict["MEMC-3Freq"] = True
                     split_line = line.split()
                     assert split_line[1] == "0.0"
 
                 elif line.startswith("CellBasisVector1 "):
+                    variables_read_dict["CellBasisVector1"] = True
                     split_line = line.split()
                     assert split_line[1] == "0"
-                    print("split_line[2] = " + str(split_line[2]))
                     assert split_line[2] == "10.0"
-                    assert split_line[3] == "0.00"
-                    assert split_line[4] == "0.00"
+                    assert split_line[3] == "0.0"
+                    assert split_line[4] == "0.0"
 
                 elif line.startswith("CellBasisVector2 "):
+                    variables_read_dict["CellBasisVector2"] = True
                     split_line = line.split()
                     assert split_line[1] == "0"
-                    assert split_line[2] == "0.00"
+                    assert split_line[2] == "0.0"
                     assert split_line[3] == "10.0"
-                    assert split_line[4] == "0.00"
+                    assert split_line[4] == "0.0"
 
                 elif line.startswith("CellBasisVector3 "):
+                    variables_read_dict["CellBasisVector3"] = True
                     split_line = line.split()
                     assert split_line[1] == "0"
-                    assert split_line[2] == "0.00"
-                    assert split_line[3] == "0.00"
+                    assert split_line[2] == "0.0"
+                    assert split_line[3] == "0.0"
                     assert split_line[4] == "10.0"
 
                 elif line.startswith("CBMC_First "):
+                    variables_read_dict["CBMC_First"] = True
                     split_line = line.split()
                     assert split_line[1] == "12"
 
                 elif line.startswith("CBMC_Nth"):
+                    variables_read_dict["CBMC_Nth"] = True
                     split_line = line.split()
                     assert split_line[1] == "10"
 
                 elif line.startswith("CBMC_Ang "):
+                    variables_read_dict["CBMC_Ang"] = True
                     split_line = line.split()
                     assert split_line[1] == "50"
 
                 elif line.startswith("CBMC_Dih "):
+                    variables_read_dict["CBMC_Dih"] = True
                     split_line = line.split()
                     assert split_line[1] == "50"
 
                 elif line.startswith("OutputName "):
+                    variables_read_dict["OutputName"] = True
                     split_line = line.split()
                     assert split_line[1] == "Output_data"
 
                 elif line.startswith("RestartFreq "):
+                    variables_read_dict["RestartFreq"] = True
                     split_line = line.split()
                     assert split_line[1] == "True"
                     assert split_line[2] == "1"
 
                 elif line.startswith("CheckpointFreq "):
+                    variables_read_dict["CheckpointFreq"] = True
                     split_line = line.split()
                     assert split_line[1] == "True"
                     assert split_line[2] == "1"
 
                 elif line.startswith("CoordinatesFreq "):
+                    variables_read_dict["CoordinatesFreq"] = True
                     split_line = line.split()
                     assert split_line[1] == "True"
                     assert split_line[2] == "1"
 
                 elif line.startswith("ConsoleFreq "):
+                    variables_read_dict["ConsoleFreq"] = True
                     split_line = line.split()
                     assert split_line[1] == "True"
                     assert split_line[2] == "1"
 
                 elif line.startswith("BlockAverageFreq "):
+                    variables_read_dict["BlockAverageFreq"] = True
                     split_line = line.split()
                     assert split_line[1] == "True"
                     assert split_line[2] == "1"
 
                 elif line.startswith("HistogramFreq "):
+                    variables_read_dict["HistogramFreq"] = True
                     split_line = line.split()
                     assert split_line[1] == "True"
                     assert split_line[2] == "1"
 
                 elif line.startswith("DistName "):
+                    variables_read_dict["DistName"] = True
                     split_line = line.split()
                     assert split_line[1] == "dis"
 
                 elif line.startswith("HistName "):
+                    variables_read_dict["HistName"] = True
                     split_line = line.split()
                     assert split_line[1] == "his"
 
                 elif line.startswith("RunNumber "):
+                    variables_read_dict["RunNumber"] = True
                     split_line = line.split()
                     assert split_line[1] == "1"
 
                 elif line.startswith("RunLetter "):
+                    variables_read_dict["RunLetter"] = True
                     split_line = line.split()
                     assert split_line[1] == "a"
 
                 elif line.startswith("SampleFreq "):
+                    variables_read_dict["SampleFreq"] = True
                     split_line = line.split()
                     assert split_line[1] == "1"
 
                 elif line.startswith("OutEnergy "):
+                    variables_read_dict["OutEnergy"] = True
                     split_line = line.split()
                     assert split_line[1] == "True"
                     assert split_line[2] == "True"
 
                 elif line.startswith("OutPressure "):
+                    variables_read_dict["OutPressure"] = True
                     split_line = line.split()
                     assert split_line[1] == "True"
                     assert split_line[2] == "True"
 
                 elif line.startswith("OutMolNumber "):
+                    variables_read_dict["OutMolNumber"] = True
                     split_line = line.split()
                     assert split_line[1] == "True"
                     assert split_line[2] == "True"
 
                 elif line.startswith("OutDensity "):
+                    variables_read_dict["OutDensity"] = True
                     split_line = line.split()
                     assert split_line[1] == "True"
                     assert split_line[2] == "True"
 
                 elif line.startswith("OutVolume "):
+                    variables_read_dict["OutVolume"] = True
                     split_line = line.split()
                     assert split_line[1] == "True"
                     assert split_line[2] == "True"
 
                 elif line.startswith("OutSurfaceTension "):
+                    variables_read_dict["OutSurfaceTension"] = True
                     split_line = line.split()
                     assert split_line[1] == "False"
                     assert split_line[2] == "False"
@@ -632,180 +760,348 @@ class TestGOMCControlFileWriter(BaseTest):
                 else:
                     pass
 
+        assert variables_read_dict == {
+            "Restart": True,
+            "PRNG": True,
+            "ParaTypeCHARMM": True,
+            "Parameters": True,
+            "Coordinates": True,
+            "Structure": True,
+            "Temperature": True,
+            "Potential": True,
+            "LRC": True,
+            "Rcut": True,
+            "RcutLow": True,
+            "VDWGeometricSigma": True,
+            "Exclude": True,
+            "Ewald": True,
+            "ElectroStatic": True,
+            "CachedFourier": True,
+            "Tolerance": True,
+            "1-4scaling": True,
+            "PressureCalc": True,
+            "RunSteps": True,
+            "EqSteps": True,
+            "AdjSteps": True,
+            "DisFreq": True,
+            "RotFreq": True,
+            "IntraSwapFreq": True,
+            "SwapFreq": True,
+            "RegrowthFreq": True,
+            "CrankShaftFreq": True,
+            "VolFreq": True,
+            "MultiParticleFreq": True,
+            "IntraMEMC-1Freq": True,
+            "MEMC-1Freq": True,
+            "IntraMEMC-2Freq": True,
+            "MEMC-2Freq": True,
+            "IntraMEMC-3Freq": True,
+            "MEMC-3Freq": True,
+            "CellBasisVector1": True,
+            "CellBasisVector2": True,
+            "CellBasisVector3": True,
+            "CBMC_First": True,
+            "CBMC_Nth": True,
+            "CBMC_Ang": True,
+            "CBMC_Dih": True,
+            "OutputName": True,
+            "RestartFreq": True,
+            "CheckpointFreq": True,
+            "CoordinatesFreq": True,
+            "ConsoleFreq": True,
+            "BlockAverageFreq": True,
+            "HistogramFreq": True,
+            "DistName": True,
+            "HistName": True,
+            "RunNumber": True,
+            "RunLetter": True,
+            "SampleFreq": True,
+            "OutEnergy": True,
+            "OutPressure": True,
+            "OutMolNumber": True,
+            "OutDensity": True,
+            "OutVolume": True,
+            "OutSurfaceTension": True,
+        }
+
     def test_save_basic_NPT(self, ethane_gomc):
+        test_box_ethane_gomc = mb.fill_box(
+            compound=[ethane_gomc], n_compounds=[1], box=[2, 2, 2]
+        )
         charmm = Charmm(
-            ethane_gomc,
+            test_box_ethane_gomc,
             "ethane",
             ff_filename="ethane",
             residues=[ethane_gomc.name],
             forcefield_selection="oplsaa",
-            box_0=[2, 2, 2],
         )
         gomc_control.write_gomc_control_file(
             charmm, "test_save_basic_NPT.conf", "NPT", 1000, 500
         )
 
         with open("test_save_basic_NPT.conf", "r") as fp:
+            variables_read_dict = {
+                "Pressure": False,
+                "Temperature": False,
+                "PressureCalc": False,
+                "RunSteps": False,
+                "EqSteps": False,
+                "AdjSteps": False,
+                "DisFreq": False,
+                "RotFreq": False,
+                "IntraSwapFreq": False,
+                "SwapFreq": False,
+                "RegrowthFreq": False,
+                "CrankShaftFreq": False,
+                "VolFreq": False,
+                "MultiParticleFreq": False,
+                "IntraMEMC-1Freq": False,
+                "MEMC-1Freq": False,
+                "IntraMEMC-2Freq": False,
+                "MEMC-2Freq": False,
+                "IntraMEMC-3Freq": False,
+                "MEMC-3Freq": False,
+                "CellBasisVector1": False,
+                "CellBasisVector2": False,
+                "CellBasisVector3": False,
+                "RestartFreq": False,
+                "CheckpointFreq": False,
+                "CoordinatesFreq": False,
+                "ConsoleFreq": False,
+                "BlockAverageFreq": False,
+                "HistogramFreq": False,
+                "SampleFreq": False,
+                "VDWGeometricSigma": False,
+                "useConstantArea": False,
+            }
             out_gomc = fp.readlines()
             for i, line in enumerate(out_gomc):
                 if line.startswith("Pressure "):
+                    variables_read_dict["Pressure"] = True
                     split_line = line.split()
                     assert split_line[1] == "1.01325"
 
                 elif line.startswith("Temperature "):
+                    variables_read_dict["Temperature"] = True
                     split_line = line.split()
                     assert split_line[1] == "500"
 
                 elif line.startswith("PressureCalc "):
+                    variables_read_dict["PressureCalc"] = True
                     split_line = line.split()
                     assert split_line[1] == "True"
                     assert split_line[2] == "100"
 
                 elif line.startswith("RunSteps "):
+                    variables_read_dict["RunSteps"] = True
                     split_line = line.split()
                     assert split_line[1] == "1000"
 
                 elif line.startswith("EqSteps "):
+                    variables_read_dict["EqSteps"] = True
                     split_line = line.split()
                     assert split_line[1] == "100"
 
                 elif line.startswith("AdjSteps "):
+                    variables_read_dict["AdjSteps"] = True
                     split_line = line.split()
                     assert split_line[1] == "100"
 
                 elif line.startswith("DisFreq "):
+                    variables_read_dict["DisFreq"] = True
                     split_line = line.split()
                     assert split_line[1] == "0.15"
 
                 elif line.startswith("RotFreq "):
+                    variables_read_dict["RotFreq"] = True
                     split_line = line.split()
                     assert split_line[1] == "0.15"
 
                 elif line.startswith("IntraSwapFreq "):
+                    variables_read_dict["IntraSwapFreq"] = True
                     split_line = line.split()
                     assert split_line[1] == "0.29"
 
                 elif line.startswith("SwapFreq "):
+                    variables_read_dict["SwapFreq"] = True
                     split_line = line.split()
                     assert split_line[1] == "0.0"
 
                 elif line.startswith("RegrowthFreq "):
+                    variables_read_dict["RegrowthFreq"] = True
                     split_line = line.split()
                     assert split_line[1] == "0.3"
 
                 elif line.startswith("CrankShaftFreq "):
+                    variables_read_dict["CrankShaftFreq"] = True
                     split_line = line.split()
                     assert split_line[1] == "0.1"
 
                 elif line.startswith("VolFreq "):
+                    variables_read_dict["VolFreq"] = True
                     split_line = line.split()
                     assert split_line[1] == "0.01"
 
                 elif line.startswith("MultiParticleFreq "):
+                    variables_read_dict["MultiParticleFreq"] = True
                     split_line = line.split()
                     assert split_line[1] == "0.0"
 
                 elif line.startswith("IntraMEMC-1Freq "):
+                    variables_read_dict["IntraMEMC-1Freq"] = True
                     split_line = line.split()
                     assert split_line[1] == "0.0"
 
                 elif line.startswith("MEMC-1Freq "):
+                    variables_read_dict["MEMC-1Freq"] = True
                     split_line = line.split()
                     assert split_line[1] == "0.0"
 
                 elif line.startswith("IntraMEMC-2Freq "):
+                    variables_read_dict["IntraMEMC-2Freq"] = True
                     split_line = line.split()
                     assert split_line[1] == "0.0"
 
                 elif line.startswith("MEMC-2Freq "):
+                    variables_read_dict["MEMC-2Freq"] = True
                     split_line = line.split()
                     assert split_line[1] == "0.0"
 
                 elif line.startswith("IntraMEMC-3Freq "):
+                    variables_read_dict["IntraMEMC-3Freq"] = True
                     split_line = line.split()
                     assert split_line[1] == "0.0"
 
                 elif line.startswith("MEMC-3Freq "):
+                    variables_read_dict["MEMC-3Freq"] = True
                     split_line = line.split()
                     assert split_line[1] == "0.0"
 
                 elif line.startswith("CellBasisVector1 "):
+                    variables_read_dict["CellBasisVector1"] = True
                     split_line = line.split()
                     assert split_line[1] == "0"
                     assert split_line[2] == "20.0"
-                    assert split_line[3] == "0.00"
-                    assert split_line[4] == "0.00"
+                    assert split_line[3] == "0.0"
+                    assert split_line[4] == "0.0"
 
                 elif line.startswith("CellBasisVector2 "):
+                    variables_read_dict["CellBasisVector2"] = True
                     split_line = line.split()
                     assert split_line[1] == "0"
-                    assert split_line[2] == "0.00"
+                    assert split_line[2] == "0.0"
                     assert split_line[3] == "20.0"
-                    assert split_line[4] == "0.00"
+                    assert split_line[4] == "0.0"
 
                 elif line.startswith("CellBasisVector3 "):
+                    variables_read_dict["CellBasisVector3"] = True
                     split_line = line.split()
                     assert split_line[1] == "0"
-                    assert split_line[2] == "0.00"
-                    assert split_line[3] == "0.00"
+                    assert split_line[2] == "0.0"
+                    assert split_line[3] == "0.0"
                     assert split_line[4] == "20.0"
 
                 elif line.startswith("RestartFreq "):
+                    variables_read_dict["RestartFreq"] = True
                     split_line = line.split()
                     assert split_line[1] == "True"
                     assert split_line[2] == "100"
 
                 elif line.startswith("CheckpointFreq "):
+                    variables_read_dict["CheckpointFreq"] = True
                     split_line = line.split()
                     assert split_line[1] == "True"
                     assert split_line[2] == "100"
 
                 elif line.startswith("CoordinatesFreq "):
+                    variables_read_dict["CoordinatesFreq"] = True
                     split_line = line.split()
                     assert split_line[1] == "True"
                     assert split_line[2] == "100"
 
                 elif line.startswith("ConsoleFreq "):
+                    variables_read_dict["ConsoleFreq"] = True
                     split_line = line.split()
                     assert split_line[1] == "True"
                     assert split_line[2] == "100"
 
                 elif line.startswith("BlockAverageFreq "):
+                    variables_read_dict["BlockAverageFreq"] = True
                     split_line = line.split()
                     assert split_line[1] == "True"
                     assert split_line[2] == "100"
 
                 elif line.startswith("HistogramFreq "):
+                    variables_read_dict["HistogramFreq"] = True
                     split_line = line.split()
                     assert split_line[1] == "True"
                     assert split_line[2] == "100"
 
                 elif line.startswith("SampleFreq "):
+                    variables_read_dict["SampleFreq"] = True
                     split_line = line.split()
                     assert split_line[1] == "100"
 
                 elif line.startswith("VDWGeometricSigma "):
+                    variables_read_dict["VDWGeometricSigma"] = True
                     split_line = line.split()
                     assert split_line[1] == "False"
 
                 elif line.startswith("useConstantArea "):
+                    variables_read_dict["useConstantArea"] = True
                     split_line = line.split()
                     assert split_line[1] == "False"
 
                 else:
                     pass
 
+        assert variables_read_dict == {
+            "Pressure": True,
+            "Temperature": True,
+            "PressureCalc": True,
+            "RunSteps": True,
+            "EqSteps": True,
+            "AdjSteps": True,
+            "DisFreq": True,
+            "RotFreq": True,
+            "IntraSwapFreq": True,
+            "SwapFreq": True,
+            "RegrowthFreq": True,
+            "CrankShaftFreq": True,
+            "VolFreq": True,
+            "MultiParticleFreq": True,
+            "IntraMEMC-1Freq": True,
+            "MEMC-1Freq": True,
+            "IntraMEMC-2Freq": True,
+            "MEMC-2Freq": True,
+            "IntraMEMC-3Freq": True,
+            "MEMC-3Freq": True,
+            "CellBasisVector1": True,
+            "CellBasisVector2": True,
+            "CellBasisVector3": True,
+            "RestartFreq": True,
+            "CheckpointFreq": True,
+            "CoordinatesFreq": True,
+            "ConsoleFreq": True,
+            "BlockAverageFreq": True,
+            "HistogramFreq": True,
+            "SampleFreq": True,
+            "VDWGeometricSigma": True,
+            "useConstantArea": True,
+        }
+
     def test_save_basic_GCMC(self, ethane_gomc):
+        test_box_ethane_gomc = mb.fill_box(
+            compound=[ethane_gomc], n_compounds=[1], box=[2, 2, 2]
+        )
         charmm = Charmm(
-            ethane_gomc,
+            test_box_ethane_gomc,
             "ethane_box_0",
-            structure_box_1=ethane_gomc,
+            structure_box_1=test_box_ethane_gomc,
             filename_box_1="ethane_box_1",
             ff_filename="ethane_FF",
             residues=[ethane_gomc.name],
             forcefield_selection="oplsaa",
-            box_0=[2, 2, 2],
-            box_1=[2, 2, 2],
         )
         gomc_control.write_gomc_control_file(
             charmm,
@@ -820,286 +1116,457 @@ class TestGOMCControlFileWriter(BaseTest):
         )
 
         with open("test_save_basic_GCMC.conf", "r") as fp:
+            variables_read_dict = {
+                "Parameters": False,
+                "Coordinates 0": False,
+                "Coordinates 1": False,
+                "Structure 0": False,
+                "Structure 1": False,
+                "Temperature": False,
+                "ChemPot": False,
+                "PressureCalc": False,
+                "RunSteps": False,
+                "EqSteps": False,
+                "AdjSteps": False,
+                "DisFreq": False,
+                "RotFreq": False,
+                "IntraSwapFreq": False,
+                "SwapFreq": False,
+                "RegrowthFreq": False,
+                "CrankShaftFreq": False,
+                "VolFreq": False,
+                "MultiParticleFreq": False,
+                "IntraMEMC-1Freq": False,
+                "MEMC-1Freq": False,
+                "IntraMEMC-2Freq": False,
+                "MEMC-2Freq": False,
+                "IntraMEMC-3Freq": False,
+                "MEMC-3Freq": False,
+                "CellBasisVector1 0": False,
+                "CellBasisVector2 0": False,
+                "CellBasisVector3 0": False,
+                "CellBasisVector1 1": False,
+                "CellBasisVector2 1": False,
+                "CellBasisVector3 1": False,
+                "RestartFreq": False,
+                "CheckpointFreq": False,
+                "CoordinatesFreq": False,
+                "ConsoleFreq": False,
+                "BlockAverageFreq": False,
+                "HistogramFreq": False,
+                "SampleFreq": False,
+                "VDWGeometricSigma": False,
+            }
             out_gomc = fp.readlines()
             for i, line in enumerate(out_gomc):
                 if line.startswith("Parameters "):
+                    variables_read_dict["Parameters"] = True
                     split_line = line.split()
                     assert split_line[1] == "ethane_FF.inp"
 
                 elif line.startswith("Coordinates 0"):
+                    variables_read_dict["Coordinates 0"] = True
                     split_line = line.split()
                     assert split_line[1] == "0"
                     assert split_line[2] == "ethane_box_0.pdb"
 
                 elif line.startswith("Coordinates 1"):
+                    variables_read_dict["Coordinates 1"] = True
                     split_line = line.split()
                     assert split_line[1] == "1"
                     assert split_line[2] == "ethane_box_1.pdb"
 
                 elif line.startswith("Structure 0"):
+                    variables_read_dict["Structure 0"] = True
                     split_line = line.split()
                     assert split_line[1] == "0"
                     assert split_line[2] == "ethane_box_0.psf"
 
                 elif line.startswith("Structure 1"):
+                    variables_read_dict["Structure 1"] = True
                     split_line = line.split()
                     assert split_line[1] == "1"
                     assert split_line[2] == "ethane_box_1.psf"
 
                 elif line.startswith("Temperature "):
+                    variables_read_dict["Temperature"] = True
                     split_line = line.split()
                     assert split_line[1] == "500"
 
                 elif line.startswith("ChemPot "):
+                    variables_read_dict["ChemPot"] = True
                     split_line = line.split()
                     assert split_line[1] == "ETH"
                     assert split_line[2] == "-4000"
 
                 elif line.startswith("PressureCalc "):
+                    variables_read_dict["PressureCalc"] = True
                     split_line = line.split()
                     assert split_line[1] == "True"
                     assert split_line[2] == "10000"
 
                 elif line.startswith("RunSteps "):
+                    variables_read_dict["RunSteps"] = True
                     split_line = line.split()
                     assert split_line[1] == "100000"
 
                 elif line.startswith("EqSteps "):
+                    variables_read_dict["EqSteps"] = True
                     split_line = line.split()
                     assert split_line[1] == "10000"
 
                 elif line.startswith("AdjSteps "):
+                    variables_read_dict["AdjSteps"] = True
                     split_line = line.split()
                     assert split_line[1] == "1000"
 
                 elif line.startswith("DisFreq "):
+                    variables_read_dict["DisFreq"] = True
                     split_line = line.split()
                     assert split_line[1] == "0.15"
 
                 elif line.startswith("RotFreq "):
+                    variables_read_dict["RotFreq"] = True
                     split_line = line.split()
                     assert split_line[1] == "0.15"
 
                 elif line.startswith("IntraSwapFreq "):
+                    variables_read_dict["IntraSwapFreq"] = True
                     split_line = line.split()
                     assert split_line[1] == "0.1"
 
                 elif line.startswith("SwapFreq "):
+                    variables_read_dict["SwapFreq"] = True
                     split_line = line.split()
                     assert split_line[1] == "0.35"
 
                 elif line.startswith("RegrowthFreq "):
+                    variables_read_dict["RegrowthFreq"] = True
                     split_line = line.split()
                     assert split_line[1] == "0.15"
 
                 elif line.startswith("CrankShaftFreq "):
+                    variables_read_dict["CrankShaftFreq"] = True
                     split_line = line.split()
                     assert split_line[1] == "0.1"
 
                 elif line.startswith("VolFreq "):
+                    variables_read_dict["VolFreq"] = True
                     split_line = line.split()
                     assert split_line[1] == "0.0"
 
                 elif line.startswith("MultiParticleFreq "):
+                    variables_read_dict["MultiParticleFreq"] = True
                     split_line = line.split()
                     assert split_line[1] == "0.0"
 
                 elif line.startswith("IntraMEMC-1Freq "):
+                    variables_read_dict["IntraMEMC-1Freq"] = True
                     split_line = line.split()
                     assert split_line[1] == "0.0"
 
                 elif line.startswith("MEMC-1Freq "):
+                    variables_read_dict["MEMC-1Freq"] = True
                     split_line = line.split()
                     assert split_line[1] == "0.0"
 
                 elif line.startswith("IntraMEMC-2Freq "):
+                    variables_read_dict["IntraMEMC-2Freq"] = True
                     split_line = line.split()
                     assert split_line[1] == "0.0"
 
                 elif line.startswith("MEMC-2Freq "):
+                    variables_read_dict["MEMC-2Freq"] = True
                     split_line = line.split()
                     assert split_line[1] == "0.0"
 
                 elif line.startswith("IntraMEMC-3Freq "):
+                    variables_read_dict["IntraMEMC-3Freq"] = True
                     split_line = line.split()
                     assert split_line[1] == "0.0"
 
                 elif line.startswith("MEMC-3Freq "):
+                    variables_read_dict["MEMC-3Freq"] = True
                     split_line = line.split()
                     assert split_line[1] == "0.0"
 
                 elif line.startswith("CellBasisVector1 0"):
+                    variables_read_dict["CellBasisVector1 0"] = True
                     split_line = line.split()
                     assert split_line[1] == "0"
                     assert split_line[2] == "20.0"
-                    assert split_line[3] == "0.00"
-                    assert split_line[4] == "0.00"
+                    assert split_line[3] == "0.0"
+                    assert split_line[4] == "0.0"
 
                 elif line.startswith("CellBasisVector2 0"):
+                    variables_read_dict["CellBasisVector2 0"] = True
                     split_line = line.split()
                     assert split_line[1] == "0"
-                    assert split_line[2] == "0.00"
+                    assert split_line[2] == "0.0"
                     assert split_line[3] == "20.0"
-                    assert split_line[4] == "0.00"
+                    assert split_line[4] == "0.0"
 
                 elif line.startswith("CellBasisVector3 0"):
+                    variables_read_dict["CellBasisVector3 0"] = True
                     split_line = line.split()
                     assert split_line[1] == "0"
-                    assert split_line[2] == "0.00"
-                    assert split_line[3] == "0.00"
+                    assert split_line[2] == "0.0"
+                    assert split_line[3] == "0.0"
                     assert split_line[4] == "20.0"
 
                 elif line.startswith("CellBasisVector1 1"):
+                    variables_read_dict["CellBasisVector1 1"] = True
                     split_line = line.split()
                     assert split_line[1] == "1"
                     assert split_line[2] == "20.0"
-                    assert split_line[3] == "0.00"
-                    assert split_line[4] == "0.00"
+                    assert split_line[3] == "0.0"
+                    assert split_line[4] == "0.0"
 
                 elif line.startswith("CellBasisVector2 1"):
+                    variables_read_dict["CellBasisVector2 1"] = True
                     split_line = line.split()
                     assert split_line[1] == "1"
-                    assert split_line[2] == "0.00"
+                    assert split_line[2] == "0.0"
                     assert split_line[3] == "20.0"
-                    assert split_line[4] == "0.00"
+                    assert split_line[4] == "0.0"
 
                 elif line.startswith("CellBasisVector3 1"):
+                    variables_read_dict["CellBasisVector3 1"] = True
                     split_line = line.split()
                     assert split_line[1] == "1"
-                    assert split_line[2] == "0.00"
-                    assert split_line[3] == "0.00"
+                    assert split_line[2] == "0.0"
+                    assert split_line[3] == "0.0"
                     assert split_line[4] == "20.0"
 
                 elif line.startswith("RestartFreq "):
+                    variables_read_dict["RestartFreq"] = True
                     split_line = line.split()
                     assert split_line[1] == "True"
                     assert split_line[2] == "10000"
 
                 elif line.startswith("CheckpointFreq "):
+                    variables_read_dict["CheckpointFreq"] = True
                     split_line = line.split()
                     assert split_line[1] == "True"
                     assert split_line[2] == "10000"
 
                 elif line.startswith("CoordinatesFreq "):
+                    variables_read_dict["CoordinatesFreq"] = True
                     split_line = line.split()
                     assert split_line[1] == "True"
                     assert split_line[2] == "10000"
 
                 elif line.startswith("ConsoleFreq "):
+                    variables_read_dict["ConsoleFreq"] = True
                     split_line = line.split()
                     assert split_line[1] == "True"
                     assert split_line[2] == "10000"
 
                 elif line.startswith("BlockAverageFreq "):
+                    variables_read_dict["BlockAverageFreq"] = True
                     split_line = line.split()
                     assert split_line[1] == "True"
                     assert split_line[2] == "10000"
 
                 elif line.startswith("HistogramFreq "):
+                    variables_read_dict["HistogramFreq"] = True
                     split_line = line.split()
                     assert split_line[1] == "True"
                     assert split_line[2] == "10000"
 
                 elif line.startswith("SampleFreq "):
+                    variables_read_dict["SampleFreq"] = True
                     split_line = line.split()
                     assert split_line[1] == "500"
 
                 elif line.startswith("VDWGeometricSigma "):
+                    variables_read_dict["VDWGeometricSigma"] = True
                     split_line = line.split()
                     assert split_line[1] == "True"
 
                 else:
                     pass
 
+        assert variables_read_dict == {
+            "Parameters": True,
+            "Coordinates 0": True,
+            "Coordinates 1": True,
+            "Structure 0": True,
+            "Structure 1": True,
+            "Temperature": True,
+            "ChemPot": True,
+            "PressureCalc": True,
+            "RunSteps": True,
+            "EqSteps": True,
+            "AdjSteps": True,
+            "DisFreq": True,
+            "RotFreq": True,
+            "IntraSwapFreq": True,
+            "SwapFreq": True,
+            "RegrowthFreq": True,
+            "CrankShaftFreq": True,
+            "VolFreq": True,
+            "MultiParticleFreq": True,
+            "IntraMEMC-1Freq": True,
+            "MEMC-1Freq": True,
+            "IntraMEMC-2Freq": True,
+            "MEMC-2Freq": True,
+            "IntraMEMC-3Freq": True,
+            "MEMC-3Freq": True,
+            "CellBasisVector1 0": True,
+            "CellBasisVector2 0": True,
+            "CellBasisVector3 0": True,
+            "CellBasisVector1 1": True,
+            "CellBasisVector2 1": True,
+            "CellBasisVector3 1": True,
+            "RestartFreq": True,
+            "CheckpointFreq": True,
+            "CoordinatesFreq": True,
+            "ConsoleFreq": True,
+            "BlockAverageFreq": True,
+            "HistogramFreq": True,
+            "SampleFreq": True,
+            "VDWGeometricSigma": True,
+        }
+
     def test_save_basic_GEMC_NVT(self, ethane_gomc):
+        test_box_ethane_gomc = mb.fill_box(
+            compound=[ethane_gomc], n_compounds=[1], box=[2, 2, 2]
+        )
         charmm = Charmm(
-            ethane_gomc,
+            test_box_ethane_gomc,
             "ethane_box_0",
-            structure_box_1=ethane_gomc,
+            structure_box_1=test_box_ethane_gomc,
             filename_box_1="ethane_box_1",
             ff_filename="ethane_FF",
             residues=[ethane_gomc.name],
             forcefield_selection="oplsaa",
-            box_0=[2, 2, 2],
-            box_1=[2, 2, 2],
         )
         gomc_control.write_gomc_control_file(
             charmm, "test_save_basic_GEMC_NVT.conf", "GEMC_NVT", 1000000, 500
         )
 
         with open("test_save_basic_GEMC_NVT.conf", "r") as fp:
+            variables_read_dict = {
+                "DisFreq": False,
+                "RotFreq": False,
+                "IntraSwapFreq": False,
+                "SwapFreq": False,
+                "RegrowthFreq": False,
+                "CrankShaftFreq": False,
+                "VolFreq": False,
+                "MultiParticleFreq": False,
+                "IntraMEMC-1Freq": False,
+                "MEMC-1Freq": False,
+                "IntraMEMC-2Freq": False,
+                "MEMC-2Freq": False,
+                "IntraMEMC-3Freq": False,
+                "MEMC-3Freq": False,
+            }
             out_gomc = fp.readlines()
             for i, line in enumerate(out_gomc):
                 if line.startswith("DisFreq "):
+                    variables_read_dict["DisFreq"] = True
                     split_line = line.split()
                     assert split_line[1] == "0.2"
 
                 elif line.startswith("RotFreq "):
+                    variables_read_dict["RotFreq"] = True
                     split_line = line.split()
                     assert split_line[1] == "0.2"
 
                 elif line.startswith("IntraSwapFreq "):
+                    variables_read_dict["IntraSwapFreq"] = True
                     split_line = line.split()
                     assert split_line[1] == "0.1"
 
                 elif line.startswith("SwapFreq "):
+                    variables_read_dict["SwapFreq"] = True
                     split_line = line.split()
                     assert split_line[1] == "0.2"
 
                 elif line.startswith("RegrowthFreq "):
+                    variables_read_dict["RegrowthFreq"] = True
                     split_line = line.split()
                     assert split_line[1] == "0.2"
 
                 elif line.startswith("CrankShaftFreq "):
+                    variables_read_dict["CrankShaftFreq"] = True
                     split_line = line.split()
                     assert split_line[1] == "0.1"
 
                 elif line.startswith("VolFreq "):
+                    variables_read_dict["VolFreq"] = True
                     split_line = line.split()
                     assert split_line[1] == "0.0"
 
                 elif line.startswith("MultiParticleFreq "):
+                    variables_read_dict["MultiParticleFreq"] = True
                     split_line = line.split()
                     assert split_line[1] == "0.0"
 
                 elif line.startswith("IntraMEMC-1Freq "):
+                    variables_read_dict["IntraMEMC-1Freq"] = True
                     split_line = line.split()
                     assert split_line[1] == "0.0"
 
                 elif line.startswith("MEMC-1Freq "):
+                    variables_read_dict["MEMC-1Freq"] = True
                     split_line = line.split()
                     assert split_line[1] == "0.0"
 
                 elif line.startswith("IntraMEMC-2Freq "):
+                    variables_read_dict["IntraMEMC-2Freq"] = True
                     split_line = line.split()
                     assert split_line[1] == "0.0"
 
                 elif line.startswith("MEMC-2Freq "):
+                    variables_read_dict["MEMC-2Freq"] = True
                     split_line = line.split()
                     assert split_line[1] == "0.0"
 
                 elif line.startswith("IntraMEMC-3Freq "):
+                    variables_read_dict["IntraMEMC-3Freq"] = True
                     split_line = line.split()
                     assert split_line[1] == "0.0"
 
                 elif line.startswith("MEMC-3Freq "):
+                    variables_read_dict["MEMC-3Freq"] = True
                     split_line = line.split()
                     assert split_line[1] == "0.0"
 
                 else:
                     pass
 
+        assert variables_read_dict == {
+            "DisFreq": True,
+            "RotFreq": True,
+            "IntraSwapFreq": True,
+            "SwapFreq": True,
+            "RegrowthFreq": True,
+            "CrankShaftFreq": True,
+            "VolFreq": True,
+            "MultiParticleFreq": True,
+            "IntraMEMC-1Freq": True,
+            "MEMC-1Freq": True,
+            "IntraMEMC-2Freq": True,
+            "MEMC-2Freq": True,
+            "IntraMEMC-3Freq": True,
+            "MEMC-3Freq": True,
+        }
+
     def test_save_basic_GEMC_NPT(self, ethane_gomc):
+        test_box_ethane_gomc = mb.fill_box(
+            compound=[ethane_gomc], n_compounds=[1], box=[2, 2, 2]
+        )
         charmm = Charmm(
-            ethane_gomc,
+            test_box_ethane_gomc,
             "ethane_box_0",
-            structure_box_1=ethane_gomc,
+            structure_box_1=test_box_ethane_gomc,
             filename_box_1="ethane_box_1",
             ff_filename="ethane_FF",
             residues=[ethane_gomc.name],
             forcefield_selection="oplsaa",
-            box_0=[2, 2, 2],
-            box_1=[2, 2, 2],
         )
         gomc_control.write_gomc_control_file(
             charmm,
@@ -1111,82 +1578,154 @@ class TestGOMCControlFileWriter(BaseTest):
                 "Pressure": 10,
                 "useConstantArea": True,
                 "FixVolBox0": True,
+                "RcutCoulomb_box_0": 14,
+                "RcutCoulomb_box_1": 14,
             },
         )
 
         with open("test_save_basic_GEMC_NPT.conf", "r") as fp:
+            variables_read_dict = {
+                "Pressure": False,
+                "DisFreq": False,
+                "RotFreq": False,
+                "IntraSwapFreq": False,
+                "SwapFreq": False,
+                "RegrowthFreq": False,
+                "CrankShaftFreq": False,
+                "VolFreq": False,
+                "MultiParticleFreq": False,
+                "IntraMEMC-1Freq": False,
+                "MEMC-1Freq": False,
+                "IntraMEMC-2Freq": False,
+                "MEMC-2Freq": False,
+                "IntraMEMC-3Freq": False,
+                "MEMC-3Freq": False,
+                "useConstantArea": False,
+                "FixVolBox0": False,
+                "RcutCoulomb_box_0": False,
+                "RcutCoulomb_box_1": False,
+            }
             out_gomc = fp.readlines()
             for i, line in enumerate(out_gomc):
                 if line.startswith("Pressure "):
+                    variables_read_dict["Pressure"] = True
                     split_line = line.split()
                     assert split_line[1] == "10"
 
                 elif line.startswith("DisFreq "):
+                    variables_read_dict["DisFreq"] = True
                     split_line = line.split()
                     assert split_line[1] == "0.19"
 
                 elif line.startswith("RotFreq "):
+                    variables_read_dict["RotFreq"] = True
                     split_line = line.split()
                     assert split_line[1] == "0.2"
 
                 elif line.startswith("IntraSwapFreq "):
+                    variables_read_dict["IntraSwapFreq"] = True
                     split_line = line.split()
                     assert split_line[1] == "0.1"
 
                 elif line.startswith("SwapFreq "):
+                    variables_read_dict["SwapFreq"] = True
                     split_line = line.split()
                     assert split_line[1] == "0.2"
 
                 elif line.startswith("RegrowthFreq "):
+                    variables_read_dict["RegrowthFreq"] = True
                     split_line = line.split()
                     assert split_line[1] == "0.2"
 
                 elif line.startswith("CrankShaftFreq "):
+                    variables_read_dict["CrankShaftFreq"] = True
                     split_line = line.split()
                     assert split_line[1] == "0.1"
 
                 elif line.startswith("VolFreq "):
+                    variables_read_dict["VolFreq"] = True
                     split_line = line.split()
                     assert split_line[1] == "0.01"
 
                 elif line.startswith("MultiParticleFreq "):
+                    variables_read_dict["MultiParticleFreq"] = True
                     split_line = line.split()
                     assert split_line[1] == "0.0"
 
                 elif line.startswith("IntraMEMC-1Freq "):
+                    variables_read_dict["IntraMEMC-1Freq"] = True
                     split_line = line.split()
                     assert split_line[1] == "0.0"
 
                 elif line.startswith("MEMC-1Freq "):
+                    variables_read_dict["MEMC-1Freq"] = True
                     split_line = line.split()
                     assert split_line[1] == "0.0"
 
                 elif line.startswith("IntraMEMC-2Freq "):
+                    variables_read_dict["IntraMEMC-2Freq"] = True
                     split_line = line.split()
                     assert split_line[1] == "0.0"
 
                 elif line.startswith("MEMC-2Freq "):
+                    variables_read_dict["MEMC-2Freq"] = True
                     split_line = line.split()
                     assert split_line[1] == "0.0"
 
                 elif line.startswith("IntraMEMC-3Freq "):
+                    variables_read_dict["IntraMEMC-3Freq"] = True
                     split_line = line.split()
                     assert split_line[1] == "0.0"
 
                 elif line.startswith("MEMC-3Freq "):
+                    variables_read_dict["MEMC-3Freq"] = True
                     split_line = line.split()
                     assert split_line[1] == "0.0"
 
                 elif line.startswith("useConstantArea "):
+                    variables_read_dict["useConstantArea"] = True
                     split_line = line.split()
                     assert split_line[1] == "True"
 
                 elif line.startswith("FixVolBox0 "):
+                    variables_read_dict["FixVolBox0"] = True
                     split_line = line.split()
                     assert split_line[1] == "True"
 
+                elif line.startswith("RcutCoulomb 0 "):
+                    variables_read_dict["RcutCoulomb_box_0"] = True
+                    split_line = line.split()
+                    assert split_line[2] == "14"
+
+                elif line.startswith("RcutCoulomb 1 "):
+                    variables_read_dict["RcutCoulomb_box_1"] = True
+                    split_line = line.split()
+                    assert split_line[2] == "14"
+
                 else:
                     pass
+
+        assert variables_read_dict == {
+            "Pressure": True,
+            "DisFreq": True,
+            "RotFreq": True,
+            "IntraSwapFreq": True,
+            "SwapFreq": True,
+            "RegrowthFreq": True,
+            "CrankShaftFreq": True,
+            "VolFreq": True,
+            "MultiParticleFreq": True,
+            "IntraMEMC-1Freq": True,
+            "MEMC-1Freq": True,
+            "IntraMEMC-2Freq": True,
+            "MEMC-2Freq": True,
+            "IntraMEMC-3Freq": True,
+            "MEMC-3Freq": True,
+            "useConstantArea": True,
+            "FixVolBox0": True,
+            "RcutCoulomb_box_0": True,
+            "RcutCoulomb_box_1": True,
+        }
 
     def test_save_change_most_variable_NVT(self, ethane_gomc, ethanol_gomc):
         test_box_ethane_ethanol = mb.fill_box(
@@ -1252,8 +1791,8 @@ class TestGOMCControlFileWriter(BaseTest):
                 "FreeEnergyCalc": [True, 50],
                 "MoleculeType": ["ETH", 1],
                 "InitialState": 3,
-                "LambdaVDW": [0.1, 0.2, 0.4, 0.9],
-                "LambdaCoulomb": [0.1, 0.3, 0.8, 0.8],
+                "LambdaVDW": [0.1, 0.2, 0.4, 1.0],
+                "LambdaCoulomb": [0.1, 0.3, 0.8, 1.0],
                 "MEMC_DataInput": [
                     [1, "ETH", ["C1", "C2"], "ETO", ["C1", "C2"]]
                 ],
@@ -1267,212 +1806,334 @@ class TestGOMCControlFileWriter(BaseTest):
         )
 
         with open("test_save_change_most_variable_NVT.conf", "r") as fp:
+            variables_read_dict = {
+                "Restart": False,
+                "PRNG": False,
+                "Random_Seed": False,
+                "ParaTypeCHARMM": False,
+                "Parameters": False,
+                "Coordinates": False,
+                "Structure": False,
+                "Temperature": False,
+                "Potential": False,
+                "LRC": False,
+                "Rcut": False,
+                "RcutLow": False,
+                "Exclude": False,
+                "Ewald": False,
+                "ElectroStatic": False,
+                "CachedFourier": False,
+                "Tolerance": False,
+                "1-4scaling": False,
+                "RcutCoulomb 0": False,
+                "PressureCalc": False,
+                "RunSteps": False,
+                "EqSteps": False,
+                "AdjSteps": False,
+                "DisFreq": False,
+                "RotFreq": False,
+                "IntraSwapFreq": False,
+                "SwapFreq": False,
+                "RegrowthFreq": False,
+                "CrankShaftFreq": False,
+                "VolFreq": False,
+                "MultiParticleFreq": False,
+                "IntraMEMC-1Freq": False,
+                "MEMC-1Freq": False,
+                "IntraMEMC-2Freq": False,
+                "MEMC-2Freq": False,
+                "IntraMEMC-3Freq": False,
+                "MEMC-3Freq": False,
+                "CellBasisVector1": False,
+                "CellBasisVector2": False,
+                "CellBasisVector3": False,
+                "FreeEnergyCalc": False,
+                "MoleculeType": False,
+                "InitialState": False,
+                "ScalePower": False,
+                "ScaleAlpha": False,
+                "MinSigma": False,
+                "ScaleCoulomb": False,
+                "# States": False,
+                "LambdaVDW": False,
+                "LambdaCoulomb": False,
+                "CBMC_First": False,
+                "CBMC_Nth": False,
+                "CBMC_Ang": False,
+                "CBMC_Dih": False,
+                "OutputName": False,
+                "RestartFreq": False,
+                "CheckpointFreq": False,
+                "CoordinatesFreq": False,
+                "ConsoleFreq": False,
+                "BlockAverageFreq": False,
+                "HistogramFreq": False,
+                "DistName": False,
+                "HistName": False,
+                "RunNumber": False,
+                "RunLetter": False,
+                "SampleFreq": False,
+                "OutEnergy": False,
+                "OutPressure": False,
+                "OutMolNumber": False,
+                "OutDensity": False,
+                "OutVolume": False,
+                "OutSurfaceTension": False,
+            }
             out_gomc = fp.readlines()
             for i, line in enumerate(out_gomc):
                 if line.startswith("Restart "):
+                    variables_read_dict["Restart"] = True
                     split_line = line.split()
                     assert split_line[1] == "True"
 
                 elif line.startswith("PRNG "):
+                    variables_read_dict["PRNG"] = True
                     split_line = line.split()
                     assert split_line[1] == "INTSEED"
 
                 elif line.startswith("Random_Seed "):
+                    variables_read_dict["Random_Seed"] = True
                     split_line = line.split()
                     assert split_line[1] == "123"
 
                 elif line.startswith("ParaTypeCHARMM "):
+                    variables_read_dict["ParaTypeCHARMM"] = True
                     split_line = line.split()
                     assert split_line[1] == "True"
 
                 elif line.startswith("Parameters "):
+                    variables_read_dict["Parameters"] = True
                     split_line = line.split()
                     assert split_line[1] == "ethane_ethanol.inp"
 
                 elif line.startswith("Coordinates "):
+                    variables_read_dict["Coordinates"] = True
                     split_line = line.split()
                     assert split_line[1] == "0"
                     assert split_line[2] == "ethane_ethanol.pdb"
 
                 elif line.startswith("Structure "):
+                    variables_read_dict["Structure"] = True
                     split_line = line.split()
                     assert split_line[1] == "0"
                     assert split_line[2] == "ethane_ethanol.psf"
 
                 elif line.startswith("Temperature "):
+                    variables_read_dict["Temperature"] = True
                     split_line = line.split()
                     assert split_line[1] == "300"
 
                 elif line.startswith("Potential "):
+                    variables_read_dict["Potential"] = True
                     split_line = line.split()
                     assert split_line[1] == "VDW"
 
                 elif line.startswith("LRC "):
+                    variables_read_dict["LRC"] = True
                     split_line = line.split()
                     assert split_line[1] == "False"
 
                 elif line.startswith("Rcut "):
+                    variables_read_dict["Rcut"] = True
                     split_line = line.split()
                     assert split_line[1] == "12"
 
                 elif line.startswith("RcutLow "):
+                    variables_read_dict["RcutLow"] = True
                     split_line = line.split()
                     assert split_line[1] == "8"
 
                 elif line.startswith("Exclude "):
+                    variables_read_dict["Exclude"] = True
                     split_line = line.split()
                     assert split_line[1] == "1-4"
 
                 elif line.startswith("Ewald "):
+                    variables_read_dict["Ewald"] = True
                     split_line = line.split()
                     assert split_line[1] == "False"
 
                 elif line.startswith("ElectroStatic "):
+                    variables_read_dict["ElectroStatic"] = True
                     split_line = line.split()
                     assert split_line[1] == "False"
 
                 elif line.startswith("CachedFourier "):
+                    variables_read_dict["CachedFourier"] = True
                     split_line = line.split()
                     assert split_line[1] == "True"
 
                 elif line.startswith("Tolerance "):
+                    variables_read_dict["Tolerance"] = True
                     split_line = line.split()
-                    assert split_line[1] == "0.010000000000"
+                    assert split_line[1] == "0.01"
 
                 elif line.startswith("1-4scaling "):
+                    variables_read_dict["1-4scaling"] = True
                     split_line = line.split()
                     assert split_line[1] == "0.5"
 
                 elif line.startswith("RcutCoulomb 0 "):
+                    variables_read_dict["RcutCoulomb 0"] = True
                     split_line = line.split()
                     assert split_line[1] == "0"
                     assert split_line[2] == "14"
 
                 elif line.startswith("PressureCalc "):
+                    variables_read_dict["PressureCalc"] = True
                     split_line = line.split()
                     assert split_line[1] == "False"
                     assert split_line[2] == "4"
 
                 elif line.startswith("RunSteps "):
+                    variables_read_dict["RunSteps"] = True
                     split_line = line.split()
                     assert split_line[1] == "100000"
 
                 elif line.startswith("EqSteps "):
+                    variables_read_dict["EqSteps"] = True
                     split_line = line.split()
                     assert split_line[1] == "10000"
 
                 elif line.startswith("AdjSteps "):
+                    variables_read_dict["AdjSteps"] = True
                     split_line = line.split()
                     assert split_line[1] == "1000"
 
                 elif line.startswith("DisFreq "):
+                    variables_read_dict["DisFreq"] = True
                     split_line = line.split()
                     assert split_line[1] == "0.2"
 
                 elif line.startswith("RotFreq "):
+                    variables_read_dict["RotFreq"] = True
                     split_line = line.split()
                     assert split_line[1] == "0.2"
 
                 elif line.startswith("IntraSwapFreq "):
+                    variables_read_dict["IntraSwapFreq"] = True
                     split_line = line.split()
                     assert split_line[1] == "0.1"
 
                 elif line.startswith("SwapFreq "):
+                    variables_read_dict["SwapFreq"] = True
                     split_line = line.split()
                     assert split_line[1] == "0.0"
 
                 elif line.startswith("RegrowthFreq "):
+                    variables_read_dict["RegrowthFreq"] = True
                     split_line = line.split()
                     assert split_line[1] == "0.1"
 
                 elif line.startswith("CrankShaftFreq "):
+                    variables_read_dict["CrankShaftFreq"] = True
                     split_line = line.split()
                     assert split_line[1] == "0.2"
 
                 elif line.startswith("VolFreq "):
+                    variables_read_dict["VolFreq"] = True
                     split_line = line.split()
                     assert split_line[1] == "0.0"
 
                 elif line.startswith("MultiParticleFreq "):
+                    variables_read_dict["MultiParticleFreq"] = True
                     split_line = line.split()
                     assert split_line[1] == "0.05"
 
                 elif line.startswith("IntraMEMC-1Freq "):
+                    variables_read_dict["IntraMEMC-1Freq"] = True
                     split_line = line.split()
                     assert split_line[1] == "0.05"
 
                 elif line.startswith("MEMC-1Freq "):
+                    variables_read_dict["MEMC-1Freq"] = True
                     split_line = line.split()
                     assert split_line[1] == "0.0"
 
                 elif line.startswith("IntraMEMC-2Freq "):
+                    variables_read_dict["IntraMEMC-2Freq"] = True
                     split_line = line.split()
                     assert split_line[1] == "0.05"
 
                 elif line.startswith("MEMC-2Freq "):
+                    variables_read_dict["MEMC-2Freq"] = True
                     split_line = line.split()
                     assert split_line[1] == "0.0"
 
                 elif line.startswith("IntraMEMC-3Freq "):
+                    variables_read_dict["IntraMEMC-3Freq"] = True
                     split_line = line.split()
                     assert split_line[1] == "0.05"
 
                 elif line.startswith("MEMC-3Freq "):
+                    variables_read_dict["MEMC-3Freq"] = True
                     split_line = line.split()
                     assert split_line[1] == "0.0"
 
                 elif line.startswith("CellBasisVector1 "):
+                    variables_read_dict["CellBasisVector1"] = True
                     split_line = line.split()
                     assert split_line[1] == "0"
                     assert split_line[2] == "40.0"
-                    assert split_line[3] == "0.00"
-                    assert split_line[4] == "0.00"
+                    assert split_line[3] == "0.0"
+                    assert split_line[4] == "0.0"
 
                 elif line.startswith("CellBasisVector2 "):
+                    variables_read_dict["CellBasisVector2"] = True
                     split_line = line.split()
                     assert split_line[1] == "0"
-                    assert split_line[2] == "0.00"
+                    assert split_line[2] == "0.0"
                     assert split_line[3] == "40.0"
-                    assert split_line[4] == "0.00"
+                    assert split_line[4] == "0.0"
 
                 elif line.startswith("CellBasisVector3 "):
+                    variables_read_dict["CellBasisVector3"] = True
                     split_line = line.split()
                     assert split_line[1] == "0"
-                    assert split_line[2] == "0.00"
-                    assert split_line[3] == "0.00"
+                    assert split_line[2] == "0.0"
+                    assert split_line[3] == "0.0"
                     assert split_line[4] == "40.0"
 
                 elif line.startswith("FreeEnergyCalc "):
+                    variables_read_dict["FreeEnergyCalc"] = True
                     split_line = line.split()
                     assert split_line[1] == "True"
                     assert split_line[2] == "50"
 
                 elif line.startswith("MoleculeType "):
+                    variables_read_dict["MoleculeType"] = True
                     split_line = line.split()
                     assert split_line[1] == "ETH"
                     assert split_line[2] == "1"
 
                 elif line.startswith("InitialState "):
+                    variables_read_dict["InitialState"] = True
                     split_line = line.split()
                     assert split_line[1] == "3"
 
                 elif line.startswith("ScalePower "):
+                    variables_read_dict["ScalePower"] = True
                     split_line = line.split()
                     assert split_line[1] == "2"
 
                 elif line.startswith("ScaleAlpha "):
+                    variables_read_dict["ScaleAlpha"] = True
                     split_line = line.split()
                     assert split_line[1] == "0.5"
 
                 elif line.startswith("MinSigma "):
+                    variables_read_dict["MinSigma"] = True
                     split_line = line.split()
                     assert split_line[1] == "3"
 
                 elif line.startswith("ScaleCoulomb "):
+                    variables_read_dict["ScaleCoulomb"] = True
                     split_line = line.split()
                     assert split_line[1] == "False"
 
                 elif line.startswith("# States "):
+                    variables_read_dict["# States"] = True
                     split_line = line.split()
                     assert split_line[2] == "0"
                     assert split_line[3] == "1"
@@ -1480,115 +2141,139 @@ class TestGOMCControlFileWriter(BaseTest):
                     assert split_line[5] == "3"
 
                 elif line.startswith("LambdaVDW "):
+                    variables_read_dict["LambdaVDW"] = True
                     split_line = line.split()
                     assert split_line[1] == "0.1"
                     assert split_line[2] == "0.2"
                     assert split_line[3] == "0.4"
-                    assert split_line[4] == "0.9"
+                    assert split_line[4] == "1.0"
 
                 elif line.startswith("LambdaCoulomb "):
+                    variables_read_dict["LambdaCoulomb"] = True
                     split_line = line.split()
                     assert split_line[1] == "0.1"
                     assert split_line[2] == "0.3"
                     assert split_line[3] == "0.8"
-                    assert split_line[4] == "0.8"
+                    assert split_line[4] == "1.0"
 
                 elif line.startswith("CBMC_First "):
+                    variables_read_dict["CBMC_First"] = True
                     split_line = line.split()
                     assert split_line[1] == "55"
 
                 elif line.startswith("CBMC_Nth "):
+                    variables_read_dict["CBMC_Nth"] = True
                     split_line = line.split()
                     assert split_line[1] == "66"
 
                 elif line.startswith("CBMC_Ang "):
+                    variables_read_dict["CBMC_Ang"] = True
                     split_line = line.split()
                     assert split_line[1] == "33"
 
                 elif line.startswith("CBMC_Dih "):
+                    variables_read_dict["CBMC_Dih"] = True
                     split_line = line.split()
                     assert split_line[1] == "22"
 
                 elif line.startswith("OutputName "):
+                    variables_read_dict["OutputName"] = True
                     split_line = line.split()
                     assert split_line[1] == "test_out"
 
                 elif line.startswith("RestartFreq "):
+                    variables_read_dict["RestartFreq"] = True
                     split_line = line.split()
                     assert split_line[1] == "False"
                     assert split_line[2] == "50"
 
                 elif line.startswith("CheckpointFreq "):
+                    variables_read_dict["CheckpointFreq"] = True
                     split_line = line.split()
                     assert split_line[1] == "False"
                     assert split_line[2] == "50"
 
                 elif line.startswith("CoordinatesFreq "):
+                    variables_read_dict["CoordinatesFreq"] = True
                     split_line = line.split()
                     assert split_line[1] == "False"
                     assert split_line[2] == "50"
 
                 elif line.startswith("ConsoleFreq "):
+                    variables_read_dict["ConsoleFreq"] = True
                     split_line = line.split()
                     assert split_line[1] == "False"
                     assert split_line[2] == "500"
 
                 elif line.startswith("BlockAverageFreq "):
+                    variables_read_dict["BlockAverageFreq"] = True
                     split_line = line.split()
                     assert split_line[1] == "False"
                     assert split_line[2] == "50"
 
                 elif line.startswith("HistogramFreq "):
+                    variables_read_dict["HistogramFreq"] = True
                     split_line = line.split()
                     assert split_line[1] == "False"
                     assert split_line[2] == "50"
 
                 elif line.startswith("DistName "):
+                    variables_read_dict["DistName"] = True
                     split_line = line.split()
                     assert split_line[1] == "dist"
 
                 elif line.startswith("HistName "):
+                    variables_read_dict["HistName"] = True
                     split_line = line.split()
                     assert split_line[1] == "hist"
 
                 elif line.startswith("RunNumber "):
+                    variables_read_dict["RunNumber"] = True
                     split_line = line.split()
                     assert split_line[1] == "4"
 
                 elif line.startswith("RunLetter "):
+                    variables_read_dict["RunLetter"] = True
                     split_line = line.split()
                     assert split_line[1] == "c"
 
                 elif line.startswith("SampleFreq "):
+                    variables_read_dict["SampleFreq"] = True
                     split_line = line.split()
                     assert split_line[1] == "25"
 
                 elif line.startswith("OutEnergy "):
+                    variables_read_dict["OutEnergy"] = True
                     split_line = line.split()
                     assert split_line[1] == "False"
                     assert split_line[2] == "False"
 
                 elif line.startswith("OutPressure "):
+                    variables_read_dict["OutPressure"] = True
                     split_line = line.split()
                     assert split_line[1] == "False"
                     assert split_line[2] == "False"
 
                 elif line.startswith("OutMolNumber "):
+                    variables_read_dict["OutMolNumber"] = True
                     split_line = line.split()
                     assert split_line[1] == "False"
                     assert split_line[2] == "False"
 
                 elif line.startswith("OutDensity "):
+                    variables_read_dict["OutDensity"] = True
                     split_line = line.split()
                     assert split_line[1] == "False"
                     assert split_line[2] == "False"
 
                 elif line.startswith("OutVolume "):
+                    variables_read_dict["OutVolume"] = True
                     split_line = line.split()
                     assert split_line[1] == "False"
                     assert split_line[2] == "False"
 
                 elif line.startswith("OutSurfaceTension "):
+                    variables_read_dict["OutSurfaceTension"] = True
                     split_line = line.split()
                     assert split_line[1] == "True"
                     assert split_line[2] == "True"
@@ -1596,11 +2281,86 @@ class TestGOMCControlFileWriter(BaseTest):
                 else:
                     pass
 
-    def test_save_NVT_bad_variables_part_1(self, ethane_gomc, ethanol_gomc):
+        assert variables_read_dict == {
+            "Restart": True,
+            "PRNG": True,
+            "Random_Seed": True,
+            "ParaTypeCHARMM": True,
+            "Parameters": True,
+            "Coordinates": True,
+            "Structure": True,
+            "Temperature": True,
+            "Potential": True,
+            "LRC": True,
+            "Rcut": True,
+            "RcutLow": True,
+            "Exclude": True,
+            "Ewald": True,
+            "ElectroStatic": True,
+            "CachedFourier": True,
+            "Tolerance": True,
+            "1-4scaling": True,
+            "RcutCoulomb 0": True,
+            "PressureCalc": True,
+            "RunSteps": True,
+            "EqSteps": True,
+            "AdjSteps": True,
+            "DisFreq": True,
+            "RotFreq": True,
+            "IntraSwapFreq": True,
+            "SwapFreq": True,
+            "RegrowthFreq": True,
+            "CrankShaftFreq": True,
+            "VolFreq": True,
+            "MultiParticleFreq": True,
+            "IntraMEMC-1Freq": True,
+            "MEMC-1Freq": True,
+            "IntraMEMC-2Freq": True,
+            "MEMC-2Freq": True,
+            "IntraMEMC-3Freq": True,
+            "MEMC-3Freq": True,
+            "CellBasisVector1": True,
+            "CellBasisVector2": True,
+            "CellBasisVector3": True,
+            "FreeEnergyCalc": True,
+            "MoleculeType": True,
+            "InitialState": True,
+            "ScalePower": True,
+            "ScaleAlpha": True,
+            "MinSigma": True,
+            "ScaleCoulomb": True,
+            "# States": True,
+            "LambdaVDW": True,
+            "LambdaCoulomb": True,
+            "CBMC_First": True,
+            "CBMC_Nth": True,
+            "CBMC_Ang": True,
+            "CBMC_Dih": True,
+            "OutputName": True,
+            "RestartFreq": True,
+            "CheckpointFreq": True,
+            "CoordinatesFreq": True,
+            "ConsoleFreq": True,
+            "BlockAverageFreq": True,
+            "HistogramFreq": True,
+            "DistName": True,
+            "HistName": True,
+            "RunNumber": True,
+            "RunLetter": True,
+            "SampleFreq": True,
+            "OutEnergy": True,
+            "OutPressure": True,
+            "OutMolNumber": True,
+            "OutDensity": True,
+            "OutVolume": True,
+            "OutSurfaceTension": True,
+        }
+
+    def test_save_NVT_bad_lamda_value(self, ethane_gomc, ethanol_gomc):
         test_box_ethane_ethanol = mb.fill_box(
             compound=[ethane_gomc, ethanol_gomc],
             n_compounds=[1, 1],
-            box=[4.0, 4.0, 4.0],
+            box=[1, 1, 1],
         )
 
         charmm = Charmm(
@@ -1609,7 +2369,58 @@ class TestGOMCControlFileWriter(BaseTest):
             ff_filename="ethane_ethanol",
             residues=[ethane_gomc.name, ethanol_gomc.name],
             forcefield_selection="oplsaa",
-            box_0=[1, 1, 1],
+        )
+
+        with pytest.raises(
+            ValueError,
+            match=r"ERROR: The last value in the LambdaCoulomb variable list must be a 1.0",
+        ):
+            gomc_control.write_gomc_control_file(
+                charmm,
+                "test_save_NVT_bad_variables_part_1.conf",
+                "NVT",
+                100,
+                300,
+                input_variables_dict={
+                    "FreeEnergyCalc": [True, 10],
+                    "MoleculeType": ["ETH", 1],
+                    "InitialState": 3,
+                    "LambdaVDW": [0.1, 0.2, 0.4, 1.0],
+                    "LambdaCoulomb": [0.1, 0.3, 0.8, 0.9],
+                },
+            )
+
+        with pytest.raises(
+            ValueError,
+            match=r"ERROR: The last value in the LambdaVDW variable list must be a 1.0",
+        ):
+            gomc_control.write_gomc_control_file(
+                charmm,
+                "test_save_NVT_bad_variables_part_1.conf",
+                "NVT",
+                100,
+                300,
+                input_variables_dict={
+                    "FreeEnergyCalc": [True, 10],
+                    "MoleculeType": ["ETH", 1],
+                    "InitialState": 3,
+                    "LambdaVDW": [0.1, 0.2, 0.4, 0.9],
+                },
+            )
+
+    def test_save_NVT_bad_variables_part_1(self, ethane_gomc, ethanol_gomc):
+        test_box_ethane_ethanol = mb.fill_box(
+            compound=[ethane_gomc, ethanol_gomc],
+            n_compounds=[1, 1],
+            box=[1, 1, 1],
+        )
+
+        charmm = Charmm(
+            test_box_ethane_ethanol,
+            "ethane_ethanol",
+            ff_filename="ethane_ethanol",
+            residues=[ethane_gomc.name, ethanol_gomc.name],
+            forcefield_selection="oplsaa",
         )
 
         with pytest.raises(
@@ -2403,8 +3214,8 @@ class TestGOMCControlFileWriter(BaseTest):
                     "FreeEnergyCalc": "s",
                     "MoleculeType": ["ETH", 1],
                     "InitialState": 1,
-                    "LambdaVDW": [0.1, 0.2, 0.4, 0.9],
-                    "LambdaCoulomb": [0.1, 0.3, 0.8, 0.8],
+                    "LambdaVDW": [0.1, 0.2, 0.4, 1.0],
+                    "LambdaCoulomb": [0.1, 0.3, 0.8, 1.0],
                 },
             )
 
@@ -2425,8 +3236,8 @@ class TestGOMCControlFileWriter(BaseTest):
                     "FreeEnergyCalc": [True, 10000],
                     "MoleculeType": ["ETH", "s"],
                     "InitialState": 1,
-                    "LambdaVDW": [0.1, 0.2, 0.4, 0.9],
-                    "LambdaCoulomb": [0.1, 0.3, 0.8, 0.8],
+                    "LambdaVDW": [0.1, 0.2, 0.4, 1.0],
+                    "LambdaCoulomb": [0.1, 0.3, 0.8, 1.0],
                 },
             )
 
@@ -2447,8 +3258,8 @@ class TestGOMCControlFileWriter(BaseTest):
                     "FreeEnergyCalc": [True, 10000],
                     "MoleculeType": [["ETH"], 1],
                     "InitialState": 1,
-                    "LambdaVDW": [0.1, 0.2, 0.4, 0.9],
-                    "LambdaCoulomb": [0.1, 0.3, 0.8, 0.8],
+                    "LambdaVDW": [0.1, 0.2, 0.4, 1.0],
+                    "LambdaCoulomb": [0.1, 0.3, 0.8, 1.0],
                 },
             )
 
@@ -2469,8 +3280,8 @@ class TestGOMCControlFileWriter(BaseTest):
                     "FreeEnergyCalc": [True, 10000],
                     "MoleculeType": [{"ETH": "1"}, 1],
                     "InitialState": 1,
-                    "LambdaVDW": [0.1, 0.2, 0.4, 0.9],
-                    "LambdaCoulomb": [0.1, 0.3, 0.8, 0.8],
+                    "LambdaVDW": [0.1, 0.2, 0.4, 1.0],
+                    "LambdaCoulomb": [0.1, 0.3, 0.8, 1.0],
                 },
             )
 
@@ -2491,8 +3302,8 @@ class TestGOMCControlFileWriter(BaseTest):
                     "FreeEnergyCalc": [True, 10000],
                     "MoleculeType": ["ETH", 1],
                     "InitialState": "s",
-                    "LambdaVDW": [0.1, 0.2, 0.4, 0.9],
-                    "LambdaCoulomb": [0.1, 0.3, 0.8, 0.8],
+                    "LambdaVDW": [0.1, 0.2, 0.4, 1.0],
+                    "LambdaCoulomb": [0.1, 0.3, 0.8, 1.0],
                 },
             )
 
@@ -2514,7 +3325,7 @@ class TestGOMCControlFileWriter(BaseTest):
                     "MoleculeType": ["ETH", 1],
                     "InitialState": 1,
                     "LambdaVDW": "s",
-                    "LambdaCoulomb": [0.1, 0.3, 0.8, 0.8],
+                    "LambdaCoulomb": [0.1, 0.3, 0.8, 1.0],
                 },
             )
 
@@ -2535,7 +3346,7 @@ class TestGOMCControlFileWriter(BaseTest):
                     "FreeEnergyCalc": [True, 10000],
                     "MoleculeType": ["ETH", 1],
                     "InitialState": 1,
-                    "LambdaVDW": [0.1, 0.2, 0.4, 0.9],
+                    "LambdaVDW": [0.1, 0.2, 0.4, 1.0],
                     "LambdaCoulomb": "s",
                 },
             )
@@ -2897,7 +3708,7 @@ class TestGOMCControlFileWriter(BaseTest):
         test_box_ethane_ethanol = mb.fill_box(
             compound=[ethane_gomc, ethanol_gomc],
             n_compounds=[1, 1],
-            box=[4.0, 4.0, 4.0],
+            box=[1, 1, 1],
         )
 
         charmm = Charmm(
@@ -2906,7 +3717,6 @@ class TestGOMCControlFileWriter(BaseTest):
             ff_filename="ethane_ethanol",
             residues=[ethane_gomc.name, ethanol_gomc.name],
             forcefield_selection="oplsaa",
-            box_0=[1, 1, 1],
         )
 
         with pytest.raises(
@@ -3718,8 +4528,8 @@ class TestGOMCControlFileWriter(BaseTest):
                     "FreeEnergyCalc": [],
                     "MoleculeType": ["ETH", 1],
                     "InitialState": 1,
-                    "LambdaVDW": [0.1, 0.2, 0.4, 0.9],
-                    "LambdaCoulomb": [0.1, 0.3, 0.8, 0.8],
+                    "LambdaVDW": [0.1, 0.2, 0.4, 1.0],
+                    "LambdaCoulomb": [0.1, 0.3, 0.8, 1.0],
                 },
             )
 
@@ -3740,8 +4550,8 @@ class TestGOMCControlFileWriter(BaseTest):
                     "FreeEnergyCalc": [True, 10000],
                     "MoleculeType": ["ETH", []],
                     "InitialState": 1,
-                    "LambdaVDW": [0.1, 0.2, 0.4, 0.9],
-                    "LambdaCoulomb": [0.1, 0.3, 0.8, 0.8],
+                    "LambdaVDW": [0.1, 0.2, 0.4, 1.0],
+                    "LambdaCoulomb": [0.1, 0.3, 0.8, 1.0],
                 },
             )
 
@@ -3762,8 +4572,8 @@ class TestGOMCControlFileWriter(BaseTest):
                     "FreeEnergyCalc": [True, 10000],
                     "MoleculeType": [["ETH"], 1],
                     "InitialState": 1,
-                    "LambdaVDW": [0.1, 0.2, 0.4, 0.9],
-                    "LambdaCoulomb": [0.1, 0.3, 0.8, 0.8],
+                    "LambdaVDW": [0.1, 0.2, 0.4, 1.0],
+                    "LambdaCoulomb": [0.1, 0.3, 0.8, 1.0],
                 },
             )
 
@@ -3784,8 +4594,8 @@ class TestGOMCControlFileWriter(BaseTest):
                     "FreeEnergyCalc": [True, 10000],
                     "MoleculeType": [{"ETH": "1"}, 1],
                     "InitialState": 1,
-                    "LambdaVDW": [0.1, 0.2, 0.4, 0.9],
-                    "LambdaCoulomb": [0.1, 0.3, 0.8, 0.8],
+                    "LambdaVDW": [0.1, 0.2, 0.4, 1.0],
+                    "LambdaCoulomb": [0.1, 0.3, 0.8, 1.0],
                 },
             )
 
@@ -3806,8 +4616,8 @@ class TestGOMCControlFileWriter(BaseTest):
                     "FreeEnergyCalc": [True, 10000],
                     "MoleculeType": ["ETH", 1],
                     "InitialState": [],
-                    "LambdaVDW": [0.1, 0.2, 0.4, 0.9],
-                    "LambdaCoulomb": [0.1, 0.3, 0.8, 0.8],
+                    "LambdaVDW": [0.1, 0.2, 0.4, 1.0],
+                    "LambdaCoulomb": [0.1, 0.3, 0.8, 1.0],
                 },
             )
 
@@ -3829,7 +4639,7 @@ class TestGOMCControlFileWriter(BaseTest):
                     "MoleculeType": ["ETH", 1],
                     "InitialState": 1,
                     "LambdaVDW": [],
-                    "LambdaCoulomb": [0.1, 0.3, 0.8, 0.8],
+                    "LambdaCoulomb": [0.1, 0.3, 0.8, 1.0],
                 },
             )
 
@@ -3850,7 +4660,7 @@ class TestGOMCControlFileWriter(BaseTest):
                     "FreeEnergyCalc": [True, 10000],
                     "MoleculeType": ["ETH", 1],
                     "InitialState": 1,
-                    "LambdaVDW": [0.1, 0.2, 0.4, 0.9],
+                    "LambdaVDW": [0.1, 0.2, 0.4, 1.0],
                     "LambdaCoulomb": [],
                 },
             )
@@ -4212,7 +5022,7 @@ class TestGOMCControlFileWriter(BaseTest):
         test_box_ethane_ethanol = mb.fill_box(
             compound=[ethane_gomc, ethanol_gomc],
             n_compounds=[1, 1],
-            box=[4.0, 4.0, 4.0],
+            box=[1, 1, 1],
         )
 
         charmm = Charmm(
@@ -4221,7 +5031,6 @@ class TestGOMCControlFileWriter(BaseTest):
             ff_filename="ethane_ethanol",
             residues=[ethane_gomc.name, ethanol_gomc.name],
             forcefield_selection="oplsaa",
-            box_0=[1, 1, 1],
         )
 
         try:
@@ -4444,7 +5253,7 @@ class TestGOMCControlFileWriter(BaseTest):
         test_box_ethane_ethanol = mb.fill_box(
             compound=[ethane_gomc, ethanol_gomc],
             n_compounds=[1, 1],
-            box=[4.0, 4.0, 4.0],
+            box=[1, 1, 1],
         )
 
         charmm = Charmm(
@@ -4453,7 +5262,6 @@ class TestGOMCControlFileWriter(BaseTest):
             ff_filename="ethane_ethanol",
             residues=[ethane_gomc.name, ethanol_gomc.name],
             forcefield_selection="oplsaa",
-            box_0=[1, 1, 1],
         )
 
         try:
@@ -4672,7 +5480,7 @@ class TestGOMCControlFileWriter(BaseTest):
         test_box_ethane_ethanol = mb.fill_box(
             compound=[ethane_gomc, ethanol_gomc],
             n_compounds=[1, 1],
-            box=[4.0, 4.0, 4.0],
+            box=[1, 1, 1],
         )
 
         charmm = Charmm(
@@ -4681,7 +5489,6 @@ class TestGOMCControlFileWriter(BaseTest):
             ff_filename="ethane_ethanol",
             residues=[ethane_gomc.name, ethanol_gomc.name],
             forcefield_selection="oplsaa",
-            box_0=[1, 1, 1],
         )
 
         try:
@@ -4695,8 +5502,8 @@ class TestGOMCControlFileWriter(BaseTest):
                     "FreeEnergyCalc": [True, 10000],
                     "MoleculeType": ["ETH", 1],
                     "InitialState": 1,
-                    "LambdaVDW": [0.1, 0.2, 0.4, 0.9],
-                    "LambdaCoulomb": [0.1, 0.3, 0.8, 0.8],
+                    "LambdaVDW": [0.1, 0.2, 0.4, 1.0],
+                    "LambdaCoulomb": [0.1, 0.3, 0.8, 1.0],
                 },
             )
 
@@ -4716,8 +5523,8 @@ class TestGOMCControlFileWriter(BaseTest):
                     "FreeEnergyCalc": [False, 10000],
                     "MoleculeType": ["ETO", 1],
                     "InitialState": 1,
-                    "LambdaVDW": [0.1, 0.2, 0.4, 0.9, 0.99],
-                    "LambdaCoulomb": [0.1, 0.3, 0.8, 0.8, 0.99],
+                    "LambdaVDW": [0.1, 0.2, 0.4, 0.9, 1.0],
+                    "LambdaCoulomb": [0.1, 0.3, 0.8, 0.8, 1.0],
                 },
             )
         except:
@@ -4736,8 +5543,8 @@ class TestGOMCControlFileWriter(BaseTest):
                     "FreeEnergyCalc": [True, 10000],
                     "MoleculeType": ["ETH", 1],
                     "InitialState": 1,
-                    "LambdaVDW": [0.1, 0.2, 0.4, 0.9],
-                    "LambdaCoulomb": [0.1, 0.3, 0.8, 0.8],
+                    "LambdaVDW": [0.1, 0.2, 0.4, 1.0],
+                    "LambdaCoulomb": [0.1, 0.3, 0.8, 1.0],
                 },
             )
 
@@ -4757,8 +5564,8 @@ class TestGOMCControlFileWriter(BaseTest):
                     "FreeEnergyCalc": [False, 10000],
                     "MoleculeType": ["ETO", 1],
                     "InitialState": 1,
-                    "LambdaVDW": [0.1, 0.2, 0.4, 0.9],
-                    "LambdaCoulomb": [0.1, 0.3, 0.8, 0.8],
+                    "LambdaVDW": [0.1, 0.2, 0.4, 1.0],
+                    "LambdaCoulomb": [0.1, 0.3, 0.8, 1.0],
                 },
             )
         except:
@@ -4781,8 +5588,8 @@ class TestGOMCControlFileWriter(BaseTest):
                 input_variables_dict={
                     "MoleculeType": ["ETO", 1],
                     "InitialState": 1,
-                    "LambdaVDW": [0.1, 0.2, 0.4, 0.9],
-                    "LambdaCoulomb": [0.1, 0.3, 0.8, 0.8],
+                    "LambdaVDW": [0.1, 0.2, 0.4, 1.0],
+                    "LambdaCoulomb": [0.1, 0.3, 0.8, 1.0],
                 },
             )
 
@@ -4801,8 +5608,8 @@ class TestGOMCControlFileWriter(BaseTest):
                 input_variables_dict={
                     "FreeEnergyCalc": [False, 10000],
                     "InitialState": 1,
-                    "LambdaVDW": [0.1, 0.2, 0.4, 0.9],
-                    "LambdaCoulomb": [0.1, 0.3, 0.8, 0.8],
+                    "LambdaVDW": [0.1, 0.2, 0.4, 1.0],
+                    "LambdaCoulomb": [0.1, 0.3, 0.8, 1.0],
                 },
             )
 
@@ -4821,8 +5628,8 @@ class TestGOMCControlFileWriter(BaseTest):
                 input_variables_dict={
                     "FreeEnergyCalc": [False, 10000],
                     "MoleculeType": ["ETO", 1],
-                    "LambdaVDW": [0.1, 0.2, 0.4, 0.9],
-                    "LambdaCoulomb": [0.1, 0.3, 0.8, 0.8],
+                    "LambdaVDW": [0.1, 0.2, 0.4, 1.0],
+                    "LambdaCoulomb": [0.1, 0.3, 0.8, 1.0],
                 },
             )
 
@@ -4842,7 +5649,7 @@ class TestGOMCControlFileWriter(BaseTest):
                     "FreeEnergyCalc": [False, 10000],
                     "MoleculeType": ["ETO", 1],
                     "InitialState": 1,
-                    "LambdaCoulomb": [0.1, 0.3, 0.8, 0.8],
+                    "LambdaCoulomb": [0.1, 0.3, 0.8, 1.0],
                 },
             )
 
@@ -4857,7 +5664,7 @@ class TestGOMCControlFileWriter(BaseTest):
                     "FreeEnergyCalc": [False, 10000],
                     "MoleculeType": ["ETO", 1],
                     "InitialState": 1,
-                    "LambdaVDW": [0.1, 0.2, 0.4, 0.9],
+                    "LambdaVDW": [0.1, 0.2, 0.4, 1.0],
                 },
             )
         except:
@@ -4883,8 +5690,8 @@ class TestGOMCControlFileWriter(BaseTest):
                     "FreeEnergyCalc": [1, 10000],
                     "MoleculeType": ["ETO", 1],
                     "InitialState": 1,
-                    "LambdaVDW": [0.1, 0.2, 0.4, 0.9],
-                    "LambdaCoulomb": [0.1, 0.3, 0.8, 0.8],
+                    "LambdaVDW": [0.1, 0.2, 0.4, 1.0],
+                    "LambdaCoulomb": [0.1, 0.3, 0.8, 1.0],
                 },
             )
 
@@ -4905,8 +5712,8 @@ class TestGOMCControlFileWriter(BaseTest):
                     "FreeEnergyCalc": ["1", 10000],
                     "MoleculeType": ["ETO", 1],
                     "InitialState": 1,
-                    "LambdaVDW": [0.1, 0.2, 0.4, 0.9],
-                    "LambdaCoulomb": [0.1, 0.3, 0.8, 0.8],
+                    "LambdaVDW": [0.1, 0.2, 0.4, 1.0],
+                    "LambdaCoulomb": [0.1, 0.3, 0.8, 1.0],
                 },
             )
 
@@ -4927,8 +5734,8 @@ class TestGOMCControlFileWriter(BaseTest):
                     "FreeEnergyCalc": [["1"], 10000],
                     "MoleculeType": ["ETO", 1],
                     "InitialState": 1,
-                    "LambdaVDW": [0.1, 0.2, 0.4, 0.9],
-                    "LambdaCoulomb": [0.1, 0.3, 0.8, 0.8],
+                    "LambdaVDW": [0.1, 0.2, 0.4, 1.0],
+                    "LambdaCoulomb": [0.1, 0.3, 0.8, 1.0],
                 },
             )
 
@@ -4949,8 +5756,8 @@ class TestGOMCControlFileWriter(BaseTest):
                     "FreeEnergyCalc": [{"a": "1"}, 10000],
                     "MoleculeType": ["ETO", 1],
                     "InitialState": 1,
-                    "LambdaVDW": [0.1, 0.2, 0.4, 0.9],
-                    "LambdaCoulomb": [0.1, 0.3, 0.8, 0.8],
+                    "LambdaVDW": [0.1, 0.2, 0.4, 1.0],
+                    "LambdaCoulomb": [0.1, 0.3, 0.8, 1.0],
                 },
             )
 
@@ -4965,7 +5772,7 @@ class TestGOMCControlFileWriter(BaseTest):
                     "FreeEnergyCalc": [False, 10000],
                     "MoleculeType": ["ETO", 1],
                     "InitialState": 1,
-                    "LambdaVDW": [0.1, 0.2, 0.4, 0.9],
+                    "LambdaVDW": [0.1, 0.2, 0.4, 1.0],
                 },
             )
         except:
@@ -4991,8 +5798,8 @@ class TestGOMCControlFileWriter(BaseTest):
                     "FreeEnergyCalc": [True, 1.0],
                     "MoleculeType": ["ETO", 1],
                     "InitialState": 1,
-                    "LambdaVDW": [0.1, 0.2, 0.4, 0.9],
-                    "LambdaCoulomb": [0.1, 0.3, 0.8, 0.8],
+                    "LambdaVDW": [0.1, 0.2, 0.4, 1.0],
+                    "LambdaCoulomb": [0.1, 0.3, 0.8, 1.0],
                 },
             )
 
@@ -5013,8 +5820,8 @@ class TestGOMCControlFileWriter(BaseTest):
                     "FreeEnergyCalc": [True, "1"],
                     "MoleculeType": ["ETO", 1],
                     "InitialState": 1,
-                    "LambdaVDW": [0.1, 0.2, 0.4, 0.9],
-                    "LambdaCoulomb": [0.1, 0.3, 0.8, 0.8],
+                    "LambdaVDW": [0.1, 0.2, 0.4, 1.0],
+                    "LambdaCoulomb": [0.1, 0.3, 0.8, 1.0],
                 },
             )
 
@@ -5035,8 +5842,8 @@ class TestGOMCControlFileWriter(BaseTest):
                     "FreeEnergyCalc": [True, ["1"]],
                     "MoleculeType": ["ETO", 1],
                     "InitialState": 1,
-                    "LambdaVDW": [0.1, 0.2, 0.4, 0.9],
-                    "LambdaCoulomb": [0.1, 0.3, 0.8, 0.8],
+                    "LambdaVDW": [0.1, 0.2, 0.4, 1.0],
+                    "LambdaCoulomb": [0.1, 0.3, 0.8, 1.0],
                 },
             )
 
@@ -5057,8 +5864,8 @@ class TestGOMCControlFileWriter(BaseTest):
                     "FreeEnergyCalc": [True, {"a": "1"}],
                     "MoleculeType": ["ETO", 1],
                     "InitialState": 1,
-                    "LambdaVDW": [0.1, 0.2, 0.4, 0.9],
-                    "LambdaCoulomb": [0.1, 0.3, 0.8, 0.8],
+                    "LambdaVDW": [0.1, 0.2, 0.4, 1.0],
+                    "LambdaCoulomb": [0.1, 0.3, 0.8, 1.0],
                 },
             )
 
@@ -5079,8 +5886,8 @@ class TestGOMCControlFileWriter(BaseTest):
                     "FreeEnergyCalc": [True, 10000, "s"],
                     "MoleculeType": ["ETO", 1],
                     "InitialState": 1,
-                    "LambdaVDW": [0.1, 0.2, 0.4, 0.9],
-                    "LambdaCoulomb": [0.1, 0.3, 0.8, 0.8],
+                    "LambdaVDW": [0.1, 0.2, 0.4, 1.0],
+                    "LambdaCoulomb": [0.1, 0.3, 0.8, 1.0],
                 },
             )
 
@@ -5102,8 +5909,8 @@ class TestGOMCControlFileWriter(BaseTest):
                     "FreeEnergyCalc": [True, 10000],
                     "MoleculeType": [1, 1],
                     "InitialState": 1,
-                    "LambdaVDW": [0.1, 0.2, 0.4, 0.9],
-                    "LambdaCoulomb": [0.1, 0.3, 0.8, 0.8],
+                    "LambdaVDW": [0.1, 0.2, 0.4, 1.0],
+                    "LambdaCoulomb": [0.1, 0.3, 0.8, 1.0],
                 },
             )
 
@@ -5124,8 +5931,8 @@ class TestGOMCControlFileWriter(BaseTest):
                     "FreeEnergyCalc": [True, 10000],
                     "MoleculeType": [[1], 1],
                     "InitialState": 1,
-                    "LambdaVDW": [0.1, 0.2, 0.4, 0.9],
-                    "LambdaCoulomb": [0.1, 0.3, 0.8, 0.8],
+                    "LambdaVDW": [0.1, 0.2, 0.4, 1.0],
+                    "LambdaCoulomb": [0.1, 0.3, 0.8, 1.0],
                 },
             )
 
@@ -5146,8 +5953,8 @@ class TestGOMCControlFileWriter(BaseTest):
                     "FreeEnergyCalc": [True, 10000],
                     "MoleculeType": [{"a": "1"}, 1],
                     "InitialState": 1,
-                    "LambdaVDW": [0.1, 0.2, 0.4, 0.9],
-                    "LambdaCoulomb": [0.1, 0.3, 0.8, 0.8],
+                    "LambdaVDW": [0.1, 0.2, 0.4, 1.0],
+                    "LambdaCoulomb": [0.1, 0.3, 0.8, 1.0],
                 },
             )
 
@@ -5168,8 +5975,8 @@ class TestGOMCControlFileWriter(BaseTest):
                     "FreeEnergyCalc": [True, 10000],
                     "MoleculeType": ["ETO", "1"],
                     "InitialState": 1,
-                    "LambdaVDW": [0.1, 0.2, 0.4, 0.9],
-                    "LambdaCoulomb": [0.1, 0.3, 0.8, 0.8],
+                    "LambdaVDW": [0.1, 0.2, 0.4, 1.0],
+                    "LambdaCoulomb": [0.1, 0.3, 0.8, 1.0],
                 },
             )
 
@@ -5190,8 +5997,8 @@ class TestGOMCControlFileWriter(BaseTest):
                     "FreeEnergyCalc": [True, 10000],
                     "MoleculeType": ["ETO", ["1"]],
                     "InitialState": 1,
-                    "LambdaVDW": [0.1, 0.2, 0.4, 0.9],
-                    "LambdaCoulomb": [0.1, 0.3, 0.8, 0.8],
+                    "LambdaVDW": [0.1, 0.2, 0.4, 1.0],
+                    "LambdaCoulomb": [0.1, 0.3, 0.8, 1.0],
                 },
             )
 
@@ -5212,8 +6019,8 @@ class TestGOMCControlFileWriter(BaseTest):
                     "FreeEnergyCalc": [True, 10000],
                     "MoleculeType": ["ETO", {"a": "1"}],
                     "InitialState": 1,
-                    "LambdaVDW": [0.1, 0.2, 0.4, 0.9],
-                    "LambdaCoulomb": [0.1, 0.3, 0.8, 0.8],
+                    "LambdaVDW": [0.1, 0.2, 0.4, 1.0],
+                    "LambdaCoulomb": [0.1, 0.3, 0.8, 1.0],
                 },
             )
 
@@ -5234,8 +6041,8 @@ class TestGOMCControlFileWriter(BaseTest):
                     "FreeEnergyCalc": [True, 10000],
                     "MoleculeType": ["ETOa", 1],
                     "InitialState": 1,
-                    "LambdaVDW": [0.1, 0.2, 0.4, 0.9],
-                    "LambdaCoulomb": [0.1, 0.3, 0.8, 0.8],
+                    "LambdaVDW": [0.1, 0.2, 0.4, 1.0],
+                    "LambdaCoulomb": [0.1, 0.3, 0.8, 1.0],
                 },
             )
 
@@ -5257,8 +6064,8 @@ class TestGOMCControlFileWriter(BaseTest):
                     "FreeEnergyCalc": [True, 10000],
                     "MoleculeType": ["ETO", 1],
                     "InitialState": "s",
-                    "LambdaVDW": [0.1, 0.2, 0.4, 0.9],
-                    "LambdaCoulomb": [0.1, 0.3, 0.8, 0.8],
+                    "LambdaVDW": [0.1, 0.2, 0.4, 1.0],
+                    "LambdaCoulomb": [0.1, 0.3, 0.8, 1.0],
                 },
             )
 
@@ -5279,8 +6086,8 @@ class TestGOMCControlFileWriter(BaseTest):
                     "FreeEnergyCalc": [True, 10000],
                     "MoleculeType": ["ETO", 1],
                     "InitialState": ["s"],
-                    "LambdaVDW": [0.1, 0.2, 0.4, 0.9],
-                    "LambdaCoulomb": [0.1, 0.3, 0.8, 0.8],
+                    "LambdaVDW": [0.1, 0.2, 0.4, 1.0],
+                    "LambdaCoulomb": [0.1, 0.3, 0.8, 1.0],
                 },
             )
 
@@ -5301,8 +6108,8 @@ class TestGOMCControlFileWriter(BaseTest):
                     "FreeEnergyCalc": [True, 10000],
                     "MoleculeType": ["ETO", 1],
                     "InitialState": {"a": "1"},
-                    "LambdaVDW": [0.1, 0.2, 0.4, 0.9],
-                    "LambdaCoulomb": [0.1, 0.3, 0.8, 0.8],
+                    "LambdaVDW": [0.1, 0.2, 0.4, 1.0],
+                    "LambdaCoulomb": [0.1, 0.3, 0.8, 1.0],
                 },
             )
 
@@ -5323,8 +6130,8 @@ class TestGOMCControlFileWriter(BaseTest):
                     "FreeEnergyCalc": [True, 10000],
                     "MoleculeType": ["ETO", 1],
                     "InitialState": 1.0,
-                    "LambdaVDW": [0.1, 0.2, 0.4, 0.9],
-                    "LambdaCoulomb": [0.1, 0.3, 0.8, 0.8],
+                    "LambdaVDW": [0.1, 0.2, 0.4, 1.0],
+                    "LambdaCoulomb": [0.1, 0.3, 0.8, 1.0],
                 },
             )
 
@@ -5346,8 +6153,8 @@ class TestGOMCControlFileWriter(BaseTest):
                     "FreeEnergyCalc": [True, 10000],
                     "MoleculeType": ["ETO", 1],
                     "InitialState": 1,
-                    "LambdaVDW": ["x", 0.2, 0.4, 0.9],
-                    "LambdaCoulomb": [0.1, 0.3, 0.8, 0.8],
+                    "LambdaVDW": ["x", 0.2, 0.4, 1.0],
+                    "LambdaCoulomb": [0.1, 0.3, 0.8, 1.0],
                 },
             )
 
@@ -5368,8 +6175,8 @@ class TestGOMCControlFileWriter(BaseTest):
                     "FreeEnergyCalc": [True, 10000],
                     "MoleculeType": ["ETO", 1],
                     "InitialState": 1,
-                    "LambdaVDW": [[0.1], 0.2, 0.4, 0.9],
-                    "LambdaCoulomb": [0.1, 0.3, 0.8, 0.8],
+                    "LambdaVDW": [[0.1], 0.2, 0.4, 1.0],
+                    "LambdaCoulomb": [0.1, 0.3, 0.8, 1.0],
                 },
             )
 
@@ -5390,8 +6197,8 @@ class TestGOMCControlFileWriter(BaseTest):
                     "FreeEnergyCalc": [True, 10000],
                     "MoleculeType": ["ETO", 1],
                     "InitialState": 1,
-                    "LambdaVDW": [{"a": "1"}, 0.2, 0.4],
-                    "LambdaCoulomb": [0.1, 0.3, 0.8],
+                    "LambdaVDW": [{"a": "1"}, 0.2, 1.0],
+                    "LambdaCoulomb": [0.1, 0.3, 1.0],
                 },
             )
 
@@ -5413,8 +6220,8 @@ class TestGOMCControlFileWriter(BaseTest):
                     "FreeEnergyCalc": [True, 10000],
                     "MoleculeType": ["ETO", 1],
                     "InitialState": 1,
-                    "LambdaVDW": [0.1, 0.2, 0.4, 0.9],
-                    "LambdaCoulomb": ["x", 0.3, 0.8, 0.8],
+                    "LambdaVDW": [0.1, 0.2, 0.4, 1.0],
+                    "LambdaCoulomb": ["x", 0.3, 0.8, 1.0],
                 },
             )
 
@@ -5435,8 +6242,8 @@ class TestGOMCControlFileWriter(BaseTest):
                     "FreeEnergyCalc": [True, 10000],
                     "MoleculeType": ["ETO", 1],
                     "InitialState": 1,
-                    "LambdaVDW": [0.1, 0.2, 0.4, 0.9],
-                    "LambdaCoulomb": [[0.1], 0.3, 0.8, 0.8],
+                    "LambdaVDW": [0.1, 0.2, 0.4, 1.0],
+                    "LambdaCoulomb": [[0.1], 0.3, 0.8, 1.0],
                 },
             )
 
@@ -5457,8 +6264,8 @@ class TestGOMCControlFileWriter(BaseTest):
                     "FreeEnergyCalc": [True, 10000],
                     "MoleculeType": ["ETO", 1],
                     "InitialState": 1,
-                    "LambdaVDW": [0.1, 0.2, 0.4],
-                    "LambdaCoulomb": [{"a": "1"}, 0.3, 0.8],
+                    "LambdaVDW": [0.1, 0.2, 1.0],
+                    "LambdaCoulomb": [{"a": "1"}, 0.3, 1.0],
                 },
             )
 
@@ -5477,8 +6284,8 @@ class TestGOMCControlFileWriter(BaseTest):
                     "FreeEnergyCalc": [True, 10000],
                     "MoleculeType": ["ETO", 1],
                     "InitialState": 1,
-                    "LambdaVDW": [0.2, 0.4, 0.9],
-                    "LambdaCoulomb": [0.1, 0.3, 0.8, 0.8],
+                    "LambdaVDW": [0.2, 0.4, 1.0],
+                    "LambdaCoulomb": [0.1, 0.3, 0.8, 1.0],
                 },
             )
 
@@ -5496,8 +6303,8 @@ class TestGOMCControlFileWriter(BaseTest):
                     "FreeEnergyCalc": [True, 10000],
                     "MoleculeType": ["ETO", 1],
                     "InitialState": 1,
-                    "LambdaVDW": [0.1, 0.2, 0.4, 0.9],
-                    "LambdaCoulomb": [0.3, 0.8, 0.8],
+                    "LambdaVDW": [0.1, 0.2, 0.4, 1.0],
+                    "LambdaCoulomb": [0.3, 0.8, 1.0],
                 },
             )
 
@@ -7510,7 +8317,8 @@ class TestGOMCControlFileWriter(BaseTest):
                 300,
                 input_variables_dict={
                     "MEMC_DataInput": [
-                        [1, "ETH", ["C1", "C2"], "ETO", ["C1", "C2"]]
+                        [1, "ETH", ["C1", "C2"], "ETO", ["C1", "C2"]],
+                        [1, "ETH", ["C1", "C2"], "ETO", ["C1", "O1"]],
                     ],
                     "ChEmPot": {"ETH": -4000, "ETO": -8000},
                     "DisFreQ": 0.05,
@@ -7645,3 +8453,314 @@ class TestGOMCControlFileWriter(BaseTest):
                 100,
                 300,
             )
+
+    def test_save_non_othoganol_writer(self):
+        lattice_cif_ETV_triclinic = load_cif(
+            file_or_path=get_fn("ETV_triclinic.cif")
+        )
+        ETV_triclinic_1_cell = lattice_cif_ETV_triclinic.populate(x=1, y=1, z=1)
+        ETV_triclinic_1_cell.name = "ETV_1"
+        ETV_triclinic_3_cell = lattice_cif_ETV_triclinic.populate(x=3, y=3, z=3)
+        ETV_triclinic_3_cell.name = "ETV_3"
+
+        charmm = Charmm(
+            ETV_triclinic_1_cell,
+            "ETV_triclinic_1_cell_box_0",
+            structure_box_1=ETV_triclinic_3_cell,
+            filename_box_1="ETV_triclinic_3_cell_box_1",
+            ff_filename="ETV_triclinic_FF",
+            forcefield_selection={
+                ETV_triclinic_1_cell.name: get_fn(
+                    "Charmm_writer_testing_only_zeolite.xml"
+                ),
+                ETV_triclinic_3_cell.name: get_fn(
+                    "Charmm_writer_testing_only_zeolite.xml"
+                ),
+            },
+            residues=[ETV_triclinic_1_cell.name, ETV_triclinic_3_cell.name],
+            bead_to_atom_name_dict=None,
+            fix_residue=[ETV_triclinic_1_cell.name, ETV_triclinic_3_cell.name],
+        )
+
+        gomc_control.write_gomc_control_file(
+            charmm,
+            "test_save_non_othoganol_writer.conf",
+            "GEMC_NVT",
+            100000,
+            300,
+        )
+
+        with open("test_save_non_othoganol_writer.conf", "r") as fp:
+            cell_vector_box_0_1_read = False
+            cell_vector_box_0_2_read = False
+            cell_vector_box_0_3_read = False
+            cell_vector_box_1_1_read = False
+            cell_vector_box_1_2_read = False
+            cell_vector_box_1_3_read = False
+            out_gomc = fp.readlines()
+            for i, line in enumerate(out_gomc):
+                if line.startswith("CellBasisVector1 0"):
+                    cell_vector_box_0_1_read = True
+                    split_line = line.split()
+                    assert split_line[1] == "0"
+                    assert split_line[2] == "8.7503"
+                    assert split_line[3] == "0.0"
+                    assert split_line[4] == "0.0"
+
+                elif line.startswith("CellBasisVector2 0"):
+                    cell_vector_box_0_2_read = True
+                    split_line = line.split()
+                    assert split_line[1] == "0"
+                    assert split_line[2] == "-1.179131"
+                    assert split_line[3] == "9.575585"
+                    assert split_line[4] == "0.0"
+
+                elif line.startswith("CellBasisVector3 0"):
+                    cell_vector_box_0_3_read = True
+                    split_line = line.split()
+                    assert split_line[1] == "0"
+                    assert split_line[2] == "-1.817231"
+                    assert split_line[3] == "-3.027821"
+                    assert split_line[4] == "9.645823"
+
+                if line.startswith("CellBasisVector1 1"):
+                    cell_vector_box_1_1_read = True
+                    split_line = line.split()
+                    assert split_line[1] == "1"
+                    assert split_line[2] == "26.2509"
+                    assert split_line[3] == "0.0"
+                    assert split_line[4] == "0.0"
+
+                elif line.startswith("CellBasisVector2 1"):
+                    cell_vector_box_1_2_read = True
+                    split_line = line.split()
+                    assert split_line[1] == "1"
+                    assert split_line[2] == "-3.537381"
+                    assert split_line[3] == "28.726735"
+                    assert split_line[4] == "0.0"
+
+                elif line.startswith("CellBasisVector3 1"):
+                    cell_vector_box_1_3_read = True
+                    split_line = line.split()
+                    assert split_line[1] == "1"
+                    assert split_line[2] == "-5.451699"
+                    assert split_line[3] == "-9.083469"
+                    assert split_line[4] == "28.937455"
+
+                else:
+                    pass
+
+        assert cell_vector_box_0_1_read == True
+        assert cell_vector_box_0_2_read == True
+        assert cell_vector_box_0_3_read == True
+        assert cell_vector_box_1_1_read == True
+        assert cell_vector_box_1_2_read == True
+        assert cell_vector_box_1_3_read == True
+
+    def test_box_vector_too_many_char(self):
+
+        methane = mb.Compound(name="MET")
+        methane_child_bead = mb.Compound(name="_CH4")
+        methane.add(methane_child_bead, inherit_periodicity=False)
+
+        methane_box_orth = mb.fill_box(
+            compound=methane, n_compounds=10, box=[1, 2, 3]
+        )
+
+        charmm_bad_box_0 = Charmm(
+            methane_box_orth,
+            "methane_box_0_orth",
+            ff_filename="methane_box_orth_bad_box_0_non_orth",
+            residues=[methane.name],
+            forcefield_selection="trappe-ua",
+        )
+
+        # set the vectors all too long
+        charmm_bad_box_0.box_0_vectors[0][0] = -0.45678901234561
+        charmm_bad_box_0.box_0_vectors[0][1] = -0.45678901234562
+        charmm_bad_box_0.box_0_vectors[0][2] = -0.45678901234563
+        charmm_bad_box_0.box_0_vectors[1][0] = -0.45678901234564
+        charmm_bad_box_0.box_0_vectors[1][1] = -0.45678901234565
+        charmm_bad_box_0.box_0_vectors[1][2] = -0.45678901234566
+        charmm_bad_box_0.box_0_vectors[2][0] = -0.45678901234567
+        charmm_bad_box_0.box_0_vectors[2][1] = -0.45678901234568
+        charmm_bad_box_0.box_0_vectors[2][2] = -0.45678901234569
+
+        charmm_bad_box_1 = Charmm(
+            methane_box_orth,
+            "methane_box_0_orth",
+            structure_box_1=methane_box_orth,
+            filename_box_1="methane_box_1_orth",
+            ff_filename="methane_box_orth_bad_box_1_non_orth",
+            residues=[methane.name],
+            forcefield_selection="trappe-ua",
+        )
+
+        # set the vectors all too long
+        charmm_bad_box_1.box_1_vectors[0][0] = -0.45678901234561
+        charmm_bad_box_1.box_1_vectors[0][1] = -0.45678901234562
+        charmm_bad_box_1.box_1_vectors[0][2] = -0.45678901234563
+        charmm_bad_box_1.box_1_vectors[1][0] = -0.45678901234564
+        charmm_bad_box_1.box_1_vectors[1][1] = -0.45678901234565
+        charmm_bad_box_1.box_1_vectors[1][2] = -0.45678901234566
+        charmm_bad_box_1.box_1_vectors[2][0] = -0.45678901234567
+        charmm_bad_box_1.box_1_vectors[2][1] = -0.45678901234568
+        charmm_bad_box_1.box_1_vectors[2][2] = -0.45678901234569
+
+        # test that it fails with the GEMC_NVT with only 1 box in the Charmm object
+        with pytest.raises(
+            ValueError,
+            match=r"ERROR: At lease one of the individual box {} vectors are too large "
+            "or greater than {} characters."
+            "".format(0, 16),
+        ):
+
+            gomc_control.write_gomc_control_file(
+                charmm_bad_box_0,
+                "test_box_vector_too_many_char_box_0",
+                "NVT",
+                100,
+                300,
+            )
+
+        # test that it fails with the GEMC_NPT with only 1 box in the Charmm object
+        with pytest.raises(
+            ValueError,
+            match=r"ERROR: At lease one of the individual box {} vectors are too large "
+            "or greater than {} characters."
+            "".format(1, 16),
+        ):
+
+            gomc_control.write_gomc_control_file(
+                charmm_bad_box_1,
+                "test_box_vector_too_many_char_box_1",
+                "GCMC",
+                100,
+                300,
+            )
+
+    def test_adjustment_steps(self, ethane_gomc):
+        test_box_ethane_gomc = mb.fill_box(
+            compound=[ethane_gomc], n_compounds=[1], box=[2, 2, 2]
+        )
+        charmm = Charmm(
+            test_box_ethane_gomc,
+            "ethane_box_0",
+            structure_box_1=None,
+            filename_box_1=None,
+            ff_filename="ethane_FF",
+            residues=[ethane_gomc.name],
+            forcefield_selection="oplsaa",
+        )
+        gomc_control.write_gomc_control_file(
+            charmm,
+            "test_adjustment_steps.conf",
+            "NVT",
+            100000,
+            500,
+            input_variables_dict={
+                "PressureCalc": [True, 1],
+                "AdjSteps": 2,
+                "EqSteps": 3,
+                "CoordinatesFreq": [True, 4],
+                "RestartFreq": [True, 5],
+                "CheckpointFreq": [True, 6],
+                "ConsoleFreq": [True, 7],
+                "BlockAverageFreq": [True, 8],
+                "HistogramFreq": [True, 9],
+                "SampleFreq": 11,
+                "VDWGeometricSigma": True,
+            },
+        )
+
+        with open("test_adjustment_steps.conf", "r") as fp:
+            variables_read_dict = {
+                "PressureCalc": False,
+                "AdjSteps": False,
+                "EqSteps": False,
+                "CoordinatesFreq": False,
+                "RestartFreq": False,
+                "CheckpointFreq": False,
+                "ConsoleFreq": False,
+                "BlockAverageFreq": False,
+                "HistogramFreq": False,
+                "SampleFreq": False,
+                "VDWGeometricSigma": False,
+            }
+            out_gomc = fp.readlines()
+            for i, line in enumerate(out_gomc):
+                if line.startswith("PressureCalc "):
+                    variables_read_dict["PressureCalc"] = True
+                    split_line = line.split()
+                    assert split_line[1] == "True"
+                    assert split_line[2] == "1"
+
+                elif line.startswith("AdjSteps "):
+                    variables_read_dict["AdjSteps"] = True
+                    split_line = line.split()
+                    assert split_line[1] == "2"
+
+                elif line.startswith("EqSteps "):
+                    variables_read_dict["EqSteps"] = True
+                    split_line = line.split()
+                    assert split_line[1] == "3"
+
+                elif line.startswith("CoordinatesFreq "):
+                    variables_read_dict["CoordinatesFreq"] = True
+                    split_line = line.split()
+                    assert split_line[1] == "True"
+                    assert split_line[2] == "4"
+
+                elif line.startswith("RestartFreq "):
+                    variables_read_dict["RestartFreq"] = True
+                    split_line = line.split()
+                    assert split_line[1] == "True"
+                    assert split_line[2] == "5"
+
+                elif line.startswith("CheckpointFreq "):
+                    variables_read_dict["CheckpointFreq"] = True
+                    split_line = line.split()
+                    assert split_line[1] == "True"
+                    assert split_line[2] == "6"
+
+                elif line.startswith("ConsoleFreq "):
+                    variables_read_dict["ConsoleFreq"] = True
+                    split_line = line.split()
+                    assert split_line[1] == "True"
+                    assert split_line[2] == "7"
+
+                elif line.startswith("BlockAverageFreq "):
+                    variables_read_dict["BlockAverageFreq"] = True
+                    split_line = line.split()
+                    assert split_line[1] == "True"
+                    assert split_line[2] == "8"
+
+                elif line.startswith("HistogramFreq "):
+                    variables_read_dict["HistogramFreq"] = True
+                    split_line = line.split()
+                    assert split_line[1] == "True"
+                    assert split_line[2] == "9"
+
+                elif line.startswith("SampleFreq "):
+                    variables_read_dict["SampleFreq"] = True
+                    split_line = line.split()
+                    assert split_line[1] == "11"
+
+                elif line.startswith("VDWGeometricSigma "):
+                    variables_read_dict["VDWGeometricSigma"] = True
+                    split_line = line.split()
+                    assert split_line[1] == "True"
+
+        assert variables_read_dict == {
+            "PressureCalc": True,
+            "AdjSteps": True,
+            "EqSteps": True,
+            "CoordinatesFreq": True,
+            "RestartFreq": True,
+            "CheckpointFreq": True,
+            "ConsoleFreq": True,
+            "BlockAverageFreq": True,
+            "HistogramFreq": True,
+            "SampleFreq": True,
+            "VDWGeometricSigma": True,
+        }
