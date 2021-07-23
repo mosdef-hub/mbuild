@@ -188,7 +188,7 @@ def fill_box(
                 n_compounds = [
                     int(
                         density
-                        / compound_mass
+                        / total_mass
                         * np.prod(np.asarray(box.lengths))
                         * 0.60224
                     )
