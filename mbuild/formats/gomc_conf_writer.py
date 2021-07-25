@@ -4484,7 +4484,6 @@ class GOMCControl:
         Returns
         ---------
         Writes the GOMC control file with the name provided via conf_filename
-
             If completed without errors: str, "PASSED
             If completed with errors :  None
         """
@@ -5099,7 +5098,6 @@ class GOMCControl:
         data_control_file.write(
             "{:25s} {}\n".format("SampleFreq", self.SampleFreq)
         )
-        # print("{:10s}:    {}".format(arg, description))
         data_control_file.write(" \n")
 
         data_control_file.write("####################################\n")
