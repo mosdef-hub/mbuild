@@ -981,7 +981,7 @@ def _get_default_variables_dict():
 def check_valid_ensemble_files(ensemble_type, testing_ensemble_files_list):
     """
     Checks if all the required ensemble inputs are provided,
-        and provides a list of the bad variables in the printed output.
+    and provides a list of the bad variables in the printed output.
 
     Parameters
     ----------
@@ -1066,7 +1066,7 @@ def check_valid_ensemble_input_variables(
 ):
     """
     Checks if all the input variables (user optional) inputs are valid for the given
-        ensemble, and provides a list of the bad variables in the printed output.
+    ensemble, and provides a list of the bad variables in the printed output.
 
     Parameters
     ----------
