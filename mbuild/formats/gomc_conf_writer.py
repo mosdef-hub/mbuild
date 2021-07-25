@@ -6700,79 +6700,79 @@ def write_gomc_control_file(
 
     Attributes
     ----------
-        input_error : bool
-            This error is typically incurred from an error in the user input values.
-            However, it could also be due to a bug, provided the user is inputting
-            the data as this Class intends.
-        all_failed_input_List : list
-            A list of all the inputs that failed, but there may be some inputs that
-        ensemble_typ : str, ['NVT', 'NPT', 'GEMC_NPT', 'GCMC-NVT', 'GCMC']
-            The ensemble type of the simulation.
-        RunSteps : int (>0), must be an integer greater than zero.
-            Sets the total number of simulation steps.
-        Temperature : float or int (>0), must be an integer greater than zero.
-            Temperature of system in Kelvin (K)
-        ff_psf_pdb_file_directory : str (optional), default=None (i.e., the current directory).
-            The full or relative directory added to the force field, psf, and pdb
-            file names, created via the Charmm object.
-        override_check_input_files_exist : bool (default = False)
-            Override the check to see if the force field, psf, and pdb files exist.
-            If the files are checked and do not exist, the writer will throw a ValueError.
-            True, check if the force field, psf, and pdb files exist.
-            False, do not check if the force field, psf, and pdb files exist.
-        input_variables_dict: dict, default = None
-            These input variables are optional and override the default settings.
-            Changing these variables likely required for more advanced systems.
-            The details of the acceptable input variables for the selected
-            ensembles can be found by running this python workbook,
-            >>> print_valid_ensemble_input_variables('GCMC', description = True)
-            which prints the input_variables with their subsection description
-            for the selected 'GCMC' ensemble (other ensembles can be set as well).
-            Example : input_variables_dict = {'Restart' : False, 'PRNG' : 123,
-            'ParaTypeCHARMM' : True }
-        conf_filename : str
-            The name of the GOMC contol file, which will be created.  The extension
-            of the GOMC control file can be .conf, or no extension can be provided.
-            If no extension is provided, this writer will automatically add the
-            .conf extension to the provided string.
-        Coordinates_box_0 : str
-            The coordinate or PDB file for box 0 in the simulation.
-        Coordinates_box_1 : str or None
-            The coordinate or PDB file for box 1 in the simulation.  This is only for
-            GCMC, GEMC_NVT, and GEMC_NVT simulations. If running a NVT or NPT
-            simulation, the value will be None.
-        Structures_box_0 : str
-            The structure file or PSF file for box 0 in the simulation.
-            The coordinate or PDB file for box 1 in the simulation.  This is only for
-            GCMC, GEMC_NVT, and GEMC_NVT simulations. If running a NVT or NPT
-            simulation, the value will be None.
-        Structures_box_1 : str or None
-            The structure file or PSF file for box 1 in the simulation.  This is only for
-            GCMC, GEMC_NVT, and GEMC_NVT simulations. If running a NVT or NPT
-            simulation, the value will be None.
-        box_0_vectors : numpy.ndarray, [[float float float], [float float float], [float float float]]
-            Three (3) sets vectors for box 0 each with 3 float values, which represent
-            the vectors for the Charmm-style systems (units in Angstroms (Ang))
-        box_1_vectors : numpy.ndarray, [[float float float], [float float float], [float float float]]
-            Three (3) sets vectors for box 1 each with 3 float values, which represent
-            the vectors for the Charmm-style systems (units in Angstroms (Ang))
-        coul_1_4 : float or int
-            The non-bonded 1-4 coulombic scaling factor, which is the
-            same for all the residues/molecules, regardless if
-            differenct force fields are utilized.
-        residues : list, [str, ..., str]
-            Labels of unique residues in the Compound. Residues are assigned by
-            checking against Compound.name.  Only supply residue names as 4 character
-            strings, as the residue names are truncated to 4 characters to fit in the
-            psf and pdb file.
-        all_res_unique_atom_name_dict : dict, {str : [str, ..., str]}
-            A dictionary that provides the residue names (keys) and a list
-            of the unique atom names in the residue (value), for the
-            combined structures (box 0 and box 1 (if supplied)).
-        any input_variables_dict key : varies (see each input_variables_dict key and value)
-            Any of the input variables keys is also an Attribute and can be called
-            the same way.  Please see the input_variables_dict keys in the
-            Parameters section above for all the available attributes.
+    input_error : bool
+        This error is typically incurred from an error in the user input values.
+        However, it could also be due to a bug, provided the user is inputting
+        the data as this Class intends.
+    all_failed_input_List : list
+        A list of all the inputs that failed, but there may be some inputs that
+    ensemble_typ : str, ['NVT', 'NPT', 'GEMC_NPT', 'GCMC-NVT', 'GCMC']
+        The ensemble type of the simulation.
+    RunSteps : int (>0), must be an integer greater than zero.
+        Sets the total number of simulation steps.
+    Temperature : float or int (>0), must be an integer greater than zero.
+        Temperature of system in Kelvin (K)
+    ff_psf_pdb_file_directory : str (optional), default=None (i.e., the current directory).
+        The full or relative directory added to the force field, psf, and pdb
+        file names, created via the Charmm object.
+    override_check_input_files_exist : bool (default = False)
+        Override the check to see if the force field, psf, and pdb files exist.
+        If the files are checked and do not exist, the writer will throw a ValueError.
+        True, check if the force field, psf, and pdb files exist.
+        False, do not check if the force field, psf, and pdb files exist.
+    input_variables_dict: dict, default = None
+        These input variables are optional and override the default settings.
+        Changing these variables likely required for more advanced systems.
+        The details of the acceptable input variables for the selected
+        ensembles can be found by running this python workbook,
+        >>> print_valid_ensemble_input_variables('GCMC', description = True)
+        which prints the input_variables with their subsection description
+        for the selected 'GCMC' ensemble (other ensembles can be set as well).
+        Example : input_variables_dict = {'Restart' : False, 'PRNG' : 123,
+        'ParaTypeCHARMM' : True }
+    conf_filename : str
+        The name of the GOMC contol file, which will be created.  The extension
+        of the GOMC control file can be .conf, or no extension can be provided.
+        If no extension is provided, this writer will automatically add the
+        .conf extension to the provided string.
+    Coordinates_box_0 : str
+        The coordinate or PDB file for box 0 in the simulation.
+    Coordinates_box_1 : str or None
+        The coordinate or PDB file for box 1 in the simulation.  This is only for
+        GCMC, GEMC_NVT, and GEMC_NVT simulations. If running a NVT or NPT
+        simulation, the value will be None.
+    Structures_box_0 : str
+        The structure file or PSF file for box 0 in the simulation.
+        The coordinate or PDB file for box 1 in the simulation.  This is only for
+        GCMC, GEMC_NVT, and GEMC_NVT simulations. If running a NVT or NPT
+        simulation, the value will be None.
+    Structures_box_1 : str or None
+        The structure file or PSF file for box 1 in the simulation.  This is only for
+        GCMC, GEMC_NVT, and GEMC_NVT simulations. If running a NVT or NPT
+        simulation, the value will be None.
+    box_0_vectors : numpy.ndarray, [[float float float], [float float float], [float float float]]
+        Three (3) sets vectors for box 0 each with 3 float values, which represent
+        the vectors for the Charmm-style systems (units in Angstroms (Ang))
+    box_1_vectors : numpy.ndarray, [[float float float], [float float float], [float float float]]
+        Three (3) sets vectors for box 1 each with 3 float values, which represent
+        the vectors for the Charmm-style systems (units in Angstroms (Ang))
+    coul_1_4 : float or int
+        The non-bonded 1-4 coulombic scaling factor, which is the
+        same for all the residues/molecules, regardless if
+        differenct force fields are utilized.
+    residues : list, [str, ..., str]
+        Labels of unique residues in the Compound. Residues are assigned by
+        checking against Compound.name.  Only supply residue names as 4 character
+        strings, as the residue names are truncated to 4 characters to fit in the
+        psf and pdb file.
+    all_res_unique_atom_name_dict : dict, {str : [str, ..., str]}
+        A dictionary that provides the residue names (keys) and a list
+        of the unique atom names in the residue (value), for the
+        combined structures (box 0 and box 1 (if supplied)).
+    any input_variables_dict key : varies (see each input_variables_dict key and value)
+        Any of the input variables keys is also an Attribute and can be called
+        the same way.  Please see the input_variables_dict keys in the
+        Parameters section above for all the available attributes.
 
     Notes
     -------
