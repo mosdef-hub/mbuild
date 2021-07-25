@@ -6087,6 +6087,7 @@ def _check_if_input_files_exist(
     If the file exists : None
     If the file does not exist : raise ValueError
     """
+
     if (
         os.path.isfile(file_directory_and_name) is False
         and override_check_input_files_exist is False
@@ -6730,7 +6731,7 @@ def write_gomc_control_file(
             which prints the input_variables with their subsection description
             for the selected 'GCMC' ensemble (other ensembles can be set as well).
             Example : input_variables_dict = {'Restart' : False, 'PRNG' : 123,
-                                              'ParaTypeCHARMM' : True }
+            'ParaTypeCHARMM' : True }
         conf_filename : str
             The name of the GOMC contol file, which will be created.  The extension
             of the GOMC control file can be .conf, or no extension can be provided.
