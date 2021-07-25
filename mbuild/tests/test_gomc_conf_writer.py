@@ -8989,8 +8989,8 @@ class TestGOMCControlFileWriter(BaseTest):
         # test the failure of the ff_psf_pdb_file_directory variable is not None or a string
         with pytest.raises(
             TypeError,
-            match= f"ERROR: The {'ff_psf_pdb_file_directory'} variable for directly entering the "
-                   f"{'force field, pdb, and psf'} file directory and name is a {type(['x'])} and not a string."
+            match=f"ERROR: The {'ff_psf_pdb_file_directory'} variable for directly entering the "
+            f"{'force field, pdb, and psf'} file directory and name is a {type(['x'])} and not a string.",
         ):
             gomc_control.write_gomc_control_file(
                 charmm,

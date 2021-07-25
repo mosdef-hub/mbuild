@@ -2087,18 +2087,22 @@ class GOMCControl:
             not isinstance(self.ff_psf_pdb_file_directory, str)
             and self.ff_psf_pdb_file_directory is not None
         ):
-            _check_if_string('ff_psf_pdb_file_directory',
-                             self.ff_psf_pdb_file_directory,
-                             'force field, pdb, and psf')
+            _check_if_string(
+                "ff_psf_pdb_file_directory",
+                self.ff_psf_pdb_file_directory,
+                "force field, pdb, and psf",
+            )
 
         if (
             charmm_object.ff_filename is not None
             and isinstance(charmm_object.ff_filename, str) is True
         ):
             if override_ff_directory_filename is not None:
-                _check_if_string('override_ff_directory_filename',
-                                 override_ff_directory_filename,
-                                 'force field')
+                _check_if_string(
+                    "override_ff_directory_filename",
+                    override_ff_directory_filename,
+                    "force field",
+                )
                 self.ff_filename = override_ff_directory_filename
             elif self.ff_psf_pdb_file_directory is None:
                 self.ff_filename = charmm_object.ff_filename
@@ -2133,12 +2137,16 @@ class GOMCControl:
             and isinstance(charmm_object.filename_box_0, str) is True
         ):
             if override_box_0_pdb_directory_filename is not None:
-                _check_if_string('override_box_0_pdb_directory_filename',
-                                 override_box_0_pdb_directory_filename,
-                                 'pdb')
-                _check_if_string('override_box_0_psf_directory_filename',
-                                 override_box_0_psf_directory_filename,
-                                 'psf')
+                _check_if_string(
+                    "override_box_0_pdb_directory_filename",
+                    override_box_0_pdb_directory_filename,
+                    "pdb",
+                )
+                _check_if_string(
+                    "override_box_0_psf_directory_filename",
+                    override_box_0_psf_directory_filename,
+                    "psf",
+                )
                 self.Coordinates_box_0 = override_box_0_pdb_directory_filename
                 self.Structures_box_0 = override_box_0_psf_directory_filename
             elif self.ff_psf_pdb_file_directory is None:
@@ -2172,12 +2180,16 @@ class GOMCControl:
             and isinstance(charmm_object.filename_box_1, str) is True
         ):
             if override_box_1_pdb_directory_filename is not None:
-                _check_if_string('override_box_1_pdb_directory_filename',
-                                 override_box_1_pdb_directory_filename,
-                                 'pdb')
-                _check_if_string('override_box_1_psf_directory_filename',
-                                 override_box_1_psf_directory_filename,
-                                 'psf')
+                _check_if_string(
+                    "override_box_1_pdb_directory_filename",
+                    override_box_1_pdb_directory_filename,
+                    "pdb",
+                )
+                _check_if_string(
+                    "override_box_1_psf_directory_filename",
+                    override_box_1_psf_directory_filename,
+                    "psf",
+                )
                 self.Coordinates_box_1 = override_box_1_pdb_directory_filename
                 self.Structures_box_1 = override_box_1_psf_directory_filename
             elif self.ff_psf_pdb_file_directory is None:
@@ -6149,10 +6161,11 @@ def _check_if_input_files_exist(
         )
         raise ValueError(print_error_message)
 
+
 def _check_if_string(
-        file_directory_and_name,
-        file_directory_and_name_variable,
-        type_of_file,
+    file_directory_and_name,
+    file_directory_and_name_variable,
+    type_of_file,
 ):
     """
     Checks to see GOMC FF, pdb, and psf files exist
@@ -6172,8 +6185,8 @@ def _check_if_string(
     If the variable is not a string : raise TypeError
     """
     if (
-            not isinstance(file_directory_and_name_variable, str)
-            and file_directory_and_name_variable is not None
+        not isinstance(file_directory_and_name_variable, str)
+        and file_directory_and_name_variable is not None
     ):
         print_error_message = (
             r"ERROR: The {} variable for directly entering the "
@@ -6184,6 +6197,7 @@ def _check_if_string(
             )
         )
         raise TypeError(print_error_message)
+
 
 # user callable function to write the GOMC control file
 def write_gomc_control_file(
