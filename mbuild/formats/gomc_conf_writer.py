@@ -6699,7 +6699,7 @@ def write_gomc_control_file(
     # *******************************************************************
 
     Attributes
-        ----------
+    ----------
         input_error : bool
             This error is typically incurred from an error in the user input values.
             However, it could also be due to a bug, provided the user is inputting
