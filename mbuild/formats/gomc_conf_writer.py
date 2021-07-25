@@ -1326,7 +1326,7 @@ class GOMCControl:
     ff_psf_pdb_file_directory : str (optional), default=None (i.e., the current directory).
         The full or relative directory added to the force field, psf, and pdb
         file names, created via the Charmm object.
-    override_check_files_exist : bool (default = False)
+    override_check_files_exist : bool, (default = False)
         Override the check to see if the force field, psf, and pdb files exist.
         If the files are checked and do not exist, the writer will throw a ValueError.
         True, check if the force field, psf, and pdb files exist.
@@ -1336,7 +1336,7 @@ class GOMCControl:
         Changing these variables likely required for more advanced systems.
         The details of the acceptable input variables for the selected
         ensembles can be found by running this python workbook,
-            print_valid_ensemble_input_variables('GCMC', description = True)
+        >>> print_valid_ensemble_input_variables('GCMC', description = True)
         which prints the input_variables with their subsection description
         for the selected 'GCMC' ensemble (other ensembles can be set as well).
 
@@ -1904,7 +1904,7 @@ class GOMCControl:
     ff_psf_pdb_file_directory : str (optional), default=None (i.e., the current directory).
         The full or relative directory added to the force field, psf, and pdb
         file names, created via the Charmm object.
-    override_check_files_exist : bool (default = False)
+    override_check_files_exist : bool, (default = False)
         Override the check to see if the force field, psf, and pdb files exist.
         If the files are checked and do not exist, the writer will throw a ValueError.
         True, check if the force field, psf, and pdb files exist.
@@ -1914,7 +1914,7 @@ class GOMCControl:
         Changing these variables likely required for more advanced systems.
         The details of the acceptable input variables for the selected
         ensembles can be found by running this python workbook,
-            print_valid_ensemble_input_variables('GCMC', description = True)
+        >>> print_valid_ensemble_input_variables('GCMC', description = True)
         which prints the input_variables with their subsection description
         for the selected 'GCMC' ensemble (other ensembles can be set as well).
         Example : input_variables_dict = {'Restart' : False, 'PRNG' : 123,
@@ -6067,7 +6067,7 @@ def _check_if_input_files_exist(
     override_check_input_files_exist=False,
 ):
     """
-    Checks to see if the vectors exceed the specified character limit
+    Checks to see GOMC FF, pdb, and psf files exist
 
     Parameters
     ----------
@@ -6724,7 +6724,7 @@ def write_gomc_control_file(
             Changing these variables likely required for more advanced systems.
             The details of the acceptable input variables for the selected
             ensembles can be found by running this python workbook,
-                print_valid_ensemble_input_variables('GCMC', description = True)
+            >>> print_valid_ensemble_input_variables('GCMC', description = True)
             which prints the input_variables with their subsection description
             for the selected 'GCMC' ensemble (other ensembles can be set as well).
             Example : input_variables_dict = {'Restart' : False, 'PRNG' : 123,
