@@ -1742,7 +1742,7 @@ class GOMCControl:
         rotated or displaced simultaneously, along the calculated torque or force
         respectively (i.e., fraction of multi-particle moves).
     IntraMEMC_1Freq : int or float (0 <= value <= 1), default are specific for each ensemble
-    {'NVT': 0.0, 'NPT': 0.0, 'GEMC_NVT': 0.0, 'GEMC_NPT': 0.0, 'GCMC': 0.0}
+        {'NVT': 0.0, 'NPT': 0.0, 'GEMC_NVT': 0.0, 'GEMC_NPT': 0.0, 'GCMC': 0.0}
         Fractional percentage at which specified number of small molecule kind will be
         exchanged with a specified large molecule kind in defined sub-volume within
         same simulation box.  This move need additional information such as
@@ -1894,7 +1894,9 @@ class GOMCControl:
         This error is typically incurred from an error in the user input values.
         However, it could also be due to a bug, provided the user is inputting
         the data as this Class intends.
-    all_failed_input_List
+    all_failed_input_List : list
+        A list of all the inputs that failed, but there may be some inputs that
+        are not possible to put on this list.
     ensemble_typ : str, ['NVT', 'NPT', 'GEMC_NPT', 'GCMC-NVT', 'GCMC']
         The ensemble type of the simulation.
     RunSteps : int (>0), must be an integer greater than zero.
@@ -1936,7 +1938,7 @@ class GOMCControl:
         GCMC, GEMC_NVT, and GEMC_NVT simulations. If running a NVT or NPT
         simulation, the value will be None.
     Structures_box_1 : str or None
-    The structure file or PSF file for box 1 in the simulation.  This is only for
+        The structure file or PSF file for box 1 in the simulation.  This is only for
         GCMC, GEMC_NVT, and GEMC_NVT simulations. If running a NVT or NPT
         simulation, the value will be None.
     box_0_vectors : numpy.ndarray, [[float float float], [float float float], [float float float]]
@@ -1962,7 +1964,6 @@ class GOMCControl:
         Any of the input variables keys is also an Attribute and can be called
         the same way.  Please see the input_variables_dict keys in the
         Parameters section above for all the available attributes.
-
 
     Notes
     -------
@@ -6552,7 +6553,7 @@ def write_gomc_control_file(
         rotated or displaced simultaneously, along the calculated torque or force
         respectively (i.e., fraction of multi-particle moves).
     IntraMEMC_1Freq : int or float (0 <= value <= 1), default are specific for each ensemble
-    {'NVT': 0.0, 'NPT': 0.0, 'GEMC_NVT': 0.0, 'GEMC_NPT': 0.0, 'GCMC': 0.0}
+        {'NVT': 0.0, 'NPT': 0.0, 'GEMC_NVT': 0.0, 'GEMC_NPT': 0.0, 'GCMC': 0.0}
         Fractional percentage at which specified number of small molecule kind will be
         exchanged with a specified large molecule kind in defined sub-volume within
         same simulation box.  This move need additional information such as
@@ -6704,7 +6705,8 @@ def write_gomc_control_file(
             This error is typically incurred from an error in the user input values.
             However, it could also be due to a bug, provided the user is inputting
             the data as this Class intends.
-        all_failed_input_List
+        all_failed_input_List : list
+            A list of all the inputs that failed, but there may be some inputs that
         ensemble_typ : str, ['NVT', 'NPT', 'GEMC_NPT', 'GCMC-NVT', 'GCMC']
             The ensemble type of the simulation.
         RunSteps : int (>0), must be an integer greater than zero.
@@ -6746,7 +6748,7 @@ def write_gomc_control_file(
             GCMC, GEMC_NVT, and GEMC_NVT simulations. If running a NVT or NPT
             simulation, the value will be None.
         Structures_box_1 : str or None
-        The structure file or PSF file for box 1 in the simulation.  This is only for
+            The structure file or PSF file for box 1 in the simulation.  This is only for
             GCMC, GEMC_NVT, and GEMC_NVT simulations. If running a NVT or NPT
             simulation, the value will be None.
         box_0_vectors : numpy.ndarray, [[float float float], [float float float], [float float float]]
@@ -6772,7 +6774,6 @@ def write_gomc_control_file(
             Any of the input variables keys is also an Attribute and can be called
             the same way.  Please see the input_variables_dict keys in the
             Parameters section above for all the available attributes.
-
 
     Notes
     -------
