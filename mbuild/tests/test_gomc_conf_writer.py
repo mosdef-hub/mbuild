@@ -363,7 +363,11 @@ class TestGOMCControlFileWriter(BaseTest):
             forcefield_selection="oplsaa",
         )
         gomc_control.write_gomc_control_file(
-            charmm, "test_save_basic_NVT.conf", "NVT", 10, 300,
+            charmm,
+            "test_save_basic_NVT.conf",
+            "NVT",
+            10,
+            300,
             override_check_input_files_exist=True,
         )
 
@@ -841,7 +845,11 @@ class TestGOMCControlFileWriter(BaseTest):
             forcefield_selection="oplsaa",
         )
         gomc_control.write_gomc_control_file(
-            charmm, "test_save_basic_NPT.conf", "NPT", 1000, 500,
+            charmm,
+            "test_save_basic_NPT.conf",
+            "NPT",
+            1000,
+            500,
             override_check_input_files_exist=True,
         )
 
@@ -1450,7 +1458,11 @@ class TestGOMCControlFileWriter(BaseTest):
             forcefield_selection="oplsaa",
         )
         gomc_control.write_gomc_control_file(
-            charmm, "test_save_basic_GEMC_NVT.conf", "GEMC_NVT", 1000000, 500,
+            charmm,
+            "test_save_basic_GEMC_NVT.conf",
+            "GEMC_NVT",
+            1000000,
+            500,
             override_check_input_files_exist=True,
         )
 
@@ -8953,7 +8965,7 @@ class TestGOMCControlFileWriter(BaseTest):
         test_box_ethane_gomc = mb.fill_box(
             compound=[ethane_gomc], n_compounds=[1], box=[2, 2, 2]
         )
-        changed_file_path = '../files'
+        changed_file_path = "../files"
         charmm = Charmm(
             test_box_ethane_gomc,
             "ethane_box_0",
@@ -8968,7 +8980,7 @@ class TestGOMCControlFileWriter(BaseTest):
         with pytest.raises(
             TypeError,
             match=f"ERROR: The ff_psf_pdb_file_directory variable for modifying the FF, pdb, "
-                  f"and psf file directories is a {type(['x'])} and not a string.",
+            f"and psf file directories is a {type(['x'])} and not a string.",
         ):
             gomc_control.write_gomc_control_file(
                 charmm,
@@ -8977,7 +8989,7 @@ class TestGOMCControlFileWriter(BaseTest):
                 100,
                 300,
                 override_check_input_files_exist=True,
-                ff_psf_pdb_file_directory=['x'],
+                ff_psf_pdb_file_directory=["x"],
             )
 
         gomc_control.write_gomc_control_file(
@@ -9089,27 +9101,37 @@ class TestGOMCControlFileWriter(BaseTest):
                 elif line.startswith("Parameters "):
                     variables_read_dict["Parameters"] = True
                     split_line = line.split()
-                    assert split_line[1] == "{}/ethane_FF.inp".format(changed_file_path)
+                    assert split_line[1] == "{}/ethane_FF.inp".format(
+                        changed_file_path
+                    )
 
                 elif line.startswith("Coordinates 0 "):
                     variables_read_dict["Coordinates_box_0"] = True
                     split_line = line.split()
-                    assert split_line[2] == "{}/ethane_box_0.pdb".format(changed_file_path)
+                    assert split_line[2] == "{}/ethane_box_0.pdb".format(
+                        changed_file_path
+                    )
 
                 elif line.startswith("Structure 0 "):
                     variables_read_dict["Structure_box_0"] = True
                     split_line = line.split()
-                    assert split_line[2] == "{}/ethane_box_0.psf".format(changed_file_path)
+                    assert split_line[2] == "{}/ethane_box_0.psf".format(
+                        changed_file_path
+                    )
 
                 elif line.startswith("Coordinates 1 "):
                     variables_read_dict["Coordinates_box_1"] = True
                     split_line = line.split()
-                    assert split_line[2] == "{}/ethane_box_1.pdb".format(changed_file_path)
+                    assert split_line[2] == "{}/ethane_box_1.pdb".format(
+                        changed_file_path
+                    )
 
                 elif line.startswith("Structure 1 "):
                     variables_read_dict["Structure_box_1"] = True
                     split_line = line.split()
-                    assert split_line[2] == "{}/ethane_box_1.psf".format(changed_file_path)
+                    assert split_line[2] == "{}/ethane_box_1.psf".format(
+                        changed_file_path
+                    )
 
         assert variables_read_dict == {
             "PressureCalc": True,
@@ -9145,10 +9167,12 @@ class TestGOMCControlFileWriter(BaseTest):
         )
 
         with pytest.raises(
-                ValueError,
-                match=r"The {} with the file directory and name {}, "
-                      "does not exist.".format("force field file or parameter file",
-                                              "{}".format("ethane_FF.inp")),
+            ValueError,
+            match=r"The {} with the file directory and name {}, "
+            "does not exist.".format(
+                "force field file or parameter file",
+                "{}".format("ethane_FF.inp"),
+            ),
         ):
             gomc_control.write_gomc_control_file(
                 charmm,
@@ -9177,10 +9201,11 @@ class TestGOMCControlFileWriter(BaseTest):
         charmm.write_inp()
 
         with pytest.raises(
-                ValueError,
-                match=r"The {} with the file directory and name {}, "
-                      "does not exist.".format("box 0 pdb file",
-                                               "{}".format("ethane_box_0.pdb")),
+            ValueError,
+            match=r"The {} with the file directory and name {}, "
+            "does not exist.".format(
+                "box 0 pdb file", "{}".format("ethane_box_0.pdb")
+            ),
         ):
             gomc_control.write_gomc_control_file(
                 charmm,
@@ -9210,10 +9235,11 @@ class TestGOMCControlFileWriter(BaseTest):
         charmm.write_pdb()
 
         with pytest.raises(
-                ValueError,
-                match=r"The {} with the file directory and name {}, "
-                      "does not exist.".format("box 0 psf file",
-                                               "{}".format("ethane_box_0.psf")),
+            ValueError,
+            match=r"The {} with the file directory and name {}, "
+            "does not exist.".format(
+                "box 0 psf file", "{}".format("ethane_box_0.psf")
+            ),
         ):
             gomc_control.write_gomc_control_file(
                 charmm,
@@ -9242,10 +9268,11 @@ class TestGOMCControlFileWriter(BaseTest):
         charmm.write_inp()
 
         with pytest.raises(
-                ValueError,
-                match=r"The {} with the file directory and name {}, "
-                      "does not exist.".format("box 0 pdb file",
-                                               "{}".format("ethane_box_0.pdb")),
+            ValueError,
+            match=r"The {} with the file directory and name {}, "
+            "does not exist.".format(
+                "box 0 pdb file", "{}".format("ethane_box_0.pdb")
+            ),
         ):
             gomc_control.write_gomc_control_file(
                 charmm,
@@ -9275,10 +9302,11 @@ class TestGOMCControlFileWriter(BaseTest):
         charmm.write_pdb()
 
         with pytest.raises(
-                ValueError,
-                match=r"The {} with the file directory and name {}, "
-                      "does not exist.".format("box 0 psf file",
-                                               "{}".format("ethane_box_0.psf")),
+            ValueError,
+            match=r"The {} with the file directory and name {}, "
+            "does not exist.".format(
+                "box 0 psf file", "{}".format("ethane_box_0.psf")
+            ),
         ):
             gomc_control.write_gomc_control_file(
                 charmm,

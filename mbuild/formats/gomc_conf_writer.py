@@ -81,8 +81,8 @@ def _get_required_data(description=False):
         "ff_psf_pdb_file_directory": "str (optional), default=None (i.e., the current directory)."
         "The full or relative directory added to the force field, psf, and pdb"
         "file names, created via the Charmm object.",
-        "override_check_input_files_exist" : "bool (default = False) " 
-        "Override the check to see if the force field, psf, and pdb files exist. " 
+        "override_check_input_files_exist": "bool (default = False) "
+        "Override the check to see if the force field, psf, and pdb files exist. "
         "If the files are checked and do not exist, the writer will throw a ValueError."
         "True, check if the force field, psf, and pdb files exist."
         "False, do not check if the force field, psf, and pdb files exist.",
@@ -2047,11 +2047,16 @@ class GOMCControl:
         self.RunSteps = RunSteps
         self.Temperature = Temperature
         self.ff_psf_pdb_file_directory = ff_psf_pdb_file_directory
-        if not isinstance(self.ff_psf_pdb_file_directory, str) and self.ff_psf_pdb_file_directory is not None:
+        if (
+            not isinstance(self.ff_psf_pdb_file_directory, str)
+            and self.ff_psf_pdb_file_directory is not None
+        ):
             self.input_error = True
             print_error_message = (
                 r"ERROR: The ff_psf_pdb_file_directory variable for modifying the FF, pdb, "
-                r"and psf file directories is a {} and not a string.".format(type(self.ff_psf_pdb_file_directory))
+                r"and psf file directories is a {} and not a string.".format(
+                    type(self.ff_psf_pdb_file_directory)
+                )
             )
             raise TypeError(print_error_message)
 
@@ -2062,14 +2067,16 @@ class GOMCControl:
             if self.ff_psf_pdb_file_directory is None:
                 self.ff_filename = charmm_object.ff_filename
             else:
-                self.ff_filename = "{}/{}".format(self.ff_psf_pdb_file_directory,
-                                                  charmm_object.ff_filename,
-                                                  )
+                self.ff_filename = "{}/{}".format(
+                    self.ff_psf_pdb_file_directory,
+                    charmm_object.ff_filename,
+                )
             # check if the FF file exist:
-            _check_if_input_files_exist(self.ff_filename,
-                                        "force field file or parameter file",
-                                        override_check_input_files_exist=override_check_input_files_exist,
-                                        )
+            _check_if_input_files_exist(
+                self.ff_filename,
+                "force field file or parameter file",
+                override_check_input_files_exist=override_check_input_files_exist,
+            )
         elif (
             charmm_object.ff_filename is None
             or isinstance(charmm_object.ff_filename, str) is False
@@ -2090,44 +2097,60 @@ class GOMCControl:
             and isinstance(charmm_object.filename_box_0, str) is True
         ):
             if self.ff_psf_pdb_file_directory is None:
-                self.Coordinates_box_0 = "{}.pdb".format(charmm_object.filename_box_0)
-                self.Structures_box_0 = "{}.psf".format(charmm_object.filename_box_0)
+                self.Coordinates_box_0 = "{}.pdb".format(
+                    charmm_object.filename_box_0
+                )
+                self.Structures_box_0 = "{}.psf".format(
+                    charmm_object.filename_box_0
+                )
             else:
-                self.Coordinates_box_0 = "{}/{}.pdb".format(self.ff_psf_pdb_file_directory,
-                                                            charmm_object.filename_box_0)
-                self.Structures_box_0 = "{}/{}.psf".format(self.ff_psf_pdb_file_directory,
-                                                           charmm_object.filename_box_0)
+                self.Coordinates_box_0 = "{}/{}.pdb".format(
+                    self.ff_psf_pdb_file_directory, charmm_object.filename_box_0
+                )
+                self.Structures_box_0 = "{}/{}.psf".format(
+                    self.ff_psf_pdb_file_directory, charmm_object.filename_box_0
+                )
 
-            _check_if_input_files_exist(self.Coordinates_box_0,
-                                        "box 0 pdb file",
-                                        override_check_input_files_exist=override_check_input_files_exist,
-                                        )
-            _check_if_input_files_exist(self.Structures_box_0,
-                                        "box 0 psf file",
-                                        override_check_input_files_exist=override_check_input_files_exist,
-                                        )
+            _check_if_input_files_exist(
+                self.Coordinates_box_0,
+                "box 0 pdb file",
+                override_check_input_files_exist=override_check_input_files_exist,
+            )
+            _check_if_input_files_exist(
+                self.Structures_box_0,
+                "box 0 psf file",
+                override_check_input_files_exist=override_check_input_files_exist,
+            )
 
         if (
             charmm_object.filename_box_1 is not None
             and isinstance(charmm_object.filename_box_1, str) is True
         ):
             if self.ff_psf_pdb_file_directory is None:
-                self.Coordinates_box_1 = "{}.pdb".format(charmm_object.filename_box_1)
-                self.Structures_box_1 = "{}.psf".format(charmm_object.filename_box_1)
+                self.Coordinates_box_1 = "{}.pdb".format(
+                    charmm_object.filename_box_1
+                )
+                self.Structures_box_1 = "{}.psf".format(
+                    charmm_object.filename_box_1
+                )
             else:
-                self.Coordinates_box_1 = "{}/{}.pdb".format(self.ff_psf_pdb_file_directory,
-                                                            charmm_object.filename_box_1)
-                self.Structures_box_1 = "{}/{}.psf".format(self.ff_psf_pdb_file_directory,
-                                                           charmm_object.filename_box_1)
+                self.Coordinates_box_1 = "{}/{}.pdb".format(
+                    self.ff_psf_pdb_file_directory, charmm_object.filename_box_1
+                )
+                self.Structures_box_1 = "{}/{}.psf".format(
+                    self.ff_psf_pdb_file_directory, charmm_object.filename_box_1
+                )
 
-            _check_if_input_files_exist(self.Coordinates_box_1,
-                                        "box 1 pdb file",
-                                        override_check_input_files_exist=override_check_input_files_exist,
-                                        )
-            _check_if_input_files_exist(self.Structures_box_1,
-                                        "box 1 psf file",
-                                        override_check_input_files_exist=override_check_input_files_exist,
-                                        )
+            _check_if_input_files_exist(
+                self.Coordinates_box_1,
+                "box 1 pdb file",
+                override_check_input_files_exist=override_check_input_files_exist,
+            )
+            _check_if_input_files_exist(
+                self.Structures_box_1,
+                "box 1 psf file",
+                override_check_input_files_exist=override_check_input_files_exist,
+            )
 
         else:
             self.Coordinates_box_1 = None
@@ -6011,6 +6034,7 @@ def ck_box_dim_is_float_or_int_greater_0(
 
     return None
 
+
 def _check_box_vectors_char_limit(vectors, char_limit):
     """
     Checks to see if the vectors exceed the specified character limit
@@ -6036,9 +6060,12 @@ def _check_box_vectors_char_limit(vectors, char_limit):
                 return False
     return True
 
-def _check_if_input_files_exist(file_directory_and_name,
-                                type_of_file,
-                                override_check_input_files_exist=False):
+
+def _check_if_input_files_exist(
+    file_directory_and_name,
+    type_of_file,
+    override_check_input_files_exist=False,
+):
     """
     Checks to see if the vectors exceed the specified character limit
 
@@ -6059,12 +6086,16 @@ def _check_if_input_files_exist(file_directory_and_name,
     If the file exists : None
     If the file does not exist : raise ValueError
     """
-    if os.path.isfile(file_directory_and_name) is False and override_check_input_files_exist is False:
-        print_error_message = ("The {} with the file directory and name {}, "
-                               "does not exist.".format(type_of_file,
-                                                       file_directory_and_name)
-                               )
+    if (
+        os.path.isfile(file_directory_and_name) is False
+        and override_check_input_files_exist is False
+    ):
+        print_error_message = (
+            "The {} with the file directory and name {}, "
+            "does not exist.".format(type_of_file, file_directory_and_name)
+        )
         raise ValueError(print_error_message)
+
 
 # user callable function to write the GOMC control file
 def write_gomc_control_file(
@@ -6793,7 +6824,6 @@ def write_gomc_control_file(
         ff_psf_pdb_file_directory=ff_psf_pdb_file_directory,
         override_check_input_files_exist=override_check_input_files_exist,
         input_variables_dict=input_variables_dict,
-
     )
     test_gomc_control_write_conf_file = gomc_control.write_conf_file(
         conf_filename
