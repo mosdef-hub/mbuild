@@ -86,6 +86,16 @@ def _get_required_data(description=False):
         "If the files are checked and do not exist, the writer will throw a ValueError."
         "True, check if the force field, psf, and pdb files exist."
         "False, do not check if the force field, psf, and pdb files exist.",
+        "override_ff_directory_filename": "str, (default = None)"
+        "Override all other force field directory and filename inputs.",
+        "override_box_0_pdb_directory_filename": "str, (default = None)"
+        "Override all other box 0 pdb directory and filename inputs.",
+        "override_box_0_psf_directory_filename": "str, (default = None)"
+        "Override all other box 0 psf directory and filename inputs.",
+        "override_box_1_pdb_directory_filename": "str, (default = None)"
+        "Override all other box 1 pdb directory and filename inputs.",
+        "override_box_1_psf_directory_filename": "str, (default = None)"
+        "Override all other box 1 psf directory and filename inputs.",
     }
 
     if description:
@@ -1326,11 +1336,21 @@ class GOMCControl:
     ff_psf_pdb_file_directory : str (optional), default=None (i.e., the current directory).
         The full or relative directory added to the force field, psf, and pdb
         file names, created via the Charmm object.
-    override_check_files_exist : bool, (default = False)
+    override_check_files_inputs_exist : bool, (default = False)
         Override the check to see if the force field, psf, and pdb files exist.
         If the files are checked and do not exist, the writer will throw a ValueError.
         True, check if the force field, psf, and pdb files exist.
         False, do not check if the force field, psf, and pdb files exist.
+    override_ff_directory_filename : str, (default = None)
+        Override all other force field directory and filename inputs.
+    override_box_0_pdb_directory_filename : str, (default = None)
+        Override all other box 0 pdb directory and filename inputs.
+    override_box_0_psf_directory_filename : str, (default = None)
+        Override all other box 0 psf directory and filename inputs.
+    override_box_1_pdb_directory_filename : str, (default = None)
+        Override all other box 1 pdb directory and filename inputs.
+    override_box_1_psf_directory_filename : str, (default = None)
+        Override all other box 1  psf directory and filename inputs.
     input_variables_dict: dict, default = None
         These input variables are optional and override the default settings.
         Changing these variables likely required for more advanced systems.
@@ -1906,11 +1926,21 @@ class GOMCControl:
     ff_psf_pdb_file_directory : str (optional), default=None (i.e., the current directory).
         The full or relative directory added to the force field, psf, and pdb
         file names, created via the Charmm object.
-    override_check_files_exist : bool, (default = False)
+    override_check_files_inputs_exist : bool, (default = False)
         Override the check to see if the force field, psf, and pdb files exist.
         If the files are checked and do not exist, the writer will throw a ValueError.
         True, check if the force field, psf, and pdb files exist.
         False, do not check if the force field, psf, and pdb files exist.
+    override_ff_directory_filename : str, (default = None)
+        Override all other force field directory and filename inputs.
+    override_box_0_pdb_directory_filename : str, (default = None)
+        Override all other box 0 pdb directory and filename inputs.
+    override_box_0_psf_directory_filename : str, (default = None)
+        Override all other box 0 psf directory and filename inputs.
+    override_box_1_pdb_directory_filename : str, (default = None)
+        Override all other box 1 pdb directory and filename inputs.
+    override_box_1_psf_directory_filename : str, (default = None)
+        Override all other box 1  psf directory and filename inputs.
     input_variables_dict: dict, default = None
         These input variables are optional and override the default settings.
         Changing these variables likely required for more advanced systems.
@@ -2009,6 +2039,11 @@ class GOMCControl:
         Temperature,
         ff_psf_pdb_file_directory=None,
         override_check_input_files_exist=False,
+        override_ff_directory_filename=None,
+        override_box_0_pdb_directory_filename=None,
+        override_box_0_psf_directory_filename=None,
+        override_box_1_pdb_directory_filename=None,
+        override_box_1_psf_directory_filename=None,
         input_variables_dict=None,
     ):
 
@@ -2052,20 +2087,20 @@ class GOMCControl:
             not isinstance(self.ff_psf_pdb_file_directory, str)
             and self.ff_psf_pdb_file_directory is not None
         ):
-            self.input_error = True
-            print_error_message = (
-                r"ERROR: The ff_psf_pdb_file_directory variable for modifying the FF, pdb, "
-                r"and psf file directories is a {} and not a string.".format(
-                    type(self.ff_psf_pdb_file_directory)
-                )
-            )
-            raise TypeError(print_error_message)
+            _check_if_string('ff_psf_pdb_file_directory',
+                             self.ff_psf_pdb_file_directory,
+                             'force field, pdb, and psf')
 
         if (
             charmm_object.ff_filename is not None
             and isinstance(charmm_object.ff_filename, str) is True
         ):
-            if self.ff_psf_pdb_file_directory is None:
+            if override_ff_directory_filename is not None:
+                _check_if_string('override_ff_directory_filename',
+                                 override_ff_directory_filename,
+                                 'force field')
+                self.ff_filename = override_ff_directory_filename
+            elif self.ff_psf_pdb_file_directory is None:
                 self.ff_filename = charmm_object.ff_filename
             else:
                 self.ff_filename = "{}/{}".format(
@@ -2097,7 +2132,16 @@ class GOMCControl:
             charmm_object.filename_box_0 is not None
             and isinstance(charmm_object.filename_box_0, str) is True
         ):
-            if self.ff_psf_pdb_file_directory is None:
+            if override_box_0_pdb_directory_filename is not None:
+                _check_if_string('override_box_0_pdb_directory_filename',
+                                 override_box_0_pdb_directory_filename,
+                                 'pdb')
+                _check_if_string('override_box_0_psf_directory_filename',
+                                 override_box_0_psf_directory_filename,
+                                 'psf')
+                self.Coordinates_box_0 = override_box_0_pdb_directory_filename
+                self.Structures_box_0 = override_box_0_psf_directory_filename
+            elif self.ff_psf_pdb_file_directory is None:
                 self.Coordinates_box_0 = "{}.pdb".format(
                     charmm_object.filename_box_0
                 )
@@ -2127,7 +2171,16 @@ class GOMCControl:
             charmm_object.filename_box_1 is not None
             and isinstance(charmm_object.filename_box_1, str) is True
         ):
-            if self.ff_psf_pdb_file_directory is None:
+            if override_box_1_pdb_directory_filename is not None:
+                _check_if_string('override_box_1_pdb_directory_filename',
+                                 override_box_1_pdb_directory_filename,
+                                 'pdb')
+                _check_if_string('override_box_1_psf_directory_filename',
+                                 override_box_1_psf_directory_filename,
+                                 'psf')
+                self.Coordinates_box_1 = override_box_1_pdb_directory_filename
+                self.Structures_box_1 = override_box_1_psf_directory_filename
+            elif self.ff_psf_pdb_file_directory is None:
                 self.Coordinates_box_1 = "{}.pdb".format(
                     charmm_object.filename_box_1
                 )
@@ -6074,7 +6127,7 @@ def _check_if_input_files_exist(
         The file directory and name of the file.
     type_of_file : str
         A brief description of the file which is evaluated.
-    override_check_input_files_exist : bool (default = False)
+    override_check_input_files_exist: bool (default = False)
         Override the check to see if the force field, psf, and pdb files exist.
         If the files are checked and do not exist, the writer will throw a ValueError.
         True, check if the force field, psf, and pdb files exist.
@@ -6085,17 +6138,52 @@ def _check_if_input_files_exist(
     If the file exists : None
     If the file does not exist : raise ValueError
     """
-
     if (
         os.path.isfile(file_directory_and_name) is False
         and override_check_input_files_exist is False
     ):
+
         print_error_message = (
             "The {} with the file directory and name {}, "
             "does not exist.".format(type_of_file, file_directory_and_name)
         )
         raise ValueError(print_error_message)
 
+def _check_if_string(
+        file_directory_and_name,
+        file_directory_and_name_variable,
+        type_of_file,
+):
+    """
+    Checks to see GOMC FF, pdb, and psf files exist
+
+    Parameters
+    ----------
+    file_directory_and_name : str
+        The file directory and name of the file.
+    file_directory_and_name_variable : variable
+        The variable for the file directory and name of the file.
+    type_of_file : str
+        A brief description of the file which is evaluated (force file, psf, pdb).
+
+    Returns
+    -------
+    If the variable is a string : None
+    If the variable is not a string : raise TypeError
+    """
+    if (
+            not isinstance(file_directory_and_name_variable, str)
+            and file_directory_and_name_variable is not None
+    ):
+        print_error_message = (
+            r"ERROR: The {} variable for directly entering the "
+            r"{} file directory and name is a {} and not a string.".format(
+                file_directory_and_name,
+                type_of_file,
+                type(file_directory_and_name_variable),
+            )
+        )
+        raise TypeError(print_error_message)
 
 # user callable function to write the GOMC control file
 def write_gomc_control_file(
@@ -6106,6 +6194,11 @@ def write_gomc_control_file(
     Temperature,
     ff_psf_pdb_file_directory=None,
     override_check_input_files_exist=False,
+    override_ff_directory_filename=None,
+    override_box_0_pdb_directory_filename=None,
+    override_box_0_psf_directory_filename=None,
+    override_box_1_pdb_directory_filename=None,
+    override_box_1_psf_directory_filename=None,
     input_variables_dict=None,
 ):
     """
@@ -6136,11 +6229,21 @@ def write_gomc_control_file(
     ff_psf_pdb_file_directory : str (optional), default=None (i.e., the current directory).
         The full or relative directory added to the force field, psf, and pdb
         file names, created via the Charmm object.
-    override_check_input_files_exist : bool (default = False)
+    override_check_files_inputs_exist : bool, (default = False)
         Override the check to see if the force field, psf, and pdb files exist.
         If the files are checked and do not exist, the writer will throw a ValueError.
         True, check if the force field, psf, and pdb files exist.
         False, do not check if the force field, psf, and pdb files exist.
+    override_ff_directory_filename : str, (default = None)
+        Override all other force field directory and filename inputs.
+    override_box_0_pdb_directory_filename : str, (default = None)
+        Override all other box 0 pdb directory and filename inputs.
+    override_box_0_psf_directory_filename : str, (default = None)
+        Override all other box 0 psf directory and filename inputs.
+    override_box_1_pdb_directory_filename : str, (default = None)
+        Override all other box 1 pdb directory and filename inputs.
+    override_box_1_psf_directory_filename : str, (default = None)
+        Override all other box 1  psf directory and filename inputs.
     input_variables_dict: dict, default=None
         These input variables are optional and override the default settings.
         Changing these variables likely required for more advanced systems.
@@ -6715,11 +6818,21 @@ def write_gomc_control_file(
     ff_psf_pdb_file_directory : str (optional), default=None (i.e., the current directory).
         The full or relative directory added to the force field, psf, and pdb
         file names, created via the Charmm object.
-    override_check_input_files_exist : bool (default = False)
+    override_check_input_files_exist: bool (default = False)
         Override the check to see if the force field, psf, and pdb files exist.
         If the files are checked and do not exist, the writer will throw a ValueError.
         True, check if the force field, psf, and pdb files exist.
         False, do not check if the force field, psf, and pdb files exist.
+    override_ff_directory_filename : str, (default = None)
+        Override all other force field directory and filename inputs.
+    override_box_0_pdb_directory_filename : str, (default = None)
+        Override all other box 0 pdb directory and filename inputs.
+    override_box_0_psf_directory_filename : str, (default = None)
+        Override all other box 0 psf directory and filename inputs.
+    override_box_1_pdb_directory_filename : str, (default = None)
+        Override all other box 1 pdb directory and filename inputs.
+    override_box_1_psf_directory_filename : str, (default = None)
+        Override all other box 1  psf directory and filename inputs.
     input_variables_dict: dict, default = None
         These input variables are optional and override the default settings.
         Changing these variables likely required for more advanced systems.
@@ -6823,6 +6936,11 @@ def write_gomc_control_file(
         Temperature,
         ff_psf_pdb_file_directory=ff_psf_pdb_file_directory,
         override_check_input_files_exist=override_check_input_files_exist,
+        override_ff_directory_filename=override_ff_directory_filename,
+        override_box_0_pdb_directory_filename=override_box_0_pdb_directory_filename,
+        override_box_0_psf_directory_filename=override_box_0_psf_directory_filename,
+        override_box_1_pdb_directory_filename=override_box_1_pdb_directory_filename,
+        override_box_1_psf_directory_filename=override_box_1_psf_directory_filename,
         input_variables_dict=input_variables_dict,
     )
     test_gomc_control_write_conf_file = gomc_control.write_conf_file(

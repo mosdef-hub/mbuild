@@ -27,6 +27,11 @@ class TestGOMCControlFileWriter(BaseTest):
             "Temperature",
             "ff_psf_pdb_file_directory",
             "override_check_input_files_exist",
+            "override_ff_directory_filename",
+            "override_box_0_pdb_directory_filename",
+            "override_box_0_psf_directory_filename",
+            "override_box_1_pdb_directory_filename",
+            "override_box_1_psf_directory_filename",
         ]
 
         value = gomc_control._get_required_data(description=True)
@@ -37,6 +42,11 @@ class TestGOMCControlFileWriter(BaseTest):
             "Temperature",
             "ff_psf_pdb_file_directory",
             "override_check_input_files_exist",
+            "override_ff_directory_filename",
+            "override_box_0_pdb_directory_filename",
+            "override_box_0_psf_directory_filename",
+            "override_box_1_pdb_directory_filename",
+            "override_box_1_psf_directory_filename",
         ]
 
     def test_get_all_possible_input_variable(self):
@@ -8979,8 +8989,8 @@ class TestGOMCControlFileWriter(BaseTest):
         # test the failure of the ff_psf_pdb_file_directory variable is not None or a string
         with pytest.raises(
             TypeError,
-            match=f"ERROR: The ff_psf_pdb_file_directory variable for modifying the FF, pdb, "
-            f"and psf file directories is a {type(['x'])} and not a string.",
+            match= f"ERROR: The {'ff_psf_pdb_file_directory'} variable for directly entering the "
+                   f"{'force field, pdb, and psf'} file directory and name is a {type(['x'])} and not a string."
         ):
             gomc_control.write_gomc_control_file(
                 charmm,
