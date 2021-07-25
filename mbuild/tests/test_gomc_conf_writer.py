@@ -25,6 +25,8 @@ class TestGOMCControlFileWriter(BaseTest):
             "ensemble_type",
             "RunSteps",
             "Temperature",
+            "ff_psf_pdb_file_directory",
+            "override_check_input_files_exist",
         ]
 
         value = gomc_control._get_required_data(description=True)
@@ -33,6 +35,8 @@ class TestGOMCControlFileWriter(BaseTest):
             "ensemble_type",
             "RunSteps",
             "Temperature",
+            "ff_psf_pdb_file_directory",
+            "override_check_input_files_exist",
         ]
 
     def test_get_all_possible_input_variable(self):
@@ -359,7 +363,8 @@ class TestGOMCControlFileWriter(BaseTest):
             forcefield_selection="oplsaa",
         )
         gomc_control.write_gomc_control_file(
-            charmm, "test_save_basic_NVT.conf", "NVT", 10, 300
+            charmm, "test_save_basic_NVT.conf", "NVT", 10, 300,
+            override_check_input_files_exist=True,
         )
 
         with open("test_save_basic_NVT.conf", "r") as fp:
@@ -836,7 +841,8 @@ class TestGOMCControlFileWriter(BaseTest):
             forcefield_selection="oplsaa",
         )
         gomc_control.write_gomc_control_file(
-            charmm, "test_save_basic_NPT.conf", "NPT", 1000, 500
+            charmm, "test_save_basic_NPT.conf", "NPT", 1000, 500,
+            override_check_input_files_exist=True,
         )
 
         with open("test_save_basic_NPT.conf", "r") as fp:
@@ -1109,6 +1115,7 @@ class TestGOMCControlFileWriter(BaseTest):
             "GCMC",
             100000,
             500,
+            override_check_input_files_exist=True,
             input_variables_dict={
                 "ChemPot": {"ETH": -4000},
                 "VDWGeometricSigma": True,
@@ -1443,7 +1450,8 @@ class TestGOMCControlFileWriter(BaseTest):
             forcefield_selection="oplsaa",
         )
         gomc_control.write_gomc_control_file(
-            charmm, "test_save_basic_GEMC_NVT.conf", "GEMC_NVT", 1000000, 500
+            charmm, "test_save_basic_GEMC_NVT.conf", "GEMC_NVT", 1000000, 500,
+            override_check_input_files_exist=True,
         )
 
         with open("test_save_basic_GEMC_NVT.conf", "r") as fp:
@@ -1574,6 +1582,7 @@ class TestGOMCControlFileWriter(BaseTest):
             "GEMC_NPT",
             1000000,
             500,
+            override_check_input_files_exist=True,
             input_variables_dict={
                 "Pressure": 10,
                 "useConstantArea": True,
@@ -1747,6 +1756,7 @@ class TestGOMCControlFileWriter(BaseTest):
             "NVT",
             100000,
             300,
+            override_check_input_files_exist=True,
             input_variables_dict={
                 "Restart": True,
                 "PRNG": 123,
@@ -2381,6 +2391,7 @@ class TestGOMCControlFileWriter(BaseTest):
                 "NVT",
                 100,
                 300,
+                override_check_input_files_exist=True,
                 input_variables_dict={
                     "FreeEnergyCalc": [True, 10],
                     "MoleculeType": ["ETH", 1],
@@ -2400,6 +2411,7 @@ class TestGOMCControlFileWriter(BaseTest):
                 "NVT",
                 100,
                 300,
+                override_check_input_files_exist=True,
                 input_variables_dict={
                     "FreeEnergyCalc": [True, 10],
                     "MoleculeType": ["ETH", 1],
@@ -2436,6 +2448,7 @@ class TestGOMCControlFileWriter(BaseTest):
                 "NVT",
                 10,
                 300,
+                override_check_input_files_exist=True,
                 input_variables_dict={"Restart": "s"},
             )
 
@@ -2452,6 +2465,7 @@ class TestGOMCControlFileWriter(BaseTest):
                 "NVT",
                 10,
                 300,
+                override_check_input_files_exist=True,
                 input_variables_dict={"RestartCheckpoint": "s"},
             )
 
@@ -2468,6 +2482,7 @@ class TestGOMCControlFileWriter(BaseTest):
                 "NVT",
                 10,
                 300,
+                override_check_input_files_exist=True,
                 input_variables_dict={"PRNG": [1]},
             )
 
@@ -2484,6 +2499,7 @@ class TestGOMCControlFileWriter(BaseTest):
                 "NVT",
                 10,
                 300,
+                override_check_input_files_exist=True,
                 input_variables_dict={"ParaTypeCHARMM": "s"},
             )
 
@@ -2500,6 +2516,7 @@ class TestGOMCControlFileWriter(BaseTest):
                 "NVT",
                 10,
                 300,
+                override_check_input_files_exist=True,
                 input_variables_dict={"ParaTypeMie": "s"},
             )
 
@@ -2516,6 +2533,7 @@ class TestGOMCControlFileWriter(BaseTest):
                 "NVT",
                 10,
                 300,
+                override_check_input_files_exist=True,
                 input_variables_dict={"ParaTypeMARTINI": "s"},
             )
 
@@ -2532,6 +2550,7 @@ class TestGOMCControlFileWriter(BaseTest):
                 "NVT",
                 10,
                 300,
+                override_check_input_files_exist=True,
                 input_variables_dict={"RcutCoulomb_box_0": "s"},
             )
 
@@ -2550,6 +2569,7 @@ class TestGOMCControlFileWriter(BaseTest):
                 "NVT",
                 10,
                 300,
+                override_check_input_files_exist=True,
                 input_variables_dict={"RcutCoulomb_box_1": "s"},
             )
 
@@ -2566,6 +2586,7 @@ class TestGOMCControlFileWriter(BaseTest):
                 "NVT",
                 10,
                 300,
+                override_check_input_files_exist=True,
                 input_variables_dict={"Pressure": "s"},
             )
 
@@ -2582,6 +2603,7 @@ class TestGOMCControlFileWriter(BaseTest):
                 "NVT",
                 10,
                 300,
+                override_check_input_files_exist=True,
                 input_variables_dict={"Rcut": "s"},
             )
 
@@ -2598,6 +2620,7 @@ class TestGOMCControlFileWriter(BaseTest):
                 "NVT",
                 10,
                 300,
+                override_check_input_files_exist=True,
                 input_variables_dict={"RcutLow": "s"},
             )
 
@@ -2614,6 +2637,7 @@ class TestGOMCControlFileWriter(BaseTest):
                 "NVT",
                 10,
                 300,
+                override_check_input_files_exist=True,
                 input_variables_dict={"LRC": "s"},
             )
 
@@ -2630,6 +2654,7 @@ class TestGOMCControlFileWriter(BaseTest):
                 "NVT",
                 10,
                 300,
+                override_check_input_files_exist=True,
                 input_variables_dict={"Exclude": "s"},
             )
 
@@ -2646,6 +2671,7 @@ class TestGOMCControlFileWriter(BaseTest):
                 "NVT",
                 10,
                 300,
+                override_check_input_files_exist=True,
                 input_variables_dict={"Potential": "s"},
             )
 
@@ -2662,6 +2688,7 @@ class TestGOMCControlFileWriter(BaseTest):
                 "NVT",
                 10,
                 300,
+                override_check_input_files_exist=True,
                 input_variables_dict={"Rswitch": "s"},
             )
 
@@ -2678,6 +2705,7 @@ class TestGOMCControlFileWriter(BaseTest):
                 "NVT",
                 10,
                 300,
+                override_check_input_files_exist=True,
                 input_variables_dict={"ElectroStatic": "s"},
             )
 
@@ -2694,6 +2722,7 @@ class TestGOMCControlFileWriter(BaseTest):
                 "NVT",
                 10,
                 300,
+                override_check_input_files_exist=True,
                 input_variables_dict={"Ewald": "s"},
             )
 
@@ -2710,6 +2739,7 @@ class TestGOMCControlFileWriter(BaseTest):
                 "NVT",
                 10,
                 300,
+                override_check_input_files_exist=True,
                 input_variables_dict={"CachedFourier": "s"},
             )
 
@@ -2726,6 +2756,7 @@ class TestGOMCControlFileWriter(BaseTest):
                 "NVT",
                 10,
                 300,
+                override_check_input_files_exist=True,
                 input_variables_dict={"Tolerance": "s"},
             )
 
@@ -2742,6 +2773,7 @@ class TestGOMCControlFileWriter(BaseTest):
                 "NVT",
                 10,
                 300,
+                override_check_input_files_exist=True,
                 input_variables_dict={"Dielectric": "s"},
             )
 
@@ -2758,6 +2790,7 @@ class TestGOMCControlFileWriter(BaseTest):
                 "NVT",
                 10,
                 300,
+                override_check_input_files_exist=True,
                 input_variables_dict={"PressureCalc": "s"},
             )
 
@@ -2774,6 +2807,7 @@ class TestGOMCControlFileWriter(BaseTest):
                 "NVT",
                 10,
                 300,
+                override_check_input_files_exist=True,
                 input_variables_dict={"EqSteps": "s"},
             )
 
@@ -2790,6 +2824,7 @@ class TestGOMCControlFileWriter(BaseTest):
                 "NVT",
                 10,
                 300,
+                override_check_input_files_exist=True,
                 input_variables_dict={"EqSteps": "s"},
             )
 
@@ -2806,6 +2841,7 @@ class TestGOMCControlFileWriter(BaseTest):
                 "NPT",
                 10,
                 300,
+                override_check_input_files_exist=True,
                 input_variables_dict={"useConstantArea": "s"},
             )
 
@@ -2824,6 +2860,7 @@ class TestGOMCControlFileWriter(BaseTest):
                 "NVT",
                 10,
                 300,
+                override_check_input_files_exist=True,
                 input_variables_dict={"ChemPot": "s"},
             )
 
@@ -2842,6 +2879,7 @@ class TestGOMCControlFileWriter(BaseTest):
                 "NVT",
                 10,
                 300,
+                override_check_input_files_exist=True,
                 input_variables_dict={"Fugacity": "s"},
             )
 
@@ -2858,6 +2896,7 @@ class TestGOMCControlFileWriter(BaseTest):
                 "NVT",
                 10,
                 300,
+                override_check_input_files_exist=True,
                 input_variables_dict={"CBMC_First": "s"},
             )
 
@@ -2874,6 +2913,7 @@ class TestGOMCControlFileWriter(BaseTest):
                 "NVT",
                 10,
                 300,
+                override_check_input_files_exist=True,
                 input_variables_dict={"CBMC_Nth": "s"},
             )
 
@@ -2890,6 +2930,7 @@ class TestGOMCControlFileWriter(BaseTest):
                 "NVT",
                 10,
                 300,
+                override_check_input_files_exist=True,
                 input_variables_dict={"CBMC_Ang": "s"},
             )
 
@@ -2906,6 +2947,7 @@ class TestGOMCControlFileWriter(BaseTest):
                 "NVT",
                 10,
                 300,
+                override_check_input_files_exist=True,
                 input_variables_dict={"CBMC_Dih": "s"},
             )
 
@@ -2922,6 +2964,7 @@ class TestGOMCControlFileWriter(BaseTest):
                 "NVT",
                 10,
                 300,
+                override_check_input_files_exist=True,
                 input_variables_dict={"OutputName": 1},
             )
 
@@ -2938,6 +2981,7 @@ class TestGOMCControlFileWriter(BaseTest):
                 "NVT",
                 10,
                 300,
+                override_check_input_files_exist=True,
                 input_variables_dict={"CoordinatesFreq": "s"},
             )
 
@@ -2954,6 +2998,7 @@ class TestGOMCControlFileWriter(BaseTest):
                 "NVT",
                 10,
                 300,
+                override_check_input_files_exist=True,
                 input_variables_dict={"RestartFreq": "s"},
             )
 
@@ -2970,6 +3015,7 @@ class TestGOMCControlFileWriter(BaseTest):
                 "NVT",
                 10,
                 300,
+                override_check_input_files_exist=True,
                 input_variables_dict={"CheckpointFreq": "s"},
             )
 
@@ -2986,6 +3032,7 @@ class TestGOMCControlFileWriter(BaseTest):
                 "NVT",
                 10,
                 300,
+                override_check_input_files_exist=True,
                 input_variables_dict={"ConsoleFreq": "s"},
             )
 
@@ -3002,6 +3049,7 @@ class TestGOMCControlFileWriter(BaseTest):
                 "NVT",
                 10,
                 300,
+                override_check_input_files_exist=True,
                 input_variables_dict={"BlockAverageFreq": "s"},
             )
 
@@ -3018,6 +3066,7 @@ class TestGOMCControlFileWriter(BaseTest):
                 "NVT",
                 10,
                 300,
+                override_check_input_files_exist=True,
                 input_variables_dict={"HistogramFreq": "s"},
             )
 
@@ -3034,6 +3083,7 @@ class TestGOMCControlFileWriter(BaseTest):
                 "NVT",
                 10,
                 300,
+                override_check_input_files_exist=True,
                 input_variables_dict={"DistName": 1},
             )
 
@@ -3050,6 +3100,7 @@ class TestGOMCControlFileWriter(BaseTest):
                 "NVT",
                 10,
                 300,
+                override_check_input_files_exist=True,
                 input_variables_dict={"HistName": 1},
             )
 
@@ -3066,6 +3117,7 @@ class TestGOMCControlFileWriter(BaseTest):
                 "NVT",
                 10,
                 300,
+                override_check_input_files_exist=True,
                 input_variables_dict={"RunNumber": "s"},
             )
 
@@ -3082,6 +3134,7 @@ class TestGOMCControlFileWriter(BaseTest):
                 "NVT",
                 10,
                 300,
+                override_check_input_files_exist=True,
                 input_variables_dict={"RunLetter": 1},
             )
 
@@ -3098,6 +3151,7 @@ class TestGOMCControlFileWriter(BaseTest):
                 "NVT",
                 10,
                 300,
+                override_check_input_files_exist=True,
                 input_variables_dict={"SampleFreq": "s"},
             )
 
@@ -3114,6 +3168,7 @@ class TestGOMCControlFileWriter(BaseTest):
                 "NVT",
                 10,
                 300,
+                override_check_input_files_exist=True,
                 input_variables_dict={"OutEnergy": "s"},
             )
 
@@ -3130,6 +3185,7 @@ class TestGOMCControlFileWriter(BaseTest):
                 "NVT",
                 10,
                 300,
+                override_check_input_files_exist=True,
                 input_variables_dict={"OutPressure": "s"},
             )
 
@@ -3146,6 +3202,7 @@ class TestGOMCControlFileWriter(BaseTest):
                 "NVT",
                 10,
                 300,
+                override_check_input_files_exist=True,
                 input_variables_dict={"OutMolNumber": "s"},
             )
 
@@ -3162,6 +3219,7 @@ class TestGOMCControlFileWriter(BaseTest):
                 "NVT",
                 10,
                 300,
+                override_check_input_files_exist=True,
                 input_variables_dict={"OutDensity": "s"},
             )
 
@@ -3178,6 +3236,7 @@ class TestGOMCControlFileWriter(BaseTest):
                 "NVT",
                 10,
                 300,
+                override_check_input_files_exist=True,
                 input_variables_dict={"OutVolume": "s"},
             )
 
@@ -3194,6 +3253,7 @@ class TestGOMCControlFileWriter(BaseTest):
                 "NVT",
                 10,
                 300,
+                override_check_input_files_exist=True,
                 input_variables_dict={"OutSurfaceTension": "s"},
             )
 
@@ -3210,6 +3270,7 @@ class TestGOMCControlFileWriter(BaseTest):
                 "NVT",
                 10,
                 300,
+                override_check_input_files_exist=True,
                 input_variables_dict={
                     "FreeEnergyCalc": "s",
                     "MoleculeType": ["ETH", 1],
@@ -3232,6 +3293,7 @@ class TestGOMCControlFileWriter(BaseTest):
                 "NVT",
                 10,
                 300,
+                override_check_input_files_exist=True,
                 input_variables_dict={
                     "FreeEnergyCalc": [True, 10000],
                     "MoleculeType": ["ETH", "s"],
@@ -3254,6 +3316,7 @@ class TestGOMCControlFileWriter(BaseTest):
                 "NVT",
                 10,
                 300,
+                override_check_input_files_exist=True,
                 input_variables_dict={
                     "FreeEnergyCalc": [True, 10000],
                     "MoleculeType": [["ETH"], 1],
@@ -3276,6 +3339,7 @@ class TestGOMCControlFileWriter(BaseTest):
                 "NVT",
                 10,
                 300,
+                override_check_input_files_exist=True,
                 input_variables_dict={
                     "FreeEnergyCalc": [True, 10000],
                     "MoleculeType": [{"ETH": "1"}, 1],
@@ -3298,6 +3362,7 @@ class TestGOMCControlFileWriter(BaseTest):
                 "NVT",
                 10,
                 300,
+                override_check_input_files_exist=True,
                 input_variables_dict={
                     "FreeEnergyCalc": [True, 10000],
                     "MoleculeType": ["ETH", 1],
@@ -3320,6 +3385,7 @@ class TestGOMCControlFileWriter(BaseTest):
                 "NVT",
                 10,
                 300,
+                override_check_input_files_exist=True,
                 input_variables_dict={
                     "FreeEnergyCalc": [True, 10000],
                     "MoleculeType": ["ETH", 1],
@@ -3342,6 +3408,7 @@ class TestGOMCControlFileWriter(BaseTest):
                 "NVT",
                 10,
                 300,
+                override_check_input_files_exist=True,
                 input_variables_dict={
                     "FreeEnergyCalc": [True, 10000],
                     "MoleculeType": ["ETH", 1],
@@ -3363,6 +3430,7 @@ class TestGOMCControlFileWriter(BaseTest):
                 "NVT",
                 10,
                 300,
+                override_check_input_files_exist=True,
                 input_variables_dict={"FreeEnergyCalc": [True, 10000]},
             )
 
@@ -3379,6 +3447,7 @@ class TestGOMCControlFileWriter(BaseTest):
                 "NVT",
                 10,
                 300,
+                override_check_input_files_exist=True,
                 input_variables_dict={"ScaleCoulomb": "s"},
             )
 
@@ -3395,6 +3464,7 @@ class TestGOMCControlFileWriter(BaseTest):
                 "NVT",
                 10,
                 300,
+                override_check_input_files_exist=True,
                 input_variables_dict={"ScalePower": "s"},
             )
 
@@ -3411,6 +3481,7 @@ class TestGOMCControlFileWriter(BaseTest):
                 "NVT",
                 10,
                 300,
+                override_check_input_files_exist=True,
                 input_variables_dict={"ScaleAlpha": "s"},
             )
 
@@ -3427,6 +3498,7 @@ class TestGOMCControlFileWriter(BaseTest):
                 "NVT",
                 10,
                 300,
+                override_check_input_files_exist=True,
                 input_variables_dict={"MinSigma": "s"},
             )
 
@@ -3443,6 +3515,7 @@ class TestGOMCControlFileWriter(BaseTest):
                 "NVT",
                 10,
                 300,
+                override_check_input_files_exist=True,
                 input_variables_dict={"ExchangeVolumeDim": "s"},
             )
 
@@ -3459,6 +3532,7 @@ class TestGOMCControlFileWriter(BaseTest):
                 "NVT",
                 10,
                 300,
+                override_check_input_files_exist=True,
                 input_variables_dict={"MEMC_DataInput": "s"},
             )
 
@@ -3475,6 +3549,7 @@ class TestGOMCControlFileWriter(BaseTest):
                 "NVT",
                 10,
                 300,
+                override_check_input_files_exist=True,
                 input_variables_dict={"DisFreq": "s"},
             )
 
@@ -3491,6 +3566,7 @@ class TestGOMCControlFileWriter(BaseTest):
                 "NVT",
                 10,
                 300,
+                override_check_input_files_exist=True,
                 input_variables_dict={"RotFreq": "s"},
             )
 
@@ -3507,6 +3583,7 @@ class TestGOMCControlFileWriter(BaseTest):
                 "NVT",
                 10,
                 300,
+                override_check_input_files_exist=True,
                 input_variables_dict={"IntraSwapFreq": "s"},
             )
 
@@ -3523,6 +3600,7 @@ class TestGOMCControlFileWriter(BaseTest):
                 "NVT",
                 10,
                 300,
+                override_check_input_files_exist=True,
                 input_variables_dict={"SwapFreq": "s"},
             )
 
@@ -3539,6 +3617,7 @@ class TestGOMCControlFileWriter(BaseTest):
                 "NVT",
                 10,
                 300,
+                override_check_input_files_exist=True,
                 input_variables_dict={"RegrowthFreq": "s"},
             )
 
@@ -3555,6 +3634,7 @@ class TestGOMCControlFileWriter(BaseTest):
                 "NVT",
                 10,
                 300,
+                override_check_input_files_exist=True,
                 input_variables_dict={"CrankShaftFreq": "s"},
             )
 
@@ -3571,6 +3651,7 @@ class TestGOMCControlFileWriter(BaseTest):
                 "NVT",
                 10,
                 300,
+                override_check_input_files_exist=True,
                 input_variables_dict={"VolFreq": "s"},
             )
 
@@ -3587,6 +3668,7 @@ class TestGOMCControlFileWriter(BaseTest):
                 "NVT",
                 10,
                 300,
+                override_check_input_files_exist=True,
                 input_variables_dict={"MultiParticleFreq": "s"},
             )
 
@@ -3603,6 +3685,7 @@ class TestGOMCControlFileWriter(BaseTest):
                 "NVT",
                 10,
                 300,
+                override_check_input_files_exist=True,
                 input_variables_dict={"IntraMEMC-1Freq": "s"},
             )
 
@@ -3619,6 +3702,7 @@ class TestGOMCControlFileWriter(BaseTest):
                 "NVT",
                 10,
                 300,
+                override_check_input_files_exist=True,
                 input_variables_dict={"MEMC-1Freq": "s"},
             )
 
@@ -3635,6 +3719,7 @@ class TestGOMCControlFileWriter(BaseTest):
                 "NVT",
                 10,
                 300,
+                override_check_input_files_exist=True,
                 input_variables_dict={"IntraMEMC-2Freq": "s"},
             )
 
@@ -3651,6 +3736,7 @@ class TestGOMCControlFileWriter(BaseTest):
                 "NVT",
                 10,
                 300,
+                override_check_input_files_exist=True,
                 input_variables_dict={"MEMC-2Freq": "s"},
             )
 
@@ -3667,6 +3753,7 @@ class TestGOMCControlFileWriter(BaseTest):
                 "NVT",
                 10,
                 300,
+                override_check_input_files_exist=True,
                 input_variables_dict={"IntraMEMC-3Freq": "s"},
             )
 
@@ -3683,6 +3770,7 @@ class TestGOMCControlFileWriter(BaseTest):
                 "NVT",
                 10,
                 300,
+                override_check_input_files_exist=True,
                 input_variables_dict={"MEMC-3Freq": "s"},
             )
 
@@ -3701,6 +3789,7 @@ class TestGOMCControlFileWriter(BaseTest):
                 "NVT",
                 10,
                 300,
+                override_check_input_files_exist=True,
                 input_variables_dict={"XXXXXX": "s"},
             )
 
@@ -3732,6 +3821,7 @@ class TestGOMCControlFileWriter(BaseTest):
                 "NVT",
                 10,
                 300,
+                override_check_input_files_exist=True,
                 input_variables_dict={"Restart": []},
             )
 
@@ -3748,6 +3838,7 @@ class TestGOMCControlFileWriter(BaseTest):
                 "NVT",
                 10,
                 300,
+                override_check_input_files_exist=True,
                 input_variables_dict={"RestartCheckpoint": []},
             )
 
@@ -3764,6 +3855,7 @@ class TestGOMCControlFileWriter(BaseTest):
                 "NVT",
                 10,
                 300,
+                override_check_input_files_exist=True,
                 input_variables_dict={"PRNG": []},
             )
 
@@ -3780,6 +3872,7 @@ class TestGOMCControlFileWriter(BaseTest):
                 "NVT",
                 10,
                 300,
+                override_check_input_files_exist=True,
                 input_variables_dict={"ParaTypeCHARMM": []},
             )
 
@@ -3796,6 +3889,7 @@ class TestGOMCControlFileWriter(BaseTest):
                 "NVT",
                 10,
                 300,
+                override_check_input_files_exist=True,
                 input_variables_dict={"ParaTypeMie": []},
             )
 
@@ -3812,6 +3906,7 @@ class TestGOMCControlFileWriter(BaseTest):
                 "NVT",
                 10,
                 300,
+                override_check_input_files_exist=True,
                 input_variables_dict={"ParaTypeMARTINI": []},
             )
 
@@ -3828,6 +3923,7 @@ class TestGOMCControlFileWriter(BaseTest):
                 "NVT",
                 10,
                 300,
+                override_check_input_files_exist=True,
                 input_variables_dict={"RcutCoulomb_box_0": []},
             )
 
@@ -3846,6 +3942,7 @@ class TestGOMCControlFileWriter(BaseTest):
                 "NVT",
                 10,
                 300,
+                override_check_input_files_exist=True,
                 input_variables_dict={"RcutCoulomb_box_1": []},
             )
 
@@ -3862,6 +3959,7 @@ class TestGOMCControlFileWriter(BaseTest):
                 "NVT",
                 10,
                 300,
+                override_check_input_files_exist=True,
                 input_variables_dict={"Pressure": []},
             )
 
@@ -3878,6 +3976,7 @@ class TestGOMCControlFileWriter(BaseTest):
                 "NVT",
                 10,
                 300,
+                override_check_input_files_exist=True,
                 input_variables_dict={"Rcut": []},
             )
 
@@ -3894,6 +3993,7 @@ class TestGOMCControlFileWriter(BaseTest):
                 "NVT",
                 10,
                 300,
+                override_check_input_files_exist=True,
                 input_variables_dict={"RcutLow": []},
             )
 
@@ -3910,6 +4010,7 @@ class TestGOMCControlFileWriter(BaseTest):
                 "NVT",
                 10,
                 300,
+                override_check_input_files_exist=True,
                 input_variables_dict={"LRC": []},
             )
 
@@ -3926,6 +4027,7 @@ class TestGOMCControlFileWriter(BaseTest):
                 "NVT",
                 10,
                 300,
+                override_check_input_files_exist=True,
                 input_variables_dict={"Exclude": []},
             )
 
@@ -3942,6 +4044,7 @@ class TestGOMCControlFileWriter(BaseTest):
                 "NVT",
                 10,
                 300,
+                override_check_input_files_exist=True,
                 input_variables_dict={"Potential": []},
             )
 
@@ -3958,6 +4061,7 @@ class TestGOMCControlFileWriter(BaseTest):
                 "NVT",
                 10,
                 300,
+                override_check_input_files_exist=True,
                 input_variables_dict={"Rswitch": []},
             )
 
@@ -3974,6 +4078,7 @@ class TestGOMCControlFileWriter(BaseTest):
                 "NVT",
                 10,
                 300,
+                override_check_input_files_exist=True,
                 input_variables_dict={"ElectroStatic": []},
             )
 
@@ -3990,6 +4095,7 @@ class TestGOMCControlFileWriter(BaseTest):
                 "NVT",
                 10,
                 300,
+                override_check_input_files_exist=True,
                 input_variables_dict={"Ewald": []},
             )
 
@@ -4006,6 +4112,7 @@ class TestGOMCControlFileWriter(BaseTest):
                 "NVT",
                 10,
                 300,
+                override_check_input_files_exist=True,
                 input_variables_dict={"CachedFourier": []},
             )
 
@@ -4022,6 +4129,7 @@ class TestGOMCControlFileWriter(BaseTest):
                 "NVT",
                 10,
                 300,
+                override_check_input_files_exist=True,
                 input_variables_dict={"Tolerance": []},
             )
 
@@ -4038,6 +4146,7 @@ class TestGOMCControlFileWriter(BaseTest):
                 "NVT",
                 10,
                 300,
+                override_check_input_files_exist=True,
                 input_variables_dict={"Dielectric": []},
             )
 
@@ -4054,6 +4163,7 @@ class TestGOMCControlFileWriter(BaseTest):
                 "NVT",
                 10,
                 300,
+                override_check_input_files_exist=True,
                 input_variables_dict={"PressureCalc": []},
             )
 
@@ -4070,6 +4180,7 @@ class TestGOMCControlFileWriter(BaseTest):
                 "NVT",
                 10,
                 300,
+                override_check_input_files_exist=True,
                 input_variables_dict={"EqSteps": []},
             )
 
@@ -4086,6 +4197,7 @@ class TestGOMCControlFileWriter(BaseTest):
                 "NVT",
                 10,
                 300,
+                override_check_input_files_exist=True,
                 input_variables_dict={"AdjSteps": []},
             )
 
@@ -4102,6 +4214,7 @@ class TestGOMCControlFileWriter(BaseTest):
                 "NVT",
                 10,
                 300,
+                override_check_input_files_exist=True,
                 input_variables_dict={"useConstantArea": []},
             )
 
@@ -4120,6 +4233,7 @@ class TestGOMCControlFileWriter(BaseTest):
                 "NVT",
                 10,
                 300,
+                override_check_input_files_exist=True,
                 input_variables_dict={"FixVolBox0": []},
             )
 
@@ -4138,6 +4252,7 @@ class TestGOMCControlFileWriter(BaseTest):
                 "NVT",
                 10,
                 300,
+                override_check_input_files_exist=True,
                 input_variables_dict={"ChemPot": []},
             )
 
@@ -4156,6 +4271,7 @@ class TestGOMCControlFileWriter(BaseTest):
                 "NVT",
                 10,
                 300,
+                override_check_input_files_exist=True,
                 input_variables_dict={"Fugacity": []},
             )
 
@@ -4172,6 +4288,7 @@ class TestGOMCControlFileWriter(BaseTest):
                 "NVT",
                 10,
                 300,
+                override_check_input_files_exist=True,
                 input_variables_dict={"CBMC_First": []},
             )
 
@@ -4188,6 +4305,7 @@ class TestGOMCControlFileWriter(BaseTest):
                 "NVT",
                 10,
                 300,
+                override_check_input_files_exist=True,
                 input_variables_dict={"CBMC_Nth": []},
             )
 
@@ -4204,6 +4322,7 @@ class TestGOMCControlFileWriter(BaseTest):
                 "NVT",
                 10,
                 300,
+                override_check_input_files_exist=True,
                 input_variables_dict={"CBMC_Ang": []},
             )
 
@@ -4220,6 +4339,7 @@ class TestGOMCControlFileWriter(BaseTest):
                 "NVT",
                 10,
                 300,
+                override_check_input_files_exist=True,
                 input_variables_dict={"CBMC_Dih": []},
             )
 
@@ -4236,6 +4356,7 @@ class TestGOMCControlFileWriter(BaseTest):
                 "NVT",
                 10,
                 300,
+                override_check_input_files_exist=True,
                 input_variables_dict={"OutputName": []},
             )
 
@@ -4252,6 +4373,7 @@ class TestGOMCControlFileWriter(BaseTest):
                 "NVT",
                 10,
                 300,
+                override_check_input_files_exist=True,
                 input_variables_dict={"CoordinatesFreq": []},
             )
 
@@ -4268,6 +4390,7 @@ class TestGOMCControlFileWriter(BaseTest):
                 "NVT",
                 10,
                 300,
+                override_check_input_files_exist=True,
                 input_variables_dict={"RestartFreq": []},
             )
 
@@ -4284,6 +4407,7 @@ class TestGOMCControlFileWriter(BaseTest):
                 "NVT",
                 10,
                 300,
+                override_check_input_files_exist=True,
                 input_variables_dict={"CheckpointFreq": []},
             )
 
@@ -4300,6 +4424,7 @@ class TestGOMCControlFileWriter(BaseTest):
                 "NVT",
                 10,
                 300,
+                override_check_input_files_exist=True,
                 input_variables_dict={"ConsoleFreq": []},
             )
 
@@ -4316,6 +4441,7 @@ class TestGOMCControlFileWriter(BaseTest):
                 "NVT",
                 10,
                 300,
+                override_check_input_files_exist=True,
                 input_variables_dict={"BlockAverageFreq": []},
             )
 
@@ -4332,6 +4458,7 @@ class TestGOMCControlFileWriter(BaseTest):
                 "NVT",
                 10,
                 300,
+                override_check_input_files_exist=True,
                 input_variables_dict={"HistogramFreq": []},
             )
 
@@ -4348,6 +4475,7 @@ class TestGOMCControlFileWriter(BaseTest):
                 "NVT",
                 10,
                 300,
+                override_check_input_files_exist=True,
                 input_variables_dict={"DistName": []},
             )
 
@@ -4364,6 +4492,7 @@ class TestGOMCControlFileWriter(BaseTest):
                 "NVT",
                 10,
                 300,
+                override_check_input_files_exist=True,
                 input_variables_dict={"HistName": []},
             )
 
@@ -4380,6 +4509,7 @@ class TestGOMCControlFileWriter(BaseTest):
                 "NVT",
                 10,
                 300,
+                override_check_input_files_exist=True,
                 input_variables_dict={"RunNumber": []},
             )
 
@@ -4396,6 +4526,7 @@ class TestGOMCControlFileWriter(BaseTest):
                 "NVT",
                 10,
                 300,
+                override_check_input_files_exist=True,
                 input_variables_dict={"RunLetter": []},
             )
 
@@ -4412,6 +4543,7 @@ class TestGOMCControlFileWriter(BaseTest):
                 "NVT",
                 10,
                 300,
+                override_check_input_files_exist=True,
                 input_variables_dict={"SampleFreq": []},
             )
 
@@ -4428,6 +4560,7 @@ class TestGOMCControlFileWriter(BaseTest):
                 "NVT",
                 10,
                 300,
+                override_check_input_files_exist=True,
                 input_variables_dict={"OutEnergy": []},
             )
 
@@ -4444,6 +4577,7 @@ class TestGOMCControlFileWriter(BaseTest):
                 "NVT",
                 10,
                 300,
+                override_check_input_files_exist=True,
                 input_variables_dict={"OutPressure": []},
             )
 
@@ -4460,6 +4594,7 @@ class TestGOMCControlFileWriter(BaseTest):
                 "NVT",
                 10,
                 300,
+                override_check_input_files_exist=True,
                 input_variables_dict={"OutMolNumber": []},
             )
 
@@ -4476,6 +4611,7 @@ class TestGOMCControlFileWriter(BaseTest):
                 "NVT",
                 10,
                 300,
+                override_check_input_files_exist=True,
                 input_variables_dict={"OutDensity": []},
             )
 
@@ -4492,6 +4628,7 @@ class TestGOMCControlFileWriter(BaseTest):
                 "NVT",
                 10,
                 300,
+                override_check_input_files_exist=True,
                 input_variables_dict={"OutVolume": []},
             )
 
@@ -4508,6 +4645,7 @@ class TestGOMCControlFileWriter(BaseTest):
                 "NVT",
                 10,
                 300,
+                override_check_input_files_exist=True,
                 input_variables_dict={"OutSurfaceTension": []},
             )
 
@@ -4524,6 +4662,7 @@ class TestGOMCControlFileWriter(BaseTest):
                 "NVT",
                 10,
                 300,
+                override_check_input_files_exist=True,
                 input_variables_dict={
                     "FreeEnergyCalc": [],
                     "MoleculeType": ["ETH", 1],
@@ -4546,6 +4685,7 @@ class TestGOMCControlFileWriter(BaseTest):
                 "NVT",
                 10,
                 300,
+                override_check_input_files_exist=True,
                 input_variables_dict={
                     "FreeEnergyCalc": [True, 10000],
                     "MoleculeType": ["ETH", []],
@@ -4568,6 +4708,7 @@ class TestGOMCControlFileWriter(BaseTest):
                 "NVT",
                 10,
                 300,
+                override_check_input_files_exist=True,
                 input_variables_dict={
                     "FreeEnergyCalc": [True, 10000],
                     "MoleculeType": [["ETH"], 1],
@@ -4590,6 +4731,7 @@ class TestGOMCControlFileWriter(BaseTest):
                 "NVT",
                 10,
                 300,
+                override_check_input_files_exist=True,
                 input_variables_dict={
                     "FreeEnergyCalc": [True, 10000],
                     "MoleculeType": [{"ETH": "1"}, 1],
@@ -4612,6 +4754,7 @@ class TestGOMCControlFileWriter(BaseTest):
                 "NVT",
                 10,
                 300,
+                override_check_input_files_exist=True,
                 input_variables_dict={
                     "FreeEnergyCalc": [True, 10000],
                     "MoleculeType": ["ETH", 1],
@@ -4634,6 +4777,7 @@ class TestGOMCControlFileWriter(BaseTest):
                 "NVT",
                 10,
                 300,
+                override_check_input_files_exist=True,
                 input_variables_dict={
                     "FreeEnergyCalc": [True, 10000],
                     "MoleculeType": ["ETH", 1],
@@ -4656,6 +4800,7 @@ class TestGOMCControlFileWriter(BaseTest):
                 "NVT",
                 10,
                 300,
+                override_check_input_files_exist=True,
                 input_variables_dict={
                     "FreeEnergyCalc": [True, 10000],
                     "MoleculeType": ["ETH", 1],
@@ -4677,6 +4822,7 @@ class TestGOMCControlFileWriter(BaseTest):
                 "NVT",
                 10,
                 300,
+                override_check_input_files_exist=True,
                 input_variables_dict={"FreeEnergyCalc": [True, 10000]},
             )
 
@@ -4693,6 +4839,7 @@ class TestGOMCControlFileWriter(BaseTest):
                 "NVT",
                 10,
                 300,
+                override_check_input_files_exist=True,
                 input_variables_dict={"ScaleCoulomb": []},
             )
 
@@ -4709,6 +4856,7 @@ class TestGOMCControlFileWriter(BaseTest):
                 "NVT",
                 10,
                 300,
+                override_check_input_files_exist=True,
                 input_variables_dict={"ScalePower": []},
             )
 
@@ -4725,6 +4873,7 @@ class TestGOMCControlFileWriter(BaseTest):
                 "NVT",
                 10,
                 300,
+                override_check_input_files_exist=True,
                 input_variables_dict={"ScaleAlpha": []},
             )
 
@@ -4741,6 +4890,7 @@ class TestGOMCControlFileWriter(BaseTest):
                 "NVT",
                 10,
                 300,
+                override_check_input_files_exist=True,
                 input_variables_dict={"MinSigma": []},
             )
 
@@ -4757,6 +4907,7 @@ class TestGOMCControlFileWriter(BaseTest):
                 "NVT",
                 10,
                 300,
+                override_check_input_files_exist=True,
                 input_variables_dict={"ExchangeVolumeDim": []},
             )
 
@@ -4773,6 +4924,7 @@ class TestGOMCControlFileWriter(BaseTest):
                 "NVT",
                 10,
                 300,
+                override_check_input_files_exist=True,
                 input_variables_dict={"MEMC_DataInput": []},
             )
 
@@ -4789,6 +4941,7 @@ class TestGOMCControlFileWriter(BaseTest):
                 "NVT",
                 10,
                 300,
+                override_check_input_files_exist=True,
                 input_variables_dict={"DisFreq": []},
             )
 
@@ -4805,6 +4958,7 @@ class TestGOMCControlFileWriter(BaseTest):
                 "NVT",
                 10,
                 300,
+                override_check_input_files_exist=True,
                 input_variables_dict={"DisFreq": []},
             )
 
@@ -4821,6 +4975,7 @@ class TestGOMCControlFileWriter(BaseTest):
                 "NVT",
                 10,
                 300,
+                override_check_input_files_exist=True,
                 input_variables_dict={"IntraSwapFreq": []},
             )
 
@@ -4837,6 +4992,7 @@ class TestGOMCControlFileWriter(BaseTest):
                 "NVT",
                 10,
                 300,
+                override_check_input_files_exist=True,
                 input_variables_dict={"IntraSwapFreq": []},
             )
 
@@ -4853,6 +5009,7 @@ class TestGOMCControlFileWriter(BaseTest):
                 "NVT",
                 10,
                 300,
+                override_check_input_files_exist=True,
                 input_variables_dict={"RegrowthFreq": []},
             )
 
@@ -4869,6 +5026,7 @@ class TestGOMCControlFileWriter(BaseTest):
                 "NVT",
                 10,
                 300,
+                override_check_input_files_exist=True,
                 input_variables_dict={"CrankShaftFreq": []},
             )
 
@@ -4885,6 +5043,7 @@ class TestGOMCControlFileWriter(BaseTest):
                 "NVT",
                 10,
                 300,
+                override_check_input_files_exist=True,
                 input_variables_dict={"VolFreq": []},
             )
 
@@ -4901,6 +5060,7 @@ class TestGOMCControlFileWriter(BaseTest):
                 "NVT",
                 10,
                 300,
+                override_check_input_files_exist=True,
                 input_variables_dict={"MultiParticleFreq": []},
             )
 
@@ -4917,6 +5077,7 @@ class TestGOMCControlFileWriter(BaseTest):
                 "NVT",
                 10,
                 300,
+                override_check_input_files_exist=True,
                 input_variables_dict={"IntraMEMC-1Freq": []},
             )
 
@@ -4933,6 +5094,7 @@ class TestGOMCControlFileWriter(BaseTest):
                 "NVT",
                 10,
                 300,
+                override_check_input_files_exist=True,
                 input_variables_dict={"MEMC-1Freq": []},
             )
 
@@ -4949,6 +5111,7 @@ class TestGOMCControlFileWriter(BaseTest):
                 "NVT",
                 10,
                 300,
+                override_check_input_files_exist=True,
                 input_variables_dict={"IntraMEMC-2Freq": []},
             )
 
@@ -4965,6 +5128,7 @@ class TestGOMCControlFileWriter(BaseTest):
                 "NVT",
                 10,
                 300,
+                override_check_input_files_exist=True,
                 input_variables_dict={"MEMC-2Freq": []},
             )
 
@@ -4981,6 +5145,7 @@ class TestGOMCControlFileWriter(BaseTest):
                 "NVT",
                 10,
                 300,
+                override_check_input_files_exist=True,
                 input_variables_dict={"IntraMEMC-3Freq": []},
             )
 
@@ -4997,6 +5162,7 @@ class TestGOMCControlFileWriter(BaseTest):
                 "NVT",
                 10,
                 300,
+                override_check_input_files_exist=True,
                 input_variables_dict={"MEMC-3Freq": []},
             )
 
@@ -5015,6 +5181,7 @@ class TestGOMCControlFileWriter(BaseTest):
                 "NVT",
                 10,
                 300,
+                override_check_input_files_exist=True,
                 input_variables_dict={"XXXXXX": []},
             )
 
@@ -5040,6 +5207,7 @@ class TestGOMCControlFileWriter(BaseTest):
                 "NPT",
                 10,
                 300,
+                override_check_input_files_exist=True,
                 input_variables_dict={"PressureCalc": [True, 10000]},
             )
         except:
@@ -5054,6 +5222,7 @@ class TestGOMCControlFileWriter(BaseTest):
                 "NPT",
                 10,
                 300,
+                override_check_input_files_exist=True,
                 input_variables_dict={"PressureCalc": [False, 10000]},
             )
         except:
@@ -5074,6 +5243,7 @@ class TestGOMCControlFileWriter(BaseTest):
                 "NPT",
                 10,
                 300,
+                override_check_input_files_exist=True,
                 input_variables_dict={"PressureCalc": [1, 10000]},
             )
 
@@ -5084,6 +5254,7 @@ class TestGOMCControlFileWriter(BaseTest):
                 "NVT",
                 10,
                 300,
+                override_check_input_files_exist=True,
                 input_variables_dict={"PressureCalc": [True, 10000]},
             )
         except:
@@ -5098,6 +5269,7 @@ class TestGOMCControlFileWriter(BaseTest):
                 "NVT",
                 10,
                 300,
+                override_check_input_files_exist=True,
                 input_variables_dict={"PressureCalc": [False, 10000]},
             )
         except:
@@ -5118,6 +5290,7 @@ class TestGOMCControlFileWriter(BaseTest):
                 "NVT",
                 10,
                 300,
+                override_check_input_files_exist=True,
                 input_variables_dict={"PressureCalc": [1, 10000]},
             )
 
@@ -5134,6 +5307,7 @@ class TestGOMCControlFileWriter(BaseTest):
                 "NVT",
                 10,
                 300,
+                override_check_input_files_exist=True,
                 input_variables_dict={"PressureCalc": ["", 10000]},
             )
 
@@ -5150,6 +5324,7 @@ class TestGOMCControlFileWriter(BaseTest):
                 "NVT",
                 10,
                 300,
+                override_check_input_files_exist=True,
                 input_variables_dict={"PressureCalc": [["x"], 10000]},
             )
 
@@ -5166,6 +5341,7 @@ class TestGOMCControlFileWriter(BaseTest):
                 "NVT",
                 10,
                 300,
+                override_check_input_files_exist=True,
                 input_variables_dict={"PressureCalc": [{"s": 1}, 10000]},
             )
 
@@ -5182,6 +5358,7 @@ class TestGOMCControlFileWriter(BaseTest):
                 "NVT",
                 10,
                 300,
+                override_check_input_files_exist=True,
                 input_variables_dict={"PressureCalc": [True, 1.0]},
             )
 
@@ -5198,6 +5375,7 @@ class TestGOMCControlFileWriter(BaseTest):
                 "NVT",
                 10,
                 300,
+                override_check_input_files_exist=True,
                 input_variables_dict={"PressureCalc": [True, "x"]},
             )
 
@@ -5214,6 +5392,7 @@ class TestGOMCControlFileWriter(BaseTest):
                 "NVT",
                 10,
                 300,
+                override_check_input_files_exist=True,
                 input_variables_dict={"PressureCalc": [True, ["x"]]},
             )
 
@@ -5230,6 +5409,7 @@ class TestGOMCControlFileWriter(BaseTest):
                 "NVT",
                 10,
                 300,
+                override_check_input_files_exist=True,
                 input_variables_dict={"PressureCalc": [True, {"s": 1}]},
             )
 
@@ -5246,6 +5426,7 @@ class TestGOMCControlFileWriter(BaseTest):
                 "NVT",
                 10,
                 300,
+                override_check_input_files_exist=True,
                 input_variables_dict={"PressureCalc": [1, True]},
             )
 
@@ -5271,6 +5452,7 @@ class TestGOMCControlFileWriter(BaseTest):
                 "NPT",
                 10,
                 300,
+                override_check_input_files_exist=True,
                 input_variables_dict={"OutEnergy": [True, True]},
             )
         except:
@@ -5285,6 +5467,7 @@ class TestGOMCControlFileWriter(BaseTest):
                 "NPT",
                 10,
                 300,
+                override_check_input_files_exist=True,
                 input_variables_dict={"OutEnergy": [False, True]},
             )
         except:
@@ -5299,6 +5482,7 @@ class TestGOMCControlFileWriter(BaseTest):
                 "NPT",
                 10,
                 300,
+                override_check_input_files_exist=True,
                 input_variables_dict={"OutEnergy": [False, False]},
             )
         except:
@@ -5313,6 +5497,7 @@ class TestGOMCControlFileWriter(BaseTest):
                 "NVT",
                 10,
                 300,
+                override_check_input_files_exist=True,
                 input_variables_dict={"OutEnergy": [True, True]},
             )
         except:
@@ -5327,6 +5512,7 @@ class TestGOMCControlFileWriter(BaseTest):
                 "NVT",
                 10,
                 300,
+                override_check_input_files_exist=True,
                 input_variables_dict={"OutEnergy": [False, True]},
             )
         except:
@@ -5341,6 +5527,7 @@ class TestGOMCControlFileWriter(BaseTest):
                 "NVT",
                 10,
                 300,
+                override_check_input_files_exist=True,
                 input_variables_dict={"OutEnergy": [False, False]},
             )
         except:
@@ -5361,6 +5548,7 @@ class TestGOMCControlFileWriter(BaseTest):
                 "NVT",
                 10,
                 300,
+                override_check_input_files_exist=True,
                 input_variables_dict={"OutEnergy": [1, True]},
             )
 
@@ -5377,6 +5565,7 @@ class TestGOMCControlFileWriter(BaseTest):
                 "NVT",
                 10,
                 300,
+                override_check_input_files_exist=True,
                 input_variables_dict={"OutEnergy": ["", True]},
             )
 
@@ -5393,6 +5582,7 @@ class TestGOMCControlFileWriter(BaseTest):
                 "NVT",
                 10,
                 300,
+                override_check_input_files_exist=True,
                 input_variables_dict={"OutEnergy": [["x"], True]},
             )
 
@@ -5409,6 +5599,7 @@ class TestGOMCControlFileWriter(BaseTest):
                 "NVT",
                 10,
                 300,
+                override_check_input_files_exist=True,
                 input_variables_dict={"OutEnergy": [{"s": 1}, True]},
             )
 
@@ -5425,6 +5616,7 @@ class TestGOMCControlFileWriter(BaseTest):
                 "NVT",
                 10,
                 300,
+                override_check_input_files_exist=True,
                 input_variables_dict={"OutEnergy": [True, 1.0]},
             )
 
@@ -5441,6 +5633,7 @@ class TestGOMCControlFileWriter(BaseTest):
                 "NVT",
                 10,
                 300,
+                override_check_input_files_exist=True,
                 input_variables_dict={"OutEnergy": [True, "x"]},
             )
 
@@ -5457,6 +5650,7 @@ class TestGOMCControlFileWriter(BaseTest):
                 "NVT",
                 10,
                 300,
+                override_check_input_files_exist=True,
                 input_variables_dict={"OutEnergy": [True, ["x"]]},
             )
 
@@ -5473,6 +5667,7 @@ class TestGOMCControlFileWriter(BaseTest):
                 "NVT",
                 10,
                 300,
+                override_check_input_files_exist=True,
                 input_variables_dict={"OutEnergy": [True, {"s": 1}]},
             )
 
@@ -5498,6 +5693,7 @@ class TestGOMCControlFileWriter(BaseTest):
                 "NPT",
                 10,
                 300,
+                override_check_input_files_exist=True,
                 input_variables_dict={
                     "FreeEnergyCalc": [True, 10000],
                     "MoleculeType": ["ETH", 1],
@@ -5519,6 +5715,7 @@ class TestGOMCControlFileWriter(BaseTest):
                 "NPT",
                 10,
                 300,
+                override_check_input_files_exist=True,
                 input_variables_dict={
                     "FreeEnergyCalc": [False, 10000],
                     "MoleculeType": ["ETO", 1],
@@ -5539,6 +5736,7 @@ class TestGOMCControlFileWriter(BaseTest):
                 "NVT",
                 10,
                 300,
+                override_check_input_files_exist=True,
                 input_variables_dict={
                     "FreeEnergyCalc": [True, 10000],
                     "MoleculeType": ["ETH", 1],
@@ -5560,6 +5758,7 @@ class TestGOMCControlFileWriter(BaseTest):
                 "NVT",
                 10,
                 300,
+                override_check_input_files_exist=True,
                 input_variables_dict={
                     "FreeEnergyCalc": [False, 10000],
                     "MoleculeType": ["ETO", 1],
@@ -5585,6 +5784,7 @@ class TestGOMCControlFileWriter(BaseTest):
                 "NVT",
                 10,
                 300,
+                override_check_input_files_exist=True,
                 input_variables_dict={
                     "MoleculeType": ["ETO", 1],
                     "InitialState": 1,
@@ -5605,6 +5805,7 @@ class TestGOMCControlFileWriter(BaseTest):
                 "NVT",
                 10,
                 300,
+                override_check_input_files_exist=True,
                 input_variables_dict={
                     "FreeEnergyCalc": [False, 10000],
                     "InitialState": 1,
@@ -5625,6 +5826,7 @@ class TestGOMCControlFileWriter(BaseTest):
                 "NVT",
                 10,
                 300,
+                override_check_input_files_exist=True,
                 input_variables_dict={
                     "FreeEnergyCalc": [False, 10000],
                     "MoleculeType": ["ETO", 1],
@@ -5645,6 +5847,7 @@ class TestGOMCControlFileWriter(BaseTest):
                 "NVT",
                 10,
                 300,
+                override_check_input_files_exist=True,
                 input_variables_dict={
                     "FreeEnergyCalc": [False, 10000],
                     "MoleculeType": ["ETO", 1],
@@ -5660,6 +5863,7 @@ class TestGOMCControlFileWriter(BaseTest):
                 "NVT",
                 10,
                 300,
+                override_check_input_files_exist=True,
                 input_variables_dict={
                     "FreeEnergyCalc": [False, 10000],
                     "MoleculeType": ["ETO", 1],
@@ -5686,6 +5890,7 @@ class TestGOMCControlFileWriter(BaseTest):
                 "NVT",
                 10,
                 300,
+                override_check_input_files_exist=True,
                 input_variables_dict={
                     "FreeEnergyCalc": [1, 10000],
                     "MoleculeType": ["ETO", 1],
@@ -5708,6 +5913,7 @@ class TestGOMCControlFileWriter(BaseTest):
                 "NVT",
                 10,
                 300,
+                override_check_input_files_exist=True,
                 input_variables_dict={
                     "FreeEnergyCalc": ["1", 10000],
                     "MoleculeType": ["ETO", 1],
@@ -5730,6 +5936,7 @@ class TestGOMCControlFileWriter(BaseTest):
                 "NVT",
                 10,
                 300,
+                override_check_input_files_exist=True,
                 input_variables_dict={
                     "FreeEnergyCalc": [["1"], 10000],
                     "MoleculeType": ["ETO", 1],
@@ -5752,6 +5959,7 @@ class TestGOMCControlFileWriter(BaseTest):
                 "NVT",
                 10,
                 300,
+                override_check_input_files_exist=True,
                 input_variables_dict={
                     "FreeEnergyCalc": [{"a": "1"}, 10000],
                     "MoleculeType": ["ETO", 1],
@@ -5768,6 +5976,7 @@ class TestGOMCControlFileWriter(BaseTest):
                 "NVT",
                 10,
                 300,
+                override_check_input_files_exist=True,
                 input_variables_dict={
                     "FreeEnergyCalc": [False, 10000],
                     "MoleculeType": ["ETO", 1],
@@ -5794,6 +6003,7 @@ class TestGOMCControlFileWriter(BaseTest):
                 "NVT",
                 10,
                 300,
+                override_check_input_files_exist=True,
                 input_variables_dict={
                     "FreeEnergyCalc": [True, 1.0],
                     "MoleculeType": ["ETO", 1],
@@ -5816,6 +6026,7 @@ class TestGOMCControlFileWriter(BaseTest):
                 "NVT",
                 10,
                 300,
+                override_check_input_files_exist=True,
                 input_variables_dict={
                     "FreeEnergyCalc": [True, "1"],
                     "MoleculeType": ["ETO", 1],
@@ -5838,6 +6049,7 @@ class TestGOMCControlFileWriter(BaseTest):
                 "NVT",
                 10,
                 300,
+                override_check_input_files_exist=True,
                 input_variables_dict={
                     "FreeEnergyCalc": [True, ["1"]],
                     "MoleculeType": ["ETO", 1],
@@ -5860,6 +6072,7 @@ class TestGOMCControlFileWriter(BaseTest):
                 "NVT",
                 10,
                 300,
+                override_check_input_files_exist=True,
                 input_variables_dict={
                     "FreeEnergyCalc": [True, {"a": "1"}],
                     "MoleculeType": ["ETO", 1],
@@ -5882,6 +6095,7 @@ class TestGOMCControlFileWriter(BaseTest):
                 "NVT",
                 10,
                 300,
+                override_check_input_files_exist=True,
                 input_variables_dict={
                     "FreeEnergyCalc": [True, 10000, "s"],
                     "MoleculeType": ["ETO", 1],
@@ -5905,6 +6119,7 @@ class TestGOMCControlFileWriter(BaseTest):
                 "NVT",
                 10,
                 300,
+                override_check_input_files_exist=True,
                 input_variables_dict={
                     "FreeEnergyCalc": [True, 10000],
                     "MoleculeType": [1, 1],
@@ -5927,6 +6142,7 @@ class TestGOMCControlFileWriter(BaseTest):
                 "NVT",
                 10,
                 300,
+                override_check_input_files_exist=True,
                 input_variables_dict={
                     "FreeEnergyCalc": [True, 10000],
                     "MoleculeType": [[1], 1],
@@ -5949,6 +6165,7 @@ class TestGOMCControlFileWriter(BaseTest):
                 "NVT",
                 10,
                 300,
+                override_check_input_files_exist=True,
                 input_variables_dict={
                     "FreeEnergyCalc": [True, 10000],
                     "MoleculeType": [{"a": "1"}, 1],
@@ -5971,6 +6188,7 @@ class TestGOMCControlFileWriter(BaseTest):
                 "NVT",
                 10,
                 300,
+                override_check_input_files_exist=True,
                 input_variables_dict={
                     "FreeEnergyCalc": [True, 10000],
                     "MoleculeType": ["ETO", "1"],
@@ -5993,6 +6211,7 @@ class TestGOMCControlFileWriter(BaseTest):
                 "NVT",
                 10,
                 300,
+                override_check_input_files_exist=True,
                 input_variables_dict={
                     "FreeEnergyCalc": [True, 10000],
                     "MoleculeType": ["ETO", ["1"]],
@@ -6015,6 +6234,7 @@ class TestGOMCControlFileWriter(BaseTest):
                 "NVT",
                 10,
                 300,
+                override_check_input_files_exist=True,
                 input_variables_dict={
                     "FreeEnergyCalc": [True, 10000],
                     "MoleculeType": ["ETO", {"a": "1"}],
@@ -6037,6 +6257,7 @@ class TestGOMCControlFileWriter(BaseTest):
                 "NVT",
                 10,
                 300,
+                override_check_input_files_exist=True,
                 input_variables_dict={
                     "FreeEnergyCalc": [True, 10000],
                     "MoleculeType": ["ETOa", 1],
@@ -6060,6 +6281,7 @@ class TestGOMCControlFileWriter(BaseTest):
                 "NVT",
                 10,
                 300,
+                override_check_input_files_exist=True,
                 input_variables_dict={
                     "FreeEnergyCalc": [True, 10000],
                     "MoleculeType": ["ETO", 1],
@@ -6082,6 +6304,7 @@ class TestGOMCControlFileWriter(BaseTest):
                 "NVT",
                 10,
                 300,
+                override_check_input_files_exist=True,
                 input_variables_dict={
                     "FreeEnergyCalc": [True, 10000],
                     "MoleculeType": ["ETO", 1],
@@ -6104,6 +6327,7 @@ class TestGOMCControlFileWriter(BaseTest):
                 "NVT",
                 10,
                 300,
+                override_check_input_files_exist=True,
                 input_variables_dict={
                     "FreeEnergyCalc": [True, 10000],
                     "MoleculeType": ["ETO", 1],
@@ -6126,6 +6350,7 @@ class TestGOMCControlFileWriter(BaseTest):
                 "NVT",
                 10,
                 300,
+                override_check_input_files_exist=True,
                 input_variables_dict={
                     "FreeEnergyCalc": [True, 10000],
                     "MoleculeType": ["ETO", 1],
@@ -6149,6 +6374,7 @@ class TestGOMCControlFileWriter(BaseTest):
                 "NVT",
                 10,
                 300,
+                override_check_input_files_exist=True,
                 input_variables_dict={
                     "FreeEnergyCalc": [True, 10000],
                     "MoleculeType": ["ETO", 1],
@@ -6171,6 +6397,7 @@ class TestGOMCControlFileWriter(BaseTest):
                 "NVT",
                 10,
                 300,
+                override_check_input_files_exist=True,
                 input_variables_dict={
                     "FreeEnergyCalc": [True, 10000],
                     "MoleculeType": ["ETO", 1],
@@ -6193,6 +6420,7 @@ class TestGOMCControlFileWriter(BaseTest):
                 "NVT",
                 10,
                 300,
+                override_check_input_files_exist=True,
                 input_variables_dict={
                     "FreeEnergyCalc": [True, 10000],
                     "MoleculeType": ["ETO", 1],
@@ -6216,6 +6444,7 @@ class TestGOMCControlFileWriter(BaseTest):
                 "NVT",
                 10,
                 300,
+                override_check_input_files_exist=True,
                 input_variables_dict={
                     "FreeEnergyCalc": [True, 10000],
                     "MoleculeType": ["ETO", 1],
@@ -6238,6 +6467,7 @@ class TestGOMCControlFileWriter(BaseTest):
                 "NVT",
                 10,
                 300,
+                override_check_input_files_exist=True,
                 input_variables_dict={
                     "FreeEnergyCalc": [True, 10000],
                     "MoleculeType": ["ETO", 1],
@@ -6260,6 +6490,7 @@ class TestGOMCControlFileWriter(BaseTest):
                 "NVT",
                 10,
                 300,
+                override_check_input_files_exist=True,
                 input_variables_dict={
                     "FreeEnergyCalc": [True, 10000],
                     "MoleculeType": ["ETO", 1],
@@ -6280,6 +6511,7 @@ class TestGOMCControlFileWriter(BaseTest):
                 "NVT",
                 10,
                 300,
+                override_check_input_files_exist=True,
                 input_variables_dict={
                     "FreeEnergyCalc": [True, 10000],
                     "MoleculeType": ["ETO", 1],
@@ -6299,6 +6531,7 @@ class TestGOMCControlFileWriter(BaseTest):
                 "NVT",
                 10,
                 300,
+                override_check_input_files_exist=True,
                 input_variables_dict={
                     "FreeEnergyCalc": [True, 10000],
                     "MoleculeType": ["ETO", 1],
@@ -6352,6 +6585,7 @@ class TestGOMCControlFileWriter(BaseTest):
                 "GEMC_NVT",
                 10,
                 300,
+                override_check_input_files_exist=True,
                 input_variables_dict={"RcutCoulomb_box_1": "s"},
             )
 
@@ -6368,6 +6602,7 @@ class TestGOMCControlFileWriter(BaseTest):
                 "GEMC_NPT",
                 10,
                 300,
+                override_check_input_files_exist=True,
                 input_variables_dict={"FixVolBox0": "s"},
             )
 
@@ -6385,6 +6620,7 @@ class TestGOMCControlFileWriter(BaseTest):
                 "GEMC_NVT",
                 10,
                 300,
+                override_check_input_files_exist=True,
                 input_variables_dict={"MEMC-1Freq": 1},
             )
 
@@ -6395,6 +6631,7 @@ class TestGOMCControlFileWriter(BaseTest):
                 "GEMC_NVT",
                 10,
                 300,
+                override_check_input_files_exist=True,
                 input_variables_dict={"ExchangeVolumeDim": [1.0, 1.0, 1.0]},
             )
         except:
@@ -6409,6 +6646,7 @@ class TestGOMCControlFileWriter(BaseTest):
                 "GEMC_NVT",
                 10,
                 300,
+                override_check_input_files_exist=True,
                 input_variables_dict={"ExchangeVolumeDim": [1, 1, 1]},
             )
         except:
@@ -6429,6 +6667,7 @@ class TestGOMCControlFileWriter(BaseTest):
                 "GEMC_NVT",
                 10,
                 300,
+                override_check_input_files_exist=True,
                 input_variables_dict={"ExchangeVolumeDim": ["s", 1.0, 1.0]},
             )
 
@@ -6445,6 +6684,7 @@ class TestGOMCControlFileWriter(BaseTest):
                 "GEMC_NVT",
                 10,
                 300,
+                override_check_input_files_exist=True,
                 input_variables_dict={"ExchangeVolumeDim": [1.0, [1.0], 1.0]},
             )
 
@@ -6461,6 +6701,7 @@ class TestGOMCControlFileWriter(BaseTest):
                 "GEMC_NVT",
                 10,
                 300,
+                override_check_input_files_exist=True,
                 input_variables_dict={
                     "ExchangeVolumeDim": [1.0, 1.0, {"a": 1.0}]
                 },
@@ -6474,6 +6715,7 @@ class TestGOMCControlFileWriter(BaseTest):
                 "GEMC_NPT",
                 10,
                 300,
+                override_check_input_files_exist=True,
                 input_variables_dict={
                     "MEMC_DataInput": [
                         [1, "ETH", ["C1", "C2"], "ETO", ["C1", "C2"]]
@@ -6506,6 +6748,7 @@ class TestGOMCControlFileWriter(BaseTest):
                 "GEMC_NPT",
                 10,
                 300,
+                override_check_input_files_exist=True,
                 input_variables_dict={
                     "MEMC_DataInput": [
                         [1, "ETH", ["C1", "C2"], "ETO", ["C1", "O1"]]
@@ -6538,6 +6781,7 @@ class TestGOMCControlFileWriter(BaseTest):
                 "GEMC_NPT",
                 10,
                 300,
+                override_check_input_files_exist=True,
                 input_variables_dict={
                     "MEMC_DataInput": [
                         [1, "ETH", ["C2", "C1"], "ETO", ["O1", "C1"]]
@@ -6576,6 +6820,7 @@ class TestGOMCControlFileWriter(BaseTest):
                 "GEMC_NPT",
                 10,
                 300,
+                override_check_input_files_exist=True,
                 input_variables_dict={
                     "MEMC_DataInput": [
                         [1, "ETH", ["C1", "O1"], "ETO", ["C1", "C2"]]
@@ -6610,6 +6855,7 @@ class TestGOMCControlFileWriter(BaseTest):
                 "GEMC_NPT",
                 10,
                 300,
+                override_check_input_files_exist=True,
                 input_variables_dict={
                     "MEMC_DataInput": [
                         [1, "ETH", ["O1", "C1"], "ETO", ["C2", "C1"]]
@@ -6644,6 +6890,7 @@ class TestGOMCControlFileWriter(BaseTest):
                 "GEMC_NPT",
                 10,
                 300,
+                override_check_input_files_exist=True,
                 input_variables_dict={
                     "MEMC_DataInput": [
                         [1.0, "ETH", ["C1", "C2"], "ETO", ["C1", "C2"]]
@@ -6678,6 +6925,7 @@ class TestGOMCControlFileWriter(BaseTest):
                 "GEMC_NPT",
                 10,
                 300,
+                override_check_input_files_exist=True,
                 input_variables_dict={
                     "MEMC_DataInput": [
                         ["s", "ETH", ["C1", "C2"], "ETO", ["C1", "C2"]]
@@ -6712,6 +6960,7 @@ class TestGOMCControlFileWriter(BaseTest):
                 "GEMC_NPT",
                 10,
                 300,
+                override_check_input_files_exist=True,
                 input_variables_dict={
                     "MEMC_DataInput": [
                         [[1], "ETH", ["C1", "C2"], "ETO", ["C1", "C2"]]
@@ -6746,6 +6995,7 @@ class TestGOMCControlFileWriter(BaseTest):
                 "GEMC_NPT",
                 10,
                 300,
+                override_check_input_files_exist=True,
                 input_variables_dict={
                     "MEMC_DataInput": [
                         [{"a": "1"}, "ETH", ["C1", "C2"], "ETO", ["C1", "C2"]]
@@ -6780,6 +7030,7 @@ class TestGOMCControlFileWriter(BaseTest):
                 "GEMC_NPT",
                 10,
                 300,
+                override_check_input_files_exist=True,
                 input_variables_dict={
                     "MEMC_DataInput": [
                         [1, "ETHa", ["C1", "C2"], "ETO", ["C1", "C2"]]
@@ -6814,6 +7065,7 @@ class TestGOMCControlFileWriter(BaseTest):
                 "GEMC_NPT",
                 10,
                 300,
+                override_check_input_files_exist=True,
                 input_variables_dict={
                     "MEMC_DataInput": [
                         [1, 1, ["C1", "C2"], "ETO", ["C1", "C2"]]
@@ -6848,6 +7100,7 @@ class TestGOMCControlFileWriter(BaseTest):
                 "GEMC_NPT",
                 10,
                 300,
+                override_check_input_files_exist=True,
                 input_variables_dict={
                     "MEMC_DataInput": [
                         [1, [1], ["C1", "C2"], "ETO", ["C1", "C2"]]
@@ -6882,6 +7135,7 @@ class TestGOMCControlFileWriter(BaseTest):
                 "GEMC_NPT",
                 10,
                 300,
+                override_check_input_files_exist=True,
                 input_variables_dict={
                     "MEMC_DataInput": [
                         [1, "ETH", [1, "C2"], "ETO", ["C1", "C2"]]
@@ -6916,6 +7170,7 @@ class TestGOMCControlFileWriter(BaseTest):
                 "GEMC_NPT",
                 10,
                 300,
+                override_check_input_files_exist=True,
                 input_variables_dict={
                     "MEMC_DataInput": [
                         [1, "ETH", [[1], "C2"], "ETO", ["C1", "C2"]]
@@ -6950,6 +7205,7 @@ class TestGOMCControlFileWriter(BaseTest):
                 "GEMC_NPT",
                 10,
                 300,
+                override_check_input_files_exist=True,
                 input_variables_dict={
                     "MEMC_DataInput": [
                         [1, "ETH", ["C1", 1], "ETO", ["C1", "C2"]]
@@ -6984,6 +7240,7 @@ class TestGOMCControlFileWriter(BaseTest):
                 "GEMC_NPT",
                 10,
                 300,
+                override_check_input_files_exist=True,
                 input_variables_dict={
                     "MEMC_DataInput": [
                         [1, "ETH", ["C1", [1]], "ETO", ["C1", "C2"]]
@@ -7018,6 +7275,7 @@ class TestGOMCControlFileWriter(BaseTest):
                 "GEMC_NPT",
                 10,
                 300,
+                override_check_input_files_exist=True,
                 input_variables_dict={
                     "MEMC_DataInput": [
                         [1, "ETH", ["C1", "C2"], 1, ["C1", "C2"]]
@@ -7052,6 +7310,7 @@ class TestGOMCControlFileWriter(BaseTest):
                 "GEMC_NPT",
                 10,
                 300,
+                override_check_input_files_exist=True,
                 input_variables_dict={
                     "MEMC_DataInput": [
                         [1, "ETH", ["C1", "C2"], [1], ["C1", "C2"]]
@@ -7086,6 +7345,7 @@ class TestGOMCControlFileWriter(BaseTest):
                 "GEMC_NPT",
                 10,
                 300,
+                override_check_input_files_exist=True,
                 input_variables_dict={
                     "MEMC_DataInput": [
                         [1, "ETH", ["C1", "C2"], "ETO", [1, "C2"]]
@@ -7120,6 +7380,7 @@ class TestGOMCControlFileWriter(BaseTest):
                 "GEMC_NPT",
                 10,
                 300,
+                override_check_input_files_exist=True,
                 input_variables_dict={
                     "MEMC_DataInput": [
                         [1, "ETH", ["C1", "C2"], "ETO", [[1], "C2"]]
@@ -7154,6 +7415,7 @@ class TestGOMCControlFileWriter(BaseTest):
                 "GEMC_NPT",
                 10,
                 300,
+                override_check_input_files_exist=True,
                 input_variables_dict={
                     "MEMC_DataInput": [
                         [1, "ETH", ["C1", "C2"], "ETO", ["C1", 1]]
@@ -7188,6 +7450,7 @@ class TestGOMCControlFileWriter(BaseTest):
                 "GEMC_NPT",
                 10,
                 300,
+                override_check_input_files_exist=True,
                 input_variables_dict={
                     "MEMC_DataInput": [
                         [1, "ETH", ["C1", "C2"], "ETO", ["C1", [1]]]
@@ -7223,6 +7486,7 @@ class TestGOMCControlFileWriter(BaseTest):
                 "GEMC_NPT",
                 10,
                 300,
+                override_check_input_files_exist=True,
                 input_variables_dict={
                     "IntraMEMC-1Freq": 0.20,
                     "MEMC-1Freq": 0.20,
@@ -7247,6 +7511,7 @@ class TestGOMCControlFileWriter(BaseTest):
                 "GCMC",
                 10,
                 300,
+                override_check_input_files_exist=True,
                 input_variables_dict={"ChemPot": "s"},
             )
 
@@ -7263,6 +7528,7 @@ class TestGOMCControlFileWriter(BaseTest):
                 "GCMC",
                 10,
                 300,
+                override_check_input_files_exist=True,
                 input_variables_dict={"Fugacity": "s"},
             )
 
@@ -7274,6 +7540,7 @@ class TestGOMCControlFileWriter(BaseTest):
                 "GEMC_NPT",
                 10,
                 300,
+                override_check_input_files_exist=True,
                 input_variables_dict={
                     "MEMC_DataInput": [
                         [1, "ETH", ["C1", "C2"], "ETO", ["C1", "C2"]]
@@ -7316,6 +7583,7 @@ class TestGOMCControlFileWriter(BaseTest):
                 "GEMC_NPT",
                 10,
                 300,
+                override_check_input_files_exist=True,
                 input_variables_dict={
                     "MEMC_DataInput": [
                         [1, "ETH", ["C1", "C2"], "ETO", ["C1", "C2"]]
@@ -7344,6 +7612,7 @@ class TestGOMCControlFileWriter(BaseTest):
                 "GEMC_NVT",
                 10,
                 300,
+                override_check_input_files_exist=True,
                 input_variables_dict={
                     "MEMC_DataInput": [
                         [1, "ETH", ["C1", "C2"], "ETO", ["C1", "C2"]]
@@ -7385,6 +7654,7 @@ class TestGOMCControlFileWriter(BaseTest):
                 "GEMC_NVT",
                 10,
                 300,
+                override_check_input_files_exist=True,
                 input_variables_dict={
                     "MEMC_DataInput": [
                         [1, "ETH", ["C1", "C2"], "ETO", ["C1", "C2"]]
@@ -7412,6 +7682,7 @@ class TestGOMCControlFileWriter(BaseTest):
                 "GCMC",
                 10,
                 300,
+                override_check_input_files_exist=True,
                 input_variables_dict={
                     "MEMC_DataInput": [
                         [1, "ETH", ["C1", "C2"], "ETO", ["C1", "C2"]]
@@ -7454,6 +7725,7 @@ class TestGOMCControlFileWriter(BaseTest):
                 "GCMC",
                 10,
                 300,
+                override_check_input_files_exist=True,
                 input_variables_dict={
                     "MEMC_DataInput": [
                         [1, "ETH", ["C1", "C2"], "ETO", ["C1", "C2"]]
@@ -7482,6 +7754,7 @@ class TestGOMCControlFileWriter(BaseTest):
                 "NPT",
                 10,
                 300,
+                override_check_input_files_exist=True,
                 input_variables_dict={
                     "MEMC_DataInput": [
                         [1, "ETH", ["C1", "C2"], "ETO", ["C1", "C2"]]
@@ -7524,6 +7797,7 @@ class TestGOMCControlFileWriter(BaseTest):
                 "NPT",
                 10,
                 300,
+                override_check_input_files_exist=True,
                 input_variables_dict={
                     "MEMC_DataInput": [
                         [1, "ETH", ["C1", "C2"], "ETO", ["C1", "C2"]]
@@ -7552,6 +7826,7 @@ class TestGOMCControlFileWriter(BaseTest):
                 "NVT",
                 10,
                 300,
+                override_check_input_files_exist=True,
                 input_variables_dict={
                     "MEMC_DataInput": [
                         [1, "ETH", ["C1", "C2"], "ETO", ["C1", "C2"]]
@@ -7594,6 +7869,7 @@ class TestGOMCControlFileWriter(BaseTest):
                 "NVT",
                 10,
                 300,
+                override_check_input_files_exist=True,
                 input_variables_dict={
                     "MEMC_DataInput": [
                         [1, "ETH", ["C1", "C2"], "ETO", ["C1", "C2"]]
@@ -7623,6 +7899,7 @@ class TestGOMCControlFileWriter(BaseTest):
                 "NVT",
                 10,
                 300,
+                override_check_input_files_exist=True,
                 input_variables_dict={
                     "MEMC_DataInput": [
                         [1, "ETH", ["C1", "C2"], "ETO", ["C1", "C2"]]
@@ -7655,6 +7932,7 @@ class TestGOMCControlFileWriter(BaseTest):
                 "NPT",
                 10,
                 300,
+                override_check_input_files_exist=True,
                 input_variables_dict={
                     "MEMC_DataInput": [
                         [1, "ETH", ["C1", "C2"], "ETO", ["C1", "C2"]]
@@ -7687,6 +7965,7 @@ class TestGOMCControlFileWriter(BaseTest):
                 "GCMC",
                 10,
                 300,
+                override_check_input_files_exist=True,
                 input_variables_dict={
                     "MEMC_DataInput": [
                         [1, "ETH", ["C1", "C2"], "ETO", ["C1", "C2"]]
@@ -7727,6 +8006,7 @@ class TestGOMCControlFileWriter(BaseTest):
                 "GCMC",
                 10,
                 300,
+                override_check_input_files_exist=True,
                 input_variables_dict={
                     "MEMC_DataInput": [
                         [1, "ETH", ["C1", "C2"], "ETO", ["C1", "C2"]]
@@ -7749,6 +8029,7 @@ class TestGOMCControlFileWriter(BaseTest):
                 "GCMC",
                 10,
                 300,
+                override_check_input_files_exist=True,
                 input_variables_dict={
                     "MEMC_DataInput": [
                         [1, "ETH", ["C1", "C2"], "ETO", ["C1", "C2"]]
@@ -7771,6 +8052,7 @@ class TestGOMCControlFileWriter(BaseTest):
                 "GCMC",
                 10,
                 300,
+                override_check_input_files_exist=True,
                 input_variables_dict={
                     "MEMC_DataInput": [
                         [1, "ETH", ["C1", "C2"], "ETO", ["C1", "C2"]]
@@ -7792,6 +8074,7 @@ class TestGOMCControlFileWriter(BaseTest):
                 "GCMC",
                 10,
                 300,
+                override_check_input_files_exist=True,
                 input_variables_dict={
                     "MEMC_DataInput": [
                         [1, "ETH", ["C1", "C2"], "ETO", ["C1", "C2"]]
@@ -7814,6 +8097,7 @@ class TestGOMCControlFileWriter(BaseTest):
                 "GCMC",
                 10,
                 300,
+                override_check_input_files_exist=True,
                 input_variables_dict={
                     "DisFreq": 1,
                     "Fugacity": {"ETH": 0, "XXX": 1.0},
@@ -7833,6 +8117,7 @@ class TestGOMCControlFileWriter(BaseTest):
                 "GCMC",
                 10,
                 300,
+                override_check_input_files_exist=True,
                 input_variables_dict={
                     "DisFreq": 1,
                     "Fugacity": {"XXX": 0, "ETO": 1.0},
@@ -7852,6 +8137,7 @@ class TestGOMCControlFileWriter(BaseTest):
                 "GCMC",
                 10,
                 300,
+                override_check_input_files_exist=True,
                 input_variables_dict={
                     "DisFreq": 1,
                     "ChemPot": {1: -4000, "ETO": -8000},
@@ -7871,6 +8157,7 @@ class TestGOMCControlFileWriter(BaseTest):
                 "GCMC",
                 10,
                 300,
+                override_check_input_files_exist=True,
                 input_variables_dict={
                     "DisFreq": 1,
                     "ChemPot": {"XXX": -4000, "ETO": -8000},
@@ -7890,6 +8177,7 @@ class TestGOMCControlFileWriter(BaseTest):
                 "GCMC",
                 10,
                 300,
+                override_check_input_files_exist=True,
                 input_variables_dict={
                     "DisFreq": 1,
                     "ChemPot": {"ETH": -4000, "XXX": -8000},
@@ -7909,6 +8197,7 @@ class TestGOMCControlFileWriter(BaseTest):
                 "GCMC",
                 10,
                 300,
+                override_check_input_files_exist=True,
                 input_variables_dict={
                     "DisFreq": 1,
                     "ChemPot": {"ETH": "40", "ETO": -8000},
@@ -7928,6 +8217,7 @@ class TestGOMCControlFileWriter(BaseTest):
                 "GCMC",
                 10,
                 300,
+                override_check_input_files_exist=True,
                 input_variables_dict={
                     "DisFreq": 1,
                     "ChemPot": {"ETH": ["40"], "ETO": -8000},
@@ -7947,6 +8237,7 @@ class TestGOMCControlFileWriter(BaseTest):
                 "NVT",
                 10,
                 300,
+                override_check_input_files_exist=True,
                 input_variables_dict={
                     "MEMC_DataInput": [
                         [1, "ETH", ["C1", "C2"], "ETO", ["C1", "C2"]]
@@ -7980,6 +8271,7 @@ class TestGOMCControlFileWriter(BaseTest):
                 "GCMC",
                 10,
                 300,
+                override_check_input_files_exist=True,
                 input_variables_dict={
                     "MEMC_DataInput": [
                         [1, "ETH", ["C1", "C2"], "ETO", ["C1", "C2"]]
@@ -8016,6 +8308,7 @@ class TestGOMCControlFileWriter(BaseTest):
                 "NVT",
                 10,
                 300,
+                override_check_input_files_exist=True,
                 input_variables_dict={
                     "MEMC_DataInput": [
                         [1, "ETH", ["C1", "C2"], "ETO", ["C1", "C2"]]
@@ -8050,6 +8343,7 @@ class TestGOMCControlFileWriter(BaseTest):
                 "NVT",
                 10,
                 300,
+                override_check_input_files_exist=True,
                 input_variables_dict={
                     "MEMC_DataInput": [
                         [1, "ETH", ["C1", "C2"], "ETO", ["C1", "C2"]]
@@ -8084,6 +8378,7 @@ class TestGOMCControlFileWriter(BaseTest):
                 "NVT",
                 10,
                 300,
+                override_check_input_files_exist=True,
                 input_variables_dict={
                     "MEMC_DataInput": [
                         [1, "ETH", ["C1", "C2"], "ETO", ["C1", "C2"]]
@@ -8118,6 +8413,7 @@ class TestGOMCControlFileWriter(BaseTest):
                 "NPT",
                 10,
                 300,
+                override_check_input_files_exist=True,
                 input_variables_dict={
                     "MEMC_DataInput": [
                         [1, "ETH", ["C1", "C2"], "ETO", ["C1", "C2"]]
@@ -8152,6 +8448,7 @@ class TestGOMCControlFileWriter(BaseTest):
                 "NPT",
                 10,
                 300,
+                override_check_input_files_exist=True,
                 input_variables_dict={
                     "MEMC_DataInput": [
                         [1, "ETH", ["C1", "C2"], "ETO", ["C1", "C2"]]
@@ -8186,6 +8483,7 @@ class TestGOMCControlFileWriter(BaseTest):
                 "NPT",
                 10,
                 300,
+                override_check_input_files_exist=True,
                 input_variables_dict={
                     "MEMC_DataInput": [
                         [1, "ETH", ["C1", "C2"], "ETO", ["C1", "C2"]]
@@ -8215,6 +8513,7 @@ class TestGOMCControlFileWriter(BaseTest):
                 "GCMC",
                 10,
                 300,
+                override_check_input_files_exist=True,
                 input_variables_dict={
                     "MEMC_DataInput": [
                         [1, "ETH", ["C1", "C2"], "ETO", ["C1", "C2"]]
@@ -8248,6 +8547,7 @@ class TestGOMCControlFileWriter(BaseTest):
                 "GCMC",
                 10,
                 300,
+                override_check_input_files_exist=True,
                 input_variables_dict={
                     "MEMC_DataInput": [
                         [1, "ETH", ["C1", "C2"], "ETO", ["C1", "C2"]]
@@ -8281,6 +8581,7 @@ class TestGOMCControlFileWriter(BaseTest):
                 "GCMC",
                 10,
                 300,
+                override_check_input_files_exist=True,
                 input_variables_dict={
                     "MEMC_DataInput": [
                         [1, "ETH", ["C1", "C2"], "ETO", ["C1", "C2"]]
@@ -8315,6 +8616,7 @@ class TestGOMCControlFileWriter(BaseTest):
                 "GCMC",
                 10,
                 300,
+                override_check_input_files_exist=True,
                 input_variables_dict={
                     "MEMC_DataInput": [
                         [1, "ETH", ["C1", "C2"], "ETO", ["C1", "C2"]],
@@ -8389,6 +8691,7 @@ class TestGOMCControlFileWriter(BaseTest):
                 "GEMC_NVT",
                 100,
                 300,
+                override_check_input_files_exist=True,
             )
 
         # test that it fails with the GEMC_NPT with only 1 box in the Charmm object
@@ -8405,6 +8708,7 @@ class TestGOMCControlFileWriter(BaseTest):
                 "GEMC_NPT",
                 100,
                 300,
+                override_check_input_files_exist=True,
             )
 
         # test that it fails with the GCMC with only 1 box in the Charmm object
@@ -8421,6 +8725,7 @@ class TestGOMCControlFileWriter(BaseTest):
                 "GCMC",
                 100,
                 300,
+                override_check_input_files_exist=True,
             )
 
         # test that it fails with the NVT with 2 boxes in the Charmm object
@@ -8437,6 +8742,7 @@ class TestGOMCControlFileWriter(BaseTest):
                 "NVT",
                 100,
                 300,
+                override_check_input_files_exist=True,
             )
 
         # test that it fails with the NPT with 2 boxes in the Charmm object
@@ -8452,6 +8758,7 @@ class TestGOMCControlFileWriter(BaseTest):
                 "NPT",
                 100,
                 300,
+                override_check_input_files_exist=True,
             )
 
     def test_save_non_othoganol_writer(self):
@@ -8488,6 +8795,7 @@ class TestGOMCControlFileWriter(BaseTest):
             "GEMC_NVT",
             100000,
             300,
+            override_check_input_files_exist=True,
         )
 
         with open("test_save_non_othoganol_writer.conf", "r") as fp:
@@ -8621,6 +8929,7 @@ class TestGOMCControlFileWriter(BaseTest):
                 "NVT",
                 100,
                 300,
+                override_check_input_files_exist=True,
             )
 
         # test that it fails with the GEMC_NPT with only 1 box in the Charmm object
@@ -8637,27 +8946,48 @@ class TestGOMCControlFileWriter(BaseTest):
                 "GCMC",
                 100,
                 300,
+                override_check_input_files_exist=True,
             )
 
-    def test_adjustment_steps(self, ethane_gomc):
+    def test_adjustment_steps_and_ff_psf_pdb_file_directory(self, ethane_gomc):
         test_box_ethane_gomc = mb.fill_box(
             compound=[ethane_gomc], n_compounds=[1], box=[2, 2, 2]
         )
+        changed_file_path = '../files'
         charmm = Charmm(
             test_box_ethane_gomc,
             "ethane_box_0",
-            structure_box_1=None,
-            filename_box_1=None,
+            structure_box_1=test_box_ethane_gomc,
+            filename_box_1="ethane_box_1",
             ff_filename="ethane_FF",
             residues=[ethane_gomc.name],
             forcefield_selection="oplsaa",
         )
+
+        # test the failure of the ff_psf_pdb_file_directory variable is not None or a string
+        with pytest.raises(
+            TypeError,
+            match=f"ERROR: The ff_psf_pdb_file_directory variable for modifying the FF, pdb, "
+                  f"and psf file directories is a {type(['x'])} and not a string.",
+        ):
+            gomc_control.write_gomc_control_file(
+                charmm,
+                "test_charmm_object_ff_psf_pdb_file_directory_not_a_sting",
+                "GEMC_NPT",
+                100,
+                300,
+                override_check_input_files_exist=True,
+                ff_psf_pdb_file_directory=['x'],
+            )
+
         gomc_control.write_gomc_control_file(
             charmm,
             "test_adjustment_steps.conf",
-            "NVT",
+            "GEMC_NVT",
             100000,
             500,
+            override_check_input_files_exist=True,
+            ff_psf_pdb_file_directory=changed_file_path,
             input_variables_dict={
                 "PressureCalc": [True, 1],
                 "AdjSteps": 2,
@@ -8686,6 +9016,11 @@ class TestGOMCControlFileWriter(BaseTest):
                 "HistogramFreq": False,
                 "SampleFreq": False,
                 "VDWGeometricSigma": False,
+                "Parameters": False,
+                "Coordinates_box_0": False,
+                "Structure_box_0": False,
+                "Coordinates_box_1": False,
+                "Structure_box_1": False,
             }
             out_gomc = fp.readlines()
             for i, line in enumerate(out_gomc):
@@ -8751,6 +9086,31 @@ class TestGOMCControlFileWriter(BaseTest):
                     split_line = line.split()
                     assert split_line[1] == "True"
 
+                elif line.startswith("Parameters "):
+                    variables_read_dict["Parameters"] = True
+                    split_line = line.split()
+                    assert split_line[1] == "{}/ethane_FF.inp".format(changed_file_path)
+
+                elif line.startswith("Coordinates 0 "):
+                    variables_read_dict["Coordinates_box_0"] = True
+                    split_line = line.split()
+                    assert split_line[2] == "{}/ethane_box_0.pdb".format(changed_file_path)
+
+                elif line.startswith("Structure 0 "):
+                    variables_read_dict["Structure_box_0"] = True
+                    split_line = line.split()
+                    assert split_line[2] == "{}/ethane_box_0.psf".format(changed_file_path)
+
+                elif line.startswith("Coordinates 1 "):
+                    variables_read_dict["Coordinates_box_1"] = True
+                    split_line = line.split()
+                    assert split_line[2] == "{}/ethane_box_1.pdb".format(changed_file_path)
+
+                elif line.startswith("Structure 1 "):
+                    variables_read_dict["Structure_box_1"] = True
+                    split_line = line.split()
+                    assert split_line[2] == "{}/ethane_box_1.psf".format(changed_file_path)
+
         assert variables_read_dict == {
             "PressureCalc": True,
             "AdjSteps": True,
@@ -8763,4 +9123,168 @@ class TestGOMCControlFileWriter(BaseTest):
             "HistogramFreq": True,
             "SampleFreq": True,
             "VDWGeometricSigma": True,
+            "Parameters": True,
+            "Coordinates_box_0": True,
+            "Structure_box_0": True,
+            "Coordinates_box_1": True,
+            "Structure_box_1": True,
         }
+
+    def test_check_required_gomc_files_inp_exist_GEMC_NPT(self, ethane_gomc):
+        test_box_ethane_gomc = mb.fill_box(
+            compound=[ethane_gomc], n_compounds=[1], box=[1, 1, 1]
+        )
+        charmm = Charmm(
+            test_box_ethane_gomc,
+            "ethane_box_0",
+            structure_box_1=test_box_ethane_gomc,
+            filename_box_1="ethane_box_1",
+            ff_filename="ethane_FF",
+            residues=[ethane_gomc.name],
+            forcefield_selection="oplsaa",
+        )
+
+        with pytest.raises(
+                ValueError,
+                match=r"The {} with the file directory and name {}, "
+                      "does not exist.".format("force field file or parameter file",
+                                              "{}".format("ethane_FF.inp")),
+        ):
+            gomc_control.write_gomc_control_file(
+                charmm,
+                "test_gomc_ff_exists_GEMC_NPT",
+                "GEMC_NPT",
+                100,
+                300,
+                override_check_input_files_exist=False,
+            )
+
+    def test_check_required_gomc_files_pdb_exist_GEMC_NPT(self, ethane_gomc):
+        test_box_ethane_gomc = mb.fill_box(
+            compound=[ethane_gomc], n_compounds=[1], box=[1, 1, 1]
+        )
+
+        charmm = Charmm(
+            test_box_ethane_gomc,
+            "ethane_box_0",
+            structure_box_1=test_box_ethane_gomc,
+            filename_box_1="ethane_box_1",
+            ff_filename="ethane_FF",
+            residues=[ethane_gomc.name],
+            forcefield_selection="oplsaa",
+        )
+
+        charmm.write_inp()
+
+        with pytest.raises(
+                ValueError,
+                match=r"The {} with the file directory and name {}, "
+                      "does not exist.".format("box 0 pdb file",
+                                               "{}".format("ethane_box_0.pdb")),
+        ):
+            gomc_control.write_gomc_control_file(
+                charmm,
+                "test_gomc_pdb_exists_GEMC_NPT",
+                "GEMC_NPT",
+                100,
+                300,
+                override_check_input_files_exist=False,
+            )
+
+    def test_check_required_gomc_files_psf_exist_GEMC_NPT(self, ethane_gomc):
+        test_box_ethane_gomc = mb.fill_box(
+            compound=[ethane_gomc], n_compounds=[1], box=[1, 1, 1]
+        )
+
+        charmm = Charmm(
+            test_box_ethane_gomc,
+            "ethane_box_0",
+            structure_box_1=test_box_ethane_gomc,
+            filename_box_1="ethane_box_1",
+            ff_filename="ethane_FF",
+            residues=[ethane_gomc.name],
+            forcefield_selection="oplsaa",
+        )
+
+        charmm.write_inp()
+        charmm.write_pdb()
+
+        with pytest.raises(
+                ValueError,
+                match=r"The {} with the file directory and name {}, "
+                      "does not exist.".format("box 0 psf file",
+                                               "{}".format("ethane_box_0.psf")),
+        ):
+            gomc_control.write_gomc_control_file(
+                charmm,
+                "test_gomc_psf_exists_GEMC_NPT",
+                "GEMC_NPT",
+                100,
+                300,
+                override_check_input_files_exist=False,
+            )
+
+    def test_check_required_gomc_files_pdb_exist_NVT(self, ethane_gomc):
+        test_box_ethane_gomc = mb.fill_box(
+            compound=[ethane_gomc], n_compounds=[1], box=[1, 1, 1]
+        )
+
+        charmm = Charmm(
+            test_box_ethane_gomc,
+            "ethane_box_0",
+            structure_box_1=None,
+            filename_box_1=None,
+            ff_filename="ethane_FF",
+            residues=[ethane_gomc.name],
+            forcefield_selection="oplsaa",
+        )
+
+        charmm.write_inp()
+
+        with pytest.raises(
+                ValueError,
+                match=r"The {} with the file directory and name {}, "
+                      "does not exist.".format("box 0 pdb file",
+                                               "{}".format("ethane_box_0.pdb")),
+        ):
+            gomc_control.write_gomc_control_file(
+                charmm,
+                "test_gomc_pdb_exists_NVT",
+                "NVT",
+                100,
+                300,
+                override_check_input_files_exist=False,
+            )
+
+    def test_check_required_gomc_files_psf_exist_NVT(self, ethane_gomc):
+        test_box_ethane_gomc = mb.fill_box(
+            compound=[ethane_gomc], n_compounds=[1], box=[1, 1, 1]
+        )
+
+        charmm = Charmm(
+            test_box_ethane_gomc,
+            "ethane_box_0",
+            structure_box_1=None,
+            filename_box_1=None,
+            ff_filename="ethane_FF",
+            residues=[ethane_gomc.name],
+            forcefield_selection="oplsaa",
+        )
+
+        charmm.write_inp()
+        charmm.write_pdb()
+
+        with pytest.raises(
+                ValueError,
+                match=r"The {} with the file directory and name {}, "
+                      "does not exist.".format("box 0 psf file",
+                                               "{}".format("ethane_box_0.psf")),
+        ):
+            gomc_control.write_gomc_control_file(
+                charmm,
+                "test_gomc_psf_exists_NVT",
+                "NVT",
+                100,
+                300,
+                override_check_input_files_exist=False,
+            )
