@@ -1,0 +1,51 @@
+<ForceField>
+  <AtomTypes>
+    <Type name="CTL2" class="CTL2" element="_CTL2" mass="12.011" def="[_CTL2]"/>
+    <Type name="OBL" class="OBL" element="_OBL" mass="15.994" def="[_OBL]"/>
+    <Type name="OHL" class="OHL" element="_OHL" mass="15.994" def="[_OHL]"/>
+    <Type name="CL" class="CL" element="_CL" mass="12.011" def="[_CL]"/>
+  </AtomTypes>
+  <HarmonicBondForce>
+    <Bond type1="CTL2" type2="CL" length="0.1522" k="167359.99999999994"/>
+    <Bond type1="OBL" type2="CL" length="0.122" k="627599.9999999998"/>
+    <Bond type1="OHL" type2="CL" length="0.14" k="192463.99999999994"/>
+    <Bond type1="CTL2" type2="CTL2" length="0.15300000000000002" k="186187.99999999994"/>
+    <Bond type1="OHL" type2="CTL2" length="0.142" k="358150.3999999999"/>
+  </HarmonicBondForce>
+  <HarmonicAngleForce>
+    <Angle type1="OBL" type2="CL" type3="CTL2" angle="2.181661564992912" k="585.76"/>
+    <Angle type1="CTL2" type2="CTL2" type3="CL" angle="1.8849555921538759" k="435.136"/>
+    <Angle type1="OHL" type2="CL" type3="OBL" angle="2.1467549799530254" k="418.4"/>
+    <Angle type1="OHL" type2="CL" type3="CTL2" angle="1.928588823453734" k="460.24"/>
+    <Angle type1="CTL2" type2="CTL2" type3="CTL2" angle="1.9826940302655582" k="488.2728"/>
+    <Angle type1="OHL" type2="CTL2" type3="CTL2" angle="1.9216075064457567" k="633.4576"/>
+  </HarmonicAngleForce>
+  <!-- Urey-Bradley terms -->
+  <AmoebaUreyBradleyForce>
+    <UreyBradley type1="OBL" type2="CL" type3="CTL2" d="0.24420000000000003" k="8368.0"/>
+    <UreyBradley type1="CTL2" type2="CL" type3="OBL" d="0.24420000000000003" k="8368.0"/>
+    <UreyBradley type1="OHL" type2="CL" type3="OBL" d="0.2262" k="87864.0"/>
+    <UreyBradley type1="OBL" type2="CL" type3="OHL" d="0.2262" k="87864.0"/>
+    <UreyBradley type1="CTL2" type2="CTL2" type3="CTL2" d="0.2561" k="4669.344999999999"/>
+  </AmoebaUreyBradleyForce>
+  <PeriodicTorsionForce>
+    <Proper type1="CTL2" type2="CTL2" type3="CTL2" type4="CL" periodicity1="5" phase1="3.141592653589793" k1="0.0" periodicity2="3" phase2="3.141592653589793" k2="1.3263279999999997" periodicity3="2" phase3="0.0" k3="2.330488" periodicity4="1" phase4="0.0" k4="3.150552"/>
+    <Proper type1="CTL2" type2="CTL2" type3="CTL2" type4="CTL2" periodicity1="2" phase1="0.0" k1="0.42258399999999996" periodicity2="3" phase2="3.141592653589793" k2="0.594128" periodicity3="4" phase3="0.0" k3="0.309616" periodicity4="5" phase4="0.0" k4="0.405848"/>
+    <Proper type1="" type2="CTL2" type3="OHL" type4="" periodicity1="3" phase1="0.0" k1="0.58576"/>
+    <Proper type1="" type2="CTL2" type3="CL" type4="" periodicity1="6" phase1="3.141592653589793" k1="0.2092"/>
+    <Proper type1="" type2="CL" type3="OHL" type4="" periodicity1="2" phase1="3.141592653589793" k1="8.5772"/>
+    <Proper type1="" type2="CTL2" type3="CTL2" type4="" periodicity1="3" phase1="0.0" k1="0.79496"/>
+  </PeriodicTorsionForce>
+  <CustomTorsionForce energy="k*(theta-theta0)^2">
+    <PerTorsionParameter name="k"/>
+    <PerTorsionParameter name="theta0"/>
+    <Improper type1="CL" type2="OBL" type3="" type4="" k="418.4" theta0="0.0"/>
+    <Improper type1="CL" type2="CTL2" type3="" type4="" k="401.66399999999993" theta0="0.0"/>
+  </CustomTorsionForce>
+  <NonbondedForce coulomb14scale="1.0" lj14scale="1.0">
+    <Atom type="CTL2" sigma="0.358141284692" epsilon="0.234304" charge="0.0"/>
+    <Atom type="OBL" sigma="0.3029055641680001" epsilon="0.50208" charge="0.0"/>
+    <Atom type="OHL" sigma="0.315378146222" epsilon="0.6363863999999999" charge="0.0"/>
+    <Atom type="CL" sigma="0.356359487256" epsilon="0.29288" charge="0.0"/>
+  </NonbondedForce>
+</ForceField>
