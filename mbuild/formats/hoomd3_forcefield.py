@@ -225,7 +225,7 @@ def _init_hoomd_lj(structure, nl, r_cut=1.2, ref_distance=1.0, ref_energy=1.0):
             else:
                 raise ValueError(
                     "Mixing rule {} ".format(structure.combining_rule)
-                    + "not supported, use lorentz"
+                    + 'not supported, use "lorentz" or "geometric"'
                 )
         else:
             # If we have nbfix info, use it
