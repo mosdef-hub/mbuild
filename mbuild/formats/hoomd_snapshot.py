@@ -14,7 +14,7 @@ from mbuild.utils.sorting import natural_sort
 
 hoomd = import_("hoomd")
 
-if 'version' in dir(hoomd):
+if "version" in dir(hoomd):
     hoomd_version = packaging.version.parse(hoomd.version.version)
 else:
     hoomd_version = packaging.version.parse(hoomd.__version__)
@@ -270,8 +270,7 @@ def to_hoomdsnapshot(
         elif hoomd_version.major == 3:
             hoomd_snapshot.configuration.box = [lx, ly, lz, xy, xz, yz]
         else:
-            raise RuntimeError("Unsupported HOOMD version:",
-                               str(hoomd_version))
+            raise RuntimeError("Unsupported HOOMD version:", str(hoomd_version))
 
         init_bonds = hoomd_snapshot.bonds.N
         if init_bonds > 0:
@@ -333,12 +332,13 @@ def to_hoomdsnapshot(
             hoomd_snapshot.pairs.types = pair_types
             box = hoomd.Box(Lx=lx, Ly=ly, Lz=lz, xy=xy, xz=xz, yz=yz)
         else:
-            raise RuntimeError("Unsupported HOOMD version:",
-                               str(hoomd_version))
+            raise RuntimeError("Unsupported HOOMD version:", str(hoomd_version))
 
     # wrap particles into the box
     if hoomd_version.major == 2:
-        scaled_positions = np.stack([box.wrap(xyz)[0] for xyz in scaled_positions])
+        scaled_positions = np.stack(
+            [box.wrap(xyz)[0] for xyz in scaled_positions]
+        )
     elif hoomd_version.major == 3:
         # HOOMD-blue v3.x does not expose box.wrap.
         pass
@@ -349,8 +349,7 @@ def to_hoomdsnapshot(
         elif hoomd_version.major == 3:
             obj.N = n
         else:
-            raise RuntimeError("Unsupported HOOMD version:",
-                               str(hoomd_version))
+            raise RuntimeError("Unsupported HOOMD version:", str(hoomd_version))
 
     set_size(hoomd_snapshot.particles, n_particles)
     hoomd_snapshot.particles.position[n_init:] = scaled_positions
