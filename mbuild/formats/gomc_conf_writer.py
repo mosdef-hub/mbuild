@@ -69,33 +69,73 @@ def _get_required_data(description=False):
 
     required_data = {
         "charmm_object": "Charmm object, "
-        "A Charmm object, which by definition has been parameterized "
-        "from the selected force field.",
-        "ensemble_type": "Required files or System Info (all ensembles): str, "
-        "(valid strings are 'NVT', 'NPT', 'GEMC_NPT', 'GCMC-NVT', or 'GCMC'), "
-        "the ensemble type for the simulation.",
+                         "A Charmm object, which by definition has been parameterized "
+                         "from the selected force field.",
+        "ensemble_type": "Required files or System Info (all ensembles): str. "
+                         "(valid strings are 'NVT', 'NPT', 'GEMC_NPT', 'GCMC-NVT', or 'GCMC'), "
+                         "the ensemble type for the simulation,",
         "RunSteps": "Required files or System Info (all ensembles): int (> 0), "
-        "The number or run steps for the simulation.",
+                    "The number or run steps for the simulation.",
         "Temperature": "Required files or System Info (all ensembles): float or integer (> 0), "
-        "Temperature of system in Kelvin (K)",
-        "ff_psf_pdb_file_directory": "str (optional), default=None (i.e., the current directory)."
-        "The full or relative directory added to the force field, psf, and pdb"
-        "file names, created via the Charmm object.",
-        "override_check_input_files_exist": "bool (default = False) "
-        "Override the check to see if the force field, psf, and pdb files exist. "
-        "If the files are checked and do not exist, the writer will throw a ValueError."
-        "True, check if the force field, psf, and pdb files exist."
-        "False, do not check if the force field, psf, and pdb files exist.",
-        "override_ff_directory_filename": "str, (default = None)"
-        "Override all other force field directory and filename inputs.",
-        "override_box_0_pdb_directory_filename": "str, (default = None)"
-        "Override all other box 0 pdb directory and filename inputs.",
-        "override_box_0_psf_directory_filename": "str, (default = None)"
-        "Override all other box 0 psf directory and filename inputs.",
-        "override_box_1_pdb_directory_filename": "str, (default = None)"
-        "Override all other box 1 pdb directory and filename inputs.",
-        "override_box_1_psf_directory_filename": "str, (default = None)"
-        "Override all other box 1 psf directory and filename inputs.",
+                       "Temperature of system in Kelvin (K)",
+        "ff_psf_pdb_file_directory": "str (optional), default=None (i.e., the current directory). "
+                                     "The full or relative directory added to the force field, psf, and pdb "
+                                     "file names, created via the Charmm object.",
+        "check_input_files_exist": "Required to check if files exist (all ensembles): bool (default=True), "
+                                            "Override the check to see if the force field, psf, and pdb files exist. "
+                                            "If the files are checked and do not exist, the writer will throw "
+                                            "a ValueError. "
+                                            "True, check if the force field, psf, and pdb files exist. "
+                                            "False, do not check if the force field, psf, and pdb files exist.",
+        "Restart": "Required for restarting (all ensembles): boolean (default=False), "
+                   "Determines whether to restart the simulation "
+                   "from restart file (*_restart.pdb and *_restart.psf) or not.",
+        "RestartCheckpoint": "Required for optimal restarting (all ensembles): boolean (default=False),"
+                             "Determines whether to restart the simulation with the "
+                             "checkpoint file (checkpoint.dat) or not. Restarting the "
+                             "simulation with checkpoint.dat would result in an identical outcome, "
+                             "as if previous simulation was continued.",
+        "Coordinates_box_0": "Required for alternate box 0 .pdb file (all ensembles): "
+                             "str, (default = None), "
+                             "Override all other box 0 pdb directory and filename inputs.",
+        "Structure_box_0": "Required for alternate box 0 .psf file (all ensembles): "
+                           "str, (default = None), "
+                           "Override all other box 0 psf directory and filename inputs.",
+        "Coordinates_box_1": "Required for alternate box 1 .pdb file (all ensembles): "
+                             "str, (default = None), "
+                             "Override all other box 1 pdb directory and filename inputs.",
+        "Structure_box_1": "Required for alternate box 1 .psf file  (all ensembles): "
+                           "str, (default = None), "
+                           "Override all other box 1 psf directory and filename inputs.",
+        "binCoordinates_box_0": "Required for alternate box 0 .coor file (all ensembles): "
+                                "str, (default = None), "
+                                "The box 0 binary coordinate file is used only for restarting "
+                                "a GOMC simulation, which provides increased numerical accuracy.",
+        "extendedSystem_box_0": "Required for alternate box 0 .xsc file (all ensembles): "
+                                "str, (default = None), "
+                                "The box 0 vectors origin file is used only for restarting a "
+                                "GOMC simulation. ",
+        "binVelocities_box_0": "Required for alternate box 0 .vel file (all ensembles): "
+                               "str, (default = None), "
+                               "The box 0 binary velocity file is used only for "
+                               "restarting a GOMC simulation, which provides increased "
+                               "numerical accuracy. These velocities are only passed thru "
+                               "GOMC since Monte Carlo simulations do not utilize any "
+                               "velocity information. ",
+        "binCoordinates_box_1": "Required for alternate box 1 .coor file (all ensembles): "
+                                "str, (default = None), "
+                                "The box 1 binary coordinate file is used only for restarting a "
+                                "GOMC simulation, which provides increased numerical accuracy. ",
+        "extendedSystem_box_1": "Required for alternate box 1 .coor file (all ensembles): "
+                                "str, (default = None), "
+                                "The box 1 vectors origin file is used "
+                                "only for restarting a GOMC simulation. ",
+        "binVelocities_box_1": "Required for alternate box 1 .vel file (all ensembles): "
+                               "str, (default = None), "
+                               "The box 1 binary velocity file is used only for restarting a "
+                               "GOMC simulation, which provides increased numerical accuracy. "
+                               "These velocities are only passed thru GOMC since Monte Carlo "
+                               "simulations do not utilize any velocity information.",
     }
 
     if description:
@@ -132,665 +172,641 @@ def _get_all_possible_input_variables(description=False):
         # Definitions in this function are copied to a large extent from the GOMC manual release version 2.60 (start)
         # insert citation here:
         # ******************************************************************************************************
-        "Restart": "Simulation info (all ensembles): boolean, default = {}. "
-        "Determines whether to restart the simulation "
-        "from restart file (*_restart.pdb and *_restart.psf) or not."
-        "".format(_get_default_variables_dict()["Restart"]),
-        "RestartCheckpoint": "Simulation info (all ensembles): boolean, default = {}. "
-        "Determines whether to restart the "
-        "simulation with the checkpoint file (checkpoint.dat) or not. Restarting the "
-        "simulation with checkpoint.dat would result in an identical outcome, as if "
-        "previous simulation was continued."
-        "".format(_get_default_variables_dict()["RestartCheckpoint"]),
         "PRNG": 'Simulation info (all ensembles): string or int (>= 0) ("RANDOM" or integer), default = {}. '
-        "PRNG = Pseudo-Random Number Generator (PRNG). "
-        'There are two (2) options, entering the string, "RANDOM", or a integer.  \n'
-        '\t\t\t\t\t\t\t\t\t\t\t\t\t --- "RANDOM", which selects a random seed number. '
-        'This will enter the line "PRNG RANDOM" in the gomc configuration file. \n'
-        "\t\t\t\t\t\t\t\t\t\t\t\t\t --- integer, which defines the integer seed number "
-        "for the simulation. "
-        "This is equivalent to entering the following two lines in the configuration file: "
-        "line 1 = PRNG INTSEED, "
-        "line 2 = Random_Seed user_selected_integer. "
-        'Example 1: for a random seed enter the string "RANDOM. '
-        "Example 2: for a specific seed number enter a integer of your choosing. "
-        "".format(_get_default_variables_dict()["PRNG"]),
+                "PRNG = Pseudo-Random Number Generator (PRNG). "
+                'There are two (2) options, entering the string, "RANDOM", or a integer.  \n'
+                '\t\t\t\t\t\t\t\t\t\t\t\t\t --- "RANDOM", which selects a random seed number. '
+                'This will enter the line "PRNG RANDOM" in the gomc configuration file. \n'
+                "\t\t\t\t\t\t\t\t\t\t\t\t\t --- integer, which defines the integer seed number "
+                "for the simulation. "
+                "This is equivalent to entering the following two lines in the configuration file: "
+                "line 1 = PRNG INTSEED, "
+                "line 2 = Random_Seed user_selected_integer. "
+                'Example 1: for a random seed enter the string "RANDOM. '
+                "Example 2: for a specific seed number enter a integer of your choosing. "
+                "".format(_get_default_variables_dict()["PRNG"]),
         "ParaTypeCHARMM": "Simulation info (all ensembles): boolean, default = {}. "
-        "True if a CHARMM forcefield, False otherwise."
-        "".format(_get_default_variables_dict()["ParaTypeCHARMM"]),
+                          "True if a CHARMM forcefield, False otherwise."
+                          "".format(_get_default_variables_dict()["ParaTypeCHARMM"]),
         "ParaTypeMie": "Simulation info (all ensembles): boolean, default = {}. "
-        "True if a Mie forcefield type, False otherwise."
-        "".format(_get_default_variables_dict()["ParaTypeMie"]),
+                       "True if a Mie forcefield type, False otherwise."
+                       "".format(_get_default_variables_dict()["ParaTypeMie"]),
         "ParaTypeMARTINI": "Simulation info (all ensembles): boolean, default = {}. "
-        "True if a MARTINI forcefield, False otherwise."
-        "".format(_get_default_variables_dict()["ParaTypeMARTINI"]),
+                           "True if a MARTINI forcefield, False otherwise."
+                           "".format(_get_default_variables_dict()["ParaTypeMARTINI"]),
         "RcutCoulomb_box_0": "Simulation info (all ensembles): int or float (>= 0), default = {}."
-        "Sets a specific radius in box 0 where the short-range "
-        "electrostatic energy will be calculated (i.e., The distance to truncate the "
-        "short-range electrostatic energy in box 0.)"
-        "Note: if None, GOMC will default to the Rcut value"
-        "".format(_get_default_variables_dict()["RcutCoulomb_box_0"]),
+                             "Sets a specific radius in box 0 where the short-range "
+                             "electrostatic energy will be calculated (i.e., The distance to truncate the "
+                             "Note: if None, GOMC will default to the Rcut value"
+                             "".format(_get_default_variables_dict()["RcutCoulomb_box_0"]),
         "RcutCoulomb_box_1": "Simulation info (all ensembles): int or float (>= 0), default = {}."
-        "Sets a specific radius in box 1 where the short-range  "
-        "electrostatic energy will be calculated. (i.e., The distance to truncate the "
-        "short-range electrostatic energy in box 1.)"
-        "Note: if None, GOMC will default to the Rcut value"
-        "".format(_get_default_variables_dict()["RcutCoulomb_box_1"]),
+                             "Sets a specific radius in box 1 where the short-range  "
+                             "electrostatic energy will be calculated. (i.e., The distance to truncate the "
+                             "short-range electrostatic energy in box 1.)"
+                             "Note: if None, GOMC will default to the Rcut value"
+                             "".format(_get_default_variables_dict()["RcutCoulomb_box_1"]),
         "Pressure": "Simulation info (only GEMC_NPT and NPT): int or float (>= 0), default = {}. "
-        "The pressure in bar utilized for the NPT "
-        "and GEMC_NPT simulations."
-        "".format(_get_default_variables_dict()["Pressure"]),
+                    "The pressure in bar utilized for the NPT "
+                    "and GEMC_NPT simulations."
+                    "".format(_get_default_variables_dict()["Pressure"]),
         "Rcut": "Simulation info (all ensembles): int or float (>= 0 and RcutLow < Rswitch < Rcut), default = {}. "
-        "Sets a specific radius in Angstroms that non-bonded interaction "
-        "energy and force will be considered and calculated using defined potential function. "
-        "The distance in Angstoms to truncate the LJ, Mie, or other VDW type potential at. "
-        'Note: Rswitch is only used when the "Potential" = SWITCH. '
-        "".format(_get_default_variables_dict()["Rcut"]),
+                "Sets a specific radius in Angstroms that non-bonded interaction "
+                "energy and force will be considered and calculated using defined potential function. "
+                "The distance in Angstoms to truncate the LJ, Mie, or other VDW type potential at. "
+                'Note: Rswitch is only used when the "Potential" = SWITCH. '
+                "".format(_get_default_variables_dict()["Rcut"]),
         "RcutLow": "Simulation info (all ensembles): int or float (>= 0 and RcutLow < Rswitch < Rcut), default = {}. "
-        "Sets a specific minimum possible distance in Angstroms that reject "
-        "any move that places any atom closer than specified distance. The minimum possible "
-        "distance between any atoms. "
-        "Sets a specific radius in Angstroms that non-bonded interaction "
-        'Note: Rswitch is only used when the "Potential" = SWITCH. '
-        "".format(_get_default_variables_dict()["RcutLow"]),
+                   "Sets a specific minimum possible distance in Angstroms that reject "
+                   "any move that places any atom closer than specified distance. The minimum possible "
+                   "distance between any atoms. "
+                   "Sets a specific radius in Angstroms that non-bonded interaction "
+                   'Note: Rswitch is only used when the "Potential" = SWITCH. '
+                   "".format(_get_default_variables_dict()["RcutLow"]),
         "LRC": "Simulation info (all ensembles): boolean, default = {}. "
-        "If True, the simulation considers the long range tail corrections for the non-bonded VDW or "
-        "dispersion interactions. "
-        "Note: In case of using SHIFT or SWITCH potential functions, LRC will be ignored."
-        "".format(_get_default_variables_dict()["LRC"]),
+               "If True, the simulation considers the long range tail corrections for the non-bonded VDW or "
+               "dispersion interactions. "
+               "Note: In case of using SHIFT or SWITCH potential functions, LRC will be ignored."
+               "".format(_get_default_variables_dict()["LRC"]),
         "Exclude": "Simulation info (all ensembles): str "
-        '(The string inputs are "1-2", "1-3", or "1-4"), default = {}. '
-        "Note: In CHARMM force field, the 1-4 interaction needs to be considered. "
-        'Choosing "Excude 1-3", will modify 1-4 interaction based on 1-4 parameters '
-        "in parameter file. If a kind force field is used, where "
-        '1-4 interaction needs to be ignored, such as TraPPE, either Exlcude "1-4" needs to be '
-        "chosen or 1-4 parameter needs to be assigned to zero in the parameter file. \n"
-        '\t\t\t\t\t\t\t\t\t\t\t\t\t --- "1-2": All interaction pairs of bonded atoms, '
-        "except the ones that separated with one bond, "
-        "will be considered and modified using 1-4 parameters defined in parameter file. \n"
-        '\t\t\t\t\t\t\t\t\t\t\t\t\t --- "1-3": All interaction pairs of bonded atoms, '
-        "except the ones that separated with one or two "
-        "bonds, will be considered and modified using 1-4 parameters defined in parameter file. \n"
-        '\t\t\t\t\t\t\t\t\t\t\t\t\t --- "1-4": All interaction pairs of bonded atoms, '
-        "except the ones that separated with one, "
-        "two or three bonds, will be considered using non-bonded parameters defined in parameter file."
-        "".format(_get_default_variables_dict()["Exclude"]),
+                   '(The string inputs are "1-2", "1-3", or "1-4"), default = {}. '
+                   "Note: In CHARMM force field, the 1-4 interaction needs to be considered. "
+                   'Choosing "Excude 1-3", will modify 1-4 interaction based on 1-4 parameters '
+                   "in parameter file. If a kind force field is used, where "
+                   '1-4 interaction needs to be ignored, such as TraPPE, either Exlcude "1-4" needs to be '
+                   "chosen or 1-4 parameter needs to be assigned to zero in the parameter file. \n"
+                   '\t\t\t\t\t\t\t\t\t\t\t\t\t --- "1-2": All interaction pairs of bonded atoms, '
+                   "except the ones that separated with one bond, "
+                   "will be considered and modified using 1-4 parameters defined in parameter file. \n"
+                   '\t\t\t\t\t\t\t\t\t\t\t\t\t --- "1-3": All interaction pairs of bonded atoms, '
+                   "except the ones that separated with one or two "
+                   "bonds, will be considered and modified using 1-4 parameters defined in parameter file. \n"
+                   '\t\t\t\t\t\t\t\t\t\t\t\t\t --- "1-4": All interaction pairs of bonded atoms, '
+                   "except the ones that separated with one, "
+                   "two or three bonds, will be considered using non-bonded parameters defined in parameter file."
+                   "".format(_get_default_variables_dict()["Exclude"]),
         "Potential": 'Simulation info (all ensembles): str, ["VDW", "EXP6", "SHIFT" or "SWITCH"], default = {}. '
-        "Defines the potential function type to calculate non-bonded dispersion interaction "
-        "energy and force between atoms. \n"
-        '\t\t\t\t\t\t\t\t\t\t\t\t\t --- "VDW":    Non-bonded dispersion interaction energy and force '
-        "calculated based on n-6 (Lennard - Jones) equation. This function will be discussed "
-        "further in the Intermolecular energy and "
-        "Virial calculation section. \n"
-        '\t\t\t\t\t\t\t\t\t\t\t\t\t --- "EXP6":   Non-bonded dispersion interaction energy and force '
-        "calculated based on exp-6 (Buckingham potential) equation. \n"
-        '\t\t\t\t\t\t\t\t\t\t\t\t\t --- "SHIFT":  This option forces the potential energy to be '
-        "zero at Rcut distance.  \n"
-        '\t\t\t\t\t\t\t\t\t\t\t\t\t --- "SWITCH": This option smoothly forces the potential '
-        "energy to be zero at Rcut distance and starts modifying the potential at Rswitch "
-        "distance. Depending on force field type, specific potential function will be applied. "
-        "".format(_get_default_variables_dict()["Potential"]),
+                     "Defines the potential function type to calculate non-bonded dispersion interaction "
+                     "energy and force between atoms. \n"
+                     '\t\t\t\t\t\t\t\t\t\t\t\t\t --- "VDW":    Non-bonded dispersion interaction energy and force '
+                     "calculated based on n-6 (Lennard - Jones) equation. This function will be discussed "
+                     "further in the Intermolecular energy and "
+                     "Virial calculation section. \n"
+                     '\t\t\t\t\t\t\t\t\t\t\t\t\t --- "EXP6":   Non-bonded dispersion interaction energy and force '
+                     "calculated based on exp-6 (Buckingham potential) equation. \n"
+                     '\t\t\t\t\t\t\t\t\t\t\t\t\t --- "SHIFT":  This option forces the potential energy to be '
+                     "zero at Rcut distance.  \n"
+                     '\t\t\t\t\t\t\t\t\t\t\t\t\t --- "SWITCH": This option smoothly forces the potential '
+                     "energy to be zero at Rcut distance and starts modifying the potential at Rswitch "
+                     "distance. Depending on force field type, specific potential function will be applied. "
+                     "".format(_get_default_variables_dict()["Potential"]),
         "Rswitch": "Simulation info (all ensembles): int or float (>= 0 and RcutLow < Rswitch < Rcut), default = {}. "
-        'Note: Rswitch is only used when the SWITCH function is used (i.e., "Potential" = SWITCH). '
-        "The Rswitch distance is in Angstrom. If the “SWITCH” function is chosen, "
-        "Rswitch needs to be defined, otherwise, the program will be terminated. When using "
-        'choosing "SWITCH" as potential function, the Rswitch distance defines where the'
-        "non-bonded interaction energy modification is started, which is eventually truncated "
-        "smoothly at Rcut distance."
-        "".format(_get_default_variables_dict()["Rswitch"]),
+                   'Note: Rswitch is only used when the SWITCH function is used (i.e., "Potential" = SWITCH). '
+                   "The Rswitch distance is in Angstrom. If the “SWITCH” function is chosen, "
+                   "Rswitch needs to be defined, otherwise, the program will be terminated. When using "
+                   'choosing "SWITCH" as potential function, the Rswitch distance defines where the'
+                   "non-bonded interaction energy modification is started, which is eventually truncated "
+                   "smoothly at Rcut distance."
+                   "".format(_get_default_variables_dict()["Rswitch"]),
         "ElectroStatic": "Simulation info (all ensembles): boolean, default = {}. "
-        "Considers the coulomb interactions or not. "
-        "If True, coulomb interactions are considered and false if not. "
-        "Note: To simulate the polar molecule in MARTINI force field, ElectroStatic needs to be "
-        "turn on. The MARTINI force field uses short-range coulomb interaction with constant "
-        "Dielectric of 15.0."
-        "".format(_get_default_variables_dict()["ElectroStatic"]),
+                         "Considers the coulomb interactions or not. "
+                         "If True, coulomb interactions are considered and false if not. "
+                         "Note: To simulate the polar molecule in MARTINI force field, ElectroStatic needs to be "
+                         "turn on. The MARTINI force field uses short-range coulomb interaction with constant "
+                         "Dielectric of 15.0."
+                         "".format(_get_default_variables_dict()["ElectroStatic"]),
         "Ewald": "Simulation info (all ensembles): boolean, default = {}. "
-        "Considers the standard Ewald summation method for electrostatic calculations. "
-        "If True, Ewald summation calculation needs to be considered and false if not. "
-        "Note: By default, GOMC will set ElectroStatic to True if Ewald summation  "
-        "method was used to calculate coulomb interaction."
-        "".format(_get_default_variables_dict()["Ewald"]),
+                 "Considers the standard Ewald summation method for electrostatic calculations. "
+                 "If True, Ewald summation calculation needs to be considered and false if not. "
+                 "Note: By default, GOMC will set ElectroStatic to True if Ewald summation  "
+                 "method was used to calculate coulomb interaction."
+                 "".format(_get_default_variables_dict()["Ewald"]),
         "CachedFourier": "Simulation info (all ensembles): boolean, default = {}. "
-        "Considers storing the reciprocal terms for Ewald summation "
-        "calculation in order to improve the code performance. This option would increase the code "
-        "performance with the cost of memory usage. If True, to store reciprocal terms of Ewald "
-        "summation calculation and False if not. "
-        "Warning: Monte Carlo moves, such as MEMC-1, MEMC-2, MEMC-3, "
-        "IntraMEMC-1, IntraMEMC-2, and IntraMEMC-3 are not support with CachedFourier."
-        "".format(_get_default_variables_dict()["CachedFourier"]),
+                         "Considers storing the reciprocal terms for Ewald summation "
+                         "calculation in order to improve the code performance. This option would increase the code "
+                         "performance with the cost of memory usage. If True, to store reciprocal terms of Ewald "
+                         "summation calculation and False if not. "
+                         "Warning: Monte Carlo moves, such as MEMC-1, MEMC-2, MEMC-3, "
+                         "IntraMEMC-1, IntraMEMC-2, and IntraMEMC-3 are not support with CachedFourier."
+                         "".format(_get_default_variables_dict()["CachedFourier"]),
         "Tolerance": "Simulation info (all ensembles): float (0.0 < float < 1.0), default = {}. "
-        "Sets the accuracy in Ewald summation calculation. Ewald separation parameter and number "
-        "of reciprocal vectors for the Ewald summation are determined based on the accuracy parameter."
-        "".format(_get_default_variables_dict()["Tolerance"]),
+                     "Sets the accuracy in Ewald summation calculation. Ewald separation parameter and number "
+                     "of reciprocal vectors for the Ewald summation are determined based on the accuracy parameter."
+                     "".format(_get_default_variables_dict()["Tolerance"]),
         "Dielectric": "Simulation info (all ensembles): int or float (>= 0.0), default = {}. "
-        "Sets dielectric value used in coulomb interaction when the Martini "
-        "force field is used. Note: In MARTINI force field, Dielectric needs to be set to 15.0."
-        "".format(_get_default_variables_dict()["Dielectric"]),
+                      "Sets dielectric value used in coulomb interaction when the Martini "
+                      "force field is used. Note: In MARTINI force field, Dielectric needs to be set to 15.0."
+                      "".format(_get_default_variables_dict()["Dielectric"]),
         "PressureCalc": "Simulation info (all ensembles): list [bool , int (> 0)] or [bool , step_frequency], "
-        "default = {} or [{} , set via formula based on the number of RunSteps or {} max]. "
-        "Calculate the system pressure or not. bool = True, enables the pressure calculation "
-        "during the simulation, false disables the calculation. The int/step frequency sets the "
-        "frequency of calculating the pressure."
-        "".format(
-            _get_default_variables_dict()["PressureCalc"],
-            _get_default_variables_dict()["PressureCalc"][0],
-            _get_default_variables_dict()["PressureCalc"][1],
-        ),
+                        "default = {} or [{} , set via formula based on the number of RunSteps or {} max]. "
+                        "Calculate the system pressure or not. bool = True, enables the pressure calculation "
+                        "during the simulation, false disables the calculation. The int/step frequency sets the "
+                        "frequency of calculating the pressure."
+                        "".format(_get_default_variables_dict()["PressureCalc"],
+                                  _get_default_variables_dict()["PressureCalc"][0],
+                                  _get_default_variables_dict()["PressureCalc"][1],
+                                  ),
         "EqSteps": "Simulation info (all ensembles): int (> 0), "
-        "default = set via formula based on the number of RunSteps or {} max. "
-        "Sets the number of steps necessary to equilibrate the system. "
-        "Averaging will begin at this step. "
-        "Note: In GCMC simulations, the Histogram files will be outputed at EqSteps."
-        "".format(_get_default_variables_dict()["EqSteps"]),
+                   "default = set via formula based on the number of RunSteps or {} max. "
+                   "Sets the number of steps necessary to equilibrate the system. "
+                   "Averaging will begin at this step. "
+                   "Note: In GCMC simulations, the Histogram files will be outputed at EqSteps."
+                   "".format(_get_default_variables_dict()["EqSteps"]),
         "AdjSteps": "Simulation info (all ensembles): int (> 0), "
-        "default = set via formula based on the number of RunSteps or {} max. "
-        "Sets the number of steps per adjustment of the parameter associated with each move "
-        "(e.g. maximum translate distance, maximum rotation, maximum volume exchange, etc.)."
-        "".format(_get_default_variables_dict()["AdjSteps"]),
+                    "default = set via formula based on the number of RunSteps or {} max. "
+                    "Sets the number of steps per adjustment of the parameter associated with each move "
+                    "(e.g. maximum translate distance, maximum rotation, maximum volume exchange, etc.)."
+                    "".format(_get_default_variables_dict()["AdjSteps"]),
         "VDWGeometricSigma": "Simulation info (all ensembles): boolean, default = {}. "
-        "Use geometric mean, as required by OPLS force field, "
-        "to combining Lennard-Jones sigma parameters for different atom types. "
-        "If set to True, GOMC uses geometric mean to combine Lennard-Jones or VDW sigmas. "
-        "Note: The default setting of VDWGeometricSigma is false, which uses the arithmetic "
-        "mean when combining Lennard-Jones or VDW sigma parameters for different atom types."
-        "".format(_get_default_variables_dict()["VDWGeometricSigma"]),
+                             "Use geometric mean, as required by OPLS force field, "
+                             "to combining Lennard-Jones sigma parameters for different atom types. "
+                             "If set to True, GOMC uses geometric mean to combine Lennard-Jones or VDW sigmas. "
+                             "Note: The default setting of VDWGeometricSigma is false, which uses the arithmetic "
+                             "mean when combining Lennard-Jones or VDW sigma parameters for different atom types."
+                             "".format(_get_default_variables_dict()["VDWGeometricSigma"]),
         "useConstantArea": "Simulation info (only GEMC_NPT and NPT): boolean: default = {}. "
-        "Changes the volume of the simulation box by fixing the cross-sectional "
-        "area (x-y plane). If true, the volume will change only in z axis, If False, "
-        "the volume of the box will change in a way to maintain the constant axis ratio. "
-        "".format(_get_default_variables_dict()["useConstantArea"]),
+                           "Changes the volume of the simulation box by fixing the cross-sectional "
+                           "area (x-y plane). If true, the volume will change only in z axis, If False, "
+                           "the volume of the box will change in a way to maintain the constant axis ratio. "
+                           "".format(_get_default_variables_dict()["useConstantArea"]),
         "FixVolBox0": "Simulation info (only GEMC_NPT): boolean, default = {}. "
-        "Changing the volume of fluid phase (Box 1) to maintain the constant imposed pressure and "
-        "Temperature, while keeping the volume of adsorbed phase (Box 0) fixed. Note: By default, "
-        "GOMC will set useConstantArea to False if no value was set. It means, the volume of the "
-        "box will change in a way to maintain the constant axis ratio."
-        "".format(_get_default_variables_dict()["FixVolBox0"]),
+                      "Changing the volume of fluid phase (Box 1) to maintain the constant imposed pressure and "
+                      "Temperature, while keeping the volume of adsorbed phase (Box 0) fixed. Note: By default, "
+                      "GOMC will set useConstantArea to False if no value was set. It means, the volume of the "
+                      "box will change in a way to maintain the constant axis ratio."
+                      "".format(_get_default_variables_dict()["FixVolBox0"]),
         # GCMC only properties
-        "ChemPot": "Simulation info (only GCMC): dict {str (4 dig limit) , int or float}, "
-        + "default = {} (i.e., the user must set this variable as there is no working default)."
-        ""
-        "".format(_get_default_variables_dict()["ChemPot"])
-        + "The chemical potentials in GOMC units of energy, K. "
-        "There is a 4 character limit for the string/residue name since the PDB/PSF "
-        "files have a 4 character limitation and require and exact match in the conf file. "
-        "Note: These strings must match the residue in the psf and psb files or it will fail. "
-        "The name of the residues and their corresponding chemical potential must specified "
-        'for every residue in the system (i.e., {"residue_name" : chemical_potential}). '
-        "Note: IF 2 KEYS WITH THE SAME STRING/RESIDUE ARE PROVIDED, ONE WILL BE AUTOMATICALLY "
-        "OVERWRITTEN AND NO ERROR WILL BE THROWN IN THIS CONTROL FILE WRITER. "
-        'Example 1 (system with only water):  {"H2O" : -4000} . '
-        'Example 2 (system with water and ethanol):  {"H2O" : -4000, "ETH" : -8000} ',
+        "ChemPot": "Simulation info (only GCMC): dict {str (4 dig limit) , int or float}, "+
+                   "default = {} ".format(_get_default_variables_dict()["ChemPot"])+
+                   "(i.e., the user must set this variable as there is no working default)."
+                   "The chemical potentials in GOMC units of energy, K. "
+                   "There is a 4 character limit for the string/residue name since the PDB/PSF "
+                   "files have a 4 character limitation and require and exact match in the conf file. "
+                   "Note: These strings must match the residue in the psf and psb files or it will fail. "
+                   "The name of the residues and their corresponding chemical potential must specified "
+                   'for every residue in the system (i.e., {"residue_name" : chemical_potential}). '
+                   "Note: IF 2 KEYS WITH THE SAME STRING/RESIDUE ARE PROVIDED, ONE WILL BE AUTOMATICALLY "
+                   "OVERWRITTEN AND NO ERROR WILL BE THROWN IN THIS CONTROL FILE WRITER. "
+                   'Example 1 (system with only water):  {"H2O" : -4000} . '
+                   'Example 2 (system with water and ethanol):  {"H2O" : -4000, "ETH" : -8000} ',
         "Fugacity": "Simulation info (only GCMC): dict {str , int or float (>= 0)}, "
-        + "default = {} (i.e., the user must set this variable as there is no working default). "
-        "".format(_get_default_variables_dict()["Fugacity"])
-        + "The fugacity in GOMC units of pressure, bar. "
-        "There is a 4 character limit for the string/residue name since the PDB/PSF "
-        "files have a 4 character limitation and require and exact match in the conf file. "
-        "Note: These strings must match the residue in the psf and psb files or it will fail. "
-        "The name of the residues and their corresponding fugacity must specified "
-        'for every residue in the system (i.e., {"residue_name" : fugacity}). '
-        "Note: IF 2 KEYS WITH THE SAME STRING/RESIDUE ARE PROVIDED, ONE WILL BE AUTOMATICALLY "
-        "OVERWRITTEN AND NO ERROR WILL BE THROWN IN THIS CONTROL FILE WRITER. "
-        'Example 1 (system with only water):  {"H2O" : 1} . '
-        'Example 2 (system with water and ethanol):  {"H2O" : 0.5, "ETH" : 10} ',
+                    +"default = {} ".format(_get_default_variables_dict()["Fugacity"])
+                    +"(i.e., the user must set this variable as there is no working default). "
+                    "The fugacity in GOMC units of pressure, bar. "
+                    "There is a 4 character limit for the string/residue name since the PDB/PSF "
+                    "files have a 4 character limitation and require and exact match in the conf file. "
+                    "Note: These strings must match the residue in the psf and psb files or it will fail. "
+                    "The name of the residues and their corresponding fugacity must specified "
+                    'for every residue in the system (i.e., {"residue_name" : fugacity}). '
+                    "Note: IF 2 KEYS WITH THE SAME STRING/RESIDUE ARE PROVIDED, ONE WILL BE AUTOMATICALLY "
+                    "OVERWRITTEN AND NO ERROR WILL BE THROWN IN THIS CONTROL FILE WRITER. "
+                    'Example 1 (system with only water):  {"H2O" : 1} . '
+                    'Example 2 (system with water and ethanol):  {"H2O" : 0.5, "ETH" : 10} ',
         # CBMC inputs
         "CBMC_First": "CBMC inputs (all ensembles): int (>= 0), default = {}, "
-        "The number of CD-CBMC trials to choose the first atom position"
-        "(Lennard-Jones trials for first seed growth)."
-        "".format(_get_default_variables_dict()["CBMC_First"]),
+                      "The number of CD-CBMC trials to choose the first atom position"
+                      "(Lennard-Jones trials for first seed growth)."
+                      "".format(_get_default_variables_dict()["CBMC_First"]),
         "CBMC_Nth": "CBMC inputs (all ensembles): int (>= 0), default = {},  "
-        "The number of CD-CBMC trials to choose the later atom positions "
-        "(Lennard-Jones trials for first seed growth)."
-        "".format(_get_default_variables_dict()["CBMC_Nth"]),
+                    "The number of CD-CBMC trials to choose the later atom positions "
+                    "(Lennard-Jones trials for first seed growth)."
+                    "".format(_get_default_variables_dict()["CBMC_Nth"]),
         "CBMC_Ang": "CBMC inputs (all ensembles): int (>= 0), default = {}, "
-        "The number of CD-CBMC bending angle trials to perform for geometry "
-        "(per the coupled-decoupled CBMC scheme)."
-        "".format(_get_default_variables_dict()["CBMC_Ang"]),
+                    "The number of CD-CBMC bending angle trials to perform for geometry "
+                    "(per the coupled-decoupled CBMC scheme)."
+                    "".format(_get_default_variables_dict()["CBMC_Ang"]),
         "CBMC_Dih": "CBMC inputs (all ensembles): int (>= 0), default = {}, "
-        "The number of CD-CBMC dihedral angle trials to perform for geometry "
-        "(per the coupled-decoupled CBMC scheme)."
-        "".format(_get_default_variables_dict()["CBMC_Dih"]),
+                    "The number of CD-CBMC dihedral angle trials to perform for geometry "
+                    "(per the coupled-decoupled CBMC scheme)."
+                    "".format(_get_default_variables_dict()["CBMC_Dih"]),
         # Control file (.conf file ) output controls/parameters
         "OutputName": "Output Frequency (all ensembles): str (NO SPACES), default = {}. "
-        "The UNIQUE STRING NAME, WITH NO SPACES, which is used for the "
-        "output block average, PDB, and PSF file names."
-        "".format(_get_default_variables_dict()["OutputName"]),
-        "CoordinatesFreq": "Output Frequency (all ensembles): list [bool , int (> 0)] or "
-        "[Generate_data_bool , steps_per_data_output_int], "
-        "default = {} or [{} , set via formula based on the number of RunSteps or {} max]. "
-        "Controls output of PDB file (coordinates). "
-        "If bool is True, this enables outputting the coordinate files at the "
-        "integer frequency (set steps_per_data_output_int), "
-        'while "False" disables outputting the coordinates.'
-        "".format(
-            _get_default_variables_dict()["CoordinatesFreq"],
-            _get_default_variables_dict()["CoordinatesFreq"][0],
-            _get_default_variables_dict()["CoordinatesFreq"][1],
-        ),
+                      "The UNIQUE STRING NAME, WITH NO SPACES, which is used for the "
+                      "output block average, PDB, and PSF file names."
+                      "".format(_get_default_variables_dict()["OutputName"]),
+        "CoordinatesFreq": "PDB Output Frequency (all ensembles): list [bool , int (> 0)] or "
+                           "[Generate_data_bool , steps_per_data_output_int], "
+                           "default = {} or [{} , set via formula based on the number of RunSteps or {} max]. "
+                           "Controls output of PDB file (coordinates). "
+                           "If bool is True, this enables outputting the coordinate files at the "
+                           "integer frequency (set steps_per_data_output_int), "
+                           'while "False" disables outputting the coordinates.'
+                           "".format(_get_default_variables_dict()["CoordinatesFreq"],
+                                     _get_default_variables_dict()["CoordinatesFreq"][0],
+                                     _get_default_variables_dict()["CoordinatesFreq"][1],
+                                     ),
+        "DCDFreq": "DCD Output Frequency (all ensembles): list [bool , int (> 0)] or "
+                   "[Generate_data_bool , steps_per_data_output_int], "
+                   "default = {} or [{} , set via formula based on the number of RunSteps or {} max]. "
+                   "Controls output of DCD file (coordinates). "
+                   "If bool is True, this enables outputting the coordinate files at the "
+                   "integer frequency (set steps_per_data_output_int), "
+                   'while "False" disables outputting the coordinates.'
+                   "".format( _get_default_variables_dict()["DCDFreq"],
+                              _get_default_variables_dict()["DCDFreq"][0],
+                              _get_default_variables_dict()["DCDFreq"][1],
+                              ),
         "RestartFreq": "Output Frequency (all ensembles): list [bool , int (> 0)] or "
-        "[Generate_data_bool , steps_per_data_output_int], "
-        "default = {} or [{} , set via formula based on the number of RunSteps or {} max]. "
-        "This creates the PDB and PSF (coordinate and topology) files for restarting the system "
-        "at the set steps_per_data_output_int (frequency) "
-        "If bool is True, this enables outputting the PDB/PSF restart files at the "
-        "integer frequency (set steps_per_data_output_int), "
-        "while “false” disables outputting the PDB/PSF restart files. "
-        "".format(
-            _get_default_variables_dict()["RestartFreq"],
-            _get_default_variables_dict()["RestartFreq"][0],
-            _get_default_variables_dict()["RestartFreq"][1],
-        ),
+                       "[Generate_data_bool , steps_per_data_output_int], "
+                       "default = {} or [{} , set via formula based on the number of RunSteps or {} max]. "
+                       "This creates the PDB and PSF (coordinate and topology) files for restarting the system "
+                       "at the set steps_per_data_output_int (frequency) "
+                       "If bool is True, this enables outputting the PDB/PSF restart files at the "
+                       "integer frequency (set steps_per_data_output_int), "
+                       "while “false” disables outputting the PDB/PSF restart files. "
+                       "".format(_get_default_variables_dict()["RestartFreq"],
+                                 _get_default_variables_dict()["RestartFreq"][0],
+                                 _get_default_variables_dict()["RestartFreq"][1],
+                                 ),
         "CheckpointFreq": "Output Frequency (all ensembles): list [bool , int (> 0)] or "
-        "[Generate_data_bool , steps_per_data_output_int], "
-        "default = {} or [{} , set via formula based on the number of RunSteps or {} max]. "
-        "Controls the output of the last state of simulation at a specified step, in a "
-        "binary file format (checkpoint.dat). Checkpoint file contains the following "
-        "information in full precision: "
-        "(1) Last simulation step that saved into checkpoint file "
-        "(2) Simulation cell dimensions and angles "
-        "(3) Maximum amount of displacement (Å), rotation (δ), and volume (Å^3) that is used in "
-        "the Displacement, Rotation, MultiParticle, and Volume moves "
-        "(4) Number of Monte Carlo move trial and acceptance "
-        "(5) All molecule’s coordinates "
-        "(6) Random number sequence "
-        "If bool is True, this enables outputting the checkpoint file at the "
-        "integer frequency (set steps_per_data_output_int), "
-        'while "False" disables outputting the checkpoint file.'
-        "".format(
-            _get_default_variables_dict()["CheckpointFreq"],
-            _get_default_variables_dict()["CheckpointFreq"][0],
-            _get_default_variables_dict()["CheckpointFreq"][1],
-        ),
+                          "[Generate_data_bool , steps_per_data_output_int], "
+                          "default = {} or [{} , set via formula based on the number of RunSteps or {} max]. "
+                          "Controls the output of the last state of simulation at a specified step, in a "
+                          "binary file format (checkpoint.dat). Checkpoint file contains the following "
+                          "information in full precision: "
+                          "(1) Last simulation step that saved into checkpoint file "
+                          "(2) Simulation cell dimensions and angles "
+                          "(3) Maximum amount of displacement (Å), rotation (δ), and volume (Å^3) that is used in "
+                          "the Displacement, Rotation, MultiParticle, and Volume moves "
+                          "(4) Number of Monte Carlo move trial and acceptance "
+                          "(5) All molecule’s coordinates "
+                          "(6) Random number sequence "
+                          "If bool is True, this enables outputting the checkpoint file at the "
+                          "integer frequency (set steps_per_data_output_int), "
+                          'while "False" disables outputting the checkpoint file.'
+                          "".format(_get_default_variables_dict()["CheckpointFreq"],
+                                    _get_default_variables_dict()["CheckpointFreq"][0],
+                                    _get_default_variables_dict()["CheckpointFreq"][1],
+                                    ),
         "ConsoleFreq": "Output Frequency (all ensembles): list [bool , int (> 0)] or "
-        "[Generate_data_bool , steps_per_data_output_int], "
-        "default = {} or [{} , set via formula based on the number of RunSteps or {} max]. "
-        'Controls the output to the "console” or log file, which prints the '
-        "acceptance statistics, and run timing info. In addition, instantaneously-selected"
-        "thermodynamic properties will be output to this file.  If bool is True, "
-        "this enables outputting the console data at the integer frequency "
-        '(set steps_per_data_output_int), while "False" disables outputting the console '
-        "data file. "
-        "".format(
-            _get_default_variables_dict()["ConsoleFreq"],
-            _get_default_variables_dict()["ConsoleFreq"][0],
-            _get_default_variables_dict()["ConsoleFreq"][1],
-        ),
+                       "[Generate_data_bool , steps_per_data_output_int], "
+                       "default = {} or [{} , set via formula based on the number of RunSteps or {} max]. "
+                       'Controls the output to the "console” or log file, which prints the '
+                       "acceptance statistics, and run timing info. In addition, instantaneously-selected"
+                       "thermodynamic properties will be output to this file.  If bool is True, "
+                       "this enables outputting the console data at the integer frequency "
+                       '(set steps_per_data_output_int), while "False" disables outputting the console '
+                       "data file. "
+                       "".format(_get_default_variables_dict()["ConsoleFreq"],
+                                 _get_default_variables_dict()["ConsoleFreq"][0],
+                                 _get_default_variables_dict()["ConsoleFreq"][1],
+                                 ),
         "BlockAverageFreq": "Output Frequency (all ensembles): list [bool , int (> 0)] or "
-        "[Generate_data_bool , steps_per_data_output_int], "
-        "default = {} or [{} , set via formula based on the number of RunSteps or {} max]. "
-        "Controls the block averages output of selected thermodynamic properties. "
-        "Block averages are averages of thermodynamic values of interest for chunks of the "
-        "simulation (for post-processing of averages or std. dev. in those values)."
-        "If bool is True, this enables outputting the block averaging data/file at the "
-        "integer frequency (set steps_per_data_output_int), "
-        'while "False" disables outputting the block averaging data/file.'
-        "".format(
-            _get_default_variables_dict()["BlockAverageFreq"],
-            _get_default_variables_dict()["BlockAverageFreq"][0],
-            _get_default_variables_dict()["BlockAverageFreq"][1],
-        ),
+                            "[Generate_data_bool , steps_per_data_output_int], "
+                            "default = {} or [{} , set via formula based on the number of RunSteps or {} max]. "
+                            "Controls the block averages output of selected thermodynamic properties. "
+                            "Block averages are averages of thermodynamic values of interest for chunks of the "
+                            "simulation (for post-processing of averages or std. dev. in those values)."
+                            "If bool is True, this enables outputting the block averaging data/file at the "
+                            "integer frequency (set steps_per_data_output_int), "
+                            'while "False" disables outputting the block averaging data/file.'
+                            "".format(_get_default_variables_dict()["BlockAverageFreq"],
+                                      _get_default_variables_dict()["BlockAverageFreq"][0],
+                                      _get_default_variables_dict()["BlockAverageFreq"][1],
+                                      ),
         "HistogramFreq": "Output Frequency (all ensembles): list [bool , int (> 0)] or "
-        "[Generate_data_bool , steps_per_data_output_int], "
-        "default = {} or [{} , set via formula based on the number of RunSteps or {} max]. "
-        "Controls the histograms. Histograms are a binned listing of observation frequency "
-        "for a specific thermodynamic variable. In the GOMC code, they also control the output "
-        "of a file containing energy/molecule samples, "
-        'which is only used for the "GCMC" ensemble simulations for histogram reweighting purposes.'
-        "If bool is True, this enables outputting the data to the histogram data at the "
-        "integer frequency (set steps_per_data_output_int), "
-        'while "False" disables outputting the histogram data.'
-        "".format(
-            _get_default_variables_dict()["HistogramFreq"],
-            _get_default_variables_dict()["HistogramFreq"][0],
-            _get_default_variables_dict()["HistogramFreq"][1],
-        ),
+                         "[Generate_data_bool , steps_per_data_output_int], "
+                         "default = {} or [{} , set via formula based on the number of RunSteps or {} max]. "
+                         "Controls the histograms. Histograms are a binned listing of observation frequency "
+                         "for a specific thermodynamic variable. In the GOMC code, they also control the output "
+                         "of a file containing energy/molecule samples, "
+                         'which is only used for the "GCMC" ensemble simulations for histogram reweighting purposes.'
+                         "If bool is True, this enables outputting the data to the histogram data at the "
+                         "integer frequency (set steps_per_data_output_int), "
+                         'while "False" disables outputting the histogram data.'
+                         "".format(_get_default_variables_dict()["HistogramFreq"],
+                                   _get_default_variables_dict()["HistogramFreq"][0],
+                                   _get_default_variables_dict()["HistogramFreq"][1],
+                                   ),
         # Histogram data
         "DistName": "Histogram Output (all ensembles): str (NO SPACES), default = {}. "
-        "Short phrase which will be combined with RunNumber and RunLetter "
-        "to use in the name of the binned histogram for molecule distribution."
-        "".format(_get_default_variables_dict()["DistName"]),
+                    "Short phrase which will be combined with RunNumber and RunLetter "
+                    "to use in the name of the binned histogram for molecule distribution."
+                    "".format(_get_default_variables_dict()["DistName"]),
         "HistName": "Histogram Output (all ensembles): str (NO SPACES), default = {}. "
-        "Short phrase, which will be combined with RunNumber and RunLetter, "
-        "to use in the name of the energy/molecule count sample file."
-        "".format(_get_default_variables_dict()["HistName"]),
+                    "Short phrase, which will be combined with RunNumber and RunLetter, "
+                    "to use in the name of the energy/molecule count sample file."
+                    "".format(_get_default_variables_dict()["HistName"]),
         "RunNumber": "Histogram Output (all ensembles): int  ( > 0 ), default = {}. "
-        "Sets a number, which is a part of DistName and HistName file name."
-        "".format(_get_default_variables_dict()["RunNumber"]),
+                     "Sets a number, which is a part of DistName and HistName file name."
+                     "".format(_get_default_variables_dict()["RunNumber"]),
         "RunLetter": "Histogram Output (all ensembles): str (1 alphabetic character only), default = {}. "
-        "Sets a letter, which is a part of DistName and HistName file name."
-        "".format(_get_default_variables_dict()["RunLetter"]),
+                     "Sets a letter, which is a part of DistName and HistName file name."
+                     "".format(_get_default_variables_dict()["RunLetter"]),
         "SampleFreq": "Histogram Output (all ensembles): int ( > 0 ), default = {}. "
-        "The number of steps per histogram sample or frequency."
-        "".format(_get_default_variables_dict()["SampleFreq"]),
+                      "The number of steps per histogram sample or frequency."
+                      "".format(_get_default_variables_dict()["SampleFreq"]),
         # Data output for the console and bulk properties calculations
         "OutEnergy": "Output Data (all ensembles): [bool, bool], default = {}.   "
-        "The list provides the booleans to [block_averages_bool, console_output_bool]. "
-        "This outputs the energy data into the block averages and console output/log files."
-        "".format(_get_default_variables_dict()["OutEnergy"]),
+                     "The list provides the booleans to [block_averages_bool, console_output_bool]. "
+                     "This outputs the energy data into the block averages and console output/log files."
+                     "".format(_get_default_variables_dict()["OutEnergy"]),
         "OutPressure": "Output Data (all ensembles): [bool, bool], default = {}.   "
-        "The list provides the booleans to [block_averages_bool, console_output_bool]. "
-        "This outputs the pressure data into the block averages and console output/log files."
-        "".format(_get_default_variables_dict()["OutPressure"]),
+                       "The list provides the booleans to [block_averages_bool, console_output_bool]. "
+                       "This outputs the pressure data into the block averages and console output/log files."
+                       "".format(_get_default_variables_dict()["OutPressure"]),
         "OutMolNumber": "Output Data (all ensembles): [bool, bool], default = {}.   "
-        "The list provides the booleans to [block_averages_bool, console_output_bool]. "
-        "This outputs the number of molecules data into the block averages and console output/log files."
-        "".format(_get_default_variables_dict()["OutMolNumber"]),
+                        "The list provides the booleans to [block_averages_bool, console_output_bool]. "
+                        "This outputs the number of molecules data into the block averages and console "
+                        "output/log files."
+                        "".format(_get_default_variables_dict()["OutMolNumber"]),
         "OutDensity": "Output Data (all ensembles): [bool, bool], default = {}.   "
-        "The list provides the booleans to [block_averages_bool, console_output_bool]. "
-        "This outputs the density data into the block averages and console output/log files."
-        "".format(_get_default_variables_dict()["OutDensity"]),
+                      "The list provides the booleans to [block_averages_bool, console_output_bool]. "
+                      "This outputs the density data into the block averages and console output/log files."
+                      "".format(_get_default_variables_dict()["OutDensity"]),
         "OutVolume": "Output Data (all ensembles): [bool, bool], default = {}.   "
-        "The list provides the booleans to [block_averages_bool, console_output_bool]. "
-        "This outputs the volume data into the block averages and console output/log files."
-        "".format(_get_default_variables_dict()["OutVolume"]),
+                     "The list provides the booleans to [block_averages_bool, console_output_bool]. "
+                     "This outputs the volume data into the block averages and console output/log files."
+                     "".format(_get_default_variables_dict()["OutVolume"]),
         "OutSurfaceTension": "Output Data (all ensembles): [bool, bool], default = {}. "
-        "The list provides the booleans to [block_averages_bool, console_output_bool]. "
-        "This outputs the surface tension data into the block averages and console "
-        "output/log files."
-        "".format(_get_default_variables_dict()["OutSurfaceTension"]),
+                             "The list provides the booleans to [block_averages_bool, console_output_bool]. "
+                             "This outputs the surface tension data into the block averages and console "
+                             "output/log files."
+                             "".format(_get_default_variables_dict()["OutSurfaceTension"]),
         # free energy calculation in NVT and NPT ensembles.
         "FreeEnergyCalc": "Free Energy Calcs (NVT and NPT only): list [bool , int (> 0)] or "
-        "[Generate_data_bool , steps_per_data_output_int], default = {}. "
-        "bool = True enabling free energy calculation during the simulation, false disables "
-        "the calculation. The int/step frequency sets the frequency of calculating the free energy."
-        "".format(_get_default_variables_dict()["FreeEnergyCalc"]),
+                          "[Generate_data_bool , steps_per_data_output_int], default = {}. "
+                          "bool = True enabling free energy calculation during the simulation, false disables "
+                          "the calculation. The int/step frequency sets the frequency of calculating the free energy."
+                          "".format(_get_default_variables_dict()["FreeEnergyCalc"]),
         "MoleculeType": "Free Energy Calcs (NVT and NPT only): list [str , int (> 0)] or "
-        '["residue_name" , residue_ID], '
-        "The user must set this variable as there is no working default (default = {}). "
-        'Note: ONLY 4 characters can be used for the string (i.e., "residue_name"). '
-        "Sets the solute molecule kind (residue name) and molecule number (residue ID), "
-        "which absolute solvation free will be calculated for."
-        "".format(_get_default_variables_dict()["MoleculeType"]),
+                        '["residue_name" , residue_ID], '
+                        "The user must set this variable as there is no working default (default = {}). "
+                        'Note: ONLY 4 characters can be used for the string (i.e., "residue_name"). '
+                        "Sets the solute molecule kind (residue name) and molecule number (residue ID), "
+                        "which absolute solvation free will be calculated for."
+                        "".format(_get_default_variables_dict()["MoleculeType"]),
         "InitialState": "Free Energy Calcs (NVT and NPT only): int (>= 0), "
-        "The user must set this variable as there is no working default (default = {}). "
-        "The index of LambdaCoulomb and LambdaVDW vectors. Sets the index of the"
-        "LambdaCoulomb and LambdaVDW vectors, to determine the simulation lambda value for"
-        "VDW and Coulomb interactions. "
-        "WARNING : This must an integer within the vector count of the LambdaVDW and LambdaCoulomb, "
-        "in which the counting starts at 0.  "
-        "".format(_get_default_variables_dict()["InitialState"]),
+                        "The user must set this variable as there is no working default (default = {}). "
+                        "The index of LambdaCoulomb and LambdaVDW vectors. Sets the index of the"
+                        "LambdaCoulomb and LambdaVDW vectors, to determine the simulation lambda value for"
+                        "VDW and Coulomb interactions. "
+                        "WARNING : This must an integer within the vector count of the LambdaVDW and LambdaCoulomb, "
+                        "in which the counting starts at 0.  "
+                        "".format(_get_default_variables_dict()["InitialState"]),
         "LambdaVDW": "Free Energy Calcs (NVT and NPT only): list of floats (0 <= floats <= 1), "
-        "The user must set this variable as there is no working default (default = {}). "
-        "Lambda values for VDW interaction in ascending order. Sets the intermediate "
-        "lambda states to which solute-solvent VDW interactions are scaled. "
-        'WARNING : This list must be the same length as the "LambdaCoulomb" list length. '
-        "WARNING : All lambda values must be stated in the ascending order, otherwise "
-        "the program will terminate.  "
-        "Example of ascending order 1: [0.1, 1.0,]  "
-        "Example of ascending order 2: [0.1, 0.2, 0.4, 0.9] "
-        "".format(_get_default_variables_dict()["LambdaVDW"]),
+                     "The user must set this variable as there is no working default (default = {}). "
+                     "Lambda values for VDW interaction in ascending order. Sets the intermediate "
+                     "lambda states to which solute-solvent VDW interactions are scaled. "
+                     'WARNING : This list must be the same length as the "LambdaCoulomb" list length. '
+                     "WARNING : All lambda values must be stated in the ascending order, otherwise "
+                     "Example of ascending order 1: [0.1, 1.0,]  "
+                     "Example of ascending order 2: [0.1, 0.2, 0.4, 0.9] "
+                     "".format(_get_default_variables_dict()["LambdaVDW"]),
         "LambdaCoulomb": "Free Energy Calcs (NVT and NPT only):  list of floats (0 <= floats <= 1), "
-        "The user must set this variable as there is no working default (default = {}). "
-        "Lambda values for Coulombic interaction in ascending order. Sets the intermediate "
-        "lambda states to which solute-solvent Coulombic interactions are scaled. "
-        'GOMC defauts to the "LambdaVDW" values for the Coulombic interaction '
-        'if no "LambdaCoulomb" variable is set. '
-        'WARNING : This list must be the same length as the "LambdaVDW" list length. '
-        "WARNING : All lambda values must be stated in the ascending order, otherwise "
-        "the program will terminate.  "
-        "Example of ascending order 1: [0.1, 1.0,]  "
-        "Example of ascending order 2: [0.1, 0.2, 0.4, 0.9] "
-        "".format(_get_default_variables_dict()["LambdaCoulomb"]),
+                         "The user must set this variable as there is no working default (default = {}). "
+                         "Lambda values for Coulombic interaction in ascending order. Sets the intermediate "
+                         "lambda states to which solute-solvent Coulombic interactions are scaled. "
+                         'GOMC defauts to the "LambdaVDW" values for the Coulombic interaction '
+                         'if no "LambdaCoulomb" variable is set. '
+                         'WARNING : This list must be the same length as the "LambdaVDW" list length. '
+                         "WARNING : All lambda values must be stated in the ascending order, otherwise "
+                         "the program will terminate.  "
+                         "Example of ascending order 1: [0.1, 1.0,]  "
+                         "Example of ascending order 2: [0.1, 0.2, 0.4, 0.9] "
+                         "".format(_get_default_variables_dict()["LambdaCoulomb"]),
         "ScaleCoulomb": "Free Energy Calcs (NVT and NPT only): bool, default = {}, "
-        "Determines to scale the Coulombic interaction non-linearly (soft-core scheme) or not. "
-        "True if the Coulombic interaction needs to be scaled non-linearly. "
-        "False if the Coulombic interaction needs to be scaled linearly. "
-        "".format(_get_default_variables_dict()["ScaleCoulomb"]),
+                        "Determines to scale the Coulombic interaction non-linearly (soft-core scheme) or not. "
+                        "True if the Coulombic interaction needs to be scaled non-linearly. "
+                        "False if the Coulombic interaction needs to be scaled linearly. "
+                        "".format(_get_default_variables_dict()["ScaleCoulomb"]),
         "ScalePower": "Free Energy Calcs (NVT and NPT only): int (>= 0), default = {}, "
-        "The p value in the soft-core scaling scheme, where the distance between "
-        "solute and solvent is scaled non-linearly."
-        "".format(_get_default_variables_dict()["ScalePower"]),
+                      "The p value in the soft-core scaling scheme, where the distance between "
+                      "solute and solvent is scaled non-linearly."
+                      "".format(_get_default_variables_dict()["ScalePower"]),
         "ScaleAlpha": "Free Energy Calcs (NVT and NPT only): int or float (>= 0), default = {}, "
-        "The alpha value in the soft-core scaling scheme, where the distance "
-        "between solute and solvent is scaled non-linearly."
-        "".format(_get_default_variables_dict()["ScaleAlpha"]),
+                      "The alpha value in the soft-core scaling scheme, where the distance "
+                      "between solute and solvent is scaled non-linearly."
+                      "".format(_get_default_variables_dict()["ScaleAlpha"]),
         "MinSigma": "Free Energy Calcs (NVT and NPT only): int or float (>= 0), default = {}, "
-        "The minimum sigma value in the soft-core scaling scheme, where the "
-        "distance between solute and solvent is scaled non-linearly."
-        "".format(_get_default_variables_dict()["MinSigma"]),
+                    "The minimum sigma value in the soft-core scaling scheme, where the "
+                    "distance between solute and solvent is scaled non-linearly."
+                    "".format(_get_default_variables_dict()["MinSigma"]),
         # moves without MEMC
         "DisFreq": "Std. MC moves (all ensembles)                     : "
-        "int or float (0 <= value <= 1), default are specific for each "
-        "ensemble {}. "
-        "Fractional percentage at which the displacement move will occur "
-        "(i.e., fraction of displacement moves). Note: all of the move types"
-        "are not available in for every ensemble. Note: all of the move fractions"
-        "must sum to 1, or the control file writer will fail.  "
-        "".format(_get_default_variables_dict()["DisFreq"]),
+                   "int or float (0 <= value <= 1), default are specific for each ensemble {}. "
+                   "Fractional percentage at which the displacement move will occur "
+                   "(i.e., fraction of displacement moves). Note: all of the move types"
+                   "are not available in for every ensemble. Note: all of the move fractions"
+                   "must sum to 1, or the control file writer will fail.  "
+                   "".format(_get_default_variables_dict()["DisFreq"]),
         "RotFreq": "Std. MC moves (all ensembles)                     : "
-        "int or float (0 <= value <= 1), default are specific for each "
-        "ensemble {}. "
-        "Fractional percentage at which the rotation move will occur "
-        "(i.e., fraction of rotation moves). Note: all of the move types"
-        "are not available in for every ensemble. Note: all of the move fractions"
-        "must sum to 1, or the control file writer will fail.  "
-        "".format(_get_default_variables_dict()["RotFreq"]),
+                   "int or float (0 <= value <= 1), default are specific for each ensemble {}. "
+                   "Fractional percentage at which the rotation move will occur "
+                   "(i.e., fraction of rotation moves). Note: all of the move types"
+                   "are not available in for every ensemble. Note: all of the move fractions"
+                   "must sum to 1, or the control file writer will fail.  "
+                   "".format(_get_default_variables_dict()["RotFreq"]),
         "IntraSwapFreq": "Std. MC moves (all ensembles)                     : "
-        "int or float (0 <= value <= 1), default are specific for each "
-        "ensemble {}. "
-        "Fractional percentage at which the molecule will be removed from a "
-        "box and inserted into the same box using coupled-decoupled configurational-bias"
-        "algorithm. (i.e., fraction of intra-molecule swap moves). Note: all of the move types"
-        "are not available in for every ensemble. Note: all of the move fractions"
-        "must sum to 1, or the control file writer will fail.  "
-        "".format(_get_default_variables_dict()["IntraSwapFreq"]),
+                         "int or float (0 <= value <= 1), default are specific for each ensemble {}. "
+                         "Fractional percentage at which the molecule will be removed from a "
+                         "box and inserted into the same box using coupled-decoupled configurational-bias"
+                         "algorithm. (i.e., fraction of intra-molecule swap moves). Note: all of the move types"
+                         "are not available in for every ensemble. Note: all of the move fractions"
+                         "must sum to 1, or the control file writer will fail.  "
+                         "".format(_get_default_variables_dict()["IntraSwapFreq"]),
         "SwapFreq": "Std. MC moves (only GEMC_NPT, GEMC_NVT, and GCMC) : "
-        "int or float (0 <= value <= 1), default are specific for each "
-        "ensemble {}. "
-        "For Gibbs and Grand Canonical (GC) ensemble runs only: Fractional "
-        "percentage at which molecule swap move will occur using coupled-decoupled "
-        "configurational-bias. (i.e., fraction of molecule swaps moves). Note: all of the move types"
-        "are not available in for every ensemble. Note: all of the move fractions"
-        "must sum to 1, or the control file writer will fail.  "
-        "".format(_get_default_variables_dict()["SwapFreq"]),
+                    "int or float (0 <= value <= 1), default are specific for each ensemble {}. "
+                    "For Gibbs and Grand Canonical (GC) ensemble runs only: Fractional "
+                    "percentage at which molecule swap move will occur using coupled-decoupled "
+                    "configurational-bias. (i.e., fraction of molecule swaps moves). Note: all of the move types"
+                    "are not available in for every ensemble. Note: all of the move fractions"
+                    "must sum to 1, or the control file writer will fail.  "
+                    "".format(_get_default_variables_dict()["SwapFreq"]),
         "RegrowthFreq": "Std. MC moves (all ensembles)                     : "
-        "int or float (0 <= value <= 1), default are specific for each "
-        "ensemble {}. "
-        "Fractional percentage at which part of the molecule will be "
-        "deleted and then regrown using coupled- decoupled configurational-bias algorithm "
-        "(i.e., fraction of molecular growth moves). Note: all of the move types"
-        "are not available in for every ensemble. Note: all of the move fractions"
-        "must sum to 1, or the control file writer will fail.  "
-        "".format(_get_default_variables_dict()["RegrowthFreq"]),
+                        "int or float (0 <= value <= 1), default are specific for each ensemble {}. "
+                        "Fractional percentage at which part of the molecule will be "
+                        "deleted and then regrown using coupled- decoupled configurational-bias algorithm "
+                        "(i.e., fraction of molecular growth moves). Note: all of the move types"
+                        "are not available in for every ensemble. Note: all of the move fractions"
+                        "must sum to 1, or the control file writer will fail.  "
+                        "".format(_get_default_variables_dict()["RegrowthFreq"]),
         "CrankShaftFreq": "Std. MC moves (all ensembles)                     : "
-        "int or float (0 <= value <= 1), default are specific for each "
-        "ensemble {}. "
-        "Fractional percentage at which crankshaft move will occur. "
-        "In this move, two atoms that are forming angle or dihedral are selected randomly and "
-        "form a shaft. Then any atoms or group that are within these two selected atoms, will "
-        "rotate around the shaft to sample intra-molecular degree of freedom "
-        "(i.e., fraction of crankshaft moves). Note: all of the move types"
-        "are not available in for every ensemble. Note: all of the move fractions"
-        "must sum to 1, or the control file writer will fail.  "
-        "".format(_get_default_variables_dict()["CrankShaftFreq"]),
+                          "int or float (0 <= value <= 1), default are specific for each ensemble {}. "
+                          "Fractional percentage at which crankshaft move will occur. "
+                          "In this move, two atoms that are forming angle or dihedral are selected randomly and "
+                          "form a shaft. Then any atoms or group that are within these two selected atoms, will "
+                          "rotate around the shaft to sample intra-molecular degree of freedom "
+                          "(i.e., fraction of crankshaft moves). Note: all of the move types"
+                          "are not available in for every ensemble. Note: all of the move fractions"
+                          "must sum to 1, or the control file writer will fail. "
+                          "".format(_get_default_variables_dict()["CrankShaftFreq"]),
         "VolFreq": "Std. MC moves (only  GEMC_NPT  and  NPT )         : "
-        "int or float (0 <= value <= 1), default are specific for each "
-        "ensemble {}. Fractional percentage at  which a volume move will occur "
-        "(i.e., fraction of Volume moves). "
-        "Note: all of the move types are not available in for every ensemble. "
-        "Note: all of the move fractions must sum to 1, or the control file writer will fail. "
-        "".format(_get_default_variables_dict()["VolFreq"]),
+                   "int or float (0 <= value <= 1), default are specific for each ensemble {}. "
+                   "Fractional percentage at  which a volume move will occur "
+                   "(i.e., fraction of Volume moves). "
+                   "Note: all of the move types are not available in for every ensemble. "
+                   "Note: all of the move fractions must sum to 1, or the control file writer will fail. "
+                   "".format(_get_default_variables_dict()["VolFreq"]),
         "MultiParticleFreq": "Std. MC moves (all ensembles)                     : "
-        "int or float (0 <= value <= 1), default are specific for each "
-        "ensemble {}. "
-        "Fractional percentage at which multi-particle move will "
-        "occur. In this move, all molecules in the selected simulation box will be rigidly "
-        "rotated or displaced simultaneously, along the calculated torque or force "
-        "respectively (i.e., fraction of multi-particle moves). Note: all of the move types"
-        "are not available in for every ensemble. Note: all of the move fractions"
-        "must sum to 1, or the control file writer will fail.  "
-        "".format(_get_default_variables_dict()["MultiParticleFreq"]),
+                             "int or float (0 <= value <= 1), default are specific for each ensemble {}. "
+                             "Fractional percentage at which multi-particle move will "
+                             "occur. In this move, all molecules in the selected simulation box will be rigidly "
+                             "rotated or displaced simultaneously, along the calculated torque or force "
+                             "respectively (i.e., fraction of multi-particle moves). Note: all of the move types"
+                             "are not available in for every ensemble. Note: all of the move fractions"
+                             "must sum to 1, or the control file writer will fail.  "
+                             "".format(_get_default_variables_dict()["MultiParticleFreq"]),
         # MEMC moves
         "IntraMEMC-1Freq": "MEMC MC moves (all ensembles)                     : "
-        "int or float (0 <= value <= 1), default are specific for each "
-        "ensemble {}. "
-        "Fractional percentage at which specified number of small molecule kind will be "
-        "exchanged with a specified large molecule kind in defined sub-volume within "
-        "same simulation box.  This move need additional information such as "
-        "ExchangeVolumeDim, ExchangeRatio, ExchangeSmallKind, and ExchangeLargeKind."
-        "Note: all of the move types are not available in for every ensemble."
-        "Note: all of the move fractions must sum to 1, or the control file writer will fail.  "
-        "".format(_get_default_variables_dict()["IntraMEMC-1Freq"]),
+                           "int or float (0 <= value <= 1), default are specific for each ensemble {}. "
+                           "Fractional percentage at which specified number of small molecule kind will be "
+                           "exchanged with a specified large molecule kind in defined sub-volume within "
+                           "same simulation box.  This move need additional information such as "
+                           "ExchangeVolumeDim, ExchangeRatio, ExchangeSmallKind, and ExchangeLargeKind."
+                           "Note: all of the move types are not available in for every ensemble."
+                           "Note: all of the move fractions must sum to 1, or the control file writer will fail. "
+                           "".format(_get_default_variables_dict()["IntraMEMC-1Freq"]),
         "MEMC-1Freq": "MEMC MC moves (only GEMC_NPT, GEMC_NVT, and GCMC) : "
-        "int or float (0 <= value <= 1), default are specific for each "
-        "ensemble {}. "
-        "Fractional percentage at which specified number of small molecule kind will be exchanged "
-        "with a specified large molecule kind in defined sub-volume, between simulation boxes. "
-        "This move needs additional information such as ExchangeVolumeDim, ExchangeRatio, ExchangeSmallKind, "
-        "and ExchangeLargeKind."
-        "Note: all of the move types are not available in for every ensemble."
-        "Note: all of the move fractions must sum to 1, or the control file writer will fail.  "
-        "".format(_get_default_variables_dict()["MEMC-1Freq"]),
+                      "int or float (0 <= value <= 1), default are specific for each ensemble {}. "
+                      "Fractional percentage at which specified number of small molecule kind will be exchanged "
+                      "with a specified large molecule kind in defined sub-volume, between simulation boxes. "
+                      "This move needs additional information such as ExchangeVolumeDim, ExchangeRatio, "
+                      "ExchangeSmallKind, and ExchangeLargeKind."
+                      "Note: all of the move types are not available in for every ensemble."
+                      "Note: all of the move fractions must sum to 1, or the control file writer will fail. "
+                      "".format(_get_default_variables_dict()["MEMC-1Freq"]),
         "IntraMEMC-2Freq": "MEMC MC moves (all ensembles)                     : "
-        "int or float (0 <= value <= 1), default are specific for each "
-        "ensemble {}. "
-        "Fractional percentage at which specified number of small molecule kind "
-        "will be exchanged with a specified large molecule kind in defined sub-volume "
-        "within same simulation box. Backbone of small and large molecule kind will be "
-        "used to insert the large molecule more efficiently. This move need additional "
-        "information such as ExchangeVolumeDim, ExchangeRatio, ExchangeSmallKind, "
-        "ExchangeLargeKind, SmallKindBackBone, and LargeKindBackBone. "
-        "Note: all of the move types are not available in for every ensemble."
-        "Note: all of the move fractions must sum to 1, or the control file writer will fail.  "
-        "".format(_get_default_variables_dict()["IntraMEMC-2Freq"]),
+                           "int or float (0 <= value <= 1), default are specific for each ensemble {}. "
+                           "Fractional percentage at which specified number of small molecule kind "
+                           "will be exchanged with a specified large molecule kind in defined sub-volume "
+                           "within same simulation box. Backbone of small and large molecule kind will be "
+                           "used to insert the large molecule more efficiently. This move need additional "
+                           "information such as ExchangeVolumeDim, ExchangeRatio, ExchangeSmallKind, "
+                           "ExchangeLargeKind, SmallKindBackBone, and LargeKindBackBone. "
+                           "Note: all of the move types are not available in for every ensemble."
+                           "Note: all of the move fractions must sum to 1, or the control file writer will fail. "
+                           "".format(_get_default_variables_dict()["IntraMEMC-2Freq"]),
         "MEMC-2Freq": "MEMC MC moves (only GEMC_NPT, GEMC_NVT, and GCMC) : "
-        "int or float (0 <= value <= 1), default are specific for each "
-        "ensemble {}. "
-        "Fractional percentage at which specified number of small molecule kind will be "
-        "exchanged with a specified large molecule kind in defined sub-volume, between"
-        "simulation boxes. Backbone of small and large molecule kind will be used to insert "
-        "the large molecule more efficiently. "
-        "This move needs additional information such as ExchangeVolumeDim, ExchangeRatio, "
-        "ExchangeSmallKind, ExchangeLargeKind, SmallKindBackBone, and LargeKindBackBone. "
-        "Note: all of the move types are not available in for every ensemble."
-        "Note: all of the move fractions must sum to 1, or the control file writer will fail.  "
-        "".format(_get_default_variables_dict()["MEMC-2Freq"]),
+                      "int or float (0 <= value <= 1), default are specific for each ensemble {}. "
+                      "Fractional percentage at which specified number of small molecule kind will be "
+                      "exchanged with a specified large molecule kind in defined sub-volume, between"
+                      "simulation boxes. Backbone of small and large molecule kind will be used to insert "
+                      "the large molecule more efficiently. "
+                      "This move needs additional information such as ExchangeVolumeDim, ExchangeRatio, "
+                      "ExchangeSmallKind, ExchangeLargeKind, SmallKindBackBone, and LargeKindBackBone. "
+                      "Note: all of the move types are not available in for every ensemble."
+                      "Note: all of the move fractions must sum to 1, or the control file writer will fail. "
+                      "".format(_get_default_variables_dict()["MEMC-2Freq"]),
         "IntraMEMC-3Freq": "MEMC MC moves (all ensembles)                     : "
-        "int or float (0 <= value <= 1), default are specific for each "
-        "ensemble {}. "
-        "Fractional percentage at which specified number of small molecule kind will be "
-        "exchanged with a specified large molecule kind in defined sub-volume within same "
-        "simulation box. Specified atom of the large molecule kind will be used to insert "
-        "the large molecule using coupled-decoupled configurational-bias. This move needs "
-        "additional information such as ExchangeVolumeDim, ExchangeRatio, ExchangeSmallKind, "
-        "ExchangeLargeKind, and LargeKindBackBone. "
-        "Note: all of the move types are not available in for every ensemble."
-        "Note: all of the move fractions must sum to 1, or the control file writer will fail. "
-        "".format(_get_default_variables_dict()["IntraMEMC-3Freq"]),
+                           "int or float (0 <= value <= 1), default are specific for each ensemble {}. "
+                           "Fractional percentage at which specified number of small molecule kind will be "
+                           "exchanged with a specified large molecule kind in defined sub-volume within same "
+                           "simulation box. Specified atom of the large molecule kind will be used to insert "
+                           "the large molecule using coupled-decoupled configurational-bias. This move needs "
+                           "additional information such as ExchangeVolumeDim, ExchangeRatio, ExchangeSmallKind, "
+                           "ExchangeLargeKind, and LargeKindBackBone. "
+                           "Note: all of the move types are not available in for every ensemble."
+                           "Note: all of the move fractions must sum to 1, or the control file writer will fail. "
+                           "".format(_get_default_variables_dict()["IntraMEMC-3Freq"]),
         "MEMC-3Freq": "MEMC MC moves (only GEMC_NPT, GEMC_NVT, and GCMC) : "
-        "int or float (0 <= value <= 1), default are specific for each "
-        "ensemble {}. "
-        "Fractional percentage at which specified number of small molecule kind will be exchanged "
-        "with a specified large molecule kind in defined sub-volume, between simulation boxes. "
-        "Specified atom of the large molecule kind will be used to insert the large molecule "
-        "using coupled-decoupled configurational-bias. This move need additional information "
-        "such as ExchangeVolumeDim, ExchangeRatio, ExchangeSmallKind, ExchangeLargeKind, "
-        "and LargeKindBackBone. "
-        "Note: all of the move types are not available in for every ensemble."
-        "Note: all of the move fractions must sum to 1, or the control file writer will fail.  "
-        "".format(_get_default_variables_dict()["MEMC-3Freq"]),
+                      "int or float (0 <= value <= 1), default are specific for each ensemble {}. "
+                      "Fractional percentage at which specified number of small molecule kind will be exchanged "
+                      "with a specified large molecule kind in defined sub-volume, between simulation boxes. "
+                      "Specified atom of the large molecule kind will be used to insert the large molecule "
+                      "using coupled-decoupled configurational-bias. This move need additional information "
+                      "such as ExchangeVolumeDim, ExchangeRatio, ExchangeSmallKind, ExchangeLargeKind, "
+                      "and LargeKindBackBone. "
+                      "Note: all of the move types are not available in for every ensemble."
+                      "Note: all of the move fractions must sum to 1, or the control file writer will fail. "
+                      "".format(_get_default_variables_dict()["MEMC-3Freq"]),
         # MEMC move parameters
         "ExchangeVolumeDim": "MEMC parameters (all ensembles)                   : "
-        "list of 3 floats or integers "
-        "[int or float (> 0), int or float (> 0), int or float (> 0)]"
-        " or [X-dimension, Y-dimension, Z-dimension)], "
-        "default = {}. "
-        "To use all variation of MEMC and Intra-MEMC Monte Carlo moves, the exchange "
-        "subvolume must be defined. The exchange sub-volume is defined as an orthogonal box "
-        "with x, y, and z-dimensions, where small molecule/molecules kind will be selected "
-        "from to be exchanged with a large molecule kind. "
-        "Note: Currently, the X and Y dimension cannot be set independently (X = Y = max(X, Y)). "
-        "Note: A heuristic for setting good values of the x, y, and z-dimensions is to use"
-        "the geometric size of the large molecule plus 1-2 Å in each dimension. "
-        "Note: In case of exchanging 1 small molecule kind with 1 large molecule kind in "
-        "IntraMEMC-2, IntraMEMC-3, MEMC-2, MEMC-3 Monte Carlo moves, the sub-volume "
-        "dimension has no effect on acceptance rate. "
-        "".format(_get_default_variables_dict()["ExchangeVolumeDim"]),
+                             "list of 3 floats or integers "
+                             "[int or float (> 0), int or float (> 0), int or float (> 0)]"
+                             " or [X-dimension, Y-dimension, Z-dimension)], default = {}. "
+                             "To use all variation of MEMC and Intra-MEMC Monte Carlo moves, the exchange "
+                             "subvolume must be defined. The exchange sub-volume is defined as an orthogonal box "
+                             "with x, y, and z-dimensions, where small molecule/molecules kind will be selected "
+                             "from to be exchanged with a large molecule kind. "
+                             "Note: Currently, the X and Y dimension cannot be set independently (X = Y = max(X, Y)). "
+                             "Note: A heuristic for setting good values of the x, y, and z-dimensions is to use "
+                             "the geometric size of the large molecule plus 1-2 Å in each dimension. "
+                             "Note: In case of exchanging 1 small molecule kind with 1 large molecule kind in "
+                             "IntraMEMC-2, IntraMEMC-3, MEMC-2, MEMC-3 Monte Carlo moves, the sub-volume "
+                             "dimension has no effect on acceptance rate. "
+                             "".format(_get_default_variables_dict()["ExchangeVolumeDim"]),
         "MEMC_DataInput": "MEMC parameters (availablity based on selelection): nested lists, "
-        + "default = {}.  ".format(
-            _get_default_variables_dict()["MEMC_DataInput"]
-        )
-        + "Enter data as a list with some sub-lists as follows: "
-        "[[ExchangeRatio_int (> 0), ExchangeLargeKind_str, "
-        "[LargeKindBackBone_atom_1_str_or_NONE, LargeKindBackBone_atom_2_str_or_NONE ], "
-        "ExchangeSmallKind_str, "
-        "[SmallKindBackBone_atom_1_str_or_NONE, SmallKindBackBone_atom_2_str_or_NONE ]], ..., "
-        "[ExchangeRatio_int (> 0), ExchangeLargeKind_str, "
-        "[LargeKindBackBone_atom_1_str_or_NONE, LargeKindBackBone_atom_2_str_or_NONE ], "
-        "ExchangeSmallKind_str, "
-        "[SmallKindBackBone_atom_1_str_or_NONE, SmallKindBackBone_atom_2_str_or_NONE ]. "
-        "NOTE: CURRENTLY ALL THESE INPUTS NEED TO BE SPECIFIED, REGARDLESS OF THE MEMC TYPE "
-        "SELECTION. IF THE SmallKindBackBone or LargeKindBackBone IS NOT REQUIRED FOR THE "
-        "MEMC TYPE, "
-        "None CAN BE USED IN PLACE OF A STRING. "
-        "Note: These strings must match the residue in the psf and psb files or it will fail. "
-        "It is recommended that the user print the Charmm object psf and pdb files "
-        "and review the residue names that match the atom name before using the in "
-        "the  MEMC_DataInput variable input."
-        "Note: see the below data explanations for the ExchangeRatio, ExchangeSmallKind, "
-        "ExchangeLargeKind, LargeKindBackBone, SmallKindBackBone. "
-        "Example 1 (MEMC-1) : [ [1, 'WAT', [None, None], 'wat', [None, None]] , "
-        "[1, 'WAT', [None, None], 'wat', [None, None]] . "
-        "Example 2 (MEMC-2): [ [1, 'WAT', ['O1', 'H1'], 'wat', ['O1', 'H1' ]] , "
-        " [1, 'WAT', ['H1', 'H2'], 'wat', ['H1', 'H2' ]] . "
-        "Example 3 (MEMC-3) : [ [2, 'WAT', 'O1', 'H1'], 'wat', [None, None]] , "
-        "[2, 'WAT', ['H1', 'H2'], 'wat', [None, None]] .\n"
-        "\t\t\t\t\t\t\t\t\t\t\t\t\t --- ExchangeRatio     = MEMC parameters (all ensembles): "
-        "int (> 0), default = None. The Ratio of exchanging "
-        "small molecule/molecules with 1 large molecule. "
-        "To use all variation of MEMC and Intra-MEMC Monte Carlo moves, "
-        "the exchange ratio must be defined. "
-        "The exchange ratio defines how many small molecule will be "
-        "exchanged with 1 large molecule. For each large-small molecule pairs, "
-        "one exchange ratio must be defined. \n"
-        "\t\t\t\t\t\t\t\t\t\t\t\t\t --- ExchangeSmallKind = MEMC parameters (all ensembles): "
-        "str, default = None. The small molecule "
-        "kind (resname) to be exchanged. "
-        "Note: ONLY 4 characters can be used for the strings. "
-        "To use all variation of MEMC and Intra-MEMC Monte Carlo moves, "
-        "the small molecule kind to be exchanged with a large molecule "
-        "kind must be defined. Multiple small molecule kind can be specified.  \n"
-        "\t\t\t\t\t\t\t\t\t\t\t\t\t --- ExchangeLargeKind = MEMC parameters (all ensembles): "
-        "str, default = None. The large molecule "
-        "kind (resname) to be exchanged. "
-        "Note: ONLY 4 characters can be used for the strings. "
-        "To use all variations of MEMC and Intra-MEMC Monte Carlo moves, "
-        "the large molecule kind to be exchanged with small molecule "
-        "kind must be defined. Multiple large molecule kind can be specified. \n"
-        "\t\t\t\t\t\t\t\t\t\t\t\t\t --- LargeKindBackBone = MEMC parameters (all ensembles): "
-        "list [str, str] or [None, None], default = None "
-        "Note: ONLY 4 characters can be used for the strings. "
-        "The [None, None] values can only be used if that MEMC type does not require them. "
-        "The strings for the the atom name 1 and atom name 2 that belong to the large "
-        "molecule’s backbone (i.e., [str_for_atom_name_1, str_for_atom_name_2]) "
-        "To use MEMC-2, MEMC-3, IntraMEMC-2, and IntraMEMC-3 Monte Carlo moves, the "
-        "large molecule backbone must be defined. The backbone of the molecule is defined "
-        "as a vector that connects two atoms belong to the large molecule. The large "
-        "molecule backbone will be used to align the sub-volume in MEMC-2 and IntraMEMC-2 "
-        "moves, while in MEMC-3 and IntraMEMC-3 moves, it uses the atom name to start "
-        "growing the large molecule using coupled-decoupled configurational-bias. For "
-        "each large-small molecule pairs, two atom names must be defined. "
-        "Note: all atom names in the molecule must be unique. "
-        "Note: In MEMC-3 and IntraMEMC-3 Monte Carlo moves, both atom names must be same, "
-        "otherwise program will be terminated. "
-        "Note: If the large molecule has only one atom (mono atomic molecules), "
-        "same atom name must be used for str_for_atom_name_1 and str_for_atom_name_2 "
-        "of the LargeKindBackBone.  \n"
-        "\t\t\t\t\t\t\t\t\t\t\t\t\t --- SmallKindBackBone = MEMC parameters (all ensembles): "
-        " list [str, str] or [None, None], default = None "
-        "Note: ONLY 4 characters can be used for the strings. "
-        "The [None, None] values can only be used if that MEMC type does not require them."
-        "The strings for the the atom name 1 and atom name 2 that belong to the small "
-        "molecule’s backbone (i.e., [str_for_atom_name_1, str_for_atom_name_2]) "
-        "To use MEMC-2, and IntraMEMC-2 Monte Carlo moves, the small molecule backbone "
-        "must be defined. The backbone of the molecule is defined as a vector that "
-        "connects two atoms belong to the small molecule and will be used to align the "
-        "sub-volume. For each large-small molecule pairs, two atom names must be defined. "
-        "Note: all atom names in the molecule must be unique. "
-        "Note: If the small molecule has only one atom (mono atomic molecules), same atom "
-        "name must be used str_for_atom_name_1 and str_for_atom_name_2 "
-        "of the SmallKindBackBone. ",
+                          + "default = {}.  ".format(_get_default_variables_dict()["MEMC_DataInput"]
+                                                     )
+                          + "Enter data as a list with some sub-lists as follows: "
+                            "[[ExchangeRatio_int (> 0), ExchangeLargeKind_str, "
+                            "[LargeKindBackBone_atom_1_str_or_NONE, LargeKindBackBone_atom_2_str_or_NONE ], "
+                            "ExchangeSmallKind_str, "
+                            "[SmallKindBackBone_atom_1_str_or_NONE, SmallKindBackBone_atom_2_str_or_NONE ]], ..., "
+                            "[ExchangeRatio_int (> 0), ExchangeLargeKind_str, "
+                            "[LargeKindBackBone_atom_1_str_or_NONE, LargeKindBackBone_atom_2_str_or_NONE ], "
+                            "ExchangeSmallKind_str, "
+                            "[SmallKindBackBone_atom_1_str_or_NONE, SmallKindBackBone_atom_2_str_or_NONE ]. "
+                            "NOTE: CURRENTLY ALL THESE INPUTS NEED TO BE SPECIFIED, REGARDLESS OF THE MEMC TYPE "
+                            "SELECTION. IF THE SmallKindBackBone or LargeKindBackBone IS NOT REQUIRED FOR THE "
+                            "MEMC TYPE, None CAN BE USED IN PLACE OF A STRING. "
+                            "Note: These strings must match the residue in the psf and psb files or it will fail. "
+                            "It is recommended that the user print the Charmm object psf and pdb files "
+                            "and review the residue names that match the atom name before using the in "
+                            "the  MEMC_DataInput variable input."
+                            "Note: see the below data explanations for the ExchangeRatio, ExchangeSmallKind, "
+                            "ExchangeLargeKind, LargeKindBackBone, SmallKindBackBone. "
+                            "Example 1 (MEMC-1) : [ [1, 'WAT', [None, None], 'wat', [None, None]] , "
+                            "[1, 'WAT', [None, None], 'wat', [None, None]] . "
+                            "Example 2 (MEMC-2): [ [1, 'WAT', ['O1', 'H1'], 'wat', ['O1', 'H1' ]] , "
+                            "[1, 'WAT', ['H1', 'H2'], 'wat', ['H1', 'H2' ]] . "
+                            "Example 3 (MEMC-3) : [ [2, 'WAT', 'O1', 'H1'], 'wat', [None, None]] , "
+                            "[2, 'WAT', ['H1', 'H2'], 'wat', [None, None]] .\n"
+                            "\t\t\t\t\t\t\t\t\t\t\t\t\t --- ExchangeRatio     = MEMC parameters (all ensembles): "
+                            "int (> 0), default = None. The Ratio of exchanging "
+                            "small molecule/molecules with 1 large molecule. "
+                            "To use all variation of MEMC and Intra-MEMC Monte Carlo moves, "
+                            "the exchange ratio must be defined. "
+                            "The exchange ratio defines how many small molecule will be "
+                            "exchanged with 1 large molecule. For each large-small molecule pairs, "
+                            "one exchange ratio must be defined. \n"
+                            "\t\t\t\t\t\t\t\t\t\t\t\t\t --- ExchangeSmallKind = MEMC parameters (all ensembles): "
+                            "str, default = None. The small molecule "
+                            "kind (resname) to be exchanged. "
+                            "Note: ONLY 4 characters can be used for the strings. "
+                            "To use all variation of MEMC and Intra-MEMC Monte Carlo moves, "
+                            "the small molecule kind to be exchanged with a large molecule "
+                            "kind must be defined. Multiple small molecule kind can be specified.  \n"
+                            "\t\t\t\t\t\t\t\t\t\t\t\t\t --- ExchangeLargeKind = MEMC parameters (all ensembles): "
+                            "str, default = None. The large molecule "
+                            "kind (resname) to be exchanged. "
+                            "Note: ONLY 4 characters can be used for the strings. "
+                            "To use all variations of MEMC and Intra-MEMC Monte Carlo moves, "
+                            "the large molecule kind to be exchanged with small molecule "
+                            "kind must be defined. Multiple large molecule kind can be specified. \n"
+                            "\t\t\t\t\t\t\t\t\t\t\t\t\t --- LargeKindBackBone = MEMC parameters (all ensembles): "
+                            "list [str, str] or [None, None], default = None "
+                            "Note: ONLY 4 characters can be used for the strings. "
+                            "The [None, None] values can only be used if that MEMC type does not require them. "
+                            "The strings for the the atom name 1 and atom name 2 that belong to the large "
+                            "molecule’s backbone (i.e., [str_for_atom_name_1, str_for_atom_name_2]) "
+                            "To use MEMC-2, MEMC-3, IntraMEMC-2, and IntraMEMC-3 Monte Carlo moves, the "
+                            "large molecule backbone must be defined. The backbone of the molecule is defined "
+                            "as a vector that connects two atoms belong to the large molecule. The large "
+                            "molecule backbone will be used to align the sub-volume in MEMC-2 and IntraMEMC-2 "
+                            "moves, while in MEMC-3 and IntraMEMC-3 moves, it uses the atom name to start "
+                            "growing the large molecule using coupled-decoupled configurational-bias. For "
+                            "each large-small molecule pairs, two atom names must be defined. "
+                            "Note: all atom names in the molecule must be unique. "
+                            "Note: In MEMC-3 and IntraMEMC-3 Monte Carlo moves, both atom names must be same, "
+                            "otherwise program will be terminated. "
+                            "Note: If the large molecule has only one atom (mono atomic molecules), "
+                            "same atom name must be used for str_for_atom_name_1 and str_for_atom_name_2 "
+                            "of the LargeKindBackBone.  \n"
+                            "\t\t\t\t\t\t\t\t\t\t\t\t\t --- SmallKindBackBone = MEMC parameters (all ensembles): "
+                            " list [str, str] or [None, None], default = None "
+                            "Note: ONLY 4 characters can be used for the strings. "
+                            "The [None, None] values can only be used if that MEMC type does not require them."
+                            "The strings for the the atom name 1 and atom name 2 that belong to the small "
+                            "molecule’s backbone (i.e., [str_for_atom_name_1, str_for_atom_name_2]) "
+                            "To use MEMC-2, and IntraMEMC-2 Monte Carlo moves, the small molecule backbone "
+                            "must be defined. The backbone of the molecule is defined as a vector that "
+                            "connects two atoms belong to the small molecule and will be used to align the "
+                            "sub-volume. For each large-small molecule pairs, two atom names must be defined. "
+                            "Note: all atom names in the molecule must be unique. "
+                            "Note: If the small molecule has only one atom (mono atomic molecules), same atom "
+                            "name must be used str_for_atom_name_1 and str_for_atom_name_2 "
+                            "of the SmallKindBackBone. ",
         # ******************************************************************************************************
         # Definitions in this function are copied to a large extent from the GOMC manual release version 2.60 (end)
         # insert citation here:
@@ -814,8 +830,6 @@ def _get_default_variables_dict():
     """
 
     default_input_variables_dict = {
-        "Restart": False,
-        "RestartCheckpoint": False,
         "PRNG": "RANDOM",
         "ParaTypeCHARMM": True,
         "ParaTypeMie": False,
@@ -852,6 +866,7 @@ def _get_default_variables_dict():
         # Control file (.conf file ) output controls/parameters
         "OutputName": "Output_data",
         "CoordinatesFreq": [True, 1000000],
+        "DCDFreq": [False, 1000000],  # set to False until this is in the new official GOMC software release
         "RestartFreq": [True, 1000000],
         "CheckpointFreq": [True, 1000000],
         "ConsoleFreq": [True, 10000],
@@ -1010,7 +1025,7 @@ def check_valid_ensemble_files(ensemble_type, testing_ensemble_files_list):
     bad_key_inputs_List = []
 
     req_ensemble_files_set = set(_get_required_data(description=False))
-    testing_ensemble_files_set = set(testing_ensemble_files_List)
+    testing_ensemble_files_set = set(testing_ensemble_files_list)
 
     extra = testing_ensemble_files_set - req_ensemble_files_set
     missing = req_ensemble_files_set - testing_ensemble_files_set
@@ -1193,6 +1208,7 @@ def _get_possible_ensemble_input_variables(ensemble_type):
     output_freq_variables_list = [
         "OutputName",
         "CoordinatesFreq",
+        "DCDFreq",
         "RestartFreq",
         "CheckpointFreq",
         "ConsoleFreq",
@@ -1232,8 +1248,6 @@ def _get_possible_ensemble_input_variables(ensemble_type):
     ]
 
     basic_sim_info_variables_list = [
-        "Restart",
-        "RestartCheckpoint",
         "PRNG",
         "ParaTypeCHARMM",
         "ParaTypeMie",
@@ -1336,21 +1350,46 @@ class GOMCControl:
     ff_psf_pdb_file_directory : str (optional), default=None (i.e., the current directory).
         The full or relative directory added to the force field, psf, and pdb
         file names, created via the Charmm object.
-    override_check_files_inputs_exist : bool, (default = False)
+    check_input_files_exist : bool, (default=True)
         Override the check to see if the force field, psf, and pdb files exist.
         If the files are checked and do not exist, the writer will throw a ValueError.
         True, check if the force field, psf, and pdb files exist.
         False, do not check if the force field, psf, and pdb files exist.
-    override_ff_directory_filename : str, (default = None)
-        Override all other force field directory and filename inputs.
-    override_box_0_pdb_directory_filename : str, (default = None)
-        Override all other box 0 pdb directory and filename inputs.
-    override_box_0_psf_directory_filename : str, (default = None)
-        Override all other box 0 psf directory and filename inputs.
-    override_box_1_pdb_directory_filename : str, (default = None)
-        Override all other box 1 pdb directory and filename inputs.
-    override_box_1_psf_directory_filename : str, (default = None)
-        Override all other box 1  psf directory and filename inputs.
+    Restart : boolean, default = False
+        Determines whether to restart the simulation from restart file
+        (``*_restart.pdb`` and ``*_restart.psf``) or not.
+    RestartCheckpoint : boolean, default = False
+        Determines whether to restart the simulation with the checkpoint
+        file (checkpoint.dat) or not. Restarting the simulation with checkpoint.dat
+        would result in an identical outcome, as if previous simulation was continued.
+    Parameters : str, (default = None)
+        Override all other force field directory and filename inputs with the correct extension.
+    Coordinates_box_0 : str, (default = None)
+        Override all other box 0 pdb directory and filename inputs with the correct extension.
+    Structure_box_0 : str, (default = None)
+        Override all other box 0 psf directory and filename inputs with the correct extension.
+    Coordinates_box_1 : str, (default = None)
+        Override all other box 1 pdb directory and filename inputs with the correct extension.
+    Structure_box_1 : str, (default = None)
+        Override all other box 1  psf directory and filename inputs with the correct extension.
+    binCoordinates_box_0 : str, (default = None)
+        The box 0 binary coordinate file is used only for restarting a GOMC simulation,
+        which provides increased numerical accuracy.
+    extendedSystem_box_0 : str, (default = None)
+        The box 0 vectors origin file is used only for restarting a GOMC simulation.
+    binVelocities_box_0 : str, (default = None)
+        The box 0 binary velocity file is used only for restarting a GOMC simulation,
+        which provides increased numerical accuracy. These velocities are only passed thru
+        GOMC since Monte Carlo simulations do not utilize any velocity information.
+    binCoordinates_box_1 : str, (default = None)
+        The box 1 binary coordinate file is used only for restarting a GOMC simulation,
+        which provides increased numerical accuracy.
+    extendedSystem_box_1 : str, (default = None)
+        The box 1 vectors origin file is used only for restarting a GOMC simulation.
+    binVelocities_box_1 : str, (default = None)
+        The box 1 binary velocity file is used only for restarting a GOMC simulation,
+        which provides increased numerical accuracy. These velocities are only passed thru
+        GOMC since Monte Carlo simulations do not utilize any velocity information.
     input_variables_dict: dict, default = None
         These input variables are optional and override the default settings.
         Changing these variables likely required for more advanced systems.
@@ -1367,13 +1406,6 @@ class GOMCControl:
     # input_variables_dict options (keys and values) - (start)
     # Note: the input_variables_dict keys are also attributes
     # *******************************************************************
-    Restart : boolean, default = False
-        Determines whether to restart the simulation from restart file
-        (``*_restart.pdb`` and ``*_restart.psf``) or not.
-    RestartCheckpoint : boolean, default = False
-        Determines whether to restart the simulation with the checkpoint
-        file (checkpoint.dat) or not. Restarting the simulation with checkpoint.dat
-        would result in an identical outcome, as if previous simulation was continued.
     PRNG : string or int (>= 0) ("RANDOM" or int), default = "RANDOM"
         PRNG = Pseudo-Random Number Generator (PRNG). There are two (2) options, entering
         the string, "RANDOM", or a integer.
@@ -1572,6 +1604,12 @@ class GOMCControl:
     CoordinatesFreq : list [bool , int (> 0)] or [Generate_data_bool , steps_per_data_output_int],
         default = [True, 1M] or [True , set via formula based on the number of RunSteps or M max]
         Controls output of PDB file (coordinates). If bool is True, this
+        enables outputting the coordinate files at the integer frequency
+        (set steps_per_data_output_int), while "False" disables outputting
+        the coordinates.
+    DCDFreq : list [bool , int (> 0)] or [Generate_data_bool , steps_per_data_output_int],
+        default = [True, 1M] or [True , set via formula based on the number of RunSteps or M max]
+        Controls output of DCD file (coordinates). If bool is True, this
         enables outputting the coordinate files at the integer frequency
         (set steps_per_data_output_int), while "False" disables outputting
         the coordinates.
@@ -1926,21 +1964,46 @@ class GOMCControl:
     ff_psf_pdb_file_directory : str (optional), default=None (i.e., the current directory).
         The full or relative directory added to the force field, psf, and pdb
         file names, created via the Charmm object.
-    override_check_files_inputs_exist : bool, (default = False)
+    check_input_files_exist : bool, (default=True)
         Override the check to see if the force field, psf, and pdb files exist.
         If the files are checked and do not exist, the writer will throw a ValueError.
         True, check if the force field, psf, and pdb files exist.
         False, do not check if the force field, psf, and pdb files exist.
-    override_ff_directory_filename : str, (default = None)
-        Override all other force field directory and filename inputs.
-    override_box_0_pdb_directory_filename : str, (default = None)
-        Override all other box 0 pdb directory and filename inputs.
-    override_box_0_psf_directory_filename : str, (default = None)
-        Override all other box 0 psf directory and filename inputs.
-    override_box_1_pdb_directory_filename : str, (default = None)
-        Override all other box 1 pdb directory and filename inputs.
-    override_box_1_psf_directory_filename : str, (default = None)
-        Override all other box 1  psf directory and filename inputs.
+    Restart : boolean, default = False
+        Determines whether to restart the simulation from restart file
+        (``*_restart.pdb`` and ``*_restart.psf``) or not.
+    RestartCheckpoint : boolean, default = False
+        Determines whether to restart the simulation with the checkpoint
+        file (checkpoint.dat) or not. Restarting the simulation with checkpoint.dat
+        would result in an identical outcome, as if previous simulation was continued.
+    Parameters : str, (default = None)
+        Override all other force field directory and filename inputs with the correct extension.
+    Coordinates_box_0 : str, (default = None)
+        Override all other box 0 pdb directory and filename inputs with the correct extension.
+    Structure_box_0 : str, (default = None)
+        Override all other box 0 psf directory and filename inputs with the correct extension.
+    Coordinates_box_1 : str, (default = None)
+        Override all other box 1 pdb directory and filename inputs with the correct extension.
+    Structure_box_1 : str, (default = None)
+        Override all other box 1  psf directory and filename inputs with the correct extension.
+    binCoordinates_box_0 : str, (default = None)
+        The box 0 binary coordinate file is used only for restarting a GOMC simulation,
+        which provides increased numerical accuracy.
+    extendedSystem_box_0 : str, (default = None)
+        The box 0 vectors origin file is used only for restarting a GOMC simulation.
+    binVelocities_box_0 : str, (default = None)
+        The box 0 binary velocity file is used only for restarting a GOMC simulation,
+        which provides increased numerical accuracy. These velocities are only passed thru
+        GOMC since Monte Carlo simulations do not utilize any velocity information.
+    binCoordinates_box_1 : str, (default = None)
+        The box 1 binary coordinate file is used only for restarting a GOMC simulation,
+        which provides increased numerical accuracy.
+    extendedSystem_box_1 : str, (default = None)
+        The box 1 vectors origin file is used only for restarting a GOMC simulation.
+    binVelocities_box_1 : str, (default = None)
+        The box 1 binary velocity file is used only for restarting a GOMC simulation,
+        which provides increased numerical accuracy. These velocities are only passed thru
+        GOMC since Monte Carlo simulations do not utilize any velocity information.
     input_variables_dict: dict, default = None
         These input variables are optional and override the default settings.
         Changing these variables likely required for more advanced systems.
@@ -2038,12 +2101,20 @@ class GOMCControl:
         RunSteps,
         Temperature,
         ff_psf_pdb_file_directory=None,
-        override_check_input_files_exist=False,
-        override_ff_directory_filename=None,
-        override_box_0_pdb_directory_filename=None,
-        override_box_0_psf_directory_filename=None,
-        override_box_1_pdb_directory_filename=None,
-        override_box_1_psf_directory_filename=None,
+        check_input_files_exist=True,
+        Restart=False,
+        RestartCheckpoint=False,
+        Parameters=None,
+        Coordinates_box_0=None,
+        Structure_box_0=None,
+        Coordinates_box_1=None,
+        Structure_box_1=None,
+        binCoordinates_box_0=None,
+        extendedSystem_box_0=None,
+        binVelocities_box_0=None,
+        binCoordinates_box_1=None,
+        extendedSystem_box_1=None,
+        binVelocities_box_1=None,
         input_variables_dict=None,
     ):
 
@@ -2059,7 +2130,7 @@ class GOMCControl:
             print_error_message = (
                 "The variable supplied as a charmm_object ({}) is not a "
                 "charmm_object ({})".format(
-                    type(mf_charmm.Charmm), type(mf_charmm.Charmm)
+                    type(charmm_object), type(mf_charmm.Charmm)
                 )
             )
             raise TypeError(print_error_message)
@@ -2080,6 +2151,75 @@ class GOMCControl:
             )
             raise ValueError(print_error_message)
 
+        # check if check_input_files_exist is a boolean
+        if check_input_files_exist is not None:
+            _check_if_bool("check_input_files_exist", check_input_files_exist)
+
+        # set the restart attributes:
+        if Restart is not None:
+            _check_if_bool("Restart", Restart)
+            self.Restart = Restart
+        if RestartCheckpoint is not None:
+            _check_if_bool("RestartCheckpoint", RestartCheckpoint)
+            self.RestartCheckpoint = RestartCheckpoint
+
+        self.binCoordinates_box_0 = binCoordinates_box_0
+        self.extendedSystem_box_0 = extendedSystem_box_0
+        self.binVelocities_box_0 = binVelocities_box_0
+        self.binCoordinates_box_1 = binCoordinates_box_1
+        self.extendedSystem_box_1 = extendedSystem_box_1
+        self.binVelocities_box_1 = binVelocities_box_1
+
+        # check if the binary restart files are provided correctly
+        if self.Restart is True and self.ensemble_type in ["NVT", "NPT"]:
+            if (self.binCoordinates_box_0 is not None \
+                    or self.extendedSystem_box_0 is not None) \
+                    and (self.binCoordinates_box_0 is None \
+                         or self.extendedSystem_box_0 is None):
+                print_error_message = 'ERROR: To restart a simulation with the binary files both the coor and ' \
+                                      'xsc files for box 0 must be provided.'
+                raise ValueError(print_error_message)
+
+            elif self.binVelocities_box_0 is not None \
+                    and (self.binCoordinates_box_0 is None \
+                    or self.extendedSystem_box_0 is None):
+                print_error_message = 'ERROR: To restart a "NVT", "NPT" simulation with the ' \
+                                      'velocity binary files, the velocity files for box 0 ' \
+                                      'must be provided.'
+                raise ValueError(print_error_message)
+
+        if self.Restart is True and self.ensemble_type in ["GEMC_NPT", "GEMC_NVT", "GCMC"]:
+            if (self.binCoordinates_box_0 is not None \
+                or self.extendedSystem_box_0 is not None \
+                or self.binCoordinates_box_1 is not None \
+                or self.extendedSystem_box_1 is not None) \
+                    and (self.binCoordinates_box_0 is None \
+                         or self.extendedSystem_box_0 is None \
+                         or self.binCoordinates_box_1 is None \
+                         or self.extendedSystem_box_1 is None):
+                print_error_message = 'ERROR: To restart a simulation with the binary files both the coor and ' \
+                                      'xsc files for box 0 and box 1 must be provided.'
+                raise ValueError(print_error_message)
+
+            elif (self.binVelocities_box_0 is not None \
+                        or self.binVelocities_box_1 is not None) \
+                    and (self.binVelocities_box_0 is None \
+                         or self.binVelocities_box_1 is None):
+                print_error_message = 'ERROR: To restart a "GEMC_NPT", "GEMC_NVT", "GCMC" simulation with the ' \
+                                      'velocity binary files, both the velocity files for box 0 and box 1 ' \
+                                      'must be provided.'
+                raise ValueError(print_error_message)
+
+            if self.binCoordinates_box_0 is None \
+                or self.extendedSystem_box_0 is None \
+                or self.binCoordinates_box_1 is None \
+                or self.extendedSystem_box_1 is None:
+                print_error_message = 'ERROR: To restart a "GEMC_NPT", "GEMC_NVT", "GCMC" simulation with the ' \
+                                      'velocity binary files, both the coor and xsc files files for box 0 ' \
+                                      'and box 1 must be provided.'
+                raise ValueError(print_error_message)
+
+
         self.RunSteps = RunSteps
         self.Temperature = Temperature
         self.ff_psf_pdb_file_directory = ff_psf_pdb_file_directory
@@ -2087,19 +2227,21 @@ class GOMCControl:
             not isinstance(self.ff_psf_pdb_file_directory, str)
             and self.ff_psf_pdb_file_directory is not None
         ):
-            _check_if_string('ff_psf_pdb_file_directory',
-                             self.ff_psf_pdb_file_directory,
-                             'force field, pdb, and psf')
+            _check_if_string_and_extension('ff_psf_pdb_file_directory',
+                                           self.ff_psf_pdb_file_directory,
+                                           'force field, pdb, and psf',
+                                           expected_file_extension=None)
 
         if (
             charmm_object.ff_filename is not None
             and isinstance(charmm_object.ff_filename, str) is True
         ):
-            if override_ff_directory_filename is not None:
-                _check_if_string('override_ff_directory_filename',
-                                 override_ff_directory_filename,
-                                 'force field')
-                self.ff_filename = override_ff_directory_filename
+            if Parameters is not None:
+                _check_if_string_and_extension('Parameters',
+                                               Parameters,
+                                               'force field',
+                                               expected_file_extension=['.inp', '.par'])
+                self.ff_filename = Parameters
             elif self.ff_psf_pdb_file_directory is None:
                 self.ff_filename = charmm_object.ff_filename
             else:
@@ -2111,7 +2253,7 @@ class GOMCControl:
             _check_if_input_files_exist(
                 self.ff_filename,
                 "force field file or parameter file",
-                override_check_input_files_exist=override_check_input_files_exist,
+                check_input_files_exist=check_input_files_exist,
             )
         elif (
             charmm_object.ff_filename is None
@@ -2132,15 +2274,17 @@ class GOMCControl:
             charmm_object.filename_box_0 is not None
             and isinstance(charmm_object.filename_box_0, str) is True
         ):
-            if override_box_0_pdb_directory_filename is not None:
-                _check_if_string('override_box_0_pdb_directory_filename',
-                                 override_box_0_pdb_directory_filename,
-                                 'pdb')
-                _check_if_string('override_box_0_psf_directory_filename',
-                                 override_box_0_psf_directory_filename,
-                                 'psf')
-                self.Coordinates_box_0 = override_box_0_pdb_directory_filename
-                self.Structures_box_0 = override_box_0_psf_directory_filename
+            if Coordinates_box_0 is not None:
+                _check_if_string_and_extension('Coordinates_box_0',
+                                               Coordinates_box_0,
+                                               'pdb',
+                                               expected_file_extension=['.pdb'])
+                _check_if_string_and_extension('Structure_box_0',
+                                               Structure_box_0,
+                                               'psf',
+                                               expected_file_extension=['.psf'])
+                self.Coordinates_box_0 = Coordinates_box_0
+                self.Structures_box_0 = Structure_box_0
             elif self.ff_psf_pdb_file_directory is None:
                 self.Coordinates_box_0 = "{}.pdb".format(
                     charmm_object.filename_box_0
@@ -2159,27 +2303,62 @@ class GOMCControl:
             _check_if_input_files_exist(
                 self.Coordinates_box_0,
                 "box 0 pdb file",
-                override_check_input_files_exist=override_check_input_files_exist,
+                check_input_files_exist=check_input_files_exist,
             )
             _check_if_input_files_exist(
                 self.Structures_box_0,
                 "box 0 psf file",
-                override_check_input_files_exist=override_check_input_files_exist,
+                check_input_files_exist=check_input_files_exist,
             )
+
+            # Box 0 restarting files with increased accuracy (coor, xsc) and a velocity passing input
+            if self.binCoordinates_box_0 is not None \
+                    and self.extendedSystem_box_0 is not None:
+                _check_if_string_and_extension('binCoordinates_box_0',
+                                               self.binCoordinates_box_0,
+                                               'coor',
+                                               expected_file_extension=['.coor'])
+                _check_if_string_and_extension('Structure_box_0',
+                                               self.extendedSystem_box_0,
+                                               'xsc',
+                                               expected_file_extension=['.xsc'])
+                _check_if_input_files_exist(
+                    self.binCoordinates_box_0,
+                    "box 0 coor file",
+                    check_input_files_exist=check_input_files_exist,
+                )
+                _check_if_input_files_exist(
+                    self.extendedSystem_box_0,
+                    "box 0 xsc file",
+                    check_input_files_exist=check_input_files_exist,
+                )
+
+            if self.binVelocities_box_0 is not None:
+                _check_if_string_and_extension('binVelocities_box_0',
+                                               self.binVelocities_box_0,
+                                               'velocity',
+                                               expected_file_extension=['.vel'])
+                _check_if_input_files_exist(
+                    self.binVelocities_box_0,
+                    "box 0 velocity file",
+                    check_input_files_exist=check_input_files_exist,
+                )
 
         if (
             charmm_object.filename_box_1 is not None
             and isinstance(charmm_object.filename_box_1, str) is True
         ):
-            if override_box_1_pdb_directory_filename is not None:
-                _check_if_string('override_box_1_pdb_directory_filename',
-                                 override_box_1_pdb_directory_filename,
-                                 'pdb')
-                _check_if_string('override_box_1_psf_directory_filename',
-                                 override_box_1_psf_directory_filename,
-                                 'psf')
-                self.Coordinates_box_1 = override_box_1_pdb_directory_filename
-                self.Structures_box_1 = override_box_1_psf_directory_filename
+            if Coordinates_box_1 is not None:
+                _check_if_string_and_extension('Coordinates_box_1',
+                                               Coordinates_box_1,
+                                               'pdb',
+                                               expected_file_extension=['.pdb'])
+                _check_if_string_and_extension('Structure_box_1',
+                                               Structure_box_1,
+                                               'psf',
+                                               expected_file_extension=['.psf'])
+                self.Coordinates_box_1 = Coordinates_box_1
+                self.Structures_box_1 = Structure_box_1
             elif self.ff_psf_pdb_file_directory is None:
                 self.Coordinates_box_1 = "{}.pdb".format(
                     charmm_object.filename_box_1
@@ -2198,13 +2377,46 @@ class GOMCControl:
             _check_if_input_files_exist(
                 self.Coordinates_box_1,
                 "box 1 pdb file",
-                override_check_input_files_exist=override_check_input_files_exist,
+                check_input_files_exist=check_input_files_exist,
             )
             _check_if_input_files_exist(
                 self.Structures_box_1,
                 "box 1 psf file",
-                override_check_input_files_exist=override_check_input_files_exist,
+                check_input_files_exist=check_input_files_exist,
             )
+
+            # Box 1 restarting files with increased accuracy (coor, xsc) and a velocity passing input
+            if self.binCoordinates_box_1 is not None \
+                    and self.extendedSystem_box_1 is not None:
+                _check_if_string_and_extension('binCoordinates_box_1',
+                                               self.binCoordinates_box_1,
+                                               'coor',
+                                               expected_file_extension=['.coor'])
+                _check_if_string_and_extension('Structure_box_1',
+                                               self.extendedSystem_box_1,
+                                               'xsc',
+                                               expected_file_extension=['.xsc'])
+                _check_if_input_files_exist(
+                    self.binCoordinates_box_1,
+                    "box 1 coor file",
+                    check_input_files_exist=check_input_files_exist,
+                )
+                _check_if_input_files_exist(
+                    self.extendedSystem_box_1,
+                    "box 1 xsc file",
+                    check_input_files_exist=check_input_files_exist,
+                )
+
+            if self.binVelocities_box_1 is not None:
+                _check_if_string_and_extension('binVelocities_box_1',
+                                               self.binVelocities_box_1,
+                                               'velocity',
+                                               expected_file_extension=['.vel'])
+                _check_if_input_files_exist(
+                    self.binVelocities_box_1,
+                    "box 0 velocity file",
+                    check_input_files_exist=check_input_files_exist,
+                )
 
         else:
             self.Coordinates_box_1 = None
@@ -2299,10 +2511,6 @@ class GOMCControl:
         # set all the other variable initally to None (they are corrected to their set or default values later)
         default_input_variables_dict = _get_default_variables_dict()
 
-        self.Restart = default_input_variables_dict["Restart"]
-        self.RestartCheckpoint = default_input_variables_dict[
-            "RestartCheckpoint"
-        ]
         self.PRNG = default_input_variables_dict["PRNG"]
         self.ParaTypeCHARMM = default_input_variables_dict["ParaTypeCHARMM"]
         self.ParaTypeMie = default_input_variables_dict["ParaTypeMie"]
@@ -2440,6 +2648,11 @@ class GOMCControl:
         # auto calculate the best CoordinatesFreq  for the number of self.RunSteps
         self.CoordinatesFreq = scale_gen_freq_for_run_steps_list_bool_int(
             default_input_variables_dict["CoordinatesFreq"], self.RunSteps
+        )
+
+        # auto calculate the best DCDFreq for the number of self.RunSteps
+        self.DCDFreq = scale_gen_freq_for_run_steps_list_bool_int(
+            default_input_variables_dict["DCDFreq"], self.RunSteps
         )
 
         # auto calculate the best ConsoleFreq  for the number of self.RunSteps
@@ -2710,34 +2923,6 @@ class GOMCControl:
 
         # check for bad input variables and list the bad ones
         for var_iter in range(0, len(input_var_keys_list)):
-            key = "Restart"
-            if input_var_keys_list[var_iter] == key:
-                self.ck_input_variable_true_or_false(
-                    self.input_variables_dict,
-                    key,
-                    bad_input_variables_values_list,
-                )
-
-                if (
-                    input_var_keys_list[var_iter] == key
-                    and key in possible_ensemble_variables_list
-                ):
-                    self.Restart = self.input_variables_dict[key]
-
-            key = "RestartCheckpoint"
-            if input_var_keys_list[var_iter] == key:
-                self.ck_input_variable_true_or_false(
-                    self.input_variables_dict,
-                    key,
-                    bad_input_variables_values_list,
-                )
-
-                if (
-                    input_var_keys_list[var_iter] == key
-                    and key in possible_ensemble_variables_list
-                ):
-                    self.RestartCheckpoint = self.input_variables_dict[key]
-
             key = "PRNG"
             if input_var_keys_list[var_iter] == key:
                 if (
@@ -3226,6 +3411,20 @@ class GOMCControl:
                     and key in possible_ensemble_variables_list
                 ):
                     self.CoordinatesFreq = self.input_variables_dict[key]
+
+            key = "DCDFreq"
+            if input_var_keys_list[var_iter] == key:
+                self.ck_input_variable_list_bool_int_greater_zero(
+                    self.input_variables_dict,
+                    key,
+                    bad_input_variables_values_list,
+                )
+
+                if (
+                    input_var_keys_list[var_iter] == key
+                    and key in possible_ensemble_variables_list
+                ):
+                    self.DCDFreq = self.input_variables_dict[key]
 
             key = "RestartFreq"
             if input_var_keys_list[var_iter] == key:
@@ -4665,6 +4864,40 @@ class GOMCControl:
             data_control_file.write(
                 "{:25s} {}\n".format("Structure 1", self.Structures_box_1)
             )
+
+        if self.Restart is True and self.binCoordinates_box_0 is not None \
+                and self.extendedSystem_box_0 is not None \
+                and self.ensemble_type in ["NVT", "NPT", "GEMC_NPT", "GEMC_NVT", "GCMC"]:
+            data_control_file.write(" \n")
+            data_control_file.write("####################################\n")
+            data_control_file.write("# INPUT BINARY FILES FOR RESTARTING (COORDINATE, XSC, VELOCITY FILES)\n")
+            data_control_file.write("####################################\n")
+            data_control_file.write(
+                "{:25s} {}\n".format("binCoordinates   0", self.binCoordinates_box_0)
+            )
+            data_control_file.write(
+                "{:25s} {}\n".format("extendedSystem 	0", self.extendedSystem_box_0)
+            )
+            if self.binVelocities_box_0 is not None:
+                data_control_file.write(
+                    "{:25s} {}\n".format("binVelocities   	0", self.binVelocities_box_0)
+                )
+            data_control_file.write(" \n")
+
+            if self.binCoordinates_box_1 is not None \
+                    and self.extendedSystem_box_1 is not None \
+                    and self.ensemble_type in ["GEMC_NPT", "GEMC_NVT", "GCMC"]:
+                data_control_file.write(
+                    "{:25s} {}\n".format("binCoordinates   1", self.binCoordinates_box_1)
+                )
+                data_control_file.write(
+                    "{:25s} {}\n".format("extendedSystem 	1", self.extendedSystem_box_1)
+                )
+                if self.binVelocities_box_1 is not None:
+                    data_control_file.write(
+                        "{:25s} {}\n".format("binVelocities   	1", self.binVelocities_box_1)
+                    )
+
         data_control_file.write(" \n")
         data_control_file.write(
             "############################################################################\n"
@@ -5116,6 +5349,15 @@ class GOMCControl:
                 self.CoordinatesFreq[1],
             )
         )
+        # set this only true if use dcd is true, until the DCDFreq is in a official release of GOMC
+        if self.DCDFreq[0] is True:
+            data_control_file.write(
+                "{:25s} {:10s} {}\n".format(
+                    "DCDFreq",
+                    str(self.DCDFreq[0]),
+                    self.DCDFreq[1],
+                )
+            )
         data_control_file.write(
             "{:25s} {:10s} {}\n".format(
                 "ConsoleFreq", str(self.ConsoleFreq[0]), self.ConsoleFreq[1]
@@ -6116,7 +6358,7 @@ def _check_box_vectors_char_limit(vectors, char_limit):
 def _check_if_input_files_exist(
     file_directory_and_name,
     type_of_file,
-    override_check_input_files_exist=False,
+    check_input_files_exist=True,
 ):
     """
     Checks to see GOMC FF, pdb, and psf files exist
@@ -6127,7 +6369,7 @@ def _check_if_input_files_exist(
         The file directory and name of the file.
     type_of_file : str
         A brief description of the file which is evaluated.
-    override_check_input_files_exist: bool (default = False)
+    check_input_files_exist: bool (default=True)
         Override the check to see if the force field, psf, and pdb files exist.
         If the files are checked and do not exist, the writer will throw a ValueError.
         True, check if the force field, psf, and pdb files exist.
@@ -6140,7 +6382,7 @@ def _check_if_input_files_exist(
     """
     if (
         os.path.isfile(file_directory_and_name) is False
-        and override_check_input_files_exist is False
+        and check_input_files_exist is True
     ):
 
         print_error_message = (
@@ -6149,10 +6391,11 @@ def _check_if_input_files_exist(
         )
         raise ValueError(print_error_message)
 
-def _check_if_string(
+def _check_if_string_and_extension(
         file_directory_and_name,
         file_directory_and_name_variable,
         type_of_file,
+        expected_file_extension=None,
 ):
     """
     Checks to see GOMC FF, pdb, and psf files exist
@@ -6165,16 +6408,20 @@ def _check_if_string(
         The variable for the file directory and name of the file.
     type_of_file : str
         A brief description of the file which is evaluated (force file, psf, pdb).
+    expected_file_extension : list of strings (optional), [str, ..., str], default=None
+        The expected file extensions that are checked against the actual file extension.
 
     Returns
     -------
     If the variable is a string : None
     If the variable is not a string : raise TypeError
+    If the variable is a string and has the correct extension : None
+    If the variable is a string and has the wrong extension  : raise TypeError
     """
     if (
-            not isinstance(file_directory_and_name_variable, str)
-            and file_directory_and_name_variable is not None
+        not isinstance(file_directory_and_name_variable, str) and file_directory_and_name_variable is not None
     ):
+        print('file_directory_and_name_variable =' +str(file_directory_and_name_variable))
         print_error_message = (
             r"ERROR: The {} variable for directly entering the "
             r"{} file directory and name is a {} and not a string.".format(
@@ -6185,6 +6432,43 @@ def _check_if_string(
         )
         raise TypeError(print_error_message)
 
+    if expected_file_extension is not None:
+        acutal_file_extension = os.path.splitext(file_directory_and_name_variable)[-1]
+        if acutal_file_extension not in expected_file_extension:
+            print_error_message = (
+                r'ERROR: The {} variable expects a file extension of {}, but the actual file extension is "{}". '
+                r''.format(
+                    file_directory_and_name,
+                    expected_file_extension,
+                    acutal_file_extension,
+                )
+            )
+            raise TypeError(print_error_message)
+
+def _check_if_bool(
+        variable_as_a_string,
+        variable,
+):
+    """
+    Checks to see if the variable is a boolean.
+
+    Parameters
+    ----------
+    variable_as_a_string : str
+        The variable name as a string.
+    variable : variable
+        The variable to test if it is a boolean.
+
+    Returns
+    -------
+    If the variable is a bool : None
+    If the variable is not a bool : raise TypeError
+    """
+    if not isinstance(variable, bool):
+        print_error_message = 'ERROR: The {} input is {} and needs to be a boolean (i.e., True or False).' \
+                              ''.format(variable_as_a_string, type(variable))
+        raise TypeError(print_error_message)
+
 # user callable function to write the GOMC control file
 def write_gomc_control_file(
     charmm_object,
@@ -6193,12 +6477,20 @@ def write_gomc_control_file(
     RunSteps,
     Temperature,
     ff_psf_pdb_file_directory=None,
-    override_check_input_files_exist=False,
-    override_ff_directory_filename=None,
-    override_box_0_pdb_directory_filename=None,
-    override_box_0_psf_directory_filename=None,
-    override_box_1_pdb_directory_filename=None,
-    override_box_1_psf_directory_filename=None,
+    check_input_files_exist=True,
+    Restart=False,
+    RestartCheckpoint=False,
+    Parameters=None,
+    Coordinates_box_0=None,
+    Structure_box_0=None,
+    Coordinates_box_1=None,
+    Structure_box_1=None,
+    binCoordinates_box_0=None,
+    extendedSystem_box_0=None,
+    binVelocities_box_0=None,
+    binCoordinates_box_1=None,
+    extendedSystem_box_1=None,
+    binVelocities_box_1=None,
     input_variables_dict=None,
 ):
     """
@@ -6229,21 +6521,46 @@ def write_gomc_control_file(
     ff_psf_pdb_file_directory : str (optional), default=None (i.e., the current directory).
         The full or relative directory added to the force field, psf, and pdb
         file names, created via the Charmm object.
-    override_check_files_inputs_exist : bool, (default = False)
+    check_input_files_exist : bool, (default=True)
         Override the check to see if the force field, psf, and pdb files exist.
         If the files are checked and do not exist, the writer will throw a ValueError.
         True, check if the force field, psf, and pdb files exist.
         False, do not check if the force field, psf, and pdb files exist.
-    override_ff_directory_filename : str, (default = None)
-        Override all other force field directory and filename inputs.
-    override_box_0_pdb_directory_filename : str, (default = None)
-        Override all other box 0 pdb directory and filename inputs.
-    override_box_0_psf_directory_filename : str, (default = None)
-        Override all other box 0 psf directory and filename inputs.
-    override_box_1_pdb_directory_filename : str, (default = None)
-        Override all other box 1 pdb directory and filename inputs.
-    override_box_1_psf_directory_filename : str, (default = None)
-        Override all other box 1  psf directory and filename inputs.
+    Restart : boolean, default = False
+        Determines whether to restart the simulation from restart file
+        (``*_restart.pdb`` and ``*_restart.psf``) or not.
+    RestartCheckpoint : boolean, default = False
+        Determines whether to restart the simulation with the checkpoint
+        file (checkpoint.dat) or not. Restarting the simulation with checkpoint.dat
+        would result in an identical outcome, as if previous simulation was continued.
+    Parameters : str, (default = None)
+        Override all other force field directory and filename inputs with the correct extension.
+    Coordinates_box_0 : str, (default = None)
+        Override all other box 0 pdb directory and filename inputs with the correct extension.
+    Structure_box_0 : str, (default = None)
+        Override all other box 0 psf directory and filename inputs with the correct extension.
+    Coordinates_box_1 : str, (default = None)
+        Override all other box 1 pdb directory and filename inputs with the correct extension.
+    Structure_box_1 : str, (default = None)
+        Override all other box 1  psf directory and filename inputs with the correct extension.
+    binCoordinates_box_0 : str, (default = None)
+        The box 0 binary coordinate file is used only for restarting a GOMC simulation,
+        which provides increased numerical accuracy.
+    extendedSystem_box_0 : str, (default = None)
+        The box 0 vectors origin file is used only for restarting a GOMC simulation.
+    binVelocities_box_0 : str, (default = None)
+        The box 0 binary velocity file is used only for restarting a GOMC simulation,
+        which provides increased numerical accuracy. These velocities are only passed thru
+        GOMC since Monte Carlo simulations do not utilize any velocity information.
+    binCoordinates_box_1 : str, (default = None)
+        The box 1 binary coordinate file is used only for restarting a GOMC simulation,
+        which provides increased numerical accuracy.
+    extendedSystem_box_1 : str, (default = None)
+        The box 1 vectors origin file is used only for restarting a GOMC simulation.
+    binVelocities_box_1 : str, (default = None)
+        The box 1 binary velocity file is used only for restarting a GOMC simulation,
+        which provides increased numerical accuracy. These velocities are only passed thru
+        GOMC since Monte Carlo simulations do not utilize any velocity information.
     input_variables_dict: dict, default=None
         These input variables are optional and override the default settings.
         Changing these variables likely required for more advanced systems.
@@ -6260,13 +6577,6 @@ def write_gomc_control_file(
     # input_variables_dict options (keys and values) - (start)
     # Note: the input_variables_dict keys are also attributes
     # *******************************************************************
-    Restart : boolean, default = False
-        Determines whether to restart the simulation from restart file
-        (``*_restart.pdb`` and ``*_restart.psf``) or not.
-    RestartCheckpoint : boolean, default = False
-        Determines whether to restart the simulation with the checkpoint
-        file (checkpoint.dat) or not. Restarting the simulation with checkpoint.dat
-        would result in an identical outcome, as if previous simulation was continued.
     PRNG : string or int (>= 0) ("RANDOM" or int), default = "RANDOM"
         PRNG = Pseudo-Random Number Generator (PRNG). There are two (2) options, entering
         the string, "RANDOM", or a integer.
@@ -6465,6 +6775,12 @@ def write_gomc_control_file(
     CoordinatesFreq : list [bool , int (> 0)] or [Generate_data_bool , steps_per_data_output_int],
         default = [True, 1M] or [True , set via formula based on the number of RunSteps or M max]
         Controls output of PDB file (coordinates). If bool is True, this
+        enables outputting the coordinate files at the integer frequency
+        (set steps_per_data_output_int), while "False" disables outputting
+        the coordinates.
+    DCDFreq : list [bool , int (> 0)] or [Generate_data_bool , steps_per_data_output_int],
+        default = [True, 1M] or [True , set via formula based on the number of RunSteps or M max]
+        Controls output of DCD file (coordinates). If bool is True, this
         enables outputting the coordinate files at the integer frequency
         (set steps_per_data_output_int), while "False" disables outputting
         the coordinates.
@@ -6818,21 +7134,46 @@ def write_gomc_control_file(
     ff_psf_pdb_file_directory : str (optional), default=None (i.e., the current directory).
         The full or relative directory added to the force field, psf, and pdb
         file names, created via the Charmm object.
-    override_check_input_files_exist: bool (default = False)
+    check_input_files_exist: bool (default=True)
         Override the check to see if the force field, psf, and pdb files exist.
         If the files are checked and do not exist, the writer will throw a ValueError.
         True, check if the force field, psf, and pdb files exist.
         False, do not check if the force field, psf, and pdb files exist.
-    override_ff_directory_filename : str, (default = None)
-        Override all other force field directory and filename inputs.
-    override_box_0_pdb_directory_filename : str, (default = None)
-        Override all other box 0 pdb directory and filename inputs.
-    override_box_0_psf_directory_filename : str, (default = None)
-        Override all other box 0 psf directory and filename inputs.
-    override_box_1_pdb_directory_filename : str, (default = None)
-        Override all other box 1 pdb directory and filename inputs.
-    override_box_1_psf_directory_filename : str, (default = None)
-        Override all other box 1  psf directory and filename inputs.
+    Restart : boolean, default = False
+        Determines whether to restart the simulation from restart file
+        (``*_restart.pdb`` and ``*_restart.psf``) or not.
+    RestartCheckpoint : boolean, default = False
+        Determines whether to restart the simulation with the checkpoint
+        file (checkpoint.dat) or not. Restarting the simulation with checkpoint.dat
+        would result in an identical outcome, as if previous simulation was continued.
+    Parameters : str, (default = None)
+        Override all other force field directory and filename inputs with the correct extension.
+    Coordinates_box_0 : str, (default = None)
+        Override all other box 0 pdb directory and filename inputs with the correct extension.
+    Structure_box_0 : str, (default = None)
+        Override all other box 0 psf directory and filename inputs with the correct extension.
+    Coordinates_box_1 : str, (default = None)
+        Override all other box 1 pdb directory and filename inputs with the correct extension.
+    Structure_box_1 : str, (default = None)
+        Override all other box 1  psf directory and filename inputs with the correct extension.
+    binCoordinates_box_0 : str, (default = None)
+        The box 0 binary coordinate file is used only for restarting a GOMC simulation,
+        which provides increased numerical accuracy.
+    extendedSystem_box_0 : str, (default = None)
+        The box 0 vectors origin file is used only for restarting a GOMC simulation.
+    binVelocities_box_0 : str, (default = None)
+        The box 0 binary velocity file is used only for restarting a GOMC simulation,
+        which provides increased numerical accuracy. These velocities are only passed thru
+        GOMC since Monte Carlo simulations do not utilize any velocity information.
+    binCoordinates_box_1 : str, (default = None)
+        The box 1 binary coordinate file is used only for restarting a GOMC simulation,
+        which provides increased numerical accuracy.
+    extendedSystem_box_1 : str, (default = None)
+        The box 1 vectors origin file is used only for restarting a GOMC simulation.
+    binVelocities_box_1 : str, (default = None)
+        The box 1 binary velocity file is used only for restarting a GOMC simulation,
+        which provides increased numerical accuracy. These velocities are only passed thru
+        GOMC since Monte Carlo simulations do not utilize any velocity information.
     input_variables_dict: dict, default = None
         These input variables are optional and override the default settings.
         Changing these variables likely required for more advanced systems.
@@ -6935,12 +7276,20 @@ def write_gomc_control_file(
         RunSteps,
         Temperature,
         ff_psf_pdb_file_directory=ff_psf_pdb_file_directory,
-        override_check_input_files_exist=override_check_input_files_exist,
-        override_ff_directory_filename=override_ff_directory_filename,
-        override_box_0_pdb_directory_filename=override_box_0_pdb_directory_filename,
-        override_box_0_psf_directory_filename=override_box_0_psf_directory_filename,
-        override_box_1_pdb_directory_filename=override_box_1_pdb_directory_filename,
-        override_box_1_psf_directory_filename=override_box_1_psf_directory_filename,
+        check_input_files_exist=check_input_files_exist,
+        Restart=Restart,
+        RestartCheckpoint=RestartCheckpoint,
+        Parameters=Parameters,
+        Coordinates_box_0=Coordinates_box_0,
+        Structure_box_0=Structure_box_0,
+        Coordinates_box_1=Coordinates_box_1,
+        Structure_box_1=Structure_box_1,
+        binCoordinates_box_0=binCoordinates_box_0,
+        extendedSystem_box_0=extendedSystem_box_0,
+        binVelocities_box_0=binVelocities_box_0,
+        binCoordinates_box_1=binCoordinates_box_1,
+        extendedSystem_box_1=extendedSystem_box_1,
+        binVelocities_box_1=binVelocities_box_1,
         input_variables_dict=input_variables_dict,
     )
     test_gomc_control_write_conf_file = gomc_control.write_conf_file(

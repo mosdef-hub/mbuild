@@ -49,7 +49,6 @@ def _get_bond_type_key(
         bond_atom_2_residue_name : str
             The residue name for atom 2 in the bond.
     """
-
     bond_k_constant = round(
         bond.type.k
         * (sigma_conversion_factor ** 2 / epsilon_conversion_factor),
