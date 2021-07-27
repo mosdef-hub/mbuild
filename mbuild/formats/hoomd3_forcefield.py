@@ -60,7 +60,7 @@ def create_hoomd3_forcefield(
     -------
     hoomd_snapshot : hoomd.Snapshot
         HOOMD snapshot object to initialize the simulation
-    hoomd_forcefield : list
+    hoomd_forcefield : list[hoomd.md.force.Force]
         List of hoomd force computes created during conversion
     ReferenceValues : namedtuple
         Values used in scaling
