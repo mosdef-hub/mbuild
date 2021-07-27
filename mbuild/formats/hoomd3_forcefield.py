@@ -235,14 +235,18 @@ def _init_hoomd_lj(structure, nl, r_cut=1.2, ref_distance=1.0, ref_energy=1.0):
     return lj
 
 
-def _init_hoomd_qq(structure, nl, snapshot, Nx=1, Ny=1, Nz=1, order=4, r_cut=1.2):
+def _init_hoomd_qq(
+    structure, nl, snapshot, Nx=1, Ny=1, Nz=1, order=4, r_cut=1.2
+):
     """Charge interactions."""
     num_charged = np.sum(snapshot.particles.charge[:] != 0)
     if num_charged == 0:
         print("No charged groups found, ignoring electrostatics")
         return None
     else:
-        qq = hoomd.md.long_range.pppm.make_pppm_coulomb_forces(nlist=nl, resolution=(Nx, Ny, Nz), order=order, r_cut=r_cut)
+        qq = hoomd.md.long_range.pppm.make_pppm_coulomb_forces(
+            nlist=nl, resolution=(Nx, Ny, Nz), order=order, r_cut=r_cut
+        )
         return qq
 
 
