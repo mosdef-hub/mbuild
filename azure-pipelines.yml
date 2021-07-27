@@ -153,7 +153,7 @@ stages:
               pip install conda-merge
               git clone https://github.com/mosdef-hub/foyer.git
               conda-merge environment-dev.yml foyer/environment-dev.yml > combine.yml
-              sed -iE 's/python.*$/python=3.7/' combine.yml
+              sed -iE 's/python.*$/python=3.8/' combine.yml
               sed -iE '/mbuild/d' combine.yml
               sed -iE '/ foyer/d' combine.yml
               mamba env create -n bleeding -f combine.yml
