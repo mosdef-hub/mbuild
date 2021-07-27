@@ -117,11 +117,10 @@ stages:
           - script: |
               conda update -c defaults conda
               conda update conda -yq
-              conda install -c conda-forge mamba
               sed -i -E 's/python.*$/python='$(python.version)'/' environment-win.yml
-              mamba env create -f environment-win.yml
+              conda env create -f environment-win.yml
               call activate mbuild-dev
-            displayName: Create Conda env, Install mamba, Activate, Install dependencies
+            displayName: Create Conda env, Activate, Install dependencies
 
           - script: |
               call activate mbuild-dev
