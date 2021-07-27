@@ -51,14 +51,14 @@ def create_hoomd3_forcefield(
         Kwargs to pass to to_hoomdsnapshot
     pppm_kwargs : dict
         Kwargs to pass to hoomd's pppm function
-    init_snap : hoomd.data.SnapshotParticleData, optional, default=None
+    init_snap : hoomd.Snapshot, optional, default=None
         Initial snapshot to which to add the ParmEd structure object
         (useful for rigid bodies)
 
 
     Returns
     -------
-    hoomd_snapshot : snapshot
+    hoomd_snapshot : hoomd.Snapshot
         HOOMD snapshot object to initialize the simulation
     hoomd_forcefield : list
         List of hoomd force computes created during conversion

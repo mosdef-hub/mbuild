@@ -25,11 +25,11 @@ __all__ = ["to_hoomdsnapshot", "from_snapshot"]
 def from_snapshot(snapshot, scale=1.0):
     """Convert a Snapshot to a Compound.
 
-    Snapshot can be a hoomd.data.Snapshot or a gsd.hoomd.Snapshot.
+    Snapshot can be a hoomd.Snapshot or a gsd.hoomd.Snapshot.
 
     Parameters
     ----------
-    snapshot : hoomd._hoomd.SnapshotSystemData_float or gsd.hoomd.Snapshot
+    snapshot : hoomd.Snapshot or gsd.hoomd.Snapshot
         Snapshot from which to build the mbuild Compound.
     scale : float, optional, default 1.0
         Value by which to scale the length values
@@ -95,7 +95,7 @@ def to_hoomdsnapshot(
     parmed_kwargs={},
     hoomd_snapshot=None,
 ):
-    """Convert a Compound or parmed.Structure to hoomd.data.Snapshot.
+    """Convert a Compound or parmed.Structure to hoomd.Snapshot.
 
     Parameters
     ----------
@@ -121,14 +121,14 @@ def to_hoomdsnapshot(
     write_special_pairs : bool, optional, default=True
         Writes out special pair information necessary to correctly use
         the OPLS fudged 1,4 interactions in HOOMD.
-    hoomd_snapshot : hoomd.data.SnapshotParticleData, optional, default=None
+    hoomd_snapshot : hoomd.Snapshot, optional, default=None
         Initial snapshot to which to add the ParmEd structure object.
         The box information of the initial snapshot will be overwritten.
         (useful for rigid bodies)
 
     Returns
     -------
-    hoomd_snapshot : hoomd.data.Snapshot
+    hoomd_snapshot : hoomd.Snapshot
     ReferenceValues : namedtuple
         Values used in scaling
 
