@@ -334,14 +334,11 @@ def to_hoomdsnapshot(
         else:
             raise RuntimeError("Unsupported HOOMD version:", str(hoomd_version))
 
-    # wrap particles into the box
+    # wrap particles into the box manually for v2
     if hoomd_version.major == 2:
         scaled_positions = np.stack(
             [box.wrap(xyz)[0] for xyz in scaled_positions]
         )
-    elif hoomd_version.major == 3:
-        # HOOMD-blue v3.x does not expose box.wrap.
-        pass
 
     def set_size(obj, n):
         if hoomd_version.major == 2:
@@ -357,6 +354,10 @@ def to_hoomdsnapshot(
     hoomd_snapshot.particles.mass[n_init:] = scaled_mass
     hoomd_snapshot.particles.charge[n_init:] = scaled_charges
     hoomd_snapshot.particles.body[n_init:] = rigid_bodies
+
+    # wrap the particles into the box using the v3 API
+    if hoomd_version.major == 3:
+        hoomd_snapshot.wrap()
 
     if n_bonds > 0:
         set_size(hoomd_snapshot.bonds, n_bonds)
