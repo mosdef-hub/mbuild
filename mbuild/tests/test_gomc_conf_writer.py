@@ -1,8 +1,9 @@
+import os
+
 import pytest
 
 import mbuild as mb
 import mbuild.formats.gomc_conf_writer as gomc_control
-import os
 from mbuild.formats.charmm_writer import Charmm
 from mbuild.lattice import load_cif
 from mbuild.tests.base_test import BaseTest
@@ -21,289 +22,303 @@ class TestGOMCControlFileWriter(BaseTest):
 
     def test_get_required_data(self):
         value = gomc_control._get_required_data(description=False)
-        assert value.sort() == [
-            "charmm_object",
-            "ensemble_type",
-            "RunSteps",
-            "Temperature",
-            "ff_psf_pdb_file_directory",
-            "check_input_files_exist",
-            "Restart",
-            "RestartCheckpoint",
-            "Parameters",
-            "Coordinates_box_0",
-            "override_psf_box_0",
-            "Coordinates_box_1",
-            "Structure_box_1",
-            "binCoordinates_box_0",
-            "extendedSystem_box_0",
-            "binVelocities_box_0",
-            "binCoordinates_box_1",
-            "extendedSystem_box_1",
-            "binVelocities_box_1",
-        ].sort()
+        assert (
+            value.sort()
+            == [
+                "charmm_object",
+                "ensemble_type",
+                "RunSteps",
+                "Temperature",
+                "ff_psf_pdb_file_directory",
+                "check_input_files_exist",
+                "Restart",
+                "RestartCheckpoint",
+                "Parameters",
+                "Coordinates_box_0",
+                "override_psf_box_0",
+                "Coordinates_box_1",
+                "Structure_box_1",
+                "binCoordinates_box_0",
+                "extendedSystem_box_0",
+                "binVelocities_box_0",
+                "binCoordinates_box_1",
+                "extendedSystem_box_1",
+                "binVelocities_box_1",
+            ].sort()
+        )
 
         value = gomc_control._get_required_data(description=True)
-        assert gomc_control.dict_keys_to_list(value).sort() == [
-            "charmm_object",
-            "ensemble_type",
-            "RunSteps",
-            "Temperature",
-            "ff_psf_pdb_file_directory",
-            "Restart",
-            "RestartCheckpoint"
-            "check_input_files_exist",
-            "Parameters",
-            "Coordinate_box_0",
-            "Structure_box_0",
-            "Coordinate_box_1",
-            "Structure_box_1",
-            "binCoordinates_box_0",
-            "extendedSystem_box_0",
-            "binVelocities_box_0",
-            "binCoordinates_box_1",
-            "extendedSystem_box_1",
-            "binVelocities_box_1",
-        ].sort()
+        assert (
+            gomc_control.dict_keys_to_list(value).sort()
+            == [
+                "charmm_object",
+                "ensemble_type",
+                "RunSteps",
+                "Temperature",
+                "ff_psf_pdb_file_directory",
+                "Restart",
+                "RestartCheckpoint" "check_input_files_exist",
+                "Parameters",
+                "Coordinate_box_0",
+                "Structure_box_0",
+                "Coordinate_box_1",
+                "Structure_box_1",
+                "binCoordinates_box_0",
+                "extendedSystem_box_0",
+                "binVelocities_box_0",
+                "binCoordinates_box_1",
+                "extendedSystem_box_1",
+                "binVelocities_box_1",
+            ].sort()
+        )
 
     def test_get_all_possible_input_variable(self):
         value = gomc_control._get_all_possible_input_variables(
             description=False
         )
-        assert value.sort() == [
-            "PRNG",
-            "ParaTypeCHARMM",
-            "ParaTypeMie",
-            "ParaTypeMARTINI",
-            "RcutCoulomb_box_0",
-            "RcutCoulomb_box_1",
-            "Pressure",
-            "Rcut",
-            "RcutLow",
-            "LRC",
-            "Exclude",
-            "Potential",
-            "Rswitch",
-            "ElectroStatic",
-            "Ewald",
-            "CachedFourier",
-            "Tolerance",
-            "Dielectric",
-            "PressureCalc",
-            "EqSteps",
-            "AdjSteps",
-            "VDWGeometricSigma",
-            "useConstantArea",
-            "FixVolBox0",
-            "ChemPot",
-            "Fugacity",
-            "CBMC_First",
-            "CBMC_Nth",
-            "CBMC_Ang",
-            "CBMC_Dih",
-            "OutputName",
-            "CoordinatesFreq",
-            "DCDFreq",
-            "RestartFreq",
-            "CheckpointFreq",
-            "ConsoleFreq",
-            "BlockAverageFreq",
-            "HistogramFreq",
-            "DistName",
-            "HistName",
-            "RunNumber",
-            "RunLetter",
-            "SampleFreq",
-            "OutEnergy",
-            "OutPressure",
-            "OutMolNumber",
-            "OutDensity",
-            "OutVolume",
-            "OutSurfaceTension",
-            "FreeEnergyCalc",
-            "MoleculeType",
-            "InitialState",
-            "LambdaVDW",
-            "LambdaCoulomb",
-            "ScaleCoulomb",
-            "ScalePower",
-            "ScaleAlpha",
-            "MinSigma",
-            "DisFreq",
-            "RotFreq",
-            "IntraSwapFreq",
-            "SwapFreq",
-            "RegrowthFreq",
-            "CrankShaftFreq",
-            "VolFreq",
-            "MultiParticleFreq",
-            "IntraMEMC-1Freq",
-            "MEMC-1Freq",
-            "IntraMEMC-2Freq",
-            "MEMC-2Freq",
-            "IntraMEMC-3Freq",
-            "MEMC-3Freq",
-            "ExchangeVolumeDim",
-            "MEMC_DataInput",
-        ].sort()
+        assert (
+            value.sort()
+            == [
+                "PRNG",
+                "ParaTypeCHARMM",
+                "ParaTypeMie",
+                "ParaTypeMARTINI",
+                "RcutCoulomb_box_0",
+                "RcutCoulomb_box_1",
+                "Pressure",
+                "Rcut",
+                "RcutLow",
+                "LRC",
+                "Exclude",
+                "Potential",
+                "Rswitch",
+                "ElectroStatic",
+                "Ewald",
+                "CachedFourier",
+                "Tolerance",
+                "Dielectric",
+                "PressureCalc",
+                "EqSteps",
+                "AdjSteps",
+                "VDWGeometricSigma",
+                "useConstantArea",
+                "FixVolBox0",
+                "ChemPot",
+                "Fugacity",
+                "CBMC_First",
+                "CBMC_Nth",
+                "CBMC_Ang",
+                "CBMC_Dih",
+                "OutputName",
+                "CoordinatesFreq",
+                "DCDFreq",
+                "RestartFreq",
+                "CheckpointFreq",
+                "ConsoleFreq",
+                "BlockAverageFreq",
+                "HistogramFreq",
+                "DistName",
+                "HistName",
+                "RunNumber",
+                "RunLetter",
+                "SampleFreq",
+                "OutEnergy",
+                "OutPressure",
+                "OutMolNumber",
+                "OutDensity",
+                "OutVolume",
+                "OutSurfaceTension",
+                "FreeEnergyCalc",
+                "MoleculeType",
+                "InitialState",
+                "LambdaVDW",
+                "LambdaCoulomb",
+                "ScaleCoulomb",
+                "ScalePower",
+                "ScaleAlpha",
+                "MinSigma",
+                "DisFreq",
+                "RotFreq",
+                "IntraSwapFreq",
+                "SwapFreq",
+                "RegrowthFreq",
+                "CrankShaftFreq",
+                "VolFreq",
+                "MultiParticleFreq",
+                "IntraMEMC-1Freq",
+                "MEMC-1Freq",
+                "IntraMEMC-2Freq",
+                "MEMC-2Freq",
+                "IntraMEMC-3Freq",
+                "MEMC-3Freq",
+                "ExchangeVolumeDim",
+                "MEMC_DataInput",
+            ].sort()
+        )
 
         value = gomc_control._get_all_possible_input_variables(description=True)
-        assert gomc_control.dict_keys_to_list(value).sort() == [
-            "PRNG",
-            "ParaTypeCHARMM",
-            "ParaTypeMie",
-            "ParaTypeMARTINI",
-            "RcutCoulomb_box_0",
-            "RcutCoulomb_box_1",
-            "Pressure",
-            "Rcut",
-            "RcutLow",
-            "LRC",
-            "Exclude",
-            "Potential",
-            "Rswitch",
-            "ElectroStatic",
-            "Ewald",
-            "CachedFourier",
-            "Tolerance",
-            "Dielectric",
-            "PressureCalc",
-            "EqSteps",
-            "AdjSteps",
-            "VDWGeometricSigma",
-            "useConstantArea",
-            "FixVolBox0",
-            "ChemPot",
-            "Fugacity",
-            "CBMC_First",
-            "CBMC_Nth",
-            "CBMC_Ang",
-            "CBMC_Dih",
-            "OutputName",
-            "CoordinatesFreq",
-            "DCDFreq",
-            "RestartFreq",
-            "CheckpointFreq",
-            "ConsoleFreq",
-            "BlockAverageFreq",
-            "HistogramFreq",
-            "DistName",
-            "HistName",
-            "RunNumber",
-            "RunLetter",
-            "SampleFreq",
-            "OutEnergy",
-            "OutPressure",
-            "OutMolNumber",
-            "OutDensity",
-            "OutVolume",
-            "OutSurfaceTension",
-            "FreeEnergyCalc",
-            "MoleculeType",
-            "InitialState",
-            "LambdaVDW",
-            "LambdaCoulomb",
-            "ScaleCoulomb",
-            "ScalePower",
-            "ScaleAlpha",
-            "MinSigma",
-            "DisFreq",
-            "RotFreq",
-            "IntraSwapFreq",
-            "SwapFreq",
-            "RegrowthFreq",
-            "CrankShaftFreq",
-            "VolFreq",
-            "MultiParticleFreq",
-            "IntraMEMC-1Freq",
-            "MEMC-1Freq",
-            "IntraMEMC-2Freq",
-            "MEMC-2Freq",
-            "IntraMEMC-3Freq",
-            "MEMC-3Freq",
-            "ExchangeVolumeDim",
-            "MEMC_DataInput",
-        ].sort()
+        assert (
+            gomc_control.dict_keys_to_list(value).sort()
+            == [
+                "PRNG",
+                "ParaTypeCHARMM",
+                "ParaTypeMie",
+                "ParaTypeMARTINI",
+                "RcutCoulomb_box_0",
+                "RcutCoulomb_box_1",
+                "Pressure",
+                "Rcut",
+                "RcutLow",
+                "LRC",
+                "Exclude",
+                "Potential",
+                "Rswitch",
+                "ElectroStatic",
+                "Ewald",
+                "CachedFourier",
+                "Tolerance",
+                "Dielectric",
+                "PressureCalc",
+                "EqSteps",
+                "AdjSteps",
+                "VDWGeometricSigma",
+                "useConstantArea",
+                "FixVolBox0",
+                "ChemPot",
+                "Fugacity",
+                "CBMC_First",
+                "CBMC_Nth",
+                "CBMC_Ang",
+                "CBMC_Dih",
+                "OutputName",
+                "CoordinatesFreq",
+                "DCDFreq",
+                "RestartFreq",
+                "CheckpointFreq",
+                "ConsoleFreq",
+                "BlockAverageFreq",
+                "HistogramFreq",
+                "DistName",
+                "HistName",
+                "RunNumber",
+                "RunLetter",
+                "SampleFreq",
+                "OutEnergy",
+                "OutPressure",
+                "OutMolNumber",
+                "OutDensity",
+                "OutVolume",
+                "OutSurfaceTension",
+                "FreeEnergyCalc",
+                "MoleculeType",
+                "InitialState",
+                "LambdaVDW",
+                "LambdaCoulomb",
+                "ScaleCoulomb",
+                "ScalePower",
+                "ScaleAlpha",
+                "MinSigma",
+                "DisFreq",
+                "RotFreq",
+                "IntraSwapFreq",
+                "SwapFreq",
+                "RegrowthFreq",
+                "CrankShaftFreq",
+                "VolFreq",
+                "MultiParticleFreq",
+                "IntraMEMC-1Freq",
+                "MEMC-1Freq",
+                "IntraMEMC-2Freq",
+                "MEMC-2Freq",
+                "IntraMEMC-3Freq",
+                "MEMC-3Freq",
+                "ExchangeVolumeDim",
+                "MEMC_DataInput",
+            ].sort()
+        )
 
     def test_get_default_variables_dict(self):
         value = gomc_control._get_default_variables_dict()
-        assert gomc_control.dict_keys_to_list(value).sort() == [
-            "PRNG",
-            "ParaTypeCHARMM",
-            "ParaTypeMie",
-            "ParaTypeMARTINI",
-            "RcutCoulomb_box_0",
-            "RcutCoulomb_box_1",
-            "Pressure",
-            "Rcut",
-            "RcutLow",
-            "LRC",
-            "Exclude",
-            "coul_1_4_scaling",
-            "Potential",
-            "Rswitch",
-            "ElectroStatic",
-            "Ewald",
-            "CachedFourier",
-            "Tolerance",
-            "Dielectric",
-            "PressureCalc",
-            "EqSteps",
-            "AdjSteps",
-            "VDWGeometricSigma",
-            "useConstantArea",
-            "FixVolBox0",
-            "ChemPot",
-            "Fugacity",
-            "CBMC_First",
-            "CBMC_Nth",
-            "CBMC_Ang",
-            "CBMC_Dih",
-            "OutputName",
-            "CoordinatesFreq",
-            "DCDFreq",
-            "RestartFreq",
-            "CheckpointFreq",
-            "ConsoleFreq",
-            "BlockAverageFreq",
-            "HistogramFreq",
-            "DistName",
-            "HistName",
-            "RunNumber",
-            "RunLetter",
-            "SampleFreq",
-            "OutEnergy",
-            "OutPressure",
-            "OutMolNumber",
-            "OutDensity",
-            "OutVolume",
-            "OutSurfaceTension",
-            "FreeEnergyCalc",
-            "MoleculeType",
-            "InitialState",
-            "LambdaVDW",
-            "LambdaCoulomb",
-            "ScaleCoulomb",
-            "ScalePower",
-            "ScaleAlpha",
-            "MinSigma",
-            "ExchangeVolumeDim",
-            "MEMC_DataInput",
-            "DisFreq",
-            "RotFreq",
-            "IntraSwapFreq",
-            "SwapFreq",
-            "RegrowthFreq",
-            "CrankShaftFreq",
-            "VolFreq",
-            "MultiParticleFreq",
-            "IntraMEMC-1Freq",
-            "MEMC-1Freq",
-            "IntraMEMC-2Freq",
-            "MEMC-2Freq",
-            "IntraMEMC-3Freq",
-            "MEMC-3Freq",
-        ].sort()
+        assert (
+            gomc_control.dict_keys_to_list(value).sort()
+            == [
+                "PRNG",
+                "ParaTypeCHARMM",
+                "ParaTypeMie",
+                "ParaTypeMARTINI",
+                "RcutCoulomb_box_0",
+                "RcutCoulomb_box_1",
+                "Pressure",
+                "Rcut",
+                "RcutLow",
+                "LRC",
+                "Exclude",
+                "coul_1_4_scaling",
+                "Potential",
+                "Rswitch",
+                "ElectroStatic",
+                "Ewald",
+                "CachedFourier",
+                "Tolerance",
+                "Dielectric",
+                "PressureCalc",
+                "EqSteps",
+                "AdjSteps",
+                "VDWGeometricSigma",
+                "useConstantArea",
+                "FixVolBox0",
+                "ChemPot",
+                "Fugacity",
+                "CBMC_First",
+                "CBMC_Nth",
+                "CBMC_Ang",
+                "CBMC_Dih",
+                "OutputName",
+                "CoordinatesFreq",
+                "DCDFreq",
+                "RestartFreq",
+                "CheckpointFreq",
+                "ConsoleFreq",
+                "BlockAverageFreq",
+                "HistogramFreq",
+                "DistName",
+                "HistName",
+                "RunNumber",
+                "RunLetter",
+                "SampleFreq",
+                "OutEnergy",
+                "OutPressure",
+                "OutMolNumber",
+                "OutDensity",
+                "OutVolume",
+                "OutSurfaceTension",
+                "FreeEnergyCalc",
+                "MoleculeType",
+                "InitialState",
+                "LambdaVDW",
+                "LambdaCoulomb",
+                "ScaleCoulomb",
+                "ScalePower",
+                "ScaleAlpha",
+                "MinSigma",
+                "ExchangeVolumeDim",
+                "MEMC_DataInput",
+                "DisFreq",
+                "RotFreq",
+                "IntraSwapFreq",
+                "SwapFreq",
+                "RegrowthFreq",
+                "CrankShaftFreq",
+                "VolFreq",
+                "MultiParticleFreq",
+                "IntraMEMC-1Freq",
+                "MEMC-1Freq",
+                "IntraMEMC-2Freq",
+                "MEMC-2Freq",
+                "IntraMEMC-3Freq",
+                "MEMC-3Freq",
+            ].sort()
+        )
 
     def test_print_ensemble_info(self):
 
@@ -393,7 +408,7 @@ class TestGOMCControlFileWriter(BaseTest):
             10,
             300,
             check_input_files_exist=False,
-            Restart=False
+            Restart=False,
         )
 
         with open("test_save_basic_NVT.conf", "r") as fp:
@@ -8936,8 +8951,8 @@ class TestGOMCControlFileWriter(BaseTest):
         # test the failure of the ff_psf_pdb_file_directory variable is not None or a string
         with pytest.raises(
             TypeError,
-            match= f"ERROR: The {'ff_psf_pdb_file_directory'} variable for directly entering the "
-                   f"{'force field, pdb, and psf'} file directory and name is a {type(['x'])} and not a string."
+            match=f"ERROR: The {'ff_psf_pdb_file_directory'} variable for directly entering the "
+            f"{'force field, pdb, and psf'} file directory and name is a {type(['x'])} and not a string.",
         ):
             gomc_control.write_gomc_control_file(
                 charmm,
@@ -9292,8 +9307,8 @@ class TestGOMCControlFileWriter(BaseTest):
         restart_input = "XXXXX"
         with pytest.raises(
             TypeError,
-            match=r'ERROR: The {} input is {} and needs to be a boolean \(i.e., True or False\).' 
-                  ''.format("Restart", type(restart_input)),
+            match=r"ERROR: The {} input is {} and needs to be a boolean \(i.e., True or False\)."
+            "".format("Restart", type(restart_input)),
         ):
             gomc_control.write_gomc_control_file(
                 charmm,
@@ -9302,14 +9317,14 @@ class TestGOMCControlFileWriter(BaseTest):
                 100,
                 300,
                 check_input_files_exist=False,
-                Restart=restart_input
+                Restart=restart_input,
             )
 
         restart_checkpoint_input = "XXXXX"
         with pytest.raises(
             TypeError,
-            match=r'ERROR: The {} input is {} and needs to be a boolean \(i.e., True or False\).' 
-                  ''.format("RestartCheckpoint", type(restart_checkpoint_input)),
+            match=r"ERROR: The {} input is {} and needs to be a boolean \(i.e., True or False\)."
+            "".format("RestartCheckpoint", type(restart_checkpoint_input)),
         ):
             gomc_control.write_gomc_control_file(
                 charmm,
@@ -9324,18 +9339,19 @@ class TestGOMCControlFileWriter(BaseTest):
         check_input_files_exist_input = "XXXXX"
         with pytest.raises(
             TypeError,
-            match=r'ERROR: The {} input is {} and needs to be a boolean \(i.e., True or False\).' 
-                  ''.format("check_input_files_exist", type(check_input_files_exist_input)),
+            match=r"ERROR: The {} input is {} and needs to be a boolean \(i.e., True or False\)."
+            "".format(
+                "check_input_files_exist", type(check_input_files_exist_input)
+            ),
         ):
             gomc_control.write_gomc_control_file(
                 charmm,
-                'check_input_files_exist_error',
+                "check_input_files_exist_error",
                 "NVT",
                 100,
                 300,
                 check_input_files_exist="XXXXX",
             )
-
 
     def test_restarting_dcd_and_binary_files_NVT(self, ethane_gomc):
         test_box_ethane_gomc = mb.fill_box(
@@ -9365,9 +9381,10 @@ class TestGOMCControlFileWriter(BaseTest):
             binCoordinates_box_0="../test_files/NVT_toluene_box_0.coor",
             extendedSystem_box_0="../test_files/NVT_toluene_box_0.xsc",
             binVelocities_box_0="../test_files/NVT_toluene_box_0.vel",
-            input_variables_dict={"VDWGeometricSigma": True,
-                                  "DCDFreq": [True, 1000],
-                                  }
+            input_variables_dict={
+                "VDWGeometricSigma": True,
+                "DCDFreq": [True, 1000],
+            },
         )
 
         with open("test_restarting_dcd_and_binary_files_NVT.conf", "r") as fp:
@@ -9398,37 +9415,45 @@ class TestGOMCControlFileWriter(BaseTest):
                     assert split_line[1] == "True"
                     assert split_line[2] == "1000"
 
-
                 elif line.startswith("Coordinates 0"):
                     variables_read_dict["Coordinates_box_0"] = True
                     split_line = line.split()
                     assert split_line[1] == "0"
-                    assert split_line[2] == "../test_files/NVT_toluene_box_0.pdb"
-
+                    assert (
+                        split_line[2] == "../test_files/NVT_toluene_box_0.pdb"
+                    )
 
                 elif line.startswith("Structure 0"):
                     variables_read_dict["Structure_box_0"] = True
                     split_line = line.split()
                     assert split_line[1] == "0"
-                    assert split_line[2] == "../test_files/NVT_toluene_box_0.psf"
+                    assert (
+                        split_line[2] == "../test_files/NVT_toluene_box_0.psf"
+                    )
 
                 elif line.startswith("binCoordinates   0 "):
                     variables_read_dict["binCoordinates_box_0"] = True
                     split_line = line.split()
                     assert split_line[1] == "0"
-                    assert split_line[2] == "../test_files/NVT_toluene_box_0.coor"
+                    assert (
+                        split_line[2] == "../test_files/NVT_toluene_box_0.coor"
+                    )
 
                 elif line.startswith("extendedSystem 	0 "):
                     variables_read_dict["extendedSystem_box_0"] = True
                     split_line = line.split()
                     assert split_line[1] == "0"
-                    assert split_line[2] == "../test_files/NVT_toluene_box_0.xsc"
+                    assert (
+                        split_line[2] == "../test_files/NVT_toluene_box_0.xsc"
+                    )
 
                 elif line.startswith("binVelocities   	0"):
                     variables_read_dict["binVelocities_box_0"] = True
                     split_line = line.split()
                     assert split_line[1] == "0"
-                    assert split_line[2] == "../test_files/NVT_toluene_box_0.vel"
+                    assert (
+                        split_line[2] == "../test_files/NVT_toluene_box_0.vel"
+                    )
 
         assert variables_read_dict == {
             "Restart": True,
@@ -9457,8 +9482,8 @@ class TestGOMCControlFileWriter(BaseTest):
         )
         with pytest.raises(
             ValueError,
-            match='ERROR: To restart a simulation with the binary files both the coor '
-                  'and xsc files for box 0 must be provided.',
+            match="ERROR: To restart a simulation with the binary files both the coor "
+            "and xsc files for box 0 must be provided.",
         ):
             gomc_control.write_gomc_control_file(
                 charmm,
@@ -9471,15 +9496,16 @@ class TestGOMCControlFileWriter(BaseTest):
                 binCoordinates_box_0="../test_files/NVT_toluene_box_0.coor",
                 extendedSystem_box_0=None,
                 binVelocities_box_0=None,
-                input_variables_dict={"VDWGeometricSigma": True,
-                                      "DCDFreq": [True, 1000],
-                                      }
+                input_variables_dict={
+                    "VDWGeometricSigma": True,
+                    "DCDFreq": [True, 1000],
+                },
             )
 
         with pytest.raises(
-                ValueError,
-                match='ERROR: To restart a simulation with the binary files both the coor and '
-                      'xsc files for box 0 must be provided.',
+            ValueError,
+            match="ERROR: To restart a simulation with the binary files both the coor and "
+            "xsc files for box 0 must be provided.",
         ):
             gomc_control.write_gomc_control_file(
                 charmm,
@@ -9492,16 +9518,17 @@ class TestGOMCControlFileWriter(BaseTest):
                 binCoordinates_box_0=None,
                 extendedSystem_box_0="../test_files/NVT_toluene_box_0.xsc",
                 binVelocities_box_0=None,
-                input_variables_dict={"VDWGeometricSigma": True,
-                                      "DCDFreq": [True, 1000],
-                                      }
+                input_variables_dict={
+                    "VDWGeometricSigma": True,
+                    "DCDFreq": [True, 1000],
+                },
             )
 
         with pytest.raises(
-                ValueError,
-                match='ERROR: To restart a "NVT", "NPT" simulation with the ' 
-                      'velocity binary files, the velocity files for box 0 ' 
-                      'must be provided.',
+            ValueError,
+            match='ERROR: To restart a "NVT", "NPT" simulation with the '
+            "velocity binary files, the velocity files for box 0 "
+            "must be provided.",
         ):
             gomc_control.write_gomc_control_file(
                 charmm,
@@ -9514,12 +9541,15 @@ class TestGOMCControlFileWriter(BaseTest):
                 binCoordinates_box_0=None,
                 extendedSystem_box_0=None,
                 binVelocities_box_0="../test_files/NVT_toluene_box_0.vel",
-                input_variables_dict={"VDWGeometricSigma": True,
-                                      "DCDFreq": [True, 1000],
-                                      }
+                input_variables_dict={
+                    "VDWGeometricSigma": True,
+                    "DCDFreq": [True, 1000],
+                },
             )
 
-    def test_failures_restarting_dcd_and_binary_files_GEMC_NVT(self, ethane_gomc):
+    def test_failures_restarting_dcd_and_binary_files_GEMC_NVT(
+        self, ethane_gomc
+    ):
         test_box_ethane_gomc = mb.fill_box(
             compound=[ethane_gomc], n_compounds=[1], box=[1, 1, 1]
         )
@@ -9539,8 +9569,8 @@ class TestGOMCControlFileWriter(BaseTest):
 
         with pytest.raises(
             ValueError,
-            match='ERROR: To restart a simulation with the binary files both the coor and ' \
-                  'xsc files for box 0 and box 1 must be provided.',
+            match="ERROR: To restart a simulation with the binary files both the coor and "
+            "xsc files for box 0 and box 1 must be provided.",
         ):
             gomc_control.write_gomc_control_file(
                 charmm,
@@ -9556,15 +9586,16 @@ class TestGOMCControlFileWriter(BaseTest):
                 binCoordinates_box_1="../test_files/NVT_toluene_box_1.coor",
                 extendedSystem_box_1=None,
                 binVelocities_box_1=None,
-                input_variables_dict={"VDWGeometricSigma": True,
-                                      "DCDFreq": [True, 1000],
-                                      }
+                input_variables_dict={
+                    "VDWGeometricSigma": True,
+                    "DCDFreq": [True, 1000],
+                },
             )
 
         with pytest.raises(
-                ValueError,
-                match='ERROR: To restart a simulation with the binary files both the coor and ' \
-                      'xsc files for box 0 and box 1 must be provided.',
+            ValueError,
+            match="ERROR: To restart a simulation with the binary files both the coor and "
+            "xsc files for box 0 and box 1 must be provided.",
         ):
             gomc_control.write_gomc_control_file(
                 charmm,
@@ -9580,16 +9611,17 @@ class TestGOMCControlFileWriter(BaseTest):
                 binCoordinates_box_1=None,
                 extendedSystem_box_1="../test_files/NVT_toluene_box_0.xsc",
                 binVelocities_box_1=None,
-                input_variables_dict={"VDWGeometricSigma": True,
-                                      "DCDFreq": [True, 1000],
-                                      }
+                input_variables_dict={
+                    "VDWGeometricSigma": True,
+                    "DCDFreq": [True, 1000],
+                },
             )
 
         with pytest.raises(
-                ValueError,
-                match='ERROR: To restart a "GEMC_NPT", "GEMC_NVT", "GCMC" simulation with the ' \
-                      'velocity binary files, both the velocity files for box 0 and box 1 ' \
-                      'must be provided.',
+            ValueError,
+            match='ERROR: To restart a "GEMC_NPT", "GEMC_NVT", "GCMC" simulation with the '
+            "velocity binary files, both the velocity files for box 0 and box 1 "
+            "must be provided.",
         ):
             gomc_control.write_gomc_control_file(
                 charmm,
@@ -9605,19 +9637,21 @@ class TestGOMCControlFileWriter(BaseTest):
                 binCoordinates_box_1="../test_files/NVT_toluene_box_1.coor",
                 extendedSystem_box_1="../test_files/NVT_toluene_box_1.xsc",
                 binVelocities_box_1=None,
-                input_variables_dict={"VDWGeometricSigma": True,
-                                      "DCDFreq": [True, 1000],
-                                      }
+                input_variables_dict={
+                    "VDWGeometricSigma": True,
+                    "DCDFreq": [True, 1000],
+                },
             )
 
         test_box_0_pdb = "XXXX"
         with pytest.raises(
-                TypeError,
-                match=r'ERROR: The {} variable expects a file extension of {}, but the actual file extension is "{}". '
-                      r''.format('Coordinates_box_0',
-                                 "\['.pdb'\]",
-                                 os.path.splitext(test_box_0_pdb)[-1],
-                                 )
+            TypeError,
+            match=r'ERROR: The {} variable expects a file extension of {}, but the actual file extension is "{}". '
+            r"".format(
+                "Coordinates_box_0",
+                "\['.pdb'\]",
+                os.path.splitext(test_box_0_pdb)[-1],
+            ),
         ):
             gomc_control.write_gomc_control_file(
                 charmm,
@@ -9634,12 +9668,13 @@ class TestGOMCControlFileWriter(BaseTest):
 
         test_box_1_pdb = "XXXX"
         with pytest.raises(
-                TypeError,
-                match=r'ERROR: The {} variable expects a file extension of {}, but the actual file extension is "{}". '
-                      r''.format('Coordinates_box_1',
-                                 "\['.pdb'\]",
-                                 os.path.splitext(test_box_1_pdb)[-1],
-                                 )
+            TypeError,
+            match=r'ERROR: The {} variable expects a file extension of {}, but the actual file extension is "{}". '
+            r"".format(
+                "Coordinates_box_1",
+                "\['.pdb'\]",
+                os.path.splitext(test_box_1_pdb)[-1],
+            ),
         ):
             gomc_control.write_gomc_control_file(
                 charmm,
@@ -9656,12 +9691,13 @@ class TestGOMCControlFileWriter(BaseTest):
 
         test_box_0_psf = "XXXX"
         with pytest.raises(
-                TypeError,
-                match=r'ERROR: The {} variable expects a file extension of {}, but the actual file extension is "{}". '
-                      r''.format('Structure_box_0',
-                                 "\['.psf'\]",
-                                 os.path.splitext(test_box_0_psf)[-1],
-                                 )
+            TypeError,
+            match=r'ERROR: The {} variable expects a file extension of {}, but the actual file extension is "{}". '
+            r"".format(
+                "Structure_box_0",
+                "\['.psf'\]",
+                os.path.splitext(test_box_0_psf)[-1],
+            ),
         ):
             gomc_control.write_gomc_control_file(
                 charmm,
@@ -9678,12 +9714,13 @@ class TestGOMCControlFileWriter(BaseTest):
 
         test_box_1_psf = "XXXX"
         with pytest.raises(
-                TypeError,
-                match=r'ERROR: The {} variable expects a file extension of {}, but the actual file extension is "{}". '
-                      r''.format('Structure_box_1',
-                                 "\['.psf'\]",
-                                 os.path.splitext(test_box_1_psf)[-1],
-                                 )
+            TypeError,
+            match=r'ERROR: The {} variable expects a file extension of {}, but the actual file extension is "{}". '
+            r"".format(
+                "Structure_box_1",
+                "\['.psf'\]",
+                os.path.splitext(test_box_1_psf)[-1],
+            ),
         ):
             gomc_control.write_gomc_control_file(
                 charmm,
