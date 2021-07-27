@@ -48,9 +48,9 @@ def create_hoomd3_forcefield(
         largest mass value as ref_mass,
         and largest epsilon value as ref_energy
     snapshot_kwargs : dict
-        Kwargs to pass to to_hoomdsnapshot
+        Keyword arguments to pass to to_hoomdsnapshot
     pppm_kwargs : dict
-        Kwargs to pass to hoomd's pppm function
+        Keyword arguments to pass to hoomd.md.long_range.pppm.make_pppm_coulomb_forces
     init_snap : hoomd.Snapshot, optional, default=None
         Initial snapshot to which to add the ParmEd structure object
         (useful for rigid bodies)
@@ -134,12 +134,10 @@ def create_hoomd3_forcefield(
             ref_distance=ref_distance,
             ref_energy=ref_energy,
         )
-        # qq = _init_hoomd_qq(structure, nl, r_cut=r_cut, **pppm_kwargs)
-        warnings.warn(
-            "Long range electrostatics is not yet available" "in HOOMD-blue v3"
-        )
+        qq = _init_hoomd_qq(structure, nl, snapshot, r_cut=r_cut, **pppm_kwargs)
         hoomd_forcefield.append(lj)
-        # hoomd_forcefield.append(qq)
+        if qq is not None:
+            hoomd_forcefield.extend(qq)
     if structure.adjusts:
         print("Processing 1-4 interactions, adjusting neighborlist exclusions")
         lj_14, qq_14 = _init_hoomd_14_pairs(
@@ -237,15 +235,14 @@ def _init_hoomd_lj(structure, nl, r_cut=1.2, ref_distance=1.0, ref_energy=1.0):
     return lj
 
 
-def _init_hoomd_qq(structure, nl, Nx=1, Ny=1, Nz=1, order=4, r_cut=1.2):
+def _init_hoomd_qq(structure, nl, snapshot, Nx=1, Ny=1, Nz=1, order=4, r_cut=1.2):
     """Charge interactions."""
-    charged = hoomd.group.charged()
-    if len(charged) == 0:
+    num_charged = np.sum(snapshot.particles.charge[:] != 0)
+    if num_charged == 0:
         print("No charged groups found, ignoring electrostatics")
         return None
     else:
-        qq = hoomd.md.charge.pppm(charged, nl)
-        qq.set_params(Nx, Ny, Nz, order, r_cut)
+        qq = hoomd.md.long_range.pppm.make_pppm_coulomb_forces(nlist=nl, resolution=(Nx, Ny, Nz), order=order, r_cut=r_cut)
         return qq
 
 
