@@ -2031,21 +2031,6 @@ class GOMCControl:
         of the GOMC control file can be .conf, or no extension can be provided.
         If no extension is provided, this writer will automatically add the
         .conf extension to the provided string.
-    Coordinates_box_0 : str
-        The coordinate or PDB file for box 0 in the simulation.
-    Coordinates_box_1 : str or None
-        The coordinate or PDB file for box 1 in the simulation.  This is only for
-        GCMC, GEMC_NVT, and GEMC_NVT simulations. If running a NVT or NPT
-        simulation, the value will be None.
-    Structures_box_0 : str
-        The structure file or PSF file for box 0 in the simulation.
-        The coordinate or PDB file for box 1 in the simulation.  This is only for
-        GCMC, GEMC_NVT, and GEMC_NVT simulations. If running a NVT or NPT
-        simulation, the value will be None.
-    Structures_box_1 : str or None
-        The structure file or PSF file for box 1 in the simulation.  This is only for
-        GCMC, GEMC_NVT, and GEMC_NVT simulations. If running a NVT or NPT
-        simulation, the value will be None.
     box_0_vectors : numpy.ndarray, [[float float float], [float float float], [float float float]]
         Three (3) sets vectors for box 0 each with 3 float values, which represent
         the vectors for the Charmm-style systems (units in Angstroms (Ang))
@@ -7282,21 +7267,6 @@ def write_gomc_control_file(
         of the GOMC control file can be .conf, or no extension can be provided.
         If no extension is provided, this writer will automatically add the
         .conf extension to the provided string.
-    Coordinates_box_0 : str
-        The coordinate or PDB file for box 0 in the simulation.
-    Coordinates_box_1 : str or None
-        The coordinate or PDB file for box 1 in the simulation.  This is only for
-        GCMC, GEMC_NVT, and GEMC_NVT simulations. If running a NVT or NPT
-        simulation, the value will be None.
-    Structures_box_0 : str
-        The structure file or PSF file for box 0 in the simulation.
-        The coordinate or PDB file for box 1 in the simulation.  This is only for
-        GCMC, GEMC_NVT, and GEMC_NVT simulations. If running a NVT or NPT
-        simulation, the value will be None.
-    Structures_box_1 : str or None
-        The structure file or PSF file for box 1 in the simulation.  This is only for
-        GCMC, GEMC_NVT, and GEMC_NVT simulations. If running a NVT or NPT
-        simulation, the value will be None.
     box_0_vectors : numpy.ndarray, [[float float float], [float float float], [float float float]]
         Three (3) sets vectors for box 0 each with 3 float values, which represent
         the vectors for the Charmm-style systems (units in Angstroms (Ang))
