@@ -1,3 +1,4 @@
+"""HOOMD v3 forcefield format."""
 import itertools
 import operator
 import warnings
@@ -56,7 +57,7 @@ def create_hoomd3_forcefield(
 
 
     Returns
-    ------
+    -------
     hoomd_snapshot : snapshot
         HOOMD snapshot object to initialize the simulation
     hoomd_forcefield : list
@@ -74,7 +75,6 @@ def create_hoomd3_forcefield(
         angstroms, kcal/mol, and daltons
 
     """
-
     if isinstance(structure, mb.Compound):
         raise ValueError(
             "You passed mb.Compound to create_hoomd_simulation, "
@@ -176,7 +176,7 @@ def create_hoomd3_forcefield(
 
 
 def _init_hoomd_lj(structure, nl, r_cut=1.2, ref_distance=1.0, ref_energy=1.0):
-    """LJ parameters"""
+    """LJ parameters."""
     # Identify the unique atom types before setting
     atom_type_params = {}
     for atom in structure.atoms:
@@ -238,7 +238,7 @@ def _init_hoomd_lj(structure, nl, r_cut=1.2, ref_distance=1.0, ref_energy=1.0):
 
 
 def _init_hoomd_qq(structure, nl, Nx=1, Ny=1, Nz=1, order=4, r_cut=1.2):
-    """Charge interactions"""
+    """Charge interactions."""
     charged = hoomd.group.charged()
     if len(charged) == 0:
         print("No charged groups found, ignoring electrostatics")
@@ -252,11 +252,11 @@ def _init_hoomd_qq(structure, nl, Nx=1, Ny=1, Nz=1, order=4, r_cut=1.2):
 def _init_hoomd_14_pairs(
     structure, nl, snapshot, r_cut=1.2, ref_distance=1.0, ref_energy=1.0
 ):
-    """Special_pairs to handle 14 scalings
+    """Special_pairs to handle 14 scaling.
 
     See discussion: https://groups.google.com/forum/
-    #!topic/hoomd-users/iZ9WCpHczg0"""
-
+    #!topic/hoomd-users/iZ9WCpHczg0
+    """
     # Update neighborlist to exclude 1-4 interactions,
     # but impose a special_pair force to handle these pairs
     nl.exclusions = nl.exclusions + [
@@ -291,7 +291,7 @@ def _init_hoomd_14_pairs(
 
 
 def _init_hoomd_bonds(structure, ref_distance=1.0, ref_energy=1.0):
-    """Harmonic bonds"""
+    """Harmonic bonds."""
     # Identify the unique bond types before setting
     bond_type_params = {}
     for bond in structure.bonds:
@@ -320,7 +320,7 @@ def _init_hoomd_bonds(structure, ref_distance=1.0, ref_energy=1.0):
 
 
 def _init_hoomd_angles(structure, ref_energy=1.0):
-    """Harmonic angles"""
+    """Harmonic angles."""
     # Identify the unique angle types before setting
     angle_type_params = {}
     for angle in structure.angles:
@@ -342,7 +342,7 @@ def _init_hoomd_angles(structure, ref_energy=1.0):
 
 
 def _init_hoomd_dihedrals(structure, ref_energy=1.0):
-    """Periodic dihedrals (dubbed harmonic dihedrals in HOOMD)"""
+    """Periodic dihedrals (dubbed harmonic dihedrals in HOOMD)."""
     dihedral_type_params = {}
     for dihedral in structure.dihedrals:
         t1, t2 = dihedral.atom1.type, dihedral.atom2.type
@@ -379,7 +379,7 @@ def _init_hoomd_dihedrals(structure, ref_energy=1.0):
 
 
 def _init_hoomd_rb_torsions(structure, ref_energy=1.0):
-    """RB dihedrals (implemented as OPLS dihedrals in HOOMD)"""
+    """RB dihedrals (implemented as OPLS dihedrals in HOOMD)."""
     # Identify the unique dihedral types before setting
     dihedral_type_params = {}
     for dihedral in structure.rb_torsions:
