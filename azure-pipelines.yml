@@ -65,9 +65,12 @@ stages:
             displayName: Set conda config
 
           - bash: |
-              conda update -c defaults conda
-              conda update --all
               conda install -c conda-forge mamba
+            displayName: Install mamba
+
+          - bash: |
+              mamba update -c defaults conda
+              mamba update --all
               sed -i -E 's/python.*$/python='$(python.version)'/' environment-dev.yml
               mamba env create -f environment-dev.yml
               source activate mbuild-dev
