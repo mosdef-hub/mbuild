@@ -9594,6 +9594,174 @@ class TestGOMCControlFileWriter(BaseTest):
             "binVelocities_box_0": True,
         }
 
+    def test_restarting_dcd_and_binary_files_GEMC_NVT(self, ethane_gomc):
+        test_box_ethane_gomc = mb.fill_box(
+            compound=[ethane_gomc], n_compounds=[1], box=[1, 1, 1]
+        )
+
+        charmm = Charmm(
+            test_box_ethane_gomc,
+            "ethane_box_0",
+            structure_box_1=test_box_ethane_gomc,
+            filename_box_1="ethane_box_1",
+            ff_filename="ethane_FF",
+            residues=[ethane_gomc.name],
+            forcefield_selection="oplsaa",
+        )
+
+        gomc_control.write_gomc_control_file(
+            charmm,
+            "test_restarting_dcd_and_binary_files_GEMC_NVT",
+            "GEMC_NVT",
+            1000,
+            300,
+            Restart=True,
+            check_input_files_exist=False,
+            Coordinates_box_0="../test_files/NVT_ethane_box_0.pdb",
+            Structure_box_0="../test_files/NVT_ethane_box_0.psf",
+            binCoordinates_box_0="../test_files/NVT_ethane_box_0.coor",
+            extendedSystem_box_0="../test_files/NVT_ethane_box_0.xsc",
+            binVelocities_box_0="../test_files/NVT_ethane_box_0.vel",
+            Coordinates_box_1="../test_files/NVT_ethane_box_1.pdb",
+            Structure_box_1="../test_files/NVT_ethane_box_1.psf",
+            binCoordinates_box_1="../test_files/NVT_ethane_box_1.coor",
+            extendedSystem_box_1="../test_files/NVT_ethane_box_1.xsc",
+            binVelocities_box_1="../test_files/NVT_ethane_box_1.vel",
+            input_variables_dict={
+                "VDWGeometricSigma": True,
+                "DCDFreq": [True, 1000],
+            },
+        )
+
+        with open("test_restarting_dcd_and_binary_files_GEMC_NVT.conf", "r") as fp:
+            variables_read_dict = {
+                "VDWGeometricSigma": False,
+                "DCDFreq": False,
+                "Coordinates_box_0": False,
+                "Structure_box_0": False,
+                "binCoordinates_box_0": False,
+                "extendedSystem_box_0": False,
+                "binVelocities_box_0": False,
+                "Coordinates_box_1": False,
+                "Structure_box_1": False,
+                "binCoordinates_box_1": False,
+                "extendedSystem_box_1": False,
+                "binVelocities_box_1": False,
+            }
+            out_gomc = fp.readlines()
+            for i, line in enumerate(out_gomc):
+                if line.startswith("Restart "):
+                    variables_read_dict["Restart"] = True
+                    split_line = line.split()
+                    assert split_line[1] == "True"
+
+                elif line.startswith("VDWGeometricSigma "):
+                    variables_read_dict["VDWGeometricSigma"] = True
+                    split_line = line.split()
+                    assert split_line[1] == "True"
+
+                elif line.startswith("DCDFreq "):
+                    variables_read_dict["DCDFreq"] = True
+                    split_line = line.split()
+                    assert split_line[1] == "True"
+                    assert split_line[2] == "1000"
+
+                elif line.startswith("Coordinates 0"):
+                    variables_read_dict["Coordinates_box_0"] = True
+                    split_line = line.split()
+                    assert split_line[1] == "0"
+                    assert (
+                        split_line[2] == "../test_files/NVT_ethane_box_0.pdb"
+                    )
+
+                elif line.startswith("Structure 0"):
+                    variables_read_dict["Structure_box_0"] = True
+                    split_line = line.split()
+                    assert split_line[1] == "0"
+                    assert (
+                        split_line[2] == "../test_files/NVT_ethane_box_0.psf"
+                    )
+
+                elif line.startswith("binCoordinates   0 "):
+                    variables_read_dict["binCoordinates_box_0"] = True
+                    split_line = line.split()
+                    assert split_line[1] == "0"
+                    assert (
+                        split_line[2] == "../test_files/NVT_ethane_box_0.coor"
+                    )
+
+                elif line.startswith("extendedSystem 	0 "):
+                    variables_read_dict["extendedSystem_box_0"] = True
+                    split_line = line.split()
+                    assert split_line[1] == "0"
+                    assert (
+                        split_line[2] == "../test_files/NVT_ethane_box_0.xsc"
+                    )
+
+                elif line.startswith("binVelocities   	0"):
+                    variables_read_dict["binVelocities_box_0"] = True
+                    split_line = line.split()
+                    assert split_line[1] == "0"
+                    assert (
+                        split_line[2] == "../test_files/NVT_ethane_box_0.vel"
+                    )
+
+                elif line.startswith("Coordinates 1"):
+                    variables_read_dict["Coordinates_box_1"] = True
+                    split_line = line.split()
+                    assert split_line[1] == "1"
+                    assert (
+                        split_line[2] == "../test_files/NVT_ethane_box_1.pdb"
+                    )
+
+                elif line.startswith("Structure 1"):
+                    variables_read_dict["Structure_box_1"] = True
+                    split_line = line.split()
+                    assert split_line[1] == "1"
+                    assert (
+                        split_line[2] == "../test_files/NVT_ethane_box_1.psf"
+                    )
+
+                elif line.startswith("binCoordinates   1 "):
+                    variables_read_dict["binCoordinates_box_1"] = True
+                    split_line = line.split()
+                    assert split_line[1] == "1"
+                    assert (
+                        split_line[2] == "../test_files/NVT_ethane_box_1.coor"
+                    )
+
+                elif line.startswith("extendedSystem 	1 "):
+                    variables_read_dict["extendedSystem_box_1"] = True
+                    split_line = line.split()
+                    assert split_line[1] == "1"
+                    assert (
+                        split_line[2] == "../test_files/NVT_ethane_box_1.xsc"
+                    )
+
+                elif line.startswith("binVelocities   	1"):
+                    variables_read_dict["binVelocities_box_1"] = True
+                    split_line = line.split()
+                    assert split_line[1] == "1"
+                    assert (
+                        split_line[2] == "../test_files/NVT_ethane_box_1.vel"
+                    )
+
+        assert variables_read_dict == {
+            "Restart": True,
+            "VDWGeometricSigma": True,
+            "DCDFreq": True,
+            "Coordinates_box_0": True,
+            "Structure_box_0": True,
+            "binCoordinates_box_0": True,
+            "extendedSystem_box_0": True,
+            "binVelocities_box_0": True,
+            "Coordinates_box_1": True,
+            "Structure_box_1": True,
+            "binCoordinates_box_1": True,
+            "extendedSystem_box_1": True,
+            "binVelocities_box_1": True,
+        }
+
     def test_failures_restarting_dcd_and_binary_files_NVT(self, ethane_gomc):
         test_box_ethane_gomc = mb.fill_box(
             compound=[ethane_gomc], n_compounds=[1], box=[1, 1, 1]
@@ -9621,7 +9789,7 @@ class TestGOMCControlFileWriter(BaseTest):
                 300,
                 Restart=True,
                 check_input_files_exist=False,
-                binCoordinates_box_0="../test_files/NVT_toluene_box_0.coor",
+                binCoordinates_box_0="../test_files/NVT_ethane_box_0.coor",
                 extendedSystem_box_0=None,
                 binVelocities_box_0=None,
                 input_variables_dict={
@@ -9644,7 +9812,7 @@ class TestGOMCControlFileWriter(BaseTest):
                 Restart=True,
                 check_input_files_exist=False,
                 binCoordinates_box_0=None,
-                extendedSystem_box_0="../test_files/NVT_toluene_box_0.xsc",
+                extendedSystem_box_0="../test_files/NVT_ethane_box_0.xsc",
                 binVelocities_box_0=None,
                 input_variables_dict={
                     "VDWGeometricSigma": True,
@@ -9668,7 +9836,7 @@ class TestGOMCControlFileWriter(BaseTest):
                 check_input_files_exist=False,
                 binCoordinates_box_0=None,
                 extendedSystem_box_0=None,
-                binVelocities_box_0="../test_files/NVT_toluene_box_0.vel",
+                binVelocities_box_0="../test_files/NVT_ethane_box_0.vel",
                 input_variables_dict={
                     "VDWGeometricSigma": True,
                     "DCDFreq": [True, 1000],
@@ -9708,10 +9876,10 @@ class TestGOMCControlFileWriter(BaseTest):
                 300,
                 Restart=True,
                 check_input_files_exist=False,
-                binCoordinates_box_0="../test_files/NVT_toluene_box_0.coor",
-                extendedSystem_box_0="../test_files/NVT_toluene_box_0.xsc",
+                binCoordinates_box_0="../test_files/NVT_ethane_box_0.coor",
+                extendedSystem_box_0="../test_files/NVT_ethane_box_0.xsc",
                 binVelocities_box_0=None,
-                binCoordinates_box_1="../test_files/NVT_toluene_box_1.coor",
+                binCoordinates_box_1="../test_files/NVT_ethane_box_1.coor",
                 extendedSystem_box_1=None,
                 binVelocities_box_1=None,
                 input_variables_dict={
@@ -9733,11 +9901,11 @@ class TestGOMCControlFileWriter(BaseTest):
                 300,
                 Restart=True,
                 check_input_files_exist=False,
-                binCoordinates_box_0="../test_files/NVT_toluene_box_0.coor",
-                extendedSystem_box_0="../test_files/NVT_toluene_box_0.xsc",
+                binCoordinates_box_0="../test_files/NVT_ethane_box_0.coor",
+                extendedSystem_box_0="../test_files/NVT_ethane_box_0.xsc",
                 binVelocities_box_0=None,
                 binCoordinates_box_1=None,
-                extendedSystem_box_1="../test_files/NVT_toluene_box_0.xsc",
+                extendedSystem_box_1="../test_files/NVT_ethane_box_0.xsc",
                 binVelocities_box_1=None,
                 input_variables_dict={
                     "VDWGeometricSigma": True,
@@ -9759,11 +9927,11 @@ class TestGOMCControlFileWriter(BaseTest):
                 300,
                 Restart=True,
                 check_input_files_exist=False,
-                binCoordinates_box_0="../test_files/NVT_toluene_box_0.coor",
-                extendedSystem_box_0="../test_files/NVT_toluene_box_0.xsc",
-                binVelocities_box_0="../test_files/NVT_toluene_box_0.vel",
-                binCoordinates_box_1="../test_files/NVT_toluene_box_1.coor",
-                extendedSystem_box_1="../test_files/NVT_toluene_box_1.xsc",
+                binCoordinates_box_0="../test_files/NVT_ethane_box_0.coor",
+                extendedSystem_box_0="../test_files/NVT_ethane_box_0.xsc",
+                binVelocities_box_0="../test_files/NVT_ethane_box_0.vel",
+                binCoordinates_box_1="../test_files/NVT_ethane_box_1.coor",
+                extendedSystem_box_1="../test_files/NVT_ethane_box_1.xsc",
                 binVelocities_box_1=None,
                 input_variables_dict={
                     "VDWGeometricSigma": True,
@@ -9862,3 +10030,29 @@ class TestGOMCControlFileWriter(BaseTest):
                 Coordinates_box_1="ethane_box_1.pdb",
                 Structure_box_1=test_box_1_psf,
             )
+
+            test_parameters = ["XXXX"]
+            with pytest.raises(
+                    TypeError,
+                    match=r"ERROR: The {} variable for directly entering the "
+                          r"{} file directory and name is a {} and not a string.".format(
+                        "Parameters",
+                        "force field",
+                        type(test_parameters
+                             )
+                    ),
+
+            ):
+                gomc_control.write_gomc_control_file(
+                    charmm,
+                    "test_restart_inputs",
+                    "GEMC_NVT",
+                    1000,
+                    300,
+                    check_input_files_exist=True,
+                    Parameters=test_parameters,
+                    Coordinates_box_0="ethane_box_0.pdb",
+                    Structure_box_0="ethane_box_0.psf",
+                    Coordinates_box_1="ethane_box_1.pdb",
+                    Structure_box_1=test_box_1_psf,
+                )
