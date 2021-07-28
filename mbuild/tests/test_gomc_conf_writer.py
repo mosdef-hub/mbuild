@@ -9633,7 +9633,9 @@ class TestGOMCControlFileWriter(BaseTest):
             },
         )
 
-        with open("test_restarting_dcd_and_binary_files_GEMC_NVT.conf", "r") as fp:
+        with open(
+            "test_restarting_dcd_and_binary_files_GEMC_NVT.conf", "r"
+        ) as fp:
             variables_read_dict = {
                 "VDWGeometricSigma": False,
                 "DCDFreq": False,
@@ -9670,17 +9672,13 @@ class TestGOMCControlFileWriter(BaseTest):
                     variables_read_dict["Coordinates_box_0"] = True
                     split_line = line.split()
                     assert split_line[1] == "0"
-                    assert (
-                        split_line[2] == "../test_files/NVT_ethane_box_0.pdb"
-                    )
+                    assert split_line[2] == "../test_files/NVT_ethane_box_0.pdb"
 
                 elif line.startswith("Structure 0"):
                     variables_read_dict["Structure_box_0"] = True
                     split_line = line.split()
                     assert split_line[1] == "0"
-                    assert (
-                        split_line[2] == "../test_files/NVT_ethane_box_0.psf"
-                    )
+                    assert split_line[2] == "../test_files/NVT_ethane_box_0.psf"
 
                 elif line.startswith("binCoordinates   0 "):
                     variables_read_dict["binCoordinates_box_0"] = True
@@ -9694,33 +9692,25 @@ class TestGOMCControlFileWriter(BaseTest):
                     variables_read_dict["extendedSystem_box_0"] = True
                     split_line = line.split()
                     assert split_line[1] == "0"
-                    assert (
-                        split_line[2] == "../test_files/NVT_ethane_box_0.xsc"
-                    )
+                    assert split_line[2] == "../test_files/NVT_ethane_box_0.xsc"
 
                 elif line.startswith("binVelocities   	0"):
                     variables_read_dict["binVelocities_box_0"] = True
                     split_line = line.split()
                     assert split_line[1] == "0"
-                    assert (
-                        split_line[2] == "../test_files/NVT_ethane_box_0.vel"
-                    )
+                    assert split_line[2] == "../test_files/NVT_ethane_box_0.vel"
 
                 elif line.startswith("Coordinates 1"):
                     variables_read_dict["Coordinates_box_1"] = True
                     split_line = line.split()
                     assert split_line[1] == "1"
-                    assert (
-                        split_line[2] == "../test_files/NVT_ethane_box_1.pdb"
-                    )
+                    assert split_line[2] == "../test_files/NVT_ethane_box_1.pdb"
 
                 elif line.startswith("Structure 1"):
                     variables_read_dict["Structure_box_1"] = True
                     split_line = line.split()
                     assert split_line[1] == "1"
-                    assert (
-                        split_line[2] == "../test_files/NVT_ethane_box_1.psf"
-                    )
+                    assert split_line[2] == "../test_files/NVT_ethane_box_1.psf"
 
                 elif line.startswith("binCoordinates   1 "):
                     variables_read_dict["binCoordinates_box_1"] = True
@@ -9734,17 +9724,13 @@ class TestGOMCControlFileWriter(BaseTest):
                     variables_read_dict["extendedSystem_box_1"] = True
                     split_line = line.split()
                     assert split_line[1] == "1"
-                    assert (
-                        split_line[2] == "../test_files/NVT_ethane_box_1.xsc"
-                    )
+                    assert split_line[2] == "../test_files/NVT_ethane_box_1.xsc"
 
                 elif line.startswith("binVelocities   	1"):
                     variables_read_dict["binVelocities_box_1"] = True
                     split_line = line.split()
                     assert split_line[1] == "1"
-                    assert (
-                        split_line[2] == "../test_files/NVT_ethane_box_1.vel"
-                    )
+                    assert split_line[2] == "../test_files/NVT_ethane_box_1.vel"
 
         assert variables_read_dict == {
             "Restart": True,
@@ -10033,15 +10019,11 @@ class TestGOMCControlFileWriter(BaseTest):
 
             test_parameters = ["XXXX"]
             with pytest.raises(
-                    TypeError,
-                    match=r"ERROR: The {} variable for directly entering the "
-                          r"{} file directory and name is a {} and not a string.".format(
-                        "Parameters",
-                        "force field",
-                        type(test_parameters
-                             )
-                    ),
-
+                TypeError,
+                match=r"ERROR: The {} variable for directly entering the "
+                r"{} file directory and name is a {} and not a string.".format(
+                    "Parameters", "force field", type(test_parameters)
+                ),
             ):
                 gomc_control.write_gomc_control_file(
                     charmm,

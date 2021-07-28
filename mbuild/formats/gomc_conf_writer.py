@@ -6472,11 +6472,14 @@ def _check_if_string_and_extension(
             file_directory_and_name_variable
         )[-1]
         if acutal_file_extension not in expected_file_extension:
-            print_error_message = r'ERROR: The {} variable expects a file extension of {}, ' \
-                                  r'but the actual file extension is "{}". ' r"".format(
-                file_directory_and_name,
-                expected_file_extension,
-                acutal_file_extension,
+            print_error_message = (
+                r"ERROR: The {} variable expects a file extension of {}, "
+                r'but the actual file extension is "{}". '
+                r"".format(
+                    file_directory_and_name,
+                    expected_file_extension,
+                    acutal_file_extension,
+                )
             )
             raise TypeError(print_error_message)
 
