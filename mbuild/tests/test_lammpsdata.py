@@ -7,7 +7,7 @@ from mbuild.tests.base_test import BaseTest
 from mbuild.utils.io import get_fn, has_foyer
 
 
-@pytest.mark.skipif(not has_foyer, reason="Foyer package not installed")
+# @pytest.mark.skipif(not has_foyer, reason="Foyer package not installed")
 class TestLammpsData(BaseTest):
     def test_save(self, ethane):
         ethane.save(filename="ethane.lammps")
@@ -36,7 +36,7 @@ class TestLammpsData(BaseTest):
                     else:
                         assert "# {}".format(pair_coeff_label) in line
 
-    @pytest.mark.skipif(not has_foyer, reason="Foyer package not installed")
+    #    @pytest.mark.skipif(not has_foyer, reason="Foyer package not installed")
     def test_save_charmm(self):
         from foyer import Forcefield
 
@@ -74,7 +74,7 @@ class TestLammpsData(BaseTest):
         assert found_angles
         assert found_dihedrals
 
-    @pytest.mark.skipif(not has_foyer, reason="Foyer package not installed")
+    #    @pytest.mark.skipif(not has_foyer, reason="Foyer package not installed")
     def test_singleterm_charmm(self):
         from foyer import Forcefield
 
@@ -107,7 +107,7 @@ class TestLammpsData(BaseTest):
                 pass
         assert found_dihedrals
 
-    @pytest.mark.skipif(not has_foyer, reason="Foyer package not installed")
+    #    @pytest.mark.skipif(not has_foyer, reason="Foyer package not installed")
     def test_charmm_improper(self):
         from foyer import Forcefield
 
@@ -145,7 +145,7 @@ class TestLammpsData(BaseTest):
                 found_impropers = True
         assert found_impropers
 
-    @pytest.mark.skipif(not has_foyer, reason="Foyer package not installed")
+    #    @pytest.mark.skipif(not has_foyer, reason="Foyer package not installed")
     def test_amber(self):
         from foyer import Forcefield
 
@@ -187,7 +187,7 @@ class TestLammpsData(BaseTest):
         assert found_dihedrals
         assert found_impropers
 
-    @pytest.mark.skipif(not has_foyer, reason="Foyer package not installed")
+    #    @pytest.mark.skipif(not has_foyer, reason="Foyer package not installed")
     @pytest.mark.parametrize("unit_style", ["real", "lj"])
     def test_save_box(self, ethane, unit_style):
         box = mb.Box(
