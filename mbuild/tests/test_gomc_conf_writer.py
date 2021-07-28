@@ -403,9 +403,12 @@ class TestGOMCControlFileWriter(BaseTest):
         assert test_status == "FAILED"
 
     def test_get_possible_ensemble_input_variables(self):
-        with pytest.warns(UserWarning, match="WARNING: The ensemble_type selected for "
-                                             "the _get_possible_ensemble_input_variables "
-                                             "function is not valid."):
+        with pytest.warns(
+            UserWarning,
+            match="WARNING: The ensemble_type selected for "
+            "the _get_possible_ensemble_input_variables "
+            "function is not valid.",
+        ):
             gomc_control._get_possible_ensemble_input_variables("XXX")
 
     def test_wrong_ensemble_gomccontrol(self, ethane_gomc):
@@ -427,8 +430,8 @@ class TestGOMCControlFileWriter(BaseTest):
         with pytest.raises(
             ValueError,
             match=r"ERROR: The ensemble type selection of '{}' is not a valid ensemble option. "
-                  r"Please choose the 'NPT', 'NVT', 'GEMC_NVT', 'GEMC_NPT', or 'GCMC' "
-                  "ensembles".format(ensemble_input),
+            r"Please choose the 'NPT', 'NVT', 'GEMC_NVT', 'GEMC_NPT', or 'GCMC' "
+            "ensembles".format(ensemble_input),
         ):
             gomc_control.write_gomc_control_file(
                 charmm,
@@ -457,11 +460,9 @@ class TestGOMCControlFileWriter(BaseTest):
         with pytest.raises(
             ValueError,
             match=r"The force field file name was not specified and in the Charmm object \({}\)."
-                  r"Therefore, the force field file \(.inp\) can not be written, and thus, the "
-                  r"GOMC control file \(.conf\) can not be created. Please use the force field file "
-                  r"name when building the Charmm object".format(
-                type(Charmm)
-            ),
+            r"Therefore, the force field file \(.inp\) can not be written, and thus, the "
+            r"GOMC control file \(.conf\) can not be created. Please use the force field file "
+            r"name when building the Charmm object".format(type(Charmm)),
         ):
             gomc_control.write_gomc_control_file(
                 charmm,
@@ -489,7 +490,7 @@ class TestGOMCControlFileWriter(BaseTest):
 
         with pytest.raises(
             ValueError,
-            match=r"ERROR: The input_variables_dict variable is not None or a dictionary."
+            match=r"ERROR: The input_variables_dict variable is not None or a dictionary.",
         ):
             gomc_control.write_gomc_control_file(
                 charmm,
@@ -498,7 +499,7 @@ class TestGOMCControlFileWriter(BaseTest):
                 100,
                 300,
                 check_input_files_exist=False,
-                input_variables_dict="XXXXX"
+                input_variables_dict="XXXXX",
             )
 
     def test_not_entered_charmm_object(self):
@@ -506,15 +507,12 @@ class TestGOMCControlFileWriter(BaseTest):
         with pytest.raises(
             TypeError,
             match=r"ERROR: The variable supplied is a \({}\), not a charmm_object \({}\)"
-                  r"".format(
-                type(not_charmm_object),
-                type(Charmm)
-            ),
+            r"".format(type(not_charmm_object), type(Charmm)),
         ):
             gomc_control.write_gomc_control_file(
                 not_charmm_object,
                 "test_not_charmm_object",
-                'NVT',
+                "NVT",
                 100,
                 300,
                 check_input_files_exist=False,

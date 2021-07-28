@@ -1014,6 +1014,7 @@ def _get_default_variables_dict():
 
     return default_input_variables_dict
 
+
 def print_required_input(description=False):
     """
     Prints the required ensemble arguments with an optional description based on the ensemble type
@@ -2087,10 +2088,7 @@ class GOMCControl:
             self.input_error = True
             print_error_message = (
                 "ERROR: The variable supplied is a ({}), not a charmm_object ({})"
-                "".format(
-                    type(charmm_object),
-                    type(mf_charmm.Charmm)
-                )
+                "".format(type(charmm_object), type(mf_charmm.Charmm))
             )
             raise TypeError(print_error_message)
 
@@ -2253,7 +2251,8 @@ class GOMCControl:
                 "Therefore, the force field file (.inp) can not be written, and thus, the "
                 "GOMC control file (.conf) can not be created. Please use the force field file "
                 "name when building the Charmm object".format(
-                    type(mf_charmm.Charmm))
+                    type(mf_charmm.Charmm)
+                )
             )
             raise ValueError(print_error_message)
 
