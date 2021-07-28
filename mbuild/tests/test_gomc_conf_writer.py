@@ -390,6 +390,136 @@ class TestGOMCControlFileWriter(BaseTest):
             test_status = "FAILED"
         assert test_status == "PASSED"
 
+        try:
+            gomc_control.print_valid_ensemble_input_variables(
+                "XXXXX", description=True
+            )
+            gomc_control.print_valid_ensemble_input_variables(
+                "XXXXX", description=False
+            )
+            test_status = "PASSED"
+        except:
+            test_status = "FAILED"
+        assert test_status == "FAILED"
+
+    def test_get_possible_ensemble_input_variables(self):
+        with pytest.warns(UserWarning, match="WARNING: The ensemble_type selected for "
+                                             "the _get_possible_ensemble_input_variables "
+                                             "function is not valid."):
+            gomc_control._get_possible_ensemble_input_variables("XXX")
+
+    def test_wrong_ensemble_gomccontrol(self, ethane_gomc):
+        test_box_ethane_gomc = mb.fill_box(
+            compound=[ethane_gomc], n_compounds=[1], box=[1, 1, 1]
+        )
+
+        charmm = Charmm(
+            test_box_ethane_gomc,
+            "ethane_box_0",
+            structure_box_1=None,
+            filename_box_1=None,
+            ff_filename="ethane_FF",
+            residues=[ethane_gomc.name],
+            forcefield_selection="oplsaa",
+        )
+
+        ensemble_input = "XXXXX"
+        with pytest.raises(
+            ValueError,
+            match=r"ERROR: The ensemble type selection of '{}' is not a valid ensemble option. "
+                  r"Please choose the 'NPT', 'NVT', 'GEMC_NVT', 'GEMC_NPT', or 'GCMC' "
+                  "ensembles".format(ensemble_input),
+        ):
+            gomc_control.write_gomc_control_file(
+                charmm,
+                "test_wrong_ensemble_gomccontrol",
+                ensemble_input,
+                100,
+                300,
+                check_input_files_exist=False,
+            )
+
+    def test_charmm_ff_name_is_none(self, ethane_gomc):
+        test_box_ethane_gomc = mb.fill_box(
+            compound=[ethane_gomc], n_compounds=[1], box=[1, 1, 1]
+        )
+
+        charmm = Charmm(
+            test_box_ethane_gomc,
+            "ethane_box_0",
+            structure_box_1=None,
+            filename_box_1=None,
+            ff_filename=None,
+            residues=[ethane_gomc.name],
+            forcefield_selection="oplsaa",
+        )
+
+        with pytest.raises(
+            ValueError,
+            match=r"The force field file name was not specified and in the Charmm object \({}\)."
+                  r"Therefore, the force field file \(.inp\) can not be written, and thus, the "
+                  r"GOMC control file \(.conf\) can not be created. Please use the force field file "
+                  r"name when building the Charmm object".format(
+                type(Charmm)
+            ),
+        ):
+            gomc_control.write_gomc_control_file(
+                charmm,
+                "test_charmm_ff_name_is_none",
+                "NVT",
+                100,
+                300,
+                check_input_files_exist=False,
+            )
+
+    def test_input_variables_dict_wrong_value(self, ethane_gomc):
+        test_box_ethane_gomc = mb.fill_box(
+            compound=[ethane_gomc], n_compounds=[1], box=[1, 1, 1]
+        )
+
+        charmm = Charmm(
+            test_box_ethane_gomc,
+            "ethane_box_0",
+            structure_box_1=None,
+            filename_box_1=None,
+            ff_filename="ethane_FF",
+            residues=[ethane_gomc.name],
+            forcefield_selection="oplsaa",
+        )
+
+        with pytest.raises(
+            ValueError,
+            match=r"ERROR: The input_variables_dict variable is not None or a dictionary."
+        ):
+            gomc_control.write_gomc_control_file(
+                charmm,
+                "test_input_variables_dict_wrong_value",
+                "NVT",
+                100,
+                300,
+                check_input_files_exist=False,
+                input_variables_dict="XXXXX"
+            )
+
+    def test_not_entered_charmm_object(self):
+        not_charmm_object = "XXXXX"
+        with pytest.raises(
+            TypeError,
+            match=r"ERROR: The variable supplied is a \({}\), not a charmm_object \({}\)"
+                  r"".format(
+                type(not_charmm_object),
+                type(Charmm)
+            ),
+        ):
+            gomc_control.write_gomc_control_file(
+                not_charmm_object,
+                "test_not_charmm_object",
+                'NVT',
+                100,
+                300,
+                check_input_files_exist=False,
+            )
+
     def test_save_basic_NVT(self, ethane_gomc):
         test_box_ethane_gomc = mb.fill_box(
             compound=[ethane_gomc], n_compounds=[1], box=[1, 1, 1]

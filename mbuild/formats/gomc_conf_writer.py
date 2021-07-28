@@ -1014,45 +1014,6 @@ def _get_default_variables_dict():
 
     return default_input_variables_dict
 
-
-def check_valid_ensemble_files(ensemble_type, testing_ensemble_files_list):
-    """
-    Checks if all the required ensemble inputs are provided,
-    and provides a list of the bad variables in the printed output.
-
-    Parameters
-    ----------
-    ensemble_type : str, valid options are 'NVT', 'NPT', 'GEMC_NVT', 'GEMC_NPT', 'GCMC'
-        The ensemble type of the simulation.
-    testing_ensemble_files_list  list
-        A list containing the required ensemble
-        files variables, which will be tested for to see if they are valid.
-
-    Returns
-    ---------
-    bool
-        True is all variables are valid, False otherwise
-    """
-
-    bad_key_inputs_List = []
-
-    req_ensemble_files_set = set(_get_required_data(description=False))
-    testing_ensemble_files_set = set(testing_ensemble_files_list)
-
-    extra = testing_ensemble_files_set - req_ensemble_files_set
-    missing = req_ensemble_files_set - testing_ensemble_files_set
-
-    if len(extra) != 0:
-        bad_key_inputs_List.extend(extra)
-    if len(missing) != 0:
-        bad_key_inputs_List.extend(missing)
-
-    if not bool(missing or extra):
-        return True
-    else:
-        return False
-
-
 def print_required_input(description=False):
     """
     Prints the required ensemble arguments with an optional description based on the ensemble type
@@ -1323,7 +1284,7 @@ def _get_possible_ensemble_input_variables(ensemble_type):
         )
     else:
         warn(
-            "WARNINR: The ensemble_type selected for the _get_possible_ensemble_input_variables "
+            "WARNING: The ensemble_type selected for the _get_possible_ensemble_input_variables "
             "function is not valid."
         )
         valid_input_variables_list = None
@@ -2125,9 +2086,10 @@ class GOMCControl:
         if not isinstance(charmm_object, mf_charmm.Charmm):
             self.input_error = True
             print_error_message = (
-                "The variable supplied as a charmm_object ({}) is not a "
-                "charmm_object ({})".format(
-                    type(charmm_object), type(mf_charmm.Charmm)
+                "ERROR: The variable supplied is a ({}), not a charmm_object ({})"
+                "".format(
+                    type(charmm_object),
+                    type(mf_charmm.Charmm)
                 )
             )
             raise TypeError(print_error_message)
@@ -2142,8 +2104,8 @@ class GOMCControl:
         else:
             self.input_error = True
             print_error_message = (
-                "ERROR: The ensemble type selection of {}  is not a valid ensemble option. "
-                "Please choose the 'NPT', 'NVT', 'GEMC_NVT','GEMC_NPT', or 'GCMC' "
+                "ERROR: The ensemble type selection of '{}' is not a valid ensemble option. "
+                "Please choose the 'NPT', 'NVT', 'GEMC_NVT', 'GEMC_NPT', or 'GCMC' "
                 "ensembles".format(ensemble_type)
             )
             raise ValueError(print_error_message)
@@ -2290,9 +2252,8 @@ class GOMCControl:
                 "The force field file name was not specified and in the Charmm object ({})."
                 "Therefore, the force field file (.inp) can not be written, and thus, the "
                 "GOMC control file (.conf) can not be created. Please use the force field file "
-                "name when building the Charmm object ({})".format(
-                    type(mf_charmm.Charmm), type(mf_charmm.Charmm)
-                )
+                "name when building the Charmm object".format(
+                    type(mf_charmm.Charmm))
             )
             raise ValueError(print_error_message)
 
@@ -2736,7 +2697,7 @@ class GOMCControl:
             self.input_variables_dict = input_variables_dict
         else:
             self.input_error = True
-            print_error_message = "ERROR: The input_variables_dict variable is not None or a dictionary. "
+            print_error_message = "ERROR: The input_variables_dict variable is not None or a dictionary."
             raise ValueError(print_error_message)
 
         # Create all lower case spelled keywords, and return case specific keywords
