@@ -156,15 +156,29 @@ stages:
               sed -iE 's/python.*$/python=3.8/' combine.yml
               sed -iE '/mbuild/d' combine.yml
               sed -iE '/ foyer/d' combine.yml
-              mamba env create -n bleeding -f combine.yml
-              source activate bleeding
+              mamba env create -n bleeding-mamba -f combine.yml
+              conda env create -n bleeding-conda -f combine.yml
+              source activate bleeding-mamba
+              pip install -e .
+              cd foyer
+              pip install -e .
+              echo "LISTING mamba env"
+              conda list
+              echo "DONE LISTING mamba env"
+
+              source activate bleeding-conda
+              echo "LISTING conda env"
+              conda list
+              echo "DONE LISTING conda env"
               pip install -e .
               cd foyer
               pip install -e .
             displayName: Create a new bleeding test environment with mamba
 
           - bash: |
-              source activate bleeding
+              source activate bleeding-mamba
+              python -m pytest -v --cov=mbuild --cov-report=html --color=yes --pyargs mbuild
+              source activate bleeding-conda
               python -m pytest -v --cov=mbuild --cov-report=html --color=yes --pyargs mbuild
             displayName: Run Tests
 
