@@ -82,7 +82,7 @@ def _get_required_data(description=False):
         "The full or relative directory added to the force field, psf, and pdb "
         "file names, created via the Charmm object.",
         "check_input_files_exist": "Required to check if files exist (all ensembles): bool (default=True), "
-        "Override the check to see if the force field, psf, and pdb files exist. "
+        "Check if the force field, psf, and pdb files exist. "
         "If the files are checked and do not exist, the writer will throw "
         "a ValueError. "
         "True, check if the force field, psf, and pdb files exist. "
@@ -95,43 +95,46 @@ def _get_required_data(description=False):
         "checkpoint file (checkpoint.dat) or not. Restarting the "
         "simulation with checkpoint.dat would result in an identical outcome, "
         "as if previous simulation was continued.",
+        "Parameters": "Required for alternate force field file (all ensembles): "
+        "str, (default=None), "
+        "Override all other force field directory and filename input with the correct extension (.inp or .par).",
         "Coordinates_box_0": "Required for alternate box 0 .pdb file (all ensembles): "
-        "str, (default = None), "
+        "str, (default=None), "
         "Override all other box 0 pdb directory and filename inputs.",
         "Structure_box_0": "Required for alternate box 0 .psf file (all ensembles): "
-        "str, (default = None), "
+        "str, (default=None), "
         "Override all other box 0 psf directory and filename inputs.",
         "Coordinates_box_1": "Required for alternate box 1 .pdb file (all ensembles): "
-        "str, (default = None), "
+        "str, (default=None), "
         "Override all other box 1 pdb directory and filename inputs.",
         "Structure_box_1": "Required for alternate box 1 .psf file  (all ensembles): "
-        "str, (default = None), "
+        "str, (default=None), "
         "Override all other box 1 psf directory and filename inputs.",
         "binCoordinates_box_0": "Required for alternate box 0 .coor file (all ensembles): "
-        "str, (default = None), "
+        "str, (default=None), "
         "The box 0 binary coordinate file is used only for restarting "
         "a GOMC simulation, which provides increased numerical accuracy.",
         "extendedSystem_box_0": "Required for alternate box 0 .xsc file (all ensembles): "
-        "str, (default = None), "
-        "The box 0 vectors origin file is used only for restarting a "
+        "str, (default=None), "
+        "The box 0 vectors and origin file is used only for restarting a "
         "GOMC simulation. ",
         "binVelocities_box_0": "Required for alternate box 0 .vel file (all ensembles): "
-        "str, (default = None), "
+        "str, (default=None), "
         "The box 0 binary velocity file is used only for "
         "restarting a GOMC simulation, which provides increased "
         "numerical accuracy. These velocities are only passed thru "
         "GOMC since Monte Carlo simulations do not utilize any "
         "velocity information. ",
         "binCoordinates_box_1": "Required for alternate box 1 .coor file (all ensembles): "
-        "str, (default = None), "
+        "str, (default=None), "
         "The box 1 binary coordinate file is used only for restarting a "
         "GOMC simulation, which provides increased numerical accuracy. ",
         "extendedSystem_box_1": "Required for alternate box 1 .coor file (all ensembles): "
-        "str, (default = None), "
-        "The box 1 vectors origin file is used "
+        "str, (default=None), "
+        "The box 1 vectors and origin file is used "
         "only for restarting a GOMC simulation. ",
         "binVelocities_box_1": "Required for alternate box 1 .vel file (all ensembles): "
-        "str, (default = None), "
+        "str, (default=None), "
         "The box 1 binary velocity file is used only for restarting a "
         "GOMC simulation, which provides increased numerical accuracy. "
         "These velocities are only passed thru GOMC since Monte Carlo "
@@ -1325,7 +1328,7 @@ class GOMCControl:
         The full or relative directory added to the force field, psf, and pdb
         file names, created via the Charmm object.
     check_input_files_exist : bool, (default=True)
-        Override the check to see if the force field, psf, and pdb files exist.
+        Check if the force field, psf, and pdb files exist.
         If the files are checked and do not exist, the writer will throw a ValueError.
         True, check if the force field, psf, and pdb files exist.
         False, do not check if the force field, psf, and pdb files exist.
@@ -1336,31 +1339,31 @@ class GOMCControl:
         Determines whether to restart the simulation with the checkpoint
         file (checkpoint.dat) or not. Restarting the simulation with checkpoint.dat
         would result in an identical outcome, as if previous simulation was continued.
-    Parameters : str, (default = None)
-        Override all other force field directory and filename inputs with the correct extension.
-    Coordinates_box_0 : str, (default = None)
+    Parameters : str, (default=None)
+        Override all other force field directory and filename input with the correct extension (.inp or .par).
+    Coordinates_box_0 : str, (default=None)
         Override all other box 0 pdb directory and filename inputs with the correct extension.
-    Structure_box_0 : str, (default = None)
+    Structure_box_0 : str, (default=None)
         Override all other box 0 psf directory and filename inputs with the correct extension.
-    Coordinates_box_1 : str, (default = None)
+    Coordinates_box_1 : str, (default=None)
         Override all other box 1 pdb directory and filename inputs with the correct extension.
-    Structure_box_1 : str, (default = None)
+    Structure_box_1 : str, (default=None)
         Override all other box 1  psf directory and filename inputs with the correct extension.
-    binCoordinates_box_0 : str, (default = None)
+    binCoordinates_box_0 : str, (default=None)
         The box 0 binary coordinate file is used only for restarting a GOMC simulation,
         which provides increased numerical accuracy.
-    extendedSystem_box_0 : str, (default = None)
-        The box 0 vectors origin file is used only for restarting a GOMC simulation.
-    binVelocities_box_0 : str, (default = None)
+    extendedSystem_box_0 : str, (default=None)
+        The box 0 vectors and origin file is used only for restarting a GOMC simulation.
+    binVelocities_box_0 : str, (default=None)
         The box 0 binary velocity file is used only for restarting a GOMC simulation,
         which provides increased numerical accuracy. These velocities are only passed thru
         GOMC since Monte Carlo simulations do not utilize any velocity information.
-    binCoordinates_box_1 : str, (default = None)
+    binCoordinates_box_1 : str, (default=None)
         The box 1 binary coordinate file is used only for restarting a GOMC simulation,
         which provides increased numerical accuracy.
-    extendedSystem_box_1 : str, (default = None)
-        The box 1 vectors origin file is used only for restarting a GOMC simulation.
-    binVelocities_box_1 : str, (default = None)
+    extendedSystem_box_1 : str, (default=None)
+        The box 1 vectors and origin file is used only for restarting a GOMC simulation.
+    binVelocities_box_1 : str, (default=None)
         The box 1 binary velocity file is used only for restarting a GOMC simulation,
         which provides increased numerical accuracy. These velocities are only passed thru
         GOMC since Monte Carlo simulations do not utilize any velocity information.
@@ -1373,7 +1376,7 @@ class GOMCControl:
         which prints the input_variables with their subsection description
         for the selected 'GCMC' ensemble (other ensembles can be set as well).
 
-        Example : input_variables_dict = {'Restart' : False, 'PRNG' : 123,
+        Example : input_variables_dict = {'PRNG' : 123,
                                           'ParaTypeCHARMM' : True }
 
     # *******************************************************************
@@ -1939,7 +1942,7 @@ class GOMCControl:
         The full or relative directory added to the force field, psf, and pdb
         file names, created via the Charmm object.
     check_input_files_exist : bool, (default=True)
-        Override the check to see if the force field, psf, and pdb files exist.
+        Check if the force field, psf, and pdb files exist.
         If the files are checked and do not exist, the writer will throw a ValueError.
         True, check if the force field, psf, and pdb files exist.
         False, do not check if the force field, psf, and pdb files exist.
@@ -1950,31 +1953,31 @@ class GOMCControl:
         Determines whether to restart the simulation with the checkpoint
         file (checkpoint.dat) or not. Restarting the simulation with checkpoint.dat
         would result in an identical outcome, as if previous simulation was continued.
-    Parameters : str, (default = None)
-        Override all other force field directory and filename inputs with the correct extension.
-    Coordinates_box_0 : str, (default = None)
+    Parameters : str, (default=None)
+        Override all other force field directory and filename input with the correct extension (.inp or .par).
+    Coordinates_box_0 : str, (default=None)
         Override all other box 0 pdb directory and filename inputs with the correct extension.
-    Structure_box_0 : str, (default = None)
+    Structure_box_0 : str, (default=None)
         Override all other box 0 psf directory and filename inputs with the correct extension.
-    Coordinates_box_1 : str, (default = None)
+    Coordinates_box_1 : str, (default=None)
         Override all other box 1 pdb directory and filename inputs with the correct extension.
-    Structure_box_1 : str, (default = None)
+    Structure_box_1 : str, (default=None)
         Override all other box 1  psf directory and filename inputs with the correct extension.
-    binCoordinates_box_0 : str, (default = None)
+    binCoordinates_box_0 : str, (default=None)
         The box 0 binary coordinate file is used only for restarting a GOMC simulation,
         which provides increased numerical accuracy.
-    extendedSystem_box_0 : str, (default = None)
-        The box 0 vectors origin file is used only for restarting a GOMC simulation.
-    binVelocities_box_0 : str, (default = None)
+    extendedSystem_box_0 : str, (default=None)
+        The box 0 vectors and origin file is used only for restarting a GOMC simulation.
+    binVelocities_box_0 : str, (default=None)
         The box 0 binary velocity file is used only for restarting a GOMC simulation,
         which provides increased numerical accuracy. These velocities are only passed thru
         GOMC since Monte Carlo simulations do not utilize any velocity information.
-    binCoordinates_box_1 : str, (default = None)
+    binCoordinates_box_1 : str, (default=None)
         The box 1 binary coordinate file is used only for restarting a GOMC simulation,
         which provides increased numerical accuracy.
-    extendedSystem_box_1 : str, (default = None)
-        The box 1 vectors origin file is used only for restarting a GOMC simulation.
-    binVelocities_box_1 : str, (default = None)
+    extendedSystem_box_1 : str, (default=None)
+        The box 1 vectors and origin file is used only for restarting a GOMC simulation.
+    binVelocities_box_1 : str, (default=None)
         The box 1 binary velocity file is used only for restarting a GOMC simulation,
         which provides increased numerical accuracy. These velocities are only passed thru
         GOMC since Monte Carlo simulations do not utilize any velocity information.
@@ -1986,7 +1989,7 @@ class GOMCControl:
         >>> print_valid_ensemble_input_variables('GCMC', description = True)
         which prints the input_variables with their subsection description
         for the selected 'GCMC' ensemble (other ensembles can be set as well).
-        Example : input_variables_dict = {'Restart' : False, 'PRNG' : 123,
+        Example : input_variables_dict = {'PRNG' : 123,
                                           'ParaTypeCHARMM' : True }
     conf_filename : str
         The name of the GOMC contol file, which will be created.  The extension
@@ -4885,7 +4888,7 @@ class GOMCControl:
             data_control_file.write(" \n")
             data_control_file.write("####################################\n")
             data_control_file.write(
-                "# INPUT BINARY FILES FOR RESTARTING (COORDINATE, XSC, VELOCITY FILES)\n"
+                "# INPUT FILES FOR RESTARTING (COORDINATE, XSC, VELOCITY FILES)\n"
             )
             data_control_file.write("####################################\n")
             data_control_file.write(
@@ -6400,7 +6403,7 @@ def _check_if_input_files_exist(
     type_of_file : str
         A brief description of the file which is evaluated.
     check_input_files_exist: bool (default=True)
-        Override the check to see if the force field, psf, and pdb files exist.
+        Check if the force field, psf, and pdb files exist.
         If the files are checked and do not exist, the writer will throw a ValueError.
         True, check if the force field, psf, and pdb files exist.
         False, do not check if the force field, psf, and pdb files exist.
@@ -6564,7 +6567,7 @@ def write_gomc_control_file(
         The full or relative directory added to the force field, psf, and pdb
         file names, created via the Charmm object.
     check_input_files_exist : bool, (default=True)
-        Override the check to see if the force field, psf, and pdb files exist.
+        Check if the force field, psf, and pdb files exist.
         If the files are checked and do not exist, the writer will throw a ValueError.
         True, check if the force field, psf, and pdb files exist.
         False, do not check if the force field, psf, and pdb files exist.
@@ -6575,31 +6578,31 @@ def write_gomc_control_file(
         Determines whether to restart the simulation with the checkpoint
         file (checkpoint.dat) or not. Restarting the simulation with checkpoint.dat
         would result in an identical outcome, as if previous simulation was continued.
-    Parameters : str, (default = None)
-        Override all other force field directory and filename inputs with the correct extension.
-    Coordinates_box_0 : str, (default = None)
+    Parameters : str, (default=None)
+        Override all other force field directory and filename input with the correct extension (.inp or .par).
+    Coordinates_box_0 : str, (default=None)
         Override all other box 0 pdb directory and filename inputs with the correct extension.
-    Structure_box_0 : str, (default = None)
+    Structure_box_0 : str, (default=None)
         Override all other box 0 psf directory and filename inputs with the correct extension.
-    Coordinates_box_1 : str, (default = None)
+    Coordinates_box_1 : str, (default=None)
         Override all other box 1 pdb directory and filename inputs with the correct extension.
-    Structure_box_1 : str, (default = None)
+    Structure_box_1 : str, (default=None)
         Override all other box 1  psf directory and filename inputs with the correct extension.
-    binCoordinates_box_0 : str, (default = None)
+    binCoordinates_box_0 : str, (default=None)
         The box 0 binary coordinate file is used only for restarting a GOMC simulation,
         which provides increased numerical accuracy.
-    extendedSystem_box_0 : str, (default = None)
-        The box 0 vectors origin file is used only for restarting a GOMC simulation.
-    binVelocities_box_0 : str, (default = None)
+    extendedSystem_box_0 : str, (default=None)
+        The box 0 vectors and origin file is used only for restarting a GOMC simulation.
+    binVelocities_box_0 : str, (default=None)
         The box 0 binary velocity file is used only for restarting a GOMC simulation,
         which provides increased numerical accuracy. These velocities are only passed thru
         GOMC since Monte Carlo simulations do not utilize any velocity information.
-    binCoordinates_box_1 : str, (default = None)
+    binCoordinates_box_1 : str, (default=None)
         The box 1 binary coordinate file is used only for restarting a GOMC simulation,
         which provides increased numerical accuracy.
-    extendedSystem_box_1 : str, (default = None)
-        The box 1 vectors origin file is used only for restarting a GOMC simulation.
-    binVelocities_box_1 : str, (default = None)
+    extendedSystem_box_1 : str, (default=None)
+        The box 1 vectors and origin file is used only for restarting a GOMC simulation.
+    binVelocities_box_1 : str, (default=None)
         The box 1 binary velocity file is used only for restarting a GOMC simulation,
         which provides increased numerical accuracy. These velocities are only passed thru
         GOMC since Monte Carlo simulations do not utilize any velocity information.
@@ -6612,7 +6615,7 @@ def write_gomc_control_file(
         which prints the input_variables with their subsection description
         for the selected 'GCMC' ensemble (other ensembles can be set as well).
 
-        Example : input_variables_dict = {'Restart' : False, 'PRNG' : 123,
+        Example : input_variables_dict = {'PRNG' : 123,
         'ParaTypeCHARMM' : True }
 
     # *******************************************************************
@@ -7177,7 +7180,7 @@ def write_gomc_control_file(
         The full or relative directory added to the force field, psf, and pdb
         file names, created via the Charmm object.
     check_input_files_exist: bool (default=True)
-        Override the check to see if the force field, psf, and pdb files exist.
+        Check if the force field, psf, and pdb files exist.
         If the files are checked and do not exist, the writer will throw a ValueError.
         True, check if the force field, psf, and pdb files exist.
         False, do not check if the force field, psf, and pdb files exist.
@@ -7188,31 +7191,31 @@ def write_gomc_control_file(
         Determines whether to restart the simulation with the checkpoint
         file (checkpoint.dat) or not. Restarting the simulation with checkpoint.dat
         would result in an identical outcome, as if previous simulation was continued.
-    Parameters : str, (default = None)
-        Override all other force field directory and filename inputs with the correct extension.
-    Coordinates_box_0 : str, (default = None)
+    Parameters : str, (default=None)
+        Override all other force field directory and filename input with the correct extension (.inp or .par).
+    Coordinates_box_0 : str, (default=None)
         Override all other box 0 pdb directory and filename inputs with the correct extension.
-    Structure_box_0 : str, (default = None)
+    Structure_box_0 : str, (default=None)
         Override all other box 0 psf directory and filename inputs with the correct extension.
-    Coordinates_box_1 : str, (default = None)
+    Coordinates_box_1 : str, (default=None)
         Override all other box 1 pdb directory and filename inputs with the correct extension.
-    Structure_box_1 : str, (default = None)
+    Structure_box_1 : str, (default=None)
         Override all other box 1  psf directory and filename inputs with the correct extension.
-    binCoordinates_box_0 : str, (default = None)
+    binCoordinates_box_0 : str, (default=None)
         The box 0 binary coordinate file is used only for restarting a GOMC simulation,
         which provides increased numerical accuracy.
-    extendedSystem_box_0 : str, (default = None)
-        The box 0 vectors origin file is used only for restarting a GOMC simulation.
-    binVelocities_box_0 : str, (default = None)
+    extendedSystem_box_0 : str, (default=None)
+        The box 0 vectors and origin file is used only for restarting a GOMC simulation.
+    binVelocities_box_0 : str, (default=None)
         The box 0 binary velocity file is used only for restarting a GOMC simulation,
         which provides increased numerical accuracy. These velocities are only passed thru
         GOMC since Monte Carlo simulations do not utilize any velocity information.
-    binCoordinates_box_1 : str, (default = None)
+    binCoordinates_box_1 : str, (default=None)
         The box 1 binary coordinate file is used only for restarting a GOMC simulation,
         which provides increased numerical accuracy.
-    extendedSystem_box_1 : str, (default = None)
-        The box 1 vectors origin file is used only for restarting a GOMC simulation.
-    binVelocities_box_1 : str, (default = None)
+    extendedSystem_box_1 : str, (default=None)
+        The box 1 vectors and origin file is used only for restarting a GOMC simulation.
+    binVelocities_box_1 : str, (default=None)
         The box 1 binary velocity file is used only for restarting a GOMC simulation,
         which provides increased numerical accuracy. These velocities are only passed thru
         GOMC since Monte Carlo simulations do not utilize any velocity information.
@@ -7224,7 +7227,7 @@ def write_gomc_control_file(
         >>> print_valid_ensemble_input_variables('GCMC', description = True)
         which prints the input_variables with their subsection description
         for the selected 'GCMC' ensemble (other ensembles can be set as well).
-        Example : input_variables_dict = {'Restart' : False, 'PRNG' : 123,
+        Example : input_variables_dict = {'PRNG' : 123,
         'ParaTypeCHARMM' : True }
     conf_filename : str
         The name of the GOMC contol file, which will be created.  The extension
