@@ -165,7 +165,7 @@ stages:
 
           - bash: |
               source activate bleeding
-              python -m pytest -v --cov=mbuild --cov-report=html --pyargs mbuild
+              python -m pytest -v --cov=mbuild --cov-report=html --color=yes --pyargs mbuild
             displayName: Run Tests
 
   - stage: Docker
