@@ -166,8 +166,9 @@ class TestLammpsData(BaseTest):
         for i, line in enumerate(out_lammps):
             if "Angle Coeffs" in line:
                 assert "# harmonic" in line
-                assert "#\tk(kcal/mol/rad^2)\t\ttheteq(deg)" in out_lammps[i +
-                        1]
+                assert (
+                    "#\tk(kcal/mol/rad^2)\t\ttheteq(deg)" in out_lammps[i + 1]
+                )
                 assert len(out_lammps[i + 2].split("#")[0].split()) == 3
                 found_angles = True
             elif "Dihedral Coeffs" in line:
