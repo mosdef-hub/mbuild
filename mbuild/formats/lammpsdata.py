@@ -301,11 +301,17 @@ def write_lammpsdata(
             mins=mins, maxs=maxs, angles=structure.box[3:6]
         )
     else:
-        # Internally use nm
-        box = Box(
-            lengths=np.array([0.1 * val for val in structure.box[0:3]]),
-            angles=structure.box[3:6],
-        )
+        if unit_style == "real":
+            # Internally use nm
+            box = Box(
+                    lengths=np.array([0.1 * val for val in structure.box[0:3]]),
+                    angles=structure.box[3:6],
+            )
+        if unit_style == "lj":
+            box = Box(
+                    lengths=np.array([val for val in structure.box[0:3]]),
+                    angles=structure.box[3:6],
+            )
 
         warn(
             "Explicit box bounds (i.e., mins and maxs) were not provided. Box "
