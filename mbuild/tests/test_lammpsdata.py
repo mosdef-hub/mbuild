@@ -166,7 +166,8 @@ class TestLammpsData(BaseTest):
         for i, line in enumerate(out_lammps):
             if "Angle Coeffs" in line:
                 assert "# harmonic" in line
-                assert "#\treduced_k\t\ttheteq(deg)" in out_lammps[i + 1]
+                assert "#\tk(kcal/mol/rad^2)\t\ttheteq(deg)" in out_lammps[i +
+                        1]
                 assert len(out_lammps[i + 2].split("#")[0].split()) == 3
                 found_angles = True
             elif "Dihedral Coeffs" in line:
@@ -380,9 +381,9 @@ class TestLammpsData(BaseTest):
                     # assert np.isclose(line, 0.204)
                     assert np.isclose(float(line), 2.04)
                     line = float(fi.readline().split()[1])
-                    assert np.isclose(line, 0.2268)
+                    assert np.isclose(line, 2.268)
                     line = float(fi.readline().split()[1])
-                    assert np.isclose(line, 0.1898857)
+                    assert np.isclose(line, 1.898857)
                     checked_section = True
 
     def test_lj_masses(self, ethane):
