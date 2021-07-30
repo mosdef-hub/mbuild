@@ -2830,7 +2830,7 @@ class GOMCControl:
                     "for the GEMC_NVT, GEMC_NPT or GCMC simulations, which is not allowed"
                 )
                 self.input_error = True
-                print_error_message = (print_error_message)
+                print_error_message = print_error_message
                 raise ValueError(print_error_message)
         else:
             print(
