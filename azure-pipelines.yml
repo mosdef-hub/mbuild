@@ -170,6 +170,7 @@ stages:
               echo "LISTING conda env"
               conda list
               echo "DONE LISTING conda env"
+              cd ..
               pip install -e .
               cd foyer
               pip install -e .
