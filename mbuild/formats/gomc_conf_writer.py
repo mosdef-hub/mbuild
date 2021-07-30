@@ -2193,13 +2193,13 @@ class GOMCControl:
                 raise ValueError(print_error_message)
 
             elif (
-                    self.binVelocities_box_0 is not None
-                    or self.binVelocities_box_1 is not None
+                self.binVelocities_box_0 is not None
+                or self.binVelocities_box_1 is not None
             ) and (
-                    self.binCoordinates_box_0 is None
-                    or self.extendedSystem_box_0 is None
-                    or self.binCoordinates_box_1 is None
-                    or self.extendedSystem_box_1 is None
+                self.binCoordinates_box_0 is None
+                or self.extendedSystem_box_0 is None
+                or self.binCoordinates_box_1 is None
+                or self.extendedSystem_box_1 is None
             ):
                 print_error_message = (
                     'ERROR: To restart a "GEMC_NPT", "GEMC_NVT", "GCMC" simulation with the '

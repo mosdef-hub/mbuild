@@ -9769,16 +9769,14 @@ class TestGOMCControlFileWriter(BaseTest):
             "NVT",
             1000,
             300,
-            ff_psf_pdb_file_directory='../Test',
+            ff_psf_pdb_file_directory="../Test",
             Restart=True,
             RestartCheckpoint=True,
             check_input_files_exist=False,
             input_variables_dict={},
         )
 
-        with open(
-            "test_restarting_pdb_psf_NVT.conf", "r"
-        ) as fp:
+        with open("test_restarting_pdb_psf_NVT.conf", "r") as fp:
             variables_read_dict = {
                 "Coordinates_box_0": False,
                 "Structure_box_0": False,
@@ -9837,7 +9835,7 @@ class TestGOMCControlFileWriter(BaseTest):
             "NVT",
             1000,
             300,
-            ff_psf_pdb_file_directory='../Test',
+            ff_psf_pdb_file_directory="../Test",
             Restart=True,
             RestartCheckpoint=True,
             Coordinates_box_0="../test_files_1/NVT_toluene_box_0.pdb",
@@ -9847,7 +9845,7 @@ class TestGOMCControlFileWriter(BaseTest):
         )
 
         with open(
-                "test_restarting_pdb_psf_NVT_only_rename_coordinates.conf", "r"
+            "test_restarting_pdb_psf_NVT_only_rename_coordinates.conf", "r"
         ) as fp:
             variables_read_dict = {
                 "Coordinates_box_0": False,
@@ -9859,7 +9857,9 @@ class TestGOMCControlFileWriter(BaseTest):
                     variables_read_dict["Coordinates_box_0"] = True
                     split_line = line.split()
                     assert split_line[1] == "0"
-                    assert split_line[2] == "../test_files_1/NVT_toluene_box_0.pdb"
+                    assert (
+                        split_line[2] == "../test_files_1/NVT_toluene_box_0.pdb"
+                    )
 
                 elif line.startswith("Structure 0 "):
                     variables_read_dict["Structure_box_0"] = True
@@ -9921,14 +9921,18 @@ class TestGOMCControlFileWriter(BaseTest):
                     variables_read_dict["Structure_box_0"] = True
                     split_line = line.split()
                     assert split_line[1] == "0"
-                    assert split_line[2] == "../test_files_2/NVT_toluene_box_0.psf"
+                    assert (
+                        split_line[2] == "../test_files_2/NVT_toluene_box_0.psf"
+                    )
 
         assert variables_read_dict == {
             "Coordinates_box_0": True,
             "Structure_box_0": True,
         }
 
-    def test_restarting_pdb_psf_GEMC_NVT_only_rename_coordinates(self, ethane_gomc):
+    def test_restarting_pdb_psf_GEMC_NVT_only_rename_coordinates(
+        self, ethane_gomc
+    ):
         test_box_ethane_gomc = mb.fill_box(
             compound=[ethane_gomc], n_compounds=[1], box=[1, 1, 1]
         )
@@ -9961,7 +9965,7 @@ class TestGOMCControlFileWriter(BaseTest):
         )
 
         with open(
-                "test_restarting_pdb_psf_GEMC_NVT_only_rename_coordinates.conf", "r"
+            "test_restarting_pdb_psf_GEMC_NVT_only_rename_coordinates.conf", "r"
         ) as fp:
             variables_read_dict = {
                 "Coordinates_box_0": False,
@@ -9975,7 +9979,9 @@ class TestGOMCControlFileWriter(BaseTest):
                     variables_read_dict["Coordinates_box_0"] = True
                     split_line = line.split()
                     assert split_line[1] == "0"
-                    assert split_line[2] == "../test_files_1/NVT_toluene_box_0.pdb"
+                    assert (
+                        split_line[2] == "../test_files_1/NVT_toluene_box_0.pdb"
+                    )
 
                 elif line.startswith("Structure 0 "):
                     variables_read_dict["Structure_box_0"] = True
@@ -9987,7 +9993,9 @@ class TestGOMCControlFileWriter(BaseTest):
                     variables_read_dict["Coordinates_box_1"] = True
                     split_line = line.split()
                     assert split_line[1] == "1"
-                    assert split_line[2] == "../test_files_2/NVT_toluene_box_1.pdb"
+                    assert (
+                        split_line[2] == "../test_files_2/NVT_toluene_box_1.pdb"
+                    )
 
                 elif line.startswith("Structure 1 "):
                     variables_read_dict["Structure_box_1"] = True
@@ -10002,7 +10010,9 @@ class TestGOMCControlFileWriter(BaseTest):
             "Structure_box_1": True,
         }
 
-    def test_restarting_pdb_psf_GEMC_NVT_only_rename_structure(self, ethane_gomc):
+    def test_restarting_pdb_psf_GEMC_NVT_only_rename_structure(
+        self, ethane_gomc
+    ):
         test_box_ethane_gomc = mb.fill_box(
             compound=[ethane_gomc], n_compounds=[1], box=[1, 1, 1]
         )
@@ -10023,7 +10033,7 @@ class TestGOMCControlFileWriter(BaseTest):
             "GEMC_NVT",
             1000,
             300,
-            ff_psf_pdb_file_directory='../Test',
+            ff_psf_pdb_file_directory="../Test",
             Restart=True,
             RestartCheckpoint=True,
             Coordinates_box_0=None,
@@ -10055,7 +10065,9 @@ class TestGOMCControlFileWriter(BaseTest):
                     variables_read_dict["Structure_box_0"] = True
                     split_line = line.split()
                     assert split_line[1] == "0"
-                    assert split_line[2] == "../test_files_1/NVT_toluene_box_0.psf"
+                    assert (
+                        split_line[2] == "../test_files_1/NVT_toluene_box_0.psf"
+                    )
 
                 if line.startswith("Coordinates 1 "):
                     variables_read_dict["Coordinates_box_1"] = True
@@ -10067,7 +10079,9 @@ class TestGOMCControlFileWriter(BaseTest):
                     variables_read_dict["Structure_box_1"] = True
                     split_line = line.split()
                     assert split_line[1] == "1"
-                    assert split_line[2] == "../test_files_2/NVT_toluene_box_1.psf"
+                    assert (
+                        split_line[2] == "../test_files_2/NVT_toluene_box_1.psf"
+                    )
 
         assert variables_read_dict == {
             "Coordinates_box_0": True,
@@ -10097,16 +10111,14 @@ class TestGOMCControlFileWriter(BaseTest):
             "GEMC_NVT",
             1000,
             300,
-            ff_psf_pdb_file_directory='../Test',
+            ff_psf_pdb_file_directory="../Test",
             Restart=True,
             RestartCheckpoint=True,
             check_input_files_exist=False,
             input_variables_dict={},
         )
 
-        with open(
-            "test_restarting_pdb_psf_GEMC_NVT.conf", "r"
-        ) as fp:
+        with open("test_restarting_pdb_psf_GEMC_NVT.conf", "r") as fp:
             variables_read_dict = {
                 "Coordinates_box_0": False,
                 "Structure_box_0": False,
