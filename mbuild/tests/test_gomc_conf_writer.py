@@ -1347,7 +1347,7 @@ class TestGOMCControlFileWriter(BaseTest):
                     split_line = line.split()
                     assert split_line[1] == "ethane_FF.inp"
 
-                elif line.startswith("Coordinates 0"):
+                elif line.startswith("Coordinates 0 "):
                     variables_read_dict["Coordinates 0"] = True
                     split_line = line.split()
                     assert split_line[1] == "0"
@@ -1359,13 +1359,13 @@ class TestGOMCControlFileWriter(BaseTest):
                     assert split_line[1] == "1"
                     assert split_line[2] == "ethane_box_1.pdb"
 
-                elif line.startswith("Structure 0"):
+                elif line.startswith("Structure 0 "):
                     variables_read_dict["Structure 0"] = True
                     split_line = line.split()
                     assert split_line[1] == "0"
                     assert split_line[2] == "ethane_box_0.psf"
 
-                elif line.startswith("Structure 1"):
+                elif line.startswith("Structure 1 "):
                     variables_read_dict["Structure 1"] = True
                     split_line = line.split()
                     assert split_line[1] == "1"
@@ -9543,7 +9543,7 @@ class TestGOMCControlFileWriter(BaseTest):
                     assert split_line[1] == "True"
                     assert split_line[2] == "1000"
 
-                elif line.startswith("Coordinates 0"):
+                elif line.startswith("Coordinates 0 "):
                     variables_read_dict["Coordinates_box_0"] = True
                     split_line = line.split()
                     assert split_line[1] == "0"
@@ -9551,7 +9551,7 @@ class TestGOMCControlFileWriter(BaseTest):
                         split_line[2] == "../test_files/NVT_toluene_box_0.pdb"
                     )
 
-                elif line.startswith("Structure 0"):
+                elif line.startswith("Structure 0 "):
                     variables_read_dict["Structure_box_0"] = True
                     split_line = line.split()
                     assert split_line[1] == "0"
@@ -9668,13 +9668,13 @@ class TestGOMCControlFileWriter(BaseTest):
                     assert split_line[1] == "True"
                     assert split_line[2] == "1000"
 
-                elif line.startswith("Coordinates 0"):
+                elif line.startswith("Coordinates 0 "):
                     variables_read_dict["Coordinates_box_0"] = True
                     split_line = line.split()
                     assert split_line[1] == "0"
                     assert split_line[2] == "../test_files/NVT_ethane_box_0.pdb"
 
-                elif line.startswith("Structure 0"):
+                elif line.startswith("Structure 0 "):
                     variables_read_dict["Structure_box_0"] = True
                     split_line = line.split()
                     assert split_line[1] == "0"
@@ -9700,13 +9700,13 @@ class TestGOMCControlFileWriter(BaseTest):
                     assert split_line[1] == "0"
                     assert split_line[2] == "../test_files/NVT_ethane_box_0.vel"
 
-                elif line.startswith("Coordinates 1"):
+                elif line.startswith("Coordinates 1 "):
                     variables_read_dict["Coordinates_box_1"] = True
                     split_line = line.split()
                     assert split_line[1] == "1"
                     assert split_line[2] == "../test_files/NVT_ethane_box_1.pdb"
 
-                elif line.startswith("Structure 1"):
+                elif line.startswith("Structure 1 "):
                     variables_read_dict["Structure_box_1"] = True
                     split_line = line.split()
                     assert split_line[1] == "1"
@@ -9746,6 +9746,418 @@ class TestGOMCControlFileWriter(BaseTest):
             "binCoordinates_box_1": True,
             "extendedSystem_box_1": True,
             "binVelocities_box_1": True,
+        }
+
+    def test_restarting_pdb_psf_NVT(self, ethane_gomc):
+        test_box_ethane_gomc = mb.fill_box(
+            compound=[ethane_gomc], n_compounds=[1], box=[1, 1, 1]
+        )
+
+        charmm = Charmm(
+            test_box_ethane_gomc,
+            "ethane_box_0",
+            structure_box_1=None,
+            filename_box_1=None,
+            ff_filename="ethane_FF",
+            residues=[ethane_gomc.name],
+            forcefield_selection="oplsaa",
+        )
+
+        gomc_control.write_gomc_control_file(
+            charmm,
+            "test_restarting_pdb_psf_NVT",
+            "NVT",
+            1000,
+            300,
+            ff_psf_pdb_file_directory='../Test',
+            Restart=True,
+            RestartCheckpoint=True,
+            check_input_files_exist=False,
+            input_variables_dict={},
+        )
+
+        with open(
+            "test_restarting_pdb_psf_NVT.conf", "r"
+        ) as fp:
+            variables_read_dict = {
+                "Coordinates_box_0": False,
+                "Structure_box_0": False,
+                "Restart": False,
+                "RestartCheckpoint": False,
+            }
+            out_gomc = fp.readlines()
+            for i, line in enumerate(out_gomc):
+                if line.startswith("Coordinates 0 "):
+                    variables_read_dict["Coordinates_box_0"] = True
+                    split_line = line.split()
+                    assert split_line[1] == "0"
+                    assert split_line[2] == "../Test/ethane_box_0.pdb"
+
+                elif line.startswith("Structure 0 "):
+                    variables_read_dict["Structure_box_0"] = True
+                    split_line = line.split()
+                    assert split_line[1] == "0"
+                    assert split_line[2] == "../Test/ethane_box_0.psf"
+
+                elif line.startswith("Restart "):
+                    variables_read_dict["Restart"] = True
+                    split_line = line.split()
+                    assert split_line[1] == "True"
+
+                elif line.startswith("RestartCheckpoint "):
+                    variables_read_dict["RestartCheckpoint"] = True
+                    split_line = line.split()
+                    assert split_line[1] == "True"
+
+        assert variables_read_dict == {
+            "Coordinates_box_0": True,
+            "Structure_box_0": True,
+            "Restart": True,
+            "RestartCheckpoint": True,
+        }
+
+    def test_restarting_pdb_psf_NVT_only_rename_coordinates(self, ethane_gomc):
+        test_box_ethane_gomc = mb.fill_box(
+            compound=[ethane_gomc], n_compounds=[1], box=[1, 1, 1]
+        )
+
+        charmm = Charmm(
+            test_box_ethane_gomc,
+            "ethane_box_0",
+            structure_box_1=None,
+            filename_box_1=None,
+            ff_filename="ethane_FF",
+            residues=[ethane_gomc.name],
+            forcefield_selection="oplsaa",
+        )
+
+        gomc_control.write_gomc_control_file(
+            charmm,
+            "test_restarting_pdb_psf_NVT_only_rename_coordinates",
+            "NVT",
+            1000,
+            300,
+            ff_psf_pdb_file_directory='../Test',
+            Restart=True,
+            RestartCheckpoint=True,
+            Coordinates_box_0="../test_files_1/NVT_toluene_box_0.pdb",
+            Structure_box_0=None,
+            check_input_files_exist=False,
+            input_variables_dict={},
+        )
+
+        with open(
+                "test_restarting_pdb_psf_NVT_only_rename_coordinates.conf", "r"
+        ) as fp:
+            variables_read_dict = {
+                "Coordinates_box_0": False,
+                "Structure_box_0": False,
+            }
+            out_gomc = fp.readlines()
+            for i, line in enumerate(out_gomc):
+                if line.startswith("Coordinates 0 "):
+                    variables_read_dict["Coordinates_box_0"] = True
+                    split_line = line.split()
+                    assert split_line[1] == "0"
+                    assert split_line[2] == "../test_files_1/NVT_toluene_box_0.pdb"
+
+                elif line.startswith("Structure 0 "):
+                    variables_read_dict["Structure_box_0"] = True
+                    split_line = line.split()
+                    assert split_line[1] == "0"
+                    assert split_line[2] == "../Test/ethane_box_0.psf"
+
+        assert variables_read_dict == {
+            "Coordinates_box_0": True,
+            "Structure_box_0": True,
+        }
+
+    def test_restarting_pdb_psf_NVT_only_rename_structure(self, ethane_gomc):
+        test_box_ethane_gomc = mb.fill_box(
+            compound=[ethane_gomc], n_compounds=[1], box=[1, 1, 1]
+        )
+
+        charmm = Charmm(
+            test_box_ethane_gomc,
+            "ethane_box_0",
+            structure_box_1=None,
+            filename_box_1=None,
+            ff_filename="ethane_FF",
+            residues=[ethane_gomc.name],
+            forcefield_selection="oplsaa",
+        )
+
+        gomc_control.write_gomc_control_file(
+            charmm,
+            "test_restarting_pdb_psf_NVT_only_rename_structure",
+            "NVT",
+            1000,
+            300,
+            ff_psf_pdb_file_directory=None,
+            Restart=True,
+            RestartCheckpoint=True,
+            Coordinates_box_0=None,
+            Structure_box_0="../test_files_2/NVT_toluene_box_0.psf",
+            check_input_files_exist=False,
+            input_variables_dict={},
+        )
+
+        with open(
+            "test_restarting_pdb_psf_NVT_only_rename_structure.conf", "r"
+        ) as fp:
+            variables_read_dict = {
+                "Coordinates_box_0": False,
+                "Structure_box_0": False,
+            }
+            out_gomc = fp.readlines()
+            for i, line in enumerate(out_gomc):
+                if line.startswith("Coordinates 0 "):
+                    variables_read_dict["Coordinates_box_0"] = True
+                    split_line = line.split()
+                    assert split_line[1] == "0"
+                    assert split_line[2] == "ethane_box_0.pdb"
+
+                elif line.startswith("Structure 0 "):
+                    variables_read_dict["Structure_box_0"] = True
+                    split_line = line.split()
+                    assert split_line[1] == "0"
+                    assert split_line[2] == "../test_files_2/NVT_toluene_box_0.psf"
+
+        assert variables_read_dict == {
+            "Coordinates_box_0": True,
+            "Structure_box_0": True,
+        }
+
+    def test_restarting_pdb_psf_GEMC_NVT_only_rename_coordinates(self, ethane_gomc):
+        test_box_ethane_gomc = mb.fill_box(
+            compound=[ethane_gomc], n_compounds=[1], box=[1, 1, 1]
+        )
+
+        charmm = Charmm(
+            test_box_ethane_gomc,
+            "ethane_box_0",
+            structure_box_1=test_box_ethane_gomc,
+            filename_box_1="ethane_box_1",
+            ff_filename="ethane_FF",
+            residues=[ethane_gomc.name],
+            forcefield_selection="oplsaa",
+        )
+
+        gomc_control.write_gomc_control_file(
+            charmm,
+            "test_restarting_pdb_psf_GEMC_NVT_only_rename_coordinates",
+            "GEMC_NVT",
+            1000,
+            300,
+            ff_psf_pdb_file_directory=None,
+            Restart=True,
+            RestartCheckpoint=True,
+            Coordinates_box_0="../test_files_1/NVT_toluene_box_0.pdb",
+            Structure_box_0=None,
+            Coordinates_box_1="../test_files_2/NVT_toluene_box_1.pdb",
+            Structure_box_1=None,
+            check_input_files_exist=False,
+            input_variables_dict={},
+        )
+
+        with open(
+                "test_restarting_pdb_psf_GEMC_NVT_only_rename_coordinates.conf", "r"
+        ) as fp:
+            variables_read_dict = {
+                "Coordinates_box_0": False,
+                "Structure_box_0": False,
+                "Coordinates_box_1": False,
+                "Structure_box_1": False,
+            }
+            out_gomc = fp.readlines()
+            for i, line in enumerate(out_gomc):
+                if line.startswith("Coordinates 0 "):
+                    variables_read_dict["Coordinates_box_0"] = True
+                    split_line = line.split()
+                    assert split_line[1] == "0"
+                    assert split_line[2] == "../test_files_1/NVT_toluene_box_0.pdb"
+
+                elif line.startswith("Structure 0 "):
+                    variables_read_dict["Structure_box_0"] = True
+                    split_line = line.split()
+                    assert split_line[1] == "0"
+                    assert split_line[2] == "ethane_box_0.psf"
+
+                elif line.startswith("Coordinates 1 "):
+                    variables_read_dict["Coordinates_box_1"] = True
+                    split_line = line.split()
+                    assert split_line[1] == "1"
+                    assert split_line[2] == "../test_files_2/NVT_toluene_box_1.pdb"
+
+                elif line.startswith("Structure 1 "):
+                    variables_read_dict["Structure_box_1"] = True
+                    split_line = line.split()
+                    assert split_line[1] == "1"
+                    assert split_line[2] == "ethane_box_1.psf"
+
+        assert variables_read_dict == {
+            "Coordinates_box_0": True,
+            "Structure_box_0": True,
+            "Coordinates_box_1": True,
+            "Structure_box_1": True,
+        }
+
+    def test_restarting_pdb_psf_GEMC_NVT_only_rename_structure(self, ethane_gomc):
+        test_box_ethane_gomc = mb.fill_box(
+            compound=[ethane_gomc], n_compounds=[1], box=[1, 1, 1]
+        )
+
+        charmm = Charmm(
+            test_box_ethane_gomc,
+            "ethane_box_0",
+            structure_box_1=test_box_ethane_gomc,
+            filename_box_1="ethane_box_1",
+            ff_filename="ethane_FF",
+            residues=[ethane_gomc.name],
+            forcefield_selection="oplsaa",
+        )
+
+        gomc_control.write_gomc_control_file(
+            charmm,
+            "test_restarting_pdb_psf_GEMC_NVT_only_rename_structure",
+            "GEMC_NVT",
+            1000,
+            300,
+            ff_psf_pdb_file_directory='../Test',
+            Restart=True,
+            RestartCheckpoint=True,
+            Coordinates_box_0=None,
+            Structure_box_0="../test_files_1/NVT_toluene_box_0.psf",
+            Coordinates_box_1=None,
+            Structure_box_1="../test_files_2/NVT_toluene_box_1.psf",
+            check_input_files_exist=False,
+            input_variables_dict={},
+        )
+
+        with open(
+            "test_restarting_pdb_psf_GEMC_NVT_only_rename_structure.conf", "r"
+        ) as fp:
+            variables_read_dict = {
+                "Coordinates_box_0": False,
+                "Structure_box_0": False,
+                "Coordinates_box_1": False,
+                "Structure_box_1": False,
+            }
+            out_gomc = fp.readlines()
+            for i, line in enumerate(out_gomc):
+                if line.startswith("Coordinates 0 "):
+                    variables_read_dict["Coordinates_box_0"] = True
+                    split_line = line.split()
+                    assert split_line[1] == "0"
+                    assert split_line[2] == "../Test/ethane_box_0.pdb"
+
+                elif line.startswith("Structure 0 "):
+                    variables_read_dict["Structure_box_0"] = True
+                    split_line = line.split()
+                    assert split_line[1] == "0"
+                    assert split_line[2] == "../test_files_1/NVT_toluene_box_0.psf"
+
+                if line.startswith("Coordinates 1 "):
+                    variables_read_dict["Coordinates_box_1"] = True
+                    split_line = line.split()
+                    assert split_line[1] == "1"
+                    assert split_line[2] == "../Test/ethane_box_1.pdb"
+
+                elif line.startswith("Structure 1 "):
+                    variables_read_dict["Structure_box_1"] = True
+                    split_line = line.split()
+                    assert split_line[1] == "1"
+                    assert split_line[2] == "../test_files_2/NVT_toluene_box_1.psf"
+
+        assert variables_read_dict == {
+            "Coordinates_box_0": True,
+            "Structure_box_0": True,
+            "Coordinates_box_1": True,
+            "Structure_box_1": True,
+        }
+
+    def test_restarting_pdb_psf_GEMC_NVT(self, ethane_gomc):
+        test_box_ethane_gomc = mb.fill_box(
+            compound=[ethane_gomc], n_compounds=[1], box=[1, 1, 1]
+        )
+
+        charmm = Charmm(
+            test_box_ethane_gomc,
+            "ethane_box_0",
+            structure_box_1=test_box_ethane_gomc,
+            filename_box_1="ethane_box_1",
+            ff_filename="ethane_FF",
+            residues=[ethane_gomc.name],
+            forcefield_selection="oplsaa",
+        )
+
+        gomc_control.write_gomc_control_file(
+            charmm,
+            "test_restarting_pdb_psf_GEMC_NVT",
+            "GEMC_NVT",
+            1000,
+            300,
+            ff_psf_pdb_file_directory='../Test',
+            Restart=True,
+            RestartCheckpoint=True,
+            check_input_files_exist=False,
+            input_variables_dict={},
+        )
+
+        with open(
+            "test_restarting_pdb_psf_GEMC_NVT.conf", "r"
+        ) as fp:
+            variables_read_dict = {
+                "Coordinates_box_0": False,
+                "Structure_box_0": False,
+                "Coordinates_box_1": False,
+                "Structure_box_1": False,
+                "Restart": False,
+                "RestartCheckpoint": False,
+            }
+            out_gomc = fp.readlines()
+            for i, line in enumerate(out_gomc):
+                if line.startswith("Coordinates 0 "):
+                    variables_read_dict["Coordinates_box_0"] = True
+                    split_line = line.split()
+                    assert split_line[1] == "0"
+                    assert split_line[2] == "../Test/ethane_box_0.pdb"
+
+                elif line.startswith("Structure 0 "):
+                    variables_read_dict["Structure_box_0"] = True
+                    split_line = line.split()
+                    assert split_line[1] == "0"
+                    assert split_line[2] == "../Test/ethane_box_0.psf"
+
+                elif line.startswith("Coordinates 1 "):
+                    variables_read_dict["Coordinates_box_1"] = True
+                    split_line = line.split()
+                    assert split_line[1] == "1"
+                    assert split_line[2] == "../Test/ethane_box_1.pdb"
+
+                elif line.startswith("Structure 1 "):
+                    variables_read_dict["Structure_box_1"] = True
+                    split_line = line.split()
+                    assert split_line[1] == "1"
+                    assert split_line[2] == "../Test/ethane_box_1.psf"
+
+                elif line.startswith("Restart "):
+                    variables_read_dict["Restart"] = True
+                    split_line = line.split()
+                    assert split_line[1] == "True"
+
+                elif line.startswith("RestartCheckpoint "):
+                    variables_read_dict["RestartCheckpoint"] = True
+                    split_line = line.split()
+                    assert split_line[1] == "True"
+
+        assert variables_read_dict == {
+            "Coordinates_box_0": True,
+            "Structure_box_0": True,
+            "Coordinates_box_1": True,
+            "Structure_box_1": True,
+            "Restart": True,
+            "RestartCheckpoint": True,
         }
 
     def test_failures_restarting_dcd_and_binary_files_NVT(self, ethane_gomc):

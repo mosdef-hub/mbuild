@@ -2192,11 +2192,14 @@ class GOMCControl:
                 )
                 raise ValueError(print_error_message)
 
-            if (
-                self.binCoordinates_box_0 is None
-                or self.extendedSystem_box_0 is None
-                or self.binCoordinates_box_1 is None
-                or self.extendedSystem_box_1 is None
+            elif (
+                    self.binVelocities_box_0 is not None
+                    or self.binVelocities_box_1 is not None
+            ) and (
+                    self.binCoordinates_box_0 is None
+                    or self.extendedSystem_box_0 is None
+                    or self.binCoordinates_box_1 is None
+                    or self.extendedSystem_box_1 is None
             ):
                 print_error_message = (
                     'ERROR: To restart a "GEMC_NPT", "GEMC_NVT", "GCMC" simulation with the '
@@ -2270,26 +2273,30 @@ class GOMCControl:
                     "pdb",
                     expected_file_extension=[".pdb"],
                 )
-                _check_if_string_and_extension(
-                    "Structure_box_0",
-                    Structure_box_0,
-                    "psf",
-                    expected_file_extension=[".psf"],
-                )
                 self.Coordinates_box_0 = Coordinates_box_0
-                self.Structures_box_0 = Structure_box_0
             elif self.ff_psf_pdb_file_directory is None:
                 self.Coordinates_box_0 = "{}.pdb".format(
-                    charmm_object.filename_box_0
-                )
-                self.Structures_box_0 = "{}.psf".format(
                     charmm_object.filename_box_0
                 )
             else:
                 self.Coordinates_box_0 = "{}/{}.pdb".format(
                     self.ff_psf_pdb_file_directory, charmm_object.filename_box_0
                 )
-                self.Structures_box_0 = "{}/{}.psf".format(
+
+            if Structure_box_0 is not None:
+                _check_if_string_and_extension(
+                    "Structure_box_0",
+                    Structure_box_0,
+                    "psf",
+                    expected_file_extension=[".psf"],
+                )
+                self.Structure_box_0 = Structure_box_0
+            elif self.ff_psf_pdb_file_directory is None:
+                self.Structure_box_0 = "{}.psf".format(
+                    charmm_object.filename_box_0
+                )
+            else:
+                self.Structure_box_0 = "{}/{}.psf".format(
                     self.ff_psf_pdb_file_directory, charmm_object.filename_box_0
                 )
 
@@ -2299,7 +2306,7 @@ class GOMCControl:
                 check_input_files_exist=check_input_files_exist,
             )
             _check_if_input_files_exist(
-                self.Structures_box_0,
+                self.Structure_box_0,
                 "box 0 psf file",
                 check_input_files_exist=check_input_files_exist,
             )
@@ -2316,7 +2323,7 @@ class GOMCControl:
                     expected_file_extension=[".coor"],
                 )
                 _check_if_string_and_extension(
-                    "Structure_box_0",
+                    "extendedSystem_box_0",
                     self.extendedSystem_box_0,
                     "xsc",
                     expected_file_extension=[".xsc"],
@@ -2356,26 +2363,32 @@ class GOMCControl:
                     "pdb",
                     expected_file_extension=[".pdb"],
                 )
+                self.Coordinates_box_1 = Coordinates_box_1
+
+            elif self.ff_psf_pdb_file_directory is None:
+                self.Coordinates_box_1 = "{}.pdb".format(
+                    charmm_object.filename_box_1
+                )
+
+            else:
+                self.Coordinates_box_1 = "{}/{}.pdb".format(
+                    self.ff_psf_pdb_file_directory, charmm_object.filename_box_1
+                )
+
+            if Structure_box_1 is not None:
                 _check_if_string_and_extension(
                     "Structure_box_1",
                     Structure_box_1,
                     "psf",
                     expected_file_extension=[".psf"],
                 )
-                self.Coordinates_box_1 = Coordinates_box_1
-                self.Structures_box_1 = Structure_box_1
+                self.Structure_box_1 = Structure_box_1
             elif self.ff_psf_pdb_file_directory is None:
-                self.Coordinates_box_1 = "{}.pdb".format(
-                    charmm_object.filename_box_1
-                )
-                self.Structures_box_1 = "{}.psf".format(
+                self.Structure_box_1 = "{}.psf".format(
                     charmm_object.filename_box_1
                 )
             else:
-                self.Coordinates_box_1 = "{}/{}.pdb".format(
-                    self.ff_psf_pdb_file_directory, charmm_object.filename_box_1
-                )
-                self.Structures_box_1 = "{}/{}.psf".format(
+                self.Structure_box_1 = "{}/{}.psf".format(
                     self.ff_psf_pdb_file_directory, charmm_object.filename_box_1
                 )
 
@@ -2385,7 +2398,7 @@ class GOMCControl:
                 check_input_files_exist=check_input_files_exist,
             )
             _check_if_input_files_exist(
-                self.Structures_box_1,
+                self.Structure_box_1,
                 "box 1 psf file",
                 check_input_files_exist=check_input_files_exist,
             )
@@ -2402,7 +2415,7 @@ class GOMCControl:
                     expected_file_extension=[".coor"],
                 )
                 _check_if_string_and_extension(
-                    "Structure_box_1",
+                    "extendedSystem_box_1",
                     self.extendedSystem_box_1,
                     "xsc",
                     expected_file_extension=[".xsc"],
@@ -2433,7 +2446,7 @@ class GOMCControl:
 
         else:
             self.Coordinates_box_1 = None
-            self.Structures_box_1 = None
+            self.Structure_box_1 = None
 
         self.coul_1_4 = charmm_object.coul_1_4
         self.input_variables_dict = input_variables_dict
@@ -2490,7 +2503,7 @@ class GOMCControl:
         if (
             self.ensemble_type in ["NVT", "NPT"]
             and self.Coordinates_box_1 is not None
-            and self.Structures_box_1 is not None
+            and self.Structure_box_1 is not None
         ):
             self.input_error = True
             print_error_message = (
@@ -2504,7 +2517,7 @@ class GOMCControl:
         if (
             self.ensemble_type in ["GEMC_NVT", "GEMC_NPT", "GCMC"]
             and self.Coordinates_box_1 is None
-            and self.Structures_box_1 is None
+            and self.Structure_box_1 is None
         ):
             self.input_error = True
             print_error_message = (
@@ -2771,20 +2784,20 @@ class GOMCControl:
         required_data_list = [
             self.ff_filename,
             self.Coordinates_box_0,
-            self.Structures_box_0,
+            self.Structure_box_0,
         ]
 
         if self.Coordinates_box_1 is not None:
             required_data_list.append(self.Coordinates_box_1)
-        if self.Structures_box_1 is not None:
-            required_data_list.append(self.Structures_box_1)
+        if self.Structure_box_1 is not None:
+            required_data_list.append(self.Structure_box_1)
 
         if self.ensemble_type in ["NVT", "NPT"]:
             if (
                 len(required_data_list) != 3
                 or os.path.splitext(self.ff_filename)[1] != ".inp"
                 or os.path.splitext(self.Coordinates_box_0)[1] != ".pdb"
-                or os.path.splitext(self.Structures_box_0)[1] != ".psf"
+                or os.path.splitext(self.Structure_box_0)[1] != ".psf"
             ):
                 self.input_error = True
                 print_error_message = (
@@ -2806,9 +2819,9 @@ class GOMCControl:
                 len(required_data_list) != 5
                 or os.path.splitext(self.ff_filename)[1] != ".inp"
                 or os.path.splitext(self.Coordinates_box_0)[1] != ".pdb"
-                or os.path.splitext(self.Structures_box_0)[1] != ".psf"
+                or os.path.splitext(self.Structure_box_0)[1] != ".psf"
                 or os.path.splitext(self.Coordinates_box_1)[1] != ".pdb"
-                or os.path.splitext(self.Structures_box_1)[1] != ".psf"
+                or os.path.splitext(self.Structure_box_1)[1] != ".psf"
             ):
                 warn(
                     "ERROR: The proper force field, PDB, and psf files were not provided, "
@@ -4871,11 +4884,11 @@ class GOMCControl:
         data_control_file.write("####################################\n")
         if self.ensemble_type in ["NVT", "NPT", "GEMC_NPT", "GEMC_NVT", "GCMC"]:
             data_control_file.write(
-                "{:25s} {}\n".format("Structure 0", self.Structures_box_0)
+                "{:25s} {}\n".format("Structure 0", self.Structure_box_0)
             )
         if self.ensemble_type in ["GEMC_NPT", "GEMC_NVT", "GCMC"]:
             data_control_file.write(
-                "{:25s} {}\n".format("Structure 1", self.Structures_box_1)
+                "{:25s} {}\n".format("Structure 1", self.Structure_box_1)
             )
 
         if (
