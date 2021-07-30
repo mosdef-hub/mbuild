@@ -9770,7 +9770,7 @@ class TestGOMCControlFileWriter(BaseTest):
             1000,
             300,
             ff_psf_pdb_file_directory="../Test",
-            Parameters='../test_folder/new.par',
+            Parameters="../test_folder/new.par",
             Restart=True,
             RestartCheckpoint=True,
             check_input_files_exist=False,
@@ -9790,7 +9790,7 @@ class TestGOMCControlFileWriter(BaseTest):
                 if line.startswith("Parameters "):
                     variables_read_dict["Parameters"] = True
                     split_line = line.split()
-                    assert split_line[1] == '../test_folder/new.par'
+                    assert split_line[1] == "../test_folder/new.par"
 
                 elif line.startswith("Coordinates 0 "):
                     variables_read_dict["Coordinates_box_0"] = True
@@ -10120,7 +10120,7 @@ class TestGOMCControlFileWriter(BaseTest):
             1000,
             300,
             ff_psf_pdb_file_directory="../Test",
-            Parameters='../test_folder/new.inp',
+            Parameters="../test_folder/new.inp",
             Restart=True,
             RestartCheckpoint=True,
             check_input_files_exist=False,
@@ -10142,7 +10142,7 @@ class TestGOMCControlFileWriter(BaseTest):
                 if line.startswith("Parameters "):
                     variables_read_dict["Parameters"] = True
                     split_line = line.split()
-                    assert split_line[1] == '../test_folder/new.inp'
+                    assert split_line[1] == "../test_folder/new.inp"
 
                 elif line.startswith("Coordinates 0 "):
                     variables_read_dict["Coordinates_box_0"] = True
