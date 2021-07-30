@@ -79,7 +79,7 @@ stages:
 
           - bash: |
               source activate mbuild-dev
-              python -m pytest -v --cov=mbuild --cov-report=html --pyargs mbuild
+              python -m pytest -v --cov=mbuild --cov-report=html --color=yes --pyargs mbuild
             displayName: Run Tests
 
           - bash: |
@@ -133,7 +133,7 @@ stages:
 
           - script: |
               call activate mbuild-dev
-              python -m pytest -v --cov=mbuild --cov-report=html --pyargs mbuild
+              python -m pytest -v --cov=mbuild --cov-report=html --color=yes --pyargs mbuild
             displayName: Run Tests
 
       - job: LinuxBleedingFoyer
@@ -150,36 +150,17 @@ stages:
               conda update -c defaults conda
               conda install -c conda-forge mamba
               conda update --all
-              pip install conda-merge
               git clone https://github.com/mosdef-hub/foyer.git
-              conda-merge environment-dev.yml foyer/environment-dev.yml > combine.yml
-              sed -iE 's/python.*$/python=3.8/' combine.yml
-              sed -iE '/mbuild/d' combine.yml
-              sed -iE '/ foyer/d' combine.yml
-              mamba env create -n bleeding-mamba -f combine.yml
-              conda env create -n bleeding-conda -f combine.yml
-              source activate bleeding-mamba
+              mamba env create -n -f environment-dev.yml
+              source activate bleeding
               pip install -e .
               cd foyer
-              pip install -e .
-              echo "LISTING mamba env"
-              conda list
-              echo "DONE LISTING mamba env"
-
-              source activate bleeding-conda
-              echo "LISTING conda env"
-              conda list
-              echo "DONE LISTING conda env"
-              cd ..
-              pip install -e .
-              cd foyer
+              mamba env update --name bleeding --file environment.yml
               pip install -e .
             displayName: Create a new bleeding test environment with mamba
 
           - bash: |
-              source activate bleeding-mamba
-              python -m pytest -v --cov=mbuild --cov-report=html --color=yes --pyargs mbuild
-              source activate bleeding-conda
+              source activate bleeding
               python -m pytest -v --cov=mbuild --cov-report=html --color=yes --pyargs mbuild
             displayName: Run Tests
 
