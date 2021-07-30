@@ -58,7 +58,7 @@ def from_snapshot(snapshot, scale=1.0):
         )
     else:
         # gsd / hoomd v3
-        box = snapshot.configuration.box
+        box = np.asarray(snapshot.configuration.box)
         comp.box = Box.from_lengths_tilt_factors(
             lengths=box[:3] * scale, tilt_factors=box[3:]
         )
