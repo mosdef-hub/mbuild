@@ -14,12 +14,13 @@ from mbuild.utils.sorting import natural_sort
 
 hoomd = import_("hoomd")
 
-if "version" in dir(hoomd):
-    hoomd_version = packaging.version.parse(hoomd.version.version)
-else:
-    hoomd_version = packaging.version.parse(hoomd.__version__)
-
 __all__ = ["to_hoomdsnapshot", "from_snapshot"]
+
+def _get_hoomd_version():
+    if "version" in dir(hoomd):
+        return packaging.version.parse(hoomd.version.version)
+    else:
+        return packaging.version.parse(hoomd.__version__)
 
 
 def from_snapshot(snapshot, scale=1.0):
@@ -145,6 +146,7 @@ def to_hoomdsnapshot(
     elif isinstance(structure, Compound):
         structure = structure.to_parmed(**parmed_kwargs)
 
+    hoomd_version = _get_hoomd_version()
     if hoomd_version.major == 2 and not hoomd.context.current:
         hoomd.context.initialize("")
 

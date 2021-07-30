@@ -5,7 +5,6 @@ import warnings
 from collections import namedtuple
 
 import numpy as np
-import packaging.version
 import parmed as pmd
 
 import mbuild as mb
@@ -13,7 +12,7 @@ from mbuild.utils.conversion import RB_to_OPLS
 from mbuild.utils.io import import_
 from mbuild.utils.sorting import natural_sort
 
-from .hoomd_snapshot import to_hoomdsnapshot
+from .hoomd_snapshot import to_hoomdsnapshot, _get_hoomd_version
 
 hoomd = import_("hoomd")
 
@@ -90,11 +89,7 @@ def create_hoomd_forcefield(
             "Please pass a parmed.Structure to create_hoomd_simulation"
         )
 
-    if "version" in dir(hoomd):
-        hoomd_version = packaging.version.parse(hoomd.version.version)
-    else:
-        hoomd_version = packaging.version.parse(hoomd.__version__)
-
+    hoomd_version = _get_hoomd_version()
     if hoomd_version.major < 3:
         raise RuntimeError(
             "Unsupported HOOMD-blue version:", str(hoomd_version)
