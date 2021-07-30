@@ -16,6 +16,7 @@ hoomd = import_("hoomd")
 
 __all__ = ["to_hoomdsnapshot", "from_snapshot"]
 
+
 def _get_hoomd_version():
     if "version" in dir(hoomd):
         return packaging.version.parse(hoomd.version.version)

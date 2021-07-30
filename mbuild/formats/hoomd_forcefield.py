@@ -12,7 +12,7 @@ from mbuild.utils.conversion import RB_to_OPLS
 from mbuild.utils.io import import_
 from mbuild.utils.sorting import natural_sort
 
-from .hoomd_snapshot import to_hoomdsnapshot, _get_hoomd_version
+from .hoomd_snapshot import _get_hoomd_version, to_hoomdsnapshot
 
 hoomd = import_("hoomd")
 
