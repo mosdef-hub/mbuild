@@ -151,7 +151,7 @@ stages:
               conda install -c conda-forge mamba
               conda update --all
               git clone https://github.com/mosdef-hub/foyer.git
-              mamba env create -f environment-dev.yml
+              mamba env create --name bleeding -f environment-dev.yml
               source activate bleeding
               pip install -e .
               cd foyer
