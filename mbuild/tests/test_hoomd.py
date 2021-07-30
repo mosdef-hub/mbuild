@@ -31,7 +31,7 @@ class TestHoomdAny(BaseTest):
         if hoomd_version.major == 2:
             hoomd.context.initialize("")
             init_snap = hoomd.data.make_snapshot(
-                N=10, box=hoomd.data.boxdim(L=10)
+                N=0, box=hoomd.data.boxdim(L=10)
             )
         else:
             init_snap = hoomd.Snapshot()
