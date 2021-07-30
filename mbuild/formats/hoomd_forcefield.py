@@ -54,7 +54,6 @@ def create_hoomd_forcefield(
         Initial snapshot to which to add the ParmEd structure object
         (useful for rigid bodies)
 
-
     Returns
     -------
     hoomd_snapshot : hoomd.Snapshot
@@ -64,15 +63,13 @@ def create_hoomd_forcefield(
     ReferenceValues : namedtuple
         Values used in scaling
 
-
-    Notes
-    -----
+    Note
+    ----
     If you pass a non-parametrized pmd.Structure, you will not have
     angle, dihedral, or force field information. You may be better off
     creating a hoomd.Snapshot
     Reference units should be expected to convert parmed Structure units :
         angstroms, kcal/mol, and daltons
-
     """
     if isinstance(structure, mb.Compound):
         raise ValueError(
