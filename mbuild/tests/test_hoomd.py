@@ -293,6 +293,62 @@ class TestHoomdSimulation(BaseTest):
             )
 
 
+@pytest.mark.skipif(not has_hoomd or hoomd_version.major < 3,
+                    reason="HOOMD is not installed or is the wrong version")
+class TestHoomdForcefield(BaseTest):
+
+    def test_bad_input_to_hoomd_forcefield(self):
+        from mbuild.formats.hoomd_forcefield import create_hoomd_forcefield
+
+        with pytest.raises(ValueError):
+            create_hoomd_forcefield("fake_object")
+
+    def test_compound_to_hoomd_forcefield(self, ethane):
+        from mbuild.formats.hoomd_forcefield import create_hoomd_forcefield
+
+        with pytest.raises(ValueError):
+            create_hoomd_forcefield(ethane)
+
+    @pytest.mark.skipif(not has_foyer, reason="Foyer is not installed")
+    def test_structure_to_hoomd_forcefield(self, ethane):
+        import hoomd
+        from foyer.forcefield import Forcefield
+
+        from mbuild.formats.hoomd_forcefield import create_hoomd_forcefield
+
+        ff = Forcefield(name="oplsaa")
+        structure = ff.apply(ethane)
+
+        snapshot, forces, ref_values = create_hoomd_forcefield(structure)
+
+        assert isinstance(forces[0], hoomd.md.pair.LJ)
+        assert isinstance(forces[1], hoomd.md.pair.Ewald)
+        assert isinstance(forces[2], hoomd.md.long_range.pppm.Coulomb)
+        assert isinstance(forces[3], hoomd.md.special_pair.LJ)
+        assert isinstance(forces[4], hoomd.md.special_pair.Coulomb)
+        assert isinstance(forces[5], hoomd.md.bond.Harmonic)
+        assert isinstance(forces[6], hoomd.md.angle.Harmonic)
+        assert isinstance(forces[7], hoomd.md.dihedral.OPLS)
+
+    @pytest.mark.skipif(not has_foyer, reason="Foyer is not installed")
+    def test_lj_to_hoomd_forcefield(self):
+        import hoomd
+        from foyer.forcefield import Forcefield
+
+        from mbuild.formats.hoomd_forcefield import create_hoomd_forcefield
+
+        box = mb.Compound()
+        box.add(mb.Compound(name="Ar", pos=[1, 1, 1]))
+        box.add(mb.Compound(name="Ar", pos=[1, 1, 1]))
+        ff = Forcefield(forcefield_files=get_fn("lj.xml"))
+        structure = ff.apply(box)
+        structure.box = [10, 10, 10, 90, 90, 90]
+
+        snapshot, forces, ref_values = create_hoomd_forcefield(structure)
+
+        assert isinstance(forces[0], hoomd.md.pair.LJ)
+
+
 class TestHoomdXML(BaseTest):
     def test_save(self, ethane):
         ethane.save(filename="ethane.hoomdxml")
