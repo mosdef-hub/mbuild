@@ -18,9 +18,10 @@ RUN conda update conda -yq && \
 	conda config --set always_yes yes --set changeps1 no && \
 	. /opt/conda/etc/profile.d/conda.sh && \
     sed -i -E "s/python.*$/python="$(PY_VERSION)"/" environment-dev.yml && \
-	conda env create nomkl --file environment-dev.yml && \
+  conda install -c conda-forge mamba && \
+	mamba env create nomkl --file environment-dev.yml && \
 	conda activate mbuild-dev && \
-	conda install -c conda-forge nomkl jupyter && \
+	mamba install -c conda-forge nomkl jupyter && \
     python setup.py install && \
 	echo "source activate mbuild-dev" >> \
 	/home/anaconda/.profile && \
