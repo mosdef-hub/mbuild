@@ -96,7 +96,9 @@ def create_hoomd_forcefield(
         hoomd_version = packaging.version.parse(hoomd.__version__)
 
     if hoomd_version.major < 3:
-        raise RuntimeError("Unsupported HOOMD-blue version:", str(hoomd_version))
+        raise RuntimeError(
+            "Unsupported HOOMD-blue version:", str(hoomd_version)
+        )
 
     hoomd_forcefield = []
 

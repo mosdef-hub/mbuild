@@ -1,23 +1,24 @@
 import xml.etree.ElementTree
 
 import numpy as np
+import packaging.version
 import pytest
 
 import mbuild as mb
 from mbuild.tests.base_test import BaseTest
 from mbuild.utils.io import get_fn, has_foyer, has_gsd, has_hoomd, import_
-import packaging.version
 
 if has_hoomd:
     import hoomd
+
     if "version" in dir(hoomd):
         hoomd_version = packaging.version.parse(hoomd.version.version)
     else:
         hoomd_version = packaging.version.parse(hoomd.__version__)
 
+
 @pytest.mark.skipif(not has_hoomd, reason="HOOMD is not installed")
 class TestHoomdAny(BaseTest):
-
     def test_empty_initial_snapshot(self):
         import hoomd
 
@@ -28,7 +29,9 @@ class TestHoomdAny(BaseTest):
         system = mb.fill_box(part, n_compounds=10, box=box)
 
         if hoomd_version.major == 2:
-            init_snap = hoomd.data.make_snapshot(N=10, box=hoomd.data.boxdim(L=10))
+            init_snap = hoomd.data.make_snapshot(
+                N=10, box=hoomd.data.boxdim(L=10)
+            )
         else:
             init_snap = hoomd.Snapshot()
             init_snap.configuration.box = hoomd.Box.cube(L=10)
@@ -58,12 +61,12 @@ class TestHoomdAny(BaseTest):
 
     @pytest.mark.skipif(not has_gsd, reason="gsd is not installed")
     def test_compound_from_gsdsnapshot(self, ethane):
+        import gsd.hoomd
+
         from mbuild.formats.hoomd_snapshot import (
             from_snapshot,
             to_hoomdsnapshot,
         )
-
-        import gsd.hoomd
 
         lengths = [5, 5, 5]
         filled = mb.fill_box(ethane, n_compounds=5, box=mb.Box(lengths))
@@ -135,7 +138,9 @@ class TestHoomdAny(BaseTest):
         box = mb.Box(lengths=[5, 5, 5], angles=[90, 90, 90])
         system = mb.fill_box(part, n_compounds=10, box=box)
         if hoomd_version.major == 2:
-            init_snap = hoomd.data.make_snapshot(N=10, box=hoomd.data.boxdim(L=10))
+            init_snap = hoomd.data.make_snapshot(
+                N=10, box=hoomd.data.boxdim(L=10)
+            )
         else:
             init_snap = hoomd.Snapshot()
             init_snap.particles.N = 10
@@ -150,7 +155,9 @@ class TestHoomdAny(BaseTest):
             assert (snap.box.Lx, snap.box.Ly, snap.box.Lz) == (50, 50, 50)
             assert (snap.box.xy, snap.box.xz, snap.box.yz) == (0, 0, 0)
         else:
-            np.testing.assert_allclose(snap.configuration.box, [50, 50, 50, 0, 0, 0])
+            np.testing.assert_allclose(
+                snap.configuration.box, [50, 50, 50, 0, 0, 0]
+            )
 
     def test_bad_input_to_snapshot(self):
         from mbuild.formats.hoomd_snapshot import to_hoomdsnapshot
@@ -185,10 +192,11 @@ class TestHoomdAny(BaseTest):
         assert snap.pairs.N == 9
 
 
-@pytest.mark.skipif(not has_hoomd or hoomd_version.major != 2,
-                    reason="HOOMD is not installed or is the wrong version")
+@pytest.mark.skipif(
+    not has_hoomd or hoomd_version.major != 2,
+    reason="HOOMD is not installed or is the wrong version",
+)
 class TestHoomdSimulation(BaseTest):
-
     def test_bad_input_to_hoomdsimulation(self):
         from mbuild.formats.hoomd_simulation import create_hoomd_simulation
 
@@ -293,10 +301,11 @@ class TestHoomdSimulation(BaseTest):
             )
 
 
-@pytest.mark.skipif(not has_hoomd or hoomd_version.major < 3,
-                    reason="HOOMD is not installed or is the wrong version")
+@pytest.mark.skipif(
+    not has_hoomd or hoomd_version.major < 3,
+    reason="HOOMD is not installed or is the wrong version",
+)
 class TestHoomdForcefield(BaseTest):
-
     def test_bad_input_to_hoomd_forcefield(self):
         from mbuild.formats.hoomd_forcefield import create_hoomd_forcefield
 
