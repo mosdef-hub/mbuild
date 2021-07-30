@@ -18,7 +18,7 @@ from .hoomd_snapshot import to_hoomdsnapshot
 hoomd = import_("hoomd")
 
 
-def create_hoomd3_forcefield(
+def create_hoomd_forcefield(
     structure,
     ref_distance=1.0,
     ref_mass=1.0,
@@ -95,8 +95,8 @@ def create_hoomd3_forcefield(
     else:
         hoomd_version = packaging.version.parse(hoomd.__version__)
 
-    if hoomd_version.major != 3:
-        raise RuntimeError("Unsupported HOOMD version:", str(hoomd_version))
+    if hoomd_version.major < 3:
+        raise RuntimeError("Unsupported HOOMD-blue version:", str(hoomd_version))
 
     hoomd_forcefield = []
 
