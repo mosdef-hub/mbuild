@@ -29,6 +29,7 @@ class TestHoomdAny(BaseTest):
         system = mb.fill_box(part, n_compounds=10, box=box)
 
         if hoomd_version.major == 2:
+            hoomd.context.initialize("")
             init_snap = hoomd.data.make_snapshot(
                 N=10, box=hoomd.data.boxdim(L=10)
             )
@@ -138,6 +139,7 @@ class TestHoomdAny(BaseTest):
         box = mb.Box(lengths=[5, 5, 5], angles=[90, 90, 90])
         system = mb.fill_box(part, n_compounds=10, box=box)
         if hoomd_version.major == 2:
+            hoomd.context.initialize("")
             init_snap = hoomd.data.make_snapshot(
                 N=10, box=hoomd.data.boxdim(L=10)
             )
