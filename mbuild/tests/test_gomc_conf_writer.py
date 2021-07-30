@@ -9770,6 +9770,7 @@ class TestGOMCControlFileWriter(BaseTest):
             1000,
             300,
             ff_psf_pdb_file_directory="../Test",
+            Parameters='../test_folder/new.par',
             Restart=True,
             RestartCheckpoint=True,
             check_input_files_exist=False,
@@ -9778,6 +9779,7 @@ class TestGOMCControlFileWriter(BaseTest):
 
         with open("test_restarting_pdb_psf_NVT.conf", "r") as fp:
             variables_read_dict = {
+                "Parameters": False,
                 "Coordinates_box_0": False,
                 "Structure_box_0": False,
                 "Restart": False,
@@ -9785,7 +9787,12 @@ class TestGOMCControlFileWriter(BaseTest):
             }
             out_gomc = fp.readlines()
             for i, line in enumerate(out_gomc):
-                if line.startswith("Coordinates 0 "):
+                if line.startswith("Parameters "):
+                    variables_read_dict["Parameters"] = True
+                    split_line = line.split()
+                    assert split_line[1] == '../test_folder/new.par'
+
+                elif line.startswith("Coordinates 0 "):
                     variables_read_dict["Coordinates_box_0"] = True
                     split_line = line.split()
                     assert split_line[1] == "0"
@@ -9808,6 +9815,7 @@ class TestGOMCControlFileWriter(BaseTest):
                     assert split_line[1] == "True"
 
         assert variables_read_dict == {
+            "Parameters": True,
             "Coordinates_box_0": True,
             "Structure_box_0": True,
             "Restart": True,
@@ -10112,6 +10120,7 @@ class TestGOMCControlFileWriter(BaseTest):
             1000,
             300,
             ff_psf_pdb_file_directory="../Test",
+            Parameters='../test_folder/new.inp',
             Restart=True,
             RestartCheckpoint=True,
             check_input_files_exist=False,
@@ -10120,6 +10129,7 @@ class TestGOMCControlFileWriter(BaseTest):
 
         with open("test_restarting_pdb_psf_GEMC_NVT.conf", "r") as fp:
             variables_read_dict = {
+                "Parameters": False,
                 "Coordinates_box_0": False,
                 "Structure_box_0": False,
                 "Coordinates_box_1": False,
@@ -10129,7 +10139,12 @@ class TestGOMCControlFileWriter(BaseTest):
             }
             out_gomc = fp.readlines()
             for i, line in enumerate(out_gomc):
-                if line.startswith("Coordinates 0 "):
+                if line.startswith("Parameters "):
+                    variables_read_dict["Parameters"] = True
+                    split_line = line.split()
+                    assert split_line[1] == '../test_folder/new.inp'
+
+                elif line.startswith("Coordinates 0 "):
                     variables_read_dict["Coordinates_box_0"] = True
                     split_line = line.split()
                     assert split_line[1] == "0"
@@ -10164,6 +10179,7 @@ class TestGOMCControlFileWriter(BaseTest):
                     assert split_line[1] == "True"
 
         assert variables_read_dict == {
+            "Parameters": True,
             "Coordinates_box_0": True,
             "Structure_box_0": True,
             "Coordinates_box_1": True,
