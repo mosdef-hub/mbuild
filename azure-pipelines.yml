@@ -88,6 +88,13 @@ stages:
             condition: and( eq( variables['Agent.OS'], 'Linux' ), eq( variables['python.version'], '3.8' ) )
             displayName: Upload Coverage Report
 
+          - bash: |
+              source activate mbuild-dev
+              mamba install -c conda-forge/label/hoomd_dev -c conda-forge hoomd -y
+              python -m pytest -v --cov=mbuild --cov-report=html --color=yes mbuild/tests/test_hoomd.py
+            condition: and( eq( variables['Agent.OS'], 'Linux' ), eq( variables['python.version'], '3.8' ) )
+            displayName: Run tests and upload coverage for hoomdv3
+
           - task: PublishCodeCoverageResults@1
             inputs:
               codeCoverageTool: Cobertura
