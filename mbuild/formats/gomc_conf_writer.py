@@ -2795,7 +2795,7 @@ class GOMCControl:
         if self.ensemble_type in ["NVT", "NPT"]:
             if (
                 len(required_data_list) != 3
-                or os.path.splitext(self.ff_filename)[1] != ".inp"
+                or os.path.splitext(self.ff_filename)[1] not in [".inp", ".par"]
                 or os.path.splitext(self.Coordinates_box_0)[1] != ".pdb"
                 or os.path.splitext(self.Structure_box_0)[1] != ".psf"
             ):
@@ -2803,7 +2803,7 @@ class GOMCControl:
                 print_error_message = (
                     "ERROR: The proper force field, PDB, and psf files were not provided, "
                     "or at least their extentions are not correct "
-                    "(i.e., not .inp, .pdb, or .psf). Or box 1 PSF and PDB files were "
+                    "(i.e., not .inp, .par, .pdb, or .psf). Or box 1 PSF and PDB files were "
                     "provided for the NVT or NPT simulations, which is not allowed"
                 )
                 raise ValueError(print_error_message)
@@ -2817,25 +2817,20 @@ class GOMCControl:
         if self.ensemble_type in ["GEMC_NVT", "GEMC_NPT", "GCMC"]:
             if (
                 len(required_data_list) != 5
-                or os.path.splitext(self.ff_filename)[1] != ".inp"
+                or os.path.splitext(self.ff_filename)[1] not in [".inp", ".par"]
                 or os.path.splitext(self.Coordinates_box_0)[1] != ".pdb"
                 or os.path.splitext(self.Structure_box_0)[1] != ".psf"
                 or os.path.splitext(self.Coordinates_box_1)[1] != ".pdb"
                 or os.path.splitext(self.Structure_box_1)[1] != ".psf"
             ):
-                warn(
-                    "ERROR: The proper force field, PDB, and psf files were not provided, "
-                    "or at least their extentions are not correct "
-                    "(i.e., not .inp, .pdb, or .psf). Or box 1 PSF and PDB files were not provided "
-                    "for the GEMC_NVT, GEMC_NPT or GCMC simulations, which is not allowed"
-                )
-                self.input_error = True
                 print_error_message = (
                     "ERROR: The proper force field, PDB, and psf files were not provided, "
                     "or at least their extentions are not correct "
-                    "(i.e., not .inp, .pdb, or .psf). Or box 1 PSF and PDB files were not provided "
+                    "(i.e., not .inp, .par, .pdb, or .psf). Or box 1 PSF and PDB files were not provided "
                     "for the GEMC_NVT, GEMC_NPT or GCMC simulations, which is not allowed"
                 )
+                self.input_error = True
+                print_error_message = (print_error_message)
                 raise ValueError(print_error_message)
         else:
             print(
