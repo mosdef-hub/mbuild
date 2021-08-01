@@ -529,13 +529,17 @@ class TestGOMCControlFileWriter(BaseTest):
             residues=[ethane_gomc.name],
             forcefield_selection="oplsaa",
         )
+        charmm.write_inp()
+        charmm.write_psf()
+        charmm.write_pdb()
+
         gomc_control.write_gomc_control_file(
             charmm,
             "test_save_basic_NVT.conf",
             "NVT",
             10,
             300,
-            check_input_files_exist=False,
+            check_input_files_exist=True,
             Restart=False,
         )
 
@@ -1012,13 +1016,17 @@ class TestGOMCControlFileWriter(BaseTest):
             residues=[ethane_gomc.name],
             forcefield_selection="oplsaa",
         )
+        charmm.write_inp()
+        charmm.write_psf()
+        charmm.write_pdb()
+
         gomc_control.write_gomc_control_file(
             charmm,
             "test_save_basic_NPT.conf",
             "NPT",
             1000,
             500,
-            check_input_files_exist=False,
+            check_input_files_exist=True,
         )
 
         with open("test_save_basic_NPT.conf", "r") as fp:
@@ -1285,13 +1293,17 @@ class TestGOMCControlFileWriter(BaseTest):
             residues=[ethane_gomc.name],
             forcefield_selection="oplsaa",
         )
+        charmm.write_inp()
+        charmm.write_psf()
+        charmm.write_pdb()
+
         gomc_control.write_gomc_control_file(
             charmm,
             "test_save_basic_GCMC.conf",
             "GCMC",
             100000,
             500,
-            check_input_files_exist=False,
+            check_input_files_exist=True,
             input_variables_dict={
                 "ChemPot": {"ETH": -4000},
                 "VDWGeometricSigma": True,
@@ -1625,13 +1637,17 @@ class TestGOMCControlFileWriter(BaseTest):
             residues=[ethane_gomc.name],
             forcefield_selection="oplsaa",
         )
+        charmm.write_inp()
+        charmm.write_psf()
+        charmm.write_pdb()
+
         gomc_control.write_gomc_control_file(
             charmm,
             "test_save_basic_GEMC_NVT.conf",
             "GEMC_NVT",
             1000000,
             500,
-            check_input_files_exist=False,
+            check_input_files_exist=True,
         )
 
         with open("test_save_basic_GEMC_NVT.conf", "r") as fp:
