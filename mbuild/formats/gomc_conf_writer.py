@@ -97,19 +97,24 @@ def _get_required_data(description=False):
         "as if previous simulation was continued.",
         "Parameters": "Required for alternate force field file (all ensembles): "
         "str, (default=None), "
-        "Override all other force field directory and filename input with the correct extension (.inp or .par).",
+        "Override all other force field directory and filename input with the correct extension (.inp or .par). "
+        "Note: the default directory is the current directory with the Charmm object file name.",
         "Coordinates_box_0": "Required for alternate box 0 .pdb file (all ensembles): "
         "str, (default=None), "
-        "Override all other box 0 pdb directory and filename inputs.",
+        "Override all other box 0 pdb directory and filename inputs. "
+        "Note: the default directory is the current directory with the Charmm object file name.",
         "Structure_box_0": "Required for alternate box 0 .psf file (all ensembles): "
         "str, (default=None), "
-        "Override all other box 0 psf directory and filename inputs.",
+        "Override all other box 0 psf directory and filename inputs. "
+        "Note: the default directory is the current directory with the Charmm object file name.",
         "Coordinates_box_1": "Required for alternate box 1 .pdb file (all ensembles): "
         "str, (default=None), "
-        "Override all other box 1 pdb directory and filename inputs.",
+        "Override all other box 1 pdb directory and filename inputs. "
+        "Note: the default directory is the current directory with the Charmm object file name.",
         "Structure_box_1": "Required for alternate box 1 .psf file  (all ensembles): "
         "str, (default=None), "
-        "Override all other box 1 psf directory and filename inputs.",
+        "Override all other box 1 psf directory and filename inputs. "
+        "Note: the default directory is the current directory with the Charmm object file name.",
         "binCoordinates_box_0": "Required for alternate box 0 .coor file (all ensembles): "
         "str, (default=None), "
         "The box 0 binary coordinate file is used only for restarting "
@@ -1341,14 +1346,19 @@ class GOMCControl:
         would result in an identical outcome, as if previous simulation was continued.
     Parameters : str, (default=None)
         Override all other force field directory and filename input with the correct extension (.inp or .par).
+        Note: the default directory is the current directory with the Charmm object file name.
     Coordinates_box_0 : str, (default=None)
         Override all other box 0 pdb directory and filename inputs with the correct extension.
+        Note: the default directory is the current directory with the Charmm object file name.
     Structure_box_0 : str, (default=None)
         Override all other box 0 psf directory and filename inputs with the correct extension.
+        Note: the default directory is the current directory with the Charmm object file name.
     Coordinates_box_1 : str, (default=None)
         Override all other box 1 pdb directory and filename inputs with the correct extension.
+        Note: the default directory is the current directory with the Charmm object file name.
     Structure_box_1 : str, (default=None)
         Override all other box 1  psf directory and filename inputs with the correct extension.
+        Note: the default directory is the current directory with the Charmm object file name.
     binCoordinates_box_0 : str, (default=None)
         The box 0 binary coordinate file is used only for restarting a GOMC simulation,
         which provides increased numerical accuracy.
@@ -1955,14 +1965,19 @@ class GOMCControl:
         would result in an identical outcome, as if previous simulation was continued.
     Parameters : str, (default=None)
         Override all other force field directory and filename input with the correct extension (.inp or .par).
+        Note: the default directory is the current directory with the Charmm object file name.
     Coordinates_box_0 : str, (default=None)
         Override all other box 0 pdb directory and filename inputs with the correct extension.
+        Note: the default directory is the current directory with the Charmm object file name.
     Structure_box_0 : str, (default=None)
         Override all other box 0 psf directory and filename inputs with the correct extension.
+        Note: the default directory is the current directory with the Charmm object file name.
     Coordinates_box_1 : str, (default=None)
         Override all other box 1 pdb directory and filename inputs with the correct extension.
+        Note: the default directory is the current directory with the Charmm object file name.
     Structure_box_1 : str, (default=None)
         Override all other box 1  psf directory and filename inputs with the correct extension.
+        Note: the default directory is the current directory with the Charmm object file name.
     binCoordinates_box_0 : str, (default=None)
         The box 0 binary coordinate file is used only for restarting a GOMC simulation,
         which provides increased numerical accuracy.
@@ -6588,14 +6603,19 @@ def write_gomc_control_file(
         would result in an identical outcome, as if previous simulation was continued.
     Parameters : str, (default=None)
         Override all other force field directory and filename input with the correct extension (.inp or .par).
+        Note: the default directory is the current directory with the Charmm object file name.
     Coordinates_box_0 : str, (default=None)
         Override all other box 0 pdb directory and filename inputs with the correct extension.
+        Note: the default directory is the current directory with the Charmm object file name.
     Structure_box_0 : str, (default=None)
         Override all other box 0 psf directory and filename inputs with the correct extension.
+        Note: the default directory is the current directory with the Charmm object file name.
     Coordinates_box_1 : str, (default=None)
         Override all other box 1 pdb directory and filename inputs with the correct extension.
+        Note: the default directory is the current directory with the Charmm object file name.
     Structure_box_1 : str, (default=None)
         Override all other box 1  psf directory and filename inputs with the correct extension.
+        Note: the default directory is the current directory with the Charmm object file name.
     binCoordinates_box_0 : str, (default=None)
         The box 0 binary coordinate file is used only for restarting a GOMC simulation,
         which provides increased numerical accuracy.
@@ -7201,14 +7221,19 @@ def write_gomc_control_file(
         would result in an identical outcome, as if previous simulation was continued.
     Parameters : str, (default=None)
         Override all other force field directory and filename input with the correct extension (.inp or .par).
+        Note: the default directory is the current directory with the Charmm object file name.
     Coordinates_box_0 : str, (default=None)
         Override all other box 0 pdb directory and filename inputs with the correct extension.
+        Note: the default directory is the current directory with the Charmm object file name.
     Structure_box_0 : str, (default=None)
         Override all other box 0 psf directory and filename inputs with the correct extension.
+        Note: the default directory is the current directory with the Charmm object file name.
     Coordinates_box_1 : str, (default=None)
         Override all other box 1 pdb directory and filename inputs with the correct extension.
+        Note: the default directory is the current directory with the Charmm object file name.
     Structure_box_1 : str, (default=None)
         Override all other box 1  psf directory and filename inputs with the correct extension.
+        Note: the default directory is the current directory with the Charmm object file name.
     binCoordinates_box_0 : str, (default=None)
         The box 0 binary coordinate file is used only for restarting a GOMC simulation,
         which provides increased numerical accuracy.
