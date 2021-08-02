@@ -373,13 +373,7 @@ class Compound(object):
                 "Cannot set the mass of a Compound containing "
                 "children compounds"
             )
-        if isinstance(value, Sequence) and not isinstance(value, str):
-            if len(value) == 1:
-                value = value[0]
-            else:
-                raise MBuildError(
-                    "Mass can only be set for one compound at a time"
-                )
+
         value = float(value)
         if value < 0.0:
             raise ValueError("Cannot set a mass value less than zero")
