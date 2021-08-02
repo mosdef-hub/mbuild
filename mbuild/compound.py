@@ -89,7 +89,7 @@ class Compound(object):
         The type of Compound.
     pos : np.ndarray, shape=(3,), dtype=float, optional, default=[0, 0, 0]
         The position of the Compound in Cartestian space
-    mass : float, optional, default=None
+    mass : float, optional, default=0.0
         The mass of the compound. If none is set, then will try to
         infer the mass from a compound's element attribute.
         If neither `mass` or `element` are specified, then the
@@ -145,7 +145,7 @@ class Compound(object):
         subcompounds=None,
         name=None,
         pos=None,
-        mass=None,
+        mass=0.0,
         charge=0.0,
         periodicity=None,
         box=None,
@@ -352,16 +352,10 @@ class Compound(object):
         then a mass of zero is returned.
         """
         if self._contains_only_ports():
-            if self._mass is None:
-                warn("Mass has not been set for this compound")
-            else:
-                return self._mass
+            return self._particle_mass(self) 
         else:
-            if self._mass is None:
-                add = 0
-            else:
-                add = self._mass
-            return sum([self._particle_mass(p) for p in self.particles()]) + add
+            return (sum([self._particle_mass(p) for p in self.particles()])
+                    + self._particle_mass(self))  
 
     @staticmethod
     def _particle_mass(particle):
