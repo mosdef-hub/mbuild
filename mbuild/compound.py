@@ -356,7 +356,8 @@ class Compound(object):
         else:
             return sum([self._particle_mass(p) for p in self.particles()])
 
-    def _particle_mass(self, particle):
+    @staticmethod
+    def _particle_mass(particle):
         if particle._mass:
             return particle._mass
         else:
@@ -377,7 +378,7 @@ class Compound(object):
                 value = value[0]
             else:
                 raise MBuildError(
-                    "Mass can only be set for " "one compound at a time"
+                    "Mass can only be set for one compound at a time"
                 )
         value = float(value)
         if value < 0.0:

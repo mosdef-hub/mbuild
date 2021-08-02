@@ -763,26 +763,19 @@ def solvate(
 def _validate_mass(compound, n_compounds):
     """Check the mass of the compounds passed into the packing functions.
 
-    Returns an error if the total mass is zero, and density cannot be used to
+    Raises an error if the total mass is zero, and density cannot be used to
     find box size or number of compounds.
     Returns a warning of any subcompound in compound has a mass of zero.
     """
+    if n_compounds is None:
+        n_compounds = [1]*len(compound)
     found_zero_mass = False
     total_mass = 0
-
-    if compound and n_compounds:
-        for c, n in zip(compound, n_compounds):
-            comp_masses = [c._particle_mass(p) for p in c.particles()]
-            if 0.0 in comp_masses:
-                found_zero_mass = True
-            total_mass += np.sum(comp_masses) * n
-
-    elif compound and not n_compounds:
-        for c in compound:
-            mass = [c._particle_mass(p) for p in c.particles()]
-            if 0.0 in mass:
-                found_zero_mass = True
-            total_mass += np.sum(mass)
+    for c, n in zip(compound, n_compounds):
+        comp_masses = [c._particle_mass(p) for p in c.particles()]
+        if 0.0 in comp_masses:
+            found_zero_mass = True
+        total_mass += np.sum(comp_masses) * n
 
     if total_mass == 0:
         raise MBuildError(
