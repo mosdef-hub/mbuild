@@ -368,7 +368,7 @@ class Compound(object):
 
     @mass.setter
     def mass(self, value):
-        if self.children:
+        if self._contains_only_ports() is False:
             raise MBuildError(
                 "Cannot set the mass of a Compound containing "
                 "children compounds"
