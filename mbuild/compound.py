@@ -5,7 +5,7 @@ import itertools
 import os
 import tempfile
 from collections import OrderedDict
-from collections.abc import Iterable, Sequence
+from collections.abc import Iterable
 from copy import deepcopy
 from warnings import warn
 
