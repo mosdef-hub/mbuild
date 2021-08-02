@@ -200,7 +200,7 @@ class Compound(object):
                 )
             self.add(subcompounds)
             self._charge = 0.0
-            self._mass = mass
+            self._mass = mass 
         else:
             self._charge = charge
             self._mass = mass
@@ -351,10 +351,17 @@ class Compound(object):
         If neither of a Compound's element or mass attributes have been set,
         then a mass of zero is returned.
         """
-        if self._mass is not None:
-            return self._mass
+        if self._contains_only_ports():
+            if self._mass is None:
+                warn("Mass has not been set for this compound")
+            else:
+                return self._mass
         else:
-            return sum([self._particle_mass(p) for p in self.particles()])
+            if self._mass is None:
+                add = 0
+            else:
+                add = self._mass
+            return sum([self._particle_mass(p) for p in self.particles()]) + add
 
     @staticmethod
     def _particle_mass(particle):
