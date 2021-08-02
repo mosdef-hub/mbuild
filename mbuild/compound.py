@@ -200,7 +200,7 @@ class Compound(object):
                 )
             self.add(subcompounds)
             self._charge = 0.0
-            self._mass = mass 
+            self._mass = mass
         else:
             self._charge = charge
             self._mass = mass
