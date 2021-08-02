@@ -352,10 +352,11 @@ class Compound(object):
         then a mass of zero is returned.
         """
         if self._contains_only_ports():
-            return self._particle_mass(self) 
+            return self._particle_mass(self)
         else:
-            return (sum([self._particle_mass(p) for p in self.particles()])
-                    + self._particle_mass(self))  
+            return sum(
+                [self._particle_mass(p) for p in self.particles()]
+            ) + self._particle_mass(self)
 
     @staticmethod
     def _particle_mass(particle):
