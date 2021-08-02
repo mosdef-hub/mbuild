@@ -768,7 +768,7 @@ def _validate_mass(compound, n_compounds):
     Returns a warning of any subcompound in compound has a mass of zero.
     """
     if n_compounds is None:
-        n_compounds = [1]*len(compound)
+        n_compounds = [1] * len(compound)
     found_zero_mass = False
     total_mass = 0
     for c, n in zip(compound, n_compounds):
