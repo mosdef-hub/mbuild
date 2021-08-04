@@ -1864,7 +1864,9 @@ class Charmm:
                     "Total charge is {}.".format(total_charge)
                 )
 
-            total_charge = sum([atom.charge for atom in self.structure_box_0_and_1_ff])
+            total_charge = sum(
+                [atom.charge for atom in self.structure_box_0_and_1_ff]
+            )
             if round(total_charge, 4) != 0.0:
                 warn(
                     "System is not charge neutral for structure_0_and_1. "
@@ -1978,7 +1980,9 @@ class Charmm:
 
         if self.structure_box_1:
             self.masses = (
-                np.array([atom.mass for atom in self.structure_box_0_and_1_ff.atoms])
+                np.array(
+                    [atom.mass for atom in self.structure_box_0_and_1_ff.atoms]
+                )
                 / self.mass_conversion_factor
             )
             self.mass_dict = dict(
