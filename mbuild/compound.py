@@ -1583,6 +1583,9 @@ class Compound(object):
         scale_nonbonded : float, optional, default=1
             Scales epsilon (1 is completely on)
             For _energy_minimize_openmm
+        constraints : str, optional, default=None
+            Scales epsilon (1 is completely on)
+            For _energy_minimize_openmm
 
         References
         ----------
@@ -1690,6 +1693,7 @@ class Compound(object):
         scale_angles=1,
         scale_torsions=1,
         scale_nonbonded=1,
+        constraints=None,
     ):
         """Perform energy minimization using OpenMM.
 
@@ -1714,6 +1718,9 @@ class Compound(object):
             Scales the torsional force constants (1 is completely on)
         scale_nonbonded : float, optional, default=1
             Scales epsilon (1 is completely on)
+        constraints : str, optional, default=None
+            Specify constraints on the molecule to minimize, options are:
+            "HBonds", "AllBonds", "HAngles"
 
         Notes
         -----
@@ -1733,11 +1740,28 @@ class Compound(object):
         to_parmed = ff.apply(to_parmed)
 
         import simtk.unit as u
+        from simtk.openmm.app import AllBonds, HAngles, HBonds
         from simtk.openmm.app.pdbreporter import PDBReporter
         from simtk.openmm.app.simulation import Simulation
         from simtk.openmm.openmm import LangevinIntegrator
 
-        system = to_parmed.createSystem()  # Create an OpenMM System
+        if constraints:
+            if constraints == "AllBonds":
+                constraints = AllBonds
+            elif constraints == "HBonds":
+                constraints = HBonds
+            elif constraints == "HAngles":
+                constraints = HAngles
+            else:
+                raise ValueError(
+                    f"Provided constraints value of: {constraints}.\n"
+                    f'Expected "HAngles", "AllBonds" "HBonds".'
+                )
+            system = to_parmed.createSystem(
+                constraints=constraints
+            )  # Create an OpenMM System
+        else:
+            system = to_parmed.createSystem()  # Create an OpenMM System
         # Create a Langenvin Integrator in OpenMM
         integrator = LangevinIntegrator(
             298 * u.kelvin, 1 / u.picosecond, 0.002 * u.picoseconds
