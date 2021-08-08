@@ -47,8 +47,9 @@ def load(
 ):
     """Load a file or an existing topology into an mbuild Compound.
 
-    Files are read using the MDTraj package unless the `use_parmed` argument is
-    specified as True.
+    Files are read using the predefined backend, unless otherwise specified by
+    the user (through the `backend` flag).
+    Supported backends include "pybel", "mdtraj", "parmed", "rdkit", and "internal".
     Please refer to http://mdtraj.org/1.8.0/load_functions.html for formats
     supported by MDTraj and https://parmed.github.io/ParmEd/html/readwrite.html
     for formats supported by ParmEd.
