@@ -1584,8 +1584,8 @@ class Compound(object):
             Scales epsilon (1 is completely on)
             For _energy_minimize_openmm
         constraints : str, optional, default=None
-            Scales epsilon (1 is completely on)
-            For _energy_minimize_openmm
+            Specify constraints on the molecule to minimize, options are:
+            "HBonds", "AllBonds", "HAngles"
 
         References
         ----------
