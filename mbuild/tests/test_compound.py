@@ -1120,7 +1120,9 @@ class TestCompound(BaseTest):
         octane.energy_minimize(forcefield="oplsaa")
 
     @pytest.mark.skipif(not has_foyer, reason="Foyer is not installed")
-    @pytest.mark.parametrize("constraints", ["AllBonds", "HBonds", "HAngles", None])
+    @pytest.mark.parametrize(
+        "constraints", ["AllBonds", "HBonds", "HAngles", None]
+    )
     def test_energy_minimize_openmm_constraints(self, octane, constraints):
         octane.energy_minimize(forcefield="oplsaa", constraints=constraints)
 
