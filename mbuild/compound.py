@@ -1521,16 +1521,6 @@ class Compound(object):
             particle.pos += (np.random.rand(3) - 0.5) / 100
         self._update_port_locations(xyz_init)
 
-    def energy_minimization(
-        self, forcefield="UFF", steps=1000, **kwargs
-    ):  # noqa: D102
-        raise RemovedFuncError(
-            "Compound.energy_minimization()",
-            "Compound.energy_minimize()",
-            "0.8.1",
-            "0.11.0",
-        )
-
     def energy_minimize(self, forcefield="UFF", steps=1000, **kwargs):
         """Perform an energy minimization on a Compound.
 
@@ -1583,9 +1573,10 @@ class Compound(object):
         scale_nonbonded : float, optional, default=1
             Scales epsilon (1 is completely on)
             For _energy_minimize_openmm
-        constraints : str, optional, default=None
+        constraints : str, optional, default="AllBonds"
             Specify constraints on the molecule to minimize, options are:
-            "HBonds", "AllBonds", "HAngles"
+            None, "HBonds", "AllBonds", "HAngles"
+            For _energy_minimize_openmm
 
         References
         ----------
@@ -1693,7 +1684,7 @@ class Compound(object):
         scale_angles=1,
         scale_torsions=1,
         scale_nonbonded=1,
-        constraints=None,
+        constraints="AllBonds",
     ):
         """Perform energy minimization using OpenMM.
 
@@ -1718,9 +1709,9 @@ class Compound(object):
             Scales the torsional force constants (1 is completely on)
         scale_nonbonded : float, optional, default=1
             Scales epsilon (1 is completely on)
-        constraints : str, optional, default=None
+        constraints : str, optional, default="AllBonds"
             Specify constraints on the molecule to minimize, options are:
-            "HBonds", "AllBonds", "HAngles"
+            None, "HBonds", "AllBonds", "HAngles"
 
         Notes
         -----
