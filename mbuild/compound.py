@@ -1521,16 +1521,6 @@ class Compound(object):
             particle.pos += (np.random.rand(3) - 0.5) / 100
         self._update_port_locations(xyz_init)
 
-    def energy_minimization(
-        self, forcefield="UFF", steps=1000, **kwargs
-    ):  # noqa: D102
-        raise RemovedFuncError(
-            "Compound.energy_minimization()",
-            "Compound.energy_minimize()",
-            "0.8.1",
-            "0.11.0",
-        )
-
     def energy_minimize(self, forcefield="UFF", steps=1000, **kwargs):
         """Perform an energy minimization on a Compound.
 
@@ -1582,6 +1572,10 @@ class Compound(object):
             Note: Only Ryckaert-Bellemans style torsions are currently supported
         scale_nonbonded : float, optional, default=1
             Scales epsilon (1 is completely on)
+            For _energy_minimize_openmm
+        constraints : str, optional, default="AllBonds"
+            Specify constraints on the molecule to minimize, options are:
+            None, "HBonds", "AllBonds", "HAngles"
             For _energy_minimize_openmm
 
         References
@@ -1690,6 +1684,7 @@ class Compound(object):
         scale_angles=1,
         scale_torsions=1,
         scale_nonbonded=1,
+        constraints="AllBonds",
     ):
         """Perform energy minimization using OpenMM.
 
@@ -1714,6 +1709,9 @@ class Compound(object):
             Scales the torsional force constants (1 is completely on)
         scale_nonbonded : float, optional, default=1
             Scales epsilon (1 is completely on)
+        constraints : str, optional, default="AllBonds"
+            Specify constraints on the molecule to minimize, options are:
+            None, "HBonds", "AllBonds", "HAngles"
 
         Notes
         -----
@@ -1733,11 +1731,28 @@ class Compound(object):
         to_parmed = ff.apply(to_parmed)
 
         import simtk.unit as u
+        from simtk.openmm.app import AllBonds, HAngles, HBonds
         from simtk.openmm.app.pdbreporter import PDBReporter
         from simtk.openmm.app.simulation import Simulation
         from simtk.openmm.openmm import LangevinIntegrator
 
-        system = to_parmed.createSystem()  # Create an OpenMM System
+        if constraints:
+            if constraints == "AllBonds":
+                constraints = AllBonds
+            elif constraints == "HBonds":
+                constraints = HBonds
+            elif constraints == "HAngles":
+                constraints = HAngles
+            else:
+                raise ValueError(
+                    f"Provided constraints value of: {constraints}.\n"
+                    f'Expected "HAngles", "AllBonds" "HBonds".'
+                )
+            system = to_parmed.createSystem(
+                constraints=constraints
+            )  # Create an OpenMM System
+        else:
+            system = to_parmed.createSystem()  # Create an OpenMM System
         # Create a Langenvin Integrator in OpenMM
         integrator = LangevinIntegrator(
             298 * u.kelvin, 1 / u.picosecond, 0.002 * u.picoseconds
