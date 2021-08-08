@@ -1037,7 +1037,6 @@ class TestCompound(BaseTest):
     @pytest.mark.skipif(
         not has_openbabel, reason="Open Babel package not installed"
     )
-
     @pytest.mark.skipif(
         not has_openbabel, reason="Open Babel package not installed"
     )
