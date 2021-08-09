@@ -198,9 +198,9 @@ class Compound(object):
                 raise MBuildError(
                     "Can't set the mass of a Compound with subcompounds. "
                 )
-            self.add(subcompounds)
             self._charge = 0.0
             self._mass = mass
+            self.add(subcompounds)
         else:
             self._charge = charge
             self._mass = mass
