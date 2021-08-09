@@ -354,9 +354,7 @@ class Compound(object):
         if self._contains_only_ports():
             return self._particle_mass(self)
         else:
-            return sum(
-                [self._particle_mass(p) for p in self.particles()]
-            )
+            return sum([self._particle_mass(p) for p in self.particles()])
 
     @staticmethod
     def _particle_mass(particle):
@@ -659,11 +657,12 @@ class Compound(object):
             to add Compounds to an existing rigid body.
         """
         # Support batch add via lists, tuples and sets.
-        if self._mass !=0.0:
-            warn(f"{self} has a pre-defined mass of {self._mass}, "
-                 "which will be reset to zero now that it contains children "
-                 "compounds."
-                 )
+        if self._mass != 0.0:
+            warn(
+                f"{self} has a pre-defined mass of {self._mass}, "
+                "which will be reset to zero now that it contains children "
+                "compounds."
+            )
             self._mass = 0
         if isinstance(new_child, Iterable) and not isinstance(new_child, str):
             for child in new_child:
