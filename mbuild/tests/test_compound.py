@@ -400,13 +400,14 @@ class TestCompound(BaseTest):
 
         with pytest.raises(ValueError):
             methane[0].mass = -1.0
+
     def test_reset_parent_mass(self, methane):
         A = mb.Compound()
         A.mass = 1.0
         A.add(methane)
         assert A._mass == 0.0
         assert A.mass == methane.mass
-        
+
     def test_add_existing_parent(self, ethane, h2o):
         water_in_water = mb.clone(h2o)
         h2o.add(water_in_water)
