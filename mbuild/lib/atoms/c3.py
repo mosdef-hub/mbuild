@@ -9,7 +9,7 @@ class C3(mb.Compound):
 
     def __init__(self):
         super(C3, self).__init__()
-        self.add(mb.Particle(name="C"))
+        self.add(mb.Particle(name="C", element="C"))
 
         self.add(mb.Port(anchor=self[0]), "up")
         self["up"].translate(np.array([0, 0.07, 0]))

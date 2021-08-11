@@ -1,4 +1,5 @@
 import os
+import warnings
 
 import numpy as np
 import pytest
@@ -371,3 +372,29 @@ class TestPacking(BaseTest):
             system_box.lengths, solvated.get_boundingbox().lengths
         )
         assert np.allclose(edge_sizes, np.array([0.4] * 3), atol=0.1)
+
+    def test_validate_mass(self, methane):
+        bead = mb.Compound(name="A", mass=0.0)
+        with pytest.raises(MBuildError):
+            mb.fill_box(compound=bead, n_compounds=10, density=1)
+
+        with pytest.raises(MBuildError):
+            mb.fill_box(compound=bead, density=1, box=[0.5, 0.5, 0.5])
+
+        with pytest.raises(MBuildError):
+            mb.fill_sphere(compound=bead, sphere=[20, 20, 20, 20], density=1)
+
+        beadA = mb.Compound(name="A", mass=0.0)
+        beadB = mb.Compound(name="B", mass=1.0, pos=[0.5, 0.5, 0.5])
+        beads = mb.Compound(subcompounds=[beadA, beadB])
+        with warnings.catch_warnings(record=True) as w:
+            mb.packing._validate_mass(compound=[beadA, beadB], n_compounds=None)
+            assert w
+
+        with warnings.catch_warnings(record=True) as w:
+            mb.packing._validate_mass(compound=[beads], n_compounds=None)
+            assert w
+
+        with warnings.catch_warnings(record=True) as w:
+            mb.packing._validate_mass(compound=[beads], n_compounds=[5])
+            assert w

@@ -9,8 +9,7 @@ class H(mb.Compound):
 
     def __init__(self):
         super(H, self).__init__()
-        self.add(mb.Particle(name="H"))
-
+        self.add(mb.Particle(name="H", element="H"))
         self.add(mb.Port(anchor=self[0]), "up")
         self["up"].spin(np.pi, [0, 0, 1])
         self["up"].translate(np.array([0, 0.07, 0]))
