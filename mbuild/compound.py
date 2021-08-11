@@ -657,13 +657,8 @@ class Compound(object):
             to add Compounds to an existing rigid body.
         """
         # Support batch add via lists, tuples and sets.
-        if self._mass != 0.0:
-            warn(
-                f"{self} has a pre-defined mass of {self._mass}, "
-                "which will be reset to zero now that it contains children "
-                "compounds."
-            )
-            self._mass = 0
+        from mbuild.port import Port
+
         if isinstance(new_child, Iterable) and not isinstance(new_child, str):
             for child in new_child:
                 self.add(child, reset_rigid_ids=reset_rigid_ids)
@@ -674,6 +669,13 @@ class Compound(object):
                 "Only objects that inherit from mbuild.Compound can be added "
                 f"to Compounds. You tried to add '{new_child}'."
             )
+        if self._mass != 0.0 and not isinstance(new_child, Port):
+            warn(
+                f"{self} has a pre-defined mass of {self._mass}, "
+                "which will be reset to zero now that it contains children "
+                "compounds."
+            )
+            self._mass = 0
 
         if new_child.contains_rigid or new_child.rigid_id is not None:
             if self.contains_rigid and reset_rigid_ids:

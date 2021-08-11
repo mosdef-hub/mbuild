@@ -408,6 +408,11 @@ class TestCompound(BaseTest):
         assert A._mass == 0.0
         assert A.mass == methane.mass
 
+    def test_mass_add_port(self):
+        A = mb.Compound(mass=2.0)
+        A.add(mb.Port())
+        assert A.mass == 2.0
+
     def test_add_existing_parent(self, ethane, h2o):
         water_in_water = mb.clone(h2o)
         h2o.add(water_in_water)
