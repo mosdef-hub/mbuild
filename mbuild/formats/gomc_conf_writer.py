@@ -520,11 +520,11 @@ def _get_all_possible_input_variables(description=False):
         "The list provides the booleans to [block_averages_bool, console_output_bool]. "
         "This outputs the pressure data into the block averages and console output/log files."
         "".format(_get_default_variables_dict()["OutPressure"]),
-        "OutMolNumber": "Output Data (all ensembles): [bool, bool], default = {}.   "
+        "OutMolNum": "Output Data (all ensembles): [bool, bool], default = {}.   "
         "The list provides the booleans to [block_averages_bool, console_output_bool]. "
         "This outputs the number of molecules data into the block averages and console "
         "output/log files."
-        "".format(_get_default_variables_dict()["OutMolNumber"]),
+        "".format(_get_default_variables_dict()["OutMolNum"]),
         "OutDensity": "Output Data (all ensembles): [bool, bool], default = {}.   "
         "The list provides the booleans to [block_averages_bool, console_output_bool]. "
         "This outputs the density data into the block averages and console output/log files."
@@ -901,7 +901,7 @@ def _get_default_variables_dict():
         # Data output for the console and bulk properties calculations
         "OutEnergy": [True, True],
         "OutPressure": [True, True],
-        "OutMolNumber": [True, True],
+        "OutMolNum": [True, True],
         "OutDensity": [True, True],
         "OutVolume": [True, True],
         "OutSurfaceTension": [False, False],
@@ -1201,7 +1201,7 @@ def _get_possible_ensemble_input_variables(ensemble_type):
     output_data_variables_list = [
         "OutEnergy",
         "OutPressure",
-        "OutMolNumber",
+        "OutMolNum",
         "OutDensity",
         "OutVolume",
         "OutSurfaceTension",
@@ -1672,7 +1672,7 @@ class GOMCControl:
     OutPressure : [bool, bool], default = [True, True]
         The list provides the booleans to [block_averages_bool, console_output_bool].
         This outputs the pressure data into the block averages and console output/log files.
-    OutMolNumber : [bool, bool], default = [True, True]
+    OutMolNum : [bool, bool], default = [True, True]
         The list provides the booleans to [block_averages_bool, console_output_bool].
         This outputs the number of molecules data into the block averages and console
         output/log files.
@@ -2592,7 +2592,7 @@ class GOMCControl:
         self.RunLetter = default_input_variables_dict["RunLetter"]
         self.OutEnergy = default_input_variables_dict["OutEnergy"]
         self.OutPressure = default_input_variables_dict["OutPressure"]
-        self.OutMolNumber = default_input_variables_dict["OutMolNumber"]
+        self.OutMolNum = default_input_variables_dict["OutMolNum"]
         self.OutDensity = default_input_variables_dict["OutDensity"]
         self.OutVolume = default_input_variables_dict["OutVolume"]
         self.OutSurfaceTension = default_input_variables_dict[
@@ -3636,7 +3636,7 @@ class GOMCControl:
                 ):
                     self.OutPressure = self.input_variables_dict[key]
 
-            key = "OutMolNumber"
+            key = "OutMolNum"
             if input_var_keys_list[var_iter] == key:
                 self.ck_input_variable_list_bool_bool(
                     self.input_variables_dict,
@@ -3647,7 +3647,7 @@ class GOMCControl:
                     input_var_keys_list[var_iter] == key
                     and key in possible_ensemble_variables_list
                 ):
-                    self.OutMolNumber = self.input_variables_dict[key]
+                    self.OutMolNum = self.input_variables_dict[key]
 
             key = "OutDensity"
             if input_var_keys_list[var_iter] == key:
@@ -4572,6 +4572,7 @@ class GOMCControl:
             raise ValueError(print_error_message)
 
         # Check that RunSteps >= EqSteps >= AdjSteps
+        print('self.RunSteps = ' +str(self.RunSteps))
         if (
             self.RunSteps < self.EqSteps
             or self.RunSteps < self.AdjSteps
@@ -5470,9 +5471,9 @@ class GOMCControl:
         )
         data_control_file.write(
             "{:25s} {:10s} {:10s}\n".format(
-                "OutMolNumber",
-                str(self.OutMolNumber[0]),
-                str(self.OutMolNumber[1]),
+                "OutMolNum",
+                str(self.OutMolNum[0]),
+                str(self.OutMolNum[1]),
             )
         )
         data_control_file.write(
@@ -6929,7 +6930,7 @@ def write_gomc_control_file(
     OutPressure : [bool, bool], default = [True, True]
         The list provides the booleans to [block_averages_bool, console_output_bool].
         This outputs the pressure data into the block averages and console output/log files.
-    OutMolNumber : [bool, bool], default = [True, True]
+    OutMolNum : [bool, bool], default = [True, True]
         The list provides the booleans to [block_averages_bool, console_output_bool].
         This outputs the number of molecules data into the block averages and console
         output/log files.

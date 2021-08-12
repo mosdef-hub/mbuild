@@ -124,7 +124,7 @@ class TestGOMCControlFileWriter(BaseTest):
                 "SampleFreq",
                 "OutEnergy",
                 "OutPressure",
-                "OutMolNumber",
+                "OutMolNum",
                 "OutDensity",
                 "OutVolume",
                 "OutSurfaceTension",
@@ -205,7 +205,7 @@ class TestGOMCControlFileWriter(BaseTest):
                 "SampleFreq",
                 "OutEnergy",
                 "OutPressure",
-                "OutMolNumber",
+                "OutMolNum",
                 "OutDensity",
                 "OutVolume",
                 "OutSurfaceTension",
@@ -288,7 +288,7 @@ class TestGOMCControlFileWriter(BaseTest):
                 "SampleFreq",
                 "OutEnergy",
                 "OutPressure",
-                "OutMolNumber",
+                "OutMolNum",
                 "OutDensity",
                 "OutVolume",
                 "OutSurfaceTension",
@@ -602,7 +602,7 @@ class TestGOMCControlFileWriter(BaseTest):
                 "SampleFreq": False,
                 "OutEnergy": False,
                 "OutPressure": False,
-                "OutMolNumber": False,
+                "OutMolNum": False,
                 "OutDensity": False,
                 "OutVolume": False,
                 "OutSurfaceTension": False,
@@ -914,8 +914,8 @@ class TestGOMCControlFileWriter(BaseTest):
                     assert split_line[1] == "True"
                     assert split_line[2] == "True"
 
-                elif line.startswith("OutMolNumber "):
-                    variables_read_dict["OutMolNumber"] = True
+                elif line.startswith("OutMolNum "):
+                    variables_read_dict["OutMolNum"] = True
                     split_line = line.split()
                     assert split_line[1] == "True"
                     assert split_line[2] == "True"
@@ -999,7 +999,7 @@ class TestGOMCControlFileWriter(BaseTest):
             "SampleFreq": True,
             "OutEnergy": True,
             "OutPressure": True,
-            "OutMolNumber": True,
+            "OutMolNum": True,
             "OutDensity": True,
             "OutVolume": True,
             "OutSurfaceTension": True,
@@ -2004,7 +2004,7 @@ class TestGOMCControlFileWriter(BaseTest):
                 ],
                 "OutEnergy": [False, False],
                 "OutPressure": [False, False],
-                "OutMolNumber": [False, False],
+                "OutMolNum": [False, False],
                 "OutDensity": [False, False],
                 "OutVolume": [False, False],
                 "OutSurfaceTension": [True, True],
@@ -2081,7 +2081,7 @@ class TestGOMCControlFileWriter(BaseTest):
                 "SampleFreq": False,
                 "OutEnergy": False,
                 "OutPressure": False,
-                "OutMolNumber": False,
+                "OutMolNum": False,
                 "OutDensity": False,
                 "OutVolume": False,
                 "OutSurfaceTension": False,
@@ -2460,8 +2460,8 @@ class TestGOMCControlFileWriter(BaseTest):
                     assert split_line[1] == "False"
                     assert split_line[2] == "False"
 
-                elif line.startswith("OutMolNumber "):
-                    variables_read_dict["OutMolNumber"] = True
+                elif line.startswith("OutMolNum "):
+                    variables_read_dict["OutMolNum"] = True
                     split_line = line.split()
                     assert split_line[1] == "False"
                     assert split_line[2] == "False"
@@ -2556,7 +2556,7 @@ class TestGOMCControlFileWriter(BaseTest):
             "SampleFreq": True,
             "OutEnergy": True,
             "OutPressure": True,
-            "OutMolNumber": True,
+            "OutMolNum": True,
             "OutDensity": True,
             "OutVolume": True,
             "OutSurfaceTension": True,
@@ -3356,7 +3356,7 @@ class TestGOMCControlFileWriter(BaseTest):
             match=r"ERROR: The following input variables have "
             r"bad values \(check spelling and for empty spaces in the keys or that "
             r"the values are in the correct form with the acceptable values\)"
-            r": \['OutMolNumber'\]",
+            r": \['OutMolNum'\]",
         ):
             gomc_control.write_gomc_control_file(
                 charmm,
@@ -3365,7 +3365,7 @@ class TestGOMCControlFileWriter(BaseTest):
                 10,
                 300,
                 check_input_files_exist=False,
-                input_variables_dict={"OutMolNumber": "s"},
+                input_variables_dict={"OutMolNum": "s"},
             )
 
         with pytest.raises(
@@ -4714,7 +4714,7 @@ class TestGOMCControlFileWriter(BaseTest):
             match=r"ERROR: The following input variables have "
             r"bad values \(check spelling and for empty spaces in the keys or that "
             r"the values are in the correct form with the acceptable values\)"
-            r": \['OutMolNumber'\]",
+            r": \['OutMolNum'\]",
         ):
             gomc_control.write_gomc_control_file(
                 charmm,
@@ -4723,7 +4723,7 @@ class TestGOMCControlFileWriter(BaseTest):
                 10,
                 300,
                 check_input_files_exist=False,
-                input_variables_dict={"OutMolNumber": []},
+                input_variables_dict={"OutMolNum": []},
             )
 
         with pytest.raises(
