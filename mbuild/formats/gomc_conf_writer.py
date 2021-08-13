@@ -1381,7 +1381,7 @@ class GOMCControl:
         These input variables are optional and override the default settings.
         Changing these variables likely required for more advanced systems.
         The details of the acceptable input variables for the selected
-        ensembles can be found by running this python workbook,
+        ensembles can be found by running the code below in python,
         >>> print_valid_ensemble_input_variables('GCMC', description = True)
         which prints the input_variables with their subsection description
         for the selected 'GCMC' ensemble (other ensembles can be set as well).
@@ -2000,7 +2000,7 @@ class GOMCControl:
         These input variables are optional and override the default settings.
         Changing these variables likely required for more advanced systems.
         The details of the acceptable input variables for the selected
-        ensembles can be found by running this python workbook,
+        ensembles can be found by running the code below in python,
         >>> print_valid_ensemble_input_variables('GCMC', description = True)
         which prints the input_variables with their subsection description
         for the selected 'GCMC' ensemble (other ensembles can be set as well).
@@ -2127,16 +2127,15 @@ class GOMCControl:
             raise ValueError(print_error_message)
 
         # check if check_input_files_exist is a boolean
-        if check_input_files_exist is not None:
-            _check_if_bool("check_input_files_exist", check_input_files_exist)
+        _check_if_bool("check_input_files_exist", check_input_files_exist)
 
-        # set the restart attributes:
-        if Restart is not None:
-            _check_if_bool("Restart", Restart)
-            self.Restart = Restart
-        if RestartCheckpoint is not None:
-            _check_if_bool("RestartCheckpoint", RestartCheckpoint)
-            self.RestartCheckpoint = RestartCheckpoint
+        # set and check valid inputs for the Restart attribute
+        _check_if_bool("Restart", Restart)
+        self.Restart = Restart
+        
+        # set and check valid inputs for the RestartCheckpoint attribute
+        _check_if_bool("RestartCheckpoint", RestartCheckpoint)
+        self.RestartCheckpoint = RestartCheckpoint
 
         self.binCoordinates_box_0 = binCoordinates_box_0
         self.extendedSystem_box_0 = extendedSystem_box_0
@@ -2146,7 +2145,7 @@ class GOMCControl:
         self.binVelocities_box_1 = binVelocities_box_1
 
         # check if the binary restart files are provided correctly
-        if self.Restart is True and self.ensemble_type in ["NVT", "NPT"]:
+        if self.Restart and self.ensemble_type in ["NVT", "NPT"]:
             if (
                 self.binCoordinates_box_0 is not None
                 or self.extendedSystem_box_0 is not None
@@ -6639,7 +6638,7 @@ def write_gomc_control_file(
         These input variables are optional and override the default settings.
         Changing these variables likely required for more advanced systems.
         The details of the acceptable input variables for the selected
-        ensembles can be found by running this python workbook,
+        ensembles can be found by running the code below in python,
         >>>print_valid_ensemble_input_variables('GCMC', description = True)
         which prints the input_variables with their subsection description
         for the selected 'GCMC' ensemble (other ensembles can be set as well).
@@ -7257,7 +7256,7 @@ def write_gomc_control_file(
         These input variables are optional and override the default settings.
         Changing these variables likely required for more advanced systems.
         The details of the acceptable input variables for the selected
-        ensembles can be found by running this python workbook,
+        ensembles can be found by running the code below in python,
         >>> print_valid_ensemble_input_variables('GCMC', description = True)
         which prints the input_variables with their subsection description
         for the selected 'GCMC' ensemble (other ensembles can be set as well).

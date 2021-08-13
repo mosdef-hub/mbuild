@@ -946,7 +946,7 @@ def unique_atom_naming(
             elif len(str(atom.name)) > 2:
                 if len(str(atom.name)) == 3:
                     no_digits_atom_name = 1
-                    tom_name_value = atom.name
+                    atom_name_value = atom.name
                 else:
                     text_to_write = (
                         "ERROR: atom numbering will not work propery at"
