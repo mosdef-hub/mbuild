@@ -18,7 +18,7 @@ after which you can simply install without specifying the channels::
     The order in which channels are added matters: ``conda-forge`` should be the highest priority as a result of being added last. In your ``.condarc`` file, it should be listed first.
 
 .. note::
-    Because ``packmol`` binaries are unavailable for windows from ``conda-forge`` channel to use mbuild with conda in a Windows system requires ``omnia`` channel. Use the following command to use mbuild with conda in a Windows system
+    Because ``packmol`` binaries are unavailable for windows from ``conda-forge`` channel to use mbuild with conda in a Windows system requires ``omnia`` channel. Use the following command to use mbuild with conda in a Windows system::
 
         $ conda install -c conda-forge -c omnia mbuild
 
