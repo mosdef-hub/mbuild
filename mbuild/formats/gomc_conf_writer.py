@@ -2132,7 +2132,7 @@ class GOMCControl:
         # set and check valid inputs for the Restart attribute
         _check_if_bool("Restart", Restart)
         self.Restart = Restart
-        
+
         # set and check valid inputs for the RestartCheckpoint attribute
         _check_if_bool("RestartCheckpoint", RestartCheckpoint)
         self.RestartCheckpoint = RestartCheckpoint
