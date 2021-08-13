@@ -49,7 +49,6 @@ def _get_bond_type_key(
         bond_atom_2_residue_name : str
             The residue name for atom 2 in the bond.
     """
-
     bond_k_constant = round(
         bond.type.k
         * (sigma_conversion_factor ** 2 / epsilon_conversion_factor),
@@ -947,6 +946,7 @@ def unique_atom_naming(
             elif len(str(atom.name)) > 2:
                 if len(str(atom.name)) == 3:
                     no_digits_atom_name = 1
+                    atom_name_value = atom.name
                 else:
                     text_to_write = (
                         "ERROR: atom numbering will not work propery at"
@@ -1800,7 +1800,7 @@ class Charmm:
                 boxes_for_simulation=self.boxes_for_simulation,
             )
 
-            self.residue_id_list = (
+            self.structure_box_0_and_1_ff = (
                 self.structure_box_0_ff + self.structure_box_1_ff
             )
             self.combined_1_4_lj_dict_per_residue.update(
@@ -1865,7 +1865,9 @@ class Charmm:
                     "Total charge is {}.".format(total_charge)
                 )
 
-            total_charge = sum([atom.charge for atom in self.residue_id_list])
+            total_charge = sum(
+                [atom.charge for atom in self.structure_box_0_and_1_ff]
+            )
             if round(total_charge, 4) != 0.0:
                 warn(
                     "System is not charge neutral for structure_0_and_1. "
@@ -1962,7 +1964,7 @@ class Charmm:
             self.types = np.array(
                 [
                     atom.type + "_" + str(atom.residue.name)
-                    for atom in self.residue_id_list.atoms
+                    for atom in self.structure_box_0_and_1_ff.atoms
                 ]
             )
 
@@ -1979,7 +1981,9 @@ class Charmm:
 
         if self.structure_box_1:
             self.masses = (
-                np.array([atom.mass for atom in self.residue_id_list.atoms])
+                np.array(
+                    [atom.mass for atom in self.structure_box_0_and_1_ff.atoms]
+                )
                 / self.mass_conversion_factor
             )
             self.mass_dict = dict(
@@ -2060,7 +2064,7 @@ class Charmm:
 
         # if self.structure_box_1 != None:
         if self.structure_box_1:
-            self.structure_selection = self.residue_id_list
+            self.structure_selection = self.structure_box_0_and_1_ff
         else:
             self.structure_selection = self.structure_box_0_ff
 
