@@ -88,6 +88,13 @@ stages:
             condition: and( eq( variables['Agent.OS'], 'Linux' ), eq( variables['python.version'], '3.8' ) )
             displayName: Upload Coverage Report
 
+          - bash: |
+              source activate mbuild-dev
+              mamba update -c conda-forge/label/hoomd_dev -c conda-forge hoomd
+              python -m pytest -v --cov=mbuild --cov-report=html --color=yes mbuild/tests/test_hoomd.py
+            condition: and( eq( variables['Agent.OS'], 'Linux' ), eq( variables['python.version'], '3.8' ) )
+            displayName: Run tests for hoomdv3
+
           - task: PublishCodeCoverageResults@1
             inputs:
               codeCoverageTool: Cobertura
@@ -95,6 +102,12 @@ stages:
               reportDirectory: '$(System.DefaultWorkingDirectory)/**/htmlcov'
             condition: and( eq( variables['Agent.OS'], 'Linux' ), eq( variables['python.version'], '3.7' ) )
             displayName: Publish Coverage Report
+
+          - bash: |
+              source activate test-environment
+              bash <(curl -s https://codecov.io/bash) -C $(Build.SourceVersion)
+            condition: and( eq( variables['Agent.OS'], 'Linux' ), eq( variables['python.version'], '3.8' ) )
+            displayName: Upload Coverage Report
 
 
       - job: Windows_no_bleeding

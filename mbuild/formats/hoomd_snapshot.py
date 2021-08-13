@@ -3,6 +3,7 @@ import operator
 from collections import namedtuple
 
 import numpy as np
+import packaging.version
 import parmed as pmd
 
 from mbuild.box import Box
@@ -12,19 +13,25 @@ from mbuild.utils.io import import_
 from mbuild.utils.sorting import natural_sort
 
 hoomd = import_("hoomd")
-hoomd.data = import_("hoomd.data")
 
 __all__ = ["to_hoomdsnapshot", "from_snapshot"]
+
+
+def _get_hoomd_version():
+    if "version" in dir(hoomd):
+        return packaging.version.parse(hoomd.version.version)
+    else:
+        return packaging.version.parse(hoomd.__version__)
 
 
 def from_snapshot(snapshot, scale=1.0):
     """Convert a Snapshot to a Compound.
 
-    Snapshot can be a hoomd.data.Snapshot or a gsd.hoomd.Snapshot.
+    Snapshot can be a hoomd.Snapshot or a gsd.hoomd.Snapshot.
 
     Parameters
     ----------
-    snapshot : hoomd._hoomd.SnapshotSystemData_float or gsd.hoomd.Snapshot
+    snapshot : hoomd.Snapshot or gsd.hoomd.Snapshot
         Snapshot from which to build the mbuild Compound.
     scale : float, optional, default 1.0
         Value by which to scale the length values
@@ -53,7 +60,7 @@ def from_snapshot(snapshot, scale=1.0):
         )
     else:
         # gsd / hoomd v3
-        box = snapshot.configuration.box
+        box = np.asarray(snapshot.configuration.box)
         comp.box = Box.from_lengths_tilt_factors(
             lengths=box[:3] * scale, tilt_factors=box[3:]
         )
@@ -90,7 +97,7 @@ def to_hoomdsnapshot(
     parmed_kwargs={},
     hoomd_snapshot=None,
 ):
-    """Convert a Compound or parmed.Structure to hoomd.data.Snapshot.
+    """Convert a Compound or parmed.Structure to hoomd.Snapshot.
 
     Parameters
     ----------
@@ -116,14 +123,14 @@ def to_hoomdsnapshot(
     write_special_pairs : bool, optional, default=True
         Writes out special pair information necessary to correctly use
         the OPLS fudged 1,4 interactions in HOOMD.
-    hoomd_snapshot : hoomd.data.SnapshotParticleData, optional, default=None
+    hoomd_snapshot : hoomd.Snapshot, optional, default=None
         Initial snapshot to which to add the ParmEd structure object.
         The box information of the initial snapshot will be overwritten.
         (useful for rigid bodies)
 
     Returns
     -------
-    hoomd_snapshot : hoomd.data.Snapshot
+    hoomd_snapshot : hoomd.Snapshot
     ReferenceValues : namedtuple
         Values used in scaling
 
@@ -140,7 +147,8 @@ def to_hoomdsnapshot(
     elif isinstance(structure, Compound):
         structure = structure.to_parmed(**parmed_kwargs)
 
-    if not hoomd.context.current:
+    hoomd_version = _get_hoomd_version()
+    if hoomd_version.major == 2 and not hoomd.context.current:
         hoomd.context.initialize("")
 
     if auto_scale:
@@ -255,9 +263,17 @@ def to_hoomdsnapshot(
                 "Initial snapshot provided, but it contains no particles"
             )
 
-        hoomd_snapshot.box = hoomd.data.boxdim(
-            Lx=lx, Ly=ly, Lz=lz, xy=xy, xz=xz, yz=yz
-        )
+        if hoomd_version.major == 2:
+            hoomd_snapshot.box = hoomd.data.boxdim(
+                Lx=lx, Ly=ly, Lz=lz, xy=xy, xz=xz, yz=yz
+            )
+
+            # save the box for later use when wrapping coordinates
+            box = hoomd_snapshot.box
+        elif hoomd_version.major == 3:
+            hoomd_snapshot.configuration.box = [lx, ly, lz, xy, xz, yz]
+        else:
+            raise RuntimeError("Unsupported HOOMD version:", str(hoomd_version))
 
         init_bonds = hoomd_snapshot.bonds.N
         if init_bonds > 0:
@@ -296,62 +312,84 @@ def to_hoomdsnapshot(
         init_impropers = 0
         init_pairs = 0
 
-        hoomd_snapshot = hoomd.data.make_snapshot(
-            N=n_particles,
-            box=hoomd.data.boxdim(Lx=lx, Ly=ly, Lz=lz, xy=xy, xz=xz, yz=yz),
-            particle_types=unique_types,
-            bond_types=unique_bond_types,
-            angle_types=unique_angle_types,
-            dihedral_types=unique_dihedral_types,
-            improper_types=unique_improper_types,
-            pair_types=pair_types,
+        if hoomd_version.major == 2:
+            hoomd_snapshot = hoomd.data.make_snapshot(
+                N=n_particles,
+                box=hoomd.data.boxdim(Lx=lx, Ly=ly, Lz=lz, xy=xy, xz=xz, yz=yz),
+                particle_types=unique_types,
+                bond_types=unique_bond_types,
+                angle_types=unique_angle_types,
+                dihedral_types=unique_dihedral_types,
+                improper_types=unique_improper_types,
+                pair_types=pair_types,
+            )
+            box = hoomd.data.boxdim(Lx=lx, Ly=ly, Lz=lz, xy=xy, xz=xz, yz=yz)
+        elif hoomd_version.major == 3:
+            hoomd_snapshot = hoomd.Snapshot()
+            hoomd_snapshot.configuration.box = [lx, ly, lz, xy, xz, yz]
+            hoomd_snapshot.particles.types = unique_types
+            hoomd_snapshot.bonds.types = unique_bond_types
+            hoomd_snapshot.angles.types = unique_angle_types
+            hoomd_snapshot.dihedrals.types = unique_dihedral_types
+            hoomd_snapshot.impropers.types = unique_improper_types
+            hoomd_snapshot.pairs.types = pair_types
+            box = hoomd.Box(Lx=lx, Ly=ly, Lz=lz, xy=xy, xz=xz, yz=yz)
+        else:
+            raise RuntimeError("Unsupported HOOMD version:", str(hoomd_version))
+
+    # wrap particles into the box manually for v2
+    if hoomd_version.major == 2:
+        scaled_positions = np.stack(
+            [box.wrap(xyz)[0] for xyz in scaled_positions]
         )
 
-    # wrap particles into the box
-    box = hoomd.data.boxdim(Lx=lx, Ly=ly, Lz=lz, xy=xy, xz=xz, yz=yz)
-    scaled_positions = np.stack([box.wrap(xyz)[0] for xyz in scaled_positions])
+    def set_size(obj, n):
+        if hoomd_version.major == 2:
+            obj.resize(n)
+        elif hoomd_version.major == 3:
+            obj.N = n
+        else:
+            raise RuntimeError("Unsupported HOOMD version:", str(hoomd_version))
 
-    hoomd_snapshot.particles.resize(n_particles)
+    set_size(hoomd_snapshot.particles, n_particles)
     hoomd_snapshot.particles.position[n_init:] = scaled_positions
-    hoomd_snapshot.particles.types[n_init:] = unique_types
     hoomd_snapshot.particles.typeid[n_init:] = typeids
     hoomd_snapshot.particles.mass[n_init:] = scaled_mass
     hoomd_snapshot.particles.charge[n_init:] = scaled_charges
     hoomd_snapshot.particles.body[n_init:] = rigid_bodies
 
+    # wrap the particles into the box using the v3 API
+    if hoomd_version.major == 3:
+        hoomd_snapshot.wrap()
+
     if n_bonds > 0:
-        hoomd_snapshot.bonds.resize(n_bonds)
-        hoomd_snapshot.bonds.types[init_bonds:] = unique_bond_types
+        set_size(hoomd_snapshot.bonds, n_bonds)
         hoomd_snapshot.bonds.typeid[init_bonds:] = bond_typeids
         hoomd_snapshot.bonds.group[init_bonds:] = bond_groups
 
     if n_angles > 0:
-        hoomd_snapshot.angles.resize(n_angles)
-        hoomd_snapshot.angles.types[init_angles:] = unique_angle_types
+        set_size(hoomd_snapshot.angles, n_angles)
         hoomd_snapshot.angles.typeid[init_angles:] = angle_typeids
         hoomd_snapshot.angles.group[init_angles:] = np.reshape(
             angle_groups, (-1, 3)
         )
 
     if n_dihedrals > 0:
-        hoomd_snapshot.dihedrals.resize(n_dihedrals)
-        hoomd_snapshot.dihedrals.types[init_dihedrals:] = unique_dihedral_types
+        set_size(hoomd_snapshot.dihedrals, n_dihedrals)
         hoomd_snapshot.dihedrals.typeid[init_dihedrals:] = dihedral_typeids
         hoomd_snapshot.dihedrals.group[init_dihedrals:] = np.reshape(
             dihedral_groups, (-1, 4)
         )
 
     if n_impropers > 0:
-        hoomd_snapshot.impropers.resize(n_impropers)
-        hoomd_snapshot.impropers.types[init_impropers:] = unique_improper_types
+        set_size(hoomd_snapshot.impropers, n_impropers)
         hoomd_snapshot.impropers.typeid[init_impropers:] = improper_typeids
         hoomd_snapshot.impropers.group[init_impropers:] = np.reshape(
             improper_groups, (-1, 4)
         )
 
     if n_pairs > 0:
-        hoomd_snapshot.pairs.resize(n_pairs)
-        hoomd_snapshot.pairs.types[init_pairs:] = pair_types
+        set_size(hoomd_snapshot.pairs, n_pairs)
         hoomd_snapshot.pairs.typeid[init_pairs:] = pair_typeid
         hoomd_snapshot.pairs.group[init_pairs:] = np.reshape(pairs, (-1, 2))
 
