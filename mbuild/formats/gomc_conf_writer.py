@@ -2677,17 +2677,23 @@ class GOMCControl:
 
         # auto calculate the best RestartFreq  for the number of self.RunSteps
         self.RestartFreq = _scale_gen_freq_for_run_steps_list_bool_int(
-            "RestartFreq", default_input_variables_dict["RestartFreq"], self.RunSteps
+            "RestartFreq",
+            default_input_variables_dict["RestartFreq"],
+            self.RunSteps,
         )
 
         # auto calculate the best CheckpointFreq  for the number of self.RunSteps
         self.CheckpointFreq = _scale_gen_freq_for_run_steps_list_bool_int(
-            "CheckpointFreq", default_input_variables_dict["CheckpointFreq"], self.RunSteps
+            "CheckpointFreq",
+            default_input_variables_dict["CheckpointFreq"],
+            self.RunSteps,
         )
 
         # auto calculate the best CoordinatesFreq  for the number of self.RunSteps
         self.CoordinatesFreq = _scale_gen_freq_for_run_steps_list_bool_int(
-            "CoordinatesFreq", default_input_variables_dict["CoordinatesFreq"], self.RunSteps
+            "CoordinatesFreq",
+            default_input_variables_dict["CoordinatesFreq"],
+            self.RunSteps,
         )
 
         # auto calculate the best DCDFreq for the number of self.RunSteps
@@ -2697,27 +2703,37 @@ class GOMCControl:
 
         # auto calculate the best ConsoleFreq  for the number of self.RunSteps
         self.ConsoleFreq = _scale_gen_freq_for_run_steps_list_bool_int(
-            "ConsoleFreq", default_input_variables_dict["ConsoleFreq"], self.RunSteps
+            "ConsoleFreq",
+            default_input_variables_dict["ConsoleFreq"],
+            self.RunSteps,
         )
 
         # auto calculate the best PressureCalc  for the number of self.RunSteps
         self.PressureCalc = _scale_gen_freq_for_run_steps_list_bool_int(
-            "PressureCalc", default_input_variables_dict["PressureCalc"], self.RunSteps
+            "PressureCalc",
+            default_input_variables_dict["PressureCalc"],
+            self.RunSteps,
         )
 
         # auto calculate the best BlockAverageFreq  for the number of self.RunSteps
         self.BlockAverageFreq = _scale_gen_freq_for_run_steps_list_bool_int(
-            "BlockAverageFreq", default_input_variables_dict["BlockAverageFreq"], self.RunSteps
+            "BlockAverageFreq",
+            default_input_variables_dict["BlockAverageFreq"],
+            self.RunSteps,
         )
 
         # auto calculate the best HistogramFreq  for the number of self.RunSteps
         self.HistogramFreq = _scale_gen_freq_for_run_steps_list_bool_int(
-            "HistogramFreq", default_input_variables_dict["HistogramFreq"], self.RunSteps
+            "HistogramFreq",
+            default_input_variables_dict["HistogramFreq"],
+            self.RunSteps,
         )
 
         # auto calculate the best SampleFreq  for the number of self.RunSteps
         self.SampleFreq = _scale_gen_freq_for_run_steps_int(
-            "SampleFreq", default_input_variables_dict["SampleFreq"], self.RunSteps
+            "SampleFreq",
+            default_input_variables_dict["SampleFreq"],
+            self.RunSteps,
         )
 
         if input_variables_dict is None:
@@ -6271,7 +6287,9 @@ class GOMCControl:
             bad_input_variables_values_list.append(key)
 
 
-def _scale_gen_freq_for_run_steps_list_bool_int(variable_name, charmm_variable, run_steps):
+def _scale_gen_freq_for_run_steps_list_bool_int(
+    variable_name, charmm_variable, run_steps
+):
     """
     Scales the frequency of the output to a a more realistic value,
     if the output frequency does not make sense based on the
@@ -6294,20 +6312,32 @@ def _scale_gen_freq_for_run_steps_list_bool_int(variable_name, charmm_variable, 
         GOMCControl object, based on the RunSteps in the simulation.
     """
     if not isinstance(charmm_variable, list):
-        print_error_message = "ERROR: The {} variable is not a list.".format(variable_name)
+        print_error_message = "ERROR: The {} variable is not a list.".format(
+            variable_name
+        )
         raise ValueError(print_error_message)
 
         if len(charmm_variable) != 2:
-            print_error_message = "ERROR: The {} variable list length is not 2.".format(variable_name)
+            print_error_message = (
+                "ERROR: The {} variable list length is not 2.".format(
+                    variable_name
+                )
+            )
             raise ValueError(print_error_message)
 
         else:
             if not isinstance(charmm_variable[0], bool):
-                print_error_message = "ERROR: The {} variable is not a boolean.".format(variable_name)
+                print_error_message = (
+                    "ERROR: The {} variable is not a boolean.".format(
+                        variable_name
+                    )
+                )
                 raise ValueError(print_error_message)
 
             if not isinstance(charmm_variable[1], int):
-                print_error_message = "ERROR: The {} variable is not a int.".format(variable_name)
+                print_error_message = (
+                    "ERROR: The {} variable is not a int.".format(variable_name)
+                )
                 raise ValueError(print_error_message)
 
     set_max_steps_charmm_variable = charmm_variable[1]
@@ -6322,7 +6352,9 @@ def _scale_gen_freq_for_run_steps_list_bool_int(variable_name, charmm_variable, 
     return charmm_variable
 
 
-def _scale_gen_freq_for_run_steps_int(variable_name, charmm_variable, run_steps):
+def _scale_gen_freq_for_run_steps_int(
+    variable_name, charmm_variable, run_steps
+):
     """
     Scales the frequency of the output to a a more realistic value,
     if the output frequency does not make sense based on the
@@ -6345,7 +6377,9 @@ def _scale_gen_freq_for_run_steps_int(variable_name, charmm_variable, run_steps)
         GOMCControl object, based on the RunSteps in the simulation.
     """
     if not isinstance(charmm_variable, int):
-        print_error_message = "ERROR: The {} variable is not an interger.".format(variable_name)
+        print_error_message = (
+            "ERROR: The {} variable is not an interger.".format(variable_name)
+        )
         raise ValueError(print_error_message)
 
     set_max_steps_charmm_variable = charmm_variable
