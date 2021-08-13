@@ -71,9 +71,9 @@ def _get_required_data(description=False):
         "charmm_object": "Charmm object, "
         "A Charmm object, which by definition has been parameterized "
         "from the selected force field.",
-        "ensemble_type": "Required files or System Info (all ensembles): str. "
+        "ensemble_type": "Required files or System Info (all ensembles): str, "
         "(valid strings are 'NVT', 'NPT', 'GEMC_NPT', 'GCMC-NVT', or 'GCMC'), "
-        "the ensemble type for the simulation,",
+        "the ensemble type for the simulation.",
         "RunSteps": "Required files or System Info (all ensembles): int (> 0), "
         "The number or run steps for the simulation.",
         "Temperature": "Required files or System Info (all ensembles): float or integer (> 0), "
