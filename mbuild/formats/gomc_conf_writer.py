@@ -2667,57 +2667,57 @@ class GOMCControl:
         self.MEMC_DataInput = default_input_variables_dict["MEMC_DataInput"]
 
         # auto calculate the best EqSteps (number of Equilbrium Steps) and Adj_Steps (number of AdjSteps Steps)
-        self.EqSteps = scale_gen_freq_for_run_steps_int(
-            default_input_variables_dict["EqSteps"], self.RunSteps
+        self.EqSteps = _scale_gen_freq_for_run_steps_int(
+            "EqSteps", default_input_variables_dict["EqSteps"], self.RunSteps
         )
 
-        self.AdjSteps = scale_gen_freq_for_run_steps_int(
-            default_input_variables_dict["AdjSteps"], self.RunSteps
+        self.AdjSteps = _scale_gen_freq_for_run_steps_int(
+            "AdjSteps", default_input_variables_dict["AdjSteps"], self.RunSteps
         )
 
         # auto calculate the best RestartFreq  for the number of self.RunSteps
-        self.RestartFreq = scale_gen_freq_for_run_steps_list_bool_int(
-            default_input_variables_dict["RestartFreq"], self.RunSteps
+        self.RestartFreq = _scale_gen_freq_for_run_steps_list_bool_int(
+            "RestartFreq", default_input_variables_dict["RestartFreq"], self.RunSteps
         )
 
         # auto calculate the best CheckpointFreq  for the number of self.RunSteps
-        self.CheckpointFreq = scale_gen_freq_for_run_steps_list_bool_int(
-            default_input_variables_dict["CheckpointFreq"], self.RunSteps
+        self.CheckpointFreq = _scale_gen_freq_for_run_steps_list_bool_int(
+            "CheckpointFreq", default_input_variables_dict["CheckpointFreq"], self.RunSteps
         )
 
         # auto calculate the best CoordinatesFreq  for the number of self.RunSteps
-        self.CoordinatesFreq = scale_gen_freq_for_run_steps_list_bool_int(
-            default_input_variables_dict["CoordinatesFreq"], self.RunSteps
+        self.CoordinatesFreq = _scale_gen_freq_for_run_steps_list_bool_int(
+            "CoordinatesFreq", default_input_variables_dict["CoordinatesFreq"], self.RunSteps
         )
 
         # auto calculate the best DCDFreq for the number of self.RunSteps
-        self.DCDFreq = scale_gen_freq_for_run_steps_list_bool_int(
-            default_input_variables_dict["DCDFreq"], self.RunSteps
+        self.DCDFreq = _scale_gen_freq_for_run_steps_list_bool_int(
+            "DCDFreq", default_input_variables_dict["DCDFreq"], self.RunSteps
         )
 
         # auto calculate the best ConsoleFreq  for the number of self.RunSteps
-        self.ConsoleFreq = scale_gen_freq_for_run_steps_list_bool_int(
-            default_input_variables_dict["ConsoleFreq"], self.RunSteps
+        self.ConsoleFreq = _scale_gen_freq_for_run_steps_list_bool_int(
+            "ConsoleFreq", default_input_variables_dict["ConsoleFreq"], self.RunSteps
         )
 
         # auto calculate the best PressureCalc  for the number of self.RunSteps
-        self.PressureCalc = scale_gen_freq_for_run_steps_list_bool_int(
-            default_input_variables_dict["PressureCalc"], self.RunSteps
+        self.PressureCalc = _scale_gen_freq_for_run_steps_list_bool_int(
+            "PressureCalc", default_input_variables_dict["PressureCalc"], self.RunSteps
         )
 
         # auto calculate the best BlockAverageFreq  for the number of self.RunSteps
-        self.BlockAverageFreq = scale_gen_freq_for_run_steps_list_bool_int(
-            default_input_variables_dict["BlockAverageFreq"], self.RunSteps
+        self.BlockAverageFreq = _scale_gen_freq_for_run_steps_list_bool_int(
+            "BlockAverageFreq", default_input_variables_dict["BlockAverageFreq"], self.RunSteps
         )
 
         # auto calculate the best HistogramFreq  for the number of self.RunSteps
-        self.HistogramFreq = scale_gen_freq_for_run_steps_list_bool_int(
-            default_input_variables_dict["HistogramFreq"], self.RunSteps
+        self.HistogramFreq = _scale_gen_freq_for_run_steps_list_bool_int(
+            "HistogramFreq", default_input_variables_dict["HistogramFreq"], self.RunSteps
         )
 
         # auto calculate the best SampleFreq  for the number of self.RunSteps
-        self.SampleFreq = scale_gen_freq_for_run_steps_int(
-            default_input_variables_dict["SampleFreq"], self.RunSteps
+        self.SampleFreq = _scale_gen_freq_for_run_steps_int(
+            "SampleFreq", default_input_variables_dict["SampleFreq"], self.RunSteps
         )
 
         if input_variables_dict is None:
@@ -2879,7 +2879,12 @@ class GOMCControl:
             raise ValueError(print_error_message)
 
         # verify all input variable values are valid, for their keys
-        input_var_keys_list = dict_keys_to_list(self.input_variables_dict)
+        input_var_all_keys_list = dict_keys_to_list(self.input_variables_dict)
+        # sort to only values that are not None
+        input_var_keys_list = []
+        for all_keys_i in input_var_all_keys_list:
+            if self.input_variables_dict[all_keys_i] is not None:
+                input_var_keys_list.append(all_keys_i)
 
         possible_ensemble_variables_list = (
             _get_possible_ensemble_input_variables(self.ensemble_type)
@@ -6266,7 +6271,7 @@ class GOMCControl:
             bad_input_variables_values_list.append(key)
 
 
-def scale_gen_freq_for_run_steps_list_bool_int(charmm_variable, run_steps):
+def _scale_gen_freq_for_run_steps_list_bool_int(variable_name, charmm_variable, run_steps):
     """
     Scales the frequency of the output to a a more realistic value,
     if the output frequency does not make sense based on the
@@ -6274,6 +6279,8 @@ def scale_gen_freq_for_run_steps_list_bool_int(charmm_variable, run_steps):
 
     Parameters
     ----------
+    variable_name, str
+        The variable name as a sting, which is used for printing error outputs.
     charmm_variable : GOMCControl object variable list, [bool, int]
         This only for the frequency output variables of the GOMCControl object
     run_steps : int (>0), must be an integer greater than zero.
@@ -6286,6 +6293,22 @@ def scale_gen_freq_for_run_steps_list_bool_int(charmm_variable, run_steps):
         A rescaled and appropriate value for the frequency output variables of the
         GOMCControl object, based on the RunSteps in the simulation.
     """
+    if not isinstance(charmm_variable, list):
+        print_error_message = "ERROR: The {} variable is not a list.".format(variable_name)
+        raise ValueError(print_error_message)
+
+        if len(charmm_variable) != 2:
+            print_error_message = "ERROR: The {} variable list length is not 2.".format(variable_name)
+            raise ValueError(print_error_message)
+
+        else:
+            if not isinstance(charmm_variable[0], bool):
+                print_error_message = "ERROR: The {} variable is not a boolean.".format(variable_name)
+                raise ValueError(print_error_message)
+
+            if not isinstance(charmm_variable[1], int):
+                print_error_message = "ERROR: The {} variable is not a int.".format(variable_name)
+                raise ValueError(print_error_message)
 
     set_max_steps_charmm_variable = charmm_variable[1]
 
@@ -6299,7 +6322,7 @@ def scale_gen_freq_for_run_steps_list_bool_int(charmm_variable, run_steps):
     return charmm_variable
 
 
-def scale_gen_freq_for_run_steps_int(charmm_variable, run_steps):
+def _scale_gen_freq_for_run_steps_int(variable_name, charmm_variable, run_steps):
     """
     Scales the frequency of the output to a a more realistic value,
     if the output frequency does not make sense based on the
@@ -6307,6 +6330,8 @@ def scale_gen_freq_for_run_steps_int(charmm_variable, run_steps):
 
     Parameters
     ----------
+    variable_name, str
+        The variable name as a sting, which is used for printing error outputs.
     charmm_variable : GOMCControl object variable, int
         This only for the frequency output variables of the GOMCControl object
     run_steps : int (>0), must be an integer greater than zero.
@@ -6319,6 +6344,9 @@ def scale_gen_freq_for_run_steps_int(charmm_variable, run_steps):
         A rescaled and appropriate value for the frequency output variables of the
         GOMCControl object, based on the RunSteps in the simulation.
     """
+    if not isinstance(charmm_variable, int):
+        print_error_message = "ERROR: The {} variable is not an interger.".format(variable_name)
+        raise ValueError(print_error_message)
 
     set_max_steps_charmm_variable = charmm_variable
 
