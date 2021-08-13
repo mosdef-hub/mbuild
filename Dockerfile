@@ -21,7 +21,7 @@ RUN conda update conda -yq && \
   conda install -c conda-forge mamba && \
   mamba env create nomkl --file environment-dev.yml && \
   conda activate mbuild-dev && \
-  mamba install -c conda-forge nomkl jupyter python=$(PY_VERSION) && \
+  mamba install -c conda-forge nomkl jupyter python="$PY_VERSION" && \
   python setup.py install && \
   echo "source activate mbuild-dev" >> \
   /home/anaconda/.profile && \
