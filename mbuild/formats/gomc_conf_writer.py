@@ -4894,7 +4894,9 @@ class GOMCControl:
         data_control_file.write(
             "{:25s} {}\n".format("RestartCheckpoint", self.RestartCheckpoint)
         )
-        data_control_file.write("{:25s} {}\n".format("ExpertMode", self.ExpertMode))
+        data_control_file.write(
+            "{:25s} {}\n".format("ExpertMode", self.ExpertMode)
+        )
         data_control_file.write("\n")
         data_control_file.write("####################################\n")
         data_control_file.write("# kind {RESTART, RANDOM, INTSEED}\n")

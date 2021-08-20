@@ -10545,7 +10545,7 @@ class TestGOMCControlFileWriter(BaseTest):
                 "SwapFreq": 0.0,
                 "RegrowthFreq": 0.25,
                 "VolFreq": 0.0,
-            }
+            },
         )
 
         with open("test_save_basic_NPT_ExpertMode.conf", "r") as fp:
@@ -10638,7 +10638,7 @@ class TestGOMCControlFileWriter(BaseTest):
                 "RegrowthFreq": 0.25,
                 "VolFreq": 0.0,
                 "Fugacity": {"ETH": 1.0},
-            }
+            },
         )
 
         with open("test_save_basic_GCMC_ExpertMode.conf", "r") as fp:
@@ -10730,7 +10730,7 @@ class TestGOMCControlFileWriter(BaseTest):
                 "SwapFreq": 0.0,
                 "RegrowthFreq": 0.25,
                 "VolFreq": 0.0,
-            }
+            },
         )
 
         with open("test_save_basic_GEMC_NVT_ExpertMode.conf", "r") as fp:
@@ -10822,7 +10822,7 @@ class TestGOMCControlFileWriter(BaseTest):
                 "SwapFreq": 0.0,
                 "RegrowthFreq": 0.25,
                 "VolFreq": 0.0,
-            }
+            },
         )
 
         with open("test_save_basic_GEMC_NPT_ExpertMode.conf", "r") as fp:
