@@ -57,7 +57,9 @@ class TestGOMCControlFileWriter(BaseTest):
                 "Temperature",
                 "ff_psf_pdb_file_directory",
                 "Restart",
-                "RestartCheckpoint" "check_input_files_exist",
+                "RestartCheckpoint",
+                "ExpertMode",
+                "check_input_files_exist",
                 "Parameters",
                 "Coordinate_box_0",
                 "Structure_box_0",
@@ -546,6 +548,7 @@ class TestGOMCControlFileWriter(BaseTest):
         with open("test_save_basic_NVT.conf", "r") as fp:
             variables_read_dict = {
                 "Restart": False,
+                "ExpertMode": False,
                 "PRNG": False,
                 "ParaTypeCHARMM": False,
                 "Parameters": False,
@@ -611,6 +614,11 @@ class TestGOMCControlFileWriter(BaseTest):
             for i, line in enumerate(out_gomc):
                 if line.startswith("Restart "):
                     variables_read_dict["Restart"] = True
+                    split_line = line.split()
+                    assert split_line[1] == "False"
+
+                elif line.startswith("ExpertMode"):
+                    variables_read_dict["ExpertMode"] = True
                     split_line = line.split()
                     assert split_line[1] == "False"
 
@@ -943,6 +951,7 @@ class TestGOMCControlFileWriter(BaseTest):
 
         assert variables_read_dict == {
             "Restart": True,
+            "ExpertMode": True,
             "PRNG": True,
             "ParaTypeCHARMM": True,
             "Parameters": True,
@@ -1351,6 +1360,7 @@ class TestGOMCControlFileWriter(BaseTest):
                 "HistogramFreq": False,
                 "SampleFreq": False,
                 "VDWGeometricSigma": False,
+                "ExpertMode": False,
             }
             out_gomc = fp.readlines()
             for i, line in enumerate(out_gomc):
@@ -1579,6 +1589,11 @@ class TestGOMCControlFileWriter(BaseTest):
                     split_line = line.split()
                     assert split_line[1] == "True"
 
+                elif line.startswith("ExpertMode"):
+                    variables_read_dict["ExpertMode"] = True
+                    split_line = line.split()
+                    assert split_line[1] == "False"
+
                 else:
                     pass
 
@@ -1622,6 +1637,7 @@ class TestGOMCControlFileWriter(BaseTest):
             "HistogramFreq": True,
             "SampleFreq": True,
             "VDWGeometricSigma": True,
+            "ExpertMode": True,
         }
 
     def test_save_basic_GEMC_NVT(self, ethane_gomc):
@@ -1775,7 +1791,7 @@ class TestGOMCControlFileWriter(BaseTest):
         gomc_control.write_gomc_control_file(
             charmm,
             "test_save_basic_GEMC_NPT.conf",
-            "GEMC_NPT",
+            "GEMC-NPT",
             1000000,
             500,
             check_input_files_exist=False,
@@ -2014,6 +2030,7 @@ class TestGOMCControlFileWriter(BaseTest):
         with open("test_save_change_most_variable_NVT.conf", "r") as fp:
             variables_read_dict = {
                 "Restart": False,
+                "ExpertMode": False,
                 "PRNG": False,
                 "Random_Seed": False,
                 "ParaTypeCHARMM": False,
@@ -2090,6 +2107,11 @@ class TestGOMCControlFileWriter(BaseTest):
             for i, line in enumerate(out_gomc):
                 if line.startswith("Restart "):
                     variables_read_dict["Restart"] = True
+                    split_line = line.split()
+                    assert split_line[1] == "False"
+
+                elif line.startswith("ExpertMode"):
+                    variables_read_dict["ExpertMode"] = True
                     split_line = line.split()
                     assert split_line[1] == "False"
 
@@ -2489,6 +2511,7 @@ class TestGOMCControlFileWriter(BaseTest):
 
         assert variables_read_dict == {
             "Restart": True,
+            "ExpertMode": True,
             "PRNG": True,
             "Random_Seed": True,
             "ParaTypeCHARMM": True,
@@ -10132,7 +10155,7 @@ class TestGOMCControlFileWriter(BaseTest):
         gomc_control.write_gomc_control_file(
             charmm,
             "test_restarting_pdb_psf_GEMC_NVT",
-            "GEMC_NVT",
+            "GEMC-NVT",
             1000,
             300,
             ff_psf_pdb_file_directory="../Test",
@@ -10387,7 +10410,7 @@ class TestGOMCControlFileWriter(BaseTest):
             match=r'ERROR: The {} variable expects a file extension of {}, but the actual file extension is "{}". '
             r"".format(
                 "Coordinates_box_0",
-                "\['.pdb'\]",
+                r"\['.pdb'\]",
                 os.path.splitext(test_box_0_pdb)[-1],
             ),
         ):
@@ -10410,7 +10433,7 @@ class TestGOMCControlFileWriter(BaseTest):
             match=r'ERROR: The {} variable expects a file extension of {}, but the actual file extension is "{}". '
             r"".format(
                 "Coordinates_box_1",
-                "\['.pdb'\]",
+                r"\['.pdb'\]",
                 os.path.splitext(test_box_1_pdb)[-1],
             ),
         ):
@@ -10433,7 +10456,7 @@ class TestGOMCControlFileWriter(BaseTest):
             match=r'ERROR: The {} variable expects a file extension of {}, but the actual file extension is "{}". '
             r"".format(
                 "Structure_box_0",
-                "\['.psf'\]",
+                r"\['.psf'\]",
                 os.path.splitext(test_box_0_psf)[-1],
             ),
         ):
@@ -10456,7 +10479,7 @@ class TestGOMCControlFileWriter(BaseTest):
             match=r'ERROR: The {} variable expects a file extension of {}, but the actual file extension is "{}". '
             r"".format(
                 "Structure_box_1",
-                "\['.psf'\]",
+                r"\['.psf'\]",
                 os.path.splitext(test_box_1_psf)[-1],
             ),
         ):
@@ -10494,3 +10517,370 @@ class TestGOMCControlFileWriter(BaseTest):
                     Coordinates_box_1="ethane_box_1.pdb",
                     Structure_box_1=test_box_1_psf,
                 )
+
+    def test_save_basic_NPT_use_ExpertMode(self, ethane_gomc):
+        test_box_ethane_gomc = mb.fill_box(
+            compound=[ethane_gomc], n_compounds=[1], box=[2, 2, 2]
+        )
+        charmm = Charmm(
+            test_box_ethane_gomc,
+            "ethane",
+            ff_filename="ethane",
+            residues=[ethane_gomc.name],
+            forcefield_selection="oplsaa",
+        )
+
+        gomc_control.write_gomc_control_file(
+            charmm,
+            "test_save_basic_NPT_ExpertMode.conf",
+            "NPT",
+            1000,
+            500,
+            ExpertMode=True,
+            check_input_files_exist=False,
+            input_variables_dict={
+                "DisFreq": 0.25,
+                "RotFreq": 0.25,
+                "IntraSwapFreq": 0.25,
+                "SwapFreq": 0.0,
+                "RegrowthFreq": 0.25,
+                "VolFreq": 0.0,
+            }
+        )
+
+        with open("test_save_basic_NPT_ExpertMode.conf", "r") as fp:
+            variables_read_dict = {
+                "ExpertMode": False,
+                "DisFreq": False,
+                "RotFreq": False,
+                "IntraSwapFreq": False,
+                "SwapFreq": False,
+                "RegrowthFreq": False,
+                "VolFreq": False,
+            }
+            out_gomc = fp.readlines()
+            for i, line in enumerate(out_gomc):
+                if line.startswith("ExpertMode"):
+                    variables_read_dict["ExpertMode"] = True
+                    split_line = line.split()
+                    assert split_line[1] == "True"
+
+                elif line.startswith("DisFreq "):
+                    variables_read_dict["DisFreq"] = True
+                    split_line = line.split()
+                    assert split_line[1] == "0.25"
+
+                elif line.startswith("RotFreq "):
+                    variables_read_dict["RotFreq"] = True
+                    split_line = line.split()
+                    assert split_line[1] == "0.25"
+
+                elif line.startswith("IntraSwapFreq "):
+                    variables_read_dict["IntraSwapFreq"] = True
+                    split_line = line.split()
+                    assert split_line[1] == "0.25"
+
+                elif line.startswith("SwapFreq "):
+                    variables_read_dict["SwapFreq"] = True
+                    split_line = line.split()
+                    assert split_line[1] == "0.0"
+
+                elif line.startswith("RegrowthFreq "):
+                    variables_read_dict["RegrowthFreq"] = True
+                    split_line = line.split()
+                    assert split_line[1] == "0.25"
+
+                elif line.startswith("VolFreq "):
+                    variables_read_dict["VolFreq"] = True
+                    split_line = line.split()
+                    assert split_line[1] == "0.0"
+
+                else:
+                    pass
+
+        assert variables_read_dict == {
+            "ExpertMode": True,
+            "DisFreq": True,
+            "RotFreq": True,
+            "IntraSwapFreq": True,
+            "SwapFreq": True,
+            "RegrowthFreq": True,
+            "VolFreq": True,
+        }
+
+    def test_save_basic_GCMC_use_ExpertMode(self, ethane_gomc):
+        test_box_ethane_gomc = mb.fill_box(
+            compound=[ethane_gomc], n_compounds=[1], box=[2, 2, 2]
+        )
+        charmm = Charmm(
+            test_box_ethane_gomc,
+            "ethane_box_0",
+            ff_filename="ethane",
+            structure_box_1=test_box_ethane_gomc,
+            filename_box_1="ethane_box_1",
+            residues=[ethane_gomc.name],
+            forcefield_selection="oplsaa",
+        )
+
+        gomc_control.write_gomc_control_file(
+            charmm,
+            "test_save_basic_GCMC_ExpertMode.conf",
+            "GCMC",
+            1000,
+            500,
+            ExpertMode=True,
+            check_input_files_exist=False,
+            input_variables_dict={
+                "DisFreq": 0.25,
+                "RotFreq": 0.25,
+                "IntraSwapFreq": 0.25,
+                "SwapFreq": 0.0,
+                "RegrowthFreq": 0.25,
+                "VolFreq": 0.0,
+                "Fugacity": {"ETH": 1.0},
+            }
+        )
+
+        with open("test_save_basic_GCMC_ExpertMode.conf", "r") as fp:
+            variables_read_dict = {
+                "ExpertMode": False,
+                "DisFreq": False,
+                "RotFreq": False,
+                "IntraSwapFreq": False,
+                "SwapFreq": False,
+                "RegrowthFreq": False,
+                "VolFreq": False,
+            }
+            out_gomc = fp.readlines()
+            for i, line in enumerate(out_gomc):
+                if line.startswith("ExpertMode"):
+                    variables_read_dict["ExpertMode"] = True
+                    split_line = line.split()
+                    assert split_line[1] == "True"
+
+                elif line.startswith("DisFreq "):
+                    variables_read_dict["DisFreq"] = True
+                    split_line = line.split()
+                    assert split_line[1] == "0.25"
+
+                elif line.startswith("RotFreq "):
+                    variables_read_dict["RotFreq"] = True
+                    split_line = line.split()
+                    assert split_line[1] == "0.25"
+
+                elif line.startswith("IntraSwapFreq "):
+                    variables_read_dict["IntraSwapFreq"] = True
+                    split_line = line.split()
+                    assert split_line[1] == "0.25"
+
+                elif line.startswith("SwapFreq "):
+                    variables_read_dict["SwapFreq"] = True
+                    split_line = line.split()
+                    assert split_line[1] == "0.0"
+
+                elif line.startswith("RegrowthFreq "):
+                    variables_read_dict["RegrowthFreq"] = True
+                    split_line = line.split()
+                    assert split_line[1] == "0.25"
+
+                elif line.startswith("VolFreq "):
+                    variables_read_dict["VolFreq"] = True
+                    split_line = line.split()
+                    assert split_line[1] == "0.0"
+
+                else:
+                    pass
+
+        assert variables_read_dict == {
+            "ExpertMode": True,
+            "DisFreq": True,
+            "RotFreq": True,
+            "IntraSwapFreq": True,
+            "SwapFreq": True,
+            "RegrowthFreq": True,
+            "VolFreq": True,
+        }
+
+    def test_save_basic_GEMC_NVT_use_ExpertMode(self, ethane_gomc):
+        test_box_ethane_gomc = mb.fill_box(
+            compound=[ethane_gomc], n_compounds=[1], box=[2, 2, 2]
+        )
+        charmm = Charmm(
+            test_box_ethane_gomc,
+            "ethane_box_0",
+            ff_filename="ethane",
+            structure_box_1=test_box_ethane_gomc,
+            filename_box_1="ethane_box_1",
+            residues=[ethane_gomc.name],
+            forcefield_selection="oplsaa",
+        )
+
+        gomc_control.write_gomc_control_file(
+            charmm,
+            "test_save_basic_GEMC_NVT_ExpertMode.conf",
+            "GEMC-NVT",
+            1000,
+            500,
+            ExpertMode=True,
+            check_input_files_exist=False,
+            input_variables_dict={
+                "DisFreq": 0.25,
+                "RotFreq": 0.25,
+                "IntraSwapFreq": 0.25,
+                "SwapFreq": 0.0,
+                "RegrowthFreq": 0.25,
+                "VolFreq": 0.0,
+            }
+        )
+
+        with open("test_save_basic_GEMC_NVT_ExpertMode.conf", "r") as fp:
+            variables_read_dict = {
+                "ExpertMode": False,
+                "DisFreq": False,
+                "RotFreq": False,
+                "IntraSwapFreq": False,
+                "SwapFreq": False,
+                "RegrowthFreq": False,
+                "VolFreq": False,
+            }
+            out_gomc = fp.readlines()
+            for i, line in enumerate(out_gomc):
+                if line.startswith("ExpertMode"):
+                    variables_read_dict["ExpertMode"] = True
+                    split_line = line.split()
+                    assert split_line[1] == "True"
+
+                elif line.startswith("DisFreq "):
+                    variables_read_dict["DisFreq"] = True
+                    split_line = line.split()
+                    assert split_line[1] == "0.25"
+
+                elif line.startswith("RotFreq "):
+                    variables_read_dict["RotFreq"] = True
+                    split_line = line.split()
+                    assert split_line[1] == "0.25"
+
+                elif line.startswith("IntraSwapFreq "):
+                    variables_read_dict["IntraSwapFreq"] = True
+                    split_line = line.split()
+                    assert split_line[1] == "0.25"
+
+                elif line.startswith("SwapFreq "):
+                    variables_read_dict["SwapFreq"] = True
+                    split_line = line.split()
+                    assert split_line[1] == "0.0"
+
+                elif line.startswith("RegrowthFreq "):
+                    variables_read_dict["RegrowthFreq"] = True
+                    split_line = line.split()
+                    assert split_line[1] == "0.25"
+
+                elif line.startswith("VolFreq "):
+                    variables_read_dict["VolFreq"] = True
+                    split_line = line.split()
+                    assert split_line[1] == "0.0"
+
+                else:
+                    pass
+
+        assert variables_read_dict == {
+            "ExpertMode": True,
+            "DisFreq": True,
+            "RotFreq": True,
+            "IntraSwapFreq": True,
+            "SwapFreq": True,
+            "RegrowthFreq": True,
+            "VolFreq": True,
+        }
+
+    def test_save_basic_GEMC_NPT_use_ExpertMode(self, ethane_gomc):
+        test_box_ethane_gomc = mb.fill_box(
+            compound=[ethane_gomc], n_compounds=[1], box=[2, 2, 2]
+        )
+        charmm = Charmm(
+            test_box_ethane_gomc,
+            "ethane_box_0",
+            ff_filename="ethane",
+            structure_box_1=test_box_ethane_gomc,
+            filename_box_1="ethane_box_1",
+            residues=[ethane_gomc.name],
+            forcefield_selection="oplsaa",
+        )
+
+        gomc_control.write_gomc_control_file(
+            charmm,
+            "test_save_basic_GEMC_NPT_ExpertMode.conf",
+            "GEMC-NPT",
+            1000,
+            500,
+            ExpertMode=True,
+            check_input_files_exist=False,
+            input_variables_dict={
+                "DisFreq": 0.25,
+                "RotFreq": 0.25,
+                "IntraSwapFreq": 0.25,
+                "SwapFreq": 0.0,
+                "RegrowthFreq": 0.25,
+                "VolFreq": 0.0,
+            }
+        )
+
+        with open("test_save_basic_GEMC_NPT_ExpertMode.conf", "r") as fp:
+            variables_read_dict = {
+                "ExpertMode": False,
+                "DisFreq": False,
+                "RotFreq": False,
+                "IntraSwapFreq": False,
+                "SwapFreq": False,
+                "RegrowthFreq": False,
+                "VolFreq": False,
+            }
+            out_gomc = fp.readlines()
+            for i, line in enumerate(out_gomc):
+                if line.startswith("ExpertMode"):
+                    variables_read_dict["ExpertMode"] = True
+                    split_line = line.split()
+                    assert split_line[1] == "True"
+
+                elif line.startswith("DisFreq "):
+                    variables_read_dict["DisFreq"] = True
+                    split_line = line.split()
+                    assert split_line[1] == "0.25"
+
+                elif line.startswith("RotFreq "):
+                    variables_read_dict["RotFreq"] = True
+                    split_line = line.split()
+                    assert split_line[1] == "0.25"
+
+                elif line.startswith("IntraSwapFreq "):
+                    variables_read_dict["IntraSwapFreq"] = True
+                    split_line = line.split()
+                    assert split_line[1] == "0.25"
+
+                elif line.startswith("SwapFreq "):
+                    variables_read_dict["SwapFreq"] = True
+                    split_line = line.split()
+                    assert split_line[1] == "0.0"
+
+                elif line.startswith("RegrowthFreq "):
+                    variables_read_dict["RegrowthFreq"] = True
+                    split_line = line.split()
+                    assert split_line[1] == "0.25"
+
+                elif line.startswith("VolFreq "):
+                    variables_read_dict["VolFreq"] = True
+                    split_line = line.split()
+                    assert split_line[1] == "0.0"
+
+                else:
+                    pass
+
+        assert variables_read_dict == {
+            "ExpertMode": True,
+            "DisFreq": True,
+            "RotFreq": True,
+            "IntraSwapFreq": True,
+            "SwapFreq": True,
+            "RegrowthFreq": True,
+            "VolFreq": True,
+        }

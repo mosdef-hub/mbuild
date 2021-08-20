@@ -1344,6 +1344,15 @@ class GOMCControl:
         Determines whether to restart the simulation with the checkpoint
         file (checkpoint.dat) or not. Restarting the simulation with checkpoint.dat
         would result in an identical outcome, as if previous simulation was continued.
+    ExpertMode : boolean, default = False
+        This allows the move ratios to be any value, regardless of the ensemble,
+        provided all the move ratios sum to 1. For example, this mode is utilized
+        to easily equilibrate a GCMC or GEMC ensemble in a pseudo NVT mode by removing
+        the requirement that the volume and swap moves must be non-zero.
+        In other words, when the volume and swap moves are zero, the GCMC and GEMC
+        ensembles will run pseudo NVT simulations in 1 and 2 simulation boxes, respectively.
+        The simulation's output and restart files will keep their original output structure
+        for the selected ensemble, which is advantageous when automating a workflow.
     Parameters : str, (default=None)
         Override all other force field directory and filename input with the correct extension (.inp or .par).
         Note: the default directory is the current directory with the Charmm object file name.
@@ -2081,6 +2090,7 @@ class GOMCControl:
         check_input_files_exist=True,
         Restart=False,
         RestartCheckpoint=False,
+        ExpertMode=False,
         Parameters=None,
         Coordinates_box_0=None,
         Structure_box_0=None,
@@ -2111,6 +2121,10 @@ class GOMCControl:
             raise TypeError(print_error_message)
 
         # check ensemble is a correct type
+        if ensemble_type in ["GEMC_NVT", "GEMC-NVT"]:
+            ensemble_type = "GEMC_NVT"
+        elif ensemble_type in ["GEMC_NPT", "GEMC-NPT"]:
+            ensemble_type = "GEMC_NPT"
         print("INFO: ensemble_type = " + str(ensemble_type))
         if ensemble_type in ["NPT", "NVT", "GCMC", "GEMC_NVT", "GEMC_NPT"]:
             self.ensemble_type = ensemble_type
@@ -2136,6 +2150,10 @@ class GOMCControl:
         # set and check valid inputs for the RestartCheckpoint attribute
         _check_if_bool("RestartCheckpoint", RestartCheckpoint)
         self.RestartCheckpoint = RestartCheckpoint
+
+        # set ExpertMode
+        _check_if_bool("ExpertMode", ExpertMode)
+        self.ExpertMode = ExpertMode
 
         self.binCoordinates_box_0 = binCoordinates_box_0
         self.extendedSystem_box_0 = extendedSystem_box_0
@@ -4510,7 +4528,7 @@ class GOMCControl:
 
         # check to see if the moves sum up to 1
         if ensemble_type in ["NVT", "GCMC"]:
-            if self.VolFreq != 0:
+            if self.VolFreq != 0 and self.ExpertMode is False:
                 self.input_error = True
                 print_error_message = (
                     "ERROR: The input variable VolFreq is non-zero (0). "
@@ -4876,6 +4894,7 @@ class GOMCControl:
         data_control_file.write(
             "{:25s} {}\n".format("RestartCheckpoint", self.RestartCheckpoint)
         )
+        data_control_file.write("{:25s} {}\n".format("ExpertMode", self.ExpertMode))
         data_control_file.write("\n")
         data_control_file.write("####################################\n")
         data_control_file.write("# kind {RESTART, RANDOM, INTSEED}\n")
@@ -6610,6 +6629,7 @@ def write_gomc_control_file(
     check_input_files_exist=True,
     Restart=False,
     RestartCheckpoint=False,
+    ExpertMode=False,
     Parameters=None,
     Coordinates_box_0=None,
     Structure_box_0=None,
@@ -6663,6 +6683,15 @@ def write_gomc_control_file(
         Determines whether to restart the simulation with the checkpoint
         file (checkpoint.dat) or not. Restarting the simulation with checkpoint.dat
         would result in an identical outcome, as if previous simulation was continued.
+    ExpertMode : boolean, default = False
+        This allows the move ratios to be any value, regardless of the ensemble,
+        provided all the move ratios sum to 1. For example, this mode is utilized
+        to easily equilibrate a GCMC or GEMC ensemble in a pseudo NVT mode by removing
+        the requirement that the volume and swap moves must be non-zero.
+        In other words, when the volume and swap moves are zero, the GCMC and GEMC
+        ensembles will run pseudo NVT simulations in 1 and 2 simulation boxes, respectively.
+        The simulation's output and restart files will keep their original output structure
+        for the selected ensemble, which is advantageous when automating a workflow.
     Parameters : str, (default=None)
         Override all other force field directory and filename input with the correct extension (.inp or .par).
         Note: the default directory is the current directory with the Charmm object file name.
@@ -7404,6 +7433,7 @@ def write_gomc_control_file(
         check_input_files_exist=check_input_files_exist,
         Restart=Restart,
         RestartCheckpoint=RestartCheckpoint,
+        ExpertMode=ExpertMode,
         Parameters=Parameters,
         Coordinates_box_0=Coordinates_box_0,
         Structure_box_0=Structure_box_0,
