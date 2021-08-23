@@ -428,7 +428,15 @@ def write_lammpsdata(
         )
 
     with open(filename, "w") as data:
-        data.write(f"{filename} - created by mBuild; units = {unit_style}\n\n")
+        
+        data.write(f"{filename} - created by mBuild; units = {unit_style}\n")
+        if unit_style == "lj":
+            data.write("#Normalization factors: ")
+            data.write("sigma - {:.3E}, ".format(sigma_conversion_factor))
+            data.write("epsilon - {:.3E}, ".format(epsilon_conversion_factor))
+            data.write("mass - {:.3E}".format(mass_conversion_factor))
+        data.write("\n")
+            
         data.write("{:d} atoms\n".format(len(structure.atoms)))
         if atom_style in ["full", "molecular"]:
             data.write("{:d} bonds\n".format(len(bonds)))
@@ -689,10 +697,10 @@ def write_lammpsdata(
             else:
                 if pair_coeff_label:
                     data.write(
-                        "\nPair Coeffs # {} \n\n".format(pair_coeff_label)
+                        "\nPair Coeffs # {} \n".format(pair_coeff_label)
                     )
                 else:
-                    data.write("\nPair Coeffs # lj\n\n")
+                    data.write("\nPair Coeffs # lj\n")
 
                 if unit_style == "real":
                     data.write("#\tepsilon (kcal/mol)\t\tsigma (Angstrom)\n")
