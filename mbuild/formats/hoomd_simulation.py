@@ -25,7 +25,7 @@ def create_hoomd_simulation(
     ref_distance=1.0,
     ref_mass=1.0,
     ref_energy=1.0,
-    r_cut=1.2,
+    r_cut=2.5,
     auto_scale=False,
     snapshot_kwargs={},
     pppm_kwargs={"Nx": 8, "Ny": 8, "Nz": 8, "order": 4},
@@ -45,7 +45,7 @@ def create_hoomd_simulation(
         Reference mass for conversion to reduced units
     ref_energy : float, optional, default=1.0
         Reference energy for conversion to reduced units
-    r_cut : float, optional, default 1.2
+    r_cut : float, optional, default 2.5
         Cutoff radius, in reduced units
     auto_scale : bool, optional, default=False
         Automatically use largest sigma value as ref_distance, largest mass
@@ -187,7 +187,7 @@ def create_hoomd_simulation(
     return hoomd_objects, ref_values
 
 
-def _init_hoomd_lj(structure, nl, r_cut=1.2, ref_distance=1.0, ref_energy=1.0):
+def _init_hoomd_lj(structure, nl, r_cut=2.5, ref_distance=1.0, ref_energy=1.0):
     """LJ parameters."""
     # Identify the unique atom types before setting
     atom_type_params = {}
@@ -249,7 +249,7 @@ def _init_hoomd_lj(structure, nl, r_cut=1.2, ref_distance=1.0, ref_energy=1.0):
     return lj
 
 
-def _init_hoomd_qq(structure, nl, Nx=1, Ny=1, Nz=1, order=4, r_cut=1.2):
+def _init_hoomd_qq(structure, nl, Nx=1, Ny=1, Nz=1, order=4, r_cut=2.5):
     """Charge interactions."""
     charged = hoomd.group.charged()
     if len(charged) == 0:
@@ -262,7 +262,7 @@ def _init_hoomd_qq(structure, nl, Nx=1, Ny=1, Nz=1, order=4, r_cut=1.2):
 
 
 def _init_hoomd_14_pairs(
-    structure, nl, r_cut=1.2, ref_distance=1.0, ref_energy=1.0
+    structure, nl, r_cut=2.5, ref_distance=1.0, ref_energy=1.0
 ):
     """Special_pairs to handle 14 scalings.
 
