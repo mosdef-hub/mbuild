@@ -89,7 +89,7 @@ def read_xyz(filename, compound=None):
     return compound
 
 
-def write_xyz(structure, filename, write_atomnames=False):
+def write_xyz(structure, filename, write_atomnames=False, prec=6):
     """Output an XYZ file.
 
     Parameters
@@ -101,6 +101,8 @@ def write_xyz(structure, filename, write_atomnames=False):
     write_atomnames : bool
         Write the `atom.name` attribute of the parmed structure
         to the first column of the xyz file rather than the element
+    prec : int
+        The number of decimal places to write to the output file
 
     Notes
     -----
@@ -122,7 +124,7 @@ def write_xyz(structure, filename, write_atomnames=False):
     with open(filename, "w") as xyz_file:
         xyz_file.write(str(len(structure.atoms)))
         xyz_file.write("\n" + filename + " - created by mBuild\n")
-        for name, coords in zip(names, xyz):
+        for name, (x, y, z) in zip(names, xyz):
             xyz_file.write(
-                "{:s} {:11.6f} {:11.6f} {:11.6f}\n".format(name, *coords)
+                f"{name} {x:11.{prec}f} {y:11.{prec}f} {z:11.{prec}f}\n"
             )
