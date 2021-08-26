@@ -40,16 +40,18 @@ def create_hoomd_simulation(
     structure : parmed.Structure
         ParmEd Structure object
     ref_distance : float, optional, default=1.0
-        Reference distance for conversion to reduced units
+        Reference distance for unit conversion (from Angstrom)
     ref_mass : float, optional, default=1.0
-        Reference mass for conversion to reduced units
+        Reference mass for unit conversion (from Dalton)
     ref_energy : float, optional, default=1.0
-        Reference energy for conversion to reduced units
+        Reference energy for unit conversion (from kcal/mol)
     r_cut : float, optional, default 2.5
-        Cutoff radius, in reduced units
+        Cutoff radius in sigma units (where sigma is the largest sigma value
+        from the forcefield)
     auto_scale : bool, optional, default=False
-        Automatically use largest sigma value as ref_distance, largest mass
-        value as ref_mass, and largest epsilon value as ref_energy
+        Scale to reduced units by automatically using the largest sigma value
+        as ref_distance, largest mass value as ref_mass, and largest epsilon
+        value as ref_energy
     snapshot_kwargs : dict
         Kwargs to pass to to_hoomdsnapshot
     pppm_kwargs : dict
