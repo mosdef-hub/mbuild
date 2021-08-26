@@ -109,6 +109,12 @@ def create_hoomd_simulation(
     hoomd_objects = []  # Potential adaptation for Hoomd v3 API
 
     if auto_scale:
+        if not all([i == 1 for i in (ref_distance, ref_energy, ref_mass)]):
+            warnings.warn(
+                "Autoscale option selected--provided reference values will not "
+                "be used."
+            )
+
         ref_mass = max([atom.mass for atom in structure.atoms])
         pair_coeffs = list(
             set((a.type, a.epsilon, a.sigma) for a in structure.atoms)
