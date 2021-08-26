@@ -108,6 +108,13 @@ def create_hoomd_simulation(
 
     hoomd_objects = []  # Potential adaptation for Hoomd v3 API
 
+    pair_coeffs = list(
+        set((a.type, a.epsilon, a.sigma) for a in structure.atoms)
+    )
+    max_sigma = max(pair_coeffs, key=operator.itemgetter(2))[2]
+    # Scale r_cut by sigma
+    r_cut *= max_sigma
+
     if auto_scale:
         if not all([i == 1 for i in (ref_distance, ref_energy, ref_mass)]):
             warnings.warn(
@@ -116,11 +123,8 @@ def create_hoomd_simulation(
             )
 
         ref_mass = max([atom.mass for atom in structure.atoms])
-        pair_coeffs = list(
-            set((a.type, a.epsilon, a.sigma) for a in structure.atoms)
-        )
         ref_energy = max(pair_coeffs, key=operator.itemgetter(1))[1]
-        ref_distance = max(pair_coeffs, key=operator.itemgetter(2))[2]
+        ref_distance = max_sigma
 
     ReferenceValues = namedtuple("ref_values", ["distance", "mass", "energy"])
     ref_values = ReferenceValues(ref_distance, ref_mass, ref_energy)
