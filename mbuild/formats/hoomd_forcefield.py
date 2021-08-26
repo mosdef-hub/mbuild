@@ -35,17 +35,18 @@ def create_hoomd_forcefield(
     structure : parmed.Structure
         ParmEd Structure object
     ref_distance : float, optional, default=1.0
-        Reference distance for conversion to reduced units
+        Reference distance for unit conversion (from Angstrom)
     ref_mass : float, optional, default=1.0
-        Reference mass for conversion to reduced units
+        Reference mass for unit conversion (from Dalton)
     ref_energy : float, optional, default=1.0
-        Reference energy for conversion to reduced units
+        Reference energy for unit conversion (from kcal/mol)
     r_cut : float, optional, default 2.5
-        Cutoff radius, in reduced units
+        Cutoff radius in sigma units (where sigma is the largest sigma value
+        from the forcefield)
     auto_scale : bool, optional, default=False
-        Automatically use largest sigma value as ref_distance,
-        largest mass value as ref_mass,
-        and largest epsilon value as ref_energy
+        Scale to reduced units by automatically using the largest sigma value
+        as ref_distance, largest mass value as ref_mass, and largest epsilon
+        value as ref_energy
     snapshot_kwargs : dict
         Keyword arguments to pass to to_hoomdsnapshot
     pppm_kwargs : dict
@@ -94,16 +95,23 @@ def create_hoomd_forcefield(
 
     hoomd_forcefield = []
 
+    pair_coeffs = list(
+        set((a.type, a.epsilon, a.sigma) for a in structure.atoms)
+    )
+    max_sigma = max(pair_coeffs, key=operator.itemgetter(2))[2]
+    # Scale r_cut by sigma
+    r_cut *= max_sigma
+
     if auto_scale:
-        ref_mass = max([atom.mass for atom in structure.atoms])
-        pair_coeffs = list(
-            set(
-                (atom.type, atom.epsilon, atom.sigma)
-                for atom in structure.atoms
+        if not all([i == 1 for i in (ref_distance, ref_energy, ref_mass)]):
+            warnings.warn(
+                "Autoscale option selected--provided reference values will not "
+                "be used."
             )
-        )
+
+        ref_mass = max([atom.mass for atom in structure.atoms])
         ref_energy = max(pair_coeffs, key=operator.itemgetter(1))[1]
-        ref_distance = max(pair_coeffs, key=operator.itemgetter(2))[2]
+        ref_distance = max_sigma
 
     ReferenceValues = namedtuple("ref_values", ["distance", "mass", "energy"])
     ref_values = ReferenceValues(ref_distance, ref_mass, ref_energy)
