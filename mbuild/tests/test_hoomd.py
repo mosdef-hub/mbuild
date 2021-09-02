@@ -203,13 +203,13 @@ class TestHoomdSimulation(BaseTest):
         from mbuild.formats.hoomd_simulation import create_hoomd_simulation
 
         with pytest.raises(ValueError):
-            create_hoomd_simulation("fake_object")
+            create_hoomd_simulation("fake_object", 2)
 
     def test_compound_to_hoomdsimulation(self, ethane):
         from mbuild.formats.hoomd_simulation import create_hoomd_simulation
 
         with pytest.raises(ValueError):
-            create_hoomd_simulation(ethane)
+            create_hoomd_simulation(ethane, 2.5)
 
     @pytest.mark.skipif(not has_foyer, reason="Foyer is not installed")
     def test_structure_to_hoomdsimulation(self, ethane):
@@ -222,7 +222,7 @@ class TestHoomdSimulation(BaseTest):
         structure = ff.apply(ethane)
         sim = hoomd.context.SimulationContext()
         with sim:
-            create_hoomd_simulation(structure)
+            create_hoomd_simulation(structure, 2.5)
 
             sim_forces = hoomd.context.current.forces
             pair_force = import_("hoomd.md.pair")
@@ -256,7 +256,7 @@ class TestHoomdSimulation(BaseTest):
         structure.box = [10, 10, 10, 90, 90, 90]
         sim = hoomd.context.SimulationContext()
         with sim:
-            create_hoomd_simulation(structure)
+            create_hoomd_simulation(structure, 2.5)
             sim_forces = hoomd.context.current.forces
             pair_force = import_("hoomd.md.pair")
 
@@ -280,7 +280,7 @@ class TestHoomdSimulation(BaseTest):
         sim = hoomd.context.SimulationContext()
         with sim:
             hoomd_obj, ref_vals = create_hoomd_simulation(
-                structure, restart=get_fn("restart.gsd")
+                structure, 2.5, restart=get_fn("restart.gsd")
             )
             sim_forces = hoomd.context.current.forces
             pair_force = import_("hoomd.md.pair")
@@ -299,7 +299,7 @@ class TestHoomdSimulation(BaseTest):
 
         with pytest.raises(ValueError):
             hoomd_simulation.create_hoomd_simulation(
-                ethane, nlist=hoomd.md.nlist.tree
+                ethane, 2.5, nlist=hoomd.md.nlist.tree
             )
 
 
@@ -312,13 +312,13 @@ class TestHoomdForcefield(BaseTest):
         from mbuild.formats.hoomd_forcefield import create_hoomd_forcefield
 
         with pytest.raises(ValueError):
-            create_hoomd_forcefield("fake_object")
+            create_hoomd_forcefield("fake_object", 2.5)
 
     def test_compound_to_hoomd_forcefield(self, ethane):
         from mbuild.formats.hoomd_forcefield import create_hoomd_forcefield
 
         with pytest.raises(ValueError):
-            create_hoomd_forcefield(ethane)
+            create_hoomd_forcefield(ethane, 2.5)
 
     @pytest.mark.skipif(not has_foyer, reason="Foyer is not installed")
     def test_structure_to_hoomd_forcefield(self, ethane):
@@ -330,7 +330,7 @@ class TestHoomdForcefield(BaseTest):
         ff = Forcefield(name="oplsaa")
         structure = ff.apply(ethane)
 
-        snapshot, forces, ref_values = create_hoomd_forcefield(structure)
+        snapshot, forces, ref_values = create_hoomd_forcefield(structure, 2.5)
 
         assert isinstance(forces[0], hoomd.md.pair.LJ)
         assert isinstance(forces[1], hoomd.md.pair.Ewald)
@@ -355,7 +355,7 @@ class TestHoomdForcefield(BaseTest):
         structure = ff.apply(box)
         structure.box = [10, 10, 10, 90, 90, 90]
 
-        snapshot, forces, ref_values = create_hoomd_forcefield(structure)
+        snapshot, forces, ref_values = create_hoomd_forcefield(structure, 2.5)
 
         assert isinstance(forces[0], hoomd.md.pair.LJ)
 
