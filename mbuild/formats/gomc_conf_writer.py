@@ -2797,18 +2797,20 @@ class GOMCControl:
         self.MEMC_3Freq = default_input_variables_dict["MEMC-3Freq"][
             self.ensemble_type
         ]
-        self.TargetedSwapFreq = default_input_variables_dict["TargetedSwapFreq"][
-            self.ensemble_type
-        ]
-        self.IntraTargetedSwapFreq = default_input_variables_dict["IntraTargetedSwapFreq"][
-            self.ensemble_type
-        ]
+        self.TargetedSwapFreq = default_input_variables_dict[
+            "TargetedSwapFreq"
+        ][self.ensemble_type]
+        self.IntraTargetedSwapFreq = default_input_variables_dict[
+            "IntraTargetedSwapFreq"
+        ][self.ensemble_type]
 
         self.ExchangeVolumeDim = default_input_variables_dict[
             "ExchangeVolumeDim"
         ]
         self.MEMC_DataInput = default_input_variables_dict["MEMC_DataInput"]
-        self.TargetedSwap_DataInput = default_input_variables_dict["TargetedSwap_DataInput"]
+        self.TargetedSwap_DataInput = default_input_variables_dict[
+            "TargetedSwap_DataInput"
+        ]
 
         # auto calculate the best EqSteps (number of Equilbrium Steps) and Adj_Steps (number of AdjSteps Steps)
         self.EqSteps = _scale_gen_freq_for_run_steps_int(
@@ -3011,7 +3013,6 @@ class GOMCControl:
                 "INFO: All the required force field, pdb, and psf files for box 0 and 1 (.inp, .pdb, and .psf) all "
                 "passed the intial error checking. Note: the file names and their existance is not confirmed."
             )
-
 
         # verify all input variables keys are valid
         input_variables_dict_keys_list = dict_keys_to_list(
@@ -4604,8 +4605,8 @@ class GOMCControl:
                 )
 
                 if (
-                        input_var_keys_list[var_iter] == key
-                        and key in possible_ensemble_variables_list
+                    input_var_keys_list[var_iter] == key
+                    and key in possible_ensemble_variables_list
                 ):
                     self.TargetedSwapFreq = self.input_variables_dict[key]
                 else:
@@ -4620,8 +4621,8 @@ class GOMCControl:
                 )
 
                 if (
-                        input_var_keys_list[var_iter] == key
-                        and key in possible_ensemble_variables_list
+                    input_var_keys_list[var_iter] == key
+                    and key in possible_ensemble_variables_list
                 ):
                     self.IntraTargetedSwapFreq = self.input_variables_dict[key]
                 else:
@@ -4630,239 +4631,614 @@ class GOMCControl:
             key = "TargetedSwap_DataInput"
             if input_var_keys_list[var_iter] == key:
                 # get all residues
-                all_residue_names_list = list(self.all_residues_unique_atom_name_dict.keys())
-                target_swap_dict = self.input_variables_dict[input_var_keys_list[var_iter]]
+                all_residue_names_list = list(
+                    self.all_residues_unique_atom_name_dict.keys()
+                )
+                target_swap_dict = self.input_variables_dict[
+                    input_var_keys_list[var_iter]
+                ]
 
-                target_swap_input_error = "The TargetedSwap_DataInput is not formatted correctly as a dictionary" \
-                                          " or has the wrong input keys, values, or types."
+                target_swap_input_error = (
+                    "The TargetedSwap_DataInput is not formatted correctly as a dictionary"
+                    " or has the wrong input keys, values, or types."
+                )
                 if isinstance(target_swap_dict, dict):
                     for tag_i in list(target_swap_dict.keys()):
                         # check all tag ids are integers
                         if not isinstance(tag_i, int):
                             raise ValueError(target_swap_input_error)
-                        for ts_dict_key_i in list(target_swap_dict[tag_i].keys()):
+                        for ts_dict_key_i in list(
+                            target_swap_dict[tag_i].keys()
+                        ):
                             # check all target swap data inputs keys are strings
                             if not isinstance(ts_dict_key_i, str):
                                 raise ValueError(target_swap_input_error)
                             # force all keys to lower case
                             elif isinstance(ts_dict_key_i, str):
-                                target_swap_dict[tag_i][ts_dict_key_i.lower()] = \
-                                    target_swap_dict[tag_i].pop(ts_dict_key_i)
+                                target_swap_dict[tag_i][
+                                    ts_dict_key_i.lower()
+                                ] = target_swap_dict[tag_i].pop(ts_dict_key_i)
                                 # verify all Target swap keys are valid
-                                valid_target_swap_keys = ["subvolumetype", "subvolumebox", "subvolumecenter",
-                                                          "subvolumecenterlist", "subvolumedim",
-                                                          "subvolumeresiduekind", "subvolumerigidswap",
-                                                          "subvolumepbc", "subvolumechempot",
-                                                          "subvolumefugacity"]
-                                if ts_dict_key_i.lower() not in valid_target_swap_keys:
+                                valid_target_swap_keys = [
+                                    "subvolumetype",
+                                    "subvolumebox",
+                                    "subvolumecenter",
+                                    "subvolumecenterlist",
+                                    "subvolumedim",
+                                    "subvolumeresiduekind",
+                                    "subvolumerigidswap",
+                                    "subvolumepbc",
+                                    "subvolumechempot",
+                                    "subvolumefugacity",
+                                ]
+                                if (
+                                    ts_dict_key_i.lower()
+                                    not in valid_target_swap_keys
+                                ):
                                     raise ValueError(target_swap_input_error)
 
                             # check the SubVolumeResidueKind is list of n length or convert string to list
                             # this SubVolumeResidueKind reformating needs done first before the other checks,
                             # specifically, the SubVolumeFugacity and SubVolumeChemPot
-                            if ts_dict_key_i.lower() in ["subvolumeresiduekind"]:
-                                if not isinstance(target_swap_dict[tag_i]["subvolumeresiduekind"], list) \
-                                        and not isinstance(
-                                    target_swap_dict[tag_i]["subvolumeresiduekind"], str):
-                                    bad_input_variables_values_list.append("subvolumeresiduekind")
-                                elif isinstance(target_swap_dict[tag_i]["subvolumeresiduekind"], list) \
-                                        and len(target_swap_dict[tag_i]["subvolumeresiduekind"]) >= 1:
-                                    for ts_residue_i in target_swap_dict[tag_i]["subvolumeresiduekind"]:
+                            if ts_dict_key_i.lower() in [
+                                "subvolumeresiduekind"
+                            ]:
+                                if not isinstance(
+                                    target_swap_dict[tag_i][
+                                        "subvolumeresiduekind"
+                                    ],
+                                    list,
+                                ) and not isinstance(
+                                    target_swap_dict[tag_i][
+                                        "subvolumeresiduekind"
+                                    ],
+                                    str,
+                                ):
+                                    bad_input_variables_values_list.append(
+                                        "subvolumeresiduekind"
+                                    )
+                                elif (
+                                    isinstance(
+                                        target_swap_dict[tag_i][
+                                            "subvolumeresiduekind"
+                                        ],
+                                        list,
+                                    )
+                                    and len(
+                                        target_swap_dict[tag_i][
+                                            "subvolumeresiduekind"
+                                        ]
+                                    )
+                                    >= 1
+                                ):
+                                    for ts_residue_i in target_swap_dict[tag_i][
+                                        "subvolumeresiduekind"
+                                    ]:
                                         if not isinstance(ts_residue_i, str):
-                                            bad_input_variables_values_list.append("subvolumeresiduekind")
-                                        elif ts_residue_i not in all_residue_names_list \
-                                                and ts_residue_i.lower() not in ["all"]:
-                                            bad_input_variables_values_list.append("subvolumeresiduekind")
+                                            bad_input_variables_values_list.append(
+                                                "subvolumeresiduekind"
+                                            )
+                                        elif (
+                                            ts_residue_i
+                                            not in all_residue_names_list
+                                            and ts_residue_i.lower()
+                                            not in ["all"]
+                                        ):
+                                            bad_input_variables_values_list.append(
+                                                "subvolumeresiduekind"
+                                            )
                                         elif ts_residue_i.lower() in ["all"]:
-                                            self.input_variables_dict[input_var_keys_list[var_iter]][
-                                                tag_i]["subvolumeresiduekind"] = ['ALL']
-                                elif target_swap_dict[tag_i]["subvolumeresiduekind"].lower() == 'all':
-                                    self.input_variables_dict[input_var_keys_list[var_iter]][
-                                        tag_i]["subvolumeresiduekind"] = ['ALL']
-                                elif target_swap_dict[tag_i]["subvolumeresiduekind"] \
-                                        in all_residue_names_list:
-                                    self.input_variables_dict[input_var_keys_list[var_iter]][
-                                        tag_i]["subvolumeresiduekind"] = [
-                                        target_swap_dict[tag_i]["subvolumeresiduekind"]]
+                                            self.input_variables_dict[
+                                                input_var_keys_list[var_iter]
+                                            ][tag_i]["subvolumeresiduekind"] = [
+                                                "ALL"
+                                            ]
+                                elif (
+                                    target_swap_dict[tag_i][
+                                        "subvolumeresiduekind"
+                                    ].lower()
+                                    == "all"
+                                ):
+                                    self.input_variables_dict[
+                                        input_var_keys_list[var_iter]
+                                    ][tag_i]["subvolumeresiduekind"] = ["ALL"]
+                                elif (
+                                    target_swap_dict[tag_i][
+                                        "subvolumeresiduekind"
+                                    ]
+                                    in all_residue_names_list
+                                ):
+                                    self.input_variables_dict[
+                                        input_var_keys_list[var_iter]
+                                    ][tag_i]["subvolumeresiduekind"] = [
+                                        target_swap_dict[tag_i][
+                                            "subvolumeresiduekind"
+                                        ]
+                                    ]
                                 else:
-                                    bad_input_variables_values_list.append("subvolumeresiduekind")
+                                    bad_input_variables_values_list.append(
+                                        "subvolumeresiduekind"
+                                    )
                 else:
                     raise ValueError(target_swap_input_error)
 
                 if isinstance(target_swap_dict, dict):
                     for tag_id_keys_i in list(target_swap_dict.keys()):
-                        target_swap_tag_id_dict_key_data = target_swap_dict[tag_id_keys_i]
+                        target_swap_tag_id_dict_key_data = target_swap_dict[
+                            tag_id_keys_i
+                        ]
 
-                        for target_swap_dict_key_i_lower in list(target_swap_tag_id_dict_key_data.keys()):
+                        for target_swap_dict_key_i_lower in list(
+                            target_swap_tag_id_dict_key_data.keys()
+                        ):
                             # check the SubVolumeType are either "Static", or "Dynamic"
-                            if target_swap_dict_key_i_lower in ["subvolumetype"]:
-                                if not isinstance(target_swap_tag_id_dict_key_data["subvolumetype"], str):
-                                    bad_input_variables_values_list.append("subvolumetype")
-                                elif target_swap_tag_id_dict_key_data["subvolumetype"].lower() \
-                                     not in ["static", "dynamic"]:
-                                    bad_input_variables_values_list.append("subvolumetype")
+                            if target_swap_dict_key_i_lower in [
+                                "subvolumetype"
+                            ]:
+                                if not isinstance(
+                                    target_swap_tag_id_dict_key_data[
+                                        "subvolumetype"
+                                    ],
+                                    str,
+                                ):
+                                    bad_input_variables_values_list.append(
+                                        "subvolumetype"
+                                    )
+                                elif target_swap_tag_id_dict_key_data[
+                                    "subvolumetype"
+                                ].lower() not in ["static", "dynamic"]:
+                                    bad_input_variables_values_list.append(
+                                        "subvolumetype"
+                                    )
 
                                 # check for the SubVolumeCenter if its a static box
-                                elif target_swap_tag_id_dict_key_data["subvolumetype"].lower() in ["static"]:
-                                    if "subvolumecenter" in target_swap_tag_id_dict_key_data:
-                                        if not isinstance(target_swap_tag_id_dict_key_data["subvolumecenter"], list):
-                                            bad_input_variables_values_list.append("subvolumecenter")
-                                        elif isinstance(target_swap_tag_id_dict_key_data["subvolumecenter"], list) \
-                                                and len(target_swap_tag_id_dict_key_data["subvolumecenter"]) == 3:
-                                            for x_y_z_dim_i in target_swap_tag_id_dict_key_data["subvolumecenter"]:
-                                                if not isinstance(x_y_z_dim_i, int) \
-                                                        and not isinstance(x_y_z_dim_i, float):
-                                                        bad_input_variables_values_list.append("subvolumecenter")
+                                elif target_swap_tag_id_dict_key_data[
+                                    "subvolumetype"
+                                ].lower() in ["static"]:
+                                    if (
+                                        "subvolumecenter"
+                                        in target_swap_tag_id_dict_key_data
+                                    ):
+                                        if not isinstance(
+                                            target_swap_tag_id_dict_key_data[
+                                                "subvolumecenter"
+                                            ],
+                                            list,
+                                        ):
+                                            bad_input_variables_values_list.append(
+                                                "subvolumecenter"
+                                            )
+                                        elif (
+                                            isinstance(
+                                                target_swap_tag_id_dict_key_data[
+                                                    "subvolumecenter"
+                                                ],
+                                                list,
+                                            )
+                                            and len(
+                                                target_swap_tag_id_dict_key_data[
+                                                    "subvolumecenter"
+                                                ]
+                                            )
+                                            == 3
+                                        ):
+                                            for (
+                                                x_y_z_dim_i
+                                            ) in target_swap_tag_id_dict_key_data[
+                                                "subvolumecenter"
+                                            ]:
+                                                if not isinstance(
+                                                    x_y_z_dim_i, int
+                                                ) and not isinstance(
+                                                    x_y_z_dim_i, float
+                                                ):
+                                                    bad_input_variables_values_list.append(
+                                                        "subvolumecenter"
+                                                    )
                                         else:
-                                            bad_input_variables_values_list.append("subvolumecenter")
+                                            bad_input_variables_values_list.append(
+                                                "subvolumecenter"
+                                            )
                                     else:
-                                        bad_input_variables_values_list.append("subvolumecenter")
+                                        bad_input_variables_values_list.append(
+                                            "subvolumecenter"
+                                        )
 
                                 # check for the SubVolumeCenterList if its a dynamic box
-                                elif target_swap_tag_id_dict_key_data["subvolumetype"].lower() in ["dynamic"]:
-                                    if "subvolumecenterlist" in target_swap_tag_id_dict_key_data:
-                                        if isinstance(target_swap_tag_id_dict_key_data[
-                                                          "subvolumecenterlist"], list):
-                                            for atom_index_dim_i in target_swap_tag_id_dict_key_data[
-                                                "subvolumecenterlist"]:
-                                                if isinstance(atom_index_dim_i, int):
+                                elif target_swap_tag_id_dict_key_data[
+                                    "subvolumetype"
+                                ].lower() in ["dynamic"]:
+                                    if (
+                                        "subvolumecenterlist"
+                                        in target_swap_tag_id_dict_key_data
+                                    ):
+                                        if isinstance(
+                                            target_swap_tag_id_dict_key_data[
+                                                "subvolumecenterlist"
+                                            ],
+                                            list,
+                                        ):
+                                            for (
+                                                atom_index_dim_i
+                                            ) in target_swap_tag_id_dict_key_data[
+                                                "subvolumecenterlist"
+                                            ]:
+                                                if isinstance(
+                                                    atom_index_dim_i, int
+                                                ):
                                                     if atom_index_dim_i < 0:
                                                         bad_input_variables_values_list.append(
-                                                            "subvolumecenterlist")
-                                                elif isinstance(atom_index_dim_i, str):
-                                                    atom_index_split_str = atom_index_dim_i.split("-")
-                                                    if len(atom_index_split_str) == 2 \
-                                                            and atom_index_dim_i.find(".") < 0:
+                                                            "subvolumecenterlist"
+                                                        )
+                                                elif isinstance(
+                                                    atom_index_dim_i, str
+                                                ):
+                                                    atom_index_split_str = (
+                                                        atom_index_dim_i.split(
+                                                            "-"
+                                                        )
+                                                    )
+                                                    if (
+                                                        len(
+                                                            atom_index_split_str
+                                                        )
+                                                        == 2
+                                                        and atom_index_dim_i.find(
+                                                            "."
+                                                        )
+                                                        < 0
+                                                    ):
                                                         try:
-                                                            if not isinstance(int(atom_index_split_str[0]), int) \
-                                                                    or not isinstance(
-                                                                int(atom_index_split_str[1]), int) \
-                                                                    or int(atom_index_split_str[0]) >= int(
-                                                                    atom_index_split_str[1]) \
-                                                                    or atom_index_split_str[0] == '' \
-                                                                    or atom_index_split_str[1] == '':
+                                                            if (
+                                                                not isinstance(
+                                                                    int(
+                                                                        atom_index_split_str[
+                                                                            0
+                                                                        ]
+                                                                    ),
+                                                                    int,
+                                                                )
+                                                                or not isinstance(
+                                                                    int(
+                                                                        atom_index_split_str[
+                                                                            1
+                                                                        ]
+                                                                    ),
+                                                                    int,
+                                                                )
+                                                                or int(
+                                                                    atom_index_split_str[
+                                                                        0
+                                                                    ]
+                                                                )
+                                                                >= int(
+                                                                    atom_index_split_str[
+                                                                        1
+                                                                    ]
+                                                                )
+                                                                or atom_index_split_str[
+                                                                    0
+                                                                ]
+                                                                == ""
+                                                                or atom_index_split_str[
+                                                                    1
+                                                                ]
+                                                                == ""
+                                                            ):
                                                                 bad_input_variables_values_list.append(
-                                                                    "subvolumecenterlist")
+                                                                    "subvolumecenterlist"
+                                                                )
                                                         except:
                                                             bad_input_variables_values_list.append(
-                                                                "subvolumecenterlist")
+                                                                "subvolumecenterlist"
+                                                            )
                                                     else:
-                                                        bad_input_variables_values_list.append("subvolumecenterlist")
+                                                        bad_input_variables_values_list.append(
+                                                            "subvolumecenterlist"
+                                                        )
                                                 else:
-                                                    bad_input_variables_values_list.append("subvolumecenterlist")
+                                                    bad_input_variables_values_list.append(
+                                                        "subvolumecenterlist"
+                                                    )
                                         else:
-                                            bad_input_variables_values_list.append("subvolumecenterlist")
+                                            bad_input_variables_values_list.append(
+                                                "subvolumecenterlist"
+                                            )
                                     else:
-                                        bad_input_variables_values_list.append("subvolumecenterlist")
+                                        bad_input_variables_values_list.append(
+                                            "subvolumecenterlist"
+                                        )
 
                             # check the SubVolumeBox is an interger of 0 or 1
                             if target_swap_dict_key_i_lower in ["subvolumebox"]:
-                                if isinstance(target_swap_tag_id_dict_key_data["subvolumebox"], int):
-                                    if self.ensemble_type in ['GEMC_NVT', 'GEMC_NPT']:
-                                        if target_swap_tag_id_dict_key_data["subvolumebox"]!=0 \
-                                                 and target_swap_tag_id_dict_key_data["subvolumebox"]!=1:
-                                            bad_input_variables_values_list.append("subvolumebox")
-                                    elif self.ensemble_type in ['GCMC', 'NVT', 'NPT']:
-                                        if target_swap_tag_id_dict_key_data["subvolumebox"]!=0:
-                                            bad_input_variables_values_list.append("subvolumebox")
+                                if isinstance(
+                                    target_swap_tag_id_dict_key_data[
+                                        "subvolumebox"
+                                    ],
+                                    int,
+                                ):
+                                    if self.ensemble_type in [
+                                        "GEMC_NVT",
+                                        "GEMC_NPT",
+                                    ]:
+                                        if (
+                                            target_swap_tag_id_dict_key_data[
+                                                "subvolumebox"
+                                            ]
+                                            != 0
+                                            and target_swap_tag_id_dict_key_data[
+                                                "subvolumebox"
+                                            ]
+                                            != 1
+                                        ):
+                                            bad_input_variables_values_list.append(
+                                                "subvolumebox"
+                                            )
+                                    elif self.ensemble_type in [
+                                        "GCMC",
+                                        "NVT",
+                                        "NPT",
+                                    ]:
+                                        if (
+                                            target_swap_tag_id_dict_key_data[
+                                                "subvolumebox"
+                                            ]
+                                            != 0
+                                        ):
+                                            bad_input_variables_values_list.append(
+                                                "subvolumebox"
+                                            )
                                 else:
-                                    bad_input_variables_values_list.append("subvolumebox")
+                                    bad_input_variables_values_list.append(
+                                        "subvolumebox"
+                                    )
 
                             # check the SubVolumeDim is list of length 3, [x-dim, y-dim, z-dim]
                             if target_swap_dict_key_i_lower in ["subvolumedim"]:
-                                if not isinstance(target_swap_tag_id_dict_key_data["subvolumedim"], list):
-                                    bad_input_variables_values_list.append("subvolumedim")
-                                elif isinstance(target_swap_tag_id_dict_key_data["subvolumedim"], list) \
-                                    and len(target_swap_tag_id_dict_key_data["subvolumedim"]) == 3:
-                                    for set_x_y_z_dim_i in target_swap_tag_id_dict_key_data["subvolumedim"]:
-                                        if not isinstance(set_x_y_z_dim_i, int) \
-                                                and not isinstance(set_x_y_z_dim_i, float):
-                                            bad_input_variables_values_list.append("subvolumedim")
-                                        elif set_x_y_z_dim_i <= 0 :
-                                            bad_input_variables_values_list.append("subvolumedim")
+                                if not isinstance(
+                                    target_swap_tag_id_dict_key_data[
+                                        "subvolumedim"
+                                    ],
+                                    list,
+                                ):
+                                    bad_input_variables_values_list.append(
+                                        "subvolumedim"
+                                    )
+                                elif (
+                                    isinstance(
+                                        target_swap_tag_id_dict_key_data[
+                                            "subvolumedim"
+                                        ],
+                                        list,
+                                    )
+                                    and len(
+                                        target_swap_tag_id_dict_key_data[
+                                            "subvolumedim"
+                                        ]
+                                    )
+                                    == 3
+                                ):
+                                    for (
+                                        set_x_y_z_dim_i
+                                    ) in target_swap_tag_id_dict_key_data[
+                                        "subvolumedim"
+                                    ]:
+                                        if not isinstance(
+                                            set_x_y_z_dim_i, int
+                                        ) and not isinstance(
+                                            set_x_y_z_dim_i, float
+                                        ):
+                                            bad_input_variables_values_list.append(
+                                                "subvolumedim"
+                                            )
+                                        elif set_x_y_z_dim_i <= 0:
+                                            bad_input_variables_values_list.append(
+                                                "subvolumedim"
+                                            )
                                 else:
-                                    bad_input_variables_values_list.append("subvolumedim")
+                                    bad_input_variables_values_list.append(
+                                        "subvolumedim"
+                                    )
 
                             # check the SubVolumeRigidSwap is bool
-                            if target_swap_dict_key_i_lower in ["subvolumerigidswap"]:
-                                if not isinstance(target_swap_tag_id_dict_key_data["subvolumerigidswap"], bool):
-                                    bad_input_variables_values_list.append("subvolumerigidswap")
+                            if target_swap_dict_key_i_lower in [
+                                "subvolumerigidswap"
+                            ]:
+                                if not isinstance(
+                                    target_swap_tag_id_dict_key_data[
+                                        "subvolumerigidswap"
+                                    ],
+                                    bool,
+                                ):
+                                    bad_input_variables_values_list.append(
+                                        "subvolumerigidswap"
+                                    )
 
                             # check the SubVolumePBC is str of only 'X' 'XY' or 'XYZ'
                             if target_swap_dict_key_i_lower in ["subvolumepbc"]:
-                                if not isinstance(target_swap_tag_id_dict_key_data["subvolumepbc"], str):
-                                    bad_input_variables_values_list.append("subvolumepbc")
-                                elif isinstance(target_swap_tag_id_dict_key_data["subvolumepbc"], str) \
-                                        and target_swap_tag_id_dict_key_data["subvolumepbc"].upper() \
-                                        in ['X', 'XY', 'XZ', 'XYZ', 'Y', 'YZ', 'Z']:
-                                    self.input_variables_dict[input_var_keys_list[var_iter]][tag_id_keys_i][
-                                            "subvolumepbc"] = target_swap_tag_id_dict_key_data[
-                                        "subvolumepbc"].upper()
+                                if not isinstance(
+                                    target_swap_tag_id_dict_key_data[
+                                        "subvolumepbc"
+                                    ],
+                                    str,
+                                ):
+                                    bad_input_variables_values_list.append(
+                                        "subvolumepbc"
+                                    )
+                                elif isinstance(
+                                    target_swap_tag_id_dict_key_data[
+                                        "subvolumepbc"
+                                    ],
+                                    str,
+                                ) and target_swap_tag_id_dict_key_data[
+                                    "subvolumepbc"
+                                ].upper() in [
+                                    "X",
+                                    "XY",
+                                    "XZ",
+                                    "XYZ",
+                                    "Y",
+                                    "YZ",
+                                    "Z",
+                                ]:
+                                    self.input_variables_dict[
+                                        input_var_keys_list[var_iter]
+                                    ][tag_id_keys_i][
+                                        "subvolumepbc"
+                                    ] = target_swap_tag_id_dict_key_data[
+                                        "subvolumepbc"
+                                    ].upper()
                                 else:
-                                    bad_input_variables_values_list.append("subvolumepbc")
+                                    bad_input_variables_values_list.append(
+                                        "subvolumepbc"
+                                    )
 
                             # check the SubVolumeChempot and is dict {'resname_str': value}
-                            if target_swap_dict_key_i_lower in ["subvolumechempot"]:
-                                if not isinstance(target_swap_tag_id_dict_key_data["subvolumechempot"], dict):
-                                    bad_input_variables_values_list.append("subvolumechempot")
+                            if target_swap_dict_key_i_lower in [
+                                "subvolumechempot"
+                            ]:
+                                if not isinstance(
+                                    target_swap_tag_id_dict_key_data[
+                                        "subvolumechempot"
+                                    ],
+                                    dict,
+                                ):
+                                    bad_input_variables_values_list.append(
+                                        "subvolumechempot"
+                                    )
 
-                                elif isinstance(target_swap_tag_id_dict_key_data["subvolumechempot"], dict):
+                                elif isinstance(
+                                    target_swap_tag_id_dict_key_data[
+                                        "subvolumechempot"
+                                    ],
+                                    dict,
+                                ):
                                     self.ck_input_variable_GCMC_dict_str_int_or_float(
                                         target_swap_tag_id_dict_key_data,
                                         "subvolumechempot",
                                         bad_input_variables_values_list,
                                     )
-                                    for res_in_sub_chempot_i in list(target_swap_tag_id_dict_key_data[
-                                                                         "subvolumechempot"].keys()):
-                                        if res_in_sub_chempot_i not in all_residue_names_list:
-                                            bad_input_variables_values_list.append("subvolumechempot")
+                                    for res_in_sub_chempot_i in list(
+                                        target_swap_tag_id_dict_key_data[
+                                            "subvolumechempot"
+                                        ].keys()
+                                    ):
+                                        if (
+                                            res_in_sub_chempot_i
+                                            not in all_residue_names_list
+                                        ):
+                                            bad_input_variables_values_list.append(
+                                                "subvolumechempot"
+                                            )
 
-                                        if "subvolumeresiduekind" in list(target_swap_tag_id_dict_key_data.keys()):
-                                            if isinstance(target_swap_tag_id_dict_key_data[
-                                                              "subvolumeresiduekind"], list):
+                                        if "subvolumeresiduekind" in list(
+                                            target_swap_tag_id_dict_key_data.keys()
+                                        ):
+                                            if isinstance(
+                                                target_swap_tag_id_dict_key_data[
+                                                    "subvolumeresiduekind"
+                                                ],
+                                                list,
+                                            ):
                                                 subvolumechempot_res_list = list(
-                                                    target_swap_tag_id_dict_key_data["subvolumechempot"].keys())
+                                                    target_swap_tag_id_dict_key_data[
+                                                        "subvolumechempot"
+                                                    ].keys()
+                                                )
                                                 subvolumeresiduekind_res_list = list(
-                                                    target_swap_tag_id_dict_key_data["subvolumeresiduekind"])
+                                                    target_swap_tag_id_dict_key_data[
+                                                        "subvolumeresiduekind"
+                                                    ]
+                                                )
 
-                                                for subvolumechempot_res_iter in subvolumechempot_res_list:
-                                                    if subvolumechempot_res_iter \
-                                                            not in subvolumeresiduekind_res_list \
-                                                            and subvolumeresiduekind_res_list != ["ALL"] \
-                                                            and subvolumechempot_res_iter in all_residue_names_list:
-                                                        bad_input_variables_values_list.append("subvolumeresiduekind")
+                                                for (
+                                                    subvolumechempot_res_iter
+                                                ) in subvolumechempot_res_list:
+                                                    if (
+                                                        subvolumechempot_res_iter
+                                                        not in subvolumeresiduekind_res_list
+                                                        and subvolumeresiduekind_res_list
+                                                        != ["ALL"]
+                                                        and subvolumechempot_res_iter
+                                                        in all_residue_names_list
+                                                    ):
+                                                        bad_input_variables_values_list.append(
+                                                            "subvolumeresiduekind"
+                                                        )
 
                             # check the SubVolumefugacity and is dict {'resname_str': value}
-                            if target_swap_dict_key_i_lower in ["subvolumefugacity"]:
-                                if not isinstance(target_swap_tag_id_dict_key_data["subvolumefugacity"], dict):
-                                    bad_input_variables_values_list.append("subvolumefugacity")
+                            if target_swap_dict_key_i_lower in [
+                                "subvolumefugacity"
+                            ]:
+                                if not isinstance(
+                                    target_swap_tag_id_dict_key_data[
+                                        "subvolumefugacity"
+                                    ],
+                                    dict,
+                                ):
+                                    bad_input_variables_values_list.append(
+                                        "subvolumefugacity"
+                                    )
 
-                                elif isinstance(target_swap_tag_id_dict_key_data["subvolumefugacity"], dict):
+                                elif isinstance(
+                                    target_swap_tag_id_dict_key_data[
+                                        "subvolumefugacity"
+                                    ],
+                                    dict,
+                                ):
                                     self.ck_input_variable_GCMC_dict_str_int_or_float_zero_or_greater(
                                         target_swap_tag_id_dict_key_data,
                                         "subvolumefugacity",
                                         bad_input_variables_values_list,
                                     )
 
-                                    for res_in_sub_chempot_i in list(target_swap_tag_id_dict_key_data[
-                                                                         "subvolumefugacity"].keys()):
-                                        if res_in_sub_chempot_i not in all_residue_names_list:
-                                            bad_input_variables_values_list.append("subvolumefugacity")
+                                    for res_in_sub_chempot_i in list(
+                                        target_swap_tag_id_dict_key_data[
+                                            "subvolumefugacity"
+                                        ].keys()
+                                    ):
+                                        if (
+                                            res_in_sub_chempot_i
+                                            not in all_residue_names_list
+                                        ):
+                                            bad_input_variables_values_list.append(
+                                                "subvolumefugacity"
+                                            )
 
-                                        if "subvolumeresiduekind" in list(target_swap_tag_id_dict_key_data.keys()):
-                                            if isinstance(target_swap_tag_id_dict_key_data[
-                                                              "subvolumeresiduekind"], list):
+                                        if "subvolumeresiduekind" in list(
+                                            target_swap_tag_id_dict_key_data.keys()
+                                        ):
+                                            if isinstance(
+                                                target_swap_tag_id_dict_key_data[
+                                                    "subvolumeresiduekind"
+                                                ],
+                                                list,
+                                            ):
                                                 subvolumefugacity_res_list = list(
-                                                    target_swap_tag_id_dict_key_data["subvolumefugacity"].keys())
+                                                    target_swap_tag_id_dict_key_data[
+                                                        "subvolumefugacity"
+                                                    ].keys()
+                                                )
                                                 subvolumeresiduekind_res_list = list(
-                                                    target_swap_tag_id_dict_key_data["subvolumeresiduekind"])
+                                                    target_swap_tag_id_dict_key_data[
+                                                        "subvolumeresiduekind"
+                                                    ]
+                                                )
 
-                                                for subvolumefugacity_res_iter in subvolumefugacity_res_list:
-                                                    if subvolumefugacity_res_iter \
-                                                            not in subvolumeresiduekind_res_list \
-                                                            and subvolumeresiduekind_res_list != ["ALL"] \
-                                                            and subvolumefugacity_res_iter in all_residue_names_list:
-                                                        bad_input_variables_values_list.append("subvolumeresiduekind")
+                                                for (
+                                                    subvolumefugacity_res_iter
+                                                ) in subvolumefugacity_res_list:
+                                                    if (
+                                                        subvolumefugacity_res_iter
+                                                        not in subvolumeresiduekind_res_list
+                                                        and subvolumeresiduekind_res_list
+                                                        != ["ALL"]
+                                                        and subvolumefugacity_res_iter
+                                                        in all_residue_names_list
+                                                    ):
+                                                        bad_input_variables_values_list.append(
+                                                            "subvolumeresiduekind"
+                                                        )
 
                     self.TargetedSwap_DataInput = self.input_variables_dict[key]
                 # if not a dict
@@ -5004,7 +5380,9 @@ class GOMCControl:
             print("\t IntraMEMC_3Freq = " + str(self.IntraMEMC_3Freq))
             print("\t MEMC_3Freq = " + str(self.MEMC_3Freq))
             print("\t TargetedSwapFreq = " + str(self.TargetedSwapFreq))
-            print("\t IntraTargetedSwapFreq = " + str(self.IntraTargetedSwapFreq))
+            print(
+                "\t IntraTargetedSwapFreq = " + str(self.IntraTargetedSwapFreq)
+            )
             self.input_error = True
             print_error_message = (
                 "ERROR: The sum of the Monte Carlo move ratios does not equal 1. "
@@ -5071,7 +5449,7 @@ class GOMCControl:
         # check that TargetedSwap_DataInput values are provided if self.TargetedSwapFreq
         # and self.IntraTargetedSwapFreq is not zero
         if self.TargetedSwap_DataInput is None and (
-                self.TargetedSwapFreq != 0 or self.IntraTargetedSwapFreq != 0
+            self.TargetedSwapFreq != 0 or self.IntraTargetedSwapFreq != 0
         ):
             self.input_error = True
             print_error_message = (
@@ -5086,9 +5464,13 @@ class GOMCControl:
             chempot_used = False
             fugacity_used = False
             for tag_id_keys_j in list(self.TargetedSwap_DataInput.keys()):
-                target_swap_tag_id_dict_key_data = self.TargetedSwap_DataInput[tag_id_keys_j]
+                target_swap_tag_id_dict_key_data = self.TargetedSwap_DataInput[
+                    tag_id_keys_j
+                ]
 
-                for target_swap_dict_key_j_lower in list(target_swap_tag_id_dict_key_data.keys()):
+                for target_swap_dict_key_j_lower in list(
+                    target_swap_tag_id_dict_key_data.keys()
+                ):
                     if target_swap_dict_key_j_lower in ["subvolumechempot"]:
                         chempot_used = True
 
@@ -5096,84 +5478,135 @@ class GOMCControl:
                         fugacity_used = True
 
             if chempot_used is True and fugacity_used is True:
-                print_error_message = ("Both ChemPot and Fugacity were used in the "
-                                       "TargetedSwap_DataInput dictionaries. "
-                                       "However, only ChemPot or Fugacity may be used, not both.")
+                print_error_message = (
+                    "Both ChemPot and Fugacity were used in the "
+                    "TargetedSwap_DataInput dictionaries. "
+                    "However, only ChemPot or Fugacity may be used, not both."
+                )
                 raise ValueError(print_error_message)
 
-            if (chempot_used is True and self.Fugacity is not None) \
-                    or (fugacity_used is True and self.ChemPot is not None):
-                print_error_message = ("Both ChemPot and Fugacity were used in the "
-                                       "TargetedSwap_DataInput dictionaries "
-                                       "and in the standard GOMC swap inputs. "
-                                       "However, only ChemPot or Fugacity may be used, not both.")
+            if (chempot_used is True and self.Fugacity is not None) or (
+                fugacity_used is True and self.ChemPot is not None
+            ):
+                print_error_message = (
+                    "Both ChemPot and Fugacity were used in the "
+                    "TargetedSwap_DataInput dictionaries "
+                    "and in the standard GOMC swap inputs. "
+                    "However, only ChemPot or Fugacity may be used, not both."
+                )
                 raise ValueError(print_error_message)
 
-            if (chempot_used is True or fugacity_used is True) \
-                    and self.ensemble_type in ['NPT', 'NVT', 'GEMC_NVT', 'GEMC_NPT']:
-                print_error_message = ("Either the ChemPot and Fugacity were used in the "
-                                       "TargetedSwap_DataInput dictionaries, "
-                                       "which can not be used for the 'NPT', 'NVT', 'GEMC_NVT', "
-                                       "or 'GEMC_NPT' ensembles.")
+            if (
+                chempot_used is True or fugacity_used is True
+            ) and self.ensemble_type in ["NPT", "NVT", "GEMC_NVT", "GEMC_NPT"]:
+                print_error_message = (
+                    "Either the ChemPot and Fugacity were used in the "
+                    "TargetedSwap_DataInput dictionaries, "
+                    "which can not be used for the 'NPT', 'NVT', 'GEMC_NVT', "
+                    "or 'GEMC_NPT' ensembles."
+                )
                 raise ValueError(print_error_message)
 
             # check if every TargetedSwap_DataInput has all the required values
-            required_ts_datainput_keys_main = ['subvolumetype', 'subvolumebox',
-                                               'subvolumedim', 'subvolumeresiduekind',
-                                               'subvolumerigidswap', 'subvolumepbc']
-            required_ts_datainput_keys_static_adder = ['subvolumecenter']
-            required_ts_datainput_keys_dynamic_adder = ['subvolumecenterlist']
-            required_ts_datainput_keys_GCMC_chempot_adder = ['subvolumechempot']
-            required_ts_datainput_keys_GCMC_fugacity_adder = ['subvolumefugacity']
+            required_ts_datainput_keys_main = [
+                "subvolumetype",
+                "subvolumebox",
+                "subvolumedim",
+                "subvolumeresiduekind",
+                "subvolumerigidswap",
+                "subvolumepbc",
+            ]
+            required_ts_datainput_keys_static_adder = ["subvolumecenter"]
+            required_ts_datainput_keys_dynamic_adder = ["subvolumecenterlist"]
+            required_ts_datainput_keys_GCMC_chempot_adder = ["subvolumechempot"]
+            required_ts_datainput_keys_GCMC_fugacity_adder = [
+                "subvolumefugacity"
+            ]
 
             for ts_tag_i in list(self.TargetedSwap_DataInput.keys()):
-                all_potential_keys = required_ts_datainput_keys_main \
-                                     + required_ts_datainput_keys_static_adder \
-                                     + required_ts_datainput_keys_dynamic_adder \
-                                     + required_ts_datainput_keys_GCMC_chempot_adder \
-                                     + required_ts_datainput_keys_GCMC_fugacity_adder
-                print_error_message = f"The TargetedSwap_DataInput dictionaries do not have all the required "\
-                                      f"keys or inputs per the subvolumetype and specified ensemble. "\
-                                      f"Remember that the 'subvolumetype' values are 'static' and 'dynamic', "\
-                                      f"which must only have the cooresponding "\
-                                      f"'subvolumecenter' and 'subvolumecenterlist' values, respectively,"\
-                                      f" in each subvolume."
+                all_potential_keys = (
+                    required_ts_datainput_keys_main
+                    + required_ts_datainput_keys_static_adder
+                    + required_ts_datainput_keys_dynamic_adder
+                    + required_ts_datainput_keys_GCMC_chempot_adder
+                    + required_ts_datainput_keys_GCMC_fugacity_adder
+                )
+                print_error_message = (
+                    f"The TargetedSwap_DataInput dictionaries do not have all the required "
+                    f"keys or inputs per the subvolumetype and specified ensemble. "
+                    f"Remember that the 'subvolumetype' values are 'static' and 'dynamic', "
+                    f"which must only have the cooresponding "
+                    f"'subvolumecenter' and 'subvolumecenterlist' values, respectively,"
+                    f" in each subvolume."
+                )
 
                 required_ts_datainput_total = []
                 if "subvolumetype" in self.TargetedSwap_DataInput[ts_tag_i]:
-                    if self.TargetedSwap_DataInput[ts_tag_i]["subvolumetype"] == 'dynamic':
-                        required_ts_datainput_total = required_ts_datainput_keys_main \
-                                                      + required_ts_datainput_keys_dynamic_adder
-                    elif self.TargetedSwap_DataInput[ts_tag_i]["subvolumetype"] == 'static':
-                        required_ts_datainput_total = required_ts_datainput_keys_main \
-                                                      + required_ts_datainput_keys_static_adder
+                    if (
+                        self.TargetedSwap_DataInput[ts_tag_i]["subvolumetype"]
+                        == "dynamic"
+                    ):
+                        required_ts_datainput_total = (
+                            required_ts_datainput_keys_main
+                            + required_ts_datainput_keys_dynamic_adder
+                        )
+                    elif (
+                        self.TargetedSwap_DataInput[ts_tag_i]["subvolumetype"]
+                        == "static"
+                    ):
+                        required_ts_datainput_total = (
+                            required_ts_datainput_keys_main
+                            + required_ts_datainput_keys_static_adder
+                        )
 
-                    if self.ensemble_type in ['GCMC']:
-                        if "subvolumefugacity" in self.TargetedSwap_DataInput[ts_tag_i]:
-                            required_ts_datainput_total += required_ts_datainput_keys_GCMC_fugacity_adder
-                        elif "subvolumechempot" in self.TargetedSwap_DataInput[ts_tag_i]:
-                            required_ts_datainput_total += required_ts_datainput_keys_GCMC_chempot_adder
+                    if self.ensemble_type in ["GCMC"]:
+                        if (
+                            "subvolumefugacity"
+                            in self.TargetedSwap_DataInput[ts_tag_i]
+                        ):
+                            required_ts_datainput_total += (
+                                required_ts_datainput_keys_GCMC_fugacity_adder
+                            )
+                        elif (
+                            "subvolumechempot"
+                            in self.TargetedSwap_DataInput[ts_tag_i]
+                        ):
+                            required_ts_datainput_total += (
+                                required_ts_datainput_keys_GCMC_chempot_adder
+                            )
 
-                    print('999999999999')
-                    print('999999999999')
-                    print('999999999999')
-                    print('required_ts_datainput_total = ' +str(required_ts_datainput_total))
-                    print('self.TargetedSwap_DataInput[ts_tag_i] = ' + str(self.TargetedSwap_DataInput[ts_tag_i]))
-                    print('list(self.TargetedSwap_DataInput[ts_tag_i].keys()) = ' + str(list(self.TargetedSwap_DataInput[ts_tag_i].keys())))
-                    print('999999999999')
-                    print('999999999999')
-                    print('999999999999')
+                    print("999999999999")
+                    print("999999999999")
+                    print("999999999999")
+                    print(
+                        "required_ts_datainput_total = "
+                        + str(required_ts_datainput_total)
+                    )
+                    print(
+                        "self.TargetedSwap_DataInput[ts_tag_i] = "
+                        + str(self.TargetedSwap_DataInput[ts_tag_i])
+                    )
+                    print(
+                        "list(self.TargetedSwap_DataInput[ts_tag_i].keys()) = "
+                        + str(
+                            list(self.TargetedSwap_DataInput[ts_tag_i].keys())
+                        )
+                    )
+                    print("999999999999")
+                    print("999999999999")
+                    print("999999999999")
 
                     for subvolume_keys_j in required_ts_datainput_total:
-                        print('subvolume_keys_j = ' + str(subvolume_keys_j))
-                        if subvolume_keys_j not in list(self.TargetedSwap_DataInput[ts_tag_i].keys()):
-                                print('22222222')
-                                raise ValueError(print_error_message)
+                        print("subvolume_keys_j = " + str(subvolume_keys_j))
+                        if subvolume_keys_j not in list(
+                            self.TargetedSwap_DataInput[ts_tag_i].keys()
+                        ):
+                            print("22222222")
+                            raise ValueError(print_error_message)
 
                 else:
-                    print('333333333')
+                    print("333333333")
                     raise ValueError(print_error_message)
-
 
         # check that MEMC moves rations are > 0 if MEMC_DataInput is used
         if self.MEMC_DataInput is not None and (
@@ -5699,7 +6132,9 @@ class GOMCControl:
             "{:25s} {}\n".format("TargetedSwapFreq", self.TargetedSwapFreq)
         )
         data_control_file.write(
-            "{:25s} {}\n".format("IntraTargetedSwapFreq", self.IntraTargetedSwapFreq)
+            "{:25s} {}\n".format(
+                "IntraTargetedSwapFreq", self.IntraTargetedSwapFreq
+            )
         )
         data_control_file.write(" \n")
 
@@ -5801,28 +6236,66 @@ class GOMCControl:
                     "{:30s} {:10s} {:10s}\n".format(
                         "SubVolumeBox",
                         str(sub_vol_tag_id_i),
-                        str(self.TargetedSwap_DataInput[sub_vol_tag_id_i]["subvolumebox"])
+                        str(
+                            self.TargetedSwap_DataInput[sub_vol_tag_id_i][
+                                "subvolumebox"
+                            ]
+                        ),
                     )
                 )
 
-                if self.TargetedSwap_DataInput[sub_vol_tag_id_i]["subvolumetype"] == "static":
+                if (
+                    self.TargetedSwap_DataInput[sub_vol_tag_id_i][
+                        "subvolumetype"
+                    ]
+                    == "static"
+                ):
                     data_control_file.write(
-                    "{:30s} {:10s} {:10s} {:10s} {:10s}\n".format(
-                        "SubVolumeCenter",
-                        str(sub_vol_tag_id_i),
-                        str(self.TargetedSwap_DataInput[sub_vol_tag_id_i]["subvolumecenter"][0]),
-                        str(self.TargetedSwap_DataInput[sub_vol_tag_id_i]["subvolumecenter"][1]),
-                        str(self.TargetedSwap_DataInput[sub_vol_tag_id_i]["subvolumecenter"][2])
+                        "{:30s} {:10s} {:10s} {:10s} {:10s}\n".format(
+                            "SubVolumeCenter",
+                            str(sub_vol_tag_id_i),
+                            str(
+                                self.TargetedSwap_DataInput[sub_vol_tag_id_i][
+                                    "subvolumecenter"
+                                ][0]
+                            ),
+                            str(
+                                self.TargetedSwap_DataInput[sub_vol_tag_id_i][
+                                    "subvolumecenter"
+                                ][1]
+                            ),
+                            str(
+                                self.TargetedSwap_DataInput[sub_vol_tag_id_i][
+                                    "subvolumecenter"
+                                ][2]
+                            ),
+                        )
                     )
-                    )
-                elif self.TargetedSwap_DataInput[sub_vol_tag_id_i]["subvolumetype"] == "dynamic":
+                elif (
+                    self.TargetedSwap_DataInput[sub_vol_tag_id_i][
+                        "subvolumetype"
+                    ]
+                    == "dynamic"
+                ):
                     data_control_file.write(
                         "{:30s} {:10s} {:10s} {:10s} {:10s}\n".format(
                             "SubVolumeCenterList",
                             str(sub_vol_tag_id_i),
-                            str(self.TargetedSwap_DataInput[sub_vol_tag_id_i]["subvolumecenterlist"][0]),
-                            str(self.TargetedSwap_DataInput[sub_vol_tag_id_i]["subvolumecenterlist"][1]),
-                            str(self.TargetedSwap_DataInput[sub_vol_tag_id_i]["subvolumecenterlist"][2])
+                            str(
+                                self.TargetedSwap_DataInput[sub_vol_tag_id_i][
+                                    "subvolumecenterlist"
+                                ][0]
+                            ),
+                            str(
+                                self.TargetedSwap_DataInput[sub_vol_tag_id_i][
+                                    "subvolumecenterlist"
+                                ][1]
+                            ),
+                            str(
+                                self.TargetedSwap_DataInput[sub_vol_tag_id_i][
+                                    "subvolumecenterlist"
+                                ][2]
+                            ),
                         )
                     )
 
@@ -5831,9 +6304,21 @@ class GOMCControl:
                     "{:30s} {:10s} {:10s} {:10s} {:10s}\n".format(
                         "SubVolumeDim",
                         str(sub_vol_tag_id_i),
-                        str(self.TargetedSwap_DataInput[sub_vol_tag_id_i]["subvolumedim"][0]),
-                        str(self.TargetedSwap_DataInput[sub_vol_tag_id_i]["subvolumedim"][1]),
-                        str(self.TargetedSwap_DataInput[sub_vol_tag_id_i]["subvolumedim"][2])
+                        str(
+                            self.TargetedSwap_DataInput[sub_vol_tag_id_i][
+                                "subvolumedim"
+                            ][0]
+                        ),
+                        str(
+                            self.TargetedSwap_DataInput[sub_vol_tag_id_i][
+                                "subvolumedim"
+                            ][1]
+                        ),
+                        str(
+                            self.TargetedSwap_DataInput[sub_vol_tag_id_i][
+                                "subvolumedim"
+                            ][2]
+                        ),
                     )
                 )
                 # get the length of the SubVolumeResidueKind, modify the print statment and print it
@@ -5843,21 +6328,36 @@ class GOMCControl:
                         str(sub_vol_tag_id_i),
                     )
                 )
-                for res_i in range(0, len(self.TargetedSwap_DataInput[sub_vol_tag_id_i]["subvolumeresiduekind"])):
+                for res_i in range(
+                    0,
+                    len(
+                        self.TargetedSwap_DataInput[sub_vol_tag_id_i][
+                            "subvolumeresiduekind"
+                        ]
+                    ),
+                ):
                     data_control_file.write(
                         " {:10s}".format(
-                            str(self.TargetedSwap_DataInput[sub_vol_tag_id_i]["subvolumeresiduekind"][res_i]),
+                            str(
+                                self.TargetedSwap_DataInput[sub_vol_tag_id_i][
+                                    "subvolumeresiduekind"
+                                ][res_i]
+                            ),
                         )
                     )
                 data_control_file.write(
                     "{}\n".format(""),
-                    )
+                )
 
                 data_control_file.write(
                     "{:30s} {:10s} {:10s}\n".format(
                         "SubVolumeRigidSwap",
                         str(sub_vol_tag_id_i),
-                        str(self.TargetedSwap_DataInput[sub_vol_tag_id_i]["subvolumerigidswap"])
+                        str(
+                            self.TargetedSwap_DataInput[sub_vol_tag_id_i][
+                                "subvolumerigidswap"
+                            ]
+                        ),
                     )
                 )
 
@@ -5865,35 +6365,57 @@ class GOMCControl:
                     "{:30s} {:10s} {:10s}\n".format(
                         "SubVolumePBC",
                         str(sub_vol_tag_id_i),
-                        str(self.TargetedSwap_DataInput[sub_vol_tag_id_i]["subvolumepbc"])
+                        str(
+                            self.TargetedSwap_DataInput[sub_vol_tag_id_i][
+                                "subvolumepbc"
+                            ]
+                        ),
                     )
                 )
 
                 # get the length of the SubVolumeChemPot, modify the print statment and print it
-                if "subvolumechempot" in list(self.TargetedSwap_DataInput[sub_vol_tag_id_i].keys()):
-                    for subvol_chempot_key_i in list(self.TargetedSwap_DataInput[
-                                                         sub_vol_tag_id_i]["subvolumechempot"].keys()):
+                if "subvolumechempot" in list(
+                    self.TargetedSwap_DataInput[sub_vol_tag_id_i].keys()
+                ):
+                    for subvol_chempot_key_i in list(
+                        self.TargetedSwap_DataInput[sub_vol_tag_id_i][
+                            "subvolumechempot"
+                        ].keys()
+                    ):
                         data_control_file.write(
                             "{:30s} {:10s} {:10s} {:30s}\n".format(
                                 "SubVolumeChemPot",
                                 str(sub_vol_tag_id_i),
                                 str(subvol_chempot_key_i),
-                                str(self.TargetedSwap_DataInput[sub_vol_tag_id_i][
-                                        "subvolumechempot"][subvol_chempot_key_i]),
+                                str(
+                                    self.TargetedSwap_DataInput[
+                                        sub_vol_tag_id_i
+                                    ]["subvolumechempot"][subvol_chempot_key_i]
+                                ),
                             )
                         )
 
                 # get the length of the SubVolumeFugacity, modify the print statment and print it
-                if "subvolumefugacity" in list(self.TargetedSwap_DataInput[sub_vol_tag_id_i].keys()):
+                if "subvolumefugacity" in list(
+                    self.TargetedSwap_DataInput[sub_vol_tag_id_i].keys()
+                ):
                     for subvol_fugacity_key_i in list(
-                            self.TargetedSwap_DataInput[sub_vol_tag_id_i]["subvolumefugacity"].keys()):
+                        self.TargetedSwap_DataInput[sub_vol_tag_id_i][
+                            "subvolumefugacity"
+                        ].keys()
+                    ):
                         data_control_file.write(
                             "{:30s} {:10s} {:10s} {:30s}\n".format(
                                 "SubVolumeFugacity",
                                 str(sub_vol_tag_id_i),
                                 str(subvol_fugacity_key_i),
-                                str(self.TargetedSwap_DataInput[sub_vol_tag_id_i][
-                                        "subvolumefugacity"][subvol_fugacity_key_i]),
+                                str(
+                                    self.TargetedSwap_DataInput[
+                                        sub_vol_tag_id_i
+                                    ]["subvolumefugacity"][
+                                        subvol_fugacity_key_i
+                                    ]
+                                ),
                             )
                         )
 
