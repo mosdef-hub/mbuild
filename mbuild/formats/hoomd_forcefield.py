@@ -19,10 +19,10 @@ hoomd = import_("hoomd")
 
 def create_hoomd_forcefield(
     structure,
+    r_cut,
     ref_distance=1.0,
     ref_mass=1.0,
     ref_energy=1.0,
-    r_cut=2.5,
     auto_scale=False,
     snapshot_kwargs={},
     pppm_kwargs={"Nx": 8, "Ny": 8, "Nz": 8, "order": 4},
@@ -34,15 +34,14 @@ def create_hoomd_forcefield(
     ----------
     structure : parmed.Structure
         ParmEd Structure object
+    r_cut : float
+        Cutoff radius in simulation units
     ref_distance : float, optional, default=1.0
         Reference distance for unit conversion (from Angstrom)
     ref_mass : float, optional, default=1.0
         Reference mass for unit conversion (from Dalton)
     ref_energy : float, optional, default=1.0
         Reference energy for unit conversion (from kcal/mol)
-    r_cut : float, optional, default 2.5
-        Cutoff radius in sigma units (where sigma is the largest sigma value
-        from the forcefield)
     auto_scale : bool, optional, default=False
         Scale to reduced units by automatically using the largest sigma value
         as ref_distance, largest mass value as ref_mass, and largest epsilon
@@ -74,13 +73,11 @@ def create_hoomd_forcefield(
     """
     if isinstance(structure, mb.Compound):
         raise ValueError(
-            "You passed mb.Compound to create_hoomd_simulation, "
-            + "there will be no angles, dihedrals, or force field parameters. "
-            + "Please use "
-            + "hoomd_snapshot.to_hoomdsnapshot to create a hoomd.Snapshot, "
-            + "then create your own hoomd context "
-            + "and pass your hoomd.Snapshot "
-            + "to hoomd.init.read_snapshot()"
+            "You passed mb.Compound to create_hoomd_simulation, there will be "
+            "no angles, dihedrals, or force field parameters. Please use "
+            "hoomd_snapshot.to_hoomdsnapshot to create a hoomd.Snapshot, then "
+            "create your own hoomd context and pass your hoomd.Snapshot to "
+            "hoomd.init.read_snapshot()"
         )
     elif not isinstance(structure, pmd.Structure):
         raise ValueError(
@@ -95,13 +92,6 @@ def create_hoomd_forcefield(
 
     hoomd_forcefield = []
 
-    pair_coeffs = list(
-        set((a.type, a.epsilon, a.sigma) for a in structure.atoms)
-    )
-    max_sigma = max(pair_coeffs, key=operator.itemgetter(2))[2]
-    # Scale r_cut by sigma
-    r_cut *= max_sigma
-
     if auto_scale:
         if not all([i == 1 for i in (ref_distance, ref_energy, ref_mass)]):
             warnings.warn(
@@ -109,9 +99,13 @@ def create_hoomd_forcefield(
                 "be used."
             )
 
+        pair_coeffs = list(
+            set((a.type, a.epsilon, a.sigma) for a in structure.atoms)
+        )
+
         ref_mass = max([atom.mass for atom in structure.atoms])
         ref_energy = max(pair_coeffs, key=operator.itemgetter(1))[1]
-        ref_distance = max_sigma
+        ref_distance = max(pair_coeffs, key=operator.itemgetter(2))[2]
 
     ReferenceValues = namedtuple("ref_values", ["distance", "mass", "energy"])
     ref_values = ReferenceValues(ref_distance, ref_mass, ref_energy)
@@ -122,7 +116,7 @@ def create_hoomd_forcefield(
         ref_mass=ref_mass,
         ref_energy=ref_energy,
         **snapshot_kwargs,
-        hoomd_snapshot=init_snap
+        hoomd_snapshot=init_snap,
     )
 
     nl = hoomd.md.nlist.Cell(exclusions=["bond", "1-3"])
@@ -132,11 +126,11 @@ def create_hoomd_forcefield(
         lj = _init_hoomd_lj(
             structure,
             nl,
-            r_cut=r_cut,
+            r_cut,
             ref_distance=ref_distance,
             ref_energy=ref_energy,
         )
-        qq = _init_hoomd_qq(structure, nl, snapshot, r_cut=r_cut, **pppm_kwargs)
+        qq = _init_hoomd_qq(structure, nl, snapshot, r_cut, **pppm_kwargs)
         hoomd_forcefield.append(lj)
         if qq is not None:
             hoomd_forcefield.extend(qq)
@@ -146,6 +140,7 @@ def create_hoomd_forcefield(
             structure,
             nl,
             snapshot,
+            r_cut,
             ref_distance=ref_distance,
             ref_energy=ref_energy,
         )
@@ -175,7 +170,7 @@ def create_hoomd_forcefield(
     return snapshot, hoomd_forcefield, ref_values
 
 
-def _init_hoomd_lj(structure, nl, r_cut=2.5, ref_distance=1.0, ref_energy=1.0):
+def _init_hoomd_lj(structure, nl, r_cut, ref_distance=1.0, ref_energy=1.0):
     """LJ parameters."""
     # Identify the unique atom types before setting
     atom_type_params = {}
@@ -190,7 +185,10 @@ def _init_hoomd_lj(structure, nl, r_cut=2.5, ref_distance=1.0, ref_energy=1.0):
             sigma=atom_type.sigma / ref_distance,
             epsilon=atom_type.epsilon / ref_energy,
         )
-        lj.r_cut[(name, name)] = r_cut
+        if atom_type.epsilon / ref_energy == 0:
+            lj.r_cut[(name, name)] = 0
+        else:
+            lj.r_cut[(name, name)] = r_cut
 
     # Cross interactions, mixing rules, NBfixes
     all_atomtypes = sorted(atom_type_params.keys())
@@ -224,22 +222,23 @@ def _init_hoomd_lj(structure, nl, r_cut=2.5, ref_distance=1.0, ref_energy=1.0):
                 ) ** 0.5
             else:
                 raise ValueError(
-                    "Mixing rule {} ".format(structure.combining_rule)
-                    + 'not supported, use "lorentz" or "geometric"'
+                    f"Mixing rule {structure.combining_rule} not supported, "
+                    'use "lorentz" or "geometric"'
                 )
         else:
             # If we have nbfix info, use it
             sigma = nb_fix_info[0] / (ref_distance * (2 ** (1 / 6)))
             epsilon = nb_fix_info[1] / ref_energy
         lj.params[(a1, a2)] = dict(sigma=sigma, epsilon=epsilon)
-        lj.r_cut[(a1, a2)] = r_cut
+        if epsilon == 0:
+            lj.r_cut[(a1, a2)] = 0
+        else:
+            lj.r_cut[(a1, a2)] = r_cut
 
     return lj
 
 
-def _init_hoomd_qq(
-    structure, nl, snapshot, Nx=1, Ny=1, Nz=1, order=4, r_cut=2.5
-):
+def _init_hoomd_qq(structure, nl, snapshot, r_cut, Nx=1, Ny=1, Nz=1, order=4):
     """Charge interactions."""
     num_charged = np.sum(snapshot.particles.charge[:] != 0)
     if num_charged == 0:
@@ -253,7 +252,7 @@ def _init_hoomd_qq(
 
 
 def _init_hoomd_14_pairs(
-    structure, nl, snapshot, r_cut=2.5, ref_distance=1.0, ref_energy=1.0
+    structure, nl, snapshot, r_cut, ref_distance=1.0, ref_energy=1.0
 ):
     """Special_pairs to handle 14 scaling.
 
@@ -286,7 +285,10 @@ def _init_hoomd_14_pairs(
             # The adjust epsilon already carries the scaling
             epsilon=adjust_type.epsilon / ref_energy,
         )
-        lj_14.r_cut[name] = r_cut
+        if adjust_type.epsilon / ref_energy == 0:
+            lj_14.r_cut[name] = 0
+        else:
+            lj_14.r_cut[name] = r_cut
         qq_14.params[name] = dict(alpha=adjust_type.chgscale)
         qq_14.r_cut[name] = r_cut
 
