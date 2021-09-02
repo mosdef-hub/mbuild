@@ -165,7 +165,11 @@ def create_hoomd_simulation(
     if structure.adjusts:
         print("Processing 1-4 interactions, adjusting neighborlist exclusions")
         lj_14, qq_14 = _init_hoomd_14_pairs(
-            structure, nl, ref_distance=ref_distance, ref_energy=ref_energy
+            structure,
+            nl,
+            r_cut,
+            ref_distance=ref_distance,
+            ref_energy=ref_energy,
         )
         hoomd_objects.append(lj_14)
         hoomd_objects.append(qq_14)
