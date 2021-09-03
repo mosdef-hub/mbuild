@@ -13796,11 +13796,11 @@ class TestGOMCControlFileWriter(BaseTest):
 
         # This box "SubVolumeBox" is not 0 or 1
         with pytest.raises(
-                ValueError,
-                match=r"ERROR: The following input variables have "
-                      r"bad values \(check spelling and for empty spaces in the keys or that "
-                      r"the values are in the correct form with the acceptable values\)"
-                      r": \['subvolumebox'\]",
+            ValueError,
+            match=r"ERROR: The following input variables have "
+            r"bad values \(check spelling and for empty spaces in the keys or that "
+            r"the values are in the correct form with the acceptable values\)"
+            r": \['subvolumebox'\]",
         ):
             gomc_control.write_gomc_control_file(
                 charmm,
@@ -13992,9 +13992,9 @@ class TestGOMCControlFileWriter(BaseTest):
 
         # TargetedSwap_DataInput is a list not a dict
         with pytest.raises(
-                ValueError,
-                match="The TargetedSwap_DataInput is not formatted correctly as a dictionary"
-                      " or has the wrong input keys, values, or types.",
+            ValueError,
+            match="The TargetedSwap_DataInput is not formatted correctly as a dictionary"
+            " or has the wrong input keys, values, or types.",
         ):
             gomc_control.write_gomc_control_file(
                 charmm,
@@ -14013,7 +14013,7 @@ class TestGOMCControlFileWriter(BaseTest):
                     "VolFreq": 0.0,
                     "TargetedSwapFreq": 0.00,
                     "IntraTargetedSwapFreq": 0.20,
-                    "TargetedSwap_DataInput": ['s'],
+                    "TargetedSwap_DataInput": ["s"],
                 },
             )
 
@@ -14021,9 +14021,9 @@ class TestGOMCControlFileWriter(BaseTest):
         with pytest.raises(
             ValueError,
             match=r"ERROR: The following input variables have "
-                  r"bad values \(check spelling and for empty spaces in the keys or that "
-                  r"the values are in the correct form with the acceptable values\)"
-                  r": \['subvolumecenterlist'\]",
+            r"bad values \(check spelling and for empty spaces in the keys or that "
+            r"the values are in the correct form with the acceptable values\)"
+            r": \['subvolumecenterlist'\]",
         ):
             gomc_control.write_gomc_control_file(
                 charmm,
@@ -14060,9 +14060,9 @@ class TestGOMCControlFileWriter(BaseTest):
         with pytest.raises(
             ValueError,
             match=r"ERROR: The following input variables have "
-                  r"bad values \(check spelling and for empty spaces in the keys or that "
-                  r"the values are in the correct form with the acceptable values\)"
-                  r": \['subvolumecenterlist'\]",
+            r"bad values \(check spelling and for empty spaces in the keys or that "
+            r"the values are in the correct form with the acceptable values\)"
+            r": \['subvolumecenterlist'\]",
         ):
             gomc_control.write_gomc_control_file(
                 charmm,

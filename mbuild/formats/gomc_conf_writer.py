@@ -5379,7 +5379,9 @@ class GOMCControl:
             print("\t IntraMEMC_3Freq = " + str(self.IntraMEMC_3Freq))
             print("\t MEMC_3Freq = " + str(self.MEMC_3Freq))
             print("\t TargetedSwapFreq = " + str(self.TargetedSwapFreq))
-            print("\t IntraTargetedSwapFreq = " + str(self.IntraTargetedSwapFreq))
+            print(
+                "\t IntraTargetedSwapFreq = " + str(self.IntraTargetedSwapFreq)
+            )
             self.input_error = True
             print_error_message = (
                 "ERROR: The sum of the Monte Carlo move ratios does not equal 1. "
