@@ -11158,7 +11158,7 @@ class TestGOMCControlFileWriter(BaseTest):
                         "SubVolumeCenterList": ["1-6", 7, 8],
                         "SubVolumeDim": [3, 2, 1],
                         "SubVolumeResidueKind": ["ETH", "ETO"],
-                        "SubVolumeRigidSwap": True,
+                        "SubVolumeRigidSwap": False,
                         "SubVolumePBC": "XY",
                         "SubVolumeFugacity": {"ETH": 2.22, "ETO": 0.22},
                     },
@@ -11168,8 +11168,6 @@ class TestGOMCControlFileWriter(BaseTest):
                         "SubVolumeCenter": [2, 3, 4],
                         "SubVolumeDim": [4, 3, 2],
                         "SubVolumeResidueKind": "ETH",
-                        "SubVolumeRigidSwap": False,
-                        "SubVolumePBC": "XYZ",
                         "SubVolumeFugacity": {"ETH": 3.33},
                     },
                 },
@@ -11267,12 +11265,12 @@ class TestGOMCControlFileWriter(BaseTest):
                 elif line.startswith("SubVolumeRigidSwap "):
                     split_line = line.split()
                     if split_line[1] == "0":
-                        assert split_line[2] == "True"
+                        assert split_line[2] == "False"
                         variables_read_dict[
                             "SubVolumeRigidSwap_number_0"
                         ] = True
                     if split_line[1] == "1":
-                        assert split_line[2] == "False"
+                        assert split_line[2] == "True"
                         variables_read_dict[
                             "SubVolumeRigidSwap_number_1"
                         ] = True
@@ -14094,3 +14092,44 @@ class TestGOMCControlFileWriter(BaseTest):
                     },
                 },
             )
+
+        # This "SubVolumeCenterList" is same value on both sides of - symbol
+        with pytest.raises(
+                ValueError,
+                match=r"ERROR: The following input variables have "
+                      r"bad values \(check spelling and for empty spaces in the keys or that "
+                      r"the values are in the correct form with the acceptable values\)"
+                      r": \['subvolumecenterlist'\]",
+        ):
+            gomc_control.write_gomc_control_file(
+                charmm,
+                "test_failures_targetedswap",
+                "NVT",
+                1000,
+                500,
+                ExpertMode=False,
+                check_input_files_exist=False,
+                input_variables_dict={
+                    "DisFreq": 0.20,
+                    "RotFreq": 0.20,
+                    "IntraSwapFreq": 0.40,
+                    "SwapFreq": 0.00,
+                    "RegrowthFreq": 0.00,
+                    "VolFreq": 0.0,
+                    "TargetedSwapFreq": 0.00,
+                    "IntraTargetedSwapFreq": 0.20,
+                    "TargetedSwap_DataInput": {
+                        0: {
+                            "SubVolumeType": "dynamic",
+                            "SubVolumeBox": 0,
+                            "SubVolumeCenterList": [1, 8, "1-1"],
+                            "SubVolumeDim": [3, 2, 1],
+                            "SubVolumeResidueKind": ["ETH", "ETO"],
+                            "SubVolumeRigidSwap": True,
+                            "SubVolumePBC": "XY",
+                        },
+                    },
+                },
+            )
+
+

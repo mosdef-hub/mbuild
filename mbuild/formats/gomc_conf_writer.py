@@ -824,7 +824,110 @@ def _get_all_possible_input_variables(description=False):
         "Note: If the small molecule has only one atom (mono atomic molecules), same atom "
         "name must be used str_for_atom_name_1 and str_for_atom_name_2 "
         "of the SmallKindBackBone. ",
-        "TargetedSwap_DataInput": "dCCCCCC input target swap info"
+        "TargetedSwapFreq" : "int or float (0 <= value <= 1), default are specific for each ensemble "
+        "{'NVT': 0.0, 'NPT': 0.0, 'GEMC_NVT': 0.0, 'GEMC_NPT': 0.0, 'GCMC': 0} "
+        "Fractional percentage at which targeted swap move will occur. "
+        "Note: This is only usable with the 'GCMC', 'GEMC_NVT', and 'GEMC_NPT' ensembles., "
+        "Note: This is used in conjunction with the 'TargetedSwap_DataInput' variables. ",
+        "IntraTargetedSwapFreq" : "int or float (0 <= value <= 1), default are specific for each ensemble "
+        "{'NVT': 0.0, 'NPT': 0.0, 'GEMC_NVT': 0.0, 'GEMC_NPT': 0.0, 'GCMC': 0} "
+        'Note: This is used in conjunction with the "TargetedSwap_DataInput" variables. ',
+        "TargetedSwap_DataInput" : "dict, default=None. "
+        "A dictionary which can contain one or several targeted swap regions, each designated with "
+        "their own tag ID number (aka, subvolume number). "
+        "A few examples for TargetedSwap_DataInput input is provided below. "
+        "NOTE: MULTIPLE SIMULATION BOXES CAN BE UTILIZED BY SETTING MULTIPLE tag_ID_integer VALUES (INTEGERS VALUES), "
+        'NOTE: THIS IS REQUIRED WHEN USING EITHER THE "TargetedSwapFreq" OR "IntraTargetedSwapFreq" MC MOVES. '
+        "WARNING: THE tag_ID_integer VALUES MUST BE UNIQUE FOR EACH SUBVOLUME, "
+        "OR THE DICTIONARY WILL OVERWRITE THE PREVIOUS SUBVOLUME (tag_ID_integer) SECTION "
+        "WITH THE CURRENT tag_ID_integer AND ITS RESPECTIVE VALUES. "
+
+        'The details of each key and value for the "TargetedSwap_DataInput" are provided below. '
+
+        '\t\t\t\t\t\t\t\t\t\t\t\t\t --- "SubVolumeType" : str ("static" or "dynamic"), No default is provided. '
+        'The type of targeted swap box (subvolume) that will be created. '
+        'The "static" type will maintain the box (subvolume) in a fixed location during the whole simulation, '
+        'with the center of the box determined by the coordinates set in the '
+        '"SubvolumeCenter" parameter. '
+        'The "dynamic" type will allow for dynamic movement of the box (subvolume) based atom indices '
+        'provided in the SubvolumeCenterList variable. For the "dynamic" type, the user must define a '
+        'list of atom indices using "SubVolumeCenterList" keyword; the geometric center of the '
+        'provided atom indices will be used as the center of subVolume. User must ensure that the '
+        'atoms defined in the atom list remain in the simulation box (by setting the Beta value to 2 in PDB file). '
+
+        '\t\t\t\t\t\t\t\t\t\t\t\t\t --- "SubVolumeBox" : int (0 or 1), No default is provided. '
+        'The simulation box in which the targeted swap subvolume will be applied. '
+        'NOTE: Only box zero (0) can be used for the GCMC, NPT, and NVT ensembles. '
+
+        '\t\t\t\t\t\t\t\t\t\t\t\t\t --- "SubVolumeCenter" : list of three (3) int or float, [x-axis, y-axis, z-axis], '
+        'No default is provided. '
+        'The simulation box is centered on this x, y, and z-axis points (in Angstroms), which is only '
+        'utilized when "SubVolumeType" is set to "static". '
+
+        '\t\t\t\t\t\t\t\t\t\t\t\t\t --- "SubVolumeCenterList" : list of int and/or str (>=0), ' 
+        '[atom_index, ..., atom_index], No default is provided. '
+        'The simulation box subVolume is centered on the geometric center of the provided atom indices, which is '
+        'only used when the "SubVolumeType" is set to "dynamic". For example, ["0-10", 12, 15] means that '
+        'atom indices 0 to 10, 12 and 15 are used as the geometric center of the simulation box subVolume. '
+        'NOTE: THE ATOM INDICES RANGES MUST BE A STRING IN THE FORM "2-20", WITH THE FIRST ATOM INDICES BEING '
+        'SMALLER THAN THE SECOND (i.e, "a-b", where a < b). ALL SINGULAR ATOM INDICES MUST BE INTEGERS. '
+        'NOTE: THE SAME ATOM INDICES CAN BE USED 2, 3 OR X TIMES TO WEIGHT that atom 2, 3, OR X TIMES MORE '
+        'IN THE GEOMETRIC CENTERING CALCULATION. '
+        'NOTE: THE ATOM INDICES START AT ZERO (0), WHILE THE PDB AND PSF FILES START AT ONE (1). '
+        'THEREFORE, YOU NEED TO BE CAREFUL WHEN SETTING THE INDICES FROM THE PDB OR PSF VALUES AS THEY ARE '
+        'ONE (1) NUMBER OFF. '
+
+        '\t\t\t\t\t\t\t\t\t\t\t\t\t --- "SubVolumeDim" : list of three (3) int or float (>0), ' \
+        '[x-axis, y-axis, z-axis], No default is provided. '
+        'This sets the size of the simulation box (subVolume) in the x, y, and z-axis (in Angstroms). '
+
+        '\t\t\t\t\t\t\t\t\t\t\t\t\t --- "SubVolumeResidueKind" : str or list of str, "ALL" or "residue" '
+        'or ["ALL"] or [residue_str, ..., residue_str], No default is provided. '
+        'The residues that will be used in the "TargetedSwap_DataInput" subvolume. '
+        'Alternatively, the user can just set the value to ["ALL"] or "ALL", which covers all the residues. '
+
+        '\t\t\t\t\t\t\t\t\t\t\t\t\t --- "SubVolumeRigidSwap" : bool, default = True '
+        'Choose whether to use a rigid or flexible molecule insertion using CD-CBMC for the subVolume. '
+        'True uses a rigid molecule insertion, while False uses a flexible molecule insertion '
+
+        '\t\t\t\t\t\t\t\t\t\t\t\t\t --- "SubVolumePBC" : str ("X", "XY", "XZ", "XYZ", "Y", "YZ", or "Z"), '
+        'default = "XYZ". '
+        'Apply periodic boundary condition (PBC) in selected axes for the subVolume. '
+        'Example 1, "X" applies PBC only in the X axis. Example 2, "XY" applies PBC only in the X and Y axes. '
+        'Example 3, "XYZ" applies PBC in the X, Y, and Z axes. '
+
+        '\t\t\t\t\t\t\t\t\t\t\t\t\t --- "SubVolumeChemPot" : dict {str (4 dig limit) , int or float}, '
+        'No default is provided. '
+        'The chemical potentials in GOMC units of energy, K. If no SubVolumeChemPot is provided '
+        'the default system chemical potential values are used. '
+        'There is a 4 character limit for the string/residue name since the PDB/PSF '
+        'files have a 4 character limitation and require an exact match in the conf file. '
+        'Note: These strings must match the residue in the psf and psb files or it will fail. '
+        'The name of the residues and their corresponding chemical potential must be specified '
+        'for every residue in the system (i.e., {"residue_name" : chemical_potential}). '
+        'Note: THIS IS ONLY REQUIRED FOR THE GCMC ENSEMBLE. '
+        'Note: IF 2 KEYS WITH THE SAME STRING/RESIDUE ARE PROVIDED, ONE WILL BE AUTOMATICALLY '
+        'OVERWRITTEN AND NO ERROR WILL BE THROWN IN THIS CONTROL FILE WRITER. '
+        'Note: ONLY THE "SubVolumeChemPot" OR THE "SubVolumeFugacity" CAN BE USED FOR ALL THE '
+        'TARGET SWAP BOXES (SUBVOLUMES). IF MIX OF "SubVolumeChemPot" AND "SubVolumeFugacity" ARE '
+        'USED THE CONTROL FILE WRITER WILL THROW AN ERROR. '
+
+        '\t\t\t\t\t\t\t\t\t\t\t\t\t --- "SubVolumeFugacity" : dict {str , int or float (>= 0)}, '
+        'No default is provided.  '
+        'The fugacity in GOMC units of pressure, bar. If no "SubVolumeFugacity" is provided '
+        'the default system fugacity values are used. '
+        'There is a 4 character limit for the string/residue name since the PDB/PSF '
+        'files have a 4 character limitation and require an exact match in the conf file. '
+        'Note: These strings must match the residue in the psf and psb files or it will fail. '
+        'The name of the residues and their corresponding fugacity must be specified '
+        'for every residue in the system (i.e., {"residue_name" : fugacity}). '
+        'Note: THIS IS ONLY REQUIRED FOR THE GCMC ENSEMBLE. '
+        'Note: IF 2 KEYS WITH THE SAME STRING/RESIDUE ARE PROVIDED, ONE WILL BE AUTOMATICALLY '
+        'OVERWRITTEN AND NO ERROR WILL BE THROWN IN THIS CONTROL FILE WRITER. '
+        'Note: ONLY THE "SubVolumeChemPot" OR THE "SubVolumeFugacity" CAN BE USED FOR ALL THE '
+        'TARGET SWAP BOXES (SUBVOLUMES). IF MIX OF "SubVolumeChemPot" AND "SubVolumeFugacity" ARE '
+        'USED THE CONTROL FILE WRITER WILL THROW AN ERROR. ',
+
         # ******************************************************************************************************
         # Definitions in this function are copied to a large extent from the GOMC manual release version 2.60 (end)
         # insert citation here:
@@ -1862,60 +1965,61 @@ class GOMCControl:
         {'NVT': 0.0, 'NPT': 0.0, 'GEMC_NVT': 0.0, 'GEMC_NPT': 0.0, 'GCMC': 0}
         Fractional percentage at which targeted swap move will occur.
         Note: This is only usable with the 'GCMC', 'GEMC_NVT', and 'GEMC_NPT' ensembles.
-        Note: This is used in conjunction with the TargetedSwap_DataInput variables.
+        Note: This is used in conjunction with the "TargetedSwap_DataInput" variables.
     IntraTargetedSwapFreq : int or float (0 <= value <= 1), default are specific for each ensemble
         {'NVT': 0.0, 'NPT': 0.0, 'GEMC_NVT': 0.0, 'GEMC_NPT': 0.0, 'GCMC': 0}
-        Note: This is used in conjunction with the TargetedSwap_DataInput variables.
+        Note: This is used in conjunction with the "TargetedSwap_DataInput" variables.
     TargetedSwap_DataInput : dict, default=None
-        A dictionary which can contain several targeted swap regions, each designated with
-        their own tag ID number (aka, subvolume number). This is currently only available in
-        GOMC's GCMC and NPT (via intra-swap) ensembles. NOTE: MULTIPLE SIMULATION BOXES CAN BE UTILIZED BY SETTING
-        MULTIPLE tag_ID_integer VALUES, WHICH MUST BE INTEGERS.  WARNING: THE tag_ID_integer VALUES
-        MUST BE UNIQUE FOR EACH SUBVOLUME, OR THE DICTIONARY WILL OVERWRITE THE PREVIOUS
-        SUBVOLUME (tag_ID_integer) SECTION WITH THE CURRENT tag_ID_integer AND ITS RESPECTIVE VALUES.
+        A dictionary which can contain one or several targeted swap regions, each designated with
+        their own tag ID number (aka, subvolume number).
         A few examples for TargetedSwap_DataInput input is provided below.
-        Note: This is required when using either the TargetedSwapFreq or IntraTargetedSwapFreq MC moves.
+        NOTE: MULTIPLE SIMULATION BOXES CAN BE UTILIZED BY SETTING MULTIPLE tag_ID_integer VALUES (INTEGERS VALUES),
+        NOTE: THIS IS REQUIRED WHEN USING EITHER THE "TargetedSwapFreq" OR "IntraTargetedSwapFreq" MC MOVES.
+        WARNING: THE tag_ID_integer VALUES MUST BE UNIQUE FOR EACH SUBVOLUME,
+        OR THE DICTIONARY WILL OVERWRITE THE PREVIOUS SUBVOLUME (tag_ID_integer) SECTION
+        WITH THE CURRENT tag_ID_integer AND ITS RESPECTIVE VALUES.
 
         Example 1
         input_variables_dict={"TargetedSwap_DataInput": {tag_ID_integer: {"SubVolumeType": "dynamic",
-        "SubVolumeBox": 0, "SubVolumeCenterList": ['1-10', 12, 15, '22-40'], "SubVolumeDim": [1, 2, 3],
-        "SubVolumeResidueKind": ["ALL"], "SubVolumeRigidSwap": False, "SubVolumePBC": "XY",
-        "SubVolumeChemPot": {"MET": -21, "met": -31}, "SubVolumeFugacity": {"MET": 0.1, "met": 1}}}
+        "SubVolumeBox": 0, "SubVolumeCenterList": ['0-10', 12, 15, '22-40'], "SubVolumeDim": [1, 2, 3],
+        "SubVolumeResidueKind": "ALL", "SubVolumeRigidSwap": False, "SubVolumePBC": "XY",
+        "SubVolumeChemPot": {"MET": -21, "met": -31}}}
 
         Example 2
         input_variables_dict={"TargetedSwap_DataInput": {tag_ID_integer: {"SubVolumeType": "static",
         "SubVolumeBox": 0, "SubVolumeCenter": [1, 12, 15], "SubVolumeDim": [3, 3, 3],
-        "SubVolumeResidueKind": "ALL", "SubVolumeRigidSwap": False, "SubVolumePBC": "XYZ",
+        "SubVolumeResidueKind": ["MET", "met"], "SubVolumeRigidSwap": False, "SubVolumePBC": "XYZ",
         "SubVolumeFugacity": {"MET": 0.1, "met": 1}}}
 
-        The details of each key and value for the TargetedSwap_DataInput are provided below.
+        The details of each key and value for the "TargetedSwap_DataInput" are provided below.
+
         --- "SubVolumeType" : str ("static" or "dynamic"), No default is provided.
         The type of targeted swap box (subvolume) that will be created.
-        A "static" type will maintain the box (subvolume) in a fixed location during the whole simulation,
+        The "static" type will maintain the box (subvolume) in a fixed location during the whole simulation,
         with the center of the box determined by the coordinates set in the
-        SubvolumeCenter parameter.
-        A "dynamic" type will allow for dynamic movement of the box (subvolume) based atom indices
+        "SubvolumeCenter" parameter.
+        The "dynamic" type will allow for dynamic movement of the box (subvolume) based atom indices
         provided in the SubvolumeCenterList variable. For the "dynamic" type, the user must define a
-        list of atom indices using SubVolumeCenterList keyword; the geometric center of the
+        list of atom indices using "SubVolumeCenterList" keyword; the geometric center of the
         provided atom indices will be used as the center of subVolume. User must ensure that the
         atoms defined in the atom list remain in the simulation box (by setting the Beta value to 2 in PDB file).
 
         --- "SubVolumeBox" : int (0 or 1), No default is provided.
-        The simulation box in which the targeted swap subvolume will be applied in.
-        NOTE: Only box zero (0) can be used for the GCMC, NPT, and NVT ensembples.
+        The simulation box in which the targeted swap subvolume will be applied.
+        NOTE: Only box zero (0) can be used for the GCMC, NPT, and NVT ensembles.
 
         --- "SubVolumeCenter" : list of three (3) int or float, [x-axis, y-axis, z-axis], No default is provided.
         The simulation box is centered on this x, y, and z-axis points (in Angstroms), which is only
         utilized when "SubVolumeType" is set to "static".
 
-        --- "SubVolumeCenterList" : list of int and str (>=), [atom_indices, ..., atom_indices], No default is provided.
+        --- "SubVolumeCenterList" : list of int and/or str (>=0), [atom_index, ..., atom_index], No default is provided.
         The simulation box subVolume is centered on the geometric center of the provided atom indices, which is
-        only used when the "SubVolumeType" is set to "dynamic". For example, [0, '1-10', 12, 15] means that
-        atom indices 1 to 10, 12 and 15 are used as the geometric center of the simulation box subVolume.
+        only used when the "SubVolumeType" is set to "dynamic". For example, [0-10', 12, 15] means that
+        atom indices 0 to 10, 12 and 15 are used as the geometric center of the simulation box subVolume.
         NOTE: THE ATOM INDICES RANGES MUST BE A STRING IN THE FORM '2-20', WITH THE FIRST ATOM INDICES BEING
         SMALLER THAN THE SECOND (i.e, 'a-b', where a < b). ALL SINGULAR ATOM INDICES MUST BE INTEGERS.
-        NOTE: THE SAME ATOM INDICES CAN BE USED 2, 3 OR X TIMES TO WEIGHT THAT SOME 2, 3, OR X TIMES MORE
-        IN THE GEOMETRIC CENTERING PROCESS.
+        NOTE: THE SAME ATOM INDICES CAN BE USED 2, 3 OR X TIMES TO WEIGHT that atom 2, 3, OR X TIMES MORE
+        IN THE GEOMETRIC CENTERING CALCULATION.
         NOTE: THE ATOM INDICES START AT ZERO (0), WHILE THE PDB AND PSF FILES START AT ONE (1).
         THEREFORE, YOU NEED TO BE CAREFUL WHEN SETTING THE INDICES FROM THE PDB OR PSF VALUES AS THEY ARE
         ONE (1) NUMBER OFF.
@@ -1925,15 +2029,15 @@ class GOMCControl:
 
         --- "SubVolumeResidueKind" : str or list of str, "ALL" or "residue"
         or ["ALL"] or [residue_str, ..., residue_str], No default is provided.
-        The residues that will be used in the TargetedSwap_DataInput subvolume.  Alternatevly, the user can just set the
-        value to ["ALL"], which covers all the residues.
+        The residues that will be used in the "TargetedSwap_DataInput" subvolume.
+        Alternatively, the user can just set the value to ["ALL"] or "ALL", which covers all the residues.
 
-        --- "SubVolumeRigidSwap" : bool, No default is provided.
+        --- "SubVolumeRigidSwap" : bool, default = True
         Choose whether to use a rigid or flexible molecule insertion using CD-CBMC for the subVolume.
         True uses a rigid molecule insertion, while False uses a flexible molecule insertion
 
-        --- "SubVolumePBC" : str ('X', 'XY', 'XZ', 'XYZ', 'Y', 'YZ', 'Z'), No default is provided.
-        Apply periodic boundry condition (PBC) in selected axes for the subVolume.
+        --- "SubVolumePBC" : str ('X', 'XY', 'XZ', 'XYZ', 'Y', 'YZ', or 'Z'), default = 'XYZ'.
+        Apply periodic boundary condition (PBC) in selected axes for the subVolume.
         Example 1, 'X' applies PBC only in the X axis. Example 2, 'XY' applies PBC only in the X and Y axes.
         Example 3, 'XYZ' applies PBC in the X, Y, and Z axes.
 
@@ -1941,11 +2045,11 @@ class GOMCControl:
         The chemical potentials in GOMC units of energy, K. If no SubVolumeChemPot is provided
         the default system chemical potential values are used.
         There is a 4 character limit for the string/residue name since the PDB/PSF
-        files have a 4 character limitation and require and exact match in the conf file.
+        files have a 4 character limitation and require an exact match in the conf file.
         Note: These strings must match the residue in the psf and psb files or it will fail.
-        The name of the residues and their corresponding chemical potential must specified
+        The name of the residues and their corresponding chemical potential must be specified
         for every residue in the system (i.e., {"residue_name" : chemical_potential}).
-        Note: THIS IS ONLY NEEDED FOR THE GCMC ENSEMBLE.
+        Note: THIS IS ONLY REQUIRED FOR THE GCMC ENSEMBLE.
         Note: IF 2 KEYS WITH THE SAME STRING/RESIDUE ARE PROVIDED, ONE WILL BE AUTOMATICALLY
         OVERWRITTEN AND NO ERROR WILL BE THROWN IN THIS CONTROL FILE WRITER.
         Note: ONLY THE "SubVolumeChemPot" OR THE "SubVolumeFugacity" CAN BE USED FOR ALL THE
@@ -1956,11 +2060,11 @@ class GOMCControl:
         The fugacity in GOMC units of pressure, bar. If no "SubVolumeFugacity" is provided
         the default system fugacity values are used.
         There is a 4 character limit for the string/residue name since the PDB/PSF
-        files have a 4 character limitation and require and exact match in the conf file.
+        files have a 4 character limitation and require an exact match in the conf file.
         Note: These strings must match the residue in the psf and psb files or it will fail.
-        The name of the residues and their corresponding fugacity must specified
+        The name of the residues and their corresponding fugacity must be specified
         for every residue in the system (i.e., {"residue_name" : fugacity}).
-        Note: THIS IS ONLY NEEDED FOR THE GCMC ENSEMBLE.
+        Note: THIS IS ONLY REQUIRED FOR THE GCMC ENSEMBLE.
         Note: IF 2 KEYS WITH THE SAME STRING/RESIDUE ARE PROVIDED, ONE WILL BE AUTOMATICALLY
         OVERWRITTEN AND NO ERROR WILL BE THROWN IN THIS CONTROL FILE WRITER.
         Note: ONLY THE "SubVolumeChemPot" OR THE "SubVolumeFugacity" CAN BE USED FOR ALL THE
@@ -5574,11 +5678,20 @@ class GOMCControl:
                                 required_ts_datainput_keys_GCMC_chempot_adder
                             )
 
+                    # fail build if all subvolume keys are not provided,
+                    # set default values of SubVolumeRigidSwap and SubVolumePBC if not found
                     for subvolume_keys_j in required_ts_datainput_total:
                         if subvolume_keys_j not in list(
                             self.TargetedSwap_DataInput[ts_tag_i].keys()
                         ):
-                            raise ValueError(print_error_message)
+                            # set default values of SubVolumeRigidSwap to True, if not provided
+                            if subvolume_keys_j == "subvolumerigidswap":
+                               self.TargetedSwap_DataInput[ts_tag_i].update({"subvolumerigidswap": True})
+                            # set default values of SubVolumePBC to 'XYZ', if not provided
+                            elif subvolume_keys_j == "subvolumepbc":
+                                self.TargetedSwap_DataInput[ts_tag_i].update({"subvolumepbc": 'XYZ'})
+                            else:
+                                raise ValueError(print_error_message)
 
                 else:
                     raise ValueError(print_error_message)
@@ -8309,6 +8422,116 @@ def write_gomc_control_file(
         used to insert the large molecule using coupled-decoupled configurational-bias.
         This move need additional information such as ExchangeVolumeDim,
         ExchangeRatio, ExchangeSmallKind, ExchangeLargeKind, and LargeKindBackBone.
+    TargetedSwapFreq : int or float (0 <= value <= 1), default are specific for each ensemble
+        {'NVT': 0.0, 'NPT': 0.0, 'GEMC_NVT': 0.0, 'GEMC_NPT': 0.0, 'GCMC': 0}
+        Fractional percentage at which targeted swap move will occur.
+        Note: This is only usable with the 'GCMC', 'GEMC_NVT', and 'GEMC_NPT' ensembles.
+        Note: This is used in conjunction with the "TargetedSwap_DataInput" variables.
+    IntraTargetedSwapFreq : int or float (0 <= value <= 1), default are specific for each ensemble
+        {'NVT': 0.0, 'NPT': 0.0, 'GEMC_NVT': 0.0, 'GEMC_NPT': 0.0, 'GCMC': 0}
+        Note: This is used in conjunction with the "TargetedSwap_DataInput" variables.
+    TargetedSwap_DataInput : dict, default=None
+        A dictionary which can contain one or several targeted swap regions, each designated with
+        their own tag ID number (aka, subvolume number).
+        A few examples for TargetedSwap_DataInput input is provided below.
+        NOTE: MULTIPLE SIMULATION BOXES CAN BE UTILIZED BY SETTING MULTIPLE tag_ID_integer VALUES (INTEGERS VALUES),
+        NOTE: THIS IS REQUIRED WHEN USING EITHER THE "TargetedSwapFreq" OR "IntraTargetedSwapFreq" MC MOVES.
+        WARNING: THE tag_ID_integer VALUES MUST BE UNIQUE FOR EACH SUBVOLUME,
+        OR THE DICTIONARY WILL OVERWRITE THE PREVIOUS SUBVOLUME (tag_ID_integer) SECTION
+        WITH THE CURRENT tag_ID_integer AND ITS RESPECTIVE VALUES.
+
+        Example 1
+        input_variables_dict={"TargetedSwap_DataInput": {tag_ID_integer: {"SubVolumeType": "dynamic",
+        "SubVolumeBox": 0, "SubVolumeCenterList": ['0-10', 12, 15, '22-40'], "SubVolumeDim": [1, 2, 3],
+        "SubVolumeResidueKind": "ALL", "SubVolumeRigidSwap": False, "SubVolumePBC": "XY",
+        "SubVolumeChemPot": {"MET": -21, "met": -31}}}
+
+        Example 2
+        input_variables_dict={"TargetedSwap_DataInput": {tag_ID_integer: {"SubVolumeType": "static",
+        "SubVolumeBox": 0, "SubVolumeCenter": [1, 12, 15], "SubVolumeDim": [3, 3, 3],
+        "SubVolumeResidueKind": ["MET", "met"], "SubVolumeRigidSwap": False, "SubVolumePBC": "XYZ",
+        "SubVolumeFugacity": {"MET": 0.1, "met": 1}}}
+
+        The details of each key and value for the "TargetedSwap_DataInput" are provided below.
+
+        --- "SubVolumeType" : str ("static" or "dynamic"), No default is provided.
+        The type of targeted swap box (subvolume) that will be created.
+        The "static" type will maintain the box (subvolume) in a fixed location during the whole simulation,
+        with the center of the box determined by the coordinates set in the
+        "SubvolumeCenter" parameter.
+        The "dynamic" type will allow for dynamic movement of the box (subvolume) based atom indices
+        provided in the SubvolumeCenterList variable. For the "dynamic" type, the user must define a
+        list of atom indices using "SubVolumeCenterList" keyword; the geometric center of the
+        provided atom indices will be used as the center of subVolume. User must ensure that the
+        atoms defined in the atom list remain in the simulation box (by setting the Beta value to 2 in PDB file).
+
+        --- "SubVolumeBox" : int (0 or 1), No default is provided.
+        The simulation box in which the targeted swap subvolume will be applied.
+        NOTE: Only box zero (0) can be used for the GCMC, NPT, and NVT ensembles.
+
+        --- "SubVolumeCenter" : list of three (3) int or float, [x-axis, y-axis, z-axis], No default is provided.
+        The simulation box is centered on this x, y, and z-axis points (in Angstroms), which is only
+        utilized when "SubVolumeType" is set to "static".
+
+        --- "SubVolumeCenterList" : list of int and/or str (>=0), [atom_index, ..., atom_index], No default is provided.
+        The simulation box subVolume is centered on the geometric center of the provided atom indices, which is
+        only used when the "SubVolumeType" is set to "dynamic". For example, [0-10', 12, 15] means that
+        atom indices 0 to 10, 12 and 15 are used as the geometric center of the simulation box subVolume.
+        NOTE: THE ATOM INDICES RANGES MUST BE A STRING IN THE FORM '2-20', WITH THE FIRST ATOM INDICES BEING
+        SMALLER THAN THE SECOND (i.e, 'a-b', where a < b). ALL SINGULAR ATOM INDICES MUST BE INTEGERS.
+        NOTE: THE SAME ATOM INDICES CAN BE USED 2, 3 OR X TIMES TO WEIGHT that atom 2, 3, OR X TIMES MORE
+        IN THE GEOMETRIC CENTERING CALCULATION.
+        NOTE: THE ATOM INDICES START AT ZERO (0), WHILE THE PDB AND PSF FILES START AT ONE (1).
+        THEREFORE, YOU NEED TO BE CAREFUL WHEN SETTING THE INDICES FROM THE PDB OR PSF VALUES AS THEY ARE
+        ONE (1) NUMBER OFF.
+
+        --- "SubVolumeDim" : list of three (3) int or float (>0), [x-axis, y-axis, z-axis], No default is provided.
+        This sets the size of the simulation box (subVolume) in the x, y, and z-axis (in Angstroms).
+
+        --- "SubVolumeResidueKind" : str or list of str, "ALL" or "residue"
+        or ["ALL"] or [residue_str, ..., residue_str], No default is provided.
+        The residues that will be used in the "TargetedSwap_DataInput" subvolume.
+        Alternatively, the user can just set the value to ["ALL"] or "ALL", which covers all the residues.
+
+        --- "SubVolumeRigidSwap" : bool, default = True
+        Choose whether to use a rigid or flexible molecule insertion using CD-CBMC for the subVolume.
+        True uses a rigid molecule insertion, while False uses a flexible molecule insertion
+
+        --- "SubVolumePBC" : str ('X', 'XY', 'XZ', 'XYZ', 'Y', 'YZ', or 'Z'), default = 'XYZ'.
+        Apply periodic boundary condition (PBC) in selected axes for the subVolume.
+        Example 1, 'X' applies PBC only in the X axis. Example 2, 'XY' applies PBC only in the X and Y axes.
+        Example 3, 'XYZ' applies PBC in the X, Y, and Z axes.
+
+        --- "SubVolumeChemPot" : dict {str (4 dig limit) , int or float}, No default is provided.
+        The chemical potentials in GOMC units of energy, K. If no SubVolumeChemPot is provided
+        the default system chemical potential values are used.
+        There is a 4 character limit for the string/residue name since the PDB/PSF
+        files have a 4 character limitation and require an exact match in the conf file.
+        Note: These strings must match the residue in the psf and psb files or it will fail.
+        The name of the residues and their corresponding chemical potential must be specified
+        for every residue in the system (i.e., {"residue_name" : chemical_potential}).
+        Note: THIS IS ONLY REQUIRED FOR THE GCMC ENSEMBLE.
+        Note: IF 2 KEYS WITH THE SAME STRING/RESIDUE ARE PROVIDED, ONE WILL BE AUTOMATICALLY
+        OVERWRITTEN AND NO ERROR WILL BE THROWN IN THIS CONTROL FILE WRITER.
+        Note: ONLY THE "SubVolumeChemPot" OR THE "SubVolumeFugacity" CAN BE USED FOR ALL THE
+        TARGET SWAP BOXES (SUBVOLUMES). IF MIX OF "SubVolumeChemPot" AND "SubVolumeFugacity" ARE
+        USED THE CONTROL FILE WRITER WILL THROW AN ERROR.
+
+        --- "SubVolumeFugacity" : dict {str , int or float (>= 0)}, No default is provided.
+        The fugacity in GOMC units of pressure, bar. If no "SubVolumeFugacity" is provided
+        the default system fugacity values are used.
+        There is a 4 character limit for the string/residue name since the PDB/PSF
+        files have a 4 character limitation and require an exact match in the conf file.
+        Note: These strings must match the residue in the psf and psb files or it will fail.
+        The name of the residues and their corresponding fugacity must be specified
+        for every residue in the system (i.e., {"residue_name" : fugacity}).
+        Note: THIS IS ONLY REQUIRED FOR THE GCMC ENSEMBLE.
+        Note: IF 2 KEYS WITH THE SAME STRING/RESIDUE ARE PROVIDED, ONE WILL BE AUTOMATICALLY
+        OVERWRITTEN AND NO ERROR WILL BE THROWN IN THIS CONTROL FILE WRITER.
+        Note: ONLY THE "SubVolumeChemPot" OR THE "SubVolumeFugacity" CAN BE USED FOR ALL THE
+        TARGET SWAP BOXES (SUBVOLUMES). IF MIX OF "SubVolumeChemPot" AND "SubVolumeFugacity" ARE
+        USED THE CONTROL FILE WRITER WILL THROW AN ERROR.
+
     ExchangeVolumeDim : list of 3 floats or integers or [X-dimension, Y-dimension, Z-dimension)],
         default = [1.0, 1.0, 1.0]
         To use all variations of MEMC and Intra-MEMC Monte Carlo moves, the exchange
