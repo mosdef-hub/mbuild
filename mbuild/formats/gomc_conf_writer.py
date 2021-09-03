@@ -3006,7 +3006,6 @@ class GOMCControl:
                     "for the GEMC_NVT, GEMC_NPT or GCMC simulations, which is not allowed"
                 )
                 self.input_error = True
-                print_error_message = print_error_message
                 raise ValueError(print_error_message)
         else:
             print(
@@ -5380,9 +5379,7 @@ class GOMCControl:
             print("\t IntraMEMC_3Freq = " + str(self.IntraMEMC_3Freq))
             print("\t MEMC_3Freq = " + str(self.MEMC_3Freq))
             print("\t TargetedSwapFreq = " + str(self.TargetedSwapFreq))
-            print(
-                "\t IntraTargetedSwapFreq = " + str(self.IntraTargetedSwapFreq)
-            )
+            print("\t IntraTargetedSwapFreq = " + str(self.IntraTargetedSwapFreq))
             self.input_error = True
             print_error_message = (
                 "ERROR: The sum of the Monte Carlo move ratios does not equal 1. "
@@ -5575,37 +5572,13 @@ class GOMCControl:
                                 required_ts_datainput_keys_GCMC_chempot_adder
                             )
 
-                    print("999999999999")
-                    print("999999999999")
-                    print("999999999999")
-                    print(
-                        "required_ts_datainput_total = "
-                        + str(required_ts_datainput_total)
-                    )
-                    print(
-                        "self.TargetedSwap_DataInput[ts_tag_i] = "
-                        + str(self.TargetedSwap_DataInput[ts_tag_i])
-                    )
-                    print(
-                        "list(self.TargetedSwap_DataInput[ts_tag_i].keys()) = "
-                        + str(
-                            list(self.TargetedSwap_DataInput[ts_tag_i].keys())
-                        )
-                    )
-                    print("999999999999")
-                    print("999999999999")
-                    print("999999999999")
-
                     for subvolume_keys_j in required_ts_datainput_total:
-                        print("subvolume_keys_j = " + str(subvolume_keys_j))
                         if subvolume_keys_j not in list(
                             self.TargetedSwap_DataInput[ts_tag_i].keys()
                         ):
-                            print("22222222")
                             raise ValueError(print_error_message)
 
                 else:
-                    print("333333333")
                     raise ValueError(print_error_message)
 
         # check that MEMC moves rations are > 0 if MEMC_DataInput is used
