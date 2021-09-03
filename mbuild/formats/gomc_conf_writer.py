@@ -5677,9 +5677,17 @@ class GOMCControl:
                         ):
                             # set default values of SubVolumeRigidSwap or SubVolumePBC to
                             # default value, if not provided
-                            if subvolume_keys_j in  ["subvolumerigidswap", "subvolumepbc"]:
+                            if subvolume_keys_j in [
+                                "subvolumerigidswap",
+                                "subvolumepbc",
+                            ]:
                                 self.TargetedSwap_DataInput[ts_tag_i].update(
-                                    {subvolume_keys_j: _get_default_variables_dict()[subvolume_keys_j]})
+                                    {
+                                        subvolume_keys_j: _get_default_variables_dict()[
+                                            subvolume_keys_j
+                                        ]
+                                    }
+                                )
                             else:
                                 raise ValueError(print_error_message)
 
