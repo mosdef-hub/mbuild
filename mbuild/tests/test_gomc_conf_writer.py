@@ -14095,11 +14095,11 @@ class TestGOMCControlFileWriter(BaseTest):
 
         # This "SubVolumeCenterList" is same value on both sides of - symbol
         with pytest.raises(
-                ValueError,
-                match=r"ERROR: The following input variables have "
-                      r"bad values \(check spelling and for empty spaces in the keys or that "
-                      r"the values are in the correct form with the acceptable values\)"
-                      r": \['subvolumecenterlist'\]",
+            ValueError,
+            match=r"ERROR: The following input variables have "
+            r"bad values \(check spelling and for empty spaces in the keys or that "
+            r"the values are in the correct form with the acceptable values\)"
+            r": \['subvolumecenterlist'\]",
         ):
             gomc_control.write_gomc_control_file(
                 charmm,
@@ -14131,5 +14131,3 @@ class TestGOMCControlFileWriter(BaseTest):
                     },
                 },
             )
-
-
