@@ -878,13 +878,17 @@ def _get_all_possible_input_variables(description=False):
         'or ["ALL"] or [residue_str, ..., residue_str], No default is provided. '
         'The residues that will be used in the "TargetedSwap_DataInput" subvolume. '
         'Alternatively, the user can just set the value to ["ALL"] or "ALL", which covers all the residues. '
-        '\t\t\t\t\t\t\t\t\t\t\t\t\t --- "SubVolumeRigidSwap" : bool, ' +
-        'default = {} '.format(_get_default_variables_dict()["SubVolumeRigidSwap".lower()]) +
-        "Choose whether to use a rigid or flexible molecule insertion using CD-CBMC for the subVolume. "
+        '\t\t\t\t\t\t\t\t\t\t\t\t\t --- "SubVolumeRigidSwap" : bool, '
+        + "default = {} ".format(
+            _get_default_variables_dict()["SubVolumeRigidSwap".lower()]
+        )
+        + "Choose whether to use a rigid or flexible molecule insertion using CD-CBMC for the subVolume. "
         "True uses a rigid molecule insertion, while False uses a flexible molecule insertion "
-        '\t\t\t\t\t\t\t\t\t\t\t\t\t --- "SubVolumePBC" : str ("X", "XY", "XZ", "XYZ", "Y", "YZ", or "Z"), ' +
-        'default = {} '.format(_get_default_variables_dict()["SubVolumePBC".lower()]) +
-        "Apply periodic boundary condition (PBC) in selected axes for the subVolume. "
+        '\t\t\t\t\t\t\t\t\t\t\t\t\t --- "SubVolumePBC" : str ("X", "XY", "XZ", "XYZ", "Y", "YZ", or "Z"), '
+        + "default = {} ".format(
+            _get_default_variables_dict()["SubVolumePBC".lower()]
+        )
+        + "Apply periodic boundary condition (PBC) in selected axes for the subVolume. "
         'Example 1, "X" applies PBC only in the X axis. Example 2, "XY" applies PBC only in the X and Y axes. '
         'Example 3, "XYZ" applies PBC in the X, Y, and Z axes. '
         '\t\t\t\t\t\t\t\t\t\t\t\t\t --- "SubVolumeChemPot" : dict {str (4 dig limit) , int or float}, '
