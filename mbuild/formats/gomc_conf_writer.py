@@ -1011,6 +1011,9 @@ def _get_default_variables_dict():
         "ExchangeVolumeDim": [1.0, 1.0, 1.0],
         "MEMC_DataInput": None,
         "TargetedSwap_DataInput": None,
+        # TargetedSwap_DataInput default values (these need to be all lower case)
+        "subvolumerigidswap": True,
+        "subvolumepbc": "XYZ",
         # moves without MEMC
         "DisFreq": {
             "NVT": 0.15,
@@ -5672,16 +5675,11 @@ class GOMCControl:
                         if subvolume_keys_j not in list(
                             self.TargetedSwap_DataInput[ts_tag_i].keys()
                         ):
-                            # set default values of SubVolumeRigidSwap to True, if not provided
-                            if subvolume_keys_j == "subvolumerigidswap":
+                            # set default values of SubVolumeRigidSwap or SubVolumePBC to
+                            # default value, if not provided
+                            if subvolume_keys_j in  ["subvolumerigidswap", "subvolumepbc"]:
                                 self.TargetedSwap_DataInput[ts_tag_i].update(
-                                    {"subvolumerigidswap": True}
-                                )
-                            # set default values of SubVolumePBC to 'XYZ', if not provided
-                            elif subvolume_keys_j == "subvolumepbc":
-                                self.TargetedSwap_DataInput[ts_tag_i].update(
-                                    {"subvolumepbc": "XYZ"}
-                                )
+                                    {subvolume_keys_j: _get_default_variables_dict()[subvolume_keys_j]})
                             else:
                                 raise ValueError(print_error_message)
 
