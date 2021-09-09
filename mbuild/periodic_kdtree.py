@@ -38,6 +38,8 @@ from itertools import chain
 import numpy as np
 from scipy.spatial import KDTree
 
+import mbuild as mb
+
 
 def _gen_relevant_images(x, bounds, distance_upper_bound):
     """Map x onto canonical unit cell and produce mirror images."""
@@ -86,20 +88,15 @@ class PeriodicCKDTree(KDTree):
 
     Parameters
     ----------
-    box : mbuild.Box
-        The box object containing the periodicity of the system.
-        A zero value for one of the box lengths mean that the
-        space is not periodic in that dimension.
-    bounds : array_like, shape (k,)
-        Deprecated. Will be removed in version 0.11. Please use
-        the box argument instead.
-        Size of the periodic box along each spatial dimension.  A
-        negative or zero size for dimension k means that space is not
-        periodic along k.
-    data : array-like, shape (n,m)
+    data : array-like, shape (n,m), required
         The n data points of dimension mto be indexed. This array is not copied
         unless this is necessary to produce a contiguous array of doubles, and
         so modifying this data will result in bogus results.
+    box : mbuild.Box, required
+        The box object containing the lengths and dimensions of the system.
+    periodicity : array-like, boolean, shape (3,), default = [True, True, True], optional
+        The periodicity of the compound, True means periodic in that dimension [x, y, z]
+        false is non-periodic
     leafsize : positive integer
         The number of points at which the algorithm switches over to
         brute-force.
@@ -111,33 +108,35 @@ class PeriodicCKDTree(KDTree):
     point and a data point to half the smallest box dimension.
     """
 
-    def __init__(self, data, leafsize=10, box=None, bounds=None):
-        if bounds is not None and box is not None:
-            raise ValueError(
-                "Only one of 'bounds' and 'box' may be specified. "
-                "Since 'bounds' is deprecated, please use 'box'."
+    def __init__(self, data, box, leafsize=10, periodicity=[True, True, True]):
+        if not isinstance(box, mb.Box):
+            raise TypeError(
+                f"Incorrect type of box. Was provided box of type {type(box)}. Expected mbuild.Box"
             )
         # Map all points to canonical periodic image.
-        if box is None:
-            if bounds is None:
-                bounds = np.array([0.0, 0.0, 0.0])
-        elif np.allclose(box.angles, 90.0):
-            bounds = box.lengths
-        else:
+        compound_bounds = []
+        for box_len, period in zip(box.lengths, periodicity):
+            if period:
+                compound_bounds.append(box_len)
+            else:
+                compound_bounds.append(0)
+        if not np.allclose(box.angles, 90.0):
             raise NotImplementedError(
                 "Periodic KCDTree search only implemented"
                 "for orthorhombic periodic boundaries"
             )
-        self.bounds = np.array(bounds)
+        self.bounds = np.array(compound_bounds)
         self.real_data = np.asarray(data)
 
         wrapped_data = self.real_data
 
         for i, row in enumerate(self.real_data):
             for j, coord in enumerate(row):
-                if bounds[j] > 0.0:
-                    wrap = np.floor(self.real_data[i, j] / bounds[j])
-                    wrapped_data[i, j] = self.real_data[i, j] - wrap * bounds[j]
+                if compound_bounds[j] > 0.0:
+                    wrap = np.floor(self.real_data[i, j] / compound_bounds[j])
+                    wrapped_data[i, j] = (
+                        self.real_data[i, j] - wrap * compound_bounds[j]
+                    )
 
         # Calculate maximum distance_upper_bound
         self.max_distance_upper_bound = np.min(
