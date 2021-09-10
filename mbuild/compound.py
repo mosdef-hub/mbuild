@@ -1794,11 +1794,11 @@ class Compound(object):
         )
         to_parmed = ff.apply(to_parmed)
 
-        import simtk.unit as u
-        from simtk.openmm.app import AllBonds, HAngles, HBonds
-        from simtk.openmm.app.pdbreporter import PDBReporter
-        from simtk.openmm.app.simulation import Simulation
-        from simtk.openmm.openmm import LangevinIntegrator
+        import openmm.unit as u
+        from openmm.app import AllBonds, HAngles, HBonds
+        from openmm.app.pdbreporter import PDBReporter
+        from openmm.app.simulation import Simulation
+        from openmm.openmm import LangevinIntegrator
 
         if constraints:
             if constraints == "AllBonds":
