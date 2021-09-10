@@ -5,7 +5,7 @@ dependencies:
   - bump2version
   - codecov
   - ele
-  - foyer>=0.9.2
+  - foyer>=0.9.4
   - garnett>=0.7.1
   - gsd>=2
   - hoomd=2.9.6
@@ -16,7 +16,7 @@ dependencies:
   - numpy
   - openbabel>=3
   - packmol>=20
-  - parmed>=3.4.0
+  - parmed>=3.4.3
   - pip
   - pre-commit
   - protobuf
