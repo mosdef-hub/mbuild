@@ -26,7 +26,7 @@ class TiledCompound(Compound):
         Descriptive string for the compound.
     """
 
-    def __init__(self, tile, n_tiles, name=None):
+    def __init__(self, tile, n_tiles, name=None, **kwargs):
         super(TiledCompound, self).__init__()
 
         n_tiles = np.asarray(n_tiles)
@@ -101,7 +101,7 @@ class TiledCompound(Compound):
 
         # Build a periodic kdtree of all particle positions.
         self.particle_kdtree = PeriodicCKDTree(
-            data=self.xyz, box=tile.box, periodicity=tile.periodicity
+            data=self.xyz, box=self.box, periodicity=self.periodicity
         )
         all_particles = np.asarray(list(self.particles(include_ports=False)))
 
@@ -119,10 +119,10 @@ class TiledCompound(Compound):
             if dist > dist_thresh:
                 bonds_to_remove.add((particle1, particle2))
                 image2 = self._find_particle_image(
-                    particle1, particle2, all_particles
+                    particle1, particle2, all_particles, **kwargs
                 )
                 image1 = self._find_particle_image(
-                    particle2, particle1, all_particles
+                    particle2, particle1, all_particles, **kwargs
                 )
 
                 if (image2, particle1) not in bonds_to_add:
@@ -153,9 +153,10 @@ class TiledCompound(Compound):
             if isinstance(port, Port):
                 self.add(port, containment=False)
 
-    def _find_particle_image(self, query, match, all_particles):
+    def _find_particle_image(self, query, match, all_particles, **kwargs):
         """Find particle with the same index as match in a neighboring tile."""
-        _, idxs = self.particle_kdtree.query(query.pos, k=10)
+        k = kwargs.get("k", 10)
+        _, idxs = self.particle_kdtree.query(query.pos, k=k)
 
         neighbors = all_particles[idxs]
 
