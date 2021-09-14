@@ -272,21 +272,26 @@ class TestLammpsData(BaseTest):
                     assert "# " + atom_style in line
 
     def test_resid(self, ethane, methane):
-        structure = ethane.to_parmed() + methane.to_parmed()
-        n_atoms = len(structure.atoms)
-        write_lammpsdata(structure, "compound.lammps")
-        res_list = list()
-        with open("compound.lammps", "r") as f:
-            for i, line in enumerate(f):
-                if "Atoms" in line:
-                    break
-        atom_lines = open("compound.lammps", "r").readlines()[
-            i + 2 : i + n_atoms + 2
-        ]
-        for line in atom_lines:
-            res_list.append(line.rstrip().split()[1])
-
-        assert set(res_list) == set(["1", "0"])
+        for offset in [0, 1]:
+            structure = ethane.to_parmed() + methane.to_parmed()
+            n_atoms = len(structure.atoms)
+            write_lammpsdata(
+                structure, "compound.lammps", moleculeID_offset=offset
+            )
+            res_list = list()
+            with open("compound.lammps", "r") as f:
+                for i, line in enumerate(f):
+                    if "Atoms" in line:
+                        break
+            atom_lines = open("compound.lammps", "r").readlines()[
+                i + 2 : i + n_atoms + 2
+            ]
+            for line in atom_lines:
+                res_list.append(line.rstrip().split()[1])
+            if offset == 0:
+                assert set(res_list) == set(["0", "1"])
+            else:
+                assert set(res_list) == set(["1", "2"])
 
     def test_box_bounds(self, ethane):
         from foyer import Forcefield
