@@ -314,6 +314,7 @@ class TestCompound(BaseTest):
         )
         assert len(ethane.children) == len(ethane_clone.children)
         assert ethane_clone.mass == ethane.mass
+        assert ethane.periodicity == ethane_clone.periodicity
 
     def test_batch_add(self, ethane, h2o):
         compound = Compound()
