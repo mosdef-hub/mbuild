@@ -306,6 +306,7 @@ class TestCompound(BaseTest):
 
     def test_clone_with_box(self, ethane):
         ethane.box = ethane.get_boundingbox()
+        ethane.periodicity = (True, True, False)
         ethane_clone = mb.clone(ethane)
         assert np.all(ethane.xyz == ethane_clone.xyz)
         assert np.all(
