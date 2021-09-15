@@ -2510,6 +2510,7 @@ class Compound(object):
         newone._check_if_contains_rigid_bodies = deepcopy(
             self._check_if_contains_rigid_bodies
         )
+        newone._periodicity = deepcopy(self._periodicity)
         newone._contains_rigid = deepcopy(self._contains_rigid)
         newone._rigid_id = deepcopy(self._rigid_id)
         newone._charge = deepcopy(self._charge)
