@@ -421,7 +421,6 @@ class TestLammpsData(BaseTest):
                 line = fi.readline()
                 if "Pair Coeffs" in line:
                     fi.readline()
-                    fi.readline()
                     line = fi.readline().split()
                     epsilon = float(line[1])
                     sigma = float(line[2])
