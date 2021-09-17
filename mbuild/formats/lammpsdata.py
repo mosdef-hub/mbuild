@@ -43,6 +43,7 @@ def write_lammpsdata(
     use_rb_torsions=True,
     use_dihedrals=False,
     zero_dihedral_weighting_factor=False,
+    moleculeID_offset=1,
 ):
     """Output a LAMMPS data file.
 
@@ -89,6 +90,11 @@ def write_lammpsdata(
     zero_dihedral_weighting_factor:
         If True, will set weighting parameter to zero in CHARMM-style dihedrals.
         This should be True if the CHARMM dihedral style is used in non-CHARMM forcefields.
+    moleculeID_offset : int , optional, default=1
+        Since LAMMPS treats the MoleculeID as an additional set of information
+        to identify what molecule an atom belongs to, this currently
+        behaves as a residue id. This value needs to start at 1 to be
+        considered a real molecule.
 
     Notes
     -----
@@ -775,7 +781,7 @@ def write_lammpsdata(
                 atom_line.format(
                     index=i + 1,
                     type_index=unique_types.index(types[i]) + 1,
-                    zero=structure.atoms[i].residue.idx,
+                    zero=structure.atoms[i].residue.idx + moleculeID_offset,
                     charge=charges[i],
                     x=coords[0],
                     y=coords[1],
