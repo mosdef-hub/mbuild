@@ -16,12 +16,12 @@ repos:
     - id: end-of-file-fixer
     - id: trailing-whitespace
 - repo: https://github.com/psf/black
-  rev: 21.7b0
+  rev: 21.8b0
   hooks:
     - id: black
       args: [--line-length=80]
 - repo: https://github.com/pycqa/isort
-  rev: 5.9.2
+  rev: 5.9.3
   hooks:
     - id: isort
       name: isort (python)

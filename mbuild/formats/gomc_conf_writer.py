@@ -78,6 +78,72 @@ def _get_required_data(description=False):
         "The number or run steps for the simulation.",
         "Temperature": "Required files or System Info (all ensembles): float or integer (> 0), "
         "Temperature of system in Kelvin (K)",
+        "ff_psf_pdb_file_directory": "str (optional), default=None (i.e., the current directory). "
+        "The full or relative directory added to the force field, psf, and pdb "
+        "file names, created via the Charmm object.",
+        "check_input_files_exist": "Required to check if files exist (all ensembles): bool (default=True), "
+        "Check if the force field, psf, and pdb files exist. "
+        "If the files are checked and do not exist, the writer will throw "
+        "a ValueError. "
+        "True, check if the force field, psf, and pdb files exist. "
+        "False, do not check if the force field, psf, and pdb files exist.",
+        "Restart": "Required for restarting (all ensembles): boolean (default=False), "
+        "Determines whether to restart the simulation "
+        "from restart file (*_restart.pdb and *_restart.psf) or not.",
+        "RestartCheckpoint": "Required for optimal restarting (all ensembles): boolean (default=False),"
+        "Determines whether to restart the simulation with the "
+        "checkpoint file (checkpoint.dat) or not. Restarting the "
+        "simulation with checkpoint.dat would result in an identical outcome, "
+        "as if previous simulation was continued.",
+        "Parameters": "Required for alternate force field file (all ensembles): "
+        "str, (default=None), "
+        "Override all other force field directory and filename input with the correct extension (.inp or .par). "
+        "Note: the default directory is the current directory with the Charmm object file name.",
+        "Coordinates_box_0": "Required for alternate box 0 .pdb file (all ensembles): "
+        "str, (default=None), "
+        "Override all other box 0 pdb directory and filename inputs. "
+        "Note: the default directory is the current directory with the Charmm object file name.",
+        "Structure_box_0": "Required for alternate box 0 .psf file (all ensembles): "
+        "str, (default=None), "
+        "Override all other box 0 psf directory and filename inputs. "
+        "Note: the default directory is the current directory with the Charmm object file name.",
+        "Coordinates_box_1": "Required for alternate box 1 .pdb file (all ensembles): "
+        "str, (default=None), "
+        "Override all other box 1 pdb directory and filename inputs. "
+        "Note: the default directory is the current directory with the Charmm object file name.",
+        "Structure_box_1": "Required for alternate box 1 .psf file  (all ensembles): "
+        "str, (default=None), "
+        "Override all other box 1 psf directory and filename inputs. "
+        "Note: the default directory is the current directory with the Charmm object file name.",
+        "binCoordinates_box_0": "Required for alternate box 0 .coor file (all ensembles): "
+        "str, (default=None), "
+        "The box 0 binary coordinate file is used only for restarting "
+        "a GOMC simulation, which provides increased numerical accuracy.",
+        "extendedSystem_box_0": "Required for alternate box 0 .xsc file (all ensembles): "
+        "str, (default=None), "
+        "The box 0 vectors and origin file is used only for restarting a "
+        "GOMC simulation. ",
+        "binVelocities_box_0": "Required for alternate box 0 .vel file (all ensembles): "
+        "str, (default=None), "
+        "The box 0 binary velocity file is used only for "
+        "restarting a GOMC simulation, which provides increased "
+        "numerical accuracy. These velocities are only passed thru "
+        "GOMC since Monte Carlo simulations do not utilize any "
+        "velocity information. ",
+        "binCoordinates_box_1": "Required for alternate box 1 .coor file (all ensembles): "
+        "str, (default=None), "
+        "The box 1 binary coordinate file is used only for restarting a "
+        "GOMC simulation, which provides increased numerical accuracy. ",
+        "extendedSystem_box_1": "Required for alternate box 1 .coor file (all ensembles): "
+        "str, (default=None), "
+        "The box 1 vectors and origin file is used "
+        "only for restarting a GOMC simulation. ",
+        "binVelocities_box_1": "Required for alternate box 1 .vel file (all ensembles): "
+        "str, (default=None), "
+        "The box 1 binary velocity file is used only for restarting a "
+        "GOMC simulation, which provides increased numerical accuracy. "
+        "These velocities are only passed thru GOMC since Monte Carlo "
+        "simulations do not utilize any velocity information.",
     }
 
     if description:
@@ -114,16 +180,6 @@ def _get_all_possible_input_variables(description=False):
         # Definitions in this function are copied to a large extent from the GOMC manual release version 2.60 (start)
         # insert citation here:
         # ******************************************************************************************************
-        "Restart": "Simulation info (all ensembles): boolean, default = {}. "
-        "Determines whether to restart the simulation "
-        "from restart file (*_restart.pdb and *_restart.psf) or not."
-        "".format(_get_default_variables_dict()["Restart"]),
-        "RestartCheckpoint": "Simulation info (all ensembles): boolean, default = {}. "
-        "Determines whether to restart the "
-        "simulation with the checkpoint file (checkpoint.dat) or not. Restarting the "
-        "simulation with checkpoint.dat would result in an identical outcome, as if "
-        "previous simulation was continued."
-        "".format(_get_default_variables_dict()["RestartCheckpoint"]),
         "PRNG": 'Simulation info (all ensembles): string or int (>= 0) ("RANDOM" or integer), default = {}. '
         "PRNG = Pseudo-Random Number Generator (PRNG). "
         'There are two (2) options, entering the string, "RANDOM", or a integer.  \n'
@@ -149,7 +205,6 @@ def _get_all_possible_input_variables(description=False):
         "RcutCoulomb_box_0": "Simulation info (all ensembles): int or float (>= 0), default = {}."
         "Sets a specific radius in box 0 where the short-range "
         "electrostatic energy will be calculated (i.e., The distance to truncate the "
-        "short-range electrostatic energy in box 0.)"
         "Note: if None, GOMC will default to the Rcut value"
         "".format(_get_default_variables_dict()["RcutCoulomb_box_0"]),
         "RcutCoulomb_box_1": "Simulation info (all ensembles): int or float (>= 0), default = {}."
@@ -290,10 +345,9 @@ def _get_all_possible_input_variables(description=False):
         "".format(_get_default_variables_dict()["FixVolBox0"]),
         # GCMC only properties
         "ChemPot": "Simulation info (only GCMC): dict {str (4 dig limit) , int or float}, "
-        + "default = {} (i.e., the user must set this variable as there is no working default)."
-        ""
-        "".format(_get_default_variables_dict()["ChemPot"])
-        + "The chemical potentials in GOMC units of energy, K. "
+        + "default = {} ".format(_get_default_variables_dict()["ChemPot"])
+        + "(i.e., the user must set this variable as there is no working default)."
+        "The chemical potentials in GOMC units of energy, K. "
         "There is a 4 character limit for the string/residue name since the PDB/PSF "
         "files have a 4 character limitation and require and exact match in the conf file. "
         "Note: These strings must match the residue in the psf and psb files or it will fail. "
@@ -304,9 +358,9 @@ def _get_all_possible_input_variables(description=False):
         'Example 1 (system with only water):  {"H2O" : -4000} . '
         'Example 2 (system with water and ethanol):  {"H2O" : -4000, "ETH" : -8000} ',
         "Fugacity": "Simulation info (only GCMC): dict {str , int or float (>= 0)}, "
-        + "default = {} (i.e., the user must set this variable as there is no working default). "
-        "".format(_get_default_variables_dict()["Fugacity"])
-        + "The fugacity in GOMC units of pressure, bar. "
+        + "default = {} ".format(_get_default_variables_dict()["Fugacity"])
+        + "(i.e., the user must set this variable as there is no working default). "
+        "The fugacity in GOMC units of pressure, bar. "
         "There is a 4 character limit for the string/residue name since the PDB/PSF "
         "files have a 4 character limitation and require and exact match in the conf file. "
         "Note: These strings must match the residue in the psf and psb files or it will fail. "
@@ -338,7 +392,7 @@ def _get_all_possible_input_variables(description=False):
         "The UNIQUE STRING NAME, WITH NO SPACES, which is used for the "
         "output block average, PDB, and PSF file names."
         "".format(_get_default_variables_dict()["OutputName"]),
-        "CoordinatesFreq": "Output Frequency (all ensembles): list [bool , int (> 0)] or "
+        "CoordinatesFreq": "PDB Output Frequency (all ensembles): list [bool , int (> 0)] or "
         "[Generate_data_bool , steps_per_data_output_int], "
         "default = {} or [{} , set via formula based on the number of RunSteps or {} max]. "
         "Controls output of PDB file (coordinates). "
@@ -349,6 +403,18 @@ def _get_all_possible_input_variables(description=False):
             _get_default_variables_dict()["CoordinatesFreq"],
             _get_default_variables_dict()["CoordinatesFreq"][0],
             _get_default_variables_dict()["CoordinatesFreq"][1],
+        ),
+        "DCDFreq": "DCD Output Frequency (all ensembles): list [bool , int (> 0)] or "
+        "[Generate_data_bool , steps_per_data_output_int], "
+        "default = {} or [{} , set via formula based on the number of RunSteps or {} max]. "
+        "Controls output of DCD file (coordinates). "
+        "If bool is True, this enables outputting the coordinate files at the "
+        "integer frequency (set steps_per_data_output_int), "
+        'while "False" disables outputting the coordinates.'
+        "".format(
+            _get_default_variables_dict()["DCDFreq"],
+            _get_default_variables_dict()["DCDFreq"][0],
+            _get_default_variables_dict()["DCDFreq"][1],
         ),
         "RestartFreq": "Output Frequency (all ensembles): list [bool , int (> 0)] or "
         "[Generate_data_bool , steps_per_data_output_int], "
@@ -454,10 +520,11 @@ def _get_all_possible_input_variables(description=False):
         "The list provides the booleans to [block_averages_bool, console_output_bool]. "
         "This outputs the pressure data into the block averages and console output/log files."
         "".format(_get_default_variables_dict()["OutPressure"]),
-        "OutMolNumber": "Output Data (all ensembles): [bool, bool], default = {}.   "
+        "OutMolNum": "Output Data (all ensembles): [bool, bool], default = {}.   "
         "The list provides the booleans to [block_averages_bool, console_output_bool]. "
-        "This outputs the number of molecules data into the block averages and console output/log files."
-        "".format(_get_default_variables_dict()["OutMolNumber"]),
+        "This outputs the number of molecules data into the block averages and console "
+        "output/log files."
+        "".format(_get_default_variables_dict()["OutMolNum"]),
         "OutDensity": "Output Data (all ensembles): [bool, bool], default = {}.   "
         "The list provides the booleans to [block_averages_bool, console_output_bool]. "
         "This outputs the density data into the block averages and console output/log files."
@@ -498,7 +565,6 @@ def _get_all_possible_input_variables(description=False):
         "lambda states to which solute-solvent VDW interactions are scaled. "
         'WARNING : This list must be the same length as the "LambdaCoulomb" list length. '
         "WARNING : All lambda values must be stated in the ascending order, otherwise "
-        "the program will terminate.  "
         "Example of ascending order 1: [0.1, 1.0,]  "
         "Example of ascending order 2: [0.1, 0.2, 0.4, 0.9] "
         "".format(_get_default_variables_dict()["LambdaVDW"]),
@@ -533,24 +599,21 @@ def _get_all_possible_input_variables(description=False):
         "".format(_get_default_variables_dict()["MinSigma"]),
         # moves without MEMC
         "DisFreq": "Std. MC moves (all ensembles)                     : "
-        "int or float (0 <= value <= 1), default are specific for each "
-        "ensemble {}. "
+        "int or float (0 <= value <= 1), default are specific for each ensemble {}. "
         "Fractional percentage at which the displacement move will occur "
         "(i.e., fraction of displacement moves). Note: all of the move types"
         "are not available in for every ensemble. Note: all of the move fractions"
         "must sum to 1, or the control file writer will fail.  "
         "".format(_get_default_variables_dict()["DisFreq"]),
         "RotFreq": "Std. MC moves (all ensembles)                     : "
-        "int or float (0 <= value <= 1), default are specific for each "
-        "ensemble {}. "
+        "int or float (0 <= value <= 1), default are specific for each ensemble {}. "
         "Fractional percentage at which the rotation move will occur "
         "(i.e., fraction of rotation moves). Note: all of the move types"
         "are not available in for every ensemble. Note: all of the move fractions"
         "must sum to 1, or the control file writer will fail.  "
         "".format(_get_default_variables_dict()["RotFreq"]),
         "IntraSwapFreq": "Std. MC moves (all ensembles)                     : "
-        "int or float (0 <= value <= 1), default are specific for each "
-        "ensemble {}. "
+        "int or float (0 <= value <= 1), default are specific for each ensemble {}. "
         "Fractional percentage at which the molecule will be removed from a "
         "box and inserted into the same box using coupled-decoupled configurational-bias"
         "algorithm. (i.e., fraction of intra-molecule swap moves). Note: all of the move types"
@@ -558,8 +621,7 @@ def _get_all_possible_input_variables(description=False):
         "must sum to 1, or the control file writer will fail.  "
         "".format(_get_default_variables_dict()["IntraSwapFreq"]),
         "SwapFreq": "Std. MC moves (only GEMC_NPT, GEMC_NVT, and GCMC) : "
-        "int or float (0 <= value <= 1), default are specific for each "
-        "ensemble {}. "
+        "int or float (0 <= value <= 1), default are specific for each ensemble {}. "
         "For Gibbs and Grand Canonical (GC) ensemble runs only: Fractional "
         "percentage at which molecule swap move will occur using coupled-decoupled "
         "configurational-bias. (i.e., fraction of molecule swaps moves). Note: all of the move types"
@@ -567,8 +629,7 @@ def _get_all_possible_input_variables(description=False):
         "must sum to 1, or the control file writer will fail.  "
         "".format(_get_default_variables_dict()["SwapFreq"]),
         "RegrowthFreq": "Std. MC moves (all ensembles)                     : "
-        "int or float (0 <= value <= 1), default are specific for each "
-        "ensemble {}. "
+        "int or float (0 <= value <= 1), default are specific for each ensemble {}. "
         "Fractional percentage at which part of the molecule will be "
         "deleted and then regrown using coupled- decoupled configurational-bias algorithm "
         "(i.e., fraction of molecular growth moves). Note: all of the move types"
@@ -576,26 +637,24 @@ def _get_all_possible_input_variables(description=False):
         "must sum to 1, or the control file writer will fail.  "
         "".format(_get_default_variables_dict()["RegrowthFreq"]),
         "CrankShaftFreq": "Std. MC moves (all ensembles)                     : "
-        "int or float (0 <= value <= 1), default are specific for each "
-        "ensemble {}. "
+        "int or float (0 <= value <= 1), default are specific for each ensemble {}. "
         "Fractional percentage at which crankshaft move will occur. "
         "In this move, two atoms that are forming angle or dihedral are selected randomly and "
         "form a shaft. Then any atoms or group that are within these two selected atoms, will "
         "rotate around the shaft to sample intra-molecular degree of freedom "
         "(i.e., fraction of crankshaft moves). Note: all of the move types"
         "are not available in for every ensemble. Note: all of the move fractions"
-        "must sum to 1, or the control file writer will fail.  "
+        "must sum to 1, or the control file writer will fail. "
         "".format(_get_default_variables_dict()["CrankShaftFreq"]),
         "VolFreq": "Std. MC moves (only  GEMC_NPT  and  NPT )         : "
-        "int or float (0 <= value <= 1), default are specific for each "
-        "ensemble {}. Fractional percentage at  which a volume move will occur "
+        "int or float (0 <= value <= 1), default are specific for each ensemble {}. "
+        "Fractional percentage at  which a volume move will occur "
         "(i.e., fraction of Volume moves). "
         "Note: all of the move types are not available in for every ensemble. "
         "Note: all of the move fractions must sum to 1, or the control file writer will fail. "
         "".format(_get_default_variables_dict()["VolFreq"]),
         "MultiParticleFreq": "Std. MC moves (all ensembles)                     : "
-        "int or float (0 <= value <= 1), default are specific for each "
-        "ensemble {}. "
+        "int or float (0 <= value <= 1), default are specific for each ensemble {}. "
         "Fractional percentage at which multi-particle move will "
         "occur. In this move, all molecules in the selected simulation box will be rigidly "
         "rotated or displaced simultaneously, along the calculated torque or force "
@@ -605,28 +664,25 @@ def _get_all_possible_input_variables(description=False):
         "".format(_get_default_variables_dict()["MultiParticleFreq"]),
         # MEMC moves
         "IntraMEMC-1Freq": "MEMC MC moves (all ensembles)                     : "
-        "int or float (0 <= value <= 1), default are specific for each "
-        "ensemble {}. "
+        "int or float (0 <= value <= 1), default are specific for each ensemble {}. "
         "Fractional percentage at which specified number of small molecule kind will be "
         "exchanged with a specified large molecule kind in defined sub-volume within "
         "same simulation box.  This move need additional information such as "
         "ExchangeVolumeDim, ExchangeRatio, ExchangeSmallKind, and ExchangeLargeKind."
         "Note: all of the move types are not available in for every ensemble."
-        "Note: all of the move fractions must sum to 1, or the control file writer will fail.  "
+        "Note: all of the move fractions must sum to 1, or the control file writer will fail. "
         "".format(_get_default_variables_dict()["IntraMEMC-1Freq"]),
         "MEMC-1Freq": "MEMC MC moves (only GEMC_NPT, GEMC_NVT, and GCMC) : "
-        "int or float (0 <= value <= 1), default are specific for each "
-        "ensemble {}. "
+        "int or float (0 <= value <= 1), default are specific for each ensemble {}. "
         "Fractional percentage at which specified number of small molecule kind will be exchanged "
         "with a specified large molecule kind in defined sub-volume, between simulation boxes. "
-        "This move needs additional information such as ExchangeVolumeDim, ExchangeRatio, ExchangeSmallKind, "
-        "and ExchangeLargeKind."
+        "This move needs additional information such as ExchangeVolumeDim, ExchangeRatio, "
+        "ExchangeSmallKind, and ExchangeLargeKind."
         "Note: all of the move types are not available in for every ensemble."
-        "Note: all of the move fractions must sum to 1, or the control file writer will fail.  "
+        "Note: all of the move fractions must sum to 1, or the control file writer will fail. "
         "".format(_get_default_variables_dict()["MEMC-1Freq"]),
         "IntraMEMC-2Freq": "MEMC MC moves (all ensembles)                     : "
-        "int or float (0 <= value <= 1), default are specific for each "
-        "ensemble {}. "
+        "int or float (0 <= value <= 1), default are specific for each ensemble {}. "
         "Fractional percentage at which specified number of small molecule kind "
         "will be exchanged with a specified large molecule kind in defined sub-volume "
         "within same simulation box. Backbone of small and large molecule kind will be "
@@ -634,11 +690,10 @@ def _get_all_possible_input_variables(description=False):
         "information such as ExchangeVolumeDim, ExchangeRatio, ExchangeSmallKind, "
         "ExchangeLargeKind, SmallKindBackBone, and LargeKindBackBone. "
         "Note: all of the move types are not available in for every ensemble."
-        "Note: all of the move fractions must sum to 1, or the control file writer will fail.  "
+        "Note: all of the move fractions must sum to 1, or the control file writer will fail. "
         "".format(_get_default_variables_dict()["IntraMEMC-2Freq"]),
         "MEMC-2Freq": "MEMC MC moves (only GEMC_NPT, GEMC_NVT, and GCMC) : "
-        "int or float (0 <= value <= 1), default are specific for each "
-        "ensemble {}. "
+        "int or float (0 <= value <= 1), default are specific for each ensemble {}. "
         "Fractional percentage at which specified number of small molecule kind will be "
         "exchanged with a specified large molecule kind in defined sub-volume, between"
         "simulation boxes. Backbone of small and large molecule kind will be used to insert "
@@ -646,11 +701,10 @@ def _get_all_possible_input_variables(description=False):
         "This move needs additional information such as ExchangeVolumeDim, ExchangeRatio, "
         "ExchangeSmallKind, ExchangeLargeKind, SmallKindBackBone, and LargeKindBackBone. "
         "Note: all of the move types are not available in for every ensemble."
-        "Note: all of the move fractions must sum to 1, or the control file writer will fail.  "
+        "Note: all of the move fractions must sum to 1, or the control file writer will fail. "
         "".format(_get_default_variables_dict()["MEMC-2Freq"]),
         "IntraMEMC-3Freq": "MEMC MC moves (all ensembles)                     : "
-        "int or float (0 <= value <= 1), default are specific for each "
-        "ensemble {}. "
+        "int or float (0 <= value <= 1), default are specific for each ensemble {}. "
         "Fractional percentage at which specified number of small molecule kind will be "
         "exchanged with a specified large molecule kind in defined sub-volume within same "
         "simulation box. Specified atom of the large molecule kind will be used to insert "
@@ -661,8 +715,7 @@ def _get_all_possible_input_variables(description=False):
         "Note: all of the move fractions must sum to 1, or the control file writer will fail. "
         "".format(_get_default_variables_dict()["IntraMEMC-3Freq"]),
         "MEMC-3Freq": "MEMC MC moves (only GEMC_NPT, GEMC_NVT, and GCMC) : "
-        "int or float (0 <= value <= 1), default are specific for each "
-        "ensemble {}. "
+        "int or float (0 <= value <= 1), default are specific for each ensemble {}. "
         "Fractional percentage at which specified number of small molecule kind will be exchanged "
         "with a specified large molecule kind in defined sub-volume, between simulation boxes. "
         "Specified atom of the large molecule kind will be used to insert the large molecule "
@@ -670,20 +723,19 @@ def _get_all_possible_input_variables(description=False):
         "such as ExchangeVolumeDim, ExchangeRatio, ExchangeSmallKind, ExchangeLargeKind, "
         "and LargeKindBackBone. "
         "Note: all of the move types are not available in for every ensemble."
-        "Note: all of the move fractions must sum to 1, or the control file writer will fail.  "
+        "Note: all of the move fractions must sum to 1, or the control file writer will fail. "
         "".format(_get_default_variables_dict()["MEMC-3Freq"]),
         # MEMC move parameters
         "ExchangeVolumeDim": "MEMC parameters (all ensembles)                   : "
         "list of 3 floats or integers "
         "[int or float (> 0), int or float (> 0), int or float (> 0)]"
-        " or [X-dimension, Y-dimension, Z-dimension)], "
-        "default = {}. "
+        " or [X-dimension, Y-dimension, Z-dimension)], default = {}. "
         "To use all variation of MEMC and Intra-MEMC Monte Carlo moves, the exchange "
         "subvolume must be defined. The exchange sub-volume is defined as an orthogonal box "
         "with x, y, and z-dimensions, where small molecule/molecules kind will be selected "
         "from to be exchanged with a large molecule kind. "
         "Note: Currently, the X and Y dimension cannot be set independently (X = Y = max(X, Y)). "
-        "Note: A heuristic for setting good values of the x, y, and z-dimensions is to use"
+        "Note: A heuristic for setting good values of the x, y, and z-dimensions is to use "
         "the geometric size of the large molecule plus 1-2 Å in each dimension. "
         "Note: In case of exchanging 1 small molecule kind with 1 large molecule kind in "
         "IntraMEMC-2, IntraMEMC-3, MEMC-2, MEMC-3 Monte Carlo moves, the sub-volume "
@@ -704,8 +756,7 @@ def _get_all_possible_input_variables(description=False):
         "[SmallKindBackBone_atom_1_str_or_NONE, SmallKindBackBone_atom_2_str_or_NONE ]. "
         "NOTE: CURRENTLY ALL THESE INPUTS NEED TO BE SPECIFIED, REGARDLESS OF THE MEMC TYPE "
         "SELECTION. IF THE SmallKindBackBone or LargeKindBackBone IS NOT REQUIRED FOR THE "
-        "MEMC TYPE, "
-        "None CAN BE USED IN PLACE OF A STRING. "
+        "MEMC TYPE, None CAN BE USED IN PLACE OF A STRING. "
         "Note: These strings must match the residue in the psf and psb files or it will fail. "
         "It is recommended that the user print the Charmm object psf and pdb files "
         "and review the residue names that match the atom name before using the in "
@@ -715,7 +766,7 @@ def _get_all_possible_input_variables(description=False):
         "Example 1 (MEMC-1) : [ [1, 'WAT', [None, None], 'wat', [None, None]] , "
         "[1, 'WAT', [None, None], 'wat', [None, None]] . "
         "Example 2 (MEMC-2): [ [1, 'WAT', ['O1', 'H1'], 'wat', ['O1', 'H1' ]] , "
-        " [1, 'WAT', ['H1', 'H2'], 'wat', ['H1', 'H2' ]] . "
+        "[1, 'WAT', ['H1', 'H2'], 'wat', ['H1', 'H2' ]] . "
         "Example 3 (MEMC-3) : [ [2, 'WAT', 'O1', 'H1'], 'wat', [None, None]] , "
         "[2, 'WAT', ['H1', 'H2'], 'wat', [None, None]] .\n"
         "\t\t\t\t\t\t\t\t\t\t\t\t\t --- ExchangeRatio     = MEMC parameters (all ensembles): "
@@ -796,8 +847,6 @@ def _get_default_variables_dict():
     """
 
     default_input_variables_dict = {
-        "Restart": False,
-        "RestartCheckpoint": False,
         "PRNG": "RANDOM",
         "ParaTypeCHARMM": True,
         "ParaTypeMie": False,
@@ -834,6 +883,10 @@ def _get_default_variables_dict():
         # Control file (.conf file ) output controls/parameters
         "OutputName": "Output_data",
         "CoordinatesFreq": [True, 1000000],
+        "DCDFreq": [
+            False,
+            1000000,
+        ],  # set to False until this is in the new official GOMC software release
         "RestartFreq": [True, 1000000],
         "CheckpointFreq": [True, 1000000],
         "ConsoleFreq": [True, 10000],
@@ -848,7 +901,7 @@ def _get_default_variables_dict():
         # Data output for the console and bulk properties calculations
         "OutEnergy": [True, True],
         "OutPressure": [True, True],
-        "OutMolNumber": [True, True],
+        "OutMolNum": [True, True],
         "OutDensity": [True, True],
         "OutVolume": [True, True],
         "OutSurfaceTension": [False, False],
@@ -970,44 +1023,6 @@ def _get_default_variables_dict():
     return default_input_variables_dict
 
 
-def check_valid_ensemble_files(ensemble_type, testing_ensemble_files_list):
-    """
-    Checks if all the required ensemble inputs are provided,
-        and provides a list of the bad variables in the printed output.
-
-    Parameters
-    ----------
-    ensemble_type : str, valid options are 'NVT', 'NPT', 'GEMC_NVT', 'GEMC_NPT', 'GCMC'
-        The ensemble type of the simulation.
-    testing_ensemble_files_list  list
-        A list containing the required ensemble
-        files variables, which will be tested for to see if they are valid.
-
-    Returns
-    ---------
-    bool
-        True is all variables are valid, False otherwise
-    """
-
-    bad_key_inputs_List = []
-
-    req_ensemble_files_set = set(_get_required_data(description=False))
-    testing_ensemble_files_set = set(testing_ensemble_files_List)
-
-    extra = testing_ensemble_files_set - req_ensemble_files_set
-    missing = req_ensemble_files_set - testing_ensemble_files_set
-
-    if len(extra) != 0:
-        bad_key_inputs_List.extend(extra)
-    if len(missing) != 0:
-        bad_key_inputs_List.extend(missing)
-
-    if not bool(missing or extra):
-        return True
-    else:
-        return False
-
-
 def print_required_input(description=False):
     """
     Prints the required ensemble arguments with an optional description based on the ensemble type
@@ -1058,7 +1073,7 @@ def check_valid_ensemble_input_variables(
 ):
     """
     Checks if all the input variables (user optional) inputs are valid for the given
-        ensemble, and provides a list of the bad variables in the printed output.
+    ensemble, and provides a list of the bad variables in the printed output.
 
     Parameters
     ----------
@@ -1175,6 +1190,7 @@ def _get_possible_ensemble_input_variables(ensemble_type):
     output_freq_variables_list = [
         "OutputName",
         "CoordinatesFreq",
+        "DCDFreq",
         "RestartFreq",
         "CheckpointFreq",
         "ConsoleFreq",
@@ -1185,7 +1201,7 @@ def _get_possible_ensemble_input_variables(ensemble_type):
     output_data_variables_list = [
         "OutEnergy",
         "OutPressure",
-        "OutMolNumber",
+        "OutMolNum",
         "OutDensity",
         "OutVolume",
         "OutSurfaceTension",
@@ -1214,8 +1230,6 @@ def _get_possible_ensemble_input_variables(ensemble_type):
     ]
 
     basic_sim_info_variables_list = [
-        "Restart",
-        "RestartCheckpoint",
         "PRNG",
         "ParaTypeCHARMM",
         "ParaTypeMie",
@@ -1279,7 +1293,7 @@ def _get_possible_ensemble_input_variables(ensemble_type):
         )
     else:
         warn(
-            "WARNINR: The ensemble_type selected for the _get_possible_ensemble_input_variables "
+            "WARNING: The ensemble_type selected for the _get_possible_ensemble_input_variables "
             "function is not valid."
         )
         valid_input_variables_list = None
@@ -1315,22 +1329,14 @@ class GOMCControl:
         Sets the total number of simulation steps.
     Temperature : float or int (>0), must be an integer greater than zero.
         Temperature of system in Kelvin (K)
-    input_variables_dict: dict, default = None
-        These input variables are optional and override the default settings.
-        Changing these variables likely required for more advanced systems.
-        The details of the acceptable input variables for the selected
-        ensembles can be found by running this python workbook,
-            print_valid_ensemble_input_variables('GCMC', description = True)
-        which prints the input_variables with their subsection description
-        for the selected 'GCMC' ensemble (other ensembles can be set as well).
-
-        Example : input_variables_dict = {'Restart' : False, 'PRNG' : 123,
-                                          'ParaTypeCHARMM' : True }
-
-    # *******************************************************************
-    # input_variables_dict options (keys and values) - (start)
-    # Note: the input_variables_dict keys are also attributes
-    # *******************************************************************
+    ff_psf_pdb_file_directory : str (optional), default=None (i.e., the current directory).
+        The full or relative directory added to the force field, psf, and pdb
+        file names, created via the Charmm object.
+    check_input_files_exist : bool, (default=True)
+        Check if the force field, psf, and pdb files exist.
+        If the files are checked and do not exist, the writer will throw a ValueError.
+        True, check if the force field, psf, and pdb files exist.
+        False, do not check if the force field, psf, and pdb files exist.
     Restart : boolean, default = False
         Determines whether to restart the simulation from restart file
         (``*_restart.pdb`` and ``*_restart.psf``) or not.
@@ -1338,6 +1344,64 @@ class GOMCControl:
         Determines whether to restart the simulation with the checkpoint
         file (checkpoint.dat) or not. Restarting the simulation with checkpoint.dat
         would result in an identical outcome, as if previous simulation was continued.
+    ExpertMode : boolean, default = False
+        This allows the move ratios to be any value, regardless of the ensemble,
+        provided all the move ratios sum to 1. For example, this mode is utilized
+        to easily equilibrate a GCMC or GEMC ensemble in a pseudo NVT mode by removing
+        the requirement that the volume and swap moves must be non-zero.
+        In other words, when the volume and swap moves are zero, the GCMC and GEMC
+        ensembles will run pseudo NVT simulations in 1 and 2 simulation boxes, respectively.
+        The simulation's output and restart files will keep their original output structure
+        for the selected ensemble, which is advantageous when automating a workflow.
+    Parameters : str, (default=None)
+        Override all other force field directory and filename input with the correct extension (.inp or .par).
+        Note: the default directory is the current directory with the Charmm object file name.
+    Coordinates_box_0 : str, (default=None)
+        Override all other box 0 pdb directory and filename inputs with the correct extension.
+        Note: the default directory is the current directory with the Charmm object file name.
+    Structure_box_0 : str, (default=None)
+        Override all other box 0 psf directory and filename inputs with the correct extension.
+        Note: the default directory is the current directory with the Charmm object file name.
+    Coordinates_box_1 : str, (default=None)
+        Override all other box 1 pdb directory and filename inputs with the correct extension.
+        Note: the default directory is the current directory with the Charmm object file name.
+    Structure_box_1 : str, (default=None)
+        Override all other box 1  psf directory and filename inputs with the correct extension.
+        Note: the default directory is the current directory with the Charmm object file name.
+    binCoordinates_box_0 : str, (default=None)
+        The box 0 binary coordinate file is used only for restarting a GOMC simulation,
+        which provides increased numerical accuracy.
+    extendedSystem_box_0 : str, (default=None)
+        The box 0 vectors and origin file is used only for restarting a GOMC simulation.
+    binVelocities_box_0 : str, (default=None)
+        The box 0 binary velocity file is used only for restarting a GOMC simulation,
+        which provides increased numerical accuracy. These velocities are only passed thru
+        GOMC since Monte Carlo simulations do not utilize any velocity information.
+    binCoordinates_box_1 : str, (default=None)
+        The box 1 binary coordinate file is used only for restarting a GOMC simulation,
+        which provides increased numerical accuracy.
+    extendedSystem_box_1 : str, (default=None)
+        The box 1 vectors and origin file is used only for restarting a GOMC simulation.
+    binVelocities_box_1 : str, (default=None)
+        The box 1 binary velocity file is used only for restarting a GOMC simulation,
+        which provides increased numerical accuracy. These velocities are only passed thru
+        GOMC since Monte Carlo simulations do not utilize any velocity information.
+    input_variables_dict: dict, default = None
+        These input variables are optional and override the default settings.
+        Changing these variables likely required for more advanced systems.
+        The details of the acceptable input variables for the selected
+        ensembles can be found by running the code below in python,
+        >>> print_valid_ensemble_input_variables('GCMC', description = True)
+        which prints the input_variables with their subsection description
+        for the selected 'GCMC' ensemble (other ensembles can be set as well).
+
+        Example : input_variables_dict = {'PRNG' : 123,
+                                          'ParaTypeCHARMM' : True }
+
+    # *******************************************************************
+    # input_variables_dict options (keys and values) - (start)
+    # Note: the input_variables_dict keys are also attributes
+    # *******************************************************************
     PRNG : string or int (>= 0) ("RANDOM" or int), default = "RANDOM"
         PRNG = Pseudo-Random Number Generator (PRNG). There are two (2) options, entering
         the string, "RANDOM", or a integer.
@@ -1539,6 +1603,12 @@ class GOMCControl:
         enables outputting the coordinate files at the integer frequency
         (set steps_per_data_output_int), while "False" disables outputting
         the coordinates.
+    DCDFreq : list [bool , int (> 0)] or [Generate_data_bool , steps_per_data_output_int],
+        default = [True, 1M] or [True , set via formula based on the number of RunSteps or M max]
+        Controls output of DCD file (coordinates). If bool is True, this
+        enables outputting the coordinate files at the integer frequency
+        (set steps_per_data_output_int), while "False" disables outputting
+        the coordinates.
     RestartFreq : list [bool , int (> 0)] or [Generate_data_bool , steps_per_data_output_int],
         default = [True, 1M] or [True , set via formula based on the number of RunSteps or 1M max]
         This creates the PDB and PSF (coordinate and topology) files for
@@ -1611,7 +1681,7 @@ class GOMCControl:
     OutPressure : [bool, bool], default = [True, True]
         The list provides the booleans to [block_averages_bool, console_output_bool].
         This outputs the pressure data into the block averages and console output/log files.
-    OutMolNumber : [bool, bool], default = [True, True]
+    OutMolNum : [bool, bool], default = [True, True]
         The list provides the booleans to [block_averages_bool, console_output_bool].
         This outputs the number of molecules data into the block averages and console
         output/log files.
@@ -1726,7 +1796,7 @@ class GOMCControl:
         rotated or displaced simultaneously, along the calculated torque or force
         respectively (i.e., fraction of multi-particle moves).
     IntraMEMC_1Freq : int or float (0 <= value <= 1), default are specific for each ensemble
-    {'NVT': 0.0, 'NPT': 0.0, 'GEMC_NVT': 0.0, 'GEMC_NPT': 0.0, 'GCMC': 0.0}
+        {'NVT': 0.0, 'NPT': 0.0, 'GEMC_NVT': 0.0, 'GEMC_NPT': 0.0, 'GCMC': 0.0}
         Fractional percentage at which specified number of small molecule kind will be
         exchanged with a specified large molecule kind in defined sub-volume within
         same simulation box.  This move need additional information such as
@@ -1878,43 +1948,78 @@ class GOMCControl:
         This error is typically incurred from an error in the user input values.
         However, it could also be due to a bug, provided the user is inputting
         the data as this Class intends.
-    all_failed_input_List
+    all_failed_input_List : list
+        A list of all the inputs that failed, but there may be some inputs that
+        are not possible to put on this list.
     ensemble_typ : str, ['NVT', 'NPT', 'GEMC_NPT', 'GCMC-NVT', 'GCMC']
         The ensemble type of the simulation.
     RunSteps : int (>0), must be an integer greater than zero.
         Sets the total number of simulation steps.
     Temperature : float or int (>0), must be an integer greater than zero.
         Temperature of system in Kelvin (K)
+    ff_psf_pdb_file_directory : str (optional), default=None (i.e., the current directory).
+        The full or relative directory added to the force field, psf, and pdb
+        file names, created via the Charmm object.
+    check_input_files_exist : bool, (default=True)
+        Check if the force field, psf, and pdb files exist.
+        If the files are checked and do not exist, the writer will throw a ValueError.
+        True, check if the force field, psf, and pdb files exist.
+        False, do not check if the force field, psf, and pdb files exist.
+    Restart : boolean, default = False
+        Determines whether to restart the simulation from restart file
+        (``*_restart.pdb`` and ``*_restart.psf``) or not.
+    RestartCheckpoint : boolean, default = False
+        Determines whether to restart the simulation with the checkpoint
+        file (checkpoint.dat) or not. Restarting the simulation with checkpoint.dat
+        would result in an identical outcome, as if previous simulation was continued.
+    Parameters : str, (default=None)
+        Override all other force field directory and filename input with the correct extension (.inp or .par).
+        Note: the default directory is the current directory with the Charmm object file name.
+    Coordinates_box_0 : str, (default=None)
+        Override all other box 0 pdb directory and filename inputs with the correct extension.
+        Note: the default directory is the current directory with the Charmm object file name.
+    Structure_box_0 : str, (default=None)
+        Override all other box 0 psf directory and filename inputs with the correct extension.
+        Note: the default directory is the current directory with the Charmm object file name.
+    Coordinates_box_1 : str, (default=None)
+        Override all other box 1 pdb directory and filename inputs with the correct extension.
+        Note: the default directory is the current directory with the Charmm object file name.
+    Structure_box_1 : str, (default=None)
+        Override all other box 1  psf directory and filename inputs with the correct extension.
+        Note: the default directory is the current directory with the Charmm object file name.
+    binCoordinates_box_0 : str, (default=None)
+        The box 0 binary coordinate file is used only for restarting a GOMC simulation,
+        which provides increased numerical accuracy.
+    extendedSystem_box_0 : str, (default=None)
+        The box 0 vectors and origin file is used only for restarting a GOMC simulation.
+    binVelocities_box_0 : str, (default=None)
+        The box 0 binary velocity file is used only for restarting a GOMC simulation,
+        which provides increased numerical accuracy. These velocities are only passed thru
+        GOMC since Monte Carlo simulations do not utilize any velocity information.
+    binCoordinates_box_1 : str, (default=None)
+        The box 1 binary coordinate file is used only for restarting a GOMC simulation,
+        which provides increased numerical accuracy.
+    extendedSystem_box_1 : str, (default=None)
+        The box 1 vectors and origin file is used only for restarting a GOMC simulation.
+    binVelocities_box_1 : str, (default=None)
+        The box 1 binary velocity file is used only for restarting a GOMC simulation,
+        which provides increased numerical accuracy. These velocities are only passed thru
+        GOMC since Monte Carlo simulations do not utilize any velocity information.
     input_variables_dict: dict, default = None
         These input variables are optional and override the default settings.
         Changing these variables likely required for more advanced systems.
         The details of the acceptable input variables for the selected
-        ensembles can be found by running this python workbook,
-            print_valid_ensemble_input_variables('GCMC', description = True)
+        ensembles can be found by running the code below in python,
+        >>> print_valid_ensemble_input_variables('GCMC', description = True)
         which prints the input_variables with their subsection description
         for the selected 'GCMC' ensemble (other ensembles can be set as well).
-        Example : input_variables_dict = {'Restart' : False, 'PRNG' : 123,
+        Example : input_variables_dict = {'PRNG' : 123,
                                           'ParaTypeCHARMM' : True }
     conf_filename : str
         The name of the GOMC contol file, which will be created.  The extension
         of the GOMC control file can be .conf, or no extension can be provided.
         If no extension is provided, this writer will automatically add the
         .conf extension to the provided string.
-    Coordinates_box_0 : str
-        The coordinate or PDB file for box 0 in the simulation.
-    Coordinates_box_1 : str or None
-        The coordinate or PDB file for box 1 in the simulation.  This is only for
-        GCMC, GEMC_NVT, and GEMC_NVT simulations. If running a NVT or NPT
-        simulation, the value will be None.
-    Structures_box_0 : str
-        The structure file or PSF file for box 0 in the simulation.
-        The coordinate or PDB file for box 1 in the simulation.  This is only for
-        GCMC, GEMC_NVT, and GEMC_NVT simulations. If running a NVT or NPT
-        simulation, the value will be None.
-    Structures_box_1 : str or None
-    The structure file or PSF file for box 1 in the simulation.  This is only for
-        GCMC, GEMC_NVT, and GEMC_NVT simulations. If running a NVT or NPT
-        simulation, the value will be None.
     box_0_vectors : numpy.ndarray, [[float float float], [float float float], [float float float]]
         Three (3) sets vectors for box 0 each with 3 float values, which represent
         the vectors for the Charmm-style systems (units in Angstroms (Ang))
@@ -1938,7 +2043,6 @@ class GOMCControl:
         Any of the input variables keys is also an Attribute and can be called
         the same way.  Please see the input_variables_dict keys in the
         Parameters section above for all the available attributes.
-
 
     Notes
     -------
@@ -1982,6 +2086,22 @@ class GOMCControl:
         ensemble_type,
         RunSteps,
         Temperature,
+        ff_psf_pdb_file_directory=None,
+        check_input_files_exist=True,
+        Restart=False,
+        RestartCheckpoint=False,
+        ExpertMode=False,
+        Parameters=None,
+        Coordinates_box_0=None,
+        Structure_box_0=None,
+        Coordinates_box_1=None,
+        Structure_box_1=None,
+        binCoordinates_box_0=None,
+        extendedSystem_box_0=None,
+        binVelocities_box_0=None,
+        binCoordinates_box_1=None,
+        extendedSystem_box_1=None,
+        binVelocities_box_1=None,
         input_variables_dict=None,
     ):
 
@@ -1995,14 +2115,16 @@ class GOMCControl:
         if not isinstance(charmm_object, mf_charmm.Charmm):
             self.input_error = True
             print_error_message = (
-                "The variable supplied as a charmm_object ({}}) is not a "
-                "charmm_object ({}})".format(
-                    type(mf_charmm.Charmm), type(mf_charmm.Charmm)
-                )
+                "ERROR: The variable supplied is a ({}), not a charmm_object ({})"
+                "".format(type(charmm_object), type(mf_charmm.Charmm))
             )
             raise TypeError(print_error_message)
 
         # check ensemble is a correct type
+        if ensemble_type in ["GEMC_NVT", "GEMC-NVT"]:
+            ensemble_type = "GEMC_NVT"
+        elif ensemble_type in ["GEMC_NPT", "GEMC-NPT"]:
+            ensemble_type = "GEMC_NPT"
         print("INFO: ensemble_type = " + str(ensemble_type))
         if ensemble_type in ["NPT", "NVT", "GCMC", "GEMC_NVT", "GEMC_NPT"]:
             self.ensemble_type = ensemble_type
@@ -2012,30 +2134,162 @@ class GOMCControl:
         else:
             self.input_error = True
             print_error_message = (
-                "ERROR: The ensemble type selection of {}  is not a valid ensemble option. "
-                "Please choose the 'NPT', 'NVT', 'GEMC_NVT','GEMC_NPT', or 'GCMC' "
+                "ERROR: The ensemble type selection of '{}' is not a valid ensemble option. "
+                "Please choose the 'NPT', 'NVT', 'GEMC_NVT', 'GEMC_NPT', or 'GCMC' "
                 "ensembles".format(ensemble_type)
             )
             raise ValueError(print_error_message)
 
+        # check if check_input_files_exist is a boolean
+        _check_if_bool("check_input_files_exist", check_input_files_exist)
+
+        # set and check valid inputs for the Restart attribute
+        _check_if_bool("Restart", Restart)
+        self.Restart = Restart
+
+        # set and check valid inputs for the RestartCheckpoint attribute
+        _check_if_bool("RestartCheckpoint", RestartCheckpoint)
+        self.RestartCheckpoint = RestartCheckpoint
+
+        # set ExpertMode
+        _check_if_bool("ExpertMode", ExpertMode)
+        self.ExpertMode = ExpertMode
+
+        self.binCoordinates_box_0 = binCoordinates_box_0
+        self.extendedSystem_box_0 = extendedSystem_box_0
+        self.binVelocities_box_0 = binVelocities_box_0
+        self.binCoordinates_box_1 = binCoordinates_box_1
+        self.extendedSystem_box_1 = extendedSystem_box_1
+        self.binVelocities_box_1 = binVelocities_box_1
+
+        # check if the binary restart files are provided correctly
+        if self.Restart and self.ensemble_type in ["NVT", "NPT"]:
+            if (
+                self.binCoordinates_box_0 is not None
+                or self.extendedSystem_box_0 is not None
+            ) and (
+                self.binCoordinates_box_0 is None
+                or self.extendedSystem_box_0 is None
+            ):
+                print_error_message = (
+                    "ERROR: To restart a simulation with the binary files both the coor and "
+                    "xsc files for box 0 must be provided."
+                )
+                raise ValueError(print_error_message)
+
+            elif self.binVelocities_box_0 is not None and (
+                self.binCoordinates_box_0 is None
+                or self.extendedSystem_box_0 is None
+            ):
+                print_error_message = (
+                    'ERROR: To restart a "NVT", "NPT" simulation with the '
+                    "velocity binary files, the velocity files for box 0 "
+                    "must be provided."
+                )
+                raise ValueError(print_error_message)
+
+        if self.Restart is True and self.ensemble_type in [
+            "GEMC_NPT",
+            "GEMC_NVT",
+            "GCMC",
+        ]:
+            if (
+                self.binCoordinates_box_0 is not None
+                or self.extendedSystem_box_0 is not None
+                or self.binCoordinates_box_1 is not None
+                or self.extendedSystem_box_1 is not None
+            ) and (
+                self.binCoordinates_box_0 is None
+                or self.extendedSystem_box_0 is None
+                or self.binCoordinates_box_1 is None
+                or self.extendedSystem_box_1 is None
+            ):
+                print_error_message = (
+                    "ERROR: To restart a simulation with the binary files both the coor and "
+                    "xsc files for box 0 and box 1 must be provided."
+                )
+                raise ValueError(print_error_message)
+
+            elif (
+                self.binVelocities_box_0 is not None
+                or self.binVelocities_box_1 is not None
+            ) and (
+                self.binVelocities_box_0 is None
+                or self.binVelocities_box_1 is None
+            ):
+                print_error_message = (
+                    'ERROR: To restart a "GEMC_NPT", "GEMC_NVT", "GCMC" simulation with the '
+                    "velocity binary files, both the velocity files for box 0 and box 1 "
+                    "must be provided."
+                )
+                raise ValueError(print_error_message)
+
+            elif (
+                self.binVelocities_box_0 is not None
+                or self.binVelocities_box_1 is not None
+            ) and (
+                self.binCoordinates_box_0 is None
+                or self.extendedSystem_box_0 is None
+                or self.binCoordinates_box_1 is None
+                or self.extendedSystem_box_1 is None
+            ):
+                print_error_message = (
+                    'ERROR: To restart a "GEMC_NPT", "GEMC_NVT", "GCMC" simulation with the '
+                    "velocity binary files, both the coor and xsc files files for box 0 "
+                    "and box 1 must be provided."
+                )
+                raise ValueError(print_error_message)
+
         self.RunSteps = RunSteps
         self.Temperature = Temperature
+        self.ff_psf_pdb_file_directory = ff_psf_pdb_file_directory
+        if (
+            not isinstance(self.ff_psf_pdb_file_directory, str)
+            and self.ff_psf_pdb_file_directory is not None
+        ):
+            _check_if_string_and_extension(
+                "ff_psf_pdb_file_directory",
+                self.ff_psf_pdb_file_directory,
+                "force field, pdb, and psf",
+                expected_file_extension=None,
+            )
+
         if (
             charmm_object.ff_filename is not None
             and isinstance(charmm_object.ff_filename, str) is True
         ):
-            self.ff_filename = charmm_object.ff_filename
+            if Parameters is not None:
+                _check_if_string_and_extension(
+                    "Parameters",
+                    Parameters,
+                    "force field",
+                    expected_file_extension=[".inp", ".par"],
+                )
+                self.ff_filename = Parameters
+            elif self.ff_psf_pdb_file_directory is None:
+                self.ff_filename = charmm_object.ff_filename
+            else:
+                self.ff_filename = "{}/{}".format(
+                    self.ff_psf_pdb_file_directory,
+                    charmm_object.ff_filename,
+                )
+            # check if the FF file exist:
+            _check_if_input_files_exist(
+                self.ff_filename,
+                "force field file or parameter file",
+                check_input_files_exist=check_input_files_exist,
+            )
         elif (
             charmm_object.ff_filename is None
             or isinstance(charmm_object.ff_filename, str) is False
         ):
             self.input_error = True
             print_error_message = (
-                "The force field file name was not specified and in the Charmm object ({}})."
+                "The force field file name was not specified and in the Charmm object ({})."
                 "Therefore, the force field file (.inp) can not be written, and thus, the "
                 "GOMC control file (.conf) can not be created. Please use the force field file "
-                "name when building the Charmm object ({}})".format(
-                    type(mf_charmm.Charmm), type(mf_charmm.Charmm)
+                "name when building the Charmm object".format(
+                    type(mf_charmm.Charmm)
                 )
             )
             raise ValueError(print_error_message)
@@ -2044,17 +2298,187 @@ class GOMCControl:
             charmm_object.filename_box_0 is not None
             and isinstance(charmm_object.filename_box_0, str) is True
         ):
-            self.Coordinates_box_0 = str(charmm_object.filename_box_0) + ".pdb"
-            self.Structures_box_0 = str(charmm_object.filename_box_0) + ".psf"
+            if Coordinates_box_0 is not None:
+                _check_if_string_and_extension(
+                    "Coordinates_box_0",
+                    Coordinates_box_0,
+                    "pdb",
+                    expected_file_extension=[".pdb"],
+                )
+                self.Coordinates_box_0 = Coordinates_box_0
+            elif self.ff_psf_pdb_file_directory is None:
+                self.Coordinates_box_0 = "{}.pdb".format(
+                    charmm_object.filename_box_0
+                )
+            else:
+                self.Coordinates_box_0 = "{}/{}.pdb".format(
+                    self.ff_psf_pdb_file_directory, charmm_object.filename_box_0
+                )
+
+            if Structure_box_0 is not None:
+                _check_if_string_and_extension(
+                    "Structure_box_0",
+                    Structure_box_0,
+                    "psf",
+                    expected_file_extension=[".psf"],
+                )
+                self.Structure_box_0 = Structure_box_0
+            elif self.ff_psf_pdb_file_directory is None:
+                self.Structure_box_0 = "{}.psf".format(
+                    charmm_object.filename_box_0
+                )
+            else:
+                self.Structure_box_0 = "{}/{}.psf".format(
+                    self.ff_psf_pdb_file_directory, charmm_object.filename_box_0
+                )
+
+            _check_if_input_files_exist(
+                self.Coordinates_box_0,
+                "box 0 pdb file",
+                check_input_files_exist=check_input_files_exist,
+            )
+            _check_if_input_files_exist(
+                self.Structure_box_0,
+                "box 0 psf file",
+                check_input_files_exist=check_input_files_exist,
+            )
+
+            # Box 0 restarting files with increased accuracy (coor, xsc) and a velocity passing input
+            if (
+                self.binCoordinates_box_0 is not None
+                and self.extendedSystem_box_0 is not None
+            ):
+                _check_if_string_and_extension(
+                    "binCoordinates_box_0",
+                    self.binCoordinates_box_0,
+                    "coor",
+                    expected_file_extension=[".coor"],
+                )
+                _check_if_string_and_extension(
+                    "extendedSystem_box_0",
+                    self.extendedSystem_box_0,
+                    "xsc",
+                    expected_file_extension=[".xsc"],
+                )
+                _check_if_input_files_exist(
+                    self.binCoordinates_box_0,
+                    "box 0 coor file",
+                    check_input_files_exist=check_input_files_exist,
+                )
+                _check_if_input_files_exist(
+                    self.extendedSystem_box_0,
+                    "box 0 xsc file",
+                    check_input_files_exist=check_input_files_exist,
+                )
+
+            if self.binVelocities_box_0 is not None:
+                _check_if_string_and_extension(
+                    "binVelocities_box_0",
+                    self.binVelocities_box_0,
+                    "velocity",
+                    expected_file_extension=[".vel"],
+                )
+                _check_if_input_files_exist(
+                    self.binVelocities_box_0,
+                    "box 0 velocity file",
+                    check_input_files_exist=check_input_files_exist,
+                )
+
         if (
             charmm_object.filename_box_1 is not None
             and isinstance(charmm_object.filename_box_1, str) is True
         ):
-            self.Coordinates_box_1 = str(charmm_object.filename_box_1) + ".pdb"
-            self.Structures_box_1 = str(charmm_object.filename_box_1) + ".psf"
+            if Coordinates_box_1 is not None:
+                _check_if_string_and_extension(
+                    "Coordinates_box_1",
+                    Coordinates_box_1,
+                    "pdb",
+                    expected_file_extension=[".pdb"],
+                )
+                self.Coordinates_box_1 = Coordinates_box_1
+
+            elif self.ff_psf_pdb_file_directory is None:
+                self.Coordinates_box_1 = "{}.pdb".format(
+                    charmm_object.filename_box_1
+                )
+
+            else:
+                self.Coordinates_box_1 = "{}/{}.pdb".format(
+                    self.ff_psf_pdb_file_directory, charmm_object.filename_box_1
+                )
+
+            if Structure_box_1 is not None:
+                _check_if_string_and_extension(
+                    "Structure_box_1",
+                    Structure_box_1,
+                    "psf",
+                    expected_file_extension=[".psf"],
+                )
+                self.Structure_box_1 = Structure_box_1
+            elif self.ff_psf_pdb_file_directory is None:
+                self.Structure_box_1 = "{}.psf".format(
+                    charmm_object.filename_box_1
+                )
+            else:
+                self.Structure_box_1 = "{}/{}.psf".format(
+                    self.ff_psf_pdb_file_directory, charmm_object.filename_box_1
+                )
+
+            _check_if_input_files_exist(
+                self.Coordinates_box_1,
+                "box 1 pdb file",
+                check_input_files_exist=check_input_files_exist,
+            )
+            _check_if_input_files_exist(
+                self.Structure_box_1,
+                "box 1 psf file",
+                check_input_files_exist=check_input_files_exist,
+            )
+
+            # Box 1 restarting files with increased accuracy (coor, xsc) and a velocity passing input
+            if (
+                self.binCoordinates_box_1 is not None
+                and self.extendedSystem_box_1 is not None
+            ):
+                _check_if_string_and_extension(
+                    "binCoordinates_box_1",
+                    self.binCoordinates_box_1,
+                    "coor",
+                    expected_file_extension=[".coor"],
+                )
+                _check_if_string_and_extension(
+                    "extendedSystem_box_1",
+                    self.extendedSystem_box_1,
+                    "xsc",
+                    expected_file_extension=[".xsc"],
+                )
+                _check_if_input_files_exist(
+                    self.binCoordinates_box_1,
+                    "box 1 coor file",
+                    check_input_files_exist=check_input_files_exist,
+                )
+                _check_if_input_files_exist(
+                    self.extendedSystem_box_1,
+                    "box 1 xsc file",
+                    check_input_files_exist=check_input_files_exist,
+                )
+
+            if self.binVelocities_box_1 is not None:
+                _check_if_string_and_extension(
+                    "binVelocities_box_1",
+                    self.binVelocities_box_1,
+                    "velocity",
+                    expected_file_extension=[".vel"],
+                )
+                _check_if_input_files_exist(
+                    self.binVelocities_box_1,
+                    "box 0 velocity file",
+                    check_input_files_exist=check_input_files_exist,
+                )
+
         else:
             self.Coordinates_box_1 = None
-            self.Structures_box_1 = None
+            self.Structure_box_1 = None
 
         self.coul_1_4 = charmm_object.coul_1_4
         self.input_variables_dict = input_variables_dict
@@ -2111,7 +2535,7 @@ class GOMCControl:
         if (
             self.ensemble_type in ["NVT", "NPT"]
             and self.Coordinates_box_1 is not None
-            and self.Structures_box_1 is not None
+            and self.Structure_box_1 is not None
         ):
             self.input_error = True
             print_error_message = (
@@ -2125,7 +2549,7 @@ class GOMCControl:
         if (
             self.ensemble_type in ["GEMC_NVT", "GEMC_NPT", "GCMC"]
             and self.Coordinates_box_1 is None
-            and self.Structures_box_1 is None
+            and self.Structure_box_1 is None
         ):
             self.input_error = True
             print_error_message = (
@@ -2145,10 +2569,6 @@ class GOMCControl:
         # set all the other variable initally to None (they are corrected to their set or default values later)
         default_input_variables_dict = _get_default_variables_dict()
 
-        self.Restart = default_input_variables_dict["Restart"]
-        self.RestartCheckpoint = default_input_variables_dict[
-            "RestartCheckpoint"
-        ]
         self.PRNG = default_input_variables_dict["PRNG"]
         self.ParaTypeCHARMM = default_input_variables_dict["ParaTypeCHARMM"]
         self.ParaTypeMie = default_input_variables_dict["ParaTypeMie"]
@@ -2189,7 +2609,7 @@ class GOMCControl:
         self.RunLetter = default_input_variables_dict["RunLetter"]
         self.OutEnergy = default_input_variables_dict["OutEnergy"]
         self.OutPressure = default_input_variables_dict["OutPressure"]
-        self.OutMolNumber = default_input_variables_dict["OutMolNumber"]
+        self.OutMolNum = default_input_variables_dict["OutMolNum"]
         self.OutDensity = default_input_variables_dict["OutDensity"]
         self.OutVolume = default_input_variables_dict["OutVolume"]
         self.OutSurfaceTension = default_input_variables_dict[
@@ -2265,52 +2685,73 @@ class GOMCControl:
         self.MEMC_DataInput = default_input_variables_dict["MEMC_DataInput"]
 
         # auto calculate the best EqSteps (number of Equilbrium Steps) and Adj_Steps (number of AdjSteps Steps)
-        self.EqSteps = scale_gen_freq_for_run_steps_int(
-            default_input_variables_dict["EqSteps"], self.RunSteps
+        self.EqSteps = _scale_gen_freq_for_run_steps_int(
+            "EqSteps", default_input_variables_dict["EqSteps"], self.RunSteps
         )
 
-        self.AdjSteps = scale_gen_freq_for_run_steps_int(
-            default_input_variables_dict["AdjSteps"], self.RunSteps
+        self.AdjSteps = _scale_gen_freq_for_run_steps_int(
+            "AdjSteps", default_input_variables_dict["AdjSteps"], self.RunSteps
         )
 
         # auto calculate the best RestartFreq  for the number of self.RunSteps
-        self.RestartFreq = scale_gen_freq_for_run_steps_list_bool_int(
-            default_input_variables_dict["RestartFreq"], self.RunSteps
+        self.RestartFreq = _scale_gen_freq_for_run_steps_list_bool_int(
+            "RestartFreq",
+            default_input_variables_dict["RestartFreq"],
+            self.RunSteps,
         )
 
         # auto calculate the best CheckpointFreq  for the number of self.RunSteps
-        self.CheckpointFreq = scale_gen_freq_for_run_steps_list_bool_int(
-            default_input_variables_dict["CheckpointFreq"], self.RunSteps
+        self.CheckpointFreq = _scale_gen_freq_for_run_steps_list_bool_int(
+            "CheckpointFreq",
+            default_input_variables_dict["CheckpointFreq"],
+            self.RunSteps,
         )
 
         # auto calculate the best CoordinatesFreq  for the number of self.RunSteps
-        self.CoordinatesFreq = scale_gen_freq_for_run_steps_list_bool_int(
-            default_input_variables_dict["CoordinatesFreq"], self.RunSteps
+        self.CoordinatesFreq = _scale_gen_freq_for_run_steps_list_bool_int(
+            "CoordinatesFreq",
+            default_input_variables_dict["CoordinatesFreq"],
+            self.RunSteps,
+        )
+
+        # auto calculate the best DCDFreq for the number of self.RunSteps
+        self.DCDFreq = _scale_gen_freq_for_run_steps_list_bool_int(
+            "DCDFreq", default_input_variables_dict["DCDFreq"], self.RunSteps
         )
 
         # auto calculate the best ConsoleFreq  for the number of self.RunSteps
-        self.ConsoleFreq = scale_gen_freq_for_run_steps_list_bool_int(
-            default_input_variables_dict["ConsoleFreq"], self.RunSteps
+        self.ConsoleFreq = _scale_gen_freq_for_run_steps_list_bool_int(
+            "ConsoleFreq",
+            default_input_variables_dict["ConsoleFreq"],
+            self.RunSteps,
         )
 
         # auto calculate the best PressureCalc  for the number of self.RunSteps
-        self.PressureCalc = scale_gen_freq_for_run_steps_list_bool_int(
-            default_input_variables_dict["PressureCalc"], self.RunSteps
+        self.PressureCalc = _scale_gen_freq_for_run_steps_list_bool_int(
+            "PressureCalc",
+            default_input_variables_dict["PressureCalc"],
+            self.RunSteps,
         )
 
         # auto calculate the best BlockAverageFreq  for the number of self.RunSteps
-        self.BlockAverageFreq = scale_gen_freq_for_run_steps_list_bool_int(
-            default_input_variables_dict["BlockAverageFreq"], self.RunSteps
+        self.BlockAverageFreq = _scale_gen_freq_for_run_steps_list_bool_int(
+            "BlockAverageFreq",
+            default_input_variables_dict["BlockAverageFreq"],
+            self.RunSteps,
         )
 
         # auto calculate the best HistogramFreq  for the number of self.RunSteps
-        self.HistogramFreq = scale_gen_freq_for_run_steps_list_bool_int(
-            default_input_variables_dict["HistogramFreq"], self.RunSteps
+        self.HistogramFreq = _scale_gen_freq_for_run_steps_list_bool_int(
+            "HistogramFreq",
+            default_input_variables_dict["HistogramFreq"],
+            self.RunSteps,
         )
 
         # auto calculate the best SampleFreq  for the number of self.RunSteps
-        self.SampleFreq = scale_gen_freq_for_run_steps_int(
-            default_input_variables_dict["SampleFreq"], self.RunSteps
+        self.SampleFreq = _scale_gen_freq_for_run_steps_int(
+            "SampleFreq",
+            default_input_variables_dict["SampleFreq"],
+            self.RunSteps,
         )
 
         if input_variables_dict is None:
@@ -2319,7 +2760,7 @@ class GOMCControl:
             self.input_variables_dict = input_variables_dict
         else:
             self.input_error = True
-            print_error_message = "ERROR: The input_variables_dict variable is not None or a dictionary. "
+            print_error_message = "ERROR: The input_variables_dict variable is not None or a dictionary."
             raise ValueError(print_error_message)
 
         # Create all lower case spelled keywords, and return case specific keywords
@@ -2391,26 +2832,26 @@ class GOMCControl:
         required_data_list = [
             self.ff_filename,
             self.Coordinates_box_0,
-            self.Structures_box_0,
+            self.Structure_box_0,
         ]
 
         if self.Coordinates_box_1 is not None:
             required_data_list.append(self.Coordinates_box_1)
-        if self.Structures_box_1 is not None:
-            required_data_list.append(self.Structures_box_1)
+        if self.Structure_box_1 is not None:
+            required_data_list.append(self.Structure_box_1)
 
         if self.ensemble_type in ["NVT", "NPT"]:
             if (
                 len(required_data_list) != 3
-                or os.path.splitext(self.ff_filename)[1] != ".inp"
+                or os.path.splitext(self.ff_filename)[1] not in [".inp", ".par"]
                 or os.path.splitext(self.Coordinates_box_0)[1] != ".pdb"
-                or os.path.splitext(self.Structures_box_0)[1] != ".psf"
+                or os.path.splitext(self.Structure_box_0)[1] != ".psf"
             ):
                 self.input_error = True
                 print_error_message = (
                     "ERROR: The proper force field, PDB, and psf files were not provided, "
                     "or at least their extentions are not correct "
-                    "(i.e., not .inp, .pdb, or .psf). Or box 1 PSF and PDB files were "
+                    "(i.e., not .inp, .par, .pdb, or .psf). Or box 1 PSF and PDB files were "
                     "provided for the NVT or NPT simulations, which is not allowed"
                 )
                 raise ValueError(print_error_message)
@@ -2424,25 +2865,20 @@ class GOMCControl:
         if self.ensemble_type in ["GEMC_NVT", "GEMC_NPT", "GCMC"]:
             if (
                 len(required_data_list) != 5
-                or os.path.splitext(self.ff_filename)[1] != ".inp"
+                or os.path.splitext(self.ff_filename)[1] not in [".inp", ".par"]
                 or os.path.splitext(self.Coordinates_box_0)[1] != ".pdb"
-                or os.path.splitext(self.Structures_box_0)[1] != ".psf"
+                or os.path.splitext(self.Structure_box_0)[1] != ".psf"
                 or os.path.splitext(self.Coordinates_box_1)[1] != ".pdb"
-                or os.path.splitext(self.Structures_box_1)[1] != ".psf"
+                or os.path.splitext(self.Structure_box_1)[1] != ".psf"
             ):
-                warn(
-                    "ERROR: The proper force field, PDB, and psf files were not provided, "
-                    "or at least their extentions are not correct "
-                    "(i.e., not .inp, .pdb, or .psf). Or box 1 PSF and PDB files were not provided "
-                    "for the GEMC_NVT, GEMC_NPT or GCMC simulations, which is not allowed"
-                )
-                self.input_error = True
                 print_error_message = (
                     "ERROR: The proper force field, PDB, and psf files were not provided, "
                     "or at least their extentions are not correct "
-                    "(i.e., not .inp, .pdb, or .psf). Or box 1 PSF and PDB files were not provided "
+                    "(i.e., not .inp, .par, .pdb, or .psf). Or box 1 PSF and PDB files were not provided "
                     "for the GEMC_NVT, GEMC_NPT or GCMC simulations, which is not allowed"
                 )
+                self.input_error = True
+                print_error_message = print_error_message
                 raise ValueError(print_error_message)
         else:
             print(
@@ -2477,7 +2913,12 @@ class GOMCControl:
             raise ValueError(print_error_message)
 
         # verify all input variable values are valid, for their keys
-        input_var_keys_list = dict_keys_to_list(self.input_variables_dict)
+        input_var_all_keys_list = dict_keys_to_list(self.input_variables_dict)
+        # sort to only values that are not None
+        input_var_keys_list = []
+        for all_keys_i in input_var_all_keys_list:
+            if self.input_variables_dict[all_keys_i] is not None:
+                input_var_keys_list.append(all_keys_i)
 
         possible_ensemble_variables_list = (
             _get_possible_ensemble_input_variables(self.ensemble_type)
@@ -2556,34 +2997,6 @@ class GOMCControl:
 
         # check for bad input variables and list the bad ones
         for var_iter in range(0, len(input_var_keys_list)):
-            key = "Restart"
-            if input_var_keys_list[var_iter] == key:
-                self.ck_input_variable_true_or_false(
-                    self.input_variables_dict,
-                    key,
-                    bad_input_variables_values_list,
-                )
-
-                if (
-                    input_var_keys_list[var_iter] == key
-                    and key in possible_ensemble_variables_list
-                ):
-                    self.Restart = self.input_variables_dict[key]
-
-            key = "RestartCheckpoint"
-            if input_var_keys_list[var_iter] == key:
-                self.ck_input_variable_true_or_false(
-                    self.input_variables_dict,
-                    key,
-                    bad_input_variables_values_list,
-                )
-
-                if (
-                    input_var_keys_list[var_iter] == key
-                    and key in possible_ensemble_variables_list
-                ):
-                    self.RestartCheckpoint = self.input_variables_dict[key]
-
             key = "PRNG"
             if input_var_keys_list[var_iter] == key:
                 if (
@@ -3073,6 +3486,20 @@ class GOMCControl:
                 ):
                     self.CoordinatesFreq = self.input_variables_dict[key]
 
+            key = "DCDFreq"
+            if input_var_keys_list[var_iter] == key:
+                self.ck_input_variable_list_bool_int_greater_zero(
+                    self.input_variables_dict,
+                    key,
+                    bad_input_variables_values_list,
+                )
+
+                if (
+                    input_var_keys_list[var_iter] == key
+                    and key in possible_ensemble_variables_list
+                ):
+                    self.DCDFreq = self.input_variables_dict[key]
+
             key = "RestartFreq"
             if input_var_keys_list[var_iter] == key:
                 self.ck_input_variable_list_bool_int_greater_zero(
@@ -3247,7 +3674,7 @@ class GOMCControl:
                 ):
                     self.OutPressure = self.input_variables_dict[key]
 
-            key = "OutMolNumber"
+            key = "OutMolNum"
             if input_var_keys_list[var_iter] == key:
                 self.ck_input_variable_list_bool_bool(
                     self.input_variables_dict,
@@ -3258,7 +3685,7 @@ class GOMCControl:
                     input_var_keys_list[var_iter] == key
                     and key in possible_ensemble_variables_list
                 ):
-                    self.OutMolNumber = self.input_variables_dict[key]
+                    self.OutMolNum = self.input_variables_dict[key]
 
             key = "OutDensity"
             if input_var_keys_list[var_iter] == key:
@@ -4101,7 +4528,7 @@ class GOMCControl:
 
         # check to see if the moves sum up to 1
         if ensemble_type in ["NVT", "GCMC"]:
-            if self.VolFreq != 0:
+            if self.VolFreq != 0 and self.ExpertMode is False:
                 self.input_error = True
                 print_error_message = (
                     "ERROR: The input variable VolFreq is non-zero (0). "
@@ -4183,6 +4610,7 @@ class GOMCControl:
             raise ValueError(print_error_message)
 
         # Check that RunSteps >= EqSteps >= AdjSteps
+        print("self.RunSteps = " + str(self.RunSteps))
         if (
             self.RunSteps < self.EqSteps
             or self.RunSteps < self.AdjSteps
@@ -4383,7 +4811,6 @@ class GOMCControl:
         Returns
         ---------
         Writes the GOMC control file with the name provided via conf_filename
-
             If completed without errors: str, "PASSED
             If completed with errors :  None
         """
@@ -4468,6 +4895,10 @@ class GOMCControl:
             "{:25s} {}\n".format("RestartCheckpoint", self.RestartCheckpoint)
         )
         data_control_file.write("\n")
+        data_control_file.write(
+            "{:25s} {}\n".format("ExpertMode", self.ExpertMode)
+        )
+        data_control_file.write("\n")
         data_control_file.write("####################################\n")
         data_control_file.write("# kind {RESTART, RANDOM, INTSEED}\n")
         data_control_file.write("####################################\n")
@@ -4506,12 +4937,66 @@ class GOMCControl:
         data_control_file.write("####################################\n")
         if self.ensemble_type in ["NVT", "NPT", "GEMC_NPT", "GEMC_NVT", "GCMC"]:
             data_control_file.write(
-                "{:25s} {}\n".format("Structure 0", self.Structures_box_0)
+                "{:25s} {}\n".format("Structure 0", self.Structure_box_0)
             )
         if self.ensemble_type in ["GEMC_NPT", "GEMC_NVT", "GCMC"]:
             data_control_file.write(
-                "{:25s} {}\n".format("Structure 1", self.Structures_box_1)
+                "{:25s} {}\n".format("Structure 1", self.Structure_box_1)
             )
+
+        if (
+            self.Restart is True
+            and self.binCoordinates_box_0 is not None
+            and self.extendedSystem_box_0 is not None
+            and self.ensemble_type
+            in ["NVT", "NPT", "GEMC_NPT", "GEMC_NVT", "GCMC"]
+        ):
+            data_control_file.write(" \n")
+            data_control_file.write("####################################\n")
+            data_control_file.write(
+                "# INPUT FILES FOR RESTARTING (COORDINATE, XSC, VELOCITY FILES)\n"
+            )
+            data_control_file.write("####################################\n")
+            data_control_file.write(
+                "{:25s} {}\n".format(
+                    "binCoordinates   0", self.binCoordinates_box_0
+                )
+            )
+            data_control_file.write(
+                "{:25s} {}\n".format(
+                    "extendedSystem 	0", self.extendedSystem_box_0
+                )
+            )
+            if self.binVelocities_box_0 is not None:
+                data_control_file.write(
+                    "{:25s} {}\n".format(
+                        "binVelocities   	0", self.binVelocities_box_0
+                    )
+                )
+            data_control_file.write(" \n")
+
+            if (
+                self.binCoordinates_box_1 is not None
+                and self.extendedSystem_box_1 is not None
+                and self.ensemble_type in ["GEMC_NPT", "GEMC_NVT", "GCMC"]
+            ):
+                data_control_file.write(
+                    "{:25s} {}\n".format(
+                        "binCoordinates   1", self.binCoordinates_box_1
+                    )
+                )
+                data_control_file.write(
+                    "{:25s} {}\n".format(
+                        "extendedSystem 	1", self.extendedSystem_box_1
+                    )
+                )
+                if self.binVelocities_box_1 is not None:
+                    data_control_file.write(
+                        "{:25s} {}\n".format(
+                            "binVelocities   	1", self.binVelocities_box_1
+                        )
+                    )
+
         data_control_file.write(" \n")
         data_control_file.write(
             "############################################################################\n"
@@ -4963,6 +5448,15 @@ class GOMCControl:
                 self.CoordinatesFreq[1],
             )
         )
+        # set this only true if use dcd is true, until the DCDFreq is in a official release of GOMC
+        if self.DCDFreq[0] is True:
+            data_control_file.write(
+                "{:25s} {:10s} {}\n".format(
+                    "DCDFreq",
+                    str(self.DCDFreq[0]),
+                    self.DCDFreq[1],
+                )
+            )
         data_control_file.write(
             "{:25s} {:10s} {}\n".format(
                 "ConsoleFreq", str(self.ConsoleFreq[0]), self.ConsoleFreq[1]
@@ -4998,7 +5492,6 @@ class GOMCControl:
         data_control_file.write(
             "{:25s} {}\n".format("SampleFreq", self.SampleFreq)
         )
-        # print("{:10s}:    {}".format(arg, description))
         data_control_file.write(" \n")
 
         data_control_file.write("####################################\n")
@@ -5020,9 +5513,9 @@ class GOMCControl:
         )
         data_control_file.write(
             "{:25s} {:10s} {:10s}\n".format(
-                "OutMolNumber",
-                str(self.OutMolNumber[0]),
-                str(self.OutMolNumber[1]),
+                "OutMolNum",
+                str(self.OutMolNum[0]),
+                str(self.OutMolNum[1]),
             )
         )
         data_control_file.write(
@@ -5816,7 +6309,9 @@ class GOMCControl:
             bad_input_variables_values_list.append(key)
 
 
-def scale_gen_freq_for_run_steps_list_bool_int(charmm_variable, run_steps):
+def _scale_gen_freq_for_run_steps_list_bool_int(
+    variable_name, charmm_variable, run_steps
+):
     """
     Scales the frequency of the output to a a more realistic value,
     if the output frequency does not make sense based on the
@@ -5824,6 +6319,8 @@ def scale_gen_freq_for_run_steps_list_bool_int(charmm_variable, run_steps):
 
     Parameters
     ----------
+    variable_name, str
+        The variable name as a sting, which is used for printing error outputs.
     charmm_variable : GOMCControl object variable list, [bool, int]
         This only for the frequency output variables of the GOMCControl object
     run_steps : int (>0), must be an integer greater than zero.
@@ -5836,6 +6333,34 @@ def scale_gen_freq_for_run_steps_list_bool_int(charmm_variable, run_steps):
         A rescaled and appropriate value for the frequency output variables of the
         GOMCControl object, based on the RunSteps in the simulation.
     """
+    if not isinstance(charmm_variable, list):
+        print_error_message = "ERROR: The {} variable is not a list.".format(
+            variable_name
+        )
+        raise ValueError(print_error_message)
+
+        if len(charmm_variable) != 2:
+            print_error_message = (
+                "ERROR: The {} variable list length is not 2.".format(
+                    variable_name
+                )
+            )
+            raise ValueError(print_error_message)
+
+        else:
+            if not isinstance(charmm_variable[0], bool):
+                print_error_message = (
+                    "ERROR: The {} variable is not a boolean.".format(
+                        variable_name
+                    )
+                )
+                raise ValueError(print_error_message)
+
+            if not isinstance(charmm_variable[1], int):
+                print_error_message = (
+                    "ERROR: The {} variable is not a int.".format(variable_name)
+                )
+                raise ValueError(print_error_message)
 
     set_max_steps_charmm_variable = charmm_variable[1]
 
@@ -5849,7 +6374,9 @@ def scale_gen_freq_for_run_steps_list_bool_int(charmm_variable, run_steps):
     return charmm_variable
 
 
-def scale_gen_freq_for_run_steps_int(charmm_variable, run_steps):
+def _scale_gen_freq_for_run_steps_int(
+    variable_name, charmm_variable, run_steps
+):
     """
     Scales the frequency of the output to a a more realistic value,
     if the output frequency does not make sense based on the
@@ -5857,6 +6384,8 @@ def scale_gen_freq_for_run_steps_int(charmm_variable, run_steps):
 
     Parameters
     ----------
+    variable_name, str
+        The variable name as a sting, which is used for printing error outputs.
     charmm_variable : GOMCControl object variable, int
         This only for the frequency output variables of the GOMCControl object
     run_steps : int (>0), must be an integer greater than zero.
@@ -5869,6 +6398,11 @@ def scale_gen_freq_for_run_steps_int(charmm_variable, run_steps):
         A rescaled and appropriate value for the frequency output variables of the
         GOMCControl object, based on the RunSteps in the simulation.
     """
+    if not isinstance(charmm_variable, int):
+        print_error_message = (
+            "ERROR: The {} variable is not an interger.".format(variable_name)
+        )
+        raise ValueError(print_error_message)
 
     set_max_steps_charmm_variable = charmm_variable
 
@@ -5961,6 +6495,132 @@ def _check_box_vectors_char_limit(vectors, char_limit):
     return True
 
 
+def _check_if_input_files_exist(
+    file_directory_and_name,
+    type_of_file,
+    check_input_files_exist=True,
+):
+    """
+    Checks to see GOMC FF, pdb, and psf files exist
+
+    Parameters
+    ----------
+    file_directory_and_name : str
+        The file directory and name of the file.
+    type_of_file : str
+        A brief description of the file which is evaluated.
+    check_input_files_exist: bool (default=True)
+        Check if the force field, psf, and pdb files exist.
+        If the files are checked and do not exist, the writer will throw a ValueError.
+        True, check if the force field, psf, and pdb files exist.
+        False, do not check if the force field, psf, and pdb files exist.
+
+    Returns
+    -------
+    If the file exists : None
+    If the file does not exist : raise ValueError
+    """
+    if (
+        os.path.isfile(file_directory_and_name) is False
+        and check_input_files_exist is True
+    ):
+
+        print_error_message = (
+            "The {} with the file directory and name {}, "
+            "does not exist.".format(type_of_file, file_directory_and_name)
+        )
+        raise ValueError(print_error_message)
+
+
+def _check_if_string_and_extension(
+    file_directory_and_name,
+    file_directory_and_name_variable,
+    type_of_file,
+    expected_file_extension=None,
+):
+    """
+    Checks to see GOMC FF, pdb, and psf files exist
+
+    Parameters
+    ----------
+    file_directory_and_name : str
+        The file directory and name of the file.
+    file_directory_and_name_variable : variable
+        The variable for the file directory and name of the file.
+    type_of_file : str
+        A brief description of the file which is evaluated (force file, psf, pdb).
+    expected_file_extension : list of strings (optional), [str, ..., str], default=None
+        The expected file extensions that are checked against the actual file extension.
+
+    Returns
+    -------
+    If the variable is a string : None
+    If the variable is not a string : raise TypeError
+    If the variable is a string and has the correct extension : None
+    If the variable is a string and has the wrong extension  : raise TypeError
+    """
+    if (
+        not isinstance(file_directory_and_name_variable, str)
+        and file_directory_and_name_variable is not None
+    ):
+        print(
+            "file_directory_and_name_variable ="
+            + str(file_directory_and_name_variable)
+        )
+        print_error_message = (
+            r"ERROR: The {} variable for directly entering the "
+            r"{} file directory and name is a {} and not a string.".format(
+                file_directory_and_name,
+                type_of_file,
+                type(file_directory_and_name_variable),
+            )
+        )
+        raise TypeError(print_error_message)
+
+    if expected_file_extension is not None:
+        acutal_file_extension = os.path.splitext(
+            file_directory_and_name_variable
+        )[-1]
+        if acutal_file_extension not in expected_file_extension:
+            print_error_message = (
+                r"ERROR: The {} variable expects a file extension of {}, "
+                r'but the actual file extension is "{}". '
+                r"".format(
+                    file_directory_and_name,
+                    expected_file_extension,
+                    acutal_file_extension,
+                )
+            )
+            raise TypeError(print_error_message)
+
+
+def _check_if_bool(
+    variable_as_a_string,
+    variable,
+):
+    """
+    Checks to see if the variable is a boolean.
+
+    Parameters
+    ----------
+    variable_as_a_string : str
+        The variable name as a string.
+    variable : variable
+        The variable to test if it is a boolean.
+
+    Returns
+    -------
+    If the variable is a bool : None
+    If the variable is not a bool : raise TypeError
+    """
+    if not isinstance(variable, bool):
+        print_error_message = (
+            "ERROR: The {} input is {} and needs to be a boolean (i.e., True or False)."
+            "".format(variable_as_a_string, type(variable))
+        )
+        raise TypeError(print_error_message)
+
+
 # user callable function to write the GOMC control file
 def write_gomc_control_file(
     charmm_object,
@@ -5968,6 +6628,22 @@ def write_gomc_control_file(
     ensemble_type,
     RunSteps,
     Temperature,
+    ff_psf_pdb_file_directory=None,
+    check_input_files_exist=True,
+    Restart=False,
+    RestartCheckpoint=False,
+    ExpertMode=False,
+    Parameters=None,
+    Coordinates_box_0=None,
+    Structure_box_0=None,
+    Coordinates_box_1=None,
+    Structure_box_1=None,
+    binCoordinates_box_0=None,
+    extendedSystem_box_0=None,
+    binVelocities_box_0=None,
+    binCoordinates_box_1=None,
+    extendedSystem_box_1=None,
+    binVelocities_box_1=None,
     input_variables_dict=None,
 ):
     """
@@ -5995,22 +6671,14 @@ def write_gomc_control_file(
         Sets the total number of simulation steps.
     Temperature : float or int (>0), must be an integer greater than zero.
         Temperature of system in Kelvin (K)
-    input_variables_dict: dict, default=None
-        These input variables are optional and override the default settings.
-        Changing these variables likely required for more advanced systems.
-        The details of the acceptable input variables for the selected
-        ensembles can be found by running this python workbook,
-        >>>print_valid_ensemble_input_variables('GCMC', description = True)
-        which prints the input_variables with their subsection description
-        for the selected 'GCMC' ensemble (other ensembles can be set as well).
-
-        Example : input_variables_dict = {'Restart' : False, 'PRNG' : 123,
-        'ParaTypeCHARMM' : True }
-
-    # *******************************************************************
-    # input_variables_dict options (keys and values) - (start)
-    # Note: the input_variables_dict keys are also attributes
-    # *******************************************************************
+    ff_psf_pdb_file_directory : str (optional), default=None (i.e., the current directory).
+        The full or relative directory added to the force field, psf, and pdb
+        file names, created via the Charmm object.
+    check_input_files_exist : bool, (default=True)
+        Check if the force field, psf, and pdb files exist.
+        If the files are checked and do not exist, the writer will throw a ValueError.
+        True, check if the force field, psf, and pdb files exist.
+        False, do not check if the force field, psf, and pdb files exist.
     Restart : boolean, default = False
         Determines whether to restart the simulation from restart file
         (``*_restart.pdb`` and ``*_restart.psf``) or not.
@@ -6018,6 +6686,64 @@ def write_gomc_control_file(
         Determines whether to restart the simulation with the checkpoint
         file (checkpoint.dat) or not. Restarting the simulation with checkpoint.dat
         would result in an identical outcome, as if previous simulation was continued.
+    ExpertMode : boolean, default = False
+        This allows the move ratios to be any value, regardless of the ensemble,
+        provided all the move ratios sum to 1. For example, this mode is utilized
+        to easily equilibrate a GCMC or GEMC ensemble in a pseudo NVT mode by removing
+        the requirement that the volume and swap moves must be non-zero.
+        In other words, when the volume and swap moves are zero, the GCMC and GEMC
+        ensembles will run pseudo NVT simulations in 1 and 2 simulation boxes, respectively.
+        The simulation's output and restart files will keep their original output structure
+        for the selected ensemble, which is advantageous when automating a workflow.
+    Parameters : str, (default=None)
+        Override all other force field directory and filename input with the correct extension (.inp or .par).
+        Note: the default directory is the current directory with the Charmm object file name.
+    Coordinates_box_0 : str, (default=None)
+        Override all other box 0 pdb directory and filename inputs with the correct extension.
+        Note: the default directory is the current directory with the Charmm object file name.
+    Structure_box_0 : str, (default=None)
+        Override all other box 0 psf directory and filename inputs with the correct extension.
+        Note: the default directory is the current directory with the Charmm object file name.
+    Coordinates_box_1 : str, (default=None)
+        Override all other box 1 pdb directory and filename inputs with the correct extension.
+        Note: the default directory is the current directory with the Charmm object file name.
+    Structure_box_1 : str, (default=None)
+        Override all other box 1  psf directory and filename inputs with the correct extension.
+        Note: the default directory is the current directory with the Charmm object file name.
+    binCoordinates_box_0 : str, (default=None)
+        The box 0 binary coordinate file is used only for restarting a GOMC simulation,
+        which provides increased numerical accuracy.
+    extendedSystem_box_0 : str, (default=None)
+        The box 0 vectors and origin file is used only for restarting a GOMC simulation.
+    binVelocities_box_0 : str, (default=None)
+        The box 0 binary velocity file is used only for restarting a GOMC simulation,
+        which provides increased numerical accuracy. These velocities are only passed thru
+        GOMC since Monte Carlo simulations do not utilize any velocity information.
+    binCoordinates_box_1 : str, (default=None)
+        The box 1 binary coordinate file is used only for restarting a GOMC simulation,
+        which provides increased numerical accuracy.
+    extendedSystem_box_1 : str, (default=None)
+        The box 1 vectors and origin file is used only for restarting a GOMC simulation.
+    binVelocities_box_1 : str, (default=None)
+        The box 1 binary velocity file is used only for restarting a GOMC simulation,
+        which provides increased numerical accuracy. These velocities are only passed thru
+        GOMC since Monte Carlo simulations do not utilize any velocity information.
+    input_variables_dict: dict, default=None
+        These input variables are optional and override the default settings.
+        Changing these variables likely required for more advanced systems.
+        The details of the acceptable input variables for the selected
+        ensembles can be found by running the code below in python,
+        >>>print_valid_ensemble_input_variables('GCMC', description = True)
+        which prints the input_variables with their subsection description
+        for the selected 'GCMC' ensemble (other ensembles can be set as well).
+
+        Example : input_variables_dict = {'PRNG' : 123,
+        'ParaTypeCHARMM' : True }
+
+    # *******************************************************************
+    # input_variables_dict options (keys and values) - (start)
+    # Note: the input_variables_dict keys are also attributes
+    # *******************************************************************
     PRNG : string or int (>= 0) ("RANDOM" or int), default = "RANDOM"
         PRNG = Pseudo-Random Number Generator (PRNG). There are two (2) options, entering
         the string, "RANDOM", or a integer.
@@ -6219,6 +6945,12 @@ def write_gomc_control_file(
         enables outputting the coordinate files at the integer frequency
         (set steps_per_data_output_int), while "False" disables outputting
         the coordinates.
+    DCDFreq : list [bool , int (> 0)] or [Generate_data_bool , steps_per_data_output_int],
+        default = [True, 1M] or [True , set via formula based on the number of RunSteps or M max]
+        Controls output of DCD file (coordinates). If bool is True, this
+        enables outputting the coordinate files at the integer frequency
+        (set steps_per_data_output_int), while "False" disables outputting
+        the coordinates.
     RestartFreq : list [bool , int (> 0)] or [Generate_data_bool , steps_per_data_output_int],
         default = [True, 1M] or [True , set via formula based on the number of RunSteps or 1M max]
         This creates the PDB and PSF (coordinate and topology) files for
@@ -6291,7 +7023,7 @@ def write_gomc_control_file(
     OutPressure : [bool, bool], default = [True, True]
         The list provides the booleans to [block_averages_bool, console_output_bool].
         This outputs the pressure data into the block averages and console output/log files.
-    OutMolNumber : [bool, bool], default = [True, True]
+    OutMolNum : [bool, bool], default = [True, True]
         The list provides the booleans to [block_averages_bool, console_output_bool].
         This outputs the number of molecules data into the block averages and console
         output/log files.
@@ -6406,7 +7138,7 @@ def write_gomc_control_file(
         rotated or displaced simultaneously, along the calculated torque or force
         respectively (i.e., fraction of multi-particle moves).
     IntraMEMC_1Freq : int or float (0 <= value <= 1), default are specific for each ensemble
-    {'NVT': 0.0, 'NPT': 0.0, 'GEMC_NVT': 0.0, 'GEMC_NPT': 0.0, 'GCMC': 0.0}
+        {'NVT': 0.0, 'NPT': 0.0, 'GEMC_NVT': 0.0, 'GEMC_NPT': 0.0, 'GCMC': 0.0}
         Fractional percentage at which specified number of small molecule kind will be
         exchanged with a specified large molecule kind in defined sub-volume within
         same simulation box.  This move need additional information such as
@@ -6552,6 +7284,107 @@ def write_gomc_control_file(
     # Note: the input_variables_dict keys are also attributes
     # *******************************************************************
 
+    Attributes
+    ----------
+    input_error : bool
+        This error is typically incurred from an error in the user input values.
+        However, it could also be due to a bug, provided the user is inputting
+        the data as this Class intends.
+    all_failed_input_List : list
+        A list of all the inputs that failed, but there may be some inputs that
+    ensemble_typ : str, ['NVT', 'NPT', 'GEMC_NPT', 'GCMC-NVT', 'GCMC']
+        The ensemble type of the simulation.
+    RunSteps : int (>0), must be an integer greater than zero.
+        Sets the total number of simulation steps.
+    Temperature : float or int (>0), must be an integer greater than zero.
+        Temperature of system in Kelvin (K)
+    ff_psf_pdb_file_directory : str (optional), default=None (i.e., the current directory).
+        The full or relative directory added to the force field, psf, and pdb
+        file names, created via the Charmm object.
+    check_input_files_exist: bool (default=True)
+        Check if the force field, psf, and pdb files exist.
+        If the files are checked and do not exist, the writer will throw a ValueError.
+        True, check if the force field, psf, and pdb files exist.
+        False, do not check if the force field, psf, and pdb files exist.
+    Restart : boolean, default = False
+        Determines whether to restart the simulation from restart file
+        (``*_restart.pdb`` and ``*_restart.psf``) or not.
+    RestartCheckpoint : boolean, default = False
+        Determines whether to restart the simulation with the checkpoint
+        file (checkpoint.dat) or not. Restarting the simulation with checkpoint.dat
+        would result in an identical outcome, as if previous simulation was continued.
+    Parameters : str, (default=None)
+        Override all other force field directory and filename input with the correct extension (.inp or .par).
+        Note: the default directory is the current directory with the Charmm object file name.
+    Coordinates_box_0 : str, (default=None)
+        Override all other box 0 pdb directory and filename inputs with the correct extension.
+        Note: the default directory is the current directory with the Charmm object file name.
+    Structure_box_0 : str, (default=None)
+        Override all other box 0 psf directory and filename inputs with the correct extension.
+        Note: the default directory is the current directory with the Charmm object file name.
+    Coordinates_box_1 : str, (default=None)
+        Override all other box 1 pdb directory and filename inputs with the correct extension.
+        Note: the default directory is the current directory with the Charmm object file name.
+    Structure_box_1 : str, (default=None)
+        Override all other box 1  psf directory and filename inputs with the correct extension.
+        Note: the default directory is the current directory with the Charmm object file name.
+    binCoordinates_box_0 : str, (default=None)
+        The box 0 binary coordinate file is used only for restarting a GOMC simulation,
+        which provides increased numerical accuracy.
+    extendedSystem_box_0 : str, (default=None)
+        The box 0 vectors and origin file is used only for restarting a GOMC simulation.
+    binVelocities_box_0 : str, (default=None)
+        The box 0 binary velocity file is used only for restarting a GOMC simulation,
+        which provides increased numerical accuracy. These velocities are only passed thru
+        GOMC since Monte Carlo simulations do not utilize any velocity information.
+    binCoordinates_box_1 : str, (default=None)
+        The box 1 binary coordinate file is used only for restarting a GOMC simulation,
+        which provides increased numerical accuracy.
+    extendedSystem_box_1 : str, (default=None)
+        The box 1 vectors and origin file is used only for restarting a GOMC simulation.
+    binVelocities_box_1 : str, (default=None)
+        The box 1 binary velocity file is used only for restarting a GOMC simulation,
+        which provides increased numerical accuracy. These velocities are only passed thru
+        GOMC since Monte Carlo simulations do not utilize any velocity information.
+    input_variables_dict: dict, default = None
+        These input variables are optional and override the default settings.
+        Changing these variables likely required for more advanced systems.
+        The details of the acceptable input variables for the selected
+        ensembles can be found by running the code below in python,
+        >>> print_valid_ensemble_input_variables('GCMC', description = True)
+        which prints the input_variables with their subsection description
+        for the selected 'GCMC' ensemble (other ensembles can be set as well).
+        Example : input_variables_dict = {'PRNG' : 123,
+        'ParaTypeCHARMM' : True }
+    conf_filename : str
+        The name of the GOMC contol file, which will be created.  The extension
+        of the GOMC control file can be .conf, or no extension can be provided.
+        If no extension is provided, this writer will automatically add the
+        .conf extension to the provided string.
+    box_0_vectors : numpy.ndarray, [[float float float], [float float float], [float float float]]
+        Three (3) sets vectors for box 0 each with 3 float values, which represent
+        the vectors for the Charmm-style systems (units in Angstroms (Ang))
+    box_1_vectors : numpy.ndarray, [[float float float], [float float float], [float float float]]
+        Three (3) sets vectors for box 1 each with 3 float values, which represent
+        the vectors for the Charmm-style systems (units in Angstroms (Ang))
+    coul_1_4 : float or int
+        The non-bonded 1-4 coulombic scaling factor, which is the
+        same for all the residues/molecules, regardless if
+        differenct force fields are utilized.
+    residues : list, [str, ..., str]
+        Labels of unique residues in the Compound. Residues are assigned by
+        checking against Compound.name.  Only supply residue names as 4 character
+        strings, as the residue names are truncated to 4 characters to fit in the
+        psf and pdb file.
+    all_res_unique_atom_name_dict : dict, {str : [str, ..., str]}
+        A dictionary that provides the residue names (keys) and a list
+        of the unique atom names in the residue (value), for the
+        combined structures (box 0 and box 1 (if supplied)).
+    any input_variables_dict key : varies (see each input_variables_dict key and value)
+        Any of the input variables keys is also an Attribute and can be called
+        the same way.  Please see the input_variables_dict keys in the
+        Parameters section above for all the available attributes.
+
     Notes
     -------
     The user input variables (input_variables_dict) and the specific
@@ -6599,6 +7432,22 @@ def write_gomc_control_file(
         ensemble_type,
         RunSteps,
         Temperature,
+        ff_psf_pdb_file_directory=ff_psf_pdb_file_directory,
+        check_input_files_exist=check_input_files_exist,
+        Restart=Restart,
+        RestartCheckpoint=RestartCheckpoint,
+        ExpertMode=ExpertMode,
+        Parameters=Parameters,
+        Coordinates_box_0=Coordinates_box_0,
+        Structure_box_0=Structure_box_0,
+        Coordinates_box_1=Coordinates_box_1,
+        Structure_box_1=Structure_box_1,
+        binCoordinates_box_0=binCoordinates_box_0,
+        extendedSystem_box_0=extendedSystem_box_0,
+        binVelocities_box_0=binVelocities_box_0,
+        binCoordinates_box_1=binCoordinates_box_1,
+        extendedSystem_box_1=extendedSystem_box_1,
+        binVelocities_box_1=binVelocities_box_1,
         input_variables_dict=input_variables_dict,
     )
     test_gomc_control_write_conf_file = gomc_control.write_conf_file(

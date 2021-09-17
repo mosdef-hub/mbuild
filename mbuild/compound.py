@@ -89,6 +89,11 @@ class Compound(object):
         The type of Compound.
     pos : np.ndarray, shape=(3,), dtype=float, optional, default=[0, 0, 0]
         The position of the Compound in Cartestian space
+    mass : float, optional, default=0.0
+        The mass of the compound. If none is set, then will try to
+        infer the mass from a compound's element attribute.
+        If neither `mass` or `element` are specified, then the
+        mass will be zero.
     charge : float, optional, default=0.0
         Currently not used. Likely removed in next release.
     periodicity : tuple of bools, length=3, optional, default=None
@@ -126,6 +131,7 @@ class Compound(object):
         The bounds (xmin, xmax, ymin, ymax, zmin, zmax) of particles in Compound
     center
     contains_rigid
+    mass
     max_rigid_id
     n_particles
     n_bonds
@@ -139,6 +145,7 @@ class Compound(object):
         subcompounds=None,
         name=None,
         pos=None,
+        mass=0.0,
         charge=0.0,
         periodicity=None,
         box=None,
@@ -174,22 +181,29 @@ class Compound(object):
         self._check_if_contains_rigid_bodies = False
 
         self.element = element
+        if mass and float(mass) < 0.0:
+            raise ValueError("Cannot set a Compound mass value less than zero")
         self._box = box
         if periodicity is not None:
             self.periodicity = periodicity
         else:
             self.periodicity = (False, False, False)
-
         # self.add() must be called after labels and children are initialized.
         if subcompounds:
             if charge:
                 raise MBuildError(
                     "Can't set the charge of a Compound with subcompounds."
                 )
-            self.add(subcompounds)
+            if mass:
+                raise MBuildError(
+                    "Can't set the mass of a Compound with subcompounds. "
+                )
             self._charge = 0.0
+            self._mass = mass
+            self.add(subcompounds)
         else:
             self._charge = charge
+            self._mass = mass
 
     def particles(self, include_ports=False):
         """Return all Particles of the Compound.
@@ -323,6 +337,47 @@ class Compound(object):
         for particle in self.particles():
             if particle.element == element:
                 yield particle
+
+    @property
+    def mass(self):
+        """Return the total mass of a compound.
+
+        If the compound contains children compouds, the total mass of all
+        children compounds is returned.
+        If the compound contains element information (Compound.element) then
+        the mass is inferred from the elemental mass.
+        If Compound.mass has been set explicitly, then it will override the
+        mass inferred from Compound.element.
+        If neither of a Compound's element or mass attributes have been set,
+        then a mass of zero is returned.
+        """
+        if self._contains_only_ports():
+            return self._particle_mass(self)
+        else:
+            return sum([self._particle_mass(p) for p in self.particles()])
+
+    @staticmethod
+    def _particle_mass(particle):
+        if particle._mass:
+            return particle._mass
+        else:
+            if particle.element:
+                return particle.element.mass
+            else:
+                return 0
+
+    @mass.setter
+    def mass(self, value):
+        if self._contains_only_ports() is False:
+            raise MBuildError(
+                "Cannot set the mass of a Compound containing "
+                "children compounds"
+            )
+
+        value = float(value)
+        if value < 0.0:
+            raise ValueError("Cannot set a mass value less than zero")
+        self._mass = value
 
     @property
     def charge(self):
@@ -602,6 +657,8 @@ class Compound(object):
             to add Compounds to an existing rigid body.
         """
         # Support batch add via lists, tuples and sets.
+        from mbuild.port import Port
+
         if isinstance(new_child, Iterable) and not isinstance(new_child, str):
             for child in new_child:
                 self.add(child, reset_rigid_ids=reset_rigid_ids)
@@ -612,6 +669,13 @@ class Compound(object):
                 "Only objects that inherit from mbuild.Compound can be added "
                 f"to Compounds. You tried to add '{new_child}'."
             )
+        if self._mass != 0.0 and not isinstance(new_child, Port):
+            warn(
+                f"{self} has a pre-defined mass of {self._mass}, "
+                "which will be reset to zero now that it contains children "
+                "compounds."
+            )
+            self._mass = 0
 
         if new_child.contains_rigid or new_child.rigid_id is not None:
             if self.contains_rigid and reset_rigid_ids:
@@ -1521,16 +1585,6 @@ class Compound(object):
             particle.pos += (np.random.rand(3) - 0.5) / 100
         self._update_port_locations(xyz_init)
 
-    def energy_minimization(
-        self, forcefield="UFF", steps=1000, **kwargs
-    ):  # noqa: D102
-        raise RemovedFuncError(
-            "Compound.energy_minimization()",
-            "Compound.energy_minimize()",
-            "0.8.1",
-            "0.11.0",
-        )
-
     def energy_minimize(self, forcefield="UFF", steps=1000, **kwargs):
         """Perform an energy minimization on a Compound.
 
@@ -1582,6 +1636,10 @@ class Compound(object):
             Note: Only Ryckaert-Bellemans style torsions are currently supported
         scale_nonbonded : float, optional, default=1
             Scales epsilon (1 is completely on)
+            For _energy_minimize_openmm
+        constraints : str, optional, default="AllBonds"
+            Specify constraints on the molecule to minimize, options are:
+            None, "HBonds", "AllBonds", "HAngles"
             For _energy_minimize_openmm
 
         References
@@ -1690,6 +1748,7 @@ class Compound(object):
         scale_angles=1,
         scale_torsions=1,
         scale_nonbonded=1,
+        constraints="AllBonds",
     ):
         """Perform energy minimization using OpenMM.
 
@@ -1714,6 +1773,9 @@ class Compound(object):
             Scales the torsional force constants (1 is completely on)
         scale_nonbonded : float, optional, default=1
             Scales epsilon (1 is completely on)
+        constraints : str, optional, default="AllBonds"
+            Specify constraints on the molecule to minimize, options are:
+            None, "HBonds", "AllBonds", "HAngles"
 
         Notes
         -----
@@ -1732,12 +1794,29 @@ class Compound(object):
         )
         to_parmed = ff.apply(to_parmed)
 
-        import simtk.unit as u
-        from simtk.openmm.app.pdbreporter import PDBReporter
-        from simtk.openmm.app.simulation import Simulation
-        from simtk.openmm.openmm import LangevinIntegrator
+        import openmm.unit as u
+        from openmm.app import AllBonds, HAngles, HBonds
+        from openmm.app.pdbreporter import PDBReporter
+        from openmm.app.simulation import Simulation
+        from openmm.openmm import LangevinIntegrator
 
-        system = to_parmed.createSystem()  # Create an OpenMM System
+        if constraints:
+            if constraints == "AllBonds":
+                constraints = AllBonds
+            elif constraints == "HBonds":
+                constraints = HBonds
+            elif constraints == "HAngles":
+                constraints = HAngles
+            else:
+                raise ValueError(
+                    f"Provided constraints value of: {constraints}.\n"
+                    f'Expected "HAngles", "AllBonds" "HBonds".'
+                )
+            system = to_parmed.createSystem(
+                constraints=constraints
+            )  # Create an OpenMM System
+        else:
+            system = to_parmed.createSystem()  # Create an OpenMM System
         # Create a Langenvin Integrator in OpenMM
         integrator = LangevinIntegrator(
             298 * u.kelvin, 1 / u.picosecond, 0.002 * u.picoseconds
@@ -2431,9 +2510,11 @@ class Compound(object):
         newone._check_if_contains_rigid_bodies = deepcopy(
             self._check_if_contains_rigid_bodies
         )
+        newone._periodicity = deepcopy(self._periodicity)
         newone._contains_rigid = deepcopy(self._contains_rigid)
         newone._rigid_id = deepcopy(self._rigid_id)
         newone._charge = deepcopy(self._charge)
+        newone._mass = deepcopy(self._mass)
         if hasattr(self, "index"):
             newone.index = deepcopy(self.index)
 

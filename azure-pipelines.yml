@@ -65,17 +65,21 @@ stages:
             displayName: Set conda config
 
           - bash: |
-              conda update -c defaults conda
-              conda update --all
+              conda install -c conda-forge mamba
+            displayName: Install mamba
+
+          - bash: |
+              mamba update -c defaults conda
+              mamba update --all
               sed -i -E 's/python.*$/python='$(python.version)'/' environment-dev.yml
-              conda env create -f environment-dev.yml
+              mamba env create -f environment-dev.yml
               source activate mbuild-dev
               pip install -e .
-            displayName: Create Conda env, Activate, Install dependencies, Install Branch
+            displayName: Create Conda env, Install mamba, Activate, Install dependencies, Install Branch
 
           - bash: |
               source activate mbuild-dev
-              python -m pytest -v --cov=mbuild --cov-report=html --pyargs mbuild
+              python -m pytest -v --cov=mbuild --cov-report=html --color=yes --pyargs mbuild
             displayName: Run Tests
 
           - bash: |
@@ -84,6 +88,13 @@ stages:
             condition: and( eq( variables['Agent.OS'], 'Linux' ), eq( variables['python.version'], '3.8' ) )
             displayName: Upload Coverage Report
 
+          - bash: |
+              source activate mbuild-dev
+              mamba update -c conda-forge/label/hoomd_dev -c conda-forge hoomd
+              python -m pytest -v --cov=mbuild --cov-report=html --color=yes mbuild/tests/test_hoomd.py
+            condition: and( eq( variables['Agent.OS'], 'Linux' ), eq( variables['python.version'], '3.8' ) )
+            displayName: Run tests for hoomdv3
+
           - task: PublishCodeCoverageResults@1
             inputs:
               codeCoverageTool: Cobertura
@@ -91,6 +102,12 @@ stages:
               reportDirectory: '$(System.DefaultWorkingDirectory)/**/htmlcov'
             condition: and( eq( variables['Agent.OS'], 'Linux' ), eq( variables['python.version'], '3.7' ) )
             displayName: Publish Coverage Report
+
+          - bash: |
+              source activate test-environment
+              bash <(curl -s https://codecov.io/bash) -C $(Build.SourceVersion)
+            condition: and( eq( variables['Agent.OS'], 'Linux' ), eq( variables['python.version'], '3.8' ) )
+            displayName: Upload Coverage Report
 
 
       - job: Windows_no_bleeding
@@ -129,7 +146,7 @@ stages:
 
           - script: |
               call activate mbuild-dev
-              python -m pytest -v --cov=mbuild --cov-report=html --pyargs mbuild
+              python -m pytest -v --cov=mbuild --cov-report=html --color=yes --pyargs mbuild
             displayName: Run Tests
 
       - job: LinuxBleedingFoyer
@@ -144,23 +161,20 @@ stages:
           - bash: |
               conda config --set always_yes yes --set changeps1 no
               conda update -c defaults conda
+              conda install -c conda-forge mamba
               conda update --all
-              pip install conda-merge
               git clone https://github.com/mosdef-hub/foyer.git
-              conda-merge environment-dev.yml foyer/environment-dev.yml > combine.yml
-              sed -iE 's/python.*$/python=3.7/' combine.yml
-              sed -iE '/mbuild/d' combine.yml
-              sed -iE '/ foyer/d' combine.yml
-              conda env create -n bleeding -f combine.yml
+              mamba env create --name bleeding -f environment-dev.yml
               source activate bleeding
               pip install -e .
               cd foyer
+              mamba env update --name bleeding --file environment.yml
               pip install -e .
-            displayName: Create a new bleeding test environment
+            displayName: Create a new bleeding test environment with mamba
 
           - bash: |
               source activate bleeding
-              python -m pytest -v --cov=mbuild --cov-report=html --pyargs mbuild
+              python -m pytest -v --cov=mbuild --cov-report=html --color=yes --pyargs mbuild
             displayName: Run Tests
 
   - stage: Docker

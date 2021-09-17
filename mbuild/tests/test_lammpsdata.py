@@ -1,5 +1,6 @@
 import numpy as np
 import pytest
+from pytest import FixtureRequest
 
 import mbuild as mb
 from mbuild.formats.lammpsdata import write_lammpsdata
@@ -273,10 +274,13 @@ class TestLammpsData(BaseTest):
                 else:
                     assert "# " + atom_style in line
 
-    def test_resid(self, ethane, methane):
+    @pytest.mark.parametrize(
+        "offset, expected_value", [(0, ("0", "1")), (1, ("1", "2"))]
+    )
+    def test_resid(self, offset, expected_value, ethane, methane):
         structure = ethane.to_parmed() + methane.to_parmed()
         n_atoms = len(structure.atoms)
-        write_lammpsdata(structure, "compound.lammps")
+        write_lammpsdata(structure, "compound.lammps", moleculeID_offset=offset)
         res_list = list()
         with open("compound.lammps", "r") as f:
             for i, line in enumerate(f):
@@ -287,8 +291,7 @@ class TestLammpsData(BaseTest):
         ]
         for line in atom_lines:
             res_list.append(line.rstrip().split()[1])
-
-        assert set(res_list) == set(["1", "0"])
+        assert set(res_list) == set(expected_value)
 
     def test_box_bounds(self, ethane):
         from foyer import Forcefield
