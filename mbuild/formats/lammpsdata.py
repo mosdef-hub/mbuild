@@ -310,7 +310,9 @@ def write_lammpsdata(
         if unit_style == "real":
             # Internally use nm
             box = Box(
-                lengths=np.array([1/NM_TO_ANG * val for val in structure.box[0:3]]),
+                lengths=np.array(
+                    [1 / NM_TO_ANG * val for val in structure.box[0:3]]
+                ),
                 angles=structure.box[3:6],
             )
         if unit_style == "lj":
