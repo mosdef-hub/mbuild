@@ -475,7 +475,7 @@ def write_lammpsdata(
 
         data.write("\n")
         # If using real units, write our box dimensions in angstrom instead of nm.
-        boxdim_conversion = 10.0
+        boxdim_conversion = NM_TO_ANG
         if unit_style == "lj":
             boxdim_conversion = 1.0
         # Box data
