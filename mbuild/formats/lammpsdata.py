@@ -5,6 +5,7 @@ from warnings import warn
 
 import numpy as np
 from parmed.parameters import ParameterSet
+from parmed.structure import Structure
 from scipy.constants import epsilon_0
 
 from mbuild import Box
@@ -144,7 +145,7 @@ def write_lammpsdata(
         --- atomtype 4 : dihedral.atom4.type
     """
     # copy structure so the input structure isn't modified in-place
-    structure = structure.copy(cls=parmed.Structure, split_dihedrals=True)
+    structure = structure.copy(cls=Structure, split_dihedrals=True)
     if atom_style not in ["atomic", "charge", "molecular", "full"]:
         raise ValueError(
             'Atom style "{atom_style}" is invalid or is not currently supported'
