@@ -89,15 +89,14 @@ class PeriodicCKDTree(KDTree):
     Parameters
     ----------
     data : array-like, shape (n,m), required
-        The n data points of dimension mto be indexed. This array is not copied
+        The n data points of dimension m to be indexed. This array is not copied
         unless this is necessary to produce a contiguous array of doubles, and
         so modifying this data will result in bogus results.
-    box : mbuild.Box, required
-        The box object containing the lengths and dimensions of the system.
-    periodicity : array-like, boolean, shape (3,), default = [True, True, True], optional
-        The periodicity of the compound, True means periodic in that dimension [x, y, z]
-        false is non-periodic
-    leafsize : positive integer
+    bounds : array_like, shape (m,), required
+        Size of the periodic box along each spatial dimension.  A
+        negative or zero size for dimension k means that space is not
+        periodic along k.
+    leafsize : positive integer, optional, default=10
         The number of points at which the algorithm switches over to
         brute-force.
 
@@ -108,35 +107,32 @@ class PeriodicCKDTree(KDTree):
     point and a data point to half the smallest box dimension.
     """
 
-    def __init__(self, data, box, leafsize=10, periodicity=[True, True, True]):
-        if not isinstance(box, mb.Box):
-            raise TypeError(
-                f"Incorrect type of box. Was provided box of type {type(box)}. Expected mbuild.Box"
-            )
-        # Map all points to canonical periodic image.
-        compound_bounds = []
-        for box_len, period in zip(box.lengths, periodicity):
-            if period:
-                compound_bounds.append(box_len)
-            else:
-                compound_bounds.append(0)
-        if not np.allclose(box.angles, 90.0):
-            raise NotImplementedError(
-                "Periodic KCDTree search only implemented"
-                "for orthorhombic periodic boundaries"
-            )
-        self.bounds = np.array(compound_bounds)
+    def __init__(self, bounds, data, leafsize=10):
+        """Construct Cython kd-tree for nearest-neighbor lookup with periodic boundaries.
+
+        Parameters
+        ----------
+        bounds : array_like, shape (m,)
+            Size of the periodic box along each spatial dimension.  A
+            negative or zero size for dimension k means that space is not
+            periodic along k.
+        data : array-like, shape (n,m)
+            The n data points of dimension m to be indexed. This array is
+            not copied unless this is necessary to produce a contiguous
+            array of doubles, and so modifying this data will result in
+            bogus results.
+        leafsize : positive integer
+            The number of points at which the algorithm switches over to
+            brute-force.
+        """
+        # Map all points to canonical periodic image
+        self.bounds = np.array(bounds)
         self.real_data = np.asarray(data)
-
-        wrapped_data = self.real_data
-
-        for i, row in enumerate(self.real_data):
-            for j, coord in enumerate(row):
-                if compound_bounds[j] > 0.0:
-                    wrap = np.floor(self.real_data[i, j] / compound_bounds[j])
-                    wrapped_data[i, j] = (
-                        self.real_data[i, j] - wrap * compound_bounds[j]
-                    )
+        wrapped_data = self.real_data - np.where(
+            self.bounds > 0.0,
+            (np.floor(self.real_data / self.bounds) * self.bounds),
+            0.0,
+        )
 
         # Calculate maximum distance_upper_bound
         self.max_distance_upper_bound = np.min(
@@ -145,6 +141,56 @@ class PeriodicCKDTree(KDTree):
 
         # Set up underlying kd-tree
         super(PeriodicCKDTree, self).__init__(wrapped_data, leafsize)
+
+    @classmethod
+    def from_compound(cls, compound, leafsize=10):
+        """Create a PeriodicCKDTree from a compound.
+
+        See scipy.spatial.ckdtree for details on kd-trees.
+
+        Searches with periodic boundaries are implemented by mapping all initial
+        data points to one canonical periodic image, building an ordinary kd-tree
+        with these points, then querying this kd-tree multiple times, if necessary,
+        with all the relevant periodic images of the query point.
+
+        Parameters
+        ----------
+        compound : mb.Compound, required
+            The mbuild Compound to gather periodicity and box information for the
+            PeriodicCKDTree.
+        leafsize : positive integer
+            The number of points at which the algorithm switches over to
+            brute-force.
+
+        Note
+        ----
+        To ensure that no two distinct images of the same point appear in the
+        results, it is essential to restrict the maximum distance between a query
+        point and a data point to half the smallest box dimension.
+        """
+        if not isinstance(compound, mb.Compound):
+            raise TypeError(
+                f"Incorrect type of compound. Was provided compound of type {type(compound)}. Expected mbuild.Compound"
+            )
+        if not isinstance(compound.box, mb.Box):
+            raise TypeError(
+                f"Incorrect type of box. Was provided box of type {type(box)}. Expected mbuild.Box"
+            )
+        if not np.allclose(compound.box.angles, 90.0):
+            raise NotImplementedError(
+                "Periodic KCDTree search only implemented"
+                "for orthorhombic periodic boundaries"
+            )
+        # Map all points to canonical periodic image.
+        compound_bounds = []
+        for box_len, period in zip(compound.box.lengths, compound.periodicity):
+            if period:
+                compound_bounds.append(box_len)
+            else:
+                compound_bounds.append(0)
+
+        # Set up underlying kd-tree
+        return cls(bounds=compound_bounds, data=compound.xyz, leafsize=leafsize)
 
     # Ideally, KDTree and cKDTree would expose identical query and __query
     # interfaces.  But they don't, and cKDTree.__query is also inaccessible

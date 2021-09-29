@@ -985,8 +985,8 @@ class Compound(object):
         """
         if self.box is None:
             self.box = self.get_boundingbox()
-        particle_kdtree = PeriodicCKDTree(
-            data=self.xyz, box=self.box, periodicity=self.periodicity
+        particle_kdtree = PeriodicCKDTree.from_compound(
+            compound=self, leafsize=10
         )
         particle_array = np.array(list(self.particles()))
         added_bonds = list()
@@ -1375,9 +1375,7 @@ class Compound(object):
         if self.box is None:
             self.box = self.get_boundingbox()
         if particle_kdtree is None:
-            particle_kdtree = PeriodicCKDTree(
-                data=self.xyz, box=self.box, periodicity=self.periodicity
-            )
+            particle_kdtree = PeriodicCKDTree.from_compound(self, leafsize=10)
         _, idxs = particle_kdtree.query(
             compound.pos, k=max_particles, distance_upper_bound=dmax
         )
