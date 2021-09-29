@@ -7,7 +7,7 @@ import numpy as np
 
 from mbuild import Box, Compound, Port, clone
 from mbuild.exceptions import MBuildError
-from mbuild.periodic_kdtree import PeriodicCKDTree
+from mbuild.periodic_kdtree import PeriodicKDTree
 
 
 class TiledCompound(Compound):
