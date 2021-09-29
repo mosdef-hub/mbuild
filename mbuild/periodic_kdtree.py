@@ -140,13 +140,13 @@ class PeriodicCKDTree(KDTree):
         )
 
         # Set up underlying kd-tree
-        super(PeriodicCKDTree, self).__init__(wrapped_data, leafsize)
+        super(PeriodicKDTree, self).__init__(wrapped_data, leafsize)
 
     @classmethod
     def from_compound(cls, compound, leafsize=10):
-        """Create a PeriodicCKDTree from a compound.
+        """Create a PeriodicKDTree from a compound.
 
-        See scipy.spatial.ckdtree for details on kd-trees.
+        See scipy.spatial.kdtree for details on kd-trees.
 
         Searches with periodic boundaries are implemented by mapping all initial
         data points to one canonical periodic image, building an ordinary kd-tree
@@ -157,7 +157,7 @@ class PeriodicCKDTree(KDTree):
         ----------
         compound : mb.Compound, required
             The mbuild Compound to gather periodicity and box information for the
-            PeriodicCKDTree.
+            PeriodicKDTree.
         leafsize : positive integer
             The number of points at which the algorithm switches over to
             brute-force.
@@ -170,7 +170,7 @@ class PeriodicCKDTree(KDTree):
         """
         if not isinstance(compound, mb.Compound):
             raise TypeError(
-                f"Incorrect type of compound. Was provided compound of type {type(compound)}. Expected mbuild.Compound"
+                f"Incorrect type of compound. Provided compound of type {type(compound)}. Expected mbuild.Compound"
             )
         if not isinstance(compound.box, mb.Box):
             raise TypeError(
@@ -178,7 +178,7 @@ class PeriodicCKDTree(KDTree):
             )
         if not np.allclose(compound.box.angles, 90.0):
             raise NotImplementedError(
-                "Periodic KCDTree search only implemented"
+                "Periodic KDTree search only implemented"
                 "for orthorhombic periodic boundaries"
             )
         # Map all points to canonical periodic image.
