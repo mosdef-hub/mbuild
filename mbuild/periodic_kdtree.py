@@ -174,7 +174,7 @@ class PeriodicCKDTree(KDTree):
             )
         if not isinstance(compound.box, mb.Box):
             raise TypeError(
-                f"Incorrect type of box. Was provided box of type {type(box)}. Expected mbuild.Box"
+                f"Incorrect type of box. Was provided box of type {type(compound.box)}. Expected mbuild.Box"
             )
         if not np.allclose(compound.box.angles, 90.0):
             raise NotImplementedError(
