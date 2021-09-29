@@ -76,10 +76,10 @@ def _gen_relevant_images(x, bounds, distance_upper_bound):
     return xs
 
 
-class PeriodicCKDTree(KDTree):
+class PeriodicKDTree(KDTree):
     """Cython kd-tree for nearest-neighbor lookup with periodic boundaries.
 
-    See scipy.spatial.ckdtree for details on kd-trees.
+    See scipy.spatial.kdtree for details on kd-trees.
 
     Searches with periodic boundaries are implemented by mapping all initial
     data points to one canonical periodic image, building an ordinary kd-tree
@@ -212,7 +212,7 @@ class PeriodicCKDTree(KDTree):
         for real_x in _gen_relevant_images(
             x, self.bounds, distance_upper_bound
         ):
-            d, i = super(PeriodicCKDTree, self).query(
+            d, i = super(PeriodicKDTree, self).query(
                 real_x, k, eps, p, distance_upper_bound
             )
             if k > 1:
@@ -343,7 +343,7 @@ class PeriodicCKDTree(KDTree):
         results = []
         for real_x in _gen_relevant_images(x, self.bounds, r):
             results.extend(
-                super(PeriodicCKDTree, self).query_ball_point(real_x, r, p, eps)
+                super(PeriodicKDTree, self).query_ball_point(real_x, r, p, eps)
             )
         return results
 
@@ -375,7 +375,7 @@ class PeriodicCKDTree(KDTree):
         -----
         If you have many points whose neighbors you want to find, you may
         save substantial amounts of time by putting them in a
-        PeriodicCKDTree and using query_ball_tree.
+        PeriodicKDTree and using query_ball_tree.
         """
         x = np.asarray(x).astype(float)
         if x.shape[-1] != self.m:
