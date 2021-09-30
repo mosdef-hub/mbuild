@@ -91,7 +91,7 @@ class TiledCompound(Compound):
                 periodic_bonds.add((particle1.index, particle2.index))
 
         # Build a periodic kdtree of all particle positions.
-        self.particle_kdtree = PeriodicCKDTree.from_compound(self, leafsize=10)
+        self.particle_kdtree = PeriodicKDTree.from_compound(self, leafsize=10)
         all_particles = np.asarray(list(self.particles(include_ports=False)))
 
         # Store bonds to remove/add since we'll be iterating over all bonds.
