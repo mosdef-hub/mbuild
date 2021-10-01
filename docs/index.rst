@@ -66,3 +66,8 @@ The `MoSDeF <https://mosdef.org>`_ software is comprised the following packages:
 	reference/units
     	reference/citing_mbuild
     	reference/older_documentation
+
+.. toctree::
+    :caption: API Documentation
+
+    autoapi/mbuild/index

@@ -17,3 +17,4 @@ dependencies:
   - pip:
     - sphinxcontrib-svg2pdfconverter[CairoSVG]
     - cairosvg
+    - sphinx-autoapi
