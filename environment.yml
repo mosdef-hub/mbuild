@@ -5,7 +5,7 @@ dependencies:
   - ele
   - numpy
   - packmol>=18
-  - parmed>=3.4.0
+  - parmed>=3.4.3
   - python<=3.8
   - rdkit
   - scipy
