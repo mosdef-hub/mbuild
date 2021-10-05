@@ -105,7 +105,9 @@ stages:
 
           - bash: |
               source activate test-environment
-              bash <(curl -s https://codecov.io/bash) -C $(Build.SourceVersion)
+              curl -Os https://uploader.codecov.io/latest/linux/codecov
+              chmod +x codecov
+              bash ./codecov -C $(Build.SourceVersion)
             condition: and( eq( variables['Agent.OS'], 'Linux' ), eq( variables['python.version'], '3.8' ) )
             displayName: Upload Coverage Report
 
