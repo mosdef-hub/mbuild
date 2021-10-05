@@ -4,8 +4,8 @@ from collections import OrderedDict
 from warnings import warn
 
 import numpy as np
-from parmed.parameters import ParameterSet
 from parmed import Structure
+from parmed.parameters import ParameterSet
 from scipy.constants import epsilon_0
 
 from mbuild import Box
