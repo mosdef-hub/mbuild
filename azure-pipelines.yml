@@ -83,17 +83,12 @@ stages:
             displayName: Run Tests
 
           - bash: |
-              source activate test-environment
-              bash <(curl -s https://codecov.io/bash) -C $(Build.SourceVersion)
-            condition: and( eq( variables['Agent.OS'], 'Linux' ), eq( variables['python.version'], '3.8' ) )
-            displayName: Upload Coverage Report
-
-          - bash: |
               source activate mbuild-dev
-              mamba update -c conda-forge/label/hoomd_dev -c conda-forge hoomd
-              python -m pytest -v --cov=mbuild --cov-report=html --color=yes mbuild/tests/test_hoomd.py
+              curl -Os https://uploader.codecov.io/latest/linux/codecov
+              chmod +x codecov
+              ./codecov -C $(Build.SourceVersion)
             condition: and( eq( variables['Agent.OS'], 'Linux' ), eq( variables['python.version'], '3.8' ) )
-            displayName: Run tests for hoomdv3
+            displayName: Upload Coverage Report (regular)
 
           - task: PublishCodeCoverageResults@1
             inputs:
@@ -104,12 +99,19 @@ stages:
             displayName: Publish Coverage Report
 
           - bash: |
-              source activate test-environment
+              source activate mbuild-dev
+              mamba update -c conda-forge/label/hoomd_dev -c conda-forge hoomd
+              python -m pytest -v --cov=mbuild --cov-report=html --color=yes mbuild/tests/test_hoomd.py
+            condition: and( eq( variables['Agent.OS'], 'Linux' ), eq( variables['python.version'], '3.8' ) )
+            displayName: Run tests for hoomdv3
+
+          - bash: |
+              source activate mbuild-dev
               curl -Os https://uploader.codecov.io/latest/linux/codecov
               chmod +x codecov
-              bash ./codecov -C $(Build.SourceVersion)
+              ./codecov -C $(Build.SourceVersion)
             condition: and( eq( variables['Agent.OS'], 'Linux' ), eq( variables['python.version'], '3.8' ) )
-            displayName: Upload Coverage Report
+            displayName: Upload Coverage Report (HoomdV3)
 
 
       - job: Windows_no_bleeding
