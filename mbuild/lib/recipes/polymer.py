@@ -16,7 +16,7 @@ __all__ = ["Polymer"]
 class Polymer(Compound):
     """Connect one or more components in a specified sequence.
 
-    Attributes
+    Parameters
     ----------
     monomers : list of mbuild.Compounds
         The compound(s) to replicate. Add to this list using the add_monomers
@@ -40,10 +40,10 @@ class Polymer(Compound):
     Notes
     -----
     There are two different approaches to using the Polymer class to create
-    polymers
+    polymers:
 
-    1) Pass in already created Compound instances to the monomers and end_groups
-    parameters when creating a Polymer instance:
+        1. Pass in already created Compound instances to the monomers and end_groups\
+        parameters when creating a Polymer instance:
 
         You can then call the Polymer.build() method to create a polymer.
         This approach can be used if the compounds being passed into the Polymer
@@ -51,15 +51,14 @@ class Polymer(Compound):
         allow for the monomer-monomer and monomer-end group bonds. These
         compounds are used as-is when creating the polymer chain.
 
-        Example
-        -------
         >>> chain = Polymer(
         ...     monomers=[mb.Compound],
         ...     end_groups = [mb.Compound, mb.Compound]
         ... )
         >>> chain.build(n=5)
 
-    2) Use the add_monomer() and add_end_group() methods:
+
+        2. Use the add_monomer() and add_end_group() methods:
 
         These functions are there to help with the creation of mb.Ports, which
         are required by the build() method, and they help with the removal of
@@ -68,14 +67,13 @@ class Polymer(Compound):
         a Polymer() instance, then call the add_monomer() and add_end_group()
         methods before calling the build() method.
 
-        Example
-        -------
         >>> chain = Polymer()
         >>> chain.add_monomer(mb.Compound)
         >>> chain.add_end_groups(mb.Compound)
         >>> chain.build(n=5)
 
-        Refer to the method specific doc strings to see the correct use.
+
+    Refer to the method specific doc strings to see the correct use.
     """
 
     def __init__(self, monomers=None, end_groups=None):

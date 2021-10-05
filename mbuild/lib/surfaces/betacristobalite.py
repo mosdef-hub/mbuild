@@ -13,7 +13,9 @@ class Betacristobalite(mb.Compound):
     See http://www.wikiwand.com/en/Silicon_dioxide for more info on the various
     crystal forms.
 
-    Note: Port sites are currently naively determined by placing them on all
+    Notes
+    -----
+    Port sites are currently naively determined by placing them on all
     oxygens which are above 1.0 nm in the z-direction. This only holds true for
     the beta-cristobalite-expanded.mol2 file. If you add a new one, please
     modify the file or the method of determining port locations.

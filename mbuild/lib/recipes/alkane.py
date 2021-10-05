@@ -10,8 +10,8 @@ class Alkane(mb.Compound):
     def __init__(self, n=3, cap_front=True, cap_end=True):
         """Initialize an Alkane Compound.
 
-        Args
-        ----
+        Parameters
+        ----------
         n: int, default 3,
             Number of carbon atoms.
         cap_front: bool, default True

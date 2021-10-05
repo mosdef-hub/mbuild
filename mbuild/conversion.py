@@ -698,8 +698,8 @@ def from_pybel(
     ignore_box_warn: bool, optional, default=False
         If True, raise a warning if no unitcell detected for pybel molecule
 
-    Return
-    ------
+    Returns
+    -------
     compound : mb.Compound
     """
     # Initialize a compound if none is provided

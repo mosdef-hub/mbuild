@@ -53,9 +53,8 @@ def write_hoomdxml(
     ReferenceValues : namedtuple
         Values used in scaling
 
-    Example
-    -------
-
+    Examples
+    --------
     >>> ref_values = ethane.save(
     ...     filename='ethane-opls.hoomdxml',
     ...     forcefield_name='oplsaa',

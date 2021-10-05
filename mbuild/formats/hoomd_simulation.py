@@ -77,8 +77,8 @@ def create_hoomd_simulation(
     ReferenceValues : namedtuple
         Values used in scaling
 
-    Note
-    ----
+    Notes
+    -----
     While the hoomd objects are returned, the hoomd.SimulationContext is
     accessible via `hoomd.context.current`. If you pass a non-parametrized
     pmd.Structure, you will not have angle, dihedral, or force field

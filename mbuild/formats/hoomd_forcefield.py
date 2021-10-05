@@ -63,8 +63,8 @@ def create_hoomd_forcefield(
     ReferenceValues : namedtuple
         Values used in scaling
 
-    Note
-    ----
+    Notes
+    -----
     If you pass a non-parametrized pmd.Structure, you will not have
     angle, dihedral, or force field information. You may be better off
     creating a hoomd.Snapshot
