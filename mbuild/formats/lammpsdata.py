@@ -5,7 +5,7 @@ from warnings import warn
 
 import numpy as np
 from parmed.parameters import ParameterSet
-from parmed.structure import Structure
+from parmed import Structure
 from scipy.constants import epsilon_0
 
 from mbuild import Box
