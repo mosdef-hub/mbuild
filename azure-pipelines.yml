@@ -86,9 +86,11 @@ stages:
               source activate mbuild-dev
               curl -Os https://uploader.codecov.io/latest/linux/codecov
               chmod +x codecov
-              ./codecov -C $(Build.SourceVersion)
+              ./codecov -t ${CODECOV_UPLOAD_TOKEN} -C $(Build.SourceVersion)
             condition: and( eq( variables['Agent.OS'], 'Linux' ), eq( variables['python.version'], '3.8' ) )
             displayName: Upload Coverage Report (regular)
+            env:
+              CODECOV_UPLOAD_TOKEN: $(codecovUploadToken)
 
           - task: PublishCodeCoverageResults@1
             inputs:
@@ -107,11 +109,11 @@ stages:
 
           - bash: |
               source activate mbuild-dev
-              curl -Os https://uploader.codecov.io/latest/linux/codecov
-              chmod +x codecov
-              ./codecov -C $(Build.SourceVersion)
+              ./codecov -t ${CODECOV_UPLOAD_TOKEN} -C $(Build.SourceVersion)
             condition: and( eq( variables['Agent.OS'], 'Linux' ), eq( variables['python.version'], '3.8' ) )
             displayName: Upload Coverage Report (HoomdV3)
+            env:
+              CODECOV_UPLOAD_TOKEN: $(codecovUploadToken)
 
 
       - job: Windows_no_bleeding
