@@ -244,7 +244,7 @@ def write_lammpsdata(
             use_rb_torsions = True
         else:
             use_rb_torsions = False
-        if len(structure.dihedrals) > 0:
+        if len([d for d in structure.dihedrals if not d.improper]) > 0:
             print("Charmm dihedrals detected, will use dihedral_style charmm")
             use_dihedrals = True
         else:
