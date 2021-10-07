@@ -188,12 +188,12 @@ class TestLammpsData(BaseTest):
         assert found_dihedrals
         assert found_impropers
 
-
-
     @pytest.mark.skipif(not has_foyer, reason="Foyer package not installed")
     def test_save_forcefield_with_same_struct(self):
         from foyer import Forcefield
+
         from mbuild.formats.lammpsdata import write_lammpsdata
+
         system = mb.load("C1(=CC=CC=C1)F", smiles=True)
 
         ff = Forcefield(forcefield_files=[get_fn("gaff_test.xml")])
@@ -203,12 +203,18 @@ class TestLammpsData(BaseTest):
             assert_dihedral_params=False,
             assert_improper_params=False,
         )
-        write_lammpsdata(struc, "charmm_improper.lammps", zero_dihedral_weighting_factor=True)
+        write_lammpsdata(
+            struc, "charmm_improper.lammps", zero_dihedral_weighting_factor=True
+        )
         for i in range(3):
             xyz = struc.coordinates
-            xyz = xyz + np.array([1,1,1])
+            xyz = xyz + np.array([1, 1, 1])
             struc.coordinates = xyz
-            write_lammpsdata(struc, f"charmm_improper{i}.lammps", zero_dihedral_weighting_factor=True)
+            write_lammpsdata(
+                struc,
+                f"charmm_improper{i}.lammps",
+                zero_dihedral_weighting_factor=True,
+            )
 
     @pytest.mark.skipif(not has_foyer, reason="Foyer package not installed")
     @pytest.mark.parametrize("unit_style", ["real", "lj"])
