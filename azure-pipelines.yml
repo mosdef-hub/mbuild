@@ -82,14 +82,6 @@ stages:
               python -m pytest -v --cov=mbuild --cov-report=html --color=yes --pyargs mbuild --cov-config=setup.cfg --cov-append
             displayName: Run Tests
 
-          - task: PublishCodeCoverageResults@1
-            inputs:
-              codeCoverageTool: Cobertura
-              summaryFileLocation: '$(System.DefaultWorkingDirectory)/**/coverage.xml'
-              reportDirectory: '$(System.DefaultWorkingDirectory)/**/htmlcov'
-            condition: and( eq( variables['Agent.OS'], 'Linux' ), eq( variables['python.version'], '3.7' ) )
-            displayName: Publish Coverage Report
-
           - bash: |
               source activate mbuild-dev
               mamba update -c conda-forge/label/hoomd_dev -c conda-forge hoomd
@@ -106,6 +98,14 @@ stages:
             displayName: Upload Coverage Report
             env:
               CODECOV_UPLOAD_TOKEN: $(codecovUploadToken)
+
+          - task: PublishCodeCoverageResults@1
+            inputs:
+              codeCoverageTool: Cobertura
+              summaryFileLocation: '$(System.DefaultWorkingDirectory)/**/coverage.xml'
+              reportDirectory: '$(System.DefaultWorkingDirectory)/**/htmlcov'
+            condition: and( eq( variables['Agent.OS'], 'Linux' ), eq( variables['python.version'], '3.8' ) )
+            displayName: Publish Coverage Report
 
 
       - job: Windows_no_bleeding
