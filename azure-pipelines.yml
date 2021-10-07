@@ -79,18 +79,9 @@ stages:
 
           - bash: |
               source activate mbuild-dev
-              python -m pytest -v --cov=mbuild --cov-report=html --color=yes --pyargs mbuild
-            displayName: Run Tests
+              python -m pytest -v --cov=mbuild --cov-report=html --color=yes --pyargs mbuild --cov-config=setup.cfg --cov-append
 
-          - bash: |
-              source activate mbuild-dev
-              curl -Os https://uploader.codecov.io/latest/linux/codecov
-              chmod +x codecov
-              ./codecov -t ${CODECOV_UPLOAD_TOKEN} -C $(Build.SourceVersion)
-            condition: and( eq( variables['Agent.OS'], 'Linux' ), eq( variables['python.version'], '3.8' ) )
-            displayName: Upload Coverage Report (regular)
-            env:
-              CODECOV_UPLOAD_TOKEN: $(codecovUploadToken)
+            displayName: Run Tests
 
           - task: PublishCodeCoverageResults@1
             inputs:
@@ -103,15 +94,17 @@ stages:
           - bash: |
               source activate mbuild-dev
               mamba update -c conda-forge/label/hoomd_dev -c conda-forge hoomd
-              python -m pytest -v --cov=mbuild --cov-report=html --color=yes mbuild/tests/test_hoomd.py
+              python -m pytest -v --cov=mbuild --cov-report=html --color=yes mbuild/tests/test_hoomd.py --cov-config=setup.cfg --cov-append
             condition: and( eq( variables['Agent.OS'], 'Linux' ), eq( variables['python.version'], '3.8' ) )
             displayName: Run tests for hoomdv3
 
           - bash: |
               source activate mbuild-dev
+              curl -Os https://uploader.codecov.io/latest/linux/codecov
+              chmod +x codecov
               ./codecov -t ${CODECOV_UPLOAD_TOKEN} -C $(Build.SourceVersion)
             condition: and( eq( variables['Agent.OS'], 'Linux' ), eq( variables['python.version'], '3.8' ) )
-            displayName: Upload Coverage Report (HoomdV3)
+            displayName: Upload Coverage Report
             env:
               CODECOV_UPLOAD_TOKEN: $(codecovUploadToken)
 
