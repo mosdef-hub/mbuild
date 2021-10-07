@@ -1,5 +1,5 @@
-ARG PY_VERSION=3.7
-FROM continuumio/miniconda3:4.8.2-alpine AS builder
+ARG PY_VERSION=3.8
+FROM continuumio/miniconda3:4.10.3-alpine AS builder
 
 EXPOSE 8888
 
@@ -14,6 +14,9 @@ ADD . /mbuild
 
 WORKDIR /mbuild
 
+# Create a group and user
+RUN addgroup -S anaconda && adduser -S anaconda -G anaconda
+
 RUN conda update conda -yq && \
   conda config --set always_yes yes --set changeps1 no && \
   . /opt/conda/etc/profile.d/conda.sh && \
@@ -26,7 +29,7 @@ RUN conda update conda -yq && \
   echo "source activate mbuild-dev" >> \
   /home/anaconda/.profile && \
   conda clean -afy && \
-  mkdir /home/anaconda/data && \
+  mkdir -p /home/anaconda/data && \
   chown -R anaconda:anaconda /mbuild && \
   chown -R anaconda:anaconda /opt && \
   chown -R anaconda:anaconda /home/anaconda

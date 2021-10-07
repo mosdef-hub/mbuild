@@ -10,4 +10,4 @@ from mbuild.pattern import *
 from mbuild.port import Port
 from mbuild.recipes import recipes
 
-__version__ = "0.13.0"
+__version__ = "0.13.1"
