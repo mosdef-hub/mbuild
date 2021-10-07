@@ -80,7 +80,6 @@ stages:
           - bash: |
               source activate mbuild-dev
               python -m pytest -v --cov=mbuild --cov-report=html --color=yes --pyargs mbuild --cov-config=setup.cfg --cov-append
-
             displayName: Run Tests
 
           - task: PublishCodeCoverageResults@1
