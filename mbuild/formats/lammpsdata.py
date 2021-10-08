@@ -582,9 +582,7 @@ def write_lammpsdata(
             # Pair coefficients
             else:
                 if pair_coeff_label:
-                    data.write(
-                        "\nPair Coeffs # {}\n".format(pair_coeff_label)
-                    )
+                    data.write("\nPair Coeffs # {}\n".format(pair_coeff_label))
                 else:
                     data.write("\nPair Coeffs # lj\n")
 
