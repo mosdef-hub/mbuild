@@ -552,10 +552,10 @@ def write_lammpsdata(
                 else:
                     if pair_coeff_label:
                         data.write(
-                            "\nPair Coeffs # {} \n\n".format(pair_coeff_label)
+                            "\nPair Coeffs # {}\n".format(pair_coeff_label)
                         )
                     else:
-                        data.write("\nPair Coeffs # lj\n\n")
+                        data.write("\nPair Coeffs # lj\n")
 
                     for idx, epsilon in sorted(epsilon_dict.items()):
                         data.write(
@@ -583,10 +583,10 @@ def write_lammpsdata(
             else:
                 if pair_coeff_label:
                     data.write(
-                        "\nPair Coeffs # {} \n\n".format(pair_coeff_label)
+                        "\nPair Coeffs # {}\n".format(pair_coeff_label)
                     )
                 else:
-                    data.write("\nPair Coeffs # lj\n\n")
+                    data.write("\nPair Coeffs # lj\n")
 
                 if unit_style == "real":
                     data.write("#\tepsilon (kcal/mol)\t\tsigma (Angstrom)\n")
