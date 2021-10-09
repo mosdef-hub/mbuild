@@ -1,4 +1,4 @@
-import numpy as np
+/import numpy as np
 import pytest
 from pytest import FixtureRequest
 
@@ -448,7 +448,6 @@ class TestLammpsData(BaseTest):
             while not checked_section:
                 line = fi.readline()
                 if "Pair Coeffs" in line:
-                    fi.readline()
                     fi.readline()
                     line = fi.readline().split()
                     epsilon = float(line[1])
