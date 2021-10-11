@@ -10,6 +10,7 @@ from copy import deepcopy
 from warnings import warn
 
 import ele
+import freud
 import numpy as np
 from ele.element import Element, element_from_name, element_from_symbol
 from ele.exceptions import ElementError
@@ -20,6 +21,7 @@ from mbuild.box import Box
 from mbuild.coordinate_transform import _rotate, _translate
 from mbuild.exceptions import MBuildError
 from mbuild.periodic_kdtree import PeriodicKDTree
+from mbuild.utils.decorators import experimental_feature
 from mbuild.utils.exceptions import RemovedFuncError
 from mbuild.utils.io import import_, run_from_ipython
 from mbuild.utils.jsutils import overwrite_nglview_default
@@ -1008,6 +1010,57 @@ class Compound(object):
                 if (p2.name == name_b) and (dmin <= min_dist <= dmax):
                     self.add_bond((p1, p2))
                     added_bonds.append(bond_tuple)
+
+    @experimental_feature()
+    def freud_generate_bonds(
+        self,
+        name_a,
+        name_b,
+        dmin,
+        dmax,
+        exclude_ii=True,
+    ):
+        """Add Bonds between all pairs of types a/b within [dmin, dmax].
+
+        Parameters
+        ----------
+        name_a : str
+            The name of one of the Particles to be in each bond
+        name_b : str
+            The name of the other Particle to be in each bond
+        dmin : float
+            The minimum distance between Particles for considering a bond
+        dmax : float
+            The maximum distance between Particles for considering a bond
+        exclude_ii : bool, optional, default=True
+            Whether or not to include neighbors with the same index.
+        """
+        moved_positions = self.xyz - np.array(
+            [self.box.Lx / 2, self.box.Ly / 2, self.box.Lz / 2]
+        )
+        extended_lengths = list(self.box.lengths)
+        # extend non-periodic dimensions for pseudo-periodicity
+        for i, truthy in enumerate(self.periodicity):
+            if truthy:
+                continue
+            else:
+                extended_lengths[i] = extended_lengths[i] * 10
+        tmp_box = Box(lengths=extended_lengths, angles=list(self.box.angles))
+        freud_box = freud.box.Box.from_matrix(tmp_box.vectors.T)
+
+        aq = freud.locality.AABBQuery(freud_box, moved_positions)
+
+        bond_set = set()
+        for bond in aq.query(
+            moved_positions, dict(r_min=dmin, r_max=dmax, exclude_ii=exclude_ii)
+        ):
+            bonds = []
+            bonds.append([bond[0], bond[1]])
+            bonds[0].sort()
+            bond_set.add(tuple(bonds[0]))
+
+        for bond in bond_set:
+            self.add_bond((self[bond[0]], self[bond[1]]))
 
     def remove_bond(self, particle_pair):
         """Delete a bond between a pair of Particles.
