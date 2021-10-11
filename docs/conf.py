@@ -53,6 +53,8 @@ MOCK_MODULES = [
     "gsd",
     "gsd.hoomd",
     "gsd.fl",
+    "freud",
+    "freud.box",
 ]
 for mod_name in MOCK_MODULES:
     sys.modules[mod_name] = mock.Mock()
