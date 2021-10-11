@@ -1035,17 +1035,21 @@ class Compound(object):
         exclude_ii : bool, optional, default=True
             Whether or not to include neighbors with the same index.
         """
+        if self.box is None:
+            box = self.get_boundingbox()
+        else:
+            box = self.box
         moved_positions = self.xyz - np.array(
-            [self.box.Lx / 2, self.box.Ly / 2, self.box.Lz / 2]
+            [box.Lx / 2, box.Ly / 2, box.Lz / 2]
         )
-        extended_lengths = list(self.box.lengths)
+        extended_lengths = list(box.lengths)
         # extend non-periodic dimensions for pseudo-periodicity
         for i, truthy in enumerate(self.periodicity):
             if truthy:
                 continue
             else:
                 extended_lengths[i] = extended_lengths[i] * 10
-        tmp_box = Box(lengths=extended_lengths, angles=list(self.box.angles))
+        tmp_box = Box(lengths=extended_lengths, angles=list(box.angles))
         freud_box = freud.box.Box.from_matrix(tmp_box.vectors.T)
 
         aq = freud.locality.AABBQuery(freud_box, moved_positions)
