@@ -3,6 +3,7 @@ channels:
   - conda-forge
 dependencies:
   - ele
+  - freud
   - numpy
   - packmol>=18
   - parmed>=3.4.3

@@ -7,6 +7,7 @@ dependencies:
   - codecov
   - ele
   - foyer>=0.9.4
+  - freud
   - garnett>=0.7.1
   - gsd>=1.2
   - intermol
