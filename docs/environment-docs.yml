@@ -2,6 +2,7 @@ name: mbuild-docs
 channels:
   - conda-forge
 dependencies:
+  - freud
   - ipykernel
   - ipywidgets
   - mock
