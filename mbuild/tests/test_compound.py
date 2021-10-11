@@ -466,6 +466,16 @@ class TestCompound(BaseTest):
         ch3.generate_bonds("H", "H", dmin=0.01, dmax=2.0)
         assert ch3.n_bonds == 3 + 3
 
+    def test_freud_generate_bonds(self, ch3):
+        ch3.freud_generate_bonds(
+            "H", "H", dmin=0.01, dmax=0.19, exclude_ii=True
+        )
+        assert ch3.n_bonds == 3 + 3
+
+    def test_freud_generate_bonds_expected(self, ch3):
+        ch3.freud_generate_bonds("H", "H", dmin=0.01, dmax=0.1, exclude_ii=True)
+        assert ch3.n_bonds == 3
+
     def test_remove_from_box(self, ethane):
         n_ethanes = 5
         box = mb.fill_box(ethane, n_ethanes, [3, 3, 3])
