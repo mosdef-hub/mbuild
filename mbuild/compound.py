@@ -19,7 +19,7 @@ from mbuild.bond_graph import BondGraph
 from mbuild.box import Box
 from mbuild.coordinate_transform import _rotate, _translate
 from mbuild.exceptions import MBuildError
-from mbuild.periodic_kdtree import PeriodicCKDTree
+from mbuild.periodic_kdtree import PeriodicKDTree
 from mbuild.utils.exceptions import RemovedFuncError
 from mbuild.utils.io import import_, run_from_ipython
 from mbuild.utils.jsutils import overwrite_nglview_default
@@ -983,7 +983,11 @@ class Compound(object):
         dmax : float
             The maximum distance between Particles for considering a bond
         """
-        particle_kdtree = PeriodicCKDTree(data=self.xyz, box=self.box)
+        if self.box is None:
+            self.box = self.get_boundingbox()
+        particle_kdtree = PeriodicKDTree.from_compound(
+            compound=self, leafsize=10
+        )
         particle_array = np.array(list(self.particles()))
         added_bonds = list()
         for p1 in self.particles_by_name(name_a):
@@ -1351,7 +1355,7 @@ class Compound(object):
             Maximum distance from 'compound' to look for Particles
         max_particles : int, optional, default=20
             Maximum number of Particles to return
-        particle_kdtree : mb.PeriodicCKDTree, optional
+        particle_kdtree : mb.PeriodicKDTree, optional
             KD-tree for looking up nearest neighbors. If not provided, a KD-
             tree will be generated from all Particles in self
         particle_array : np.ndarray, shape=(n,), dtype=mb.Compound, optional
@@ -1365,11 +1369,13 @@ class Compound(object):
 
         See Also
         --------
-        periodic_kdtree.PerioidicCKDTree : mBuild implementation of kd-trees
-        scipy.spatial.ckdtree : Further details on kd-trees
+        periodic_kdtree.PerioidicKDTree : mBuild implementation of kd-trees
+        scipy.spatial.kdtree : Further details on kd-trees
         """
+        if self.box is None:
+            self.box = self.get_boundingbox()
         if particle_kdtree is None:
-            particle_kdtree = PeriodicCKDTree(data=self.xyz, box=self.box)
+            particle_kdtree = PeriodicKDTree.from_compound(self, leafsize=10)
         _, idxs = particle_kdtree.query(
             compound.pos, k=max_particles, distance_upper_bound=dmax
         )
