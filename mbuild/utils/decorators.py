@@ -128,7 +128,7 @@ def breaking_change(warning_string=""):
 def experimental_feature(warning_string=""):  # pragma no cover
     """Decorate experimental methods."""
 
-    def old_function(fcn):
+    def experimental_function(fcn):
         def wrapper(*args, **kwargs):
             warn(
                 f"{fcn.__name__} is an experimental feature and is not subject to follow standard deprecation cycles. Use at your own risk! {warning_string}",
@@ -138,4 +138,4 @@ def experimental_feature(warning_string=""):  # pragma no cover
 
         return wrapper
 
-    return old_function
+    return experimental_function
