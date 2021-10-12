@@ -320,7 +320,7 @@ def write_lammpsdata(
             )
         if unit_style == "lj":
             box = Box(
-                lengths=structure.box[0:3]
+                lengths=structure.box[0:3],
                 angles=structure.box[3:6],
             )
 
