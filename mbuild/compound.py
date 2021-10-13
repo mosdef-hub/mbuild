@@ -1054,17 +1054,29 @@ class Compound(object):
 
         aq = freud.locality.AABBQuery(freud_box, moved_positions)
 
-        bond_set = set()
-        for bond in aq.query(
-            moved_positions, dict(r_min=dmin, r_max=dmax, exclude_ii=exclude_ii)
-        ):
-            bonds = []
-            bonds.append([bond[0], bond[1]])
-            bonds[0].sort()
-            bond_set.add(tuple(bonds[0]))
+        # build name_a, name_b mask, other names are -1
+        name_mask = []
+        mask_dict = {
+            name_a: 0,
+            name_b: 1,
+        }
+        for part in self.particles():
+            name_mask.append(mask_dict.get(part.name, -1))
+        name_mask = np.array(name_mask)
 
-        for bond in bond_set:
-            self.add_bond((self[bond[0]], self[bond[1]]))
+        nlist = aq.query(
+            moved_positions,
+            dict(
+                r_min=dmin, r_max=dmax, exclude_ii=exclude_ii, num_neighbors=20
+            ),
+        ).toNeighborList()
+        nlist.filter(
+            (name_mask[nlist.query_point_indices] == 0)
+            & (name_mask[nlist.point_indices] == 1)
+        )
+
+        for i, j in nlist[:]:
+            self.add_bond((self[i], self[j]))
 
     def remove_bond(self, particle_pair):
         """Delete a bond between a pair of Particles.
