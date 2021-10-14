@@ -467,9 +467,7 @@ class TestCompound(BaseTest):
         assert ch3.n_bonds == 3 + 3
 
     def test_freud_generate_bonds(self, ch3):
-        ch3.freud_generate_bonds(
-            "H", "H", dmin=0.01, dmax=0.19, exclude_ii=True
-        )
+        ch3.freud_generate_bonds("H", "H", dmin=0.01, dmax=0.2, exclude_ii=True)
         assert ch3.n_bonds == 3 + 3
 
     def test_freud_generate_bonds_expected(self, ch3):

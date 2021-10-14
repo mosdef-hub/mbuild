@@ -1042,8 +1042,9 @@ class Compound(object):
         moved_positions = self.xyz - np.array(
             [box.Lx / 2, box.Ly / 2, box.Lz / 2]
         )
-        extended_lengths = list(box.lengths)
+
         # extend non-periodic dimensions for pseudo-periodicity
+        extended_lengths = list(box.lengths)
         for i, truthy in enumerate(self.periodicity):
             if truthy:
                 continue
@@ -1055,11 +1056,11 @@ class Compound(object):
         aq = freud.locality.AABBQuery(freud_box, moved_positions)
 
         # build name_a, name_b mask, other names are -1
-        name_mask = []
-        mask_dict = {
-            name_a: 0,
-            name_b: 1,
-        }
+        name_mask = list()
+        name_set = set((name_a, name_b))
+        mask_dict = dict()
+        for i, val in enumerate(name_set):
+            mask_dict[val] = i
         for part in self.particles():
             name_mask.append(mask_dict.get(part.name, -1))
         name_mask = np.array(name_mask)
@@ -1070,13 +1071,15 @@ class Compound(object):
                 r_min=dmin, r_max=dmax, exclude_ii=exclude_ii, num_neighbors=20
             ),
         ).toNeighborList()
+
         nlist.filter(
-            (name_mask[nlist.query_point_indices] == 0)
-            & (name_mask[nlist.point_indices] == 1)
+            (name_mask[nlist.query_point_indices] == mask_dict[name_a])
+            & (name_mask[nlist.point_indices] == mask_dict[name_b])
         )
 
+        part_list = [part for part in self.particles(include_ports=False)]
         for i, j in nlist[:]:
-            self.add_bond((self[i], self[j]))
+            self.add_bond((part_list[i], part_list[j]))
 
     def remove_bond(self, particle_pair):
         """Delete a bond between a pair of Particles.
