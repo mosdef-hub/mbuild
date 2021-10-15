@@ -10,7 +10,6 @@ from copy import deepcopy
 from warnings import warn
 
 import ele
-import freud
 import numpy as np
 from ele.element import Element, element_from_name, element_from_symbol
 from ele.exceptions import ElementError
@@ -1035,6 +1034,7 @@ class Compound(object):
         exclude_ii : bool, optional, default=True
             Whether or not to include neighbors with the same index.
         """
+        freud = import_("freud")
         if self.box is None:
             box = self.get_boundingbox()
         else:
