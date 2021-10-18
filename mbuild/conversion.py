@@ -861,6 +861,7 @@ def from_gmso(topology, compound=None, coords_only=False, infer_hierarchy=True):
     compound : mb.Compound
     """
     import unyt as u
+
     if compound and coords_only:
         if topology.n_sites != compound.n_particles:
             raise ValueError(
@@ -868,7 +869,9 @@ def from_gmso(topology, compound=None, coords_only=False, infer_hierarchy=True):
                 f"Topology: {topology.n_sites} sites"
                 f"Compound: {compound.n_particles} particles"
             )
-        atoms_particles = zip(topology.sites, compound.particles(include_ports=False))
+        atoms_particles = zip(
+            topology.sites, compound.particles(include_ports=False)
+        )
         if None in compound._particles(include_ports=None):
             raise ValueError("Some particles are None")
 
@@ -1600,6 +1603,7 @@ def to_gmso(compound):
         The converted gmso Topology
     """
     from gmso.external.convert_mbuild import from_mbuild
+
     return from_mbuild(compound)
 
 
