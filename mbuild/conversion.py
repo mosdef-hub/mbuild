@@ -842,6 +842,56 @@ def from_rdkit(rdkit_mol, compound=None, coords_only=False, smiles_seed=0):
     return comp
 
 
+def from_gmso(topology, compound=None, coords_only=False, infer_hierarchy=True):
+    """Convert a GMSO Topology to mBuild Compound
+
+    Parameter
+    ---------
+    topology : gmso.Topology
+        The GMSO Topology to be converted.
+    compound : mb.Compound, optional, default=None
+        Host mb.Compound that we are loading to.
+    coords_only : bool, optional, default=False
+        Set preexisting atoms in compound to coordinates given by Topology.
+    infer_hierarchy : bool, optional, default=True
+        If True, infer compound hierarchy from Topology residue, to be implemented.
+
+    Returns
+    -------
+    compound : mb.Compound
+    """
+    import unyt as u
+    if compound and coords_only:
+        if topology.n_sites != compound.n_particles:
+            raise ValueError(
+                f"Number of sites in {topology} does not match {compound}"
+                f"Topology: {topology.n_sites} sites"
+                f"Compound: {compound.n_particles} particles"
+            )
+        atoms_particles = zip(topology.sites, compound.particles(include_ports=False))
+        if None in compound._particles(include_ports=None):
+            raise ValueError("Some particles are None")
+
+        for site, particle in atoms_particles:
+            particle.pos = np.array(site.position.to(u.nm).value)
+        return compound
+    elif not compound and coords_only:
+        raise MBuildError("coords_only=True but host compound is not provided")
+
+    # Initialize a compound if none is provided
+    if not compound:
+        compound = mb.Compound()
+
+    # Convert gmso Topology to mbuild Compound
+    from gmso.external.convert_mbuild import to_mbuild
+
+    if not compound:
+        return to_mbuild(topology)
+    else:
+        compound.add(to_mbuild(topology))
+    return compound
+
+
 def save(
     compound,
     filename,
@@ -1535,6 +1585,22 @@ def _iterate_children(compound, nodes, edges, names_only=False):
             child, nodes, edges, names_only=names_only
         )
     return nodes, edges
+
+
+def to_gmso(compound):
+    """Create a GMSO Topology from a mBuild Compound
+
+    Parameters
+    ----------
+    compound : mb.Compound
+        The mb.Compound to be converted.
+    Returns
+    -------
+    topology : gmso.Topology
+        The converted gmso Topology
+    """
+    from gmso.external.convert_mbuild import from_mbuild
+    return from_mbuild(compound)
 
 
 def to_intermol(compound, molecule_types=None):  # pragma: no cover
