@@ -419,6 +419,18 @@ def load_file(
         elif extension == ".xyz" and "top" in kwargs:
             backend = "mdtraj"
 
+    # Then gmso reader
+    if backend == "gmso":
+        import gmso
+
+        top = gmso.Topology.load(filename=filename)
+        compound = from_gmso(
+            topology=top,
+            compound=compound,
+            coords_only=coords_only,
+            infer_hierarchy=infer_hierarchy,
+        )
+
     # Then pybel reader
     elif backend == "pybel":
         pybel = import_("pybel")
@@ -843,7 +855,7 @@ def from_rdkit(rdkit_mol, compound=None, coords_only=False, smiles_seed=0):
 
 
 def from_gmso(topology, compound=None, coords_only=False, infer_hierarchy=True):
-    """Convert a GMSO Topology to mBuild Compound
+    """Convert a GMSO Topology to mBuild Compound.
 
     Parameter
     ---------
@@ -1591,12 +1603,13 @@ def _iterate_children(compound, nodes, edges, names_only=False):
 
 
 def to_gmso(compound):
-    """Create a GMSO Topology from a mBuild Compound
+    """Create a GMSO Topology from a mBuild Compound.
 
     Parameters
     ----------
     compound : mb.Compound
         The mb.Compound to be converted.
+
     Returns
     -------
     topology : gmso.Topology
