@@ -240,6 +240,7 @@ def write_lammpsdata(
     if unit_style == "lj":
         # If not specified by user, get sigma, mass, and epsilon conversions by finding maximum of each
         if sigma_use_default:
+            import pdb; pdb.set_trace()
             sigma_conversion_factor = np.max(
                 [atom.sigma for atom in structure.atoms]
             )
@@ -688,6 +689,7 @@ def write_lammpsdata(
                                 idx, epsilon, sigma_dict[idx]
                             )
                         )
+
                     print("Copy these commands into your input script:\n")
                     print(
                         "# type1 type2\tepsilon (kcal/mol)\tsigma (Angstrom)\n"
@@ -713,14 +715,20 @@ def write_lammpsdata(
 
                 if unit_style == "real":
                     data.write("#\tepsilon (kcal/mol)\t\tsigma (Angstrom)\n")
+                    for idx, epsilon in sorted(epsilon_dict.items()):
+                        data.write(
+                            "{}\t{:.5f}\t\t{:.5f}\t\t# {}\n".format(
+                                idx, epsilon, sigma_dict[idx], forcefield_dict[idx]
+                            )
+                        )
                 elif unit_style == "lj":
                     data.write("#\treduced_epsilon \t\treduced_sigma \n")
-                for idx, epsilon in sorted(epsilon_dict.items()):
-                    data.write(
-                        "{}\t{:.5f}\t\t{:.5f}\t\t# {}\n".format(
-                            idx, epsilon, sigma_dict[idx], forcefield_dict[idx]
+                    for idx, epsilon in sorted(epsilon_dict.items()):
+                        data.write(
+                            "{}\t{:.5f}\t\t{:.5f}\t\t# {}\n".format(
+                                idx, epsilon*KCAL_TO_KJ, sigma_dict[idx]/NM_TO_ANG, forcefield_dict[idx]
+                            )
                         )
-                    )
 
             # Bond coefficients
             if bonds:
@@ -1117,11 +1125,9 @@ def _get_angle_types(
                     [
                         (
                             round(
-                                angle.type.k
-                                * (
-                                    sigma_conversion_factor ** 2
-                                    / epsilon_conversion_factor
-                                ),
+                                angle.type.k 
+                                / epsilon_conversion_factor
+                                ,
                                 3,
                             ),
                             round(angle.type.theteq, 3),
@@ -1140,11 +1146,9 @@ def _get_angle_types(
             unique_angle_types[
                 (
                     round(
-                        angle.type.k
-                        * (
-                            sigma_conversion_factor ** 2
-                            / epsilon_conversion_factor
-                        ),
+                        angle.type.k 
+                        / epsilon_conversion_factor
+                        ,
                         3,
                     ),
                     round(angle.type.theteq, 3),
