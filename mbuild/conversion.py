@@ -25,6 +25,7 @@ from mbuild.formats.lammpsdata import write_lammpsdata
 from mbuild.formats.par_writer import write_par
 from mbuild.formats.xyz import read_xyz, write_xyz
 from mbuild.utils.io import (
+    has_gmso,
     has_mdtraj,
     has_networkx,
     has_openbabel,
@@ -179,6 +180,10 @@ def load_object(
     if has_mdtraj:
         md = import_("mdtraj")
         type_dict.update({md.Trajectory: from_trajectory})
+
+    if has_gmso:
+        gmso = import_("gmso")
+        type_dict.update({gmso.Topology: from_gmso})
 
     # Check if the given object is an mb.Compound
     if isinstance(obj, mb.Compound):
