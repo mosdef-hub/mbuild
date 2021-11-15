@@ -4,6 +4,7 @@ from collections import OrderedDict
 from warnings import warn
 
 import numpy as np
+from parmed import Structure
 from parmed.parameters import ParameterSet
 from scipy.constants import epsilon_0
 
@@ -43,6 +44,7 @@ def write_lammpsdata(
     use_rb_torsions=True,
     use_dihedrals=False,
     zero_dihedral_weighting_factor=False,
+    moleculeID_offset=1,
 ):
     """Output a LAMMPS data file.
 
@@ -89,6 +91,11 @@ def write_lammpsdata(
     zero_dihedral_weighting_factor:
         If True, will set weighting parameter to zero in CHARMM-style dihedrals.
         This should be True if the CHARMM dihedral style is used in non-CHARMM forcefields.
+    moleculeID_offset : int , optional, default=1
+        Since LAMMPS treats the MoleculeID as an additional set of information
+        to identify what molecule an atom belongs to, this currently
+        behaves as a residue id. This value needs to start at 1 to be
+        considered a real molecule.
 
     Notes
     -----
@@ -137,6 +144,8 @@ def write_lammpsdata(
         --- atomtype 3 : dihedral.atom3.type
         --- atomtype 4 : dihedral.atom4.type
     """
+    # copy structure so the input structure isn't modified in-place
+    structure = structure.copy(cls=Structure, split_dihedrals=True)
     if atom_style not in ["atomic", "charge", "molecular", "full"]:
         raise ValueError(
             'Atom style "{atom_style}" is invalid or is not currently supported'
@@ -238,7 +247,7 @@ def write_lammpsdata(
             use_rb_torsions = True
         else:
             use_rb_torsions = False
-        if len(structure.dihedrals) > 0:
+        if len([d for d in structure.dihedrals if not d.improper]) > 0:
             print("Charmm dihedrals detected, will use dihedral_style charmm")
             use_dihedrals = True
         else:
@@ -543,10 +552,10 @@ def write_lammpsdata(
                 else:
                     if pair_coeff_label:
                         data.write(
-                            "\nPair Coeffs # {} \n\n".format(pair_coeff_label)
+                            "\nPair Coeffs # {}\n".format(pair_coeff_label)
                         )
                     else:
-                        data.write("\nPair Coeffs # lj\n\n")
+                        data.write("\nPair Coeffs # lj\n")
 
                     for idx, epsilon in sorted(epsilon_dict.items()):
                         data.write(
@@ -573,11 +582,9 @@ def write_lammpsdata(
             # Pair coefficients
             else:
                 if pair_coeff_label:
-                    data.write(
-                        "\nPair Coeffs # {} \n\n".format(pair_coeff_label)
-                    )
+                    data.write("\nPair Coeffs # {}\n".format(pair_coeff_label))
                 else:
-                    data.write("\nPair Coeffs # lj\n\n")
+                    data.write("\nPair Coeffs # lj\n")
 
                 if unit_style == "real":
                     data.write("#\tepsilon (kcal/mol)\t\tsigma (Angstrom)\n")
@@ -775,7 +782,7 @@ def write_lammpsdata(
                 atom_line.format(
                     index=i + 1,
                     type_index=unique_types.index(types[i]) + 1,
-                    zero=structure.atoms[i].residue.idx,
+                    zero=structure.atoms[i].residue.idx + moleculeID_offset,
                     charge=charges[i],
                     x=coords[0],
                     y=coords[1],

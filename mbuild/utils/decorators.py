@@ -116,10 +116,27 @@ def breaking_change(warning_string=""):
     def old_function(fcn):
         def wrapper(*args, **kwargs):
             warn(
-                "{fcn.__name__} has breaking change. {warning_string}", Warning
+                f"{fcn.__name__} has breaking change. {warning_string}", Warning
             )
             fcn(*args, **kwargs)
 
         return wrapper
 
     return old_function
+
+
+def experimental_feature(warning_string=""):  # pragma no cover
+    """Decorate experimental methods."""
+
+    def experimental_function(fcn):
+        @wraps(fcn)
+        def wrapper(*args, **kwargs):
+            warn(
+                f"{fcn.__name__} is an experimental feature and is not subject to follow standard deprecation cycles. Use at your own risk! {warning_string}",
+                Warning,
+            )
+            fcn(*args, **kwargs)
+
+        return wrapper
+
+    return experimental_function

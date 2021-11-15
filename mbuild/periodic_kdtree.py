@@ -38,6 +38,8 @@ from itertools import chain
 import numpy as np
 from scipy.spatial import KDTree
 
+import mbuild as mb
+
 
 def _gen_relevant_images(x, bounds, distance_upper_bound):
     """Map x onto canonical unit cell and produce mirror images."""
@@ -74,10 +76,10 @@ def _gen_relevant_images(x, bounds, distance_upper_bound):
     return xs
 
 
-class PeriodicCKDTree(KDTree):
+class PeriodicKDTree(KDTree):
     """Cython kd-tree for nearest-neighbor lookup with periodic boundaries.
 
-    See scipy.spatial.ckdtree for details on kd-trees.
+    See scipy.spatial.kdtree for details on kd-trees.
 
     Searches with periodic boundaries are implemented by mapping all initial
     data points to one canonical periodic image, building an ordinary kd-tree
@@ -86,21 +88,15 @@ class PeriodicCKDTree(KDTree):
 
     Parameters
     ----------
-    box : mbuild.Box
-        The box object containing the periodicity of the system.
-        A zero value for one of the box lengths mean that the
-        space is not periodic in that dimension.
-    bounds : array_like, shape (k,)
-        Deprecated. Will be removed in version 0.11. Please use
-        the box argument instead.
+    data : array-like, shape (n,m), required
+        The n data points of dimension m to be indexed. This array is not copied
+        unless this is necessary to produce a contiguous array of doubles, and
+        so modifying this data will result in bogus results.
+    bounds : array_like, shape (m,), required
         Size of the periodic box along each spatial dimension.  A
         negative or zero size for dimension k means that space is not
         periodic along k.
-    data : array-like, shape (n,m)
-        The n data points of dimension mto be indexed. This array is not copied
-        unless this is necessary to produce a contiguous array of doubles, and
-        so modifying this data will result in bogus results.
-    leafsize : positive integer
+    leafsize : positive integer, optional, default=10
         The number of points at which the algorithm switches over to
         brute-force.
 
@@ -111,33 +107,32 @@ class PeriodicCKDTree(KDTree):
     point and a data point to half the smallest box dimension.
     """
 
-    def __init__(self, data, leafsize=10, box=None, bounds=None):
-        if bounds is not None and box is not None:
-            raise ValueError(
-                "Only one of 'bounds' and 'box' may be specified. "
-                "Since 'bounds' is deprecated, please use 'box'."
-            )
-        # Map all points to canonical periodic image.
-        if box is None:
-            if bounds is None:
-                bounds = np.array([0.0, 0.0, 0.0])
-        elif np.allclose(box.angles, 90.0):
-            bounds = box.lengths
-        else:
-            raise NotImplementedError(
-                "Periodic KCDTree search only implemented"
-                "for orthorhombic periodic boundaries"
-            )
+    def __init__(self, bounds, data, leafsize=10):
+        """Construct Cython kd-tree for nearest-neighbor lookup with periodic boundaries.
+
+        Parameters
+        ----------
+        bounds : array_like, shape (m,)
+            Size of the periodic box along each spatial dimension.  A
+            negative or zero size for dimension k means that space is not
+            periodic along k.
+        data : array-like, shape (n,m)
+            The n data points of dimension m to be indexed. This array is
+            not copied unless this is necessary to produce a contiguous
+            array of doubles, and so modifying this data will result in
+            bogus results.
+        leafsize : positive integer
+            The number of points at which the algorithm switches over to
+            brute-force.
+        """
+        # Map all points to canonical periodic image
         self.bounds = np.array(bounds)
         self.real_data = np.asarray(data)
-
-        wrapped_data = self.real_data
-
-        for i, row in enumerate(self.real_data):
-            for j, coord in enumerate(row):
-                if bounds[j] > 0.0:
-                    wrap = np.floor(self.real_data[i, j] / bounds[j])
-                    wrapped_data[i, j] = self.real_data[i, j] - wrap * bounds[j]
+        wrapped_data = self.real_data - np.where(
+            self.bounds > 0.0,
+            (np.floor(self.real_data / self.bounds) * self.bounds),
+            0.0,
+        )
 
         # Calculate maximum distance_upper_bound
         self.max_distance_upper_bound = np.min(
@@ -145,7 +140,57 @@ class PeriodicCKDTree(KDTree):
         )
 
         # Set up underlying kd-tree
-        super(PeriodicCKDTree, self).__init__(wrapped_data, leafsize)
+        super(PeriodicKDTree, self).__init__(wrapped_data, leafsize)
+
+    @classmethod
+    def from_compound(cls, compound, leafsize=10):
+        """Create a PeriodicKDTree from a compound.
+
+        See scipy.spatial.kdtree for details on kd-trees.
+
+        Searches with periodic boundaries are implemented by mapping all initial
+        data points to one canonical periodic image, building an ordinary kd-tree
+        with these points, then querying this kd-tree multiple times, if necessary,
+        with all the relevant periodic images of the query point.
+
+        Parameters
+        ----------
+        compound : mb.Compound, required
+            The mbuild Compound to gather periodicity and box information for the
+            PeriodicKDTree.
+        leafsize : positive integer
+            The number of points at which the algorithm switches over to
+            brute-force.
+
+        Note
+        ----
+        To ensure that no two distinct images of the same point appear in the
+        results, it is essential to restrict the maximum distance between a query
+        point and a data point to half the smallest box dimension.
+        """
+        if not isinstance(compound, mb.Compound):
+            raise TypeError(
+                f"Incorrect type of compound. Provided compound of type {type(compound)}. Expected mbuild.Compound"
+            )
+        if not isinstance(compound.box, mb.Box):
+            raise TypeError(
+                f"Incorrect type of box. Was provided box of type {type(compound.box)}. Expected mbuild.Box"
+            )
+        if not np.allclose(compound.box.angles, 90.0):
+            raise NotImplementedError(
+                "Periodic KDTree search only implemented"
+                "for orthorhombic periodic boundaries"
+            )
+        # Map all points to canonical periodic image.
+        compound_bounds = []
+        for box_len, period in zip(compound.box.lengths, compound.periodicity):
+            if period:
+                compound_bounds.append(box_len)
+            else:
+                compound_bounds.append(0)
+
+        # Set up underlying kd-tree
+        return cls(bounds=compound_bounds, data=compound.xyz, leafsize=leafsize)
 
     # Ideally, KDTree and cKDTree would expose identical query and __query
     # interfaces.  But they don't, and cKDTree.__query is also inaccessible
@@ -167,7 +212,7 @@ class PeriodicCKDTree(KDTree):
         for real_x in _gen_relevant_images(
             x, self.bounds, distance_upper_bound
         ):
-            d, i = super(PeriodicCKDTree, self).query(
+            d, i = super(PeriodicKDTree, self).query(
                 real_x, k, eps, p, distance_upper_bound
             )
             if k > 1:
@@ -298,7 +343,7 @@ class PeriodicCKDTree(KDTree):
         results = []
         for real_x in _gen_relevant_images(x, self.bounds, r):
             results.extend(
-                super(PeriodicCKDTree, self).query_ball_point(real_x, r, p, eps)
+                super(PeriodicKDTree, self).query_ball_point(real_x, r, p, eps)
             )
         return results
 
@@ -330,7 +375,7 @@ class PeriodicCKDTree(KDTree):
         -----
         If you have many points whose neighbors you want to find, you may
         save substantial amounts of time by putting them in a
-        PeriodicCKDTree and using query_ball_tree.
+        PeriodicKDTree and using query_ball_tree.
         """
         x = np.asarray(x).astype(float)
         if x.shape[-1] != self.m:

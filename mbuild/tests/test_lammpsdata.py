@@ -1,5 +1,6 @@
 import numpy as np
 import pytest
+from pytest import FixtureRequest
 
 import mbuild as mb
 from mbuild.formats.lammpsdata import write_lammpsdata
@@ -188,6 +189,34 @@ class TestLammpsData(BaseTest):
         assert found_impropers
 
     @pytest.mark.skipif(not has_foyer, reason="Foyer package not installed")
+    def test_save_forcefield_with_same_struct(self):
+        from foyer import Forcefield
+
+        from mbuild.formats.lammpsdata import write_lammpsdata
+
+        system = mb.load("C1(=CC=CC=C1)F", smiles=True)
+
+        ff = Forcefield(forcefield_files=[get_fn("gaff_test.xml")])
+        struc = ff.apply(
+            system,
+            assert_angle_params=False,
+            assert_dihedral_params=False,
+            assert_improper_params=False,
+        )
+        write_lammpsdata(
+            struc, "charmm_improper.lammps", zero_dihedral_weighting_factor=True
+        )
+        for i in range(3):
+            xyz = struc.coordinates
+            xyz = xyz + np.array([1, 1, 1])
+            struc.coordinates = xyz
+            write_lammpsdata(
+                struc,
+                f"charmm_improper{i}.lammps",
+                zero_dihedral_weighting_factor=True,
+            )
+
+    @pytest.mark.skipif(not has_foyer, reason="Foyer package not installed")
     @pytest.mark.parametrize("unit_style", ["real", "lj"])
     def test_save_box(self, ethane, unit_style):
         box = mb.Box(
@@ -271,10 +300,13 @@ class TestLammpsData(BaseTest):
                 else:
                     assert "# " + atom_style in line
 
-    def test_resid(self, ethane, methane):
+    @pytest.mark.parametrize(
+        "offset, expected_value", [(0, ("0", "1")), (1, ("1", "2"))]
+    )
+    def test_resid(self, offset, expected_value, ethane, methane):
         structure = ethane.to_parmed() + methane.to_parmed()
         n_atoms = len(structure.atoms)
-        write_lammpsdata(structure, "compound.lammps")
+        write_lammpsdata(structure, "compound.lammps", moleculeID_offset=offset)
         res_list = list()
         with open("compound.lammps", "r") as f:
             for i, line in enumerate(f):
@@ -285,8 +317,7 @@ class TestLammpsData(BaseTest):
         ]
         for line in atom_lines:
             res_list.append(line.rstrip().split()[1])
-
-        assert set(res_list) == set(["1", "0"])
+        assert set(res_list) == set(expected_value)
 
     def test_box_bounds(self, ethane):
         from foyer import Forcefield
@@ -417,7 +448,6 @@ class TestLammpsData(BaseTest):
             while not checked_section:
                 line = fi.readline()
                 if "Pair Coeffs" in line:
-                    fi.readline()
                     fi.readline()
                     line = fi.readline().split()
                     epsilon = float(line[1])

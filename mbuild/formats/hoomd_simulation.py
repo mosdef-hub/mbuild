@@ -22,10 +22,10 @@ hoomd.md = import_("hoomd.md")
 
 def create_hoomd_simulation(
     structure,
+    r_cut,
     ref_distance=1.0,
     ref_mass=1.0,
     ref_energy=1.0,
-    r_cut=1.2,
     auto_scale=False,
     snapshot_kwargs={},
     pppm_kwargs={"Nx": 8, "Ny": 8, "Nz": 8, "order": 4},
@@ -39,17 +39,18 @@ def create_hoomd_simulation(
     ----------
     structure : parmed.Structure
         ParmEd Structure object
+    r_cut : float
+        Cutoff radius in simulation units
     ref_distance : float, optional, default=1.0
-        Reference distance for conversion to reduced units
+        Reference distance for unit conversion (from Angstrom)
     ref_mass : float, optional, default=1.0
-        Reference mass for conversion to reduced units
+        Reference mass for unit conversion (from Dalton)
     ref_energy : float, optional, default=1.0
-        Reference energy for conversion to reduced units
-    r_cut : float, optional, default 1.2
-        Cutoff radius, in reduced units
+        Reference energy for unit conversion (from kcal/mol)
     auto_scale : bool, optional, default=False
-        Automatically use largest sigma value as ref_distance, largest mass
-        value as ref_mass, and largest epsilon value as ref_energy
+        Scale to reduced units by automatically using the largest sigma value
+        as ref_distance, largest mass value as ref_mass, and largest epsilon
+        value as ref_energy
     snapshot_kwargs : dict
         Kwargs to pass to to_hoomdsnapshot
     pppm_kwargs : dict
@@ -107,10 +108,16 @@ def create_hoomd_simulation(
     hoomd_objects = []  # Potential adaptation for Hoomd v3 API
 
     if auto_scale:
-        ref_mass = max([atom.mass for atom in structure.atoms])
+        if not all([i == 1 for i in (ref_distance, ref_energy, ref_mass)]):
+            warnings.warn(
+                "Autoscale option selected--provided reference values will not "
+                "be used."
+            )
         pair_coeffs = list(
             set((a.type, a.epsilon, a.sigma) for a in structure.atoms)
         )
+
+        ref_mass = max([atom.mass for atom in structure.atoms])
         ref_energy = max(pair_coeffs, key=operator.itemgetter(1))[1]
         ref_distance = max(pair_coeffs, key=operator.itemgetter(2))[2]
 
@@ -148,17 +155,21 @@ def create_hoomd_simulation(
         lj = _init_hoomd_lj(
             structure,
             nl,
-            r_cut=r_cut,
+            r_cut,
             ref_distance=ref_distance,
             ref_energy=ref_energy,
         )
-        qq = _init_hoomd_qq(structure, nl, r_cut=r_cut, **pppm_kwargs)
+        qq = _init_hoomd_qq(structure, nl, r_cut, **pppm_kwargs)
         hoomd_objects.append(lj)
         hoomd_objects.append(qq)
     if structure.adjusts:
         print("Processing 1-4 interactions, adjusting neighborlist exclusions")
         lj_14, qq_14 = _init_hoomd_14_pairs(
-            structure, nl, ref_distance=ref_distance, ref_energy=ref_energy
+            structure,
+            nl,
+            r_cut,
+            ref_distance=ref_distance,
+            ref_energy=ref_energy,
         )
         hoomd_objects.append(lj_14)
         hoomd_objects.append(qq_14)
@@ -187,7 +198,7 @@ def create_hoomd_simulation(
     return hoomd_objects, ref_values
 
 
-def _init_hoomd_lj(structure, nl, r_cut=1.2, ref_distance=1.0, ref_energy=1.0):
+def _init_hoomd_lj(structure, nl, r_cut, ref_distance=1.0, ref_energy=1.0):
     """LJ parameters."""
     # Identify the unique atom types before setting
     atom_type_params = {}
@@ -204,6 +215,8 @@ def _init_hoomd_lj(structure, nl, r_cut=1.2, ref_distance=1.0, ref_energy=1.0):
             sigma=atom_type.sigma / ref_distance,
             epsilon=atom_type.epsilon / ref_energy,
         )
+        if atom_type.epsilon / ref_energy == 0:
+            lj.pair_coeff.set(name, name, r_cut=0)
 
     # Cross interactions, mixing rules, NBfixes
     all_atomtypes = sorted(atom_type_params.keys())
@@ -245,11 +258,13 @@ def _init_hoomd_lj(structure, nl, r_cut=1.2, ref_distance=1.0, ref_energy=1.0):
             sigma = nb_fix_info[0] / (ref_distance * (2 ** (1 / 6)))
             epsilon = nb_fix_info[1] / ref_energy
         lj.pair_coeff.set(a1, a2, sigma=sigma, epsilon=epsilon)
+        if epsilon == 0:
+            lj.pair_coeff.set(a1, a2, r_cut=0)
 
     return lj
 
 
-def _init_hoomd_qq(structure, nl, Nx=1, Ny=1, Nz=1, order=4, r_cut=1.2):
+def _init_hoomd_qq(structure, nl, r_cut, Nx=1, Ny=1, Nz=1, order=4):
     """Charge interactions."""
     charged = hoomd.group.charged()
     if len(charged) == 0:
@@ -262,7 +277,7 @@ def _init_hoomd_qq(structure, nl, Nx=1, Ny=1, Nz=1, order=4, r_cut=1.2):
 
 
 def _init_hoomd_14_pairs(
-    structure, nl, r_cut=1.2, ref_distance=1.0, ref_energy=1.0
+    structure, nl, r_cut, ref_distance=1.0, ref_energy=1.0
 ):
     """Special_pairs to handle 14 scalings.
 
