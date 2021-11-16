@@ -571,6 +571,7 @@ def _get_all_possible_input_variables(description=False):
         "The user must set this variable as there is no working default (default = {}). "
         "Lambda values for VDW interaction in ascending order. Sets the intermediate "
         "lambda states to which solute-solvent VDW interactions are scaled. "
+        'WARNING : This list must be the same length as the "LambdaCoulomb" list length.'
         "WARNING : All lambda values must be stated in the ascending order, "
         "starting with 0.0 and ending with 1.0; otherwise, the program will terminate."
         "Example of ascending order 1: [0.0, 0.1, 1.0] "
@@ -582,6 +583,7 @@ def _get_all_possible_input_variables(description=False):
         "lambda states to which solute-solvent Coulombic interactions are scaled. "
         'GOMC defauts to the "LambdaVDW" values for the Coulombic interaction '
         'if no "LambdaCoulomb" variable is set. '
+        'WARNING : This list must be the same length as the "LambdaVDW" list length.'
         "WARNING : All lambda values must be stated in the ascending order, "
         "starting with 0.0 and ending with 1.0; otherwise, the program will terminate."
         "Example of ascending order 1: [0.0, 0.1, 1.0] "
@@ -1850,6 +1852,8 @@ class GOMCControl:
         Lambda values for VDW interaction in ascending order. Sets the intermediate
         lambda states to which solute-solvent VDW interactions are scaled.
 
+        WARNING : This list must be the same length as the "LambdaCoulomb" list length.
+
         WARNING : All lambda values must be stated in the ascending order,
         starting with 0.0 and ending with 1.0; otherwise, the program will terminate.
 
@@ -1862,6 +1866,8 @@ class GOMCControl:
         lambda states to which solute-solvent Coulombic interactions are scaled.
         GOMC defauts to the "LambdaVDW" values for the Coulombic interaction
         if no "LambdaCoulomb" variable is set.
+
+        WARNING : This list must be the same length as the "LambdaVDW" list length.
 
         WARNING : All lambda values must be stated in the ascending order,
         starting with 0.0 and ending with 1.0; otherwise, the program will terminate.
@@ -5826,27 +5832,31 @@ class GOMCControl:
             and isinstance(self.LambdaVDW, list) is True
             and (isinstance(self.LambdaCoulomb, list)) is True
         ):
-            if self.InitialState + 1 <= len(self.LambdaVDW):
-                for lam_i in range(1, len(self.LambdaVDW)):
-                    if self.LambdaVDW[lam_i] < self.LambdaVDW[lam_i - 1]:
-                        self.input_error = True
-                        print_error_message = "ERROR: The LambdaVDW list is not in accending order."
-                        raise ValueError(print_error_message)
-                    if (
-                        self.LambdaCoulomb[lam_i]
-                        < self.LambdaCoulomb[lam_i - 1]
-                    ):
-                        self.input_error = True
-                        print_error_message = "ERROR:  The LambdaCoulomb list is not in accending order."
-                        raise ValueError(print_error_message)
+            if len(self.LambdaVDW) == len(self.LambdaCoulomb):
+                if self.InitialState + 1 <= len(self.LambdaVDW):
+                    for lam_i in range(1, len(self.LambdaVDW)):
+                        if self.LambdaVDW[lam_i] < self.LambdaVDW[lam_i - 1]:
+                            self.input_error = True
+                            print_error_message = "ERROR: The LambdaVDW list is not in accending order."
+                            raise ValueError(print_error_message)
+                        if (
+                            self.LambdaCoulomb[lam_i]
+                            < self.LambdaCoulomb[lam_i - 1]
+                        ):
+                            self.input_error = True
+                            print_error_message = "ERROR:  The LambdaCoulomb list is not in accending order."
+                            raise ValueError(print_error_message)
+                else:
+                    self.input_error = True
+                    print_error_message = (
+                        "ERROR: The InitialState integer is greater than the LambdaVDW and "
+                        "LambdaCoulomb list length.  Note: the InitialState integer starts at 0."
+                    )
+                    raise ValueError(print_error_message)
             else:
                 self.input_error = True
-                print_error_message = (
-                    "ERROR: The InitialState integer is greater than the LambdaVDW and "
-                    "LambdaCoulomb list length.  Note: the InitialState integer starts at 0."
-                )
+                print_error_message = "ERROR: The LambdaVDW and LambdaCoulomb list must be of equal length."
                 raise ValueError(print_error_message)
-
 
         # check self.LambdaVDW and LambdaCoulomb last value is 1.0
         if self.ensemble_type in ["NVT", "NPT"]:
@@ -8341,6 +8351,8 @@ def write_gomc_control_file(
         Lambda values for VDW interaction in ascending order. Sets the intermediate
         lambda states to which solute-solvent VDW interactions are scaled.
 
+        WARNING : This list must be the same length as the "LambdaCoulomb" list length.
+
         WARNING : All lambda values must be stated in the ascending order,
         starting with 0.0 and ending with 1.0; otherwise, the program will terminate.
 
@@ -8353,6 +8365,8 @@ def write_gomc_control_file(
         lambda states to which solute-solvent Coulombic interactions are scaled.
         GOMC defauts to the "LambdaVDW" values for the Coulombic interaction
         if no "LambdaCoulomb" variable is set.
+
+        WARNING : This list must be the same length as the "LambdaVDW" list length.
 
         WARNING : All lambda values must be stated in the ascending order,
         starting with 0.0 and ending with 1.0; otherwise, the program will terminate.

@@ -2059,8 +2059,9 @@ class TestGOMCControlFileWriter(BaseTest):
                 "FreeEnergyCalc": [True, 50],
                 "MoleculeType": ["ETH", 1],
                 "InitialState": 3,
-                "LambdaVDW": [0.0, 0.1, 0.2, 0.4, 1.0],
-                "LambdaCoulomb": [0.0, 0.1, 0.3, 0.8, 1.0],
+                "LambdaVDW": [0.0, 0.1, 0.1, 0.2, 1.0],
+                "LambdaCoulomb": [0.0, 0.0, 0.3, 0.8, 1.0],
+                #[0.0, 0.1, 0.3, 0.8, 1.0],
                 "MEMC_DataInput": [
                     [1, "ETH", ["C1", "C2"], "ETO", ["C1", "C2"]]
                 ],
@@ -2425,15 +2426,15 @@ class TestGOMCControlFileWriter(BaseTest):
                     split_line = line.split()
                     assert split_line[1] == "0.0"
                     assert split_line[2] == "0.1"
-                    assert split_line[3] == "0.2"
-                    assert split_line[4] == "0.4"
+                    assert split_line[3] == "0.1"
+                    assert split_line[4] == "0.2"
                     assert split_line[5] == "1.0"
 
                 elif line.startswith("LambdaCoulomb "):
                     variables_read_dict["LambdaCoulomb"] = True
                     split_line = line.split()
                     assert split_line[1] == "0.0"
-                    assert split_line[2] == "0.1"
+                    assert split_line[2] == "0.0"
                     assert split_line[3] == "0.3"
                     assert split_line[4] == "0.8"
                     assert split_line[5] == "1.0"
@@ -3646,7 +3647,7 @@ class TestGOMCControlFileWriter(BaseTest):
                     "FreeEnergyCalc": [True, 10000],
                     "MoleculeType": ["ETH", 1],
                     "InitialState": "s",
-                    "LambdaVDW": [0.0, 0.1, 0.2, 0.4, 1.0],
+                    "LambdaVDW": [0.0, 0.1, 1.0],
                     "LambdaCoulomb": [0.0, 0.1, 0.3, 0.8, 1.0],
                 },
             )
@@ -4913,7 +4914,7 @@ class TestGOMCControlFileWriter(BaseTest):
                     "MoleculeType": ["ETH", 1],
                     "InitialState": 1,
                     "LambdaVDW": [0.0, 0.1, 0.2, 0.4, 1.0],
-                    "LambdaCoulomb": [0.0, 0.1, 0.3, 0.8, 1.0],
+                    "LambdaCoulomb": [0.0, 0.8, 1.0],
                 },
             )
 
@@ -6742,6 +6743,45 @@ class TestGOMCControlFileWriter(BaseTest):
                     "InitialState": 1,
                     "LambdaVDW": [0.0, 0.1, 0.2, 1.0],
                     "LambdaCoulomb": [{"a": "1"}, 0.3, 1.0],
+                },
+            )
+        with pytest.raises(
+            ValueError,
+            match=r"ERROR: The LambdaVDW and LambdaCoulomb list must be of equal length.",
+        ):
+            gomc_control.write_gomc_control_file(
+                charmm,
+                "test_save_NVT_bad_variables_part_7.conf",
+                "NVT",
+                10,
+                300,
+                check_input_files_exist=False,
+                input_variables_dict={
+                    "FreeEnergyCalc": [True, 10000],
+                    "MoleculeType": ["ETO", 1],
+                    "InitialState": 1,
+                    "LambdaVDW": [0.0, 0.2, 0.4, 1.0],
+                    "LambdaCoulomb": [0.0, 0.1, 0.3, 0.8, 1.0],
+                },
+            )
+
+        with pytest.raises(
+            ValueError,
+            match=r"ERROR: The LambdaVDW and LambdaCoulomb list must be of equal length.",
+        ):
+            gomc_control.write_gomc_control_file(
+                charmm,
+                "test_save_NVT_bad_variables_part_7.conf",
+                "NVT",
+                10,
+                300,
+                check_input_files_exist=False,
+                input_variables_dict={
+                    "FreeEnergyCalc": [True, 10000],
+                    "MoleculeType": ["ETO", 1],
+                    "InitialState": 1,
+                    "LambdaVDW": [0.0, 0.1, 0.2, 0.4, 1.0],
+                    "LambdaCoulomb": [0.0, 0.3, 0.8, 1.0],
                 },
             )
 
