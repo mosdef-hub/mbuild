@@ -3412,8 +3412,8 @@ class GOMCControl:
                 )
 
                 if (
-                        input_var_keys_list[var_iter] == key
-                        and key in possible_ensemble_variables_list
+                    input_var_keys_list[var_iter] == key
+                    and key in possible_ensemble_variables_list
                 ):
                     self.IPC = self.input_variables_dict[key]
 
@@ -5404,14 +5404,20 @@ class GOMCControl:
         # and the potenial is set to VDW or EXP6, otherwise error out.
         # If the impulse correction term (IPC) is True and the potenial is set to
         # "SHIFT", "SWITCH", or the LRC is True, then error out.
-        if self.IPC is True and (self.LRC is True or (self.Potential in ["SHIFT", "SWITCH"])):
+        if self.IPC is True and (
+            self.LRC is True or (self.Potential in ["SHIFT", "SWITCH"])
+        ):
             print_error_message = (
                 "ERROR: The impulse correction term (IPC) can not be set as True "
                 "if the LRC=True or the Potential is SHIFT or SWITCH."
             )
             raise ValueError(print_error_message)
 
-        if self.IPC is False and self.LRC is False and (self.Potential in ["VDW", "EXP6"]):
+        if (
+            self.IPC is False
+            and self.LRC is False
+            and (self.Potential in ["VDW", "EXP6"])
+        ):
             print_warning_message = (
                 "WARNING: The impulse correction term (IPC) is False, but likely needs to be True, "
                 "as the LRC=False when the Potential is VDW or EXP6."

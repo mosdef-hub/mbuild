@@ -1049,9 +1049,7 @@ class TestGOMCControlFileWriter(BaseTest):
             1000,
             500,
             check_input_files_exist=True,
-            input_variables_dict={
-                "Potential": "SWITCH"
-            }
+            input_variables_dict={"Potential": "SWITCH"},
         )
 
         with open("test_save_basic_NPT.conf", "r") as fp:
@@ -1094,7 +1092,7 @@ class TestGOMCControlFileWriter(BaseTest):
             }
             out_gomc = fp.readlines()
             for i, line in enumerate(out_gomc):
-                if  line.startswith("Potential "):
+                if line.startswith("Potential "):
                     variables_read_dict["Potential"] = True
                     split_line = line.split()
                     assert split_line[1] == "SWITCH"
@@ -14246,7 +14244,7 @@ class TestGOMCControlFileWriter(BaseTest):
         with pytest.raises(
             ValueError,
             match=r"ERROR: The impulse correction term \(IPC\) can not be set as True "
-                  r"if the LRC=True or the Potential is SHIFT or SWITCH.",
+            r"if the LRC=True or the Potential is SHIFT or SWITCH.",
         ):
             gomc_control.write_gomc_control_file(
                 charmm,
@@ -14258,14 +14256,14 @@ class TestGOMCControlFileWriter(BaseTest):
                 input_variables_dict={
                     "IPC": True,
                     "LRC": True,
-                    "Potential": "VDW"
-                }
+                    "Potential": "VDW",
+                },
             )
 
         with pytest.raises(
             ValueError,
             match=r"ERROR: The impulse correction term \(IPC\) can not be set as True "
-                  r"if the LRC=True or the Potential is SHIFT or SWITCH.",
+            r"if the LRC=True or the Potential is SHIFT or SWITCH.",
         ):
             gomc_control.write_gomc_control_file(
                 charmm,
@@ -14277,14 +14275,14 @@ class TestGOMCControlFileWriter(BaseTest):
                 input_variables_dict={
                     "IPC": True,
                     "LRC": False,
-                    "Potential": "SHIFT"
-                }
+                    "Potential": "SHIFT",
+                },
             )
 
         with pytest.raises(
             ValueError,
             match=r"ERROR: The impulse correction term \(IPC\) can not be set as True "
-                  r"if the LRC=True or the Potential is SHIFT or SWITCH.",
+            r"if the LRC=True or the Potential is SHIFT or SWITCH.",
         ):
             gomc_control.write_gomc_control_file(
                 charmm,
@@ -14296,14 +14294,14 @@ class TestGOMCControlFileWriter(BaseTest):
                 input_variables_dict={
                     "IPC": True,
                     "LRC": False,
-                    "Potential": "SWITCH"
-                }
+                    "Potential": "SWITCH",
+                },
             )
 
         with pytest.warns(
             UserWarning,
             match=r"WARNING: The impulse correction term \(IPC\) is False, but likely needs to be True, "
-                  r"as the LRC=False when the Potential is VDW or EXP6.",
+            r"as the LRC=False when the Potential is VDW or EXP6.",
         ):
             gomc_control.write_gomc_control_file(
                 charmm,
@@ -14315,14 +14313,14 @@ class TestGOMCControlFileWriter(BaseTest):
                 input_variables_dict={
                     "IPC": False,
                     "LRC": False,
-                    "Potential": "VDW"
-                }
+                    "Potential": "VDW",
+                },
             )
 
         with pytest.warns(
             UserWarning,
             match=r"WARNING: The impulse correction term \(IPC\) is False, but likely needs to be True, "
-                  r"as the LRC=False when the Potential is VDW or EXP6.",
+            r"as the LRC=False when the Potential is VDW or EXP6.",
         ):
             gomc_control.write_gomc_control_file(
                 charmm,
@@ -14334,6 +14332,6 @@ class TestGOMCControlFileWriter(BaseTest):
                 input_variables_dict={
                     "IPC": False,
                     "LRC": False,
-                    "Potential": "EXP6"
-                }
+                    "Potential": "EXP6",
+                },
             )
