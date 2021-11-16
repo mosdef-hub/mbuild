@@ -2061,7 +2061,6 @@ class TestGOMCControlFileWriter(BaseTest):
                 "InitialState": 3,
                 "LambdaVDW": [0.0, 0.1, 0.1, 0.2, 1.0],
                 "LambdaCoulomb": [0.0, 0.0, 0.3, 0.8, 1.0],
-                #[0.0, 0.1, 0.3, 0.8, 1.0],
                 "MEMC_DataInput": [
                     [1, "ETH", ["C1", "C2"], "ETO", ["C1", "C2"]]
                 ],
