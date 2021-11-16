@@ -235,6 +235,14 @@ def _get_all_possible_input_variables(description=False):
         "dispersion interactions. "
         "Note: In case of using SHIFT or SWITCH potential functions, LRC will be ignored."
         "".format(_get_default_variables_dict()["LRC"]),
+        "IPC": "Simulation info (all ensembles): boolean, default = {}. "
+        "If True, the simulation adds the impulse correction term to the pressure, "
+        "which considers to correct for the discontinuous Rcut potential "
+        "(i.e., a hard cutoff potential, meaning a potential without tail corrections) "
+        "the long range tail corrections for the non-bonded VDW or dispersion interactions. "
+        "If False, the impulse correction term to the pressure is not applied. "
+        "Note: This can not be used if LRC is True or the Potential is set to SWITCH, or SHIFT."
+        "".format(_get_default_variables_dict()["IPC"]),
         "Exclude": "Simulation info (all ensembles): str "
         '(The string inputs are "1-2", "1-3", or "1-4"), default = {}. '
         "Note: In CHARMM force field, the 1-4 interaction needs to be considered. "
@@ -563,10 +571,10 @@ def _get_all_possible_input_variables(description=False):
         "The user must set this variable as there is no working default (default = {}). "
         "Lambda values for VDW interaction in ascending order. Sets the intermediate "
         "lambda states to which solute-solvent VDW interactions are scaled. "
-        'WARNING : This list must be the same length as the "LambdaCoulomb" list length. '
-        "WARNING : All lambda values must be stated in the ascending order, otherwise "
-        "Example of ascending order 1: [0.1, 1.0,]  "
-        "Example of ascending order 2: [0.1, 0.2, 0.4, 0.9] "
+        "WARNING : All lambda values must be stated in the ascending order, "
+        "starting with 0.0 and ending with 1.0; otherwise, the program will terminate."
+        "Example of ascending order 1: [0.0, 0.1, 1.0] "
+        "Example of ascending order 2: [0.0, 0.1, 0.2, 0.4, 0.9, 1.0] "
         "".format(_get_default_variables_dict()["LambdaVDW"]),
         "LambdaCoulomb": "Free Energy Calcs (NVT and NPT only):  list of floats (0 <= floats <= 1), "
         "The user must set this variable as there is no working default (default = {}). "
@@ -574,11 +582,10 @@ def _get_all_possible_input_variables(description=False):
         "lambda states to which solute-solvent Coulombic interactions are scaled. "
         'GOMC defauts to the "LambdaVDW" values for the Coulombic interaction '
         'if no "LambdaCoulomb" variable is set. '
-        'WARNING : This list must be the same length as the "LambdaVDW" list length. '
-        "WARNING : All lambda values must be stated in the ascending order, otherwise "
-        "the program will terminate.  "
-        "Example of ascending order 1: [0.1, 1.0,]  "
-        "Example of ascending order 2: [0.1, 0.2, 0.4, 0.9] "
+        "WARNING : All lambda values must be stated in the ascending order, "
+        "starting with 0.0 and ending with 1.0; otherwise, the program will terminate."
+        "Example of ascending order 1: [0.0, 0.1, 1.0] "
+        "Example of ascending order 2: [0.0, 0.1, 0.2, 0.4, 0.9, 1.0] "
         "".format(_get_default_variables_dict()["LambdaCoulomb"]),
         "ScaleCoulomb": "Free Energy Calcs (NVT and NPT only): bool, default = {}, "
         "Determines to scale the Coulombic interaction non-linearly (soft-core scheme) or not. "
@@ -954,6 +961,7 @@ def _get_default_variables_dict():
         "Rcut": 10,
         "RcutLow": 1,
         "LRC": True,
+        "IPC": False,
         "Exclude": "1-3",
         "coul_1_4_scaling": None,
         "Potential": "VDW",
@@ -1357,6 +1365,7 @@ def _get_possible_ensemble_input_variables(ensemble_type):
         "Rcut",
         "RcutLow",
         "LRC",
+        "IPC",
         "Exclude",
         "Potential",
         "Rswitch",
@@ -1571,6 +1580,13 @@ class GOMCControl:
         If True, the simulation considers the long range tail corrections for the
         non-bonded VDW or dispersion interactions.
         Note: In case of using SHIFT or SWITCH potential functions, LRC will be ignored.
+    IPC : boolean, default = False
+        If True, the simulation adds the impulse correction term to the pressure,
+        which considers to correct for the discontinuous Rcut potential
+        (i.e., a hard cutoff potential, meaning a potential without tail corrections)
+        the long range tail corrections for the non-bonded VDW or dispersion interactions.
+        If False, the impulse correction term to the pressure is not applied.
+        Note: This can not be used if LRC is True or the Potential is set to SWITCH, or SHIFT.
     Exclude : str ["1-2", "1-3", or "1-4"], default = "1-3"
         Note: In CHARMM force field, the 1-4 interaction needs to be considered.
         Choosing "Excude 1-3", will modify 1-4 interaction based on 1-4 parameters
@@ -1834,14 +1850,12 @@ class GOMCControl:
         Lambda values for VDW interaction in ascending order. Sets the intermediate
         lambda states to which solute-solvent VDW interactions are scaled.
 
-        WARNING : This list must be the same length as the "LambdaCoulomb" list length.
+        WARNING : All lambda values must be stated in the ascending order,
+        starting with 0.0 and ending with 1.0; otherwise, the program will terminate.
 
-        WARNING : All lambda values must be stated in the ascending order, otherwise the
-        program will terminate.
+        Example of ascending order 1: [0.0, 0.1, 1.0]
 
-        Example of ascending order 1: [0.1, 1.0,]
-
-        Example of ascending orde 2: [0.1, 0.2, 0.4, 0.9]
+        Example of ascending order 2: [0.0, 0.1, 0.2, 0.4, 0.9, 1.0]
 
     LambdaCoulomb : list of floats (0 <= floats <= 1), default = None
         Lambda values for Coulombic interaction in ascending order. Sets the intermediate
@@ -1849,14 +1863,12 @@ class GOMCControl:
         GOMC defauts to the "LambdaVDW" values for the Coulombic interaction
         if no "LambdaCoulomb" variable is set.
 
-        WARNING : This list must be the same length as the "LambdaVDW" list length.
+        WARNING : All lambda values must be stated in the ascending order,
+        starting with 0.0 and ending with 1.0; otherwise, the program will terminate.
 
-        WARNING : All lambda values must be stated in the ascending order, otherwise
-        the program will terminate.
+        Example of ascending order 1: [0.0, 0.1, 1.0]
 
-        Example of ascending order 1: [0.1, 1.0,]
-
-        Example of ascending order 2: [0.1, 0.2, 0.4, 0.9]
+        Example of ascending order 2: [0.0, 0.1, 0.2, 0.4, 0.9, 1.0]
 
     ScaleCoulomb : bool, default = False
         Determines to scale the Coulombic interaction non-linearly
@@ -2811,6 +2823,7 @@ class GOMCControl:
         self.Rcut = default_input_variables_dict["Rcut"]
         self.RcutLow = default_input_variables_dict["RcutLow"]
         self.LRC = default_input_variables_dict["LRC"]
+        self.IPC = default_input_variables_dict["IPC"]
         self.Exclude = default_input_variables_dict["Exclude"]
         self.Potential = default_input_variables_dict["Potential"]
         self.Rswitch = default_input_variables_dict["Rswitch"]
@@ -3383,6 +3396,20 @@ class GOMCControl:
                     and key in possible_ensemble_variables_list
                 ):
                     self.LRC = self.input_variables_dict[key]
+
+            key = "IPC"
+            if input_var_keys_list[var_iter] == key:
+                self.ck_input_variable_true_or_false(
+                    self.input_variables_dict,
+                    key,
+                    bad_input_variables_values_list,
+                )
+
+                if (
+                        input_var_keys_list[var_iter] == key
+                        and key in possible_ensemble_variables_list
+                ):
+                    self.IPC = self.input_variables_dict[key]
 
             key = "Exclude"
             if input_var_keys_list[var_iter] == key:
@@ -5367,6 +5394,24 @@ class GOMCControl:
                 "INFO: All the input variable passed the initial error checking"
             )
 
+        # For the impulse correction term (IPC) is True, check and make sure the LRC is False
+        # and the potenial is set to VDW or EXP6, otherwise error out.
+        # If the impulse correction term (IPC) is True and the potenial is set to
+        # "SHIFT", "SWITCH", or the LRC is True, then error out.
+        if self.IPC is True and (self.LRC is True or (self.Potential in ["SHIFT", "SWITCH"])):
+            print_error_message = (
+                "ERROR: The impulse correction term (IPC) can not be set as True "
+                "if the LRC=True or the Potential is SHIFT or SWITCH."
+            )
+            raise ValueError(print_error_message)
+
+        if self.IPC is False and self.LRC is False and (self.Potential in ["VDW", "EXP6"]):
+            print_warning_message = (
+                "WARNING: The impulse correction term (IPC) is False, but likely needs to be True, "
+                "as the LRC=False when the Potential is VDW or EXP6."
+            )
+            warn(print_warning_message)
+
         # check to make sure the VDW FF (ParaTypeCHARMM) is not true for multiple ones
         # (i.e., ParaTypeCHARMM, ParaTypeMie, ParaTypeMARTINI)
         if (
@@ -5492,22 +5537,6 @@ class GOMCControl:
                 "which do not have default values of zero will need to be set manually "
                 "so the sum equals (DisFreq, RotFreq, IntraSwapFreq, SwapFreq, "
                 "RegrowthFreq, CrankShaftFreq, and VolFreq)."
-            )
-            raise ValueError(print_error_message)
-
-        # Check that RunSteps >= EqSteps >= AdjSteps
-        print("self.RunSteps = " + str(self.RunSteps))
-        if (
-            self.RunSteps < self.EqSteps
-            or self.RunSteps < self.AdjSteps
-            or self.EqSteps < self.AdjSteps
-        ):
-            self.input_error = True
-            print_error_message = (
-                "ERROR: The values must be in this order RunSteps >= EqSteps >= AdjSteps "
-                " ({} >= {} >= {} )".format(
-                    self.RunSteps, self.EqSteps, self.AdjSteps
-                )
             )
             raise ValueError(print_error_message)
 
@@ -5797,31 +5826,27 @@ class GOMCControl:
             and isinstance(self.LambdaVDW, list) is True
             and (isinstance(self.LambdaCoulomb, list)) is True
         ):
-            if len(self.LambdaVDW) == len(self.LambdaCoulomb):
-                if self.InitialState + 1 <= len(self.LambdaVDW):
-                    for lam_i in range(1, len(self.LambdaVDW)):
-                        if self.LambdaVDW[lam_i] < self.LambdaVDW[lam_i - 1]:
-                            self.input_error = True
-                            print_error_message = "ERROR: The LambdaVDW list is not in accending order."
-                            raise ValueError(print_error_message)
-                        if (
-                            self.LambdaCoulomb[lam_i]
-                            < self.LambdaCoulomb[lam_i - 1]
-                        ):
-                            self.input_error = True
-                            print_error_message = "ERROR:  The LambdaCoulomb list is not in accending order."
-                            raise ValueError(print_error_message)
-                else:
-                    self.input_error = True
-                    print_error_message = (
-                        "ERROR: The InitialState integer is greater than the LambdaVDW and "
-                        "LambdaCoulomb list length.  Note: the InitialState integer starts at 0."
-                    )
-                    raise ValueError(print_error_message)
+            if self.InitialState + 1 <= len(self.LambdaVDW):
+                for lam_i in range(1, len(self.LambdaVDW)):
+                    if self.LambdaVDW[lam_i] < self.LambdaVDW[lam_i - 1]:
+                        self.input_error = True
+                        print_error_message = "ERROR: The LambdaVDW list is not in accending order."
+                        raise ValueError(print_error_message)
+                    if (
+                        self.LambdaCoulomb[lam_i]
+                        < self.LambdaCoulomb[lam_i - 1]
+                    ):
+                        self.input_error = True
+                        print_error_message = "ERROR:  The LambdaCoulomb list is not in accending order."
+                        raise ValueError(print_error_message)
             else:
                 self.input_error = True
-                print_error_message = "ERROR: The LambdaVDW and LambdaCoulomb list must be of equal length."
+                print_error_message = (
+                    "ERROR: The InitialState integer is greater than the LambdaVDW and "
+                    "LambdaCoulomb list length.  Note: the InitialState integer starts at 0."
+                )
                 raise ValueError(print_error_message)
+
 
         # check self.LambdaVDW and LambdaCoulomb last value is 1.0
         if self.ensemble_type in ["NVT", "NPT"]:
@@ -5830,10 +5855,16 @@ class GOMCControl:
                     if self.LambdaVDW[-1] != 1.0:
                         print_error_message = "ERROR: The last value in the LambdaVDW variable list must be a 1.0"
                         raise ValueError(print_error_message)
+                    if self.LambdaVDW[0] != 0.0:
+                        print_error_message = "ERROR: The first value in the LambdaVDW variable list must be a 0.0"
+                        raise ValueError(print_error_message)
             if isinstance(self.LambdaCoulomb, list):
                 if len(self.LambdaCoulomb) > 0:
                     if self.LambdaCoulomb[-1] != 1.0:
                         print_error_message = "ERROR: The last value in the LambdaCoulomb variable list must be a 1.0"
+                        raise ValueError(print_error_message)
+                    if self.LambdaCoulomb[0] != 0.0:
+                        print_error_message = "ERROR: The first value in the LambdaCoulomb variable list must be a 0.0"
                         raise ValueError(print_error_message)
 
     # write the control file
@@ -6115,6 +6146,7 @@ class GOMCControl:
             "{:25s} {}\n".format("Potential", self.Potential)
         )
         data_control_file.write("{:25s} {}\n".format("LRC", self.LRC))
+        data_control_file.write("{:25s} {}\n".format("IPC", self.IPC))
         data_control_file.write("{:25s} {}\n".format("Rcut", self.Rcut))
         data_control_file.write("{:25s} {}\n".format("RcutLow", self.RcutLow))
         if self.Potential == "SWITCH":
@@ -8039,6 +8071,13 @@ def write_gomc_control_file(
         If True, the simulation considers the long range tail corrections for the
         non-bonded VDW or dispersion interactions.
         Note: In case of using SHIFT or SWITCH potential functions, LRC will be ignored.
+    IPC : boolean, default = False
+        If True, the simulation adds the impulse correction term to the pressure,
+        which considers to correct for the discontinuous Rcut potential
+        (i.e., a hard cutoff potential, meaning a potential without tail corrections)
+        the long range tail corrections for the non-bonded VDW or dispersion interactions.
+        If False, the impulse correction term to the pressure is not applied.
+        Note: This can not be used if LRC is True or the Potential is set to SWITCH, or SHIFT.
     Exclude : str ["1-2", "1-3", or "1-4"], default = "1-3"
         Note: In CHARMM force field, the 1-4 interaction needs to be considered.
         Choosing "Excude 1-3", will modify 1-4 interaction based on 1-4 parameters
@@ -8302,14 +8341,12 @@ def write_gomc_control_file(
         Lambda values for VDW interaction in ascending order. Sets the intermediate
         lambda states to which solute-solvent VDW interactions are scaled.
 
-        WARNING : This list must be the same length as the "LambdaCoulomb" list length.
+        WARNING : All lambda values must be stated in the ascending order,
+        starting with 0.0 and ending with 1.0; otherwise, the program will terminate.
 
-        WARNING : All lambda values must be stated in the ascending order, otherwise the
-        program will terminate.
+        Example of ascending order 1: [0.0, 0.1, 1.0]
 
-        Example of ascending order 1: [0.1, 1.0,]
-
-        Example of ascending orde 2: [0.1, 0.2, 0.4, 0.9]
+        Example of ascending order 2: [0.0, 0.1, 0.2, 0.4, 0.9, 1.0]
 
     LambdaCoulomb : list of floats (0 <= floats <= 1), default = None
         Lambda values for Coulombic interaction in ascending order. Sets the intermediate
@@ -8317,14 +8354,12 @@ def write_gomc_control_file(
         GOMC defauts to the "LambdaVDW" values for the Coulombic interaction
         if no "LambdaCoulomb" variable is set.
 
-        WARNING : This list must be the same length as the "LambdaVDW" list length.
+        WARNING : All lambda values must be stated in the ascending order,
+        starting with 0.0 and ending with 1.0; otherwise, the program will terminate.
 
-        WARNING : All lambda values must be stated in the ascending order, otherwise
-        the program will terminate.
+        Example of ascending order 1: [0.0, 0.1, 1.0]
 
-        Example of ascending order 1: [0.1, 1.0,]
-
-        Example of ascending order 2: [0.1, 0.2, 0.4, 0.9]
+        Example of ascending order 2: [0.0, 0.1, 0.2, 0.4, 0.9, 1.0]
 
     ScaleCoulomb : bool, default = False
         Determines to scale the Coulombic interaction non-linearly
