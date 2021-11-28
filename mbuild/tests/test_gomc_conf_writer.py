@@ -91,7 +91,6 @@ class TestGOMCControlFileWriter(BaseTest):
                 "Rcut",
                 "RcutLow",
                 "LRC",
-                "IPC",
                 "Exclude",
                 "Potential",
                 "Rswitch",
@@ -156,7 +155,6 @@ class TestGOMCControlFileWriter(BaseTest):
                 "MEMC-3Freq",
                 "ExchangeVolumeDim",
                 "MEMC_DataInput",
-                "TargetedSwap",
             ].sort()
         )
 
@@ -174,7 +172,6 @@ class TestGOMCControlFileWriter(BaseTest):
                 "Rcut",
                 "RcutLow",
                 "LRC",
-                "IPC",
                 "Exclude",
                 "Potential",
                 "Rswitch",
@@ -239,7 +236,6 @@ class TestGOMCControlFileWriter(BaseTest):
                 "MEMC-3Freq",
                 "ExchangeVolumeDim",
                 "MEMC_DataInput",
-                "TargetedSwap",
             ].sort()
         )
 
@@ -258,7 +254,6 @@ class TestGOMCControlFileWriter(BaseTest):
                 "Rcut",
                 "RcutLow",
                 "LRC",
-                "IPC",
                 "Exclude",
                 "coul_1_4_scaling",
                 "Potential",
@@ -324,7 +319,6 @@ class TestGOMCControlFileWriter(BaseTest):
                 "MEMC-2Freq",
                 "IntraMEMC-3Freq",
                 "MEMC-3Freq",
-                "TargetedSwap",
             ].sort()
         )
 
@@ -563,7 +557,6 @@ class TestGOMCControlFileWriter(BaseTest):
                 "Temperature": False,
                 "Potential": False,
                 "LRC": False,
-                "IPC": False,
                 "Rcut": False,
                 "RcutLow": False,
                 "VDWGeometricSigma": False,
@@ -670,11 +663,6 @@ class TestGOMCControlFileWriter(BaseTest):
                     variables_read_dict["LRC"] = True
                     split_line = line.split()
                     assert split_line[1] == "True"
-
-                elif line.startswith("IPC "):
-                    variables_read_dict["IPC"] = True
-                    split_line = line.split()
-                    assert split_line[1] == "False"
 
                 elif line.startswith("Rcut "):
                     variables_read_dict["Rcut"] = True
@@ -972,7 +960,6 @@ class TestGOMCControlFileWriter(BaseTest):
             "Temperature": True,
             "Potential": True,
             "LRC": True,
-            "IPC": True,
             "Rcut": True,
             "RcutLow": True,
             "VDWGeometricSigma": True,
@@ -1049,14 +1036,10 @@ class TestGOMCControlFileWriter(BaseTest):
             1000,
             500,
             check_input_files_exist=True,
-            input_variables_dict={"Potential": "SWITCH"},
         )
 
         with open("test_save_basic_NPT.conf", "r") as fp:
             variables_read_dict = {
-                "Potential": False,
-                "Rswitch": False,
-                "Rcut": False,
                 "Pressure": False,
                 "Temperature": False,
                 "PressureCalc": False,
@@ -1092,22 +1075,7 @@ class TestGOMCControlFileWriter(BaseTest):
             }
             out_gomc = fp.readlines()
             for i, line in enumerate(out_gomc):
-                if line.startswith("Potential "):
-                    variables_read_dict["Potential"] = True
-                    split_line = line.split()
-                    assert split_line[1] == "SWITCH"
-
-                elif line.startswith("Rswitch "):
-                    variables_read_dict["Rswitch"] = True
-                    split_line = line.split()
-                    assert split_line[1] == "9"
-
-                elif line.startswith("Rcut "):
-                    variables_read_dict["Rcut"] = True
-                    split_line = line.split()
-                    assert split_line[1] == "10"
-
-                elif line.startswith("Pressure "):
+                if line.startswith("Pressure "):
                     variables_read_dict["Pressure"] = True
                     split_line = line.split()
                     assert split_line[1] == "1.01325"
@@ -1287,9 +1255,6 @@ class TestGOMCControlFileWriter(BaseTest):
                     pass
 
         assert variables_read_dict == {
-            "Potential": True,
-            "Rswitch": True,
-            "Rcut": True,
             "Pressure": True,
             "Temperature": True,
             "PressureCalc": True,
@@ -1856,7 +1821,6 @@ class TestGOMCControlFileWriter(BaseTest):
                 "MEMC-2Freq": False,
                 "IntraMEMC-3Freq": False,
                 "MEMC-3Freq": False,
-                "TargetedSwapFreq": False,
                 "useConstantArea": False,
                 "FixVolBox0": False,
                 "RcutCoulomb_box_0": False,
@@ -1939,11 +1903,6 @@ class TestGOMCControlFileWriter(BaseTest):
                     split_line = line.split()
                     assert split_line[1] == "0.0"
 
-                elif line.startswith("TargetedSwapFreq "):
-                    variables_read_dict["TargetedSwapFreq"] = True
-                    split_line = line.split()
-                    assert split_line[1] == "0.0"
-
                 elif line.startswith("useConstantArea "):
                     variables_read_dict["useConstantArea"] = True
                     split_line = line.split()
@@ -1983,7 +1942,6 @@ class TestGOMCControlFileWriter(BaseTest):
             "MEMC-2Freq": True,
             "IntraMEMC-3Freq": True,
             "MEMC-3Freq": True,
-            "TargetedSwapFreq": True,
             "useConstantArea": True,
             "FixVolBox0": True,
             "RcutCoulomb_box_0": True,
@@ -2018,7 +1976,6 @@ class TestGOMCControlFileWriter(BaseTest):
                 "ParaTypeMARTINI": False,
                 "ParaTypeMie": False,
                 "LRC": False,
-                "IPC": True,
                 "Rcut": 12,
                 "RcutLow": 8,
                 "Exclude": "1-4",
@@ -2037,7 +1994,6 @@ class TestGOMCControlFileWriter(BaseTest):
                 "IntraMEMC-1Freq": 0.05,
                 "IntraMEMC-2Freq": 0.05,
                 "IntraMEMC-3Freq": 0.05,
-                "TargetedSwapFreq": 0.00,
                 "CBMC_First": 55,
                 "CBMC_Nth": 66,
                 "CBMC_Ang": 33,
@@ -2057,8 +2013,8 @@ class TestGOMCControlFileWriter(BaseTest):
                 "FreeEnergyCalc": [True, 50],
                 "MoleculeType": ["ETH", 1],
                 "InitialState": 3,
-                "LambdaVDW": [0.0, 0.1, 0.1, 0.2, 1.0],
-                "LambdaCoulomb": [0.0, 0.0, 0.3, 0.8, 1.0],
+                "LambdaVDW": [0.1, 0.2, 0.4, 1.0],
+                "LambdaCoulomb": [0.1, 0.3, 0.8, 1.0],
                 "MEMC_DataInput": [
                     [1, "ETH", ["C1", "C2"], "ETO", ["C1", "C2"]]
                 ],
@@ -2084,7 +2040,6 @@ class TestGOMCControlFileWriter(BaseTest):
                 "Temperature": False,
                 "Potential": False,
                 "LRC": False,
-                "IPC": False,
                 "Rcut": False,
                 "RcutLow": False,
                 "Exclude": False,
@@ -2206,11 +2161,6 @@ class TestGOMCControlFileWriter(BaseTest):
                     variables_read_dict["LRC"] = True
                     split_line = line.split()
                     assert split_line[1] == "False"
-
-                elif line.startswith("IPC "):
-                    variables_read_dict["IPC"] = True
-                    split_line = line.split()
-                    assert split_line[1] == "True"
 
                 elif line.startswith("Rcut "):
                     variables_read_dict["Rcut"] = True
@@ -2421,20 +2371,18 @@ class TestGOMCControlFileWriter(BaseTest):
                 elif line.startswith("LambdaVDW "):
                     variables_read_dict["LambdaVDW"] = True
                     split_line = line.split()
-                    assert split_line[1] == "0.0"
-                    assert split_line[2] == "0.1"
-                    assert split_line[3] == "0.1"
-                    assert split_line[4] == "0.2"
-                    assert split_line[5] == "1.0"
+                    assert split_line[1] == "0.1"
+                    assert split_line[2] == "0.2"
+                    assert split_line[3] == "0.4"
+                    assert split_line[4] == "1.0"
 
                 elif line.startswith("LambdaCoulomb "):
                     variables_read_dict["LambdaCoulomb"] = True
                     split_line = line.split()
-                    assert split_line[1] == "0.0"
-                    assert split_line[2] == "0.0"
-                    assert split_line[3] == "0.3"
-                    assert split_line[4] == "0.8"
-                    assert split_line[5] == "1.0"
+                    assert split_line[1] == "0.1"
+                    assert split_line[2] == "0.3"
+                    assert split_line[3] == "0.8"
+                    assert split_line[4] == "1.0"
 
                 elif line.startswith("CBMC_First "):
                     variables_read_dict["CBMC_First"] = True
@@ -2573,7 +2521,6 @@ class TestGOMCControlFileWriter(BaseTest):
             "Temperature": True,
             "Potential": True,
             "LRC": True,
-            "IPC": True,
             "Rcut": True,
             "RcutLow": True,
             "Exclude": True,
@@ -2668,28 +2615,8 @@ class TestGOMCControlFileWriter(BaseTest):
                     "FreeEnergyCalc": [True, 10],
                     "MoleculeType": ["ETH", 1],
                     "InitialState": 3,
-                    "LambdaVDW": [0.0, 0.1, 0.2, 0.4, 1.0],
-                    "LambdaCoulomb": [0.0, 0.1, 0.3, 0.8, 0.9],
-                },
-            )
-
-        with pytest.raises(
-            ValueError,
-            match=r"ERROR: The first value in the LambdaCoulomb variable list must be a 0.0",
-        ):
-            gomc_control.write_gomc_control_file(
-                charmm,
-                "test_save_NVT_bad_variables_part_1.conf",
-                "NVT",
-                100,
-                300,
-                check_input_files_exist=False,
-                input_variables_dict={
-                    "FreeEnergyCalc": [True, 10],
-                    "MoleculeType": ["ETH", 1],
-                    "InitialState": 3,
-                    "LambdaVDW": [0.0, 0.1, 0.2, 0.4, 1.0],
-                    "LambdaCoulomb": [0.1, 0.3, 0.8, 0.9, 1.0],
+                    "LambdaVDW": [0.1, 0.2, 0.4, 1.0],
+                    "LambdaCoulomb": [0.1, 0.3, 0.8, 0.9],
                 },
             )
 
@@ -2708,26 +2635,7 @@ class TestGOMCControlFileWriter(BaseTest):
                     "FreeEnergyCalc": [True, 10],
                     "MoleculeType": ["ETH", 1],
                     "InitialState": 3,
-                    "LambdaVDW": [0.0, 0.1, 0.2, 0.4, 0.9],
-                },
-            )
-
-        with pytest.raises(
-            ValueError,
-            match=r"ERROR: The first value in the LambdaVDW variable list must be a 0.0",
-        ):
-            gomc_control.write_gomc_control_file(
-                charmm,
-                "test_save_NVT_bad_variables_part_1.conf",
-                "NVT",
-                100,
-                300,
-                check_input_files_exist=False,
-                input_variables_dict={
-                    "FreeEnergyCalc": [True, 10],
-                    "MoleculeType": ["ETH", 1],
-                    "InitialState": 3,
-                    "LambdaVDW": [0.1, 0.2, 0.4, 0.9, 1.0],
+                    "LambdaVDW": [0.1, 0.2, 0.4, 0.9],
                 },
             )
 
@@ -3552,8 +3460,8 @@ class TestGOMCControlFileWriter(BaseTest):
                     "FreeEnergyCalc": "s",
                     "MoleculeType": ["ETH", 1],
                     "InitialState": 1,
-                    "LambdaVDW": [0.0, 0.1, 0.2, 0.4, 1.0],
-                    "LambdaCoulomb": [0.0, 0.1, 0.3, 0.8, 1.0],
+                    "LambdaVDW": [0.1, 0.2, 0.4, 1.0],
+                    "LambdaCoulomb": [0.1, 0.3, 0.8, 1.0],
                 },
             )
 
@@ -3575,8 +3483,8 @@ class TestGOMCControlFileWriter(BaseTest):
                     "FreeEnergyCalc": [True, 10000],
                     "MoleculeType": ["ETH", "s"],
                     "InitialState": 1,
-                    "LambdaVDW": [0.0, 0.1, 0.2, 0.4, 1.0],
-                    "LambdaCoulomb": [0.0, 0.1, 0.3, 0.8, 1.0],
+                    "LambdaVDW": [0.1, 0.2, 0.4, 1.0],
+                    "LambdaCoulomb": [0.1, 0.3, 0.8, 1.0],
                 },
             )
 
@@ -3598,8 +3506,8 @@ class TestGOMCControlFileWriter(BaseTest):
                     "FreeEnergyCalc": [True, 10000],
                     "MoleculeType": [["ETH"], 1],
                     "InitialState": 1,
-                    "LambdaVDW": [0.0, 0.1, 0.2, 0.4, 1.0],
-                    "LambdaCoulomb": [0.0, 0.1, 0.3, 0.8, 1.0],
+                    "LambdaVDW": [0.1, 0.2, 0.4, 1.0],
+                    "LambdaCoulomb": [0.1, 0.3, 0.8, 1.0],
                 },
             )
 
@@ -3621,8 +3529,8 @@ class TestGOMCControlFileWriter(BaseTest):
                     "FreeEnergyCalc": [True, 10000],
                     "MoleculeType": [{"ETH": "1"}, 1],
                     "InitialState": 1,
-                    "LambdaVDW": [0.0, 0.1, 0.2, 0.4, 1.0],
-                    "LambdaCoulomb": [0.0, 0.1, 0.3, 0.8, 1.0],
+                    "LambdaVDW": [0.1, 0.2, 0.4, 1.0],
+                    "LambdaCoulomb": [0.1, 0.3, 0.8, 1.0],
                 },
             )
 
@@ -3644,8 +3552,8 @@ class TestGOMCControlFileWriter(BaseTest):
                     "FreeEnergyCalc": [True, 10000],
                     "MoleculeType": ["ETH", 1],
                     "InitialState": "s",
-                    "LambdaVDW": [0.0, 0.1, 1.0],
-                    "LambdaCoulomb": [0.0, 0.1, 0.3, 0.8, 1.0],
+                    "LambdaVDW": [0.1, 0.2, 0.4, 1.0],
+                    "LambdaCoulomb": [0.1, 0.3, 0.8, 1.0],
                 },
             )
 
@@ -3668,7 +3576,7 @@ class TestGOMCControlFileWriter(BaseTest):
                     "MoleculeType": ["ETH", 1],
                     "InitialState": 1,
                     "LambdaVDW": "s",
-                    "LambdaCoulomb": [0.0, 0.1, 0.3, 0.8, 1.0],
+                    "LambdaCoulomb": [0.1, 0.3, 0.8, 1.0],
                 },
             )
 
@@ -3690,7 +3598,7 @@ class TestGOMCControlFileWriter(BaseTest):
                     "FreeEnergyCalc": [True, 10000],
                     "MoleculeType": ["ETH", 1],
                     "InitialState": 1,
-                    "LambdaVDW": [0.0, 0.1, 0.2, 0.4, 1.0],
+                    "LambdaVDW": [0.1, 0.2, 0.4, 1.0],
                     "LambdaCoulomb": "s",
                 },
             )
@@ -4910,8 +4818,8 @@ class TestGOMCControlFileWriter(BaseTest):
                     "FreeEnergyCalc": [],
                     "MoleculeType": ["ETH", 1],
                     "InitialState": 1,
-                    "LambdaVDW": [0.0, 0.1, 0.2, 0.4, 1.0],
-                    "LambdaCoulomb": [0.0, 0.8, 1.0],
+                    "LambdaVDW": [0.1, 0.2, 0.4, 1.0],
+                    "LambdaCoulomb": [0.1, 0.3, 0.8, 1.0],
                 },
             )
 
@@ -4933,8 +4841,8 @@ class TestGOMCControlFileWriter(BaseTest):
                     "FreeEnergyCalc": [True, 10000],
                     "MoleculeType": ["ETH", []],
                     "InitialState": 1,
-                    "LambdaVDW": [0.0, 0.1, 0.2, 0.4, 1.0],
-                    "LambdaCoulomb": [0.0, 0.1, 0.3, 0.8, 1.0],
+                    "LambdaVDW": [0.1, 0.2, 0.4, 1.0],
+                    "LambdaCoulomb": [0.1, 0.3, 0.8, 1.0],
                 },
             )
 
@@ -4956,8 +4864,8 @@ class TestGOMCControlFileWriter(BaseTest):
                     "FreeEnergyCalc": [True, 10000],
                     "MoleculeType": [["ETH"], 1],
                     "InitialState": 1,
-                    "LambdaVDW": [0.0, 0.1, 0.2, 0.4, 1.0],
-                    "LambdaCoulomb": [0.0, 0.1, 0.3, 0.8, 1.0],
+                    "LambdaVDW": [0.1, 0.2, 0.4, 1.0],
+                    "LambdaCoulomb": [0.1, 0.3, 0.8, 1.0],
                 },
             )
 
@@ -4979,8 +4887,8 @@ class TestGOMCControlFileWriter(BaseTest):
                     "FreeEnergyCalc": [True, 10000],
                     "MoleculeType": [{"ETH": "1"}, 1],
                     "InitialState": 1,
-                    "LambdaVDW": [0.0, 0.1, 0.2, 0.4, 1.0],
-                    "LambdaCoulomb": [0.0, 0.1, 0.3, 0.8, 1.0],
+                    "LambdaVDW": [0.1, 0.2, 0.4, 1.0],
+                    "LambdaCoulomb": [0.1, 0.3, 0.8, 1.0],
                 },
             )
 
@@ -5002,8 +4910,8 @@ class TestGOMCControlFileWriter(BaseTest):
                     "FreeEnergyCalc": [True, 10000],
                     "MoleculeType": ["ETH", 1],
                     "InitialState": [],
-                    "LambdaVDW": [0.0, 0.1, 0.2, 0.4, 1.0],
-                    "LambdaCoulomb": [0.0, 0.1, 0.3, 0.8, 1.0],
+                    "LambdaVDW": [0.1, 0.2, 0.4, 1.0],
+                    "LambdaCoulomb": [0.1, 0.3, 0.8, 1.0],
                 },
             )
 
@@ -5026,7 +4934,7 @@ class TestGOMCControlFileWriter(BaseTest):
                     "MoleculeType": ["ETH", 1],
                     "InitialState": 1,
                     "LambdaVDW": [],
-                    "LambdaCoulomb": [0.0, 0.1, 0.3, 0.8, 1.0],
+                    "LambdaCoulomb": [0.1, 0.3, 0.8, 1.0],
                 },
             )
 
@@ -5048,7 +4956,7 @@ class TestGOMCControlFileWriter(BaseTest):
                     "FreeEnergyCalc": [True, 10000],
                     "MoleculeType": ["ETH", 1],
                     "InitialState": 1,
-                    "LambdaVDW": [0.0, 0.1, 0.2, 0.4, 1.0],
+                    "LambdaVDW": [0.1, 0.2, 0.4, 1.0],
                     "LambdaCoulomb": [],
                 },
             )
@@ -5941,8 +5849,8 @@ class TestGOMCControlFileWriter(BaseTest):
                     "FreeEnergyCalc": [True, 10000],
                     "MoleculeType": ["ETH", 1],
                     "InitialState": 1,
-                    "LambdaVDW": [0.0, 0.1, 0.2, 0.4, 1.0],
-                    "LambdaCoulomb": [0.0, 0.1, 0.3, 0.8, 1.0],
+                    "LambdaVDW": [0.1, 0.2, 0.4, 1.0],
+                    "LambdaCoulomb": [0.1, 0.3, 0.8, 1.0],
                 },
             )
 
@@ -5963,8 +5871,8 @@ class TestGOMCControlFileWriter(BaseTest):
                     "FreeEnergyCalc": [False, 10000],
                     "MoleculeType": ["ETO", 1],
                     "InitialState": 1,
-                    "LambdaVDW": [0.0, 0.1, 0.2, 0.4, 0.9, 1.0],
-                    "LambdaCoulomb": [0.0, 0.1, 0.3, 0.8, 0.8, 1.0],
+                    "LambdaVDW": [0.1, 0.2, 0.4, 0.9, 1.0],
+                    "LambdaCoulomb": [0.1, 0.3, 0.8, 0.8, 1.0],
                 },
             )
         except:
@@ -5984,8 +5892,8 @@ class TestGOMCControlFileWriter(BaseTest):
                     "FreeEnergyCalc": [True, 10000],
                     "MoleculeType": ["ETH", 1],
                     "InitialState": 1,
-                    "LambdaVDW": [0.0, 0.1, 0.2, 0.4, 1.0],
-                    "LambdaCoulomb": [0.0, 0.1, 0.3, 0.8, 1.0],
+                    "LambdaVDW": [0.1, 0.2, 0.4, 1.0],
+                    "LambdaCoulomb": [0.1, 0.3, 0.8, 1.0],
                 },
             )
 
@@ -6006,8 +5914,8 @@ class TestGOMCControlFileWriter(BaseTest):
                     "FreeEnergyCalc": [False, 10000],
                     "MoleculeType": ["ETO", 1],
                     "InitialState": 1,
-                    "LambdaVDW": [0.0, 0.1, 0.2, 0.4, 1.0],
-                    "LambdaCoulomb": [0.0, 0.1, 0.3, 0.8, 1.0],
+                    "LambdaVDW": [0.1, 0.2, 0.4, 1.0],
+                    "LambdaCoulomb": [0.1, 0.3, 0.8, 1.0],
                 },
             )
         except:
@@ -6031,8 +5939,8 @@ class TestGOMCControlFileWriter(BaseTest):
                 input_variables_dict={
                     "MoleculeType": ["ETO", 1],
                     "InitialState": 1,
-                    "LambdaVDW": [0.0, 0.1, 0.2, 0.4, 1.0],
-                    "LambdaCoulomb": [0.0, 0.1, 0.3, 0.8, 1.0],
+                    "LambdaVDW": [0.1, 0.2, 0.4, 1.0],
+                    "LambdaCoulomb": [0.1, 0.3, 0.8, 1.0],
                 },
             )
 
@@ -6052,8 +5960,8 @@ class TestGOMCControlFileWriter(BaseTest):
                 input_variables_dict={
                     "FreeEnergyCalc": [False, 10000],
                     "InitialState": 1,
-                    "LambdaVDW": [0.0, 0.1, 0.2, 0.4, 1.0],
-                    "LambdaCoulomb": [0.0, 0.1, 0.3, 0.8, 1.0],
+                    "LambdaVDW": [0.1, 0.2, 0.4, 1.0],
+                    "LambdaCoulomb": [0.1, 0.3, 0.8, 1.0],
                 },
             )
 
@@ -6073,8 +5981,8 @@ class TestGOMCControlFileWriter(BaseTest):
                 input_variables_dict={
                     "FreeEnergyCalc": [False, 10000],
                     "MoleculeType": ["ETO", 1],
-                    "LambdaVDW": [0.0, 0.1, 0.2, 0.4, 1.0],
-                    "LambdaCoulomb": [0.0, 0.1, 0.3, 0.8, 1.0],
+                    "LambdaVDW": [0.1, 0.2, 0.4, 1.0],
+                    "LambdaCoulomb": [0.1, 0.3, 0.8, 1.0],
                 },
             )
 
@@ -6111,7 +6019,7 @@ class TestGOMCControlFileWriter(BaseTest):
                     "FreeEnergyCalc": [False, 10000],
                     "MoleculeType": ["ETO", 1],
                     "InitialState": 1,
-                    "LambdaVDW": [0.0, 0.1, 0.2, 0.4, 1.0],
+                    "LambdaVDW": [0.1, 0.2, 0.4, 1.0],
                 },
             )
         except:
@@ -6138,8 +6046,8 @@ class TestGOMCControlFileWriter(BaseTest):
                     "FreeEnergyCalc": [1, 10000],
                     "MoleculeType": ["ETO", 1],
                     "InitialState": 1,
-                    "LambdaVDW": [0.0, 0.1, 0.2, 0.4, 1.0],
-                    "LambdaCoulomb": [0.0, 0.1, 0.3, 0.8, 1.0],
+                    "LambdaVDW": [0.1, 0.2, 0.4, 1.0],
+                    "LambdaCoulomb": [0.1, 0.3, 0.8, 1.0],
                 },
             )
 
@@ -6161,8 +6069,8 @@ class TestGOMCControlFileWriter(BaseTest):
                     "FreeEnergyCalc": ["1", 10000],
                     "MoleculeType": ["ETO", 1],
                     "InitialState": 1,
-                    "LambdaVDW": [0.0, 0.1, 0.2, 0.4, 1.0],
-                    "LambdaCoulomb": [0.0, 0.1, 0.3, 0.8, 1.0],
+                    "LambdaVDW": [0.1, 0.2, 0.4, 1.0],
+                    "LambdaCoulomb": [0.1, 0.3, 0.8, 1.0],
                 },
             )
 
@@ -6184,8 +6092,8 @@ class TestGOMCControlFileWriter(BaseTest):
                     "FreeEnergyCalc": [["1"], 10000],
                     "MoleculeType": ["ETO", 1],
                     "InitialState": 1,
-                    "LambdaVDW": [0.0, 0.1, 0.2, 0.4, 1.0],
-                    "LambdaCoulomb": [0.0, 0.1, 0.3, 0.8, 1.0],
+                    "LambdaVDW": [0.1, 0.2, 0.4, 1.0],
+                    "LambdaCoulomb": [0.1, 0.3, 0.8, 1.0],
                 },
             )
 
@@ -6207,8 +6115,8 @@ class TestGOMCControlFileWriter(BaseTest):
                     "FreeEnergyCalc": [{"a": "1"}, 10000],
                     "MoleculeType": ["ETO", 1],
                     "InitialState": 1,
-                    "LambdaVDW": [0.0, 0.1, 0.2, 0.4, 1.0],
-                    "LambdaCoulomb": [0.0, 0.1, 0.3, 0.8, 1.0],
+                    "LambdaVDW": [0.1, 0.2, 0.4, 1.0],
+                    "LambdaCoulomb": [0.1, 0.3, 0.8, 1.0],
                 },
             )
 
@@ -6224,7 +6132,7 @@ class TestGOMCControlFileWriter(BaseTest):
                     "FreeEnergyCalc": [False, 10000],
                     "MoleculeType": ["ETO", 1],
                     "InitialState": 1,
-                    "LambdaVDW": [0.0, 0.1, 0.2, 0.4, 1.0],
+                    "LambdaVDW": [0.1, 0.2, 0.4, 1.0],
                 },
             )
         except:
@@ -6251,8 +6159,8 @@ class TestGOMCControlFileWriter(BaseTest):
                     "FreeEnergyCalc": [True, 1.0],
                     "MoleculeType": ["ETO", 1],
                     "InitialState": 1,
-                    "LambdaVDW": [0.0, 0.1, 0.2, 0.4, 1.0],
-                    "LambdaCoulomb": [0.0, 0.1, 0.3, 0.8, 1.0],
+                    "LambdaVDW": [0.1, 0.2, 0.4, 1.0],
+                    "LambdaCoulomb": [0.1, 0.3, 0.8, 1.0],
                 },
             )
 
@@ -6274,8 +6182,8 @@ class TestGOMCControlFileWriter(BaseTest):
                     "FreeEnergyCalc": [True, "1"],
                     "MoleculeType": ["ETO", 1],
                     "InitialState": 1,
-                    "LambdaVDW": [0.0, 0.1, 0.2, 0.4, 1.0],
-                    "LambdaCoulomb": [0.0, 0.1, 0.3, 0.8, 1.0],
+                    "LambdaVDW": [0.1, 0.2, 0.4, 1.0],
+                    "LambdaCoulomb": [0.1, 0.3, 0.8, 1.0],
                 },
             )
 
@@ -6297,8 +6205,8 @@ class TestGOMCControlFileWriter(BaseTest):
                     "FreeEnergyCalc": [True, ["1"]],
                     "MoleculeType": ["ETO", 1],
                     "InitialState": 1,
-                    "LambdaVDW": [0.0, 0.1, 0.2, 0.4, 1.0],
-                    "LambdaCoulomb": [0.0, 0.1, 0.3, 0.8, 1.0],
+                    "LambdaVDW": [0.1, 0.2, 0.4, 1.0],
+                    "LambdaCoulomb": [0.1, 0.3, 0.8, 1.0],
                 },
             )
 
@@ -6320,8 +6228,8 @@ class TestGOMCControlFileWriter(BaseTest):
                     "FreeEnergyCalc": [True, {"a": "1"}],
                     "MoleculeType": ["ETO", 1],
                     "InitialState": 1,
-                    "LambdaVDW": [0.0, 0.1, 0.2, 0.4, 1.0],
-                    "LambdaCoulomb": [0.0, 0.1, 0.3, 0.8, 1.0],
+                    "LambdaVDW": [0.1, 0.2, 0.4, 1.0],
+                    "LambdaCoulomb": [0.1, 0.3, 0.8, 1.0],
                 },
             )
 
@@ -6343,8 +6251,8 @@ class TestGOMCControlFileWriter(BaseTest):
                     "FreeEnergyCalc": [True, 10000, "s"],
                     "MoleculeType": ["ETO", 1],
                     "InitialState": 1,
-                    "LambdaVDW": [0.0, 0.1, 0.2, 0.4, 1.0],
-                    "LambdaCoulomb": [0.0, 0.1, 0.3, 0.8, 1.0],
+                    "LambdaVDW": [0.1, 0.2, 0.4, 1.0],
+                    "LambdaCoulomb": [0.1, 0.3, 0.8, 1.0],
                 },
             )
 
@@ -6367,8 +6275,8 @@ class TestGOMCControlFileWriter(BaseTest):
                     "FreeEnergyCalc": [True, 10000],
                     "MoleculeType": [1, 1],
                     "InitialState": 1,
-                    "LambdaVDW": [0.0, 0.1, 0.2, 0.4, 1.0],
-                    "LambdaCoulomb": [0.0, 0.1, 0.3, 0.8, 1.0],
+                    "LambdaVDW": [0.1, 0.2, 0.4, 1.0],
+                    "LambdaCoulomb": [0.1, 0.3, 0.8, 1.0],
                 },
             )
 
@@ -6390,8 +6298,8 @@ class TestGOMCControlFileWriter(BaseTest):
                     "FreeEnergyCalc": [True, 10000],
                     "MoleculeType": [[1], 1],
                     "InitialState": 1,
-                    "LambdaVDW": [0.0, 0.1, 0.2, 0.4, 1.0],
-                    "LambdaCoulomb": [0.0, 0.1, 0.3, 0.8, 1.0],
+                    "LambdaVDW": [0.1, 0.2, 0.4, 1.0],
+                    "LambdaCoulomb": [0.1, 0.3, 0.8, 1.0],
                 },
             )
 
@@ -6413,8 +6321,8 @@ class TestGOMCControlFileWriter(BaseTest):
                     "FreeEnergyCalc": [True, 10000],
                     "MoleculeType": [{"a": "1"}, 1],
                     "InitialState": 1,
-                    "LambdaVDW": [0.0, 0.1, 0.2, 0.4, 1.0],
-                    "LambdaCoulomb": [0.0, 0.1, 0.3, 0.8, 1.0],
+                    "LambdaVDW": [0.1, 0.2, 0.4, 1.0],
+                    "LambdaCoulomb": [0.1, 0.3, 0.8, 1.0],
                 },
             )
 
@@ -6436,8 +6344,8 @@ class TestGOMCControlFileWriter(BaseTest):
                     "FreeEnergyCalc": [True, 10000],
                     "MoleculeType": ["ETO", "1"],
                     "InitialState": 1,
-                    "LambdaVDW": [0.0, 0.1, 0.2, 0.4, 1.0],
-                    "LambdaCoulomb": [0.0, 0.1, 0.3, 0.8, 1.0],
+                    "LambdaVDW": [0.1, 0.2, 0.4, 1.0],
+                    "LambdaCoulomb": [0.1, 0.3, 0.8, 1.0],
                 },
             )
 
@@ -6459,8 +6367,8 @@ class TestGOMCControlFileWriter(BaseTest):
                     "FreeEnergyCalc": [True, 10000],
                     "MoleculeType": ["ETO", ["1"]],
                     "InitialState": 1,
-                    "LambdaVDW": [0.0, 0.1, 0.2, 0.4, 1.0],
-                    "LambdaCoulomb": [0.0, 0.1, 0.3, 0.8, 1.0],
+                    "LambdaVDW": [0.1, 0.2, 0.4, 1.0],
+                    "LambdaCoulomb": [0.1, 0.3, 0.8, 1.0],
                 },
             )
 
@@ -6482,8 +6390,8 @@ class TestGOMCControlFileWriter(BaseTest):
                     "FreeEnergyCalc": [True, 10000],
                     "MoleculeType": ["ETO", {"a": "1"}],
                     "InitialState": 1,
-                    "LambdaVDW": [0.0, 0.1, 0.2, 0.4, 1.0],
-                    "LambdaCoulomb": [0.0, 0.1, 0.3, 0.8, 1.0],
+                    "LambdaVDW": [0.1, 0.2, 0.4, 1.0],
+                    "LambdaCoulomb": [0.1, 0.3, 0.8, 1.0],
                 },
             )
 
@@ -6505,8 +6413,8 @@ class TestGOMCControlFileWriter(BaseTest):
                     "FreeEnergyCalc": [True, 10000],
                     "MoleculeType": ["ETOa", 1],
                     "InitialState": 1,
-                    "LambdaVDW": [0.0, 0.1, 0.2, 0.4, 1.0],
-                    "LambdaCoulomb": [0.0, 0.1, 0.3, 0.8, 1.0],
+                    "LambdaVDW": [0.1, 0.2, 0.4, 1.0],
+                    "LambdaCoulomb": [0.1, 0.3, 0.8, 1.0],
                 },
             )
 
@@ -6529,8 +6437,8 @@ class TestGOMCControlFileWriter(BaseTest):
                     "FreeEnergyCalc": [True, 10000],
                     "MoleculeType": ["ETO", 1],
                     "InitialState": "s",
-                    "LambdaVDW": [0.0, 0.1, 0.2, 0.4, 1.0],
-                    "LambdaCoulomb": [0.0, 0.1, 0.3, 0.8, 1.0],
+                    "LambdaVDW": [0.1, 0.2, 0.4, 1.0],
+                    "LambdaCoulomb": [0.1, 0.3, 0.8, 1.0],
                 },
             )
 
@@ -6552,8 +6460,8 @@ class TestGOMCControlFileWriter(BaseTest):
                     "FreeEnergyCalc": [True, 10000],
                     "MoleculeType": ["ETO", 1],
                     "InitialState": ["s"],
-                    "LambdaVDW": [0.0, 0.1, 0.2, 0.4, 1.0],
-                    "LambdaCoulomb": [0.0, 0.1, 0.3, 0.8, 1.0],
+                    "LambdaVDW": [0.1, 0.2, 0.4, 1.0],
+                    "LambdaCoulomb": [0.1, 0.3, 0.8, 1.0],
                 },
             )
 
@@ -6575,8 +6483,8 @@ class TestGOMCControlFileWriter(BaseTest):
                     "FreeEnergyCalc": [True, 10000],
                     "MoleculeType": ["ETO", 1],
                     "InitialState": {"a": "1"},
-                    "LambdaVDW": [0.0, 0.1, 0.2, 0.4, 1.0],
-                    "LambdaCoulomb": [0.0, 0.1, 0.3, 0.8, 1.0],
+                    "LambdaVDW": [0.1, 0.2, 0.4, 1.0],
+                    "LambdaCoulomb": [0.1, 0.3, 0.8, 1.0],
                 },
             )
 
@@ -6598,8 +6506,8 @@ class TestGOMCControlFileWriter(BaseTest):
                     "FreeEnergyCalc": [True, 10000],
                     "MoleculeType": ["ETO", 1],
                     "InitialState": 1.0,
-                    "LambdaVDW": [0.0, 0.1, 0.2, 0.4, 1.0],
-                    "LambdaCoulomb": [0.0, 0.1, 0.3, 0.8, 1.0],
+                    "LambdaVDW": [0.1, 0.2, 0.4, 1.0],
+                    "LambdaCoulomb": [0.1, 0.3, 0.8, 1.0],
                 },
             )
 
@@ -6623,7 +6531,7 @@ class TestGOMCControlFileWriter(BaseTest):
                     "MoleculeType": ["ETO", 1],
                     "InitialState": 1,
                     "LambdaVDW": ["x", 0.2, 0.4, 1.0],
-                    "LambdaCoulomb": [0.0, 0.1, 0.3, 0.8, 1.0],
+                    "LambdaCoulomb": [0.1, 0.3, 0.8, 1.0],
                 },
             )
 
@@ -6645,8 +6553,8 @@ class TestGOMCControlFileWriter(BaseTest):
                     "FreeEnergyCalc": [True, 10000],
                     "MoleculeType": ["ETO", 1],
                     "InitialState": 1,
-                    "LambdaVDW": [[0.0], 0.1, 0.2, 0.4, 1.0],
-                    "LambdaCoulomb": [0.0, 0.1, 0.3, 0.8, 1.0],
+                    "LambdaVDW": [[0.1], 0.2, 0.4, 1.0],
+                    "LambdaCoulomb": [0.1, 0.3, 0.8, 1.0],
                 },
             )
 
@@ -6669,7 +6577,7 @@ class TestGOMCControlFileWriter(BaseTest):
                     "MoleculeType": ["ETO", 1],
                     "InitialState": 1,
                     "LambdaVDW": [{"a": "1"}, 0.2, 1.0],
-                    "LambdaCoulomb": [0.0, 0.1, 0.3, 1.0],
+                    "LambdaCoulomb": [0.1, 0.3, 1.0],
                 },
             )
 
@@ -6692,7 +6600,7 @@ class TestGOMCControlFileWriter(BaseTest):
                     "FreeEnergyCalc": [True, 10000],
                     "MoleculeType": ["ETO", 1],
                     "InitialState": 1,
-                    "LambdaVDW": [0.0, 0.1, 0.2, 0.4, 1.0],
+                    "LambdaVDW": [0.1, 0.2, 0.4, 1.0],
                     "LambdaCoulomb": ["x", 0.3, 0.8, 1.0],
                 },
             )
@@ -6715,8 +6623,8 @@ class TestGOMCControlFileWriter(BaseTest):
                     "FreeEnergyCalc": [True, 10000],
                     "MoleculeType": ["ETO", 1],
                     "InitialState": 1,
-                    "LambdaVDW": [0.0, 0.1, 0.2, 0.4, 1.0],
-                    "LambdaCoulomb": [[0.0], 0.3, 0.8, 1.0],
+                    "LambdaVDW": [0.1, 0.2, 0.4, 1.0],
+                    "LambdaCoulomb": [[0.1], 0.3, 0.8, 1.0],
                 },
             )
 
@@ -6738,10 +6646,12 @@ class TestGOMCControlFileWriter(BaseTest):
                     "FreeEnergyCalc": [True, 10000],
                     "MoleculeType": ["ETO", 1],
                     "InitialState": 1,
-                    "LambdaVDW": [0.0, 0.1, 0.2, 1.0],
+                    "LambdaVDW": [0.1, 0.2, 1.0],
                     "LambdaCoulomb": [{"a": "1"}, 0.3, 1.0],
                 },
             )
+
+        # different LambdaVDW and LambdaCoulomb list lengths
         with pytest.raises(
             ValueError,
             match=r"ERROR: The LambdaVDW and LambdaCoulomb list must be of equal length.",
@@ -6757,8 +6667,8 @@ class TestGOMCControlFileWriter(BaseTest):
                     "FreeEnergyCalc": [True, 10000],
                     "MoleculeType": ["ETO", 1],
                     "InitialState": 1,
-                    "LambdaVDW": [0.0, 0.2, 0.4, 1.0],
-                    "LambdaCoulomb": [0.0, 0.1, 0.3, 0.8, 1.0],
+                    "LambdaVDW": [0.2, 0.4, 1.0],
+                    "LambdaCoulomb": [0.1, 0.3, 0.8, 1.0],
                 },
             )
 
@@ -6777,8 +6687,8 @@ class TestGOMCControlFileWriter(BaseTest):
                     "FreeEnergyCalc": [True, 10000],
                     "MoleculeType": ["ETO", 1],
                     "InitialState": 1,
-                    "LambdaVDW": [0.0, 0.1, 0.2, 0.4, 1.0],
-                    "LambdaCoulomb": [0.0, 0.3, 0.8, 1.0],
+                    "LambdaVDW": [0.1, 0.2, 0.4, 1.0],
+                    "LambdaCoulomb": [0.3, 0.8, 1.0],
                 },
             )
 
@@ -6851,9 +6761,9 @@ class TestGOMCControlFileWriter(BaseTest):
         with pytest.raises(
             ValueError,
             match=r"The MEMC_DataInput variable is equal to None, but at least one "
-            r"of the MEMC move ratios are all non-zero \(IntraMEMC_1Freq, "
-            r"MEMC_1Freq, IntraMEMC_2Freq, MEMC_2Freq, IntraMEMC_3Freq, "
-            r"and MEMC_3Freq\).",
+            r"of the MEMC move ratios are all non-zero \(IntraMEMC-1Freq, "
+            r"MEMC-1Freq, IntraMEMC-2Freq, MEMC-2Freq, IntraMEMC-3Freq, "
+            r"and MEMC-3Freq\).",
         ):
             gomc_control.write_gomc_control_file(
                 charmm,
@@ -7718,8 +7628,8 @@ class TestGOMCControlFileWriter(BaseTest):
             ValueError,
             match=r"ERROR: The MEMC_DataInput variable is equal to None, but at least "
             r"one of the MEMC move ratios are all non-zero "
-            r"\(IntraMEMC_1Freq, MEMC_1Freq, IntraMEMC_2Freq, MEMC_2Freq, "
-            r"IntraMEMC_3Freq, and MEMC_3Freq\).",
+            r"\(IntraMEMC-1Freq, MEMC-1Freq, IntraMEMC-2Freq, MEMC-2Freq, "
+            r"IntraMEMC-3Freq, and MEMC-3Freq\).",
         ):
             gomc_control.write_gomc_control_file(
                 charmm,
@@ -8306,8 +8216,8 @@ class TestGOMCControlFileWriter(BaseTest):
         with pytest.raises(
             ValueError,
             match=r"ERROR: The MEMC_DataInput variable is not equal to None, "
-            r"but all the MEMC move ratios are zero \(IntraMEMC_1Freq, MEMC_1Freq, "
-            r"IntraMEMC_2Freq, MEMC_2Freq, IntraMEMC_3Freq, and MEMC_3Freq\).",
+            r"but all the MEMC move ratios are zero \(IntraMEMC-1Freq, MEMC-1Freq, "
+            r"IntraMEMC-2Freq, MEMC-2Freq, IntraMEMC-3Freq, and MEMC-3Freq\).",
         ):
             gomc_control.write_gomc_control_file(
                 charmm,
@@ -8539,8 +8449,8 @@ class TestGOMCControlFileWriter(BaseTest):
         with pytest.raises(
             ValueError,
             match=r"ERROR: All the MC move input variables must be non-zero \(0\) "
-            r"for the SwapFreq, MEMC_1Freq, MEMC_2Freq, and MEMC_3Freq. "
-            r"The SwapFreq, MEMC_1Freq, MEMC_2Freq, and MEMC_3Freq need to be zero "
+            r"for the SwapFreq, MEMC-1Freq, MEMC-2Freq, and MEMC-3Freq. "
+            r"The SwapFreq, MEMC-1Freq, MEMC-2Freq, and MEMC-3Freq need to be zero "
             r'\(0\) for the "NVT" and "NPT" ensembles.',
         ):
             gomc_control.write_gomc_control_file(
@@ -8574,8 +8484,8 @@ class TestGOMCControlFileWriter(BaseTest):
         with pytest.raises(
             ValueError,
             match=r"ERROR: All the MC move input variables must be non-zero \(0\) "
-            r"for the SwapFreq, MEMC_1Freq, MEMC_2Freq, and MEMC_3Freq. "
-            r"The SwapFreq, MEMC_1Freq, MEMC_2Freq, and MEMC_3Freq need to be zero "
+            r"for the SwapFreq, MEMC-1Freq, MEMC-2Freq, and MEMC-3Freq. "
+            r"The SwapFreq, MEMC-1Freq, MEMC-2Freq, and MEMC-3Freq need to be zero "
             r'\(0\) for the "NVT" and "NPT" ensembles.',
         ):
             gomc_control.write_gomc_control_file(
@@ -8609,8 +8519,8 @@ class TestGOMCControlFileWriter(BaseTest):
         with pytest.raises(
             ValueError,
             match=r"ERROR: All the MC move input variables must be non-zero \(0\) "
-            r"for the SwapFreq, MEMC_1Freq, MEMC_2Freq, and MEMC_3Freq. "
-            r"The SwapFreq, MEMC_1Freq, MEMC_2Freq, and MEMC_3Freq need to be zero "
+            r"for the SwapFreq, MEMC-1Freq, MEMC-2Freq, and MEMC-3Freq. "
+            r"The SwapFreq, MEMC-1Freq, MEMC-2Freq, and MEMC-3Freq need to be zero "
             r'\(0\) for the "NVT" and "NPT" ensembles.',
         ):
             gomc_control.write_gomc_control_file(
@@ -8644,8 +8554,8 @@ class TestGOMCControlFileWriter(BaseTest):
         with pytest.raises(
             ValueError,
             match=r"ERROR: All the MC move input variables must be non-zero \(0\) "
-            r"for the SwapFreq, MEMC_1Freq, MEMC_2Freq, and MEMC_3Freq. "
-            r"The SwapFreq, MEMC_1Freq, MEMC_2Freq, and MEMC_3Freq need to be zero "
+            r"for the SwapFreq, MEMC-1Freq, MEMC-2Freq, and MEMC-3Freq. "
+            r"The SwapFreq, MEMC-1Freq, MEMC-2Freq, and MEMC-3Freq need to be zero "
             r'\(0\) for the "NVT" and "NPT" ensembles.',
         ):
             gomc_control.write_gomc_control_file(
@@ -8679,8 +8589,8 @@ class TestGOMCControlFileWriter(BaseTest):
         with pytest.raises(
             ValueError,
             match=r"ERROR: All the MC move input variables must be non-zero \(0\) "
-            r"for the SwapFreq, MEMC_1Freq, MEMC_2Freq, and MEMC_3Freq. "
-            r"The SwapFreq, MEMC_1Freq, MEMC_2Freq, and MEMC_3Freq need to be zero "
+            r"for the SwapFreq, MEMC-1Freq, MEMC-2Freq, and MEMC-3Freq. "
+            r"The SwapFreq, MEMC-1Freq, MEMC-2Freq, and MEMC-3Freq need to be zero "
             r'\(0\) for the "NVT" and "NPT" ensembles.',
         ):
             gomc_control.write_gomc_control_file(
@@ -8714,8 +8624,8 @@ class TestGOMCControlFileWriter(BaseTest):
         with pytest.raises(
             ValueError,
             match=r"ERROR: All the MC move input variables must be non-zero \(0\) "
-            r"for the SwapFreq, MEMC_1Freq, MEMC_2Freq, and MEMC_3Freq. "
-            r"The SwapFreq, MEMC_1Freq, MEMC_2Freq, and MEMC_3Freq need to be zero "
+            r"for the SwapFreq, MEMC-1Freq, MEMC-2Freq, and MEMC-3Freq. "
+            r"The SwapFreq, MEMC-1Freq, MEMC-2Freq, and MEMC-3Freq need to be zero "
             r'\(0\) for the "NVT" and "NPT" ensembles.',
         ):
             gomc_control.write_gomc_control_file(
@@ -8808,7 +8718,6 @@ class TestGOMCControlFileWriter(BaseTest):
                     "MEMC-2Freq": 0.10,
                     "IntraMEMC-3Freq": 0.20,
                     "MEMC-3Freq": 0.00,
-                    "TargetedSwapFreq": 0.00,
                 },
             )
         except:
@@ -10909,8 +10818,8 @@ class TestGOMCControlFileWriter(BaseTest):
             input_variables_dict={
                 "DisFreq": 0.25,
                 "RotFreq": 0.25,
-                "IntraSwapFreq": 0.15,
-                "SwapFreq": 0.10,
+                "IntraSwapFreq": 0.25,
+                "SwapFreq": 0.0,
                 "RegrowthFreq": 0.25,
                 "VolFreq": 0.0,
             },
@@ -10946,12 +10855,12 @@ class TestGOMCControlFileWriter(BaseTest):
                 elif line.startswith("IntraSwapFreq "):
                     variables_read_dict["IntraSwapFreq"] = True
                     split_line = line.split()
-                    assert split_line[1] == "0.15"
+                    assert split_line[1] == "0.25"
 
                 elif line.startswith("SwapFreq "):
                     variables_read_dict["SwapFreq"] = True
                     split_line = line.split()
-                    assert split_line[1] == "0.1"
+                    assert split_line[1] == "0.0"
 
                 elif line.startswith("RegrowthFreq "):
                     variables_read_dict["RegrowthFreq"] = True
@@ -10975,3363 +10884,3 @@ class TestGOMCControlFileWriter(BaseTest):
             "RegrowthFreq": True,
             "VolFreq": True,
         }
-
-    def test_save_basic_GCMC_use_targetedswap_chempot(
-        self, ethane_gomc, ethanol_gomc
-    ):
-        test_box_ethane_gomc_ethanol_gomc = mb.fill_box(
-            compound=[ethane_gomc, ethanol_gomc],
-            n_compounds=[10, 10],
-            box=[2, 2, 2],
-        )
-        charmm = Charmm(
-            test_box_ethane_gomc_ethanol_gomc,
-            "ethane_box_0",
-            ff_filename="ethane",
-            structure_box_1=test_box_ethane_gomc_ethanol_gomc,
-            filename_box_1="ethane_box_1",
-            residues=[ethane_gomc.name, ethanol_gomc.name],
-            forcefield_selection="oplsaa",
-        )
-
-        gomc_control.write_gomc_control_file(
-            charmm,
-            "test_save_basic_GCMC_use_targetedswap_chempot.conf",
-            "GCMC",
-            1000,
-            500,
-            ExpertMode=False,
-            check_input_files_exist=False,
-            input_variables_dict={
-                "DisFreq": 0.20,
-                "RotFreq": 0.20,
-                "IntraSwapFreq": 0.10,
-                "SwapFreq": 0.10,
-                "RegrowthFreq": 0.20,
-                "VolFreq": 0.0,
-                "TargetedSwapFreq": 0.10,
-                "IntraTargetedSwapFreq": 0.10,
-                "ChemPot": {"ETH": -444, "ETO": -555},
-                "TargetedSwap_DataInput": {
-                    0: {
-                        "SubVolumeType": "dynamic",
-                        "SubVolumeBox": 0,
-                        "SubVolumeCenterList": ["1-2", 3, 4],
-                        "SubVolumeDim": [3, 2, 1],
-                        "SubVolumeResidueKind": ["all"],
-                        "SubVolumeRigidSwap": True,
-                        "SubVolumePBC": "XY",
-                        "SubVolumeChemPot": {"ETH": -222, "ETO": -22},
-                    },
-                    1: {
-                        "SubVolumeType": "static",
-                        "SubVolumeBox": 0,
-                        "SubVolumeCenter": [2, 3, 4],
-                        "SubVolumeDim": [4, 3, 2],
-                        "SubVolumeResidueKind": "All",
-                        "SubVolumeRigidSwap": False,
-                        "SubVolumePBC": "XYZ",
-                        "SubVolumeChemPot": {"ETH": -333, "ETO": -33},
-                    },
-                },
-            },
-        )
-
-        with open(
-            "test_save_basic_GCMC_use_targetedswap_chempot.conf", "r"
-        ) as fp:
-            variables_read_dict = {
-                "TargetedSwapFreq": False,
-                "IntraTargetedSwapFreq": False,
-                "SubVolumeBox_number_0": False,
-                "SubVolumeCenterList_number_0": False,
-                "SubVolumeDim_number_0": False,
-                "SubVolumeResidueKind_number_0": False,
-                "SubVolumeRigidSwap_number_0": False,
-                "SubVolumePBC_number_0": False,
-                "SubVolumeChemPot_number_0_value_0": False,
-                "SubVolumeChemPot_number_0_value_1": False,
-                "SubVolumeBox_number_1": False,
-                "SubVolumeCenter_number_1": False,
-                "SubVolumeDim_number_1": False,
-                "SubVolumeResidueKind_number_1": False,
-                "SubVolumeRigidSwap_number_1": False,
-                "SubVolumePBC_number_1": False,
-                "SubVolumeChemPot_number_1_value_0": False,
-                "SubVolumeChemPot_number_1_value_1": False,
-            }
-            out_gomc = fp.readlines()
-            for i, line in enumerate(out_gomc):
-                if line.startswith("TargetedSwapFreq "):
-                    split_line = line.split()
-                    assert split_line[1] == "0.1"
-                    variables_read_dict["TargetedSwapFreq"] = True
-
-                elif line.startswith("IntraTargetedSwapFreq "):
-                    split_line = line.split()
-                    assert split_line[1] == "0.1"
-                    variables_read_dict["IntraTargetedSwapFreq"] = True
-
-                elif line.startswith("SubVolumeBox "):
-                    split_line = line.split()
-                    if split_line[1] == "0":
-                        assert split_line[2] == "0"
-                        variables_read_dict["SubVolumeBox_number_0"] = True
-                    if split_line[1] == "1":
-                        assert split_line[2] == "0"
-                        variables_read_dict["SubVolumeBox_number_1"] = True
-
-                elif line.startswith("SubVolumeCenterList "):
-                    split_line = line.split()
-                    if split_line[1] == "0":
-                        assert split_line[2] == "1-2"
-                        assert split_line[3] == "3"
-                        assert split_line[4] == "4"
-                        variables_read_dict[
-                            "SubVolumeCenterList_number_0"
-                        ] = True
-
-                elif line.startswith("SubVolumeCenter "):
-                    split_line = line.split()
-                    if split_line[1] == "1":
-                        assert split_line[2] == "2"
-                        assert split_line[3] == "3"
-                        assert split_line[4] == "4"
-                        variables_read_dict["SubVolumeCenter_number_1"] = True
-
-                elif line.startswith("SubVolumeDim "):
-                    split_line = line.split()
-                    if split_line[1] == "0":
-                        assert split_line[2] == "3"
-                        assert split_line[3] == "2"
-                        assert split_line[4] == "1"
-                        variables_read_dict["SubVolumeDim_number_0"] = True
-                    if split_line[1] == "1":
-                        assert split_line[2] == "4"
-                        assert split_line[3] == "3"
-                        assert split_line[4] == "2"
-                        variables_read_dict["SubVolumeDim_number_1"] = True
-
-                elif line.startswith("SubVolumeResidueKind "):
-                    split_line = line.split()
-                    if split_line[1] == "0":
-                        assert split_line[2] == "ALL"
-                        variables_read_dict[
-                            "SubVolumeResidueKind_number_0"
-                        ] = True
-                    if split_line[1] == "1":
-                        assert split_line[2] == "ALL"
-                        variables_read_dict[
-                            "SubVolumeResidueKind_number_1"
-                        ] = True
-
-                elif line.startswith("SubVolumeRigidSwap "):
-                    split_line = line.split()
-                    if split_line[1] == "0":
-                        assert split_line[2] == "True"
-                        variables_read_dict[
-                            "SubVolumeRigidSwap_number_0"
-                        ] = True
-                    if split_line[1] == "1":
-                        assert split_line[2] == "False"
-                        variables_read_dict[
-                            "SubVolumeRigidSwap_number_1"
-                        ] = True
-
-                elif line.startswith("SubVolumePBC "):
-                    split_line = line.split()
-                    if split_line[1] == "0":
-                        assert split_line[2] == "XY"
-                        variables_read_dict["SubVolumePBC_number_0"] = True
-                    if split_line[1] == "1":
-                        assert split_line[2] == "XYZ"
-                        variables_read_dict["SubVolumePBC_number_1"] = True
-
-                elif line.startswith("SubVolumeChemPot "):
-                    split_line = line.split()
-                    if split_line[1] == "0" and split_line[2] == "ETH":
-                        assert split_line[3] == "-222"
-                        variables_read_dict[
-                            "SubVolumeChemPot_number_0_value_0"
-                        ] = True
-                    if split_line[1] == "0" and split_line[2] == "ETO":
-                        assert split_line[3] == "-22"
-                        variables_read_dict[
-                            "SubVolumeChemPot_number_0_value_1"
-                        ] = True
-                    if split_line[1] == "1" and split_line[2] == "ETH":
-                        assert split_line[3] == "-333"
-                        variables_read_dict[
-                            "SubVolumeChemPot_number_1_value_0"
-                        ] = True
-                    if split_line[1] == "1" and split_line[2] == "ETO":
-                        assert split_line[3] == "-33"
-                        variables_read_dict[
-                            "SubVolumeChemPot_number_1_value_1"
-                        ] = True
-
-                else:
-                    pass
-
-        assert variables_read_dict == {
-            "TargetedSwapFreq": True,
-            "IntraTargetedSwapFreq": True,
-            "SubVolumeBox_number_0": True,
-            "SubVolumeCenterList_number_0": True,
-            "SubVolumeDim_number_0": True,
-            "SubVolumeResidueKind_number_0": True,
-            "SubVolumeRigidSwap_number_0": True,
-            "SubVolumePBC_number_0": True,
-            "SubVolumeChemPot_number_0_value_0": True,
-            "SubVolumeChemPot_number_0_value_1": True,
-            "SubVolumeBox_number_1": True,
-            "SubVolumeCenter_number_1": True,
-            "SubVolumeDim_number_1": True,
-            "SubVolumeResidueKind_number_1": True,
-            "SubVolumeRigidSwap_number_1": True,
-            "SubVolumePBC_number_1": True,
-            "SubVolumeChemPot_number_1_value_0": True,
-            "SubVolumeChemPot_number_1_value_1": True,
-        }
-
-    def test_save_basic_GCMC_use_targetedswap_fugacity(
-        self, ethane_gomc, ethanol_gomc
-    ):
-        test_box_ethane_gomc_ethanol_gomc = mb.fill_box(
-            compound=[ethane_gomc, ethanol_gomc],
-            n_compounds=[10, 10],
-            box=[2, 2, 2],
-        )
-        charmm = Charmm(
-            test_box_ethane_gomc_ethanol_gomc,
-            "ethane_box_0",
-            ff_filename="ethane",
-            structure_box_1=test_box_ethane_gomc_ethanol_gomc,
-            filename_box_1="ethane_box_1",
-            residues=[ethane_gomc.name, ethanol_gomc.name],
-            forcefield_selection="oplsaa",
-        )
-
-        gomc_control.write_gomc_control_file(
-            charmm,
-            "test_save_basic_GCMC_use_targetedswap_fugacity.conf",
-            "GCMC",
-            1000,
-            500,
-            ExpertMode=False,
-            check_input_files_exist=False,
-            input_variables_dict={
-                "DisFreq": 0.20,
-                "RotFreq": 0.20,
-                "IntraSwapFreq": 0.10,
-                "SwapFreq": 0.10,
-                "RegrowthFreq": 0.20,
-                "VolFreq": 0.0,
-                "TargetedSwapFreq": 0.10,
-                "IntraTargetedSwapFreq": 0.10,
-                "Fugacity": {"ETH": 4.44, "ETO": 5.55},
-                "TargetedSwap_DataInput": {
-                    0: {
-                        "SubVolumeType": "dynamic",
-                        "SubVolumeBox": 0,
-                        "SubVolumeCenterList": ["1-6", 7, 8],
-                        "SubVolumeDim": [3, 2, 1],
-                        "SubVolumeResidueKind": ["ETH", "ETO"],
-                        "SubVolumeRigidSwap": False,
-                        "SubVolumePBC": "XY",
-                        "SubVolumeFugacity": {"ETH": 2.22, "ETO": 0.22},
-                    },
-                    1: {
-                        "SubVolumeType": "static",
-                        "SubVolumeBox": 0,
-                        "SubVolumeCenter": [2, 3, 4],
-                        "SubVolumeDim": [4, 3, 2],
-                        "SubVolumeResidueKind": "ETH",
-                        "SubVolumeFugacity": {"ETH": 3.33},
-                    },
-                },
-            },
-        )
-
-        with open(
-            "test_save_basic_GCMC_use_targetedswap_fugacity.conf", "r"
-        ) as fp:
-            variables_read_dict = {
-                "TargetedSwapFreq": False,
-                "IntraTargetedSwapFreq": False,
-                "SubVolumeBox_number_0": False,
-                "SubVolumeCenterList_number_0": False,
-                "SubVolumeDim_number_0": False,
-                "SubVolumeResidueKind_number_0": False,
-                "SubVolumeRigidSwap_number_0": False,
-                "SubVolumePBC_number_0": False,
-                "SubVolumeFugacity_number_0_value_0": False,
-                "SubVolumeFugacity_number_0_value_1": False,
-                "SubVolumeBox_number_1": False,
-                "SubVolumeCenter_number_1": False,
-                "SubVolumeDim_number_1": False,
-                "SubVolumeResidueKind_number_1": False,
-                "SubVolumeRigidSwap_number_1": False,
-                "SubVolumePBC_number_1": False,
-                "SubVolumeFugacity_number_1_value_0": False,
-            }
-            out_gomc = fp.readlines()
-            for i, line in enumerate(out_gomc):
-                if line.startswith("TargetedSwapFreq "):
-                    split_line = line.split()
-                    assert split_line[1] == "0.1"
-                    variables_read_dict["TargetedSwapFreq"] = True
-
-                elif line.startswith("IntraTargetedSwapFreq "):
-                    split_line = line.split()
-                    assert split_line[1] == "0.1"
-                    variables_read_dict["IntraTargetedSwapFreq"] = True
-
-                elif line.startswith("SubVolumeBox "):
-                    split_line = line.split()
-                    if split_line[1] == "0":
-                        assert split_line[2] == "0"
-                        variables_read_dict["SubVolumeBox_number_0"] = True
-                    if split_line[1] == "1":
-                        assert split_line[2] == "0"
-                        variables_read_dict["SubVolumeBox_number_1"] = True
-
-                elif line.startswith("SubVolumeCenterList "):
-                    split_line = line.split()
-                    if split_line[1] == "0":
-                        assert split_line[2] == "1-6"
-                        assert split_line[3] == "7"
-                        assert split_line[4] == "8"
-                        variables_read_dict[
-                            "SubVolumeCenterList_number_0"
-                        ] = True
-
-                elif line.startswith("SubVolumeCenter "):
-                    split_line = line.split()
-                    if split_line[1] == "1":
-                        assert split_line[2] == "2"
-                        assert split_line[3] == "3"
-                        assert split_line[4] == "4"
-                        variables_read_dict["SubVolumeCenter_number_1"] = True
-
-                elif line.startswith("SubVolumeDim "):
-                    split_line = line.split()
-                    if split_line[1] == "0":
-                        assert split_line[2] == "3"
-                        assert split_line[3] == "2"
-                        assert split_line[4] == "1"
-                        variables_read_dict["SubVolumeDim_number_0"] = True
-                    if split_line[1] == "1":
-                        assert split_line[2] == "4"
-                        assert split_line[3] == "3"
-                        assert split_line[4] == "2"
-                        variables_read_dict["SubVolumeDim_number_1"] = True
-
-                elif line.startswith("SubVolumeResidueKind "):
-                    split_line = line.split()
-                    if split_line[1] == "0":
-                        assert split_line[2] == "ETH"
-                        assert split_line[3] == "ETO"
-                        variables_read_dict[
-                            "SubVolumeResidueKind_number_0"
-                        ] = True
-                    if split_line[1] == "1":
-                        assert split_line[2] == "ETH"
-                        variables_read_dict[
-                            "SubVolumeResidueKind_number_1"
-                        ] = True
-
-                elif line.startswith("SubVolumeRigidSwap "):
-                    split_line = line.split()
-                    if split_line[1] == "0":
-                        assert split_line[2] == "False"
-                        variables_read_dict[
-                            "SubVolumeRigidSwap_number_0"
-                        ] = True
-                    if split_line[1] == "1":
-                        assert split_line[2] == "True"
-                        variables_read_dict[
-                            "SubVolumeRigidSwap_number_1"
-                        ] = True
-
-                elif line.startswith("SubVolumePBC "):
-                    split_line = line.split()
-                    if split_line[1] == "0":
-                        assert split_line[2] == "XY"
-                        variables_read_dict["SubVolumePBC_number_0"] = True
-                    if split_line[1] == "1":
-                        assert split_line[2] == "XYZ"
-                        variables_read_dict["SubVolumePBC_number_1"] = True
-
-                elif line.startswith("SubVolumeFugacity "):
-                    split_line = line.split()
-                    if split_line[1] == "0" and split_line[2] == "ETH":
-                        assert split_line[3] == "2.22"
-                        variables_read_dict[
-                            "SubVolumeFugacity_number_0_value_0"
-                        ] = True
-                    if split_line[1] == "0" and split_line[2] == "ETO":
-                        assert split_line[3] == "0.22"
-                        variables_read_dict[
-                            "SubVolumeFugacity_number_0_value_1"
-                        ] = True
-                    if split_line[1] == "1" and split_line[2] == "ETH":
-                        assert split_line[3] == "3.33"
-                        variables_read_dict[
-                            "SubVolumeFugacity_number_1_value_0"
-                        ] = True
-
-                else:
-                    pass
-
-        assert variables_read_dict == {
-            "TargetedSwapFreq": True,
-            "IntraTargetedSwapFreq": True,
-            "SubVolumeBox_number_0": True,
-            "SubVolumeCenterList_number_0": True,
-            "SubVolumeDim_number_0": True,
-            "SubVolumeResidueKind_number_0": True,
-            "SubVolumeRigidSwap_number_0": True,
-            "SubVolumePBC_number_0": True,
-            "SubVolumeFugacity_number_0_value_0": True,
-            "SubVolumeFugacity_number_0_value_1": True,
-            "SubVolumeBox_number_1": True,
-            "SubVolumeCenter_number_1": True,
-            "SubVolumeDim_number_1": True,
-            "SubVolumeResidueKind_number_1": True,
-            "SubVolumeRigidSwap_number_1": True,
-            "SubVolumePBC_number_1": True,
-            "SubVolumeFugacity_number_1_value_0": True,
-        }
-
-    def test_save_basic_GEMC_NVT_use_targetedswap(
-        self, ethane_gomc, ethanol_gomc
-    ):
-        test_box_ethane_gomc_ethanol_gomc = mb.fill_box(
-            compound=[ethane_gomc, ethanol_gomc],
-            n_compounds=[10, 10],
-            box=[2, 2, 2],
-        )
-        charmm = Charmm(
-            test_box_ethane_gomc_ethanol_gomc,
-            "ethane_box_0",
-            ff_filename="ethane",
-            structure_box_1=test_box_ethane_gomc_ethanol_gomc,
-            filename_box_1="ethane_box_1",
-            residues=[ethane_gomc.name, ethanol_gomc.name],
-            forcefield_selection="oplsaa",
-        )
-
-        gomc_control.write_gomc_control_file(
-            charmm,
-            "test_save_basic_GEMC_NVT_use_targetedswap.conf",
-            "GEMC_NVT",
-            1000,
-            500,
-            ExpertMode=False,
-            check_input_files_exist=False,
-            input_variables_dict={
-                "IPC": True,
-                "LRC": False,
-                "DisFreq": 0.20,
-                "RotFreq": 0.20,
-                "IntraSwapFreq": 0.10,
-                "SwapFreq": 0.10,
-                "RegrowthFreq": 0.20,
-                "VolFreq": 0.0,
-                "TargetedSwapFreq": 0.10,
-                "IntraTargetedSwapFreq": 0.10,
-                "TargetedSwap_DataInput": {
-                    0: {
-                        "SubVolumeType": "dynamic",
-                        "SubVolumeBox": 0,
-                        "SubVolumeCenterList": ["1-6", 7, 8],
-                        "SubVolumeDim": [3, 2, 1],
-                        "SubVolumeResidueKind": ["ETH", "ETO"],
-                        "SubVolumeRigidSwap": True,
-                        "SubVolumePBC": "XY",
-                    },
-                    1: {
-                        "SubVolumeType": "static",
-                        "SubVolumeBox": 1,
-                        "SubVolumeCenter": [2, 3, 4],
-                        "SubVolumeDim": [4, 3, 2],
-                        "SubVolumeResidueKind": "ETH",
-                        "SubVolumeRigidSwap": False,
-                        "SubVolumePBC": "XYZ",
-                    },
-                },
-            },
-        )
-
-        with open("test_save_basic_GEMC_NVT_use_targetedswap.conf", "r") as fp:
-            variables_read_dict = {
-                "IPC": False,
-                "LRC": False,
-                "TargetedSwapFreq": False,
-                "IntraTargetedSwapFreq": False,
-                "SubVolumeBox_number_0": False,
-                "SubVolumeCenterList_number_0": False,
-                "SubVolumeDim_number_0": False,
-                "SubVolumeResidueKind_number_0": False,
-                "SubVolumeRigidSwap_number_0": False,
-                "SubVolumePBC_number_0": False,
-                "SubVolumeBox_number_1": False,
-                "SubVolumeCenter_number_1": False,
-                "SubVolumeDim_number_1": False,
-                "SubVolumeResidueKind_number_1": False,
-                "SubVolumeRigidSwap_number_1": False,
-                "SubVolumePBC_number_1": False,
-            }
-
-            out_gomc = fp.readlines()
-            for i, line in enumerate(out_gomc):
-                if line.startswith("IPC "):
-                    split_line = line.split()
-                    assert split_line[1] == "True"
-                    variables_read_dict["IPC"] = True
-
-                elif line.startswith("LRC "):
-                    split_line = line.split()
-                    assert split_line[1] == "False"
-                    variables_read_dict["LRC"] = True
-
-                elif line.startswith("TargetedSwapFreq "):
-                    split_line = line.split()
-                    assert split_line[1] == "0.1"
-                    variables_read_dict["TargetedSwapFreq"] = True
-
-                elif line.startswith("IntraTargetedSwapFreq "):
-                    split_line = line.split()
-                    assert split_line[1] == "0.1"
-                    variables_read_dict["IntraTargetedSwapFreq"] = True
-
-                elif line.startswith("SubVolumeBox "):
-                    split_line = line.split()
-                    if split_line[1] == "0":
-                        assert split_line[2] == "0"
-                        variables_read_dict["SubVolumeBox_number_0"] = True
-                    if split_line[1] == "1":
-                        assert split_line[2] == "1"
-                        variables_read_dict["SubVolumeBox_number_1"] = True
-
-                elif line.startswith("SubVolumeCenterList "):
-                    split_line = line.split()
-                    if split_line[1] == "0":
-                        assert split_line[2] == "1-6"
-                        assert split_line[3] == "7"
-                        assert split_line[4] == "8"
-                        variables_read_dict[
-                            "SubVolumeCenterList_number_0"
-                        ] = True
-
-                elif line.startswith("SubVolumeCenter "):
-                    split_line = line.split()
-                    if split_line[1] == "1":
-                        assert split_line[2] == "2"
-                        assert split_line[3] == "3"
-                        assert split_line[4] == "4"
-                        variables_read_dict["SubVolumeCenter_number_1"] = True
-
-                elif line.startswith("SubVolumeDim "):
-                    split_line = line.split()
-                    if split_line[1] == "0":
-                        assert split_line[2] == "3"
-                        assert split_line[3] == "2"
-                        assert split_line[4] == "1"
-                        variables_read_dict["SubVolumeDim_number_0"] = True
-                    if split_line[1] == "1":
-                        assert split_line[2] == "4"
-                        assert split_line[3] == "3"
-                        assert split_line[4] == "2"
-                        variables_read_dict["SubVolumeDim_number_1"] = True
-
-                elif line.startswith("SubVolumeResidueKind "):
-                    split_line = line.split()
-                    if split_line[1] == "0":
-                        assert split_line[2] == "ETH"
-                        assert split_line[3] == "ETO"
-                        variables_read_dict[
-                            "SubVolumeResidueKind_number_0"
-                        ] = True
-                    if split_line[1] == "1":
-                        assert split_line[2] == "ETH"
-                        variables_read_dict[
-                            "SubVolumeResidueKind_number_1"
-                        ] = True
-
-                elif line.startswith("SubVolumeRigidSwap "):
-                    split_line = line.split()
-                    if split_line[1] == "0":
-                        assert split_line[2] == "True"
-                        variables_read_dict[
-                            "SubVolumeRigidSwap_number_0"
-                        ] = True
-                    if split_line[1] == "1":
-                        assert split_line[2] == "False"
-                        variables_read_dict[
-                            "SubVolumeRigidSwap_number_1"
-                        ] = True
-
-                elif line.startswith("SubVolumePBC "):
-                    split_line = line.split()
-                    if split_line[1] == "0":
-                        assert split_line[2] == "XY"
-                        variables_read_dict["SubVolumePBC_number_0"] = True
-                    if split_line[1] == "1":
-                        assert split_line[2] == "XYZ"
-                        variables_read_dict["SubVolumePBC_number_1"] = True
-
-                else:
-                    pass
-
-        assert variables_read_dict == {
-            "IPC": True,
-            "LRC": True,
-            "TargetedSwapFreq": True,
-            "IntraTargetedSwapFreq": True,
-            "SubVolumeBox_number_0": True,
-            "SubVolumeCenterList_number_0": True,
-            "SubVolumeDim_number_0": True,
-            "SubVolumeResidueKind_number_0": True,
-            "SubVolumeRigidSwap_number_0": True,
-            "SubVolumePBC_number_0": True,
-            "SubVolumeBox_number_1": True,
-            "SubVolumeCenter_number_1": True,
-            "SubVolumeDim_number_1": True,
-            "SubVolumeResidueKind_number_1": True,
-            "SubVolumeRigidSwap_number_1": True,
-            "SubVolumePBC_number_1": True,
-        }
-
-    def test_save_basic_NVT_use_targetedswap(self, ethane_gomc, ethanol_gomc):
-        test_box_ethane_gomc_ethanol_gomc = mb.fill_box(
-            compound=[ethane_gomc, ethanol_gomc],
-            n_compounds=[10, 10],
-            box=[2, 2, 2],
-        )
-        charmm = Charmm(
-            test_box_ethane_gomc_ethanol_gomc,
-            "ethane_box_0",
-            ff_filename="ethane",
-            structure_box_1=None,
-            filename_box_1=None,
-            residues=[ethane_gomc.name, ethanol_gomc.name],
-            forcefield_selection="oplsaa",
-        )
-
-        gomc_control.write_gomc_control_file(
-            charmm,
-            "test_save_basic_NVT_use_targetedswap.conf",
-            "NVT",
-            1000,
-            500,
-            ExpertMode=False,
-            check_input_files_exist=False,
-            input_variables_dict={
-                "DisFreq": 0.20,
-                "RotFreq": 0.20,
-                "IntraSwapFreq": 0.10,
-                "SwapFreq": 0.00,
-                "RegrowthFreq": 0.20,
-                "VolFreq": 0.0,
-                "TargetedSwapFreq": 0.00,
-                "IntraTargetedSwapFreq": 0.30,
-                "TargetedSwap_DataInput": {
-                    0: {
-                        "SubVolumeType": "dynamic",
-                        "SubVolumeBox": 0,
-                        "SubVolumeCenterList": ["1-6", 7, 8],
-                        "SubVolumeDim": [3, 2, 1],
-                        "SubVolumeResidueKind": ["ETH", "ETO"],
-                        "SubVolumeRigidSwap": True,
-                        "SubVolumePBC": "XY",
-                    },
-                    1: {
-                        "SubVolumeType": "static",
-                        "SubVolumeBox": 0,
-                        "SubVolumeCenter": [2, 3, 4],
-                        "SubVolumeDim": [4, 3, 2],
-                        "SubVolumeResidueKind": "ETH",
-                        "SubVolumeRigidSwap": False,
-                        "SubVolumePBC": "XYZ",
-                    },
-                },
-            },
-        )
-
-        with open("test_save_basic_NVT_use_targetedswap.conf", "r") as fp:
-            variables_read_dict = {
-                "TargetedSwapFreq": False,
-                "IntraTargetedSwapFreq": False,
-                "SubVolumeBox_number_0": False,
-                "SubVolumeCenterList_number_0": False,
-                "SubVolumeDim_number_0": False,
-                "SubVolumeResidueKind_number_0": False,
-                "SubVolumeRigidSwap_number_0": False,
-                "SubVolumePBC_number_0": False,
-                "SubVolumeBox_number_1": False,
-                "SubVolumeCenter_number_1": False,
-                "SubVolumeDim_number_1": False,
-                "SubVolumeResidueKind_number_1": False,
-                "SubVolumeRigidSwap_number_1": False,
-                "SubVolumePBC_number_1": False,
-            }
-
-            out_gomc = fp.readlines()
-            for i, line in enumerate(out_gomc):
-                if line.startswith("TargetedSwapFreq "):
-                    split_line = line.split()
-                    assert split_line[1] == "0.0"
-                    variables_read_dict["TargetedSwapFreq"] = True
-
-                elif line.startswith("IntraTargetedSwapFreq "):
-                    split_line = line.split()
-                    assert split_line[1] == "0.3"
-                    variables_read_dict["IntraTargetedSwapFreq"] = True
-
-                elif line.startswith("SubVolumeBox "):
-                    split_line = line.split()
-                    if split_line[1] == "0":
-                        assert split_line[2] == "0"
-                        variables_read_dict["SubVolumeBox_number_0"] = True
-                    if split_line[1] == "1":
-                        assert split_line[2] == "0"
-                        variables_read_dict["SubVolumeBox_number_1"] = True
-
-                elif line.startswith("SubVolumeCenterList "):
-                    split_line = line.split()
-                    if split_line[1] == "0":
-                        assert split_line[2] == "1-6"
-                        assert split_line[3] == "7"
-                        assert split_line[4] == "8"
-                        variables_read_dict[
-                            "SubVolumeCenterList_number_0"
-                        ] = True
-
-                elif line.startswith("SubVolumeCenter "):
-                    split_line = line.split()
-                    if split_line[1] == "1":
-                        assert split_line[2] == "2"
-                        assert split_line[3] == "3"
-                        assert split_line[4] == "4"
-                        variables_read_dict["SubVolumeCenter_number_1"] = True
-
-                elif line.startswith("SubVolumeDim "):
-                    split_line = line.split()
-                    if split_line[1] == "0":
-                        assert split_line[2] == "3"
-                        assert split_line[3] == "2"
-                        assert split_line[4] == "1"
-                        variables_read_dict["SubVolumeDim_number_0"] = True
-                    if split_line[1] == "1":
-                        assert split_line[2] == "4"
-                        assert split_line[3] == "3"
-                        assert split_line[4] == "2"
-                        variables_read_dict["SubVolumeDim_number_1"] = True
-
-                elif line.startswith("SubVolumeResidueKind "):
-                    split_line = line.split()
-                    if split_line[1] == "0":
-                        assert split_line[2] == "ETH"
-                        assert split_line[3] == "ETO"
-                        variables_read_dict[
-                            "SubVolumeResidueKind_number_0"
-                        ] = True
-                    if split_line[1] == "1":
-                        assert split_line[2] == "ETH"
-                        variables_read_dict[
-                            "SubVolumeResidueKind_number_1"
-                        ] = True
-
-                elif line.startswith("SubVolumeRigidSwap "):
-                    split_line = line.split()
-                    if split_line[1] == "0":
-                        assert split_line[2] == "True"
-                        variables_read_dict[
-                            "SubVolumeRigidSwap_number_0"
-                        ] = True
-                    if split_line[1] == "1":
-                        assert split_line[2] == "False"
-                        variables_read_dict[
-                            "SubVolumeRigidSwap_number_1"
-                        ] = True
-
-                elif line.startswith("SubVolumePBC "):
-                    split_line = line.split()
-                    if split_line[1] == "0":
-                        assert split_line[2] == "XY"
-                        variables_read_dict["SubVolumePBC_number_0"] = True
-                    if split_line[1] == "1":
-                        assert split_line[2] == "XYZ"
-                        variables_read_dict["SubVolumePBC_number_1"] = True
-
-                else:
-                    pass
-
-        assert variables_read_dict == {
-            "TargetedSwapFreq": True,
-            "IntraTargetedSwapFreq": True,
-            "SubVolumeBox_number_0": True,
-            "SubVolumeCenterList_number_0": True,
-            "SubVolumeDim_number_0": True,
-            "SubVolumeResidueKind_number_0": True,
-            "SubVolumeRigidSwap_number_0": True,
-            "SubVolumePBC_number_0": True,
-            "SubVolumeBox_number_1": True,
-            "SubVolumeCenter_number_1": True,
-            "SubVolumeDim_number_1": True,
-            "SubVolumeResidueKind_number_1": True,
-            "SubVolumeRigidSwap_number_1": True,
-            "SubVolumePBC_number_1": True,
-        }
-
-    def test_failures_targetedswap_GCMC(self, ethane_gomc, ethanol_gomc):
-        test_box_ethane_gomc_ethanol_gomc = mb.fill_box(
-            compound=[ethane_gomc, ethanol_gomc],
-            n_compounds=[10, 10],
-            box=[2, 2, 2],
-        )
-
-        charmm = Charmm(
-            test_box_ethane_gomc_ethanol_gomc,
-            "ethane_box_0",
-            ff_filename="ethane",
-            structure_box_1=test_box_ethane_gomc_ethanol_gomc,
-            filename_box_1="ethane_box_1",
-            residues=[ethane_gomc.name, ethanol_gomc.name],
-            forcefield_selection="oplsaa",
-        )
-
-        with pytest.raises(
-            ValueError,
-            match=r"ERROR: The TargetedSwap_DataInput variable is equal to None, "
-            r"but the TargetedSwapFreq or IntraTargetedSwapFreq move ratio is non-zero.",
-        ):
-            gomc_control.write_gomc_control_file(
-                charmm,
-                "test_failures_targetedswap",
-                "GCMC",
-                1000,
-                500,
-                ExpertMode=False,
-                check_input_files_exist=False,
-                input_variables_dict={
-                    "DisFreq": 0.00,
-                    "RotFreq": 0.20,
-                    "IntraSwapFreq": 0.20,
-                    "SwapFreq": 0.20,
-                    "RegrowthFreq": 0.20,
-                    "VolFreq": 0.0,
-                    "TargetedSwapFreq": 0.20,
-                    "Fugacity": {"ETH": 4.44, "ETO": 5.55},
-                },
-            )
-
-        with pytest.raises(
-            ValueError,
-            match=r"The TargetedSwap_DataInput is not formatted correctly as a dictionary"
-            r" or has the wrong input keys, values, or types.",
-        ):
-            gomc_control.write_gomc_control_file(
-                charmm,
-                "test_failures_targetedswap",
-                "GCMC",
-                1000,
-                500,
-                ExpertMode=False,
-                check_input_files_exist=False,
-                input_variables_dict={
-                    "DisFreq": 0.20,
-                    "RotFreq": 0.20,
-                    "IntraSwapFreq": 0.20,
-                    "SwapFreq": 0.20,
-                    "RegrowthFreq": 0.00,
-                    "VolFreq": 0.0,
-                    "TargetedSwapFreq": 0.20,
-                    "Fugacity": {"ETH": 4.44, "ETO": 5.55},
-                    "TargetedSwap_DataInput": {
-                        "x": {
-                            "SubVolumeType": "dynamic",
-                            "SubVolumeBox": 0,
-                            "SubVolumeCenterList": ["1-6", 7, 8],
-                            "SubVolumeDim": [3, 2, 1],
-                            "SubVolumeResidueKind": ["ETH", "ETO"],
-                            "SubVolumeRigidSwap": True,
-                            "SubVolumePBC": "XY",
-                            "SubVolumefugacity": {"ETH": 2.22, "ETO": 0.22},
-                        },
-                    },
-                },
-            )
-
-        with pytest.raises(
-            ValueError,
-            match=r"ERROR: The following input variables have "
-            r"bad values \(check spelling and for empty spaces in the keys or that "
-            r"the values are in the correct form with the acceptable values\)"
-            r": \['subvolumetype'\]",
-        ):
-            gomc_control.write_gomc_control_file(
-                charmm,
-                "test_failures_targetedswap",
-                "GCMC",
-                1000,
-                500,
-                ExpertMode=False,
-                check_input_files_exist=False,
-                input_variables_dict={
-                    "DisFreq": 0.20,
-                    "RotFreq": 0.20,
-                    "IntraSwapFreq": 0.20,
-                    "SwapFreq": 0.20,
-                    "RegrowthFreq": 0.00,
-                    "VolFreq": 0.0,
-                    "TargetedSwapFreq": 0.20,
-                    "Fugacity": {"ETH": 4.44, "ETO": 5.55},
-                    "TargetedSwap_DataInput": {
-                        0: {
-                            "SubVolumeType": "s",
-                            "SubVolumeBox": 0,
-                            "SubVolumeCenterList": ["1-6", 7, 8],
-                            "SubVolumeDim": [3, 2, 1],
-                            "SubVolumeResidueKind": ["ETH", "ETO"],
-                            "SubVolumeRigidSwap": True,
-                            "SubVolumePBC": "XY",
-                            "SubVolumeFugacity": {"ETH": 2.22, "ETO": 0.22},
-                        },
-                    },
-                },
-            )
-
-        with pytest.raises(
-            ValueError,
-            match=r"ERROR: The following input variables have "
-            r"bad values \(check spelling and for empty spaces in the keys or that "
-            r"the values are in the correct form with the acceptable values\)"
-            r": \['subvolumetype'\]",
-        ):
-            gomc_control.write_gomc_control_file(
-                charmm,
-                "test_failures_targetedswap",
-                "GCMC",
-                1000,
-                500,
-                ExpertMode=False,
-                check_input_files_exist=False,
-                input_variables_dict={
-                    "DisFreq": 0.20,
-                    "RotFreq": 0.20,
-                    "IntraSwapFreq": 0.20,
-                    "SwapFreq": 0.20,
-                    "RegrowthFreq": 0.00,
-                    "VolFreq": 0.0,
-                    "TargetedSwapFreq": 0.20,
-                    "Fugacity": {"ETH": 4.44, "ETO": 5.55},
-                    "TargetedSwap_DataInput": {
-                        0: {
-                            "SubVolumeType": 0,
-                            "SubVolumeBox": 0,
-                            "SubVolumeCenterList": ["1-6", 7, 8],
-                            "SubVolumeDim": [3, 2, 1],
-                            "SubVolumeResidueKind": ["ETH", "ETO"],
-                            "SubVolumeRigidSwap": True,
-                            "SubVolumePBC": "XY",
-                            "SubVolumeFugacity": {"ETH": 2.22, "ETO": 0.22},
-                        },
-                    },
-                },
-            )
-
-        with pytest.raises(
-            ValueError,
-            match=r"ERROR: The following input variables have "
-            r"bad values \(check spelling and for empty spaces in the keys or that "
-            r"the values are in the correct form with the acceptable values\)"
-            r": \['subvolumebox'\]",
-        ):
-            gomc_control.write_gomc_control_file(
-                charmm,
-                "test_failures_targetedswap",
-                "GCMC",
-                1000,
-                500,
-                ExpertMode=False,
-                check_input_files_exist=False,
-                input_variables_dict={
-                    "DisFreq": 0.20,
-                    "RotFreq": 0.20,
-                    "IntraSwapFreq": 0.20,
-                    "SwapFreq": 0.20,
-                    "RegrowthFreq": 0.00,
-                    "VolFreq": 0.0,
-                    "TargetedSwapFreq": 0.20,
-                    "Fugacity": {"ETH": 4.44, "ETO": 5.55},
-                    "TargetedSwap_DataInput": {
-                        0: {
-                            "SubVolumeType": "dynamic",
-                            "SubVolumeBox": "x",
-                            "SubVolumeCenterList": ["1-6", 7, 8],
-                            "SubVolumeDim": [3, 2, 1],
-                            "SubVolumeResidueKind": ["ETH", "ETO"],
-                            "SubVolumeRigidSwap": True,
-                            "SubVolumePBC": "XY",
-                            "SubVolumeFugacity": {"ETH": 2.22, "ETO": 0.22},
-                        },
-                    },
-                },
-            )
-
-        with pytest.raises(
-            ValueError,
-            match=r"ERROR: The following input variables have "
-            r"bad values \(check spelling and for empty spaces in the keys or that "
-            r"the values are in the correct form with the acceptable values\)"
-            r": \['subvolumebox'\]",
-        ):
-            gomc_control.write_gomc_control_file(
-                charmm,
-                "test_failures_targetedswap",
-                "GCMC",
-                1000,
-                500,
-                ExpertMode=False,
-                check_input_files_exist=False,
-                input_variables_dict={
-                    "DisFreq": 0.20,
-                    "RotFreq": 0.20,
-                    "IntraSwapFreq": 0.20,
-                    "SwapFreq": 0.20,
-                    "RegrowthFreq": 0.00,
-                    "VolFreq": 0.0,
-                    "TargetedSwapFreq": 0.20,
-                    "Fugacity": {"ETH": 4.44, "ETO": 5.55},
-                    "TargetedSwap_DataInput": {
-                        0: {
-                            "SubVolumeType": "dynamic",
-                            "SubVolumeBox": 2,
-                            "SubVolumeCenterList": ["1-6", 7, 8],
-                            "SubVolumeDim": [3, 2, 1],
-                            "SubVolumeResidueKind": ["ETH", "ETO"],
-                            "SubVolumeRigidSwap": True,
-                            "SubVolumePBC": "XY",
-                            "SubVolumeFugacity": {"ETH": 2.22, "ETO": 0.22},
-                        },
-                    },
-                },
-            )
-
-        with pytest.raises(
-            ValueError,
-            match=r"ERROR: The following input variables have "
-            r"bad values \(check spelling and for empty spaces in the keys or that "
-            r"the values are in the correct form with the acceptable values\)"
-            r": \['subvolumebox'\]",
-        ):
-            gomc_control.write_gomc_control_file(
-                charmm,
-                "test_failures_targetedswap",
-                "GCMC",
-                1000,
-                500,
-                ExpertMode=False,
-                check_input_files_exist=False,
-                input_variables_dict={
-                    "DisFreq": 0.20,
-                    "RotFreq": 0.20,
-                    "IntraSwapFreq": 0.20,
-                    "SwapFreq": 0.20,
-                    "RegrowthFreq": 0.00,
-                    "VolFreq": 0.0,
-                    "TargetedSwapFreq": 0.20,
-                    "Fugacity": {"ETH": 4.44, "ETO": 5.55},
-                    "TargetedSwap_DataInput": {
-                        0: {
-                            "SubVolumeType": "dynamic",
-                            "SubVolumeBox": ["s"],
-                            "SubVolumeCenterList": ["1-6", 7, 8],
-                            "SubVolumeDim": [3, 2, 1],
-                            "SubVolumeResidueKind": ["ETH", "ETO"],
-                            "SubVolumeRigidSwap": True,
-                            "SubVolumePBC": "XY",
-                            "SubVolumeFugacity": {"ETH": 2.22, "ETO": 0.22},
-                        },
-                    },
-                },
-            )
-
-        with pytest.raises(
-            ValueError,
-            match=r"ERROR: The following input variables have "
-            r"bad values \(check spelling and for empty spaces in the keys or that "
-            r"the values are in the correct form with the acceptable values\)"
-            r": \['subvolumecenterlist'\]",
-        ):
-            gomc_control.write_gomc_control_file(
-                charmm,
-                "test_failures_targetedswap",
-                "GCMC",
-                1000,
-                500,
-                ExpertMode=False,
-                check_input_files_exist=False,
-                input_variables_dict={
-                    "DisFreq": 0.20,
-                    "RotFreq": 0.20,
-                    "IntraSwapFreq": 0.20,
-                    "SwapFreq": 0.20,
-                    "RegrowthFreq": 0.00,
-                    "VolFreq": 0.0,
-                    "TargetedSwapFreq": 0.20,
-                    "Fugacity": {"ETH": 4.44, "ETO": 5.55},
-                    "TargetedSwap_DataInput": {
-                        0: {
-                            "SubVolumeType": "dynamic",
-                            "SubVolumeBox": 0,
-                            "SubVolumeCenterList": ["1-6.0", 7, 8],
-                            "SubVolumeDim": [3, 2, 1],
-                            "SubVolumeResidueKind": ["ETH", "ETO"],
-                            "SubVolumeRigidSwap": True,
-                            "SubVolumePBC": "XY",
-                            "SubVolumeFugacity": {"ETH": 2.22, "ETO": 0.22},
-                        },
-                    },
-                },
-            )
-
-        with pytest.raises(
-            ValueError,
-            match=r"ERROR: The following input variables have "
-            r"bad values \(check spelling and for empty spaces in the keys or that "
-            r"the values are in the correct form with the acceptable values\)"
-            r": \['subvolumecenterlist'\]",
-        ):
-            gomc_control.write_gomc_control_file(
-                charmm,
-                "test_failures_targetedswap",
-                "GCMC",
-                1000,
-                500,
-                ExpertMode=False,
-                check_input_files_exist=False,
-                input_variables_dict={
-                    "DisFreq": 0.20,
-                    "RotFreq": 0.20,
-                    "IntraSwapFreq": 0.20,
-                    "SwapFreq": 0.20,
-                    "RegrowthFreq": 0.00,
-                    "VolFreq": 0.0,
-                    "TargetedSwapFreq": 0.20,
-                    "Fugacity": {"ETH": 4.44, "ETO": 5.55},
-                    "TargetedSwap_DataInput": {
-                        0: {
-                            "SubVolumeType": "dynamic",
-                            "SubVolumeBox": 0,
-                            "SubVolumeCenterList": ["1", 7, 8],
-                            "SubVolumeDim": [3, 2, 1],
-                            "SubVolumeResidueKind": ["ETH", "ETO"],
-                            "SubVolumeRigidSwap": True,
-                            "SubVolumePBC": "XY",
-                            "SubVolumeFugacity": {"ETH": 2.22, "ETO": 0.22},
-                        },
-                    },
-                },
-            )
-
-        with pytest.raises(
-            ValueError,
-            match=r"ERROR: The following input variables have "
-            r"bad values \(check spelling and for empty spaces in the keys or that "
-            r"the values are in the correct form with the acceptable values\)"
-            r": \['subvolumecenterlist'\]",
-        ):
-            gomc_control.write_gomc_control_file(
-                charmm,
-                "test_failures_targetedswap",
-                "GCMC",
-                1000,
-                500,
-                ExpertMode=False,
-                check_input_files_exist=False,
-                input_variables_dict={
-                    "DisFreq": 0.20,
-                    "RotFreq": 0.20,
-                    "IntraSwapFreq": 0.20,
-                    "SwapFreq": 0.20,
-                    "RegrowthFreq": 0.00,
-                    "VolFreq": 0.0,
-                    "TargetedSwapFreq": 0.20,
-                    "Fugacity": {"ETH": 4.44, "ETO": 5.55},
-                    "TargetedSwap_DataInput": {
-                        0: {
-                            "SubVolumeType": "dynamic",
-                            "SubVolumeBox": 0,
-                            "SubVolumeCenterList": 3,
-                            "SubVolumeDim": [3, 2, 1],
-                            "SubVolumeResidueKind": ["ETH", "ETO"],
-                            "SubVolumeRigidSwap": True,
-                            "SubVolumePBC": "XY",
-                            "SubVolumeFugacity": {"ETH": 2.22, "ETO": 0.22},
-                        },
-                    },
-                },
-            )
-
-        with pytest.raises(
-            ValueError,
-            match=r"ERROR: The following input variables have "
-            r"bad values \(check spelling and for empty spaces in the keys or that "
-            r"the values are in the correct form with the acceptable values\)"
-            r": \['subvolumecenterlist'\]",
-        ):
-            gomc_control.write_gomc_control_file(
-                charmm,
-                "test_failures_targetedswap",
-                "GCMC",
-                1000,
-                500,
-                ExpertMode=False,
-                check_input_files_exist=False,
-                input_variables_dict={
-                    "DisFreq": 0.20,
-                    "RotFreq": 0.20,
-                    "IntraSwapFreq": 0.20,
-                    "SwapFreq": 0.20,
-                    "RegrowthFreq": 0.00,
-                    "VolFreq": 0.0,
-                    "TargetedSwapFreq": 0.20,
-                    "Fugacity": {"ETH": 4.44, "ETO": 5.55},
-                    "TargetedSwap_DataInput": {
-                        0: {
-                            "SubVolumeType": "dynamic",
-                            "SubVolumeBox": 0,
-                            "SubVolumeCenterList": "x",
-                            "SubVolumeDim": [3, 2, 1],
-                            "SubVolumeResidueKind": ["ETH", "ETO"],
-                            "SubVolumeRigidSwap": True,
-                            "SubVolumePBC": "XY",
-                            "SubVolumeFugacity": {"ETH": 2.22, "ETO": 0.22},
-                        },
-                    },
-                },
-            )
-
-        with pytest.raises(
-            ValueError,
-            match=r"ERROR: The following input variables have "
-            r"bad values \(check spelling and for empty spaces in the keys or that "
-            r"the values are in the correct form with the acceptable values\)"
-            r": \['subvolumecenterlist'\]",
-        ):
-            gomc_control.write_gomc_control_file(
-                charmm,
-                "test_failures_targetedswap",
-                "GCMC",
-                1000,
-                500,
-                ExpertMode=False,
-                check_input_files_exist=False,
-                input_variables_dict={
-                    "DisFreq": 0.20,
-                    "RotFreq": 0.20,
-                    "IntraSwapFreq": 0.20,
-                    "SwapFreq": 0.20,
-                    "RegrowthFreq": 0.00,
-                    "VolFreq": 0.0,
-                    "TargetedSwapFreq": 0.20,
-                    "ChemPot": {"ETH": 4.44, "ETO": 5.55},
-                    "TargetedSwap_DataInput": {
-                        0: {
-                            "SubVolumeType": "dynamic",
-                            "SubVolumeBox": 0,
-                            "SubVolumeCenterList": "x",
-                            "SubVolumeDim": [3, 2, 1],
-                            "SubVolumeResidueKind": ["ETH", "ETO"],
-                            "SubVolumeRigidSwap": True,
-                            "SubVolumePBC": "XY",
-                            "SubVolumeChemPot": {"ETH": -2.22, "ETO": 0.22},
-                        },
-                    },
-                },
-            )
-
-        with pytest.raises(
-            ValueError,
-            match=r"ERROR: The following input variables have "
-            r"bad values \(check spelling and for empty spaces in the keys or that "
-            r"the values are in the correct form with the acceptable values\)"
-            r": \['subvolumedim'\]",
-        ):
-            gomc_control.write_gomc_control_file(
-                charmm,
-                "test_failures_targetedswap",
-                "GCMC",
-                1000,
-                500,
-                ExpertMode=False,
-                check_input_files_exist=False,
-                input_variables_dict={
-                    "DisFreq": 0.20,
-                    "RotFreq": 0.20,
-                    "IntraSwapFreq": 0.20,
-                    "SwapFreq": 0.20,
-                    "RegrowthFreq": 0.00,
-                    "VolFreq": 0.0,
-                    "TargetedSwapFreq": 0.20,
-                    "Fugacity": {"ETH": 4.44, "ETO": 5.55},
-                    "TargetedSwap_DataInput": {
-                        0: {
-                            "SubVolumeType": "dynamic",
-                            "SubVolumeBox": 0,
-                            "SubVolumeCenterList": ["1-6", 7, 8],
-                            "SubVolumeDim": [-3, 2, 1],
-                            "SubVolumeResidueKind": ["ETH", "ETO"],
-                            "SubVolumeRigidSwap": True,
-                            "SubVolumePBC": "XY",
-                            "SubVolumeFugacity": {"ETH": 2.22, "ETO": 0.22},
-                        },
-                    },
-                },
-            )
-
-        with pytest.raises(
-            ValueError,
-            match=r"ERROR: The following input variables have "
-            r"bad values \(check spelling and for empty spaces in the keys or that "
-            r"the values are in the correct form with the acceptable values\)"
-            r": \['subvolumedim'\]",
-        ):
-            gomc_control.write_gomc_control_file(
-                charmm,
-                "test_failures_targetedswap",
-                "GCMC",
-                1000,
-                500,
-                ExpertMode=False,
-                check_input_files_exist=False,
-                input_variables_dict={
-                    "DisFreq": 0.20,
-                    "RotFreq": 0.20,
-                    "IntraSwapFreq": 0.20,
-                    "SwapFreq": 0.20,
-                    "RegrowthFreq": 0.00,
-                    "VolFreq": 0.0,
-                    "TargetedSwapFreq": 0.20,
-                    "Fugacity": {"ETH": 4.44, "ETO": 5.55},
-                    "TargetedSwap_DataInput": {
-                        0: {
-                            "SubVolumeType": "dynamic",
-                            "SubVolumeBox": 0,
-                            "SubVolumeCenterList": ["1-6", 7, 8],
-                            "SubVolumeDim": ["s", 2, 1],
-                            "SubVolumeResidueKind": ["ETH", "ETO"],
-                            "SubVolumeRigidSwap": True,
-                            "SubVolumePBC": "XY",
-                            "SubVolumeFugacity": {"ETH": 2.22, "ETO": 0.22},
-                        },
-                    },
-                },
-            )
-
-        with pytest.raises(
-            ValueError,
-            match=r"ERROR: The following input variables have "
-            r"bad values \(check spelling and for empty spaces in the keys or that "
-            r"the values are in the correct form with the acceptable values\)"
-            r": \['subvolumedim'\]",
-        ):
-            gomc_control.write_gomc_control_file(
-                charmm,
-                "test_failures_targetedswap",
-                "GCMC",
-                1000,
-                500,
-                ExpertMode=False,
-                check_input_files_exist=False,
-                input_variables_dict={
-                    "DisFreq": 0.20,
-                    "RotFreq": 0.20,
-                    "IntraSwapFreq": 0.20,
-                    "SwapFreq": 0.20,
-                    "RegrowthFreq": 0.00,
-                    "VolFreq": 0.0,
-                    "TargetedSwapFreq": 0.20,
-                    "Fugacity": {"ETH": 4.44, "ETO": 5.55},
-                    "TargetedSwap_DataInput": {
-                        0: {
-                            "SubVolumeType": "dynamic",
-                            "SubVolumeBox": 0,
-                            "SubVolumeCenterList": ["1-6", 7, 8],
-                            "SubVolumeDim": "s",
-                            "SubVolumeResidueKind": ["ETH", "ETO"],
-                            "SubVolumeRigidSwap": True,
-                            "SubVolumePBC": "XY",
-                            "SubVolumeFugacity": {"ETH": 2.22, "ETO": 0.22},
-                        },
-                    },
-                },
-            )
-
-        with pytest.raises(
-            ValueError,
-            match=r"ERROR: The following input variables have "
-            r"bad values \(check spelling and for empty spaces in the keys or that "
-            r"the values are in the correct form with the acceptable values\)"
-            r": \['subvolumedim'\]",
-        ):
-            gomc_control.write_gomc_control_file(
-                charmm,
-                "test_failures_targetedswap",
-                "GCMC",
-                1000,
-                500,
-                ExpertMode=False,
-                check_input_files_exist=False,
-                input_variables_dict={
-                    "DisFreq": 0.20,
-                    "RotFreq": 0.20,
-                    "IntraSwapFreq": 0.20,
-                    "SwapFreq": 0.20,
-                    "RegrowthFreq": 0.00,
-                    "VolFreq": 0.0,
-                    "TargetedSwapFreq": 0.20,
-                    "Fugacity": {"ETH": 4.44, "ETO": 5.55},
-                    "TargetedSwap_DataInput": {
-                        0: {
-                            "SubVolumeType": "dynamic",
-                            "SubVolumeBox": 0,
-                            "SubVolumeCenterList": ["1-6", 7, 8],
-                            "SubVolumeDim": [1, 2, 3, 4],
-                            "SubVolumeResidueKind": ["ETH", "ETO"],
-                            "SubVolumeRigidSwap": True,
-                            "SubVolumePBC": "XY",
-                            "SubVolumeFugacity": {"ETH": 2.22, "ETO": 0.22},
-                        },
-                    },
-                },
-            )
-
-        with pytest.raises(
-            ValueError,
-            match=r"ERROR: The following input variables have "
-            r"bad values \(check spelling and for empty spaces in the keys or that "
-            r"the values are in the correct form with the acceptable values\)"
-            r": \['subvolumeresiduekind'\]",
-        ):
-            gomc_control.write_gomc_control_file(
-                charmm,
-                "test_failures_targetedswap",
-                "GCMC",
-                1000,
-                500,
-                ExpertMode=False,
-                check_input_files_exist=False,
-                input_variables_dict={
-                    "DisFreq": 0.20,
-                    "RotFreq": 0.20,
-                    "IntraSwapFreq": 0.20,
-                    "SwapFreq": 0.20,
-                    "RegrowthFreq": 0.00,
-                    "VolFreq": 0.0,
-                    "TargetedSwapFreq": 0.20,
-                    "Fugacity": {"ETH": 4.44, "ETO": 5.55},
-                    "TargetedSwap_DataInput": {
-                        0: {
-                            "SubVolumeType": "dynamic",
-                            "SubVolumeBox": 0,
-                            "SubVolumeCenterList": ["1-6", 7, 8],
-                            "SubVolumeDim": [3, 2, 1],
-                            "SubVolumeResidueKind": [0, "ETO"],
-                            "SubVolumeRigidSwap": True,
-                            "SubVolumePBC": "XY",
-                            "SubVolumeFugacity": {"ETH": 2.22, "ETO": 0.22},
-                        },
-                    },
-                },
-            )
-
-        with pytest.raises(
-            ValueError,
-            match=r"ERROR: The following input variables have "
-            r"bad values \(check spelling and for empty spaces in the keys or that "
-            r"the values are in the correct form with the acceptable values\)"
-            r": \['subvolumeresiduekind'\]",
-        ):
-            gomc_control.write_gomc_control_file(
-                charmm,
-                "test_failures_targetedswap",
-                "GCMC",
-                1000,
-                500,
-                ExpertMode=False,
-                check_input_files_exist=False,
-                input_variables_dict={
-                    "DisFreq": 0.20,
-                    "RotFreq": 0.20,
-                    "IntraSwapFreq": 0.20,
-                    "SwapFreq": 0.20,
-                    "RegrowthFreq": 0.00,
-                    "VolFreq": 0.0,
-                    "TargetedSwapFreq": 0.20,
-                    "Fugacity": {"ETH": 4.44, "ETO": 5.55},
-                    "TargetedSwap_DataInput": {
-                        0: {
-                            "SubVolumeType": "dynamic",
-                            "SubVolumeBox": 0,
-                            "SubVolumeCenterList": ["1-6", 7, 8],
-                            "SubVolumeDim": [3, 2, 1],
-                            "SubVolumeResidueKind": "x",
-                            "SubVolumeRigidSwap": True,
-                            "SubVolumePBC": "XY",
-                            "SubVolumeFugacity": {"ETH": 2.22, "ETO": 0.22},
-                        },
-                    },
-                },
-            )
-
-        with pytest.raises(
-            ValueError,
-            match=r"ERROR: The following input variables have "
-            r"bad values \(check spelling and for empty spaces in the keys or that "
-            r"the values are in the correct form with the acceptable values\)"
-            r": \['subvolumeresiduekind'\]",
-        ):
-            gomc_control.write_gomc_control_file(
-                charmm,
-                "test_failures_targetedswap",
-                "GCMC",
-                1000,
-                500,
-                ExpertMode=False,
-                check_input_files_exist=False,
-                input_variables_dict={
-                    "DisFreq": 0.20,
-                    "RotFreq": 0.20,
-                    "IntraSwapFreq": 0.20,
-                    "SwapFreq": 0.20,
-                    "RegrowthFreq": 0.00,
-                    "VolFreq": 0.0,
-                    "TargetedSwapFreq": 0.20,
-                    "Fugacity": {"ETH": 4.44, "ETO": 5.55},
-                    "TargetedSwap_DataInput": {
-                        0: {
-                            "SubVolumeType": "dynamic",
-                            "SubVolumeBox": 0,
-                            "SubVolumeCenterList": ["1-6", 7, 8],
-                            "SubVolumeDim": [3, 2, 1],
-                            "SubVolumeResidueKind": 0,
-                            "SubVolumeRigidSwap": True,
-                            "SubVolumePBC": "XY",
-                            "SubVolumeFugacity": {"ETH": 2.22, "ETO": 0.22},
-                        },
-                    },
-                },
-            )
-
-        with pytest.raises(
-            ValueError,
-            match=r"ERROR: The following input variables have "
-            r"bad values \(check spelling and for empty spaces in the keys or that "
-            r"the values are in the correct form with the acceptable values\)"
-            r": \['subvolumeresiduekind'\]",
-        ):
-            gomc_control.write_gomc_control_file(
-                charmm,
-                "test_failures_targetedswap",
-                "GCMC",
-                1000,
-                500,
-                ExpertMode=False,
-                check_input_files_exist=False,
-                input_variables_dict={
-                    "DisFreq": 0.20,
-                    "RotFreq": 0.20,
-                    "IntraSwapFreq": 0.20,
-                    "SwapFreq": 0.20,
-                    "RegrowthFreq": 0.00,
-                    "VolFreq": 0.0,
-                    "TargetedSwapFreq": 0.20,
-                    "Fugacity": {"ETH": 4.44, "ETO": 5.55},
-                    "TargetedSwap_DataInput": {
-                        0: {
-                            "SubVolumeType": "dynamic",
-                            "SubVolumeBox": 0,
-                            "SubVolumeCenterList": ["1-6", 7, 8],
-                            "SubVolumeDim": [3, 2, 1],
-                            "SubVolumeResidueKind": ["x"],
-                            "SubVolumeRigidSwap": True,
-                            "SubVolumePBC": "XY",
-                            "SubVolumeFugacity": {"ETH": 2.22, "ETO": 0.22},
-                        },
-                    },
-                },
-            )
-
-        with pytest.raises(
-            ValueError,
-            match=r"ERROR: The following input variables have "
-            r"bad values \(check spelling and for empty spaces in the keys or that "
-            r"the values are in the correct form with the acceptable values\)"
-            r": \['subvolumerigidswap'\]",
-        ):
-            gomc_control.write_gomc_control_file(
-                charmm,
-                "test_failures_targetedswap",
-                "GCMC",
-                1000,
-                500,
-                ExpertMode=False,
-                check_input_files_exist=False,
-                input_variables_dict={
-                    "DisFreq": 0.20,
-                    "RotFreq": 0.20,
-                    "IntraSwapFreq": 0.20,
-                    "SwapFreq": 0.20,
-                    "RegrowthFreq": 0.00,
-                    "VolFreq": 0.0,
-                    "TargetedSwapFreq": 0.20,
-                    "Fugacity": {"ETH": 4.44, "ETO": 5.55},
-                    "TargetedSwap_DataInput": {
-                        0: {
-                            "SubVolumeType": "dynamic",
-                            "SubVolumeBox": 0,
-                            "SubVolumeCenterList": ["1-6", 7, 8],
-                            "SubVolumeDim": [3, 2, 1],
-                            "SubVolumeResidueKind": ["ETH", "ETO"],
-                            "SubVolumeRigidSwap": 0,
-                            "SubVolumePBC": "XY",
-                            "SubVolumeFugacity": {"ETH": 2.22, "ETO": 0.22},
-                        },
-                    },
-                },
-            )
-
-        with pytest.raises(
-            ValueError,
-            match=r"ERROR: The following input variables have "
-            r"bad values \(check spelling and for empty spaces in the keys or that "
-            r"the values are in the correct form with the acceptable values\)"
-            r": \['subvolumerigidswap'\]",
-        ):
-            gomc_control.write_gomc_control_file(
-                charmm,
-                "test_failures_targetedswap",
-                "GCMC",
-                1000,
-                500,
-                ExpertMode=False,
-                check_input_files_exist=False,
-                input_variables_dict={
-                    "DisFreq": 0.20,
-                    "RotFreq": 0.20,
-                    "IntraSwapFreq": 0.20,
-                    "SwapFreq": 0.20,
-                    "RegrowthFreq": 0.00,
-                    "VolFreq": 0.0,
-                    "TargetedSwapFreq": 0.20,
-                    "Fugacity": {"ETH": 4.44, "ETO": 5.55},
-                    "TargetedSwap_DataInput": {
-                        0: {
-                            "SubVolumeType": "dynamic",
-                            "SubVolumeBox": 0,
-                            "SubVolumeCenterList": ["1-6", 7, 8],
-                            "SubVolumeDim": [3, 2, 1],
-                            "SubVolumeResidueKind": ["ETH", "ETO"],
-                            "SubVolumeRigidSwap": "s",
-                            "SubVolumePBC": "XY",
-                            "SubVolumeFugacity": {"ETH": 2.22, "ETO": 0.22},
-                        },
-                    },
-                },
-            )
-
-        with pytest.raises(
-            ValueError,
-            match=r"ERROR: The following input variables have "
-            r"bad values \(check spelling and for empty spaces in the keys or that "
-            r"the values are in the correct form with the acceptable values\)"
-            r": \['subvolumerigidswap'\]",
-        ):
-            gomc_control.write_gomc_control_file(
-                charmm,
-                "test_failures_targetedswap",
-                "GCMC",
-                1000,
-                500,
-                ExpertMode=False,
-                check_input_files_exist=False,
-                input_variables_dict={
-                    "DisFreq": 0.20,
-                    "RotFreq": 0.20,
-                    "IntraSwapFreq": 0.20,
-                    "SwapFreq": 0.20,
-                    "RegrowthFreq": 0.00,
-                    "VolFreq": 0.0,
-                    "TargetedSwapFreq": 0.20,
-                    "Fugacity": {"ETH": 4.44, "ETO": 5.55},
-                    "TargetedSwap_DataInput": {
-                        0: {
-                            "SubVolumeType": "dynamic",
-                            "SubVolumeBox": 0,
-                            "SubVolumeCenterList": ["1-6", 7, 8],
-                            "SubVolumeDim": [3, 2, 1],
-                            "SubVolumeResidueKind": ["ETH", "ETO"],
-                            "SubVolumeRigidSwap": [True],
-                            "SubVolumePBC": "XY",
-                            "SubVolumeFugacity": {"ETH": 2.22, "ETO": 0.22},
-                        },
-                    },
-                },
-            )
-
-        with pytest.raises(
-            ValueError,
-            match=r"ERROR: The following input variables have "
-            r"bad values \(check spelling and for empty spaces in the keys or that "
-            r"the values are in the correct form with the acceptable values\)"
-            r": \['subvolumepbc'\]",
-        ):
-            gomc_control.write_gomc_control_file(
-                charmm,
-                "test_failures_targetedswap",
-                "GCMC",
-                1000,
-                500,
-                ExpertMode=False,
-                check_input_files_exist=False,
-                input_variables_dict={
-                    "DisFreq": 0.20,
-                    "RotFreq": 0.20,
-                    "IntraSwapFreq": 0.20,
-                    "SwapFreq": 0.20,
-                    "RegrowthFreq": 0.00,
-                    "VolFreq": 0.0,
-                    "TargetedSwapFreq": 0.20,
-                    "Fugacity": {"ETH": 4.44, "ETO": 5.55},
-                    "TargetedSwap_DataInput": {
-                        0: {
-                            "SubVolumeType": "dynamic",
-                            "SubVolumeBox": 0,
-                            "SubVolumeCenterList": ["1-6", 7, 8],
-                            "SubVolumeDim": [3, 2, 1],
-                            "SubVolumeResidueKind": ["ETH", "ETO"],
-                            "SubVolumeRigidSwap": True,
-                            "SubVolumePBC": "s",
-                            "SubVolumeFugacity": {"ETH": 2.22, "ETO": 0.22},
-                        },
-                    },
-                },
-            )
-
-        with pytest.raises(
-            ValueError,
-            match=r"ERROR: The following input variables have "
-            r"bad values \(check spelling and for empty spaces in the keys or that "
-            r"the values are in the correct form with the acceptable values\)"
-            r": \['subvolumepbc'\]",
-        ):
-            gomc_control.write_gomc_control_file(
-                charmm,
-                "test_failures_targetedswap",
-                "GCMC",
-                1000,
-                500,
-                ExpertMode=False,
-                check_input_files_exist=False,
-                input_variables_dict={
-                    "DisFreq": 0.20,
-                    "RotFreq": 0.20,
-                    "IntraSwapFreq": 0.20,
-                    "SwapFreq": 0.20,
-                    "RegrowthFreq": 0.00,
-                    "VolFreq": 0.0,
-                    "TargetedSwapFreq": 0.20,
-                    "Fugacity": {"ETH": 4.44, "ETO": 5.55},
-                    "TargetedSwap_DataInput": {
-                        0: {
-                            "SubVolumeType": "dynamic",
-                            "SubVolumeBox": 0,
-                            "SubVolumeCenterList": ["1-6", 7, 8],
-                            "SubVolumeDim": [3, 2, 1],
-                            "SubVolumeResidueKind": ["ETH", "ETO"],
-                            "SubVolumeRigidSwap": True,
-                            "SubVolumePBC": 0,
-                            "SubVolumeFugacity": {"ETH": 2.22, "ETO": 0.22},
-                        },
-                    },
-                },
-            )
-
-        with pytest.raises(
-            ValueError,
-            match=r"ERROR: The following input variables have "
-            r"bad values \(check spelling and for empty spaces in the keys or that "
-            r"the values are in the correct form with the acceptable values\)"
-            r": \['subvolumepbc'\]",
-        ):
-            gomc_control.write_gomc_control_file(
-                charmm,
-                "test_failures_targetedswap",
-                "GCMC",
-                1000,
-                500,
-                ExpertMode=False,
-                check_input_files_exist=False,
-                input_variables_dict={
-                    "DisFreq": 0.20,
-                    "RotFreq": 0.20,
-                    "IntraSwapFreq": 0.20,
-                    "SwapFreq": 0.20,
-                    "RegrowthFreq": 0.00,
-                    "VolFreq": 0.0,
-                    "TargetedSwapFreq": 0.20,
-                    "Fugacity": {"ETH": 4.44, "ETO": 5.55},
-                    "TargetedSwap_DataInput": {
-                        0: {
-                            "SubVolumeType": "dynamic",
-                            "SubVolumeBox": 0,
-                            "SubVolumeCenterList": ["1-6", 7, 8],
-                            "SubVolumeDim": [3, 2, 1],
-                            "SubVolumeResidueKind": ["ETH", "ETO"],
-                            "SubVolumeRigidSwap": True,
-                            "SubVolumePBC": [0],
-                            "SubVolumeFugacity": {"ETH": 2.22, "ETO": 0.22},
-                        },
-                    },
-                },
-            )
-
-        with pytest.raises(
-            ValueError,
-            match=r"ERROR: The following input variables have "
-            r"bad values \(check spelling and for empty spaces in the keys or that "
-            r"the values are in the correct form with the acceptable values\)"
-            r": \['subvolumefugacity'\]",
-        ):
-            gomc_control.write_gomc_control_file(
-                charmm,
-                "test_failures_targetedswap",
-                "GCMC",
-                1000,
-                500,
-                ExpertMode=False,
-                check_input_files_exist=False,
-                input_variables_dict={
-                    "DisFreq": 0.20,
-                    "RotFreq": 0.20,
-                    "IntraSwapFreq": 0.20,
-                    "SwapFreq": 0.20,
-                    "RegrowthFreq": 0.00,
-                    "VolFreq": 0.0,
-                    "TargetedSwapFreq": 0.20,
-                    "Fugacity": {"ETH": 4.44, "ETO": 5.55},
-                    "TargetedSwap_DataInput": {
-                        0: {
-                            "SubVolumeType": "dynamic",
-                            "SubVolumeBox": 0,
-                            "SubVolumeCenterList": ["1-6", 7, 8],
-                            "SubVolumeDim": [3, 2, 1],
-                            "SubVolumeResidueKind": ["ETH", "ETO"],
-                            "SubVolumeRigidSwap": True,
-                            "SubVolumePBC": "XY",
-                            "SubVolumeFugacity": {"X": 2.22, "ETO": 0.22},
-                        },
-                    },
-                },
-            )
-
-        with pytest.raises(
-            ValueError,
-            match=r"ERROR: The following input variables have "
-            r"bad values \(check spelling and for empty spaces in the keys or that "
-            r"the values are in the correct form with the acceptable values\)"
-            r": \['subvolumefugacity'\]",
-        ):
-            gomc_control.write_gomc_control_file(
-                charmm,
-                "test_failures_targetedswap",
-                "GCMC",
-                1000,
-                500,
-                ExpertMode=False,
-                check_input_files_exist=False,
-                input_variables_dict={
-                    "DisFreq": 0.20,
-                    "RotFreq": 0.20,
-                    "IntraSwapFreq": 0.20,
-                    "SwapFreq": 0.20,
-                    "RegrowthFreq": 0.00,
-                    "VolFreq": 0.0,
-                    "TargetedSwapFreq": 0.20,
-                    "Fugacity": {"ETH": 4.44, "ETO": 5.55},
-                    "TargetedSwap_DataInput": {
-                        0: {
-                            "SubVolumeType": "dynamic",
-                            "SubVolumeBox": 0,
-                            "SubVolumeCenterList": ["1-6", 7, 8],
-                            "SubVolumeDim": [3, 2, 1],
-                            "SubVolumeResidueKind": ["ETH", "ETO"],
-                            "SubVolumeRigidSwap": True,
-                            "SubVolumePBC": "XY",
-                            "SubVolumeFugacity": {"ET": -2.22, "ETO": 0.22},
-                        },
-                    },
-                },
-            )
-
-        with pytest.raises(
-            ValueError,
-            match=r"ERROR: The following input variables have "
-            r"bad values \(check spelling and for empty spaces in the keys or that "
-            r"the values are in the correct form with the acceptable values\)"
-            r": \['subvolumefugacity'\]",
-        ):
-            gomc_control.write_gomc_control_file(
-                charmm,
-                "test_failures_targetedswap",
-                "GCMC",
-                1000,
-                500,
-                ExpertMode=False,
-                check_input_files_exist=False,
-                input_variables_dict={
-                    "DisFreq": 0.20,
-                    "RotFreq": 0.20,
-                    "IntraSwapFreq": 0.20,
-                    "SwapFreq": 0.20,
-                    "RegrowthFreq": 0.00,
-                    "VolFreq": 0.0,
-                    "TargetedSwapFreq": 0.20,
-                    "Fugacity": {"ETH": 4.44, "ETO": 5.55},
-                    "TargetedSwap_DataInput": {
-                        0: {
-                            "SubVolumeType": "dynamic",
-                            "SubVolumeBox": 0,
-                            "SubVolumeCenterList": ["1-6", 7, 8],
-                            "SubVolumeDim": [3, 2, 1],
-                            "SubVolumeResidueKind": ["ETH", "ETO"],
-                            "SubVolumeRigidSwap": True,
-                            "SubVolumePBC": "XY",
-                            "SubVolumeFugacity": {"ET": 2.22, "ETO": "x"},
-                        },
-                    },
-                },
-            )
-
-        with pytest.raises(
-            ValueError,
-            match=r"ERROR: The following input variables have "
-            r"bad values \(check spelling and for empty spaces in the keys or that "
-            r"the values are in the correct form with the acceptable values\)"
-            r": \['subvolumefugacity'\]",
-        ):
-            gomc_control.write_gomc_control_file(
-                charmm,
-                "test_failures_targetedswap",
-                "GCMC",
-                1000,
-                500,
-                ExpertMode=False,
-                check_input_files_exist=False,
-                input_variables_dict={
-                    "DisFreq": 0.20,
-                    "RotFreq": 0.20,
-                    "IntraSwapFreq": 0.20,
-                    "SwapFreq": 0.20,
-                    "RegrowthFreq": 0.00,
-                    "VolFreq": 0.0,
-                    "TargetedSwapFreq": 0.20,
-                    "Fugacity": {"ETH": 4.44, "ETO": 5.55},
-                    "TargetedSwap_DataInput": {
-                        0: {
-                            "SubVolumeType": "dynamic",
-                            "SubVolumeBox": 0,
-                            "SubVolumeCenterList": ["1-6", 7, 8],
-                            "SubVolumeDim": [3, 2, 1],
-                            "SubVolumeResidueKind": ["ETH", "ETO"],
-                            "SubVolumeRigidSwap": True,
-                            "SubVolumePBC": "XY",
-                            "SubVolumeFugacity": ["s"],
-                        },
-                    },
-                },
-            )
-
-        with pytest.raises(
-            ValueError,
-            match=r"ERROR: The following input variables have "
-            r"bad values \(check spelling and for empty spaces in the keys or that "
-            r"the values are in the correct form with the acceptable values\)"
-            r": \['subvolumefugacity'\]",
-        ):
-            gomc_control.write_gomc_control_file(
-                charmm,
-                "test_failures_targetedswap",
-                "GCMC",
-                1000,
-                500,
-                ExpertMode=False,
-                check_input_files_exist=False,
-                input_variables_dict={
-                    "DisFreq": 0.20,
-                    "RotFreq": 0.20,
-                    "IntraSwapFreq": 0.20,
-                    "SwapFreq": 0.20,
-                    "RegrowthFreq": 0.00,
-                    "VolFreq": 0.0,
-                    "TargetedSwapFreq": 0.20,
-                    "Fugacity": {"ETH": 4.44, "ETO": 5.55},
-                    "TargetedSwap_DataInput": {
-                        0: {
-                            "SubVolumeType": "dynamic",
-                            "SubVolumeBox": 0,
-                            "SubVolumeCenterList": ["1-6", 7, 8],
-                            "SubVolumeDim": [3, 2, 1],
-                            "SubVolumeResidueKind": ["ETH", "ETO"],
-                            "SubVolumeRigidSwap": True,
-                            "SubVolumePBC": "XY",
-                            "SubVolumeFugacity": "s",
-                        },
-                    },
-                },
-            )
-
-        with pytest.raises(
-            ValueError,
-            match=r"ERROR: The following input variables have "
-            r"bad values \(check spelling and for empty spaces in the keys or that "
-            r"the values are in the correct form with the acceptable values\)"
-            r": \['subvolumefugacity'\]",
-        ):
-            gomc_control.write_gomc_control_file(
-                charmm,
-                "test_failures_targetedswap",
-                "GCMC",
-                1000,
-                500,
-                ExpertMode=False,
-                check_input_files_exist=False,
-                input_variables_dict={
-                    "DisFreq": 0.20,
-                    "RotFreq": 0.20,
-                    "IntraSwapFreq": 0.20,
-                    "SwapFreq": 0.20,
-                    "RegrowthFreq": 0.00,
-                    "VolFreq": 0.0,
-                    "TargetedSwapFreq": 0.20,
-                    "Fugacity": {"ETH": 4.44, "ETO": 5.55},
-                    "TargetedSwap_DataInput": {
-                        0: {
-                            "SubVolumeType": "dynamic",
-                            "SubVolumeBox": 0,
-                            "SubVolumeCenterList": ["1-6", 7, 8],
-                            "SubVolumeDim": [3, 2, 1],
-                            "SubVolumeResidueKind": ["ETH", "ETO"],
-                            "SubVolumeRigidSwap": True,
-                            "SubVolumePBC": "XY",
-                            "SubVolumeFugacity": 1,
-                        },
-                    },
-                },
-            )
-
-        with pytest.raises(
-            ValueError,
-            match="Both ChemPot and Fugacity were used in the "
-            "TargetedSwap_DataInput dictionaries "
-            "and in the standard GOMC swap inputs. "
-            "However, only ChemPot or Fugacity may be used, not both.",
-        ):
-            gomc_control.write_gomc_control_file(
-                charmm,
-                "test_failures_targetedswap",
-                "GCMC",
-                1000,
-                500,
-                ExpertMode=False,
-                check_input_files_exist=False,
-                input_variables_dict={
-                    "DisFreq": 0.20,
-                    "RotFreq": 0.20,
-                    "IntraSwapFreq": 0.20,
-                    "SwapFreq": 0.20,
-                    "RegrowthFreq": 0.00,
-                    "VolFreq": 0.0,
-                    "TargetedSwapFreq": 0.20,
-                    "Fugacity": {"ETH": 4.44, "ETO": 5.55},
-                    "TargetedSwap_DataInput": {
-                        0: {
-                            "SubVolumeType": "dynamic",
-                            "SubVolumeBox": 0,
-                            "SubVolumeCenterList": ["1-6", 7, 8],
-                            "SubVolumeDim": [3, 2, 1],
-                            "SubVolumeResidueKind": ["ETH", "ETO"],
-                            "SubVolumeRigidSwap": True,
-                            "SubVolumePBC": "XY",
-                            "SubVolumeChemPot": {"ETH": 2.22, "ETO": 0.22},
-                        },
-                    },
-                },
-            )
-
-        with pytest.raises(
-            ValueError,
-            match="Both ChemPot and Fugacity were used in the "
-            "TargetedSwap_DataInput dictionaries "
-            "and in the standard GOMC swap inputs. "
-            "However, only ChemPot or Fugacity may be used, not both.",
-        ):
-            gomc_control.write_gomc_control_file(
-                charmm,
-                "test_failures_targetedswap",
-                "GCMC",
-                1000,
-                500,
-                ExpertMode=False,
-                check_input_files_exist=False,
-                input_variables_dict={
-                    "DisFreq": 0.20,
-                    "RotFreq": 0.20,
-                    "IntraSwapFreq": 0.20,
-                    "SwapFreq": 0.20,
-                    "RegrowthFreq": 0.00,
-                    "VolFreq": 0.0,
-                    "TargetedSwapFreq": 0.20,
-                    "ChemPot": {"ETH": 4.44, "ETO": 5.55},
-                    "TargetedSwap_DataInput": {
-                        0: {
-                            "SubVolumeType": "dynamic",
-                            "SubVolumeBox": 0,
-                            "SubVolumeCenterList": ["1-6", 7, 8],
-                            "SubVolumeDim": [3, 2, 1],
-                            "SubVolumeResidueKind": ["ETH", "ETO"],
-                            "SubVolumeRigidSwap": True,
-                            "SubVolumePBC": "XY",
-                            "SubVolumeFugacity": {"ETH": 2.22, "ETO": 0.22},
-                        },
-                    },
-                },
-            )
-
-        with pytest.raises(
-            ValueError,
-            match="Both ChemPot and Fugacity were used in the "
-            "TargetedSwap_DataInput dictionaries. "
-            "However, only ChemPot or Fugacity may be used, not both.",
-        ):
-            gomc_control.write_gomc_control_file(
-                charmm,
-                "test_failures_targetedswap",
-                "GCMC",
-                1000,
-                500,
-                ExpertMode=False,
-                check_input_files_exist=False,
-                input_variables_dict={
-                    "DisFreq": 0.20,
-                    "RotFreq": 0.20,
-                    "IntraSwapFreq": 0.20,
-                    "SwapFreq": 0.20,
-                    "RegrowthFreq": 0.00,
-                    "VolFreq": 0.0,
-                    "TargetedSwapFreq": 0.20,
-                    "ChemPot": {"ETH": 4.44, "ETO": 5.55},
-                    "TargetedSwap_DataInput": {
-                        0: {
-                            "SubVolumeType": "dynamic",
-                            "SubVolumeBox": 0,
-                            "SubVolumeCenterList": ["1-6", 7, 8],
-                            "SubVolumeDim": [3, 2, 1],
-                            "SubVolumeResidueKind": ["ETH", "ETO"],
-                            "SubVolumeRigidSwap": True,
-                            "SubVolumePBC": "XY",
-                            "SubVolumeFugacity": {"ETH": 2.22, "ETO": 0.22},
-                            "SubVolumeChemPot": {"ETH": 4.44, "ETO": 5.55},
-                        },
-                    },
-                },
-            )
-
-        with pytest.raises(
-            ValueError,
-            match=r"ERROR: The following input variables have "
-            r"bad values \(check spelling and for empty spaces in the keys or that "
-            r"the values are in the correct form with the acceptable values\)"
-            r": \['subvolumecenter'\]",
-        ):
-            gomc_control.write_gomc_control_file(
-                charmm,
-                "test_failures_targetedswap",
-                "GCMC",
-                1000,
-                500,
-                ExpertMode=False,
-                check_input_files_exist=False,
-                input_variables_dict={
-                    "DisFreq": 0.20,
-                    "RotFreq": 0.20,
-                    "IntraSwapFreq": 0.20,
-                    "SwapFreq": 0.20,
-                    "RegrowthFreq": 0.00,
-                    "VolFreq": 0.0,
-                    "TargetedSwapFreq": 0.20,
-                    "ChemPot": {"ETH": 4.44, "ETO": 5.55},
-                    "TargetedSwap_DataInput": {
-                        0: {
-                            "SubVolumeType": "static",
-                            "SubVolumeBox": 0,
-                            "SubVolumeCenter": ["1-6", 7, 8],
-                            "SubVolumeDim": [3, 2, 1],
-                            "SubVolumeResidueKind": ["ETH", "ETO"],
-                            "SubVolumeRigidSwap": True,
-                            "SubVolumePBC": "XY",
-                            "SubVolumeChemPot": {"ETH": 4.44, "ETO": 5.55},
-                        },
-                    },
-                },
-            )
-
-        with pytest.raises(
-            ValueError,
-            match=r"ERROR: The following input variables have "
-            r"bad values \(check spelling and for empty spaces in the keys or that "
-            r"the values are in the correct form with the acceptable values\)"
-            r": \['subvolumecenter'\]",
-        ):
-            gomc_control.write_gomc_control_file(
-                charmm,
-                "test_failures_targetedswap",
-                "GCMC",
-                1000,
-                500,
-                ExpertMode=False,
-                check_input_files_exist=False,
-                input_variables_dict={
-                    "DisFreq": 0.20,
-                    "RotFreq": 0.20,
-                    "IntraSwapFreq": 0.20,
-                    "SwapFreq": 0.20,
-                    "RegrowthFreq": 0.00,
-                    "VolFreq": 0.0,
-                    "TargetedSwapFreq": 0.20,
-                    "ChemPot": {"ETH": 4.44, "ETO": 5.55},
-                    "TargetedSwap_DataInput": {
-                        0: {
-                            "subVolumetype": "static",
-                            "subVolumeBox": 0,
-                            "SubVolumecenter": 0,
-                            "SubVolumeDim": [3, 2, 1],
-                            "SubVolumeResidueKind": ["ETH", "ETO"],
-                            "SubVolumeRigidSwap": True,
-                            "SubVolumePBC": "XY",
-                            "SubVolumechemPot": {"ETH": 4.44, "ETO": 5.55},
-                        },
-                    },
-                },
-            )
-
-        with pytest.raises(
-            ValueError,
-            match=r"ERROR: The following input variables have "
-            r"bad values \(check spelling and for empty spaces in the keys or that "
-            r"the values are in the correct form with the acceptable values\)"
-            r": \['subvolumecenter'\]",
-        ):
-            gomc_control.write_gomc_control_file(
-                charmm,
-                "test_failures_targetedswap",
-                "GCMC",
-                1000,
-                500,
-                ExpertMode=False,
-                check_input_files_exist=False,
-                input_variables_dict={
-                    "DisFreq": 0.20,
-                    "RotFreq": 0.20,
-                    "IntraSwapFreq": 0.20,
-                    "SwapFreq": 0.20,
-                    "RegrowthFreq": 0.00,
-                    "VolFreq": 0.0,
-                    "TargetedSwapFreq": 0.20,
-                    "ChemPot": {"ETH": 4.44, "ETO": 5.55},
-                    "TargetedSwap_DataInput": {
-                        0: {
-                            "SubVolumeType": "static",
-                            "SubVolumeBox": 0,
-                            "SubVolumeCenter": "0",
-                            "SubVolumeDim": [3, 2, 1],
-                            "SubVolumeResidueKind": ["ETH", "ETO"],
-                            "SubVolumeRigidSwap": True,
-                            "SubVolumePBC": "XY",
-                            "SubVolumeChemPot": {"ETH": 4.44, "ETO": 5.55},
-                        },
-                    },
-                },
-            )
-
-        # missing the subvolumecenter variable
-        with pytest.raises(
-            ValueError,
-            match=r"ERROR: The following input variables have "
-            r"bad values \(check spelling and for empty spaces in the keys or that "
-            r"the values are in the correct form with the acceptable values\)"
-            r": \['subvolumecenter'\]",
-        ):
-            gomc_control.write_gomc_control_file(
-                charmm,
-                "test_failures_targetedswap",
-                "GCMC",
-                1000,
-                500,
-                ExpertMode=False,
-                check_input_files_exist=False,
-                input_variables_dict={
-                    "DisFreq": 0.20,
-                    "RotFreq": 0.20,
-                    "IntraSwapFreq": 0.20,
-                    "SwapFreq": 0.20,
-                    "RegrowthFreq": 0.00,
-                    "VolFreq": 0.0,
-                    "TargetedSwapFreq": 0.20,
-                    "ChemPot": {"ETH": 4.44, "ETO": 5.55},
-                    "TargetedSwap_DataInput": {
-                        0: {
-                            "SubVolumeType": "static",
-                            "SubVolumeBox": 0,
-                            "SubVolumeDim": [3, 2, 1],
-                            "SubVolumeResidueKind": ["ETH", "ETO"],
-                            "SubVolumeRigidSwap": True,
-                            "SubVolumePBC": "XY",
-                            "SubVolumeChemPot": {"ETH": 4.44, "ETO": 5.55},
-                        },
-                    },
-                },
-            )
-
-        # missing the subvolumecenterlist variable
-        with pytest.raises(
-            ValueError,
-            match=r"ERROR: The following input variables have "
-            r"bad values \(check spelling and for empty spaces in the keys or that "
-            r"the values are in the correct form with the acceptable values\)"
-            r": \['subvolumecenterlist'\]",
-        ):
-            gomc_control.write_gomc_control_file(
-                charmm,
-                "test_failures_targetedswap",
-                "GCMC",
-                1000,
-                500,
-                ExpertMode=False,
-                check_input_files_exist=False,
-                input_variables_dict={
-                    "DisFreq": 0.20,
-                    "RotFreq": 0.20,
-                    "IntraSwapFreq": 0.20,
-                    "Swapfreq": 0.20,
-                    "RegrowthFreq": 0.00,
-                    "VolFreq": 0.0,
-                    "TargetedSwapFreq": 0.20,
-                    "ChemPot": {"ETH": 4.44, "ETO": 5.55},
-                    "TargetedSwap_DataInput": {
-                        0: {
-                            "SubVolumeType": "dynamic",
-                            "SubVolumeBox": 0,
-                            "SubVolumeDim": [3, 2, 1],
-                            "SubVolumeResidueKind": ["ETH"],
-                            "SubVolumeRigidSwap": True,
-                            "SubVolumepbc": "XY",
-                            "SubVolumechemPot": {"ETH": 4.44},
-                        },
-                    },
-                },
-            )
-
-        with pytest.raises(
-            ValueError,
-            match=r"ERROR: The following input variables have "
-            r"bad values \(check spelling and for empty spaces in the keys or that "
-            r"the values are in the correct form with the acceptable values\)"
-            r": \['subvolumecenter'\]",
-        ):
-            gomc_control.write_gomc_control_file(
-                charmm,
-                "test_failures_targetedswap",
-                "GCMC",
-                1000,
-                500,
-                ExpertMode=False,
-                check_input_files_exist=False,
-                input_variables_dict={
-                    "DisFreq": 0.20,
-                    "RotFreq": 0.20,
-                    "IntraSwapFreq": 0.20,
-                    "SwapFreq": 0.20,
-                    "RegrowthFreq": 0.00,
-                    "VolFreq": 0.0,
-                    "TargetedSwapFreq": 0.20,
-                    "ChemPot": {"ETH": 4.44, "ETO": 5.55},
-                    "TargetedSwap_DataInput": {
-                        0: {
-                            "SubVolumeType": "static",
-                            "SubVolumeBox": 0,
-                            "SubVolumeCenter": [1, 1, 1, 1],
-                            "SubVolumeDim": [3, 2, 1],
-                            "SubVolumeResidueKind": "All",
-                            "SubVolumeRigidSwap": True,
-                            "SubVolumePBC": "XY",
-                            "SubVolumeChemPot": {"ETH": 4.44, "ETO": 5.55},
-                        },
-                    },
-                },
-            )
-
-        with pytest.raises(
-            ValueError,
-            match=r"The TargetedSwap_DataInput is not formatted correctly as a dictionary"
-            r" or has the wrong input keys, values, or types.",
-        ):
-            gomc_control.write_gomc_control_file(
-                charmm,
-                "test_failures_targetedswap",
-                "GCMC",
-                1000,
-                500,
-                ExpertMode=False,
-                check_input_files_exist=False,
-                input_variables_dict={
-                    "DisFreq": 0.20,
-                    "RotFreq": 0.20,
-                    "IntraSwapFreq": 0.20,
-                    "SwapFreq": 0.20,
-                    "RegrowthFreq": 0.00,
-                    "VolFreq": 0.0,
-                    "TargetedSwapFreq": 0.20,
-                    "ChemPot": {"ETH": 4.44, "ETO": 5.55},
-                    "TargetedSwap_DataInput": {
-                        0: {
-                            0: "static",
-                            "SubVolumeBox": 0,
-                            "SubVolumeCenter": [1, 1, 1],
-                            "SubVolumeDim": [3, 2, 1],
-                            "SubVolumeResidueKind": "all",
-                            "SubVolumeRigidSwap": True,
-                            "SubVolumePBC": "XY",
-                            "SubVolumeChemPot": {"ETH": 4.44, "ETO": 5.55},
-                        },
-                    },
-                },
-            )
-
-        with pytest.raises(
-            ValueError,
-            match=r"The TargetedSwap_DataInput is not formatted correctly as a dictionary"
-            r" or has the wrong input keys, values, or types.",
-        ):
-            gomc_control.write_gomc_control_file(
-                charmm,
-                "test_failures_targetedswap",
-                "GCMC",
-                1000,
-                500,
-                ExpertMode=False,
-                check_input_files_exist=False,
-                input_variables_dict={
-                    "DisFreq": 0.20,
-                    "RotFreq": 0.20,
-                    "IntraSwapFreq": 0.20,
-                    "SwapFreq": 0.20,
-                    "RegrowthFreq": 0.00,
-                    "VolFreq": 0.0,
-                    "TargetedSwapFreq": 0.20,
-                    "ChemPot": {"ETH": 4.44, "ETO": 5.55},
-                    "TargetedSwap_DataInput": {
-                        0: {
-                            "SubVolumeType": "static",
-                            "SubVolumeBox": 0,
-                            "SubVolumeCenter": [1, 1, 1],
-                            "x": [3, 2, 1],
-                            "SubVolumeResidueKind": "ETH",
-                            "SubVolumeRigidSwap": True,
-                            "SubVolumePBC": "XY",
-                            "SubVolumeChemPot": {"ETH": 4.44},
-                        },
-                    },
-                },
-            )
-
-        with pytest.raises(
-            ValueError,
-            match=r"The TargetedSwap_DataInput is not formatted correctly as a dictionary"
-            r" or has the wrong input keys, values, or types.",
-        ):
-            gomc_control.write_gomc_control_file(
-                charmm,
-                "test_failures_targetedswap",
-                "GCMC",
-                1000,
-                500,
-                ExpertMode=False,
-                check_input_files_exist=False,
-                input_variables_dict={
-                    "DisFreq": 0.20,
-                    "RotFreq": 0.20,
-                    "IntraSwapFreq": 0.20,
-                    "SwapFreq": 0.20,
-                    "RegrowthFreq": 0.00,
-                    "VolFreq": 0.0,
-                    "TargetedSwapFreq": 0.20,
-                    "ChemPot": {"ETH": 4.44, "ETO": 5.55},
-                    "TargetedSwap_DataInput": {
-                        0: {
-                            "SubVolumeType": "dynamic",
-                            "Subvolumebox": 0,
-                            "SubVolumeCenterList": ["1-6", 7, 8],
-                            "SubVolumeDim": [1, 1, 1],
-                            "SubVolumeresidueKind": ["ETH", "ETO"],
-                            "SubVolumeRigidswap": True,
-                            "Subvolume": "XY",
-                            "SubVolumeChemPot": {"ETH": 4.44, "ETO": 5.55},
-                        },
-                    },
-                },
-            )
-
-        with pytest.raises(
-            ValueError,
-            match=r"ERROR: The following input variables have "
-            r"bad values \(check spelling and for empty spaces in the keys or that "
-            r"the values are in the correct form with the acceptable values\)"
-            r": \['subvolumeresiduekind'\]",
-        ):
-            gomc_control.write_gomc_control_file(
-                charmm,
-                "test_failures_targetedswap",
-                "GCMC",
-                1000,
-                500,
-                ExpertMode=False,
-                check_input_files_exist=False,
-                input_variables_dict={
-                    "DisFreq": 0.20,
-                    "RotFreq": 0.20,
-                    "IntraSwapFreq": 0.20,
-                    "SwapFreq": 0.20,
-                    "RegrowthFreq": 0.00,
-                    "VolFreq": 0.0,
-                    "TargetedSwapFreq": 0.20,
-                    "ChemPot": {"ETH": 4.44, "ETO": 5.55},
-                    "TargetedSwap_DataInput": {
-                        0: {
-                            "SubVolumeType": "dynamic",
-                            "Subvolumebox": 0,
-                            "SubVolumeCenterList": ["1-6", 7, 8],
-                            "SubVolumeDim": [1, 1, 1],
-                            "SubVolumeresidueKind": ["ETO"],
-                            "SubVolumeRigidswap": True,
-                            "SubvolumePBC": "XY",
-                            "SubVolumeChemPot": {"ETH": 4.44, "ETO": 5.55},
-                        },
-                    },
-                },
-            )
-
-        with pytest.raises(
-            ValueError,
-            match=r"ERROR: The following input variables have "
-            r"bad values \(check spelling and for empty spaces in the keys or that "
-            r"the values are in the correct form with the acceptable values\)"
-            r": \['subvolumeresiduekind'\]",
-        ):
-            gomc_control.write_gomc_control_file(
-                charmm,
-                "test_failures_targetedswap",
-                "GCMC",
-                1000,
-                500,
-                ExpertMode=False,
-                check_input_files_exist=False,
-                input_variables_dict={
-                    "DisFreq": 0.20,
-                    "RotFreq": 0.20,
-                    "IntraSwapFreq": 0.20,
-                    "SwapFreq": 0.20,
-                    "RegrowthFreq": 0.00,
-                    "VolFreq": 0.0,
-                    "TargetedSwapFreq": 0.20,
-                    "Fugacity": {"ETH": 4.44, "ETO": 5.55},
-                    "TargetedSwap_DataInput": {
-                        0: {
-                            "SubVolumeType": "dynamic",
-                            "Subvolumebox": 0,
-                            "SubVolumeCenterList": ["1-6", 7, 8],
-                            "SubVolumeDim": [1, 1, 1],
-                            "SubVolumeresidueKind": "ETH",
-                            "SubVolumeRigidswap": True,
-                            "SubvolumePBC": "XY",
-                            "SubVolumeFugacity": {"ETH": 4.44, "ETO": 5.55},
-                        },
-                    },
-                },
-            )
-
-        with pytest.raises(
-            ValueError,
-            match=r"ERROR: The following input variables have "
-            r"bad values \(check spelling and for empty spaces in the keys or that "
-            r"the values are in the correct form with the acceptable values\)"
-            r": \['subvolumebox'\]",
-        ):
-            gomc_control.write_gomc_control_file(
-                charmm,
-                "test_failures_targetedswap",
-                "GCMC",
-                1000,
-                500,
-                ExpertMode=False,
-                check_input_files_exist=False,
-                input_variables_dict={
-                    "DisFreq": 0.20,
-                    "RotFreq": 0.20,
-                    "IntraSwapFreq": 0.20,
-                    "SwapFreq": 0.20,
-                    "RegrowthFreq": 0.00,
-                    "VolFreq": 0.0,
-                    "TargetedSwapFreq": 0.20,
-                    "Fugacity": {"ETH": 4.44, "ETO": 5.55},
-                    "TargetedSwap_DataInput": {
-                        0: {
-                            "SubVolumeType": "dynamic",
-                            "Subvolumebox": 1,
-                            "SubVolumeCenterList": ["1-6", 7, 8],
-                            "SubVolumeDim": [1, 1, 1],
-                            "SubVolumeresidueKind": "all",
-                            "SubVolumeRigidswap": True,
-                            "SubvolumePBC": "XY",
-                            "SubVolumeFugacity": {"ETH": 4.44, "ETO": 5.55},
-                        },
-                    },
-                },
-            )
-
-        with pytest.raises(
-            ValueError,
-            match=r"ERROR: The following input variables have "
-            r"bad values \(check spelling and for empty spaces in the keys or that "
-            r"the values are in the correct form with the acceptable values\)"
-            r": \['subvolumebox'\]",
-        ):
-            gomc_control.write_gomc_control_file(
-                charmm,
-                "test_failures_targetedswap",
-                "GCMC",
-                1000,
-                500,
-                ExpertMode=False,
-                check_input_files_exist=False,
-                input_variables_dict={
-                    "DisFreq": 0.20,
-                    "RotFreq": 0.20,
-                    "IntraSwapFreq": 0.20,
-                    "SwapFreq": 0.20,
-                    "RegrowthFreq": 0.00,
-                    "VolFreq": 0.0,
-                    "TargetedSwapFreq": 0.10,
-                    "IntraTargetedSwapFreq": 0.10,
-                    "Fugacity": {"ETH": 4.44, "ETO": 5.55},
-                    "TargetedSwap_DataInput": {
-                        0: {
-                            "SubVolumeType": "dynamic",
-                            "Subvolumebox": 1,
-                            "SubVolumeCenterList": ["1-6", 7, 8],
-                            "SubVolumeDim": [1, 1, 1],
-                            "SubVolumeresidueKind": "all",
-                            "SubVolumeRigidswap": True,
-                            "SubVolumeFugacity": {"ETH": 4.44, "ETO": 5.55},
-                        },
-                    },
-                },
-            )
-
-        # "SubVolumeFugacity" not a list
-        with pytest.raises(
-            ValueError,
-            match=r"ERROR: The following input variables have "
-            r"bad values \(check spelling and for empty spaces in the keys or that "
-            r"the values are in the correct form with the acceptable values\)"
-            r": \['subvolumefugacity'\]",
-        ):
-            gomc_control.write_gomc_control_file(
-                charmm,
-                "test_failures_targetedswap",
-                "GCMC",
-                1000,
-                500,
-                ExpertMode=False,
-                check_input_files_exist=False,
-                input_variables_dict={
-                    "DisFreq": 0.20,
-                    "RotFreq": 0.20,
-                    "IntraSwapFreq": 0.20,
-                    "SwapFreq": 0.20,
-                    "RegrowthFreq": 0.00,
-                    "VolFreq": 0.0,
-                    "TargetedSwapFreq": 0.10,
-                    "IntraTargetedSwapFreq": 0.10,
-                    "Fugacity": {"ETH": 4.44, "ETO": 5.55},
-                    "TargetedSwap_DataInput": {
-                        0: {
-                            "SubVolumeType": "dynamic",
-                            "Subvolumebox": 0,
-                            "SubVolumeCenterList": ["1-6", 7, 8],
-                            "SubVolumeDim": [1, 1, 1],
-                            "SubVolumeresidueKind": "all",
-                            "SubVolumeRigidswap": True,
-                            "SubVolumeFugacity": ["ETH"],
-                        },
-                    },
-                },
-            )
-
-        # "SubVolumeFugacity" not a list
-        with pytest.raises(
-            ValueError,
-            match=r"ERROR: The following input variables have "
-            r"bad values \(check spelling and for empty spaces in the keys or that "
-            r"the values are in the correct form with the acceptable values\)"
-            r": \['subvolumechempot'\]",
-        ):
-            gomc_control.write_gomc_control_file(
-                charmm,
-                "test_failures_targetedswap",
-                "GCMC",
-                1000,
-                500,
-                ExpertMode=False,
-                check_input_files_exist=False,
-                input_variables_dict={
-                    "DisFreq": 0.20,
-                    "RotFreq": 0.20,
-                    "IntraSwapFreq": 0.20,
-                    "SwapFreq": 0.20,
-                    "RegrowthFreq": 0.00,
-                    "VolFreq": 0.0,
-                    "TargetedSwapFreq": 0.10,
-                    "IntraTargetedSwapFreq": 0.10,
-                    "ChemPot": {"ETH": 4.44, "ETO": 5.55},
-                    "TargetedSwap_DataInput": {
-                        0: {
-                            "SubVolumeType": "dynamic",
-                            "Subvolumebox": 0,
-                            "SubVolumeCenterList": ["1-6", 7, 8],
-                            "SubVolumeDim": [1, 1, 1],
-                            "SubVolumeresidueKind": "all",
-                            "SubVolumeRigidswap": True,
-                            "SubVolumeChemPot": ["ETH"],
-                        },
-                    },
-                },
-            )
-
-    def test_failures_targetedswap_GEMC_NVT(self, ethane_gomc, ethanol_gomc):
-        test_box_ethane_gomc_ethanol_gomc = mb.fill_box(
-            compound=[ethane_gomc, ethanol_gomc],
-            n_compounds=[10, 10],
-            box=[2, 2, 2],
-        )
-
-        charmm = Charmm(
-            test_box_ethane_gomc_ethanol_gomc,
-            "ethane_box_0",
-            ff_filename="ethane",
-            structure_box_1=test_box_ethane_gomc_ethanol_gomc,
-            filename_box_1="ethane_box_1",
-            residues=[ethane_gomc.name, ethanol_gomc.name],
-            forcefield_selection="oplsaa",
-        )
-
-        with pytest.raises(
-            ValueError,
-            match=r"ERROR: The TargetedSwap_DataInput variable is equal to None, "
-            r"but the TargetedSwapFreq or IntraTargetedSwapFreq move ratio is non-zero.",
-        ):
-            gomc_control.write_gomc_control_file(
-                charmm,
-                "test_failures_targetedswap",
-                "GEMC_NVT",
-                1000,
-                500,
-                ExpertMode=False,
-                check_input_files_exist=False,
-                input_variables_dict={
-                    "DisFreq": 0.00,
-                    "RotFreq": 0.20,
-                    "IntraSwapFreq": 0.20,
-                    "SwapFreq": 0.20,
-                    "RegrowthFreq": 0.20,
-                    "VolFreq": 0.0,
-                    "TargetedSwapFreq": 0.10,
-                    "IntraTargetedSwapFreq": 0.10,
-                },
-            )
-
-        with pytest.raises(
-            ValueError,
-            match=r"The TargetedSwap_DataInput is not formatted correctly as a dictionary"
-            r" or has the wrong input keys, values, or types.",
-        ):
-            gomc_control.write_gomc_control_file(
-                charmm,
-                "test_failures_targetedswap",
-                "GEMC_NVT",
-                1000,
-                500,
-                ExpertMode=False,
-                check_input_files_exist=False,
-                input_variables_dict={
-                    "DisFreq": 0.20,
-                    "RotFreq": 0.20,
-                    "IntraSwapFreq": 0.20,
-                    "SwapFreq": 0.20,
-                    "RegrowthFreq": 0.00,
-                    "VolFreq": 0.0,
-                    "TargetedSwapFreq": 0.20,
-                    "TargetedSwap_DataInput": {
-                        "x": {
-                            "SubVolumeType": "dynamic",
-                            "SubVolumeBox": 0,
-                            "SubVolumeCenterList": ["1-6", 7, 8],
-                            "SubVolumeDim": [3, 2, 1],
-                            "SubVolumeResidueKind": ["ETH", "ETO"],
-                            "SubVolumeRigidSwap": True,
-                            "SubVolumePBC": "XY",
-                        },
-                    },
-                },
-            )
-
-        with pytest.raises(
-            ValueError,
-            match="Either the ChemPot and Fugacity were used in the "
-            "TargetedSwap_DataInput dictionaries, "
-            "which can not be used for the 'NPT', 'NVT', 'GEMC_NVT', "
-            "or 'GEMC_NPT' ensembles.",
-        ):
-            gomc_control.write_gomc_control_file(
-                charmm,
-                "test_failures_targetedswap",
-                "GEMC_NVT",
-                1000,
-                500,
-                ExpertMode=False,
-                check_input_files_exist=False,
-                input_variables_dict={
-                    "DisFreq": 0.20,
-                    "RotFreq": 0.20,
-                    "IntraSwapFreq": 0.20,
-                    "SwapFreq": 0.20,
-                    "RegrowthFreq": 0.00,
-                    "VolFreq": 0.0,
-                    "TargetedSwapFreq": 0.20,
-                    "TargetedSwap_DataInput": {
-                        0: {
-                            "SubVolumeType": "dynamic",
-                            "SubVolumeBox": 0,
-                            "SubVolumeCenterList": ["1-6", 7, 8],
-                            "SubVolumeDim": [3, 2, 1],
-                            "SubVolumeResidueKind": ["ETH", "ETO"],
-                            "SubVolumeRigidSwap": True,
-                            "SubVolumePBC": "XY",
-                            "SubVolumeChemPot": {"ETH": 4.44, "ETO": 5.55},
-                        },
-                    },
-                },
-            )
-
-        # This is missing the "SubVolumeDim" in the  "TargetedSwap_DataInput"
-        with pytest.raises(
-            ValueError,
-            match=f"The TargetedSwap_DataInput dictionaries do not have all the required "
-            f"keys or inputs per the subvolumetype and specified ensemble. "
-            f"Remember that the 'subvolumetype' values are 'static' and 'dynamic', "
-            f"which must only have the cooresponding "
-            f"'subvolumecenter' and 'subvolumecenterlist' values, respectively,"
-            f" in each subvolume.",
-        ):
-            gomc_control.write_gomc_control_file(
-                charmm,
-                "test_failures_targetedswap",
-                "GEMC_NVT",
-                1000,
-                500,
-                ExpertMode=False,
-                check_input_files_exist=False,
-                input_variables_dict={
-                    "DisFreq": 0.20,
-                    "RotFreq": 0.20,
-                    "IntraSwapFreq": 0.20,
-                    "SwapFreq": 0.20,
-                    "RegrowthFreq": 0.00,
-                    "VolFreq": 0.0,
-                    "TargetedSwapFreq": 0.20,
-                    "TargetedSwap_DataInput": {
-                        0: {
-                            "SubVolumeType": "static",
-                            "SubVolumeBox": 1,
-                            "SubVolumeCenter": [1, 7, 8],
-                            "SubVolumeResidueKind": ["ETH", "ETO"],
-                            "SubVolumeRigidSwap": True,
-                            "SubVolumePBC": "XY",
-                        },
-                    },
-                },
-            )
-
-        # This box "SubVolumeBox" is not 0 or 1
-        with pytest.raises(
-            ValueError,
-            match=r"ERROR: The following input variables have "
-            r"bad values \(check spelling and for empty spaces in the keys or that "
-            r"the values are in the correct form with the acceptable values\)"
-            r": \['subvolumebox'\]",
-        ):
-            gomc_control.write_gomc_control_file(
-                charmm,
-                "test_failures_targetedswap",
-                "GEMC_NVT",
-                1000,
-                500,
-                ExpertMode=False,
-                check_input_files_exist=False,
-                input_variables_dict={
-                    "DisFreq": 0.20,
-                    "RotFreq": 0.20,
-                    "IntraSwapFreq": 0.20,
-                    "SwapFreq": 0.20,
-                    "RegrowthFreq": 0.00,
-                    "VolFreq": 0.0,
-                    "TargetedSwapFreq": 0.20,
-                    "TargetedSwap_DataInput": {
-                        0: {
-                            "SubVolumeType": "static",
-                            "SubVolumeBox": 4,
-                            "SubVolumeCenter": [1, 7, 8],
-                            "SubVolumeResidueKind": ["ETH", "ETO"],
-                            "SubVolumeRigidSwap": True,
-                            "SubVolumePBC": "XY",
-                        },
-                    },
-                },
-            )
-
-    def test_failures_targetedswap_NVT(self, ethane_gomc, ethanol_gomc):
-        test_box_ethane_gomc_ethanol_gomc = mb.fill_box(
-            compound=[ethane_gomc, ethanol_gomc],
-            n_compounds=[10, 10],
-            box=[2, 2, 2],
-        )
-
-        charmm = Charmm(
-            test_box_ethane_gomc_ethanol_gomc,
-            "ethane_box_0",
-            ff_filename="ethane",
-            structure_box_1=None,
-            filename_box_1=None,
-            residues=[ethane_gomc.name, ethanol_gomc.name],
-            forcefield_selection="oplsaa",
-        )
-
-        with pytest.raises(
-            ValueError,
-            match=r"ERROR: The TargetedSwap_DataInput variable is equal to None, "
-            r"but the TargetedSwapFreq or IntraTargetedSwapFreq move ratio is non-zero.",
-        ):
-            gomc_control.write_gomc_control_file(
-                charmm,
-                "test_failures_targetedswap",
-                "NVT",
-                1000,
-                500,
-                ExpertMode=False,
-                check_input_files_exist=False,
-                input_variables_dict={
-                    "DisFreq": 0.00,
-                    "RotFreq": 0.20,
-                    "IntraSwapFreq": 0.40,
-                    "SwapFreq": 0.00,
-                    "RegrowthFreq": 0.20,
-                    "VolFreq": 0.0,
-                    "TargetedSwapFreq": 0.00,
-                    "IntraTargetedSwapFreq": 0.20,
-                },
-            )
-
-        with pytest.raises(
-            ValueError,
-            match=r"ERROR: The following input variables have "
-            r"bad values \(check spelling and for empty spaces in the keys or that "
-            r"the values are in the correct form with the acceptable values\)"
-            r": \['subvolumebox'\]",
-        ):
-            gomc_control.write_gomc_control_file(
-                charmm,
-                "test_failures_targetedswap",
-                "NVT",
-                1000,
-                500,
-                ExpertMode=False,
-                check_input_files_exist=False,
-                input_variables_dict={
-                    "DisFreq": 0.20,
-                    "RotFreq": 0.20,
-                    "IntraSwapFreq": 0.40,
-                    "SwapFreq": 0.00,
-                    "RegrowthFreq": 0.00,
-                    "VolFreq": 0.0,
-                    "TargetedSwapFreq": 0.00,
-                    "IntraTargetedSwapFreq": 0.20,
-                    "TargetedSwap_DataInput": {
-                        0: {
-                            "SubVolumeType": "dynamic",
-                            "SubVolumeBox": 1,
-                            "SubVolumeCenterList": ["1-6", 7, 8],
-                            "SubVolumeDim": [3, 2, 1],
-                            "SubVolumeResidueKind": ["ETH", "ETO"],
-                            "SubVolumeRigidSwap": True,
-                            "SubVolumePBC": "XY",
-                        },
-                    },
-                },
-            )
-
-        with pytest.raises(
-            ValueError,
-            match="Either the ChemPot and Fugacity were used in the "
-            "TargetedSwap_DataInput dictionaries, "
-            "which can not be used for the 'NPT', 'NVT', 'GEMC_NVT', "
-            "or 'GEMC_NPT' ensembles.",
-        ):
-            gomc_control.write_gomc_control_file(
-                charmm,
-                "test_failures_targetedswap",
-                "NVT",
-                1000,
-                500,
-                ExpertMode=False,
-                check_input_files_exist=False,
-                input_variables_dict={
-                    "DisFreq": 0.20,
-                    "RotFreq": 0.20,
-                    "IntraSwapFreq": 0.40,
-                    "SwapFreq": 0.00,
-                    "RegrowthFreq": 0.00,
-                    "VolFreq": 0.0,
-                    "TargetedSwapFreq": 0.00,
-                    "IntraTargetedSwapFreq": 0.20,
-                    "TargetedSwap_DataInput": {
-                        0: {
-                            "SubVolumeType": "dynamic",
-                            "SubVolumeBox": 0,
-                            "SubVolumeCenterList": ["1-6", 7, 8],
-                            "SubVolumeDim": [3, 2, 1],
-                            "SubVolumeResidueKind": ["ETH", "ETO"],
-                            "SubVolumeRigidSwap": True,
-                            "SubVolumePBC": "XY",
-                            "SubVolumeFugacity": {"ETH": 4.44, "ETO": 5.55},
-                        },
-                    },
-                },
-            )
-
-        # This is missing the "SubVolumeDim" in the  "TargetedSwap_DataInput"
-        with pytest.raises(
-            ValueError,
-            match=f"The TargetedSwap_DataInput dictionaries do not have all the required "
-            f"keys or inputs per the subvolumetype and specified ensemble. "
-            f"Remember that the 'subvolumetype' values are 'static' and 'dynamic', "
-            f"which must only have the cooresponding "
-            f"'subvolumecenter' and 'subvolumecenterlist' values, respectively,"
-            f" in each subvolume.",
-        ):
-            gomc_control.write_gomc_control_file(
-                charmm,
-                "test_failures_targetedswap",
-                "NVT",
-                1000,
-                500,
-                ExpertMode=False,
-                check_input_files_exist=False,
-                input_variables_dict={
-                    "DisFreq": 0.20,
-                    "RotFreq": 0.20,
-                    "IntraSwapFreq": 0.40,
-                    "SwapFreq": 0.00,
-                    "RegrowthFreq": 0.00,
-                    "VolFreq": 0.0,
-                    "TargetedSwapFreq": 0.00,
-                    "IntraTargetedSwapFreq": 0.20,
-                    "TargetedSwap_DataInput": {
-                        0: {
-                            "SubVolumeType": "dynamic",
-                            "SubVolumeBox": 0,
-                            "SubVolumeCenterList": ["1-6", 7, 8],
-                            "SubVolumeResidueKind": ["ETH", "ETO"],
-                            "SubVolumeRigidSwap": True,
-                            "SubVolumePBC": "XY",
-                        },
-                    },
-                },
-            )
-
-        # TargetedSwap_DataInput is a list not a dict
-        with pytest.raises(
-            ValueError,
-            match="The TargetedSwap_DataInput is not formatted correctly as a dictionary"
-            " or has the wrong input keys, values, or types.",
-        ):
-            gomc_control.write_gomc_control_file(
-                charmm,
-                "test_failures_targetedswap",
-                "NVT",
-                1000,
-                500,
-                ExpertMode=False,
-                check_input_files_exist=False,
-                input_variables_dict={
-                    "DisFreq": 0.20,
-                    "RotFreq": 0.20,
-                    "IntraSwapFreq": 0.40,
-                    "SwapFreq": 0.00,
-                    "RegrowthFreq": 0.00,
-                    "VolFreq": 0.0,
-                    "TargetedSwapFreq": 0.00,
-                    "IntraTargetedSwapFreq": 0.20,
-                    "TargetedSwap_DataInput": ["s"],
-                },
-            )
-
-        # This "SubVolumeCenterList" is negative
-        with pytest.raises(
-            ValueError,
-            match=r"ERROR: The following input variables have "
-            r"bad values \(check spelling and for empty spaces in the keys or that "
-            r"the values are in the correct form with the acceptable values\)"
-            r": \['subvolumecenterlist'\]",
-        ):
-            gomc_control.write_gomc_control_file(
-                charmm,
-                "test_failures_targetedswap",
-                "NVT",
-                1000,
-                500,
-                ExpertMode=False,
-                check_input_files_exist=False,
-                input_variables_dict={
-                    "DisFreq": 0.20,
-                    "RotFreq": 0.20,
-                    "IntraSwapFreq": 0.40,
-                    "SwapFreq": 0.00,
-                    "RegrowthFreq": 0.00,
-                    "VolFreq": 0.0,
-                    "TargetedSwapFreq": 0.00,
-                    "IntraTargetedSwapFreq": 0.20,
-                    "TargetedSwap_DataInput": {
-                        0: {
-                            "SubVolumeType": "dynamic",
-                            "SubVolumeBox": 0,
-                            "SubVolumeCenterList": [-7, 8, "1-6"],
-                            "SubVolumeDim": [3, 2, 1],
-                            "SubVolumeResidueKind": ["ETH", "ETO"],
-                            "SubVolumeRigidSwap": True,
-                            "SubVolumePBC": "XY",
-                        },
-                    },
-                },
-            )
-
-        # This "SubVolumeCenterList" is missing a value in the - separator
-        with pytest.raises(
-            ValueError,
-            match=r"ERROR: The following input variables have "
-            r"bad values \(check spelling and for empty spaces in the keys or that "
-            r"the values are in the correct form with the acceptable values\)"
-            r": \['subvolumecenterlist'\]",
-        ):
-            gomc_control.write_gomc_control_file(
-                charmm,
-                "test_failures_targetedswap",
-                "NVT",
-                1000,
-                500,
-                ExpertMode=False,
-                check_input_files_exist=False,
-                input_variables_dict={
-                    "DisFreq": 0.20,
-                    "RotFreq": 0.20,
-                    "IntraSwapFreq": 0.40,
-                    "SwapFreq": 0.00,
-                    "RegrowthFreq": 0.00,
-                    "VolFreq": 0.0,
-                    "TargetedSwapFreq": 0.00,
-                    "IntraTargetedSwapFreq": 0.20,
-                    "TargetedSwap_DataInput": {
-                        0: {
-                            "SubVolumeType": "dynamic",
-                            "SubVolumeBox": 0,
-                            "SubVolumeCenterList": [1, 8, "1-"],
-                            "SubVolumeDim": [3, 2, 1],
-                            "SubVolumeResidueKind": ["ETH", "ETO"],
-                            "SubVolumeRigidSwap": True,
-                            "SubVolumePBC": "XY",
-                        },
-                    },
-                },
-            )
-
-        # This "SubVolumeCenterList" is same value on both sides of - symbol
-        with pytest.raises(
-            ValueError,
-            match=r"ERROR: The following input variables have "
-            r"bad values \(check spelling and for empty spaces in the keys or that "
-            r"the values are in the correct form with the acceptable values\)"
-            r": \['subvolumecenterlist'\]",
-        ):
-            gomc_control.write_gomc_control_file(
-                charmm,
-                "test_failures_targetedswap",
-                "NVT",
-                1000,
-                500,
-                ExpertMode=False,
-                check_input_files_exist=False,
-                input_variables_dict={
-                    "DisFreq": 0.20,
-                    "RotFreq": 0.20,
-                    "IntraSwapFreq": 0.40,
-                    "SwapFreq": 0.00,
-                    "RegrowthFreq": 0.00,
-                    "VolFreq": 0.0,
-                    "TargetedSwapFreq": 0.00,
-                    "IntraTargetedSwapFreq": 0.20,
-                    "TargetedSwap_DataInput": {
-                        0: {
-                            "SubVolumeType": "dynamic",
-                            "SubVolumeBox": 0,
-                            "SubVolumeCenterList": [1, 8, "1-1"],
-                            "SubVolumeDim": [3, 2, 1],
-                            "SubVolumeResidueKind": ["ETH", "ETO"],
-                            "SubVolumeRigidSwap": True,
-                            "SubVolumePBC": "XY",
-                        },
-                    },
-                },
-            )
-
-    def test_IPC_input_errors(self, ethane_gomc):
-        test_box_ethane_gomc = mb.fill_box(
-            compound=[ethane_gomc], n_compounds=[1], box=[1, 1, 1]
-        )
-        charmm = Charmm(
-            test_box_ethane_gomc,
-            "ethane_box_0",
-            structure_box_1=None,
-            filename_box_1=None,
-            ff_filename="ethane_FF",
-            residues=[ethane_gomc.name],
-            forcefield_selection="oplsaa",
-        )
-
-        with pytest.raises(
-            ValueError,
-            match=r"ERROR: The impulse correction term \(IPC\) can not be set as True "
-            r"if the LRC=True or the Potential is SHIFT or SWITCH.",
-        ):
-            gomc_control.write_gomc_control_file(
-                charmm,
-                "test_IPC_input_errors",
-                "NVT",
-                1000,
-                300,
-                check_input_files_exist=False,
-                input_variables_dict={
-                    "IPC": True,
-                    "LRC": True,
-                    "Potential": "VDW",
-                },
-            )
-
-        with pytest.raises(
-            ValueError,
-            match=r"ERROR: The impulse correction term \(IPC\) can not be set as True "
-            r"if the LRC=True or the Potential is SHIFT or SWITCH.",
-        ):
-            gomc_control.write_gomc_control_file(
-                charmm,
-                "test_IPC_input_errors",
-                "NVT",
-                1000,
-                300,
-                check_input_files_exist=False,
-                input_variables_dict={
-                    "IPC": True,
-                    "LRC": False,
-                    "Potential": "SHIFT",
-                },
-            )
-
-        with pytest.raises(
-            ValueError,
-            match=r"ERROR: The impulse correction term \(IPC\) can not be set as True "
-            r"if the LRC=True or the Potential is SHIFT or SWITCH.",
-        ):
-            gomc_control.write_gomc_control_file(
-                charmm,
-                "test_IPC_input_errors",
-                "NVT",
-                1000,
-                300,
-                check_input_files_exist=False,
-                input_variables_dict={
-                    "IPC": True,
-                    "LRC": False,
-                    "Potential": "SWITCH",
-                },
-            )
-
-        with pytest.warns(
-            UserWarning,
-            match=r"WARNING: The impulse correction term \(IPC\) is False, but likely needs to be True, "
-            r"as the LRC=False when the Potential is VDW or EXP6.",
-        ):
-            gomc_control.write_gomc_control_file(
-                charmm,
-                "test_IPC_input_errors",
-                "NVT",
-                1000,
-                300,
-                check_input_files_exist=False,
-                input_variables_dict={
-                    "IPC": False,
-                    "LRC": False,
-                    "Potential": "VDW",
-                },
-            )
-
-        with pytest.warns(
-            UserWarning,
-            match=r"WARNING: The impulse correction term \(IPC\) is False, but likely needs to be True, "
-            r"as the LRC=False when the Potential is VDW or EXP6.",
-        ):
-            gomc_control.write_gomc_control_file(
-                charmm,
-                "test_IPC_input_errors",
-                "NVT",
-                1000,
-                300,
-                check_input_files_exist=False,
-                input_variables_dict={
-                    "IPC": False,
-                    "LRC": False,
-                    "Potential": "EXP6",
-                },
-            )
