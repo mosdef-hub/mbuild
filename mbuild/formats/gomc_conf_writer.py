@@ -6236,15 +6236,21 @@ class GOMCControl:
         data_control_file.write("####################################\n")
         mc_move_zero_error_tolerance = 10 ** (-14)
         if self.DisFreq > mc_move_zero_error_tolerance:
-            data_control_file.write("{:25s} {}\n".format("DisFreq", self.DisFreq))
+            data_control_file.write(
+                "{:25s} {}\n".format("DisFreq", self.DisFreq)
+            )
         if self.RotFreq > mc_move_zero_error_tolerance:
-            data_control_file.write("{:25s} {}\n".format("RotFreq", self.RotFreq))
+            data_control_file.write(
+                "{:25s} {}\n".format("RotFreq", self.RotFreq)
+            )
         if self.IntraSwapFreq > mc_move_zero_error_tolerance:
             data_control_file.write(
                 "{:25s} {}\n".format("IntraSwapFreq", self.IntraSwapFreq)
             )
         if self.SwapFreq > mc_move_zero_error_tolerance:
-            data_control_file.write("{:25s} {}\n".format("SwapFreq", self.SwapFreq))
+            data_control_file.write(
+                "{:25s} {}\n".format("SwapFreq", self.SwapFreq)
+            )
         if self.RegrowthFreq > mc_move_zero_error_tolerance:
             data_control_file.write(
                 "{:25s} {}\n".format("RegrowthFreq", self.RegrowthFreq)
@@ -6254,10 +6260,14 @@ class GOMCControl:
                 "{:25s} {}\n".format("CrankShaftFreq", self.CrankShaftFreq)
             )
         if self.VolFreq > mc_move_zero_error_tolerance:
-            data_control_file.write("{:25s} {}\n".format("VolFreq", self.VolFreq))
+            data_control_file.write(
+                "{:25s} {}\n".format("VolFreq", self.VolFreq)
+            )
         if self.MultiParticleFreq > mc_move_zero_error_tolerance:
             data_control_file.write(
-                "{:25s} {}\n".format("MultiParticleFreq", self.MultiParticleFreq)
+                "{:25s} {}\n".format(
+                    "MultiParticleFreq", self.MultiParticleFreq
+                )
             )
         if self.IntraMEMC_1Freq > mc_move_zero_error_tolerance:
             data_control_file.write(
