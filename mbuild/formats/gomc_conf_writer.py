@@ -1931,19 +1931,19 @@ class GOMCControl:
         In this move, all molecules in the selected simulation box will be rigidly
         rotated or displaced simultaneously, along the calculated torque or force
         respectively (i.e., fraction of multi-particle moves).
-    IntraMEMC_1Freq : int or float (0 <= value <= 1), default are specific for each ensemble
+    IntraMEMC-1Freq : int or float (0 <= value <= 1), default are specific for each ensemble
         {'NVT': 0.0, 'NPT': 0.0, 'GEMC_NVT': 0.0, 'GEMC_NPT': 0.0, 'GCMC': 0.0}
         Fractional percentage at which specified number of small molecule kind will be
         exchanged with a specified large molecule kind in defined sub-volume within
         same simulation box.  This move need additional information such as
         ExchangeVolumeDim, ExchangeRatio, ExchangeSmallKind, and ExchangeLargeKind.
-    MEMC_1Freq : int or float (0 <= value <= 1), default are specific for each ensemble
+    MEMC-1Freq : int or float (0 <= value <= 1), default are specific for each ensemble
         {'NVT': 0.0, 'NPT': 0.0, 'GEMC_NVT': 0.0, 'GEMC_NPT': 0.0, 'GCMC': 0.0}
         Fractional percentage at which specified number of small molecule kind will
         be exchanged with a specified large molecule kind in defined sub-volume,
         between simulation boxes.  This move need additional information such as
         ExchangeVolumeDim, ExchangeRatio, ExchangeSmallKind, and ExchangeLargeKind.
-    IntraMEMC_2Freq : int or float (0 <= value <= 1), default are specific for each ensemble
+    IntraMEMC-2Freq : int or float (0 <= value <= 1), default are specific for each ensemble
         {'NVT': 0.0, 'NPT': 0.0, 'GEMC_NVT': 0.0, 'GEMC_NPT': 0.0, 'GCMC': 0.0}
         Fractional percentage at which specified number of small molecule kind
         will be exchanged with a specified large molecule kind in defined sub-volume
@@ -1951,7 +1951,7 @@ class GOMCControl:
         used to insert the large molecule more efficiently. This move need additional
         information such as ExchangeVolumeDim, ExchangeRatio, ExchangeSmallKind,
         ExchangeLargeKind, SmallKindBackBone, and LargeKindBackBone.
-    MEMC_2Freq : int or float (0 <= value <= 1), default are specific for each ensemble
+    MEMC-2Freq : int or float (0 <= value <= 1), default are specific for each ensemble
         {'NVT': 0.0, 'NPT': 0.0, 'GEMC_NVT': 0.0, 'GEMC_NPT': 0.0, 'GCMC': 0.0}
         Fractional percentage at which specified number of small molecule kind will be
         exchanged with a specified large molecule kind in defined sub-volume,
@@ -1959,7 +1959,7 @@ class GOMCControl:
         used to insert the large molecule more efficiently. This move need additional
         information such as ExchangeVolumeDim, ExchangeRatio, ExchangeSmallKind,
         ExchangeLargeKind, SmallKindBackBone, and LargeKindBackBone.
-    IntraMEMC_3Freq : int or float (0 <= value <= 1), default are specific for each ensemble
+    IntraMEMC-3Freq : int or float (0 <= value <= 1), default are specific for each ensemble
         {'NVT': 0.0, 'NPT': 0.0, 'GEMC_NVT': 0.0, 'GEMC_NPT': 0.0, 'GCMC': 0.0}
         Fractional percentage at which specified number of small molecule kind will be
         exchanged with a specified large molecule kind in defined sub-volume within same
@@ -1967,7 +1967,7 @@ class GOMCControl:
         the large molecule using coupled-decoupled configurational-bias. This move need
         additional information such as ExchangeVolumeDim, ExchangeRatio, ExchangeSmallKind,
         ExchangeLargeKind, and LargeKindBackBone.
-    MEMC_3Freq : int or float (0 <= value <= 1), default are specific for each ensemble
+    MEMC-3Freq : int or float (0 <= value <= 1), default are specific for each ensemble
         {'NVT': 0.0, 'NPT': 0.0, 'GEMC_NVT': 0.0, 'GEMC_NPT': 0.0, 'GCMC': 0.0}
         Fractional percentage at which specified number of small molecule kind will be
         exchanged with a specified large molecule kind in defined sub-volume,
@@ -5483,9 +5483,9 @@ class GOMCControl:
                 self.input_error = True
                 print_error_message = (
                     "ERROR: All the MC move input variables must be non-zero (0) for the "
-                    "SwapFreq, MEMC_1Freq, MEMC_2Freq, and MEMC_3Freq. "
-                    "The SwapFreq, MEMC_1Freq, MEMC_2Freq, "
-                    'and MEMC_3Freq need to be zero (0) for the "NVT" and "NPT" ensembles.'
+                    "SwapFreq, MEMC-1Freq, MEMC-2Freq, and MEMC-3Freq. "
+                    "The SwapFreq, MEMC-1Freq, MEMC-2Freq, "
+                    'and MEMC-3Freq need to be zero (0) for the "NVT" and "NPT" ensembles.'
                 )
                 raise ValueError(print_error_message)
 
@@ -5529,12 +5529,12 @@ class GOMCControl:
             print("\t CrankShaftFreq = " + str(self.CrankShaftFreq))
             print("\t VolFreq = " + str(self.VolFreq))
             print("\t MultiParticleFreq = " + str(self.MultiParticleFreq))
-            print("\t IntraMEMC_1Freq = " + str(self.IntraMEMC_1Freq))
-            print("\t MEMC_1Freq = " + str(self.MEMC_1Freq))
-            print("\t IntraMEMC_2Freq = " + str(self.IntraMEMC_2Freq))
-            print("\t MEMC_2Freq = " + str(self.MEMC_2Freq))
-            print("\t IntraMEMC_3Freq = " + str(self.IntraMEMC_3Freq))
-            print("\t MEMC_3Freq = " + str(self.MEMC_3Freq))
+            print("\t IntraMEMC-1Freq = " + str(self.IntraMEMC_1Freq))
+            print("\t MEMC-1Freq = " + str(self.MEMC_1Freq))
+            print("\t IntraMEMC-2Freq = " + str(self.IntraMEMC_2Freq))
+            print("\t MEMC-2Freq = " + str(self.MEMC_2Freq))
+            print("\t IntraMEMC-3Freq = " + str(self.IntraMEMC_3Freq))
+            print("\t MEMC-3Freq = " + str(self.MEMC_3Freq))
             print("\t TargetedSwapFreq = " + str(self.TargetedSwapFreq))
             print(
                 "\t IntraTargetedSwapFreq = " + str(self.IntraTargetedSwapFreq)
@@ -5753,8 +5753,8 @@ class GOMCControl:
             print_error_message = (
                 "ERROR: The MEMC_DataInput variable is not equal to None, "
                 "but all the MEMC move ratios are "
-                "zero (IntraMEMC_1Freq, MEMC_1Freq, IntraMEMC_2Freq, MEMC_2Freq, "
-                "IntraMEMC_3Freq, and MEMC_3Freq)."
+                "zero (IntraMEMC-1Freq, MEMC-1Freq, IntraMEMC-2Freq, MEMC-2Freq, "
+                "IntraMEMC-3Freq, and MEMC-3Freq)."
             )
             raise ValueError(print_error_message)
 
@@ -5770,8 +5770,8 @@ class GOMCControl:
             print_error_message = (
                 "ERROR: The MEMC_DataInput variable is equal to None, "
                 "but at least one of the MEMC move ratios are "
-                "all non-zero (IntraMEMC_1Freq, MEMC_1Freq, IntraMEMC_2Freq, MEMC_2Freq, "
-                "IntraMEMC_3Freq, and MEMC_3Freq)."
+                "all non-zero (IntraMEMC-1Freq, MEMC-1Freq, IntraMEMC-2Freq, MEMC-2Freq, "
+                "IntraMEMC-3Freq, and MEMC-3Freq)."
             )
             raise ValueError(print_error_message)
 
@@ -8436,19 +8436,19 @@ def write_gomc_control_file(
         In this move, all molecules in the selected simulation box will be rigidly
         rotated or displaced simultaneously, along the calculated torque or force
         respectively (i.e., fraction of multi-particle moves).
-    IntraMEMC_1Freq : int or float (0 <= value <= 1), default are specific for each ensemble
+    IntraMEMC-1Freq : int or float (0 <= value <= 1), default are specific for each ensemble
         {'NVT': 0.0, 'NPT': 0.0, 'GEMC_NVT': 0.0, 'GEMC_NPT': 0.0, 'GCMC': 0.0}
         Fractional percentage at which specified number of small molecule kind will be
         exchanged with a specified large molecule kind in defined sub-volume within
         same simulation box.  This move need additional information such as
         ExchangeVolumeDim, ExchangeRatio, ExchangeSmallKind, and ExchangeLargeKind.
-    MEMC_1Freq : int or float (0 <= value <= 1), default are specific for each ensemble
+    MEMC-1Freq : int or float (0 <= value <= 1), default are specific for each ensemble
         {'NVT': 0.0, 'NPT': 0.0, 'GEMC_NVT': 0.0, 'GEMC_NPT': 0.0, 'GCMC': 0.0}
         Fractional percentage at which specified number of small molecule kind will
         be exchanged with a specified large molecule kind in defined sub-volume,
         between simulation boxes.  This move need additional information such as
         ExchangeVolumeDim, ExchangeRatio, ExchangeSmallKind, and ExchangeLargeKind.
-    IntraMEMC_2Freq : int or float (0 <= value <= 1), default are specific for each ensemble
+    IntraMEMC-2Freq : int or float (0 <= value <= 1), default are specific for each ensemble
         {'NVT': 0.0, 'NPT': 0.0, 'GEMC_NVT': 0.0, 'GEMC_NPT': 0.0, 'GCMC': 0.0}
         Fractional percentage at which specified number of small molecule kind
         will be exchanged with a specified large molecule kind in defined sub-volume
@@ -8456,7 +8456,7 @@ def write_gomc_control_file(
         used to insert the large molecule more efficiently. This move need additional
         information such as ExchangeVolumeDim, ExchangeRatio, ExchangeSmallKind,
         ExchangeLargeKind, SmallKindBackBone, and LargeKindBackBone.
-    MEMC_2Freq : int or float (0 <= value <= 1), default are specific for each ensemble
+    MEMC-2Freq : int or float (0 <= value <= 1), default are specific for each ensemble
         {'NVT': 0.0, 'NPT': 0.0, 'GEMC_NVT': 0.0, 'GEMC_NPT': 0.0, 'GCMC': 0.0}
         Fractional percentage at which specified number of small molecule kind will be
         exchanged with a specified large molecule kind in defined sub-volume,
@@ -8464,7 +8464,7 @@ def write_gomc_control_file(
         used to insert the large molecule more efficiently. This move need additional
         information such as ExchangeVolumeDim, ExchangeRatio, ExchangeSmallKind,
         ExchangeLargeKind, SmallKindBackBone, and LargeKindBackBone.
-    IntraMEMC_3Freq : int or float (0 <= value <= 1), default are specific for each ensemble
+    IntraMEMC-3Freq : int or float (0 <= value <= 1), default are specific for each ensemble
         {'NVT': 0.0, 'NPT': 0.0, 'GEMC_NVT': 0.0, 'GEMC_NPT': 0.0, 'GCMC': 0.0}
         Fractional percentage at which specified number of small molecule kind will be
         exchanged with a specified large molecule kind in defined sub-volume within same
@@ -8472,7 +8472,7 @@ def write_gomc_control_file(
         the large molecule using coupled-decoupled configurational-bias. This move need
         additional information such as ExchangeVolumeDim, ExchangeRatio, ExchangeSmallKind,
         ExchangeLargeKind, and LargeKindBackBone.
-    MEMC_3Freq : int or float (0 <= value <= 1), default are specific for each ensemble
+    MEMC-3Freq : int or float (0 <= value <= 1), default are specific for each ensemble
         {'NVT': 0.0, 'NPT': 0.0, 'GEMC_NVT': 0.0, 'GEMC_NPT': 0.0, 'GCMC': 0.0}
         Fractional percentage at which specified number of small molecule kind will be
         exchanged with a specified large molecule kind in defined sub-volume,

@@ -6851,9 +6851,9 @@ class TestGOMCControlFileWriter(BaseTest):
         with pytest.raises(
             ValueError,
             match=r"The MEMC_DataInput variable is equal to None, but at least one "
-            r"of the MEMC move ratios are all non-zero \(IntraMEMC_1Freq, "
-            r"MEMC_1Freq, IntraMEMC_2Freq, MEMC_2Freq, IntraMEMC_3Freq, "
-            r"and MEMC_3Freq\).",
+            r"of the MEMC move ratios are all non-zero \(IntraMEMC-1Freq, "
+            r"MEMC-1Freq, IntraMEMC-2Freq, MEMC-2Freq, IntraMEMC-3Freq, "
+            r"and MEMC-3Freq\).",
         ):
             gomc_control.write_gomc_control_file(
                 charmm,
@@ -7718,8 +7718,8 @@ class TestGOMCControlFileWriter(BaseTest):
             ValueError,
             match=r"ERROR: The MEMC_DataInput variable is equal to None, but at least "
             r"one of the MEMC move ratios are all non-zero "
-            r"\(IntraMEMC_1Freq, MEMC_1Freq, IntraMEMC_2Freq, MEMC_2Freq, "
-            r"IntraMEMC_3Freq, and MEMC_3Freq\).",
+            r"\(IntraMEMC-1Freq, MEMC-1Freq, IntraMEMC-2Freq, MEMC-2Freq, "
+            r"IntraMEMC-3Freq, and MEMC-3Freq\).",
         ):
             gomc_control.write_gomc_control_file(
                 charmm,
@@ -8306,8 +8306,8 @@ class TestGOMCControlFileWriter(BaseTest):
         with pytest.raises(
             ValueError,
             match=r"ERROR: The MEMC_DataInput variable is not equal to None, "
-            r"but all the MEMC move ratios are zero \(IntraMEMC_1Freq, MEMC_1Freq, "
-            r"IntraMEMC_2Freq, MEMC_2Freq, IntraMEMC_3Freq, and MEMC_3Freq\).",
+            r"but all the MEMC move ratios are zero \(IntraMEMC-1Freq, MEMC-1Freq, "
+            r"IntraMEMC-2Freq, MEMC-2Freq, IntraMEMC-3Freq, and MEMC-3Freq\).",
         ):
             gomc_control.write_gomc_control_file(
                 charmm,
@@ -8539,8 +8539,8 @@ class TestGOMCControlFileWriter(BaseTest):
         with pytest.raises(
             ValueError,
             match=r"ERROR: All the MC move input variables must be non-zero \(0\) "
-            r"for the SwapFreq, MEMC_1Freq, MEMC_2Freq, and MEMC_3Freq. "
-            r"The SwapFreq, MEMC_1Freq, MEMC_2Freq, and MEMC_3Freq need to be zero "
+            r"for the SwapFreq, MEMC-1Freq, MEMC-2Freq, and MEMC-3Freq. "
+            r"The SwapFreq, MEMC-1Freq, MEMC-2Freq, and MEMC-3Freq need to be zero "
             r'\(0\) for the "NVT" and "NPT" ensembles.',
         ):
             gomc_control.write_gomc_control_file(
@@ -8574,8 +8574,8 @@ class TestGOMCControlFileWriter(BaseTest):
         with pytest.raises(
             ValueError,
             match=r"ERROR: All the MC move input variables must be non-zero \(0\) "
-            r"for the SwapFreq, MEMC_1Freq, MEMC_2Freq, and MEMC_3Freq. "
-            r"The SwapFreq, MEMC_1Freq, MEMC_2Freq, and MEMC_3Freq need to be zero "
+            r"for the SwapFreq, MEMC-1Freq, MEMC-2Freq, and MEMC-3Freq. "
+            r"The SwapFreq, MEMC-1Freq, MEMC-2Freq, and MEMC-3Freq need to be zero "
             r'\(0\) for the "NVT" and "NPT" ensembles.',
         ):
             gomc_control.write_gomc_control_file(
@@ -8609,8 +8609,8 @@ class TestGOMCControlFileWriter(BaseTest):
         with pytest.raises(
             ValueError,
             match=r"ERROR: All the MC move input variables must be non-zero \(0\) "
-            r"for the SwapFreq, MEMC_1Freq, MEMC_2Freq, and MEMC_3Freq. "
-            r"The SwapFreq, MEMC_1Freq, MEMC_2Freq, and MEMC_3Freq need to be zero "
+            r"for the SwapFreq, MEMC-1Freq, MEMC-2Freq, and MEMC-3Freq. "
+            r"The SwapFreq, MEMC-1Freq, MEMC-2Freq, and MEMC-3Freq need to be zero "
             r'\(0\) for the "NVT" and "NPT" ensembles.',
         ):
             gomc_control.write_gomc_control_file(
@@ -8644,8 +8644,8 @@ class TestGOMCControlFileWriter(BaseTest):
         with pytest.raises(
             ValueError,
             match=r"ERROR: All the MC move input variables must be non-zero \(0\) "
-            r"for the SwapFreq, MEMC_1Freq, MEMC_2Freq, and MEMC_3Freq. "
-            r"The SwapFreq, MEMC_1Freq, MEMC_2Freq, and MEMC_3Freq need to be zero "
+            r"for the SwapFreq, MEMC-1Freq, MEMC-2Freq, and MEMC-3Freq. "
+            r"The SwapFreq, MEMC-1Freq, MEMC-2Freq, and MEMC-3Freq need to be zero "
             r'\(0\) for the "NVT" and "NPT" ensembles.',
         ):
             gomc_control.write_gomc_control_file(
@@ -8679,8 +8679,8 @@ class TestGOMCControlFileWriter(BaseTest):
         with pytest.raises(
             ValueError,
             match=r"ERROR: All the MC move input variables must be non-zero \(0\) "
-            r"for the SwapFreq, MEMC_1Freq, MEMC_2Freq, and MEMC_3Freq. "
-            r"The SwapFreq, MEMC_1Freq, MEMC_2Freq, and MEMC_3Freq need to be zero "
+            r"for the SwapFreq, MEMC-1Freq, MEMC-2Freq, and MEMC-3Freq. "
+            r"The SwapFreq, MEMC-1Freq, MEMC-2Freq, and MEMC-3Freq need to be zero "
             r'\(0\) for the "NVT" and "NPT" ensembles.',
         ):
             gomc_control.write_gomc_control_file(
@@ -8714,8 +8714,8 @@ class TestGOMCControlFileWriter(BaseTest):
         with pytest.raises(
             ValueError,
             match=r"ERROR: All the MC move input variables must be non-zero \(0\) "
-            r"for the SwapFreq, MEMC_1Freq, MEMC_2Freq, and MEMC_3Freq. "
-            r"The SwapFreq, MEMC_1Freq, MEMC_2Freq, and MEMC_3Freq need to be zero "
+            r"for the SwapFreq, MEMC-1Freq, MEMC-2Freq, and MEMC-3Freq. "
+            r"The SwapFreq, MEMC-1Freq, MEMC-2Freq, and MEMC-3Freq need to be zero "
             r'\(0\) for the "NVT" and "NPT" ensembles.',
         ):
             gomc_control.write_gomc_control_file(
