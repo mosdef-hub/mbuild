@@ -2923,6 +2923,7 @@ class GOMCControl:
             "IntraTargetedSwapFreq"
         ][self.ensemble_type]
 
+        # MEMC data input
         self.ExchangeVolumeDim = default_input_variables_dict[
             "ExchangeVolumeDim"
         ]
@@ -6233,48 +6234,65 @@ class GOMCControl:
         data_control_file.write("####################################\n")
         data_control_file.write("# MOVE FREQUENCY \n")
         data_control_file.write("####################################\n")
-        data_control_file.write("{:25s} {}\n".format("DisFreq", self.DisFreq))
-        data_control_file.write("{:25s} {}\n".format("RotFreq", self.RotFreq))
-        data_control_file.write(
-            "{:25s} {}\n".format("IntraSwapFreq", self.IntraSwapFreq)
-        )
-        data_control_file.write("{:25s} {}\n".format("SwapFreq", self.SwapFreq))
-        data_control_file.write(
-            "{:25s} {}\n".format("RegrowthFreq", self.RegrowthFreq)
-        )
-        data_control_file.write(
-            "{:25s} {}\n".format("CrankShaftFreq", self.CrankShaftFreq)
-        )
-        data_control_file.write("{:25s} {}\n".format("VolFreq", self.VolFreq))
-        data_control_file.write(
-            "{:25s} {}\n".format("MultiParticleFreq", self.MultiParticleFreq)
-        )
-        data_control_file.write(
-            "{:25s} {}\n".format("IntraMEMC-1Freq", self.IntraMEMC_1Freq)
-        )
-        data_control_file.write(
-            "{:25s} {}\n".format("MEMC-1Freq", self.MEMC_1Freq)
-        )
-        data_control_file.write(
-            "{:25s} {}\n".format("IntraMEMC-2Freq", self.IntraMEMC_2Freq)
-        )
-        data_control_file.write(
-            "{:25s} {}\n".format("MEMC-2Freq", self.MEMC_2Freq)
-        )
-        data_control_file.write(
-            "{:25s} {}\n".format("IntraMEMC-3Freq", self.IntraMEMC_3Freq)
-        )
-        data_control_file.write(
-            "{:25s} {}\n".format("MEMC-3Freq", self.MEMC_3Freq)
-        )
-        data_control_file.write(
-            "{:25s} {}\n".format("TargetedSwapFreq", self.TargetedSwapFreq)
-        )
-        data_control_file.write(
-            "{:25s} {}\n".format(
-                "IntraTargetedSwapFreq", self.IntraTargetedSwapFreq
+        mc_move_zero_error_tolerance = 10 ** (-14)
+        if self.DisFreq > mc_move_zero_error_tolerance:
+            data_control_file.write("{:25s} {}\n".format("DisFreq", self.DisFreq))
+        if self.RotFreq > mc_move_zero_error_tolerance:
+            data_control_file.write("{:25s} {}\n".format("RotFreq", self.RotFreq))
+        if self.IntraSwapFreq > mc_move_zero_error_tolerance:
+            data_control_file.write(
+                "{:25s} {}\n".format("IntraSwapFreq", self.IntraSwapFreq)
             )
-        )
+        if self.SwapFreq > mc_move_zero_error_tolerance:
+            data_control_file.write("{:25s} {}\n".format("SwapFreq", self.SwapFreq))
+        if self.RegrowthFreq > mc_move_zero_error_tolerance:
+            data_control_file.write(
+                "{:25s} {}\n".format("RegrowthFreq", self.RegrowthFreq)
+            )
+        if self.CrankShaftFreq > mc_move_zero_error_tolerance:
+            data_control_file.write(
+                "{:25s} {}\n".format("CrankShaftFreq", self.CrankShaftFreq)
+            )
+        if self.VolFreq > mc_move_zero_error_tolerance:
+            data_control_file.write("{:25s} {}\n".format("VolFreq", self.VolFreq))
+        if self.MultiParticleFreq > mc_move_zero_error_tolerance:
+            data_control_file.write(
+                "{:25s} {}\n".format("MultiParticleFreq", self.MultiParticleFreq)
+            )
+        if self.IntraMEMC_1Freq > mc_move_zero_error_tolerance:
+            data_control_file.write(
+                "{:25s} {}\n".format("IntraMEMC-1Freq", self.IntraMEMC_1Freq)
+            )
+        if self.MEMC_1Freq > mc_move_zero_error_tolerance:
+            data_control_file.write(
+                "{:25s} {}\n".format("MEMC-1Freq", self.MEMC_1Freq)
+            )
+        if self.IntraMEMC_2Freq > mc_move_zero_error_tolerance:
+            data_control_file.write(
+                "{:25s} {}\n".format("IntraMEMC-2Freq", self.IntraMEMC_2Freq)
+            )
+        if self.MEMC_2Freq > mc_move_zero_error_tolerance:
+            data_control_file.write(
+                "{:25s} {}\n".format("MEMC-2Freq", self.MEMC_2Freq)
+            )
+        if self.IntraMEMC_3Freq > mc_move_zero_error_tolerance:
+            data_control_file.write(
+                "{:25s} {}\n".format("IntraMEMC-3Freq", self.IntraMEMC_3Freq)
+            )
+        if self.MEMC_3Freq > mc_move_zero_error_tolerance:
+            data_control_file.write(
+                "{:25s} {}\n".format("MEMC-3Freq", self.MEMC_3Freq)
+            )
+        if self.TargetedSwapFreq > mc_move_zero_error_tolerance:
+            data_control_file.write(
+                "{:25s} {}\n".format("TargetedSwapFreq", self.TargetedSwapFreq)
+            )
+        if self.IntraTargetedSwapFreq > mc_move_zero_error_tolerance:
+            data_control_file.write(
+                "{:25s} {}\n".format(
+                    "IntraTargetedSwapFreq", self.IntraTargetedSwapFreq
+                )
+            )
         data_control_file.write(" \n")
 
         # sort and print the MEMC data if MEMC is used for the simulation

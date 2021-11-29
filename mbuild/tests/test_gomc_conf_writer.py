@@ -580,17 +580,8 @@ class TestGOMCControlFileWriter(BaseTest):
                 "DisFreq": False,
                 "RotFreq": False,
                 "IntraSwapFreq": False,
-                "SwapFreq": False,
                 "RegrowthFreq": False,
                 "CrankShaftFreq": False,
-                "VolFreq": False,
-                "MultiParticleFreq": False,
-                "IntraMEMC-1Freq": False,
-                "MEMC-1Freq": False,
-                "IntraMEMC-2Freq": False,
-                "MEMC-2Freq": False,
-                "IntraMEMC-3Freq": False,
-                "MEMC-3Freq": False,
                 "CellBasisVector1": False,
                 "CellBasisVector2": False,
                 "CellBasisVector3": False,
@@ -757,11 +748,6 @@ class TestGOMCControlFileWriter(BaseTest):
                     split_line = line.split()
                     assert split_line[1] == "0.3"
 
-                elif line.startswith("SwapFreq "):
-                    variables_read_dict["SwapFreq"] = True
-                    split_line = line.split()
-                    assert split_line[1] == "0.0"
-
                 elif line.startswith("RegrowthFreq "):
                     variables_read_dict["RegrowthFreq"] = True
                     split_line = line.split()
@@ -771,46 +757,6 @@ class TestGOMCControlFileWriter(BaseTest):
                     variables_read_dict["CrankShaftFreq"] = True
                     split_line = line.split()
                     assert split_line[1] == "0.1"
-
-                elif line.startswith("VolFreq "):
-                    variables_read_dict["VolFreq"] = True
-                    split_line = line.split()
-                    assert split_line[1] == "0.0"
-
-                elif line.startswith("MultiParticleFreq "):
-                    variables_read_dict["MultiParticleFreq"] = True
-                    split_line = line.split()
-                    assert split_line[1] == "0.0"
-
-                elif line.startswith("IntraMEMC-1Freq "):
-                    variables_read_dict["IntraMEMC-1Freq"] = True
-                    split_line = line.split()
-                    assert split_line[1] == "0.0"
-
-                elif line.startswith("MEMC-1Freq "):
-                    variables_read_dict["MEMC-1Freq"] = True
-                    split_line = line.split()
-                    assert split_line[1] == "0.0"
-
-                elif line.startswith("IntraMEMC-2Freq "):
-                    variables_read_dict["IntraMEMC-2Freq"] = True
-                    split_line = line.split()
-                    assert split_line[1] == "0.0"
-
-                elif line.startswith("MEMC-2Freq "):
-                    variables_read_dict["MEMC-2Freq"] = True
-                    split_line = line.split()
-                    assert split_line[1] == "0.0"
-
-                elif line.startswith("IntraMEMC-3Freq "):
-                    variables_read_dict["IntraMEMC-3Freq"] = True
-                    split_line = line.split()
-                    assert split_line[1] == "0.0"
-
-                elif line.startswith("MEMC-3Freq "):
-                    variables_read_dict["MEMC-3Freq"] = True
-                    split_line = line.split()
-                    assert split_line[1] == "0.0"
 
                 elif line.startswith("CellBasisVector1 "):
                     variables_read_dict["CellBasisVector1"] = True
@@ -989,17 +935,8 @@ class TestGOMCControlFileWriter(BaseTest):
             "DisFreq": True,
             "RotFreq": True,
             "IntraSwapFreq": True,
-            "SwapFreq": True,
             "RegrowthFreq": True,
             "CrankShaftFreq": True,
-            "VolFreq": True,
-            "MultiParticleFreq": True,
-            "IntraMEMC-1Freq": True,
-            "MEMC-1Freq": True,
-            "IntraMEMC-2Freq": True,
-            "MEMC-2Freq": True,
-            "IntraMEMC-3Freq": True,
-            "MEMC-3Freq": True,
             "CellBasisVector1": True,
             "CellBasisVector2": True,
             "CellBasisVector3": True,
@@ -1066,17 +1003,8 @@ class TestGOMCControlFileWriter(BaseTest):
                 "DisFreq": False,
                 "RotFreq": False,
                 "IntraSwapFreq": False,
-                "SwapFreq": False,
                 "RegrowthFreq": False,
                 "CrankShaftFreq": False,
-                "VolFreq": False,
-                "MultiParticleFreq": False,
-                "IntraMEMC-1Freq": False,
-                "MEMC-1Freq": False,
-                "IntraMEMC-2Freq": False,
-                "MEMC-2Freq": False,
-                "IntraMEMC-3Freq": False,
-                "MEMC-3Freq": False,
                 "CellBasisVector1": False,
                 "CellBasisVector2": False,
                 "CellBasisVector3": False,
@@ -1153,11 +1081,6 @@ class TestGOMCControlFileWriter(BaseTest):
                     split_line = line.split()
                     assert split_line[1] == "0.29"
 
-                elif line.startswith("SwapFreq "):
-                    variables_read_dict["SwapFreq"] = True
-                    split_line = line.split()
-                    assert split_line[1] == "0.0"
-
                 elif line.startswith("RegrowthFreq "):
                     variables_read_dict["RegrowthFreq"] = True
                     split_line = line.split()
@@ -1167,46 +1090,6 @@ class TestGOMCControlFileWriter(BaseTest):
                     variables_read_dict["CrankShaftFreq"] = True
                     split_line = line.split()
                     assert split_line[1] == "0.1"
-
-                elif line.startswith("VolFreq "):
-                    variables_read_dict["VolFreq"] = True
-                    split_line = line.split()
-                    assert split_line[1] == "0.01"
-
-                elif line.startswith("MultiParticleFreq "):
-                    variables_read_dict["MultiParticleFreq"] = True
-                    split_line = line.split()
-                    assert split_line[1] == "0.0"
-
-                elif line.startswith("IntraMEMC-1Freq "):
-                    variables_read_dict["IntraMEMC-1Freq"] = True
-                    split_line = line.split()
-                    assert split_line[1] == "0.0"
-
-                elif line.startswith("MEMC-1Freq "):
-                    variables_read_dict["MEMC-1Freq"] = True
-                    split_line = line.split()
-                    assert split_line[1] == "0.0"
-
-                elif line.startswith("IntraMEMC-2Freq "):
-                    variables_read_dict["IntraMEMC-2Freq"] = True
-                    split_line = line.split()
-                    assert split_line[1] == "0.0"
-
-                elif line.startswith("MEMC-2Freq "):
-                    variables_read_dict["MEMC-2Freq"] = True
-                    split_line = line.split()
-                    assert split_line[1] == "0.0"
-
-                elif line.startswith("IntraMEMC-3Freq "):
-                    variables_read_dict["IntraMEMC-3Freq"] = True
-                    split_line = line.split()
-                    assert split_line[1] == "0.0"
-
-                elif line.startswith("MEMC-3Freq "):
-                    variables_read_dict["MEMC-3Freq"] = True
-                    split_line = line.split()
-                    assert split_line[1] == "0.0"
 
                 elif line.startswith("CellBasisVector1 "):
                     variables_read_dict["CellBasisVector1"] = True
@@ -1299,17 +1182,8 @@ class TestGOMCControlFileWriter(BaseTest):
             "DisFreq": True,
             "RotFreq": True,
             "IntraSwapFreq": True,
-            "SwapFreq": True,
             "RegrowthFreq": True,
             "CrankShaftFreq": True,
-            "VolFreq": True,
-            "MultiParticleFreq": True,
-            "IntraMEMC-1Freq": True,
-            "MEMC-1Freq": True,
-            "IntraMEMC-2Freq": True,
-            "MEMC-2Freq": True,
-            "IntraMEMC-3Freq": True,
-            "MEMC-3Freq": True,
             "CellBasisVector1": True,
             "CellBasisVector2": True,
             "CellBasisVector3": True,
@@ -1373,14 +1247,6 @@ class TestGOMCControlFileWriter(BaseTest):
                 "SwapFreq": False,
                 "RegrowthFreq": False,
                 "CrankShaftFreq": False,
-                "VolFreq": False,
-                "MultiParticleFreq": False,
-                "IntraMEMC-1Freq": False,
-                "MEMC-1Freq": False,
-                "IntraMEMC-2Freq": False,
-                "MEMC-2Freq": False,
-                "IntraMEMC-3Freq": False,
-                "MEMC-3Freq": False,
                 "CellBasisVector1 0": False,
                 "CellBasisVector2 0": False,
                 "CellBasisVector3 0": False,
@@ -1489,46 +1355,6 @@ class TestGOMCControlFileWriter(BaseTest):
                     variables_read_dict["CrankShaftFreq"] = True
                     split_line = line.split()
                     assert split_line[1] == "0.1"
-
-                elif line.startswith("VolFreq "):
-                    variables_read_dict["VolFreq"] = True
-                    split_line = line.split()
-                    assert split_line[1] == "0.0"
-
-                elif line.startswith("MultiParticleFreq "):
-                    variables_read_dict["MultiParticleFreq"] = True
-                    split_line = line.split()
-                    assert split_line[1] == "0.0"
-
-                elif line.startswith("IntraMEMC-1Freq "):
-                    variables_read_dict["IntraMEMC-1Freq"] = True
-                    split_line = line.split()
-                    assert split_line[1] == "0.0"
-
-                elif line.startswith("MEMC-1Freq "):
-                    variables_read_dict["MEMC-1Freq"] = True
-                    split_line = line.split()
-                    assert split_line[1] == "0.0"
-
-                elif line.startswith("IntraMEMC-2Freq "):
-                    variables_read_dict["IntraMEMC-2Freq"] = True
-                    split_line = line.split()
-                    assert split_line[1] == "0.0"
-
-                elif line.startswith("MEMC-2Freq "):
-                    variables_read_dict["MEMC-2Freq"] = True
-                    split_line = line.split()
-                    assert split_line[1] == "0.0"
-
-                elif line.startswith("IntraMEMC-3Freq "):
-                    variables_read_dict["IntraMEMC-3Freq"] = True
-                    split_line = line.split()
-                    assert split_line[1] == "0.0"
-
-                elif line.startswith("MEMC-3Freq "):
-                    variables_read_dict["MEMC-3Freq"] = True
-                    split_line = line.split()
-                    assert split_line[1] == "0.0"
 
                 elif line.startswith("CellBasisVector1 0"):
                     variables_read_dict["CellBasisVector1 0"] = True
@@ -1650,14 +1476,6 @@ class TestGOMCControlFileWriter(BaseTest):
             "SwapFreq": True,
             "RegrowthFreq": True,
             "CrankShaftFreq": True,
-            "VolFreq": True,
-            "MultiParticleFreq": True,
-            "IntraMEMC-1Freq": True,
-            "MEMC-1Freq": True,
-            "IntraMEMC-2Freq": True,
-            "MEMC-2Freq": True,
-            "IntraMEMC-3Freq": True,
-            "MEMC-3Freq": True,
             "CellBasisVector1 0": True,
             "CellBasisVector2 0": True,
             "CellBasisVector3 0": True,
@@ -1709,14 +1527,6 @@ class TestGOMCControlFileWriter(BaseTest):
                 "SwapFreq": False,
                 "RegrowthFreq": False,
                 "CrankShaftFreq": False,
-                "VolFreq": False,
-                "MultiParticleFreq": False,
-                "IntraMEMC-1Freq": False,
-                "MEMC-1Freq": False,
-                "IntraMEMC-2Freq": False,
-                "MEMC-2Freq": False,
-                "IntraMEMC-3Freq": False,
-                "MEMC-3Freq": False,
             }
             out_gomc = fp.readlines()
             for i, line in enumerate(out_gomc):
@@ -1750,46 +1560,6 @@ class TestGOMCControlFileWriter(BaseTest):
                     split_line = line.split()
                     assert split_line[1] == "0.1"
 
-                elif line.startswith("VolFreq "):
-                    variables_read_dict["VolFreq"] = True
-                    split_line = line.split()
-                    assert split_line[1] == "0.0"
-
-                elif line.startswith("MultiParticleFreq "):
-                    variables_read_dict["MultiParticleFreq"] = True
-                    split_line = line.split()
-                    assert split_line[1] == "0.0"
-
-                elif line.startswith("IntraMEMC-1Freq "):
-                    variables_read_dict["IntraMEMC-1Freq"] = True
-                    split_line = line.split()
-                    assert split_line[1] == "0.0"
-
-                elif line.startswith("MEMC-1Freq "):
-                    variables_read_dict["MEMC-1Freq"] = True
-                    split_line = line.split()
-                    assert split_line[1] == "0.0"
-
-                elif line.startswith("IntraMEMC-2Freq "):
-                    variables_read_dict["IntraMEMC-2Freq"] = True
-                    split_line = line.split()
-                    assert split_line[1] == "0.0"
-
-                elif line.startswith("MEMC-2Freq "):
-                    variables_read_dict["MEMC-2Freq"] = True
-                    split_line = line.split()
-                    assert split_line[1] == "0.0"
-
-                elif line.startswith("IntraMEMC-3Freq "):
-                    variables_read_dict["IntraMEMC-3Freq"] = True
-                    split_line = line.split()
-                    assert split_line[1] == "0.0"
-
-                elif line.startswith("MEMC-3Freq "):
-                    variables_read_dict["MEMC-3Freq"] = True
-                    split_line = line.split()
-                    assert split_line[1] == "0.0"
-
                 else:
                     pass
 
@@ -1800,14 +1570,6 @@ class TestGOMCControlFileWriter(BaseTest):
             "SwapFreq": True,
             "RegrowthFreq": True,
             "CrankShaftFreq": True,
-            "VolFreq": True,
-            "MultiParticleFreq": True,
-            "IntraMEMC-1Freq": True,
-            "MEMC-1Freq": True,
-            "IntraMEMC-2Freq": True,
-            "MEMC-2Freq": True,
-            "IntraMEMC-3Freq": True,
-            "MEMC-3Freq": True,
         }
 
     def test_save_basic_GEMC_NPT(self, ethane_gomc):
@@ -1849,14 +1611,6 @@ class TestGOMCControlFileWriter(BaseTest):
                 "RegrowthFreq": False,
                 "CrankShaftFreq": False,
                 "VolFreq": False,
-                "MultiParticleFreq": False,
-                "IntraMEMC-1Freq": False,
-                "MEMC-1Freq": False,
-                "IntraMEMC-2Freq": False,
-                "MEMC-2Freq": False,
-                "IntraMEMC-3Freq": False,
-                "MEMC-3Freq": False,
-                "TargetedSwapFreq": False,
                 "useConstantArea": False,
                 "FixVolBox0": False,
                 "RcutCoulomb_box_0": False,
@@ -1904,46 +1658,6 @@ class TestGOMCControlFileWriter(BaseTest):
                     split_line = line.split()
                     assert split_line[1] == "0.01"
 
-                elif line.startswith("MultiParticleFreq "):
-                    variables_read_dict["MultiParticleFreq"] = True
-                    split_line = line.split()
-                    assert split_line[1] == "0.0"
-
-                elif line.startswith("IntraMEMC-1Freq "):
-                    variables_read_dict["IntraMEMC-1Freq"] = True
-                    split_line = line.split()
-                    assert split_line[1] == "0.0"
-
-                elif line.startswith("MEMC-1Freq "):
-                    variables_read_dict["MEMC-1Freq"] = True
-                    split_line = line.split()
-                    assert split_line[1] == "0.0"
-
-                elif line.startswith("IntraMEMC-2Freq "):
-                    variables_read_dict["IntraMEMC-2Freq"] = True
-                    split_line = line.split()
-                    assert split_line[1] == "0.0"
-
-                elif line.startswith("MEMC-2Freq "):
-                    variables_read_dict["MEMC-2Freq"] = True
-                    split_line = line.split()
-                    assert split_line[1] == "0.0"
-
-                elif line.startswith("IntraMEMC-3Freq "):
-                    variables_read_dict["IntraMEMC-3Freq"] = True
-                    split_line = line.split()
-                    assert split_line[1] == "0.0"
-
-                elif line.startswith("MEMC-3Freq "):
-                    variables_read_dict["MEMC-3Freq"] = True
-                    split_line = line.split()
-                    assert split_line[1] == "0.0"
-
-                elif line.startswith("TargetedSwapFreq "):
-                    variables_read_dict["TargetedSwapFreq"] = True
-                    split_line = line.split()
-                    assert split_line[1] == "0.0"
-
                 elif line.startswith("useConstantArea "):
                     variables_read_dict["useConstantArea"] = True
                     split_line = line.split()
@@ -1976,14 +1690,6 @@ class TestGOMCControlFileWriter(BaseTest):
             "RegrowthFreq": True,
             "CrankShaftFreq": True,
             "VolFreq": True,
-            "MultiParticleFreq": True,
-            "IntraMEMC-1Freq": True,
-            "MEMC-1Freq": True,
-            "IntraMEMC-2Freq": True,
-            "MEMC-2Freq": True,
-            "IntraMEMC-3Freq": True,
-            "MEMC-3Freq": True,
-            "TargetedSwapFreq": True,
             "useConstantArea": True,
             "FixVolBox0": True,
             "RcutCoulomb_box_0": True,
@@ -2101,17 +1807,12 @@ class TestGOMCControlFileWriter(BaseTest):
                 "DisFreq": False,
                 "RotFreq": False,
                 "IntraSwapFreq": False,
-                "SwapFreq": False,
                 "RegrowthFreq": False,
                 "CrankShaftFreq": False,
-                "VolFreq": False,
                 "MultiParticleFreq": False,
                 "IntraMEMC-1Freq": False,
-                "MEMC-1Freq": False,
                 "IntraMEMC-2Freq": False,
-                "MEMC-2Freq": False,
                 "IntraMEMC-3Freq": False,
-                "MEMC-3Freq": False,
                 "CellBasisVector1": False,
                 "CellBasisVector2": False,
                 "CellBasisVector3": False,
@@ -2294,11 +1995,6 @@ class TestGOMCControlFileWriter(BaseTest):
                     split_line = line.split()
                     assert split_line[1] == "0.1"
 
-                elif line.startswith("SwapFreq "):
-                    variables_read_dict["SwapFreq"] = True
-                    split_line = line.split()
-                    assert split_line[1] == "0.0"
-
                 elif line.startswith("RegrowthFreq "):
                     variables_read_dict["RegrowthFreq"] = True
                     split_line = line.split()
@@ -2308,11 +2004,6 @@ class TestGOMCControlFileWriter(BaseTest):
                     variables_read_dict["CrankShaftFreq"] = True
                     split_line = line.split()
                     assert split_line[1] == "0.2"
-
-                elif line.startswith("VolFreq "):
-                    variables_read_dict["VolFreq"] = True
-                    split_line = line.split()
-                    assert split_line[1] == "0.0"
 
                 elif line.startswith("MultiParticleFreq "):
                     variables_read_dict["MultiParticleFreq"] = True
@@ -2324,30 +2015,15 @@ class TestGOMCControlFileWriter(BaseTest):
                     split_line = line.split()
                     assert split_line[1] == "0.05"
 
-                elif line.startswith("MEMC-1Freq "):
-                    variables_read_dict["MEMC-1Freq"] = True
-                    split_line = line.split()
-                    assert split_line[1] == "0.0"
-
                 elif line.startswith("IntraMEMC-2Freq "):
                     variables_read_dict["IntraMEMC-2Freq"] = True
                     split_line = line.split()
                     assert split_line[1] == "0.05"
 
-                elif line.startswith("MEMC-2Freq "):
-                    variables_read_dict["MEMC-2Freq"] = True
-                    split_line = line.split()
-                    assert split_line[1] == "0.0"
-
                 elif line.startswith("IntraMEMC-3Freq "):
                     variables_read_dict["IntraMEMC-3Freq"] = True
                     split_line = line.split()
                     assert split_line[1] == "0.05"
-
-                elif line.startswith("MEMC-3Freq "):
-                    variables_read_dict["MEMC-3Freq"] = True
-                    split_line = line.split()
-                    assert split_line[1] == "0.0"
 
                 elif line.startswith("CellBasisVector1 "):
                     variables_read_dict["CellBasisVector1"] = True
@@ -2590,17 +2266,12 @@ class TestGOMCControlFileWriter(BaseTest):
             "DisFreq": True,
             "RotFreq": True,
             "IntraSwapFreq": True,
-            "SwapFreq": True,
             "RegrowthFreq": True,
             "CrankShaftFreq": True,
-            "VolFreq": True,
             "MultiParticleFreq": True,
             "IntraMEMC-1Freq": True,
-            "MEMC-1Freq": True,
             "IntraMEMC-2Freq": True,
-            "MEMC-2Freq": True,
             "IntraMEMC-3Freq": True,
-            "MEMC-3Freq": True,
             "CellBasisVector1": True,
             "CellBasisVector2": True,
             "CellBasisVector3": True,
@@ -10645,9 +10316,7 @@ class TestGOMCControlFileWriter(BaseTest):
                 "DisFreq": False,
                 "RotFreq": False,
                 "IntraSwapFreq": False,
-                "SwapFreq": False,
                 "RegrowthFreq": False,
-                "VolFreq": False,
             }
             out_gomc = fp.readlines()
             for i, line in enumerate(out_gomc):
@@ -10671,20 +10340,10 @@ class TestGOMCControlFileWriter(BaseTest):
                     split_line = line.split()
                     assert split_line[1] == "0.25"
 
-                elif line.startswith("SwapFreq "):
-                    variables_read_dict["SwapFreq"] = True
-                    split_line = line.split()
-                    assert split_line[1] == "0.0"
-
                 elif line.startswith("RegrowthFreq "):
                     variables_read_dict["RegrowthFreq"] = True
                     split_line = line.split()
                     assert split_line[1] == "0.25"
-
-                elif line.startswith("VolFreq "):
-                    variables_read_dict["VolFreq"] = True
-                    split_line = line.split()
-                    assert split_line[1] == "0.0"
 
                 else:
                     pass
@@ -10694,9 +10353,7 @@ class TestGOMCControlFileWriter(BaseTest):
             "DisFreq": True,
             "RotFreq": True,
             "IntraSwapFreq": True,
-            "SwapFreq": True,
             "RegrowthFreq": True,
-            "VolFreq": True,
         }
 
     def test_save_basic_GCMC_use_ExpertMode(self, ethane_gomc):
@@ -10738,9 +10395,7 @@ class TestGOMCControlFileWriter(BaseTest):
                 "DisFreq": False,
                 "RotFreq": False,
                 "IntraSwapFreq": False,
-                "SwapFreq": False,
                 "RegrowthFreq": False,
-                "VolFreq": False,
             }
             out_gomc = fp.readlines()
             for i, line in enumerate(out_gomc):
@@ -10764,20 +10419,10 @@ class TestGOMCControlFileWriter(BaseTest):
                     split_line = line.split()
                     assert split_line[1] == "0.25"
 
-                elif line.startswith("SwapFreq "):
-                    variables_read_dict["SwapFreq"] = True
-                    split_line = line.split()
-                    assert split_line[1] == "0.0"
-
                 elif line.startswith("RegrowthFreq "):
                     variables_read_dict["RegrowthFreq"] = True
                     split_line = line.split()
                     assert split_line[1] == "0.25"
-
-                elif line.startswith("VolFreq "):
-                    variables_read_dict["VolFreq"] = True
-                    split_line = line.split()
-                    assert split_line[1] == "0.0"
 
                 else:
                     pass
@@ -10787,9 +10432,7 @@ class TestGOMCControlFileWriter(BaseTest):
             "DisFreq": True,
             "RotFreq": True,
             "IntraSwapFreq": True,
-            "SwapFreq": True,
             "RegrowthFreq": True,
-            "VolFreq": True,
         }
 
     def test_save_basic_GEMC_NVT_use_ExpertMode(self, ethane_gomc):
@@ -10830,9 +10473,7 @@ class TestGOMCControlFileWriter(BaseTest):
                 "DisFreq": False,
                 "RotFreq": False,
                 "IntraSwapFreq": False,
-                "SwapFreq": False,
                 "RegrowthFreq": False,
-                "VolFreq": False,
             }
             out_gomc = fp.readlines()
             for i, line in enumerate(out_gomc):
@@ -10856,20 +10497,10 @@ class TestGOMCControlFileWriter(BaseTest):
                     split_line = line.split()
                     assert split_line[1] == "0.25"
 
-                elif line.startswith("SwapFreq "):
-                    variables_read_dict["SwapFreq"] = True
-                    split_line = line.split()
-                    assert split_line[1] == "0.0"
-
                 elif line.startswith("RegrowthFreq "):
                     variables_read_dict["RegrowthFreq"] = True
                     split_line = line.split()
                     assert split_line[1] == "0.25"
-
-                elif line.startswith("VolFreq "):
-                    variables_read_dict["VolFreq"] = True
-                    split_line = line.split()
-                    assert split_line[1] == "0.0"
 
                 else:
                     pass
@@ -10879,9 +10510,7 @@ class TestGOMCControlFileWriter(BaseTest):
             "DisFreq": True,
             "RotFreq": True,
             "IntraSwapFreq": True,
-            "SwapFreq": True,
             "RegrowthFreq": True,
-            "VolFreq": True,
         }
 
     def test_save_basic_GEMC_NPT_use_ExpertMode(self, ethane_gomc):
@@ -10924,7 +10553,6 @@ class TestGOMCControlFileWriter(BaseTest):
                 "IntraSwapFreq": False,
                 "SwapFreq": False,
                 "RegrowthFreq": False,
-                "VolFreq": False,
             }
             out_gomc = fp.readlines()
             for i, line in enumerate(out_gomc):
@@ -10958,11 +10586,6 @@ class TestGOMCControlFileWriter(BaseTest):
                     split_line = line.split()
                     assert split_line[1] == "0.25"
 
-                elif line.startswith("VolFreq "):
-                    variables_read_dict["VolFreq"] = True
-                    split_line = line.split()
-                    assert split_line[1] == "0.0"
-
                 else:
                     pass
 
@@ -10973,7 +10596,6 @@ class TestGOMCControlFileWriter(BaseTest):
             "IntraSwapFreq": True,
             "SwapFreq": True,
             "RegrowthFreq": True,
-            "VolFreq": True,
         }
 
     def test_save_basic_GCMC_use_targetedswap_chempot(
@@ -11662,7 +11284,6 @@ class TestGOMCControlFileWriter(BaseTest):
 
         with open("test_save_basic_NVT_use_targetedswap.conf", "r") as fp:
             variables_read_dict = {
-                "TargetedSwapFreq": False,
                 "IntraTargetedSwapFreq": False,
                 "SubVolumeBox_number_0": False,
                 "SubVolumeCenterList_number_0": False,
@@ -11680,12 +11301,7 @@ class TestGOMCControlFileWriter(BaseTest):
 
             out_gomc = fp.readlines()
             for i, line in enumerate(out_gomc):
-                if line.startswith("TargetedSwapFreq "):
-                    split_line = line.split()
-                    assert split_line[1] == "0.0"
-                    variables_read_dict["TargetedSwapFreq"] = True
-
-                elif line.startswith("IntraTargetedSwapFreq "):
+                if line.startswith("IntraTargetedSwapFreq "):
                     split_line = line.split()
                     assert split_line[1] == "0.3"
                     variables_read_dict["IntraTargetedSwapFreq"] = True
@@ -11770,7 +11386,6 @@ class TestGOMCControlFileWriter(BaseTest):
                     pass
 
         assert variables_read_dict == {
-            "TargetedSwapFreq": True,
             "IntraTargetedSwapFreq": True,
             "SubVolumeBox_number_0": True,
             "SubVolumeCenterList_number_0": True,
