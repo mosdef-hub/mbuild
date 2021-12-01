@@ -173,6 +173,10 @@ def load_object(
     # Create type_dict type -> loading method
     # Will need to add a gmso method soon
     type_dict = {pmd.Structure: from_parmed}
+    if has_gmso:
+        gmso = import_("gmso")
+        type_dict.update({gmso.Topology: from_gmso})
+
     if has_openbabel:
         pybel = import_("pybel")
         type_dict.update({pybel.Molecule: from_pybel})
@@ -426,7 +430,7 @@ def load_file(
 
     # Then gmso reader
     if backend == "gmso":
-        import gmso
+        gmso = import_("gmso")
 
         top = gmso.Topology.load(filename=filename)
         compound = from_gmso(
