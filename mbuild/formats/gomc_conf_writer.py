@@ -5556,11 +5556,10 @@ class GOMCControl:
         # Check that RunSteps >= EqSteps >= AdjSteps
         print("self.RunSteps = " + str(self.RunSteps))
         if (
-                (self.RunSteps < self.EqSteps
-                 or self.RunSteps < self.AdjSteps
-                 or self.EqSteps < self.AdjSteps)
-                and self.Restart is False
-        ):
+            self.RunSteps < self.EqSteps
+            or self.RunSteps < self.AdjSteps
+            or self.EqSteps < self.AdjSteps
+        ) and self.Restart is False:
             self.input_error = True
             print_error_message = (
                 "ERROR: When starting a simulation, the values must be in this order RunSteps >= EqSteps >= AdjSteps "
@@ -5570,16 +5569,11 @@ class GOMCControl:
             )
             raise ValueError(print_error_message)
 
-        elif (
-                (self.RunSteps < self.EqSteps)
-                and self.Restart is True
-        ):
+        elif (self.RunSteps < self.EqSteps) and self.Restart is True:
             self.input_error = True
             print_error_message = (
                 "ERROR: When restarting a simulation, this must be true RunSteps >= EqSteps "
-                "({} >= {})".format(
-                    self.RunSteps, self.EqSteps
-                )
+                "({} >= {})".format(self.RunSteps, self.EqSteps)
             )
             raise ValueError(print_error_message)
 
