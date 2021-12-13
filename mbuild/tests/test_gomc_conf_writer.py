@@ -13950,3 +13950,91 @@ class TestGOMCControlFileWriter(BaseTest):
                     "Potential": "EXP6",
                 },
             )
+
+    def test_NVT_runstep_equibsteps_adjsteps(self, ethane_gomc):
+        test_box_ethane_gomc = mb.fill_box(
+            compound=[ethane_gomc], n_compounds=[1], box=[2, 2, 2]
+        )
+        charmm = Charmm(
+            test_box_ethane_gomc,
+            "ethane_box_0",
+            ff_filename="ethane",
+            structure_box_1=None,
+            filename_box_1=None,
+            residues=[ethane_gomc.name],
+            forcefield_selection="oplsaa",
+        )
+
+        run_steps = 10000
+        equilb_steps = 10001
+        adjust_steps = 1000
+        with pytest.raises(
+                ValueError,
+                match=r"ERROR: When starting a simulation, the values must be in this order "
+                      r"RunSteps >= EqSteps >= AdjSteps "
+                      "\({} >= {} >= {}\)".format(
+                    run_steps, equilb_steps, adjust_steps
+                ),
+        ):
+            gomc_control.write_gomc_control_file(
+                charmm,
+                "test_NVT_runstep_equibsteps_adjsteps.conf",
+                "NVT",
+                run_steps,
+                500,
+                Restart=False,
+                check_input_files_exist=False,
+                input_variables_dict={
+                    "EqSteps": equilb_steps,
+                    "AdjSteps": adjust_steps,
+                },
+            )
+
+        run_steps = 10000
+        equilb_steps = 1000
+        adjust_steps = 1001
+        with pytest.raises(
+                ValueError,
+                match=r"ERROR: When starting a simulation, the values must be in this order "
+                      r"RunSteps >= EqSteps >= AdjSteps "
+                      "\({} >= {} >= {}\)".format(
+                    run_steps, equilb_steps, adjust_steps
+                ),
+        ):
+            gomc_control.write_gomc_control_file(
+                charmm,
+                "test_NVT_runstep_equibsteps_adjsteps.conf",
+                "NVT",
+                run_steps,
+                500,
+                Restart=False,
+                check_input_files_exist=False,
+                input_variables_dict={
+                    "EqSteps": equilb_steps,
+                    "AdjSteps": adjust_steps,
+                },
+            )
+
+        run_steps = 100
+        equilb_steps = 101
+        adjust_steps = 1000
+        with pytest.raises(
+                ValueError,
+                match=r"ERROR: When restarting a simulation, this must be true RunSteps >= EqSteps "
+                      "\({} >= {}\)".format(
+                    run_steps, equilb_steps
+                ),
+        ):
+            gomc_control.write_gomc_control_file(
+                charmm,
+                "test_NVT_runstep_equibsteps_adjsteps.conf",
+                "NVT",
+                run_steps,
+                500,
+                Restart=True,
+                check_input_files_exist=False,
+                input_variables_dict={
+                    "EqSteps": equilb_steps,
+                    "AdjSteps": adjust_steps,
+                },
+            )
