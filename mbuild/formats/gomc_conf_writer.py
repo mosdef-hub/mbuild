@@ -5154,7 +5154,9 @@ class GOMCControl:
                                     ) in target_swap_tag_id_dict_key_data[
                                         "subvolumedim"
                                     ]:
-                                        if not isinstance(set_x_y_z_dim_i, (int, float)):
+                                        if not isinstance(
+                                            set_x_y_z_dim_i, (int, float)
+                                        ):
                                             bad_input_variables_values_list.append(
                                                 "subvolumedim"
                                             )
