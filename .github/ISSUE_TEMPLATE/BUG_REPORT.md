@@ -21,6 +21,6 @@ Please include a code snippet that can be used to reproduce this bug.
 
 **Software versions**
 
-- Which version of mBuild are you using? (`python -c "import mbuild as mb; print(mb.version)"`)
+- Which version of mBuild are you using? (`python -c "import mbuild as mb; print(mb.__version__)"`)
 - Which version of Python (`python --version`)?
 - Which operating system?

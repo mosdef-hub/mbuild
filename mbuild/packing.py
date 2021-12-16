@@ -743,7 +743,7 @@ def solvate(
 
         # Create the topology and update the coordinates.
         solvated = Compound()
-        solvated.add(solute)
+        solvated.add(clone(solute))
         solvated = _create_topology(solvated, solvent, n_solvent)
         solvated.update_coordinates(
             solvated_xyz.name, update_port_locations=update_port_locations
