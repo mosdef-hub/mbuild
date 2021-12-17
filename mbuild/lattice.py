@@ -28,7 +28,7 @@ def load_cif(file_or_path=None, wrap_coords=False):
     assert isinstance(file_or_path, (str, pathlib.Path))
     cif_location = pathlib.Path(file_or_path)
 
-    reader = garnett.ciffilereader.CifFileReader()
+    reader = garnett.reader.CifFileReader()
     with open(cif_location.absolute(), "r") as cif_file:
         my_cif = reader.read(cif_file)
 
