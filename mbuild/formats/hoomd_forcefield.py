@@ -24,6 +24,7 @@ def create_hoomd_forcefield(
     ref_mass=1.0,
     ref_energy=1.0,
     auto_scale=False,
+    nlist_buffer=0.4,
     snapshot_kwargs={},
     pppm_kwargs={"Nx": 8, "Ny": 8, "Nz": 8, "order": 4},
     init_snap=None,
@@ -46,6 +47,8 @@ def create_hoomd_forcefield(
         Scale to reduced units by automatically using the largest sigma value
         as ref_distance, largest mass value as ref_mass, and largest epsilon
         value as ref_energy
+    nlist_buffer : float, optional, default=True
+        buffer argument to pass to hoomd.md.nlist.Cell
     snapshot_kwargs : dict
         Keyword arguments to pass to to_hoomdsnapshot
     pppm_kwargs : dict
@@ -119,7 +122,7 @@ def create_hoomd_forcefield(
         hoomd_snapshot=init_snap,
     )
 
-    nl = hoomd.md.nlist.Cell(exclusions=["bond", "1-3"])
+    nl = hoomd.md.nlist.Cell(exclusions=["bond", "1-3"], buffer=nlist_buffer)
 
     if structure.atoms[0].type != "":
         print("Processing LJ and QQ")
