@@ -1053,33 +1053,29 @@ class Compound(object):
         tmp_box = Box(lengths=extended_lengths, angles=list(box.angles))
         freud_box = freud.box.Box.from_matrix(tmp_box.vectors.T)
 
-        aq = freud.locality.AABBQuery(freud_box, moved_positions)
+        a_indices = []
+        b_indices = []
+        for i, part in enumerate(self.particles()):
+            if part.name == name_a:
+                a_indices.append(i)
+            if part.name == name_b:
+                b_indices.append(i)
+        print(a_indices, b_indices)
 
-        # build name_a, name_b mask, other names are -1
-        name_mask = list()
-        name_set = set((name_a, name_b))
-        mask_dict = dict()
-        for i, val in enumerate(name_set):
-            mask_dict[val] = i
-        for part in self.particles():
-            name_mask.append(mask_dict.get(part.name, -1))
-        name_mask = np.array(name_mask)
+        aq = freud.locality.AABBQuery(freud_box, moved_positions[b_indices])
 
         nlist = aq.query(
-            moved_positions,
+            moved_positions[a_indices],
             dict(
-                r_min=dmin, r_max=dmax, exclude_ii=exclude_ii, num_neighbors=20
+                r_min=dmin,
+                r_max=dmax,
+                exclude_ii=exclude_ii,
             ),
         ).toNeighborList()
 
-        nlist.filter(
-            (name_mask[nlist.query_point_indices] == mask_dict[name_a])
-            & (name_mask[nlist.point_indices] == mask_dict[name_b])
-        )
-
         part_list = [part for part in self.particles(include_ports=False)]
         for i, j in nlist[:]:
-            self.add_bond((part_list[i], part_list[j]))
+            self.add_bond((part_list[a_indices[i]], part_list[b_indices[j]]))
 
     def remove_bond(self, particle_pair):
         """Delete a bond between a pair of Particles.
