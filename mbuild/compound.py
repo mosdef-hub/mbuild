@@ -1043,15 +1043,8 @@ class Compound(object):
             [box.Lx / 2, box.Ly / 2, box.Lz / 2]
         )
 
-        # extend non-periodic dimensions for pseudo-periodicity
-        extended_lengths = list(box.lengths)
-        for i, truthy in enumerate(self.periodicity):
-            if truthy:
-                continue
-            else:
-                extended_lengths[i] = extended_lengths[i] * 10
-        tmp_box = Box(lengths=extended_lengths, angles=list(box.angles))
-        freud_box = freud.box.Box.from_matrix(tmp_box.vectors.T)
+        freud_box = freud.box.Box.from_matrix(box.vectors.T)
+        freud.box.periodic = self.periodicity
 
         a_indices = []
         b_indices = []
@@ -1060,7 +1053,6 @@ class Compound(object):
                 a_indices.append(i)
             if part.name == name_b:
                 b_indices.append(i)
-        print(a_indices, b_indices)
 
         aq = freud.locality.AABBQuery(freud_box, moved_positions[b_indices])
 
