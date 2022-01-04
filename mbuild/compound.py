@@ -1033,6 +1033,11 @@ class Compound(object):
             The maximum distance (in nm) between Particles for considering a bond
         exclude_ii : bool, optional, default=True
             Whether or not to include neighbors with the same index.
+
+        Notes
+        -----
+        This is an experimental feature and some behavior might change out of step of a standard development release.
+
         """
         freud = import_("freud")
         if self.box is None:
