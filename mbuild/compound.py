@@ -980,9 +980,9 @@ class Compound(object):
         name_b : str
             The name of the other Particle to be in each bond
         dmin : float
-            The minimum distance between Particles for considering a bond
+            The minimum distance (in nm) between Particles for considering a bond
         dmax : float
-            The maximum distance between Particles for considering a bond
+            The maximum distance (in nm) between Particles for considering a bond
         """
         if self.box is None:
             self.box = self.get_boundingbox()
@@ -1028,9 +1028,9 @@ class Compound(object):
         name_b : str
             The name of the other Particle to be in each bond
         dmin : float
-            The minimum distance between Particles for considering a bond
+            The minimum distance (in nm) between Particles for considering a bond
         dmax : float
-            The maximum distance between Particles for considering a bond
+            The maximum distance (in nm) between Particles for considering a bond
         exclude_ii : bool, optional, default=True
             Whether or not to include neighbors with the same index.
         """
