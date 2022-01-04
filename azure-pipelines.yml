@@ -147,7 +147,7 @@ stages:
               python -m pytest -v --cov=mbuild --cov-report=html --color=yes --pyargs mbuild
             displayName: Run Tests
 
-      - job: LinuxBleedingFoyer
+      - job: LinuxBleeding
 
         pool:
           vmImage: 'ubuntu-latest'
@@ -162,12 +162,14 @@ stages:
               conda install -c conda-forge mamba
               conda update --all
               git clone https://github.com/mosdef-hub/foyer.git
+              git clone https://github.com/mosdef-hub/gmso.git
               mamba env create --name bleeding -f environment-dev.yml
               source activate bleeding
               pip install -e .
-              cd foyer
-              mamba env update --name bleeding --file environment.yml
-              pip install -e .
+              mamba env update --name bleeding --file foyer/environment.yml
+              pip install -e foyer
+              mamba env update --name bleeding --file gmso/environment.yml
+              pip install -e gmso
             displayName: Create a new bleeding test environment with mamba
 
           - bash: |

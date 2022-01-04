@@ -190,6 +190,7 @@ class TestPacking(BaseTest):
         solvated = mb.solvate(ethane, h2o, n_solvent=n_solvent, box=[4, 4, 4])
         assert solvated.n_particles == 8 + n_solvent * 3
         assert solvated.n_bonds == 7 + n_solvent * 2
+        assert ethane.parent == None
 
     def test_solvate_multiple(self, methane, ethane, h2o):
         init_box = mb.fill_box(methane, 2, box=[4, 4, 4])
