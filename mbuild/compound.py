@@ -2176,7 +2176,7 @@ class Compound(object):
 
     # Interface to GMSO Topology for reading/writing mol2 files
     def from_gmso(self, topology, coords_only=False, infer_hierarchy=True):
-        """Convert a GMSO Topology to mBuild Compound
+        """Convert a GMSO Topology to mBuild Compound.
 
         Parameter
         ---------
@@ -2203,12 +2203,13 @@ class Compound(object):
         )
 
     def to_gmso(self):
-        """Create a GMSO Topology from a mBuild Compound
+        """Create a GMSO Topology from a mBuild Compound.
 
         Parameters
         ----------
         compound : mb.Compound
             The mb.Compound to be converted.
+
         Returns
         -------
         topology : gmso.Topology
