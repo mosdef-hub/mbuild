@@ -35,3 +35,22 @@ class TestGMSO(BaseTest):
         for i in range(mb_eth.n_particles):
             assert mb_eth[i].name == ethane[i].name
             assert np.isclose(mb_eth[i].xyz, ethane[i].xyz).all()
+
+    @pytest.mark.skipif(not has_gmso, reason="GMSO is not installed")
+    def test_coords_only(self, ethane):
+        gmso_eth = ethane.to_gmso()
+        mb_eth = from_gmso(gmso_eth)
+        # Reset coord of the mb_eth
+        for particle in mb_eth.particles():
+            particle.xyz = [[0, 0, 0]]
+
+        mb_eth.from_gmso(gmso_eth, coords_only=True)
+        for i in range(mb_eth.n_particles):
+            assert np.isclose(mb_eth[i].xyz, ethane[i].xyz).all()
+
+    @pytest.mark.skipif(not has_gmso, reason="GMSO is not installed")
+    def test_mismatch_coords_only(self, ethane):
+        gmso_eth = ethane.to_gmso()
+        meth = mb.load("C", smiles=True)
+        with pytest.raises(ValueError):
+            meth.from_gmso(gmso_eth, coords_only=True)
