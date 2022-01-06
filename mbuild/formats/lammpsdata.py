@@ -13,9 +13,53 @@ from mbuild.utils.conversion import RB_to_OPLS
 from mbuild.utils.sorting import natural_sort
 
 __all__ = ["write_lammpsdata"]
+# Define constants for conversions
+KCAL_TO_KJ = 4.184
+NM2_TO_ANG2 = 100.0
+NM_TO_ANG = 10.0
+ELEM_TO_COUL = 1.602176634e-19
 
 # returns True if both mins and maxs have been defined, and each have length 3
 # otherwise returns False
+
+
+def _evaluate_lj_conversion_factors(structure, conversion_name, conversion_factor):
+    if conversion_factor is None:
+        # Check if structure is parametrized
+        if any([atom.sigma for atom in structure.atoms]) is None:
+            raise ValueError(
+                "LJ units specified but one or more atoms has undefined LJ "
+                "parameters."
+            )
+        else:
+            conversion_factor = np.max(
+                [getattr(atom, conversion_name) for atom in structure.atoms]
+            )
+            warn(
+                f"Assuming {conversion_name} conversion factor of "
+                + str(conversion_factor)
+            )
+        if conversion_factor == 0:
+            conversion_factor = 1
+            warn(
+                f"{conversion_name} conversion factor cannot be inferred from the maximum {conversion_name} value in the ParmEd Structure. "
+                "Setting the {conversion_name} conversion factor to 1"
+            )
+    elif conversion_factor <= 0:
+        raise ValueError(
+            f"The {conversion_name} conversion factor to convert to LJ units should be greater than 0."
+        )
+    else:
+        # assume conversion factor passed in mbuild units, convert to lammps real units
+        if conversion_name == "sigma":
+            conversion_factor *= NM_TO_ANG
+        elif conversion_name == "epsilon":
+            conversion_factor *= 1 / KCAL_TO_KJ / NM_TO_ANG ** 2
+        elif conversion_name == "mass":
+            pass
+    return conversion_factor
+
+
 def _check_minsmaxs(mins, maxs):
     if mins and maxs:
         if len(mins) == 3 and len(maxs) == 3:
@@ -73,9 +117,9 @@ def write_lammpsdata(
         see https://lammps.sandia.gov/doc/99/units.html for more information
         on unit styles
     mins : list
-        minimum box dimension in x, y, z directions
+        minimum box dimension in x, y, z directions, nm
     maxs : list
-        maximum box dimension in x, y, z directions
+        maximum box dimension in x, y, z directions, nm
     pair_coeff_label : str
         Provide a custom label to the pair_coeffs section in the lammps data
         file. Defaults to None, which means a suitable default will be chosen.
@@ -115,10 +159,6 @@ def write_lammpsdata(
     https://github.com/mdtraj/mdtraj/blob/master/mdtraj/formats/lammpstrj.py
     for details.
     """
-    # Define constants for conversions
-    KCAL_TO_KJ = 4.184
-    NM2_TO_ANG2 = 100.0
-    NM_TO_ANG = 10.0
 
     if atom_style not in ["atomic", "charge", "molecular", "full"]:
         raise ValueError(
@@ -132,37 +172,6 @@ def write_lammpsdata(
                 unit_style
             )
         )
-    # Check if structure is paramterized
-    if unit_style == "lj":
-        sigma_use_default = False
-        epsilon_use_default = False
-        mass_use_default = False
-
-        if any([atom.sigma for atom in structure.atoms]) is None:
-            raise ValueError(
-                "LJ units specified but one or more atoms has undefined LJ parameters."
-            )
-
-        if sigma_conversion_factor is None:
-            sigma_use_default = True
-        elif sigma_conversion_factor <= 0:
-            raise ValueError(
-                "The sigma conversion factor to convert to LJ units should be greater than 0."
-            )
-
-        if epsilon_conversion_factor is None:
-            epsilon_use_default = True
-        elif epsilon_conversion_factor <= 0:
-            raise ValueError(
-                "The epsilon conversion factor to convert to LJ units should be greater than 0."
-            )
-
-        if mass_conversion_factor is None:
-            mass_use_default = True
-        elif mass_conversion_factor <= 0:
-            raise ValueError(
-                "The mass conversion factor to convert to LJ units should be greater than 0."
-            )
 
     xyz = np.array([[atom.xx, atom.xy, atom.xz] for atom in structure.atoms])
 
@@ -207,24 +216,9 @@ def write_lammpsdata(
     """
     # copy structure so the input structure isn't modified in-place
     structure = structure.copy(cls=Structure, split_dihedrals=True)
-    if atom_style not in ["atomic", "charge", "molecular", "full"]:
-        raise ValueError(
-            'Atom style "{atom_style}" is invalid or is not currently supported'
-        )
 
-    # Check if structure is paramterized
-    if unit_style == "lj":
-        if any([atom.sigma for atom in structure.atoms]) is None:
-            raise ValueError(
-                "LJ units specified but one or more atoms has undefined LJ "
-                "parameters."
-            )
-
+    # units of angstroms
     xyz = np.array([[atom.xx, atom.xy, atom.xz] for atom in structure.atoms])
-
-    forcefield = True
-    if structure[0].type == "":
-        forcefield = False
 
     if forcefield:
         types = [atom.type for atom in structure.atoms]
@@ -236,68 +230,6 @@ def write_lammpsdata(
 
     charges = np.array([atom.charge for atom in structure.atoms])
 
-    # Convert coordinates to LJ units
-    if unit_style == "lj":
-        # If not specified by user, get sigma, mass, and epsilon conversions by finding maximum of each
-        if sigma_use_default:
-            sigma_conversion_factor = np.max(
-                [atom.sigma for atom in structure.atoms]
-            )
-            warn(
-                "Assuming sigma conversion factor of "
-                + str(sigma_conversion_factor)
-            )
-            if sigma_conversion_factor == 0:
-                sigma_conversion_factor = 1
-                warn(
-                    "sigma conversion factor cannot be inferred from the maximum sigma value in the ParmEd Structure. "
-                    "Setting the sigma conversion factor to 1"
-                )
-
-        if epsilon_use_default:
-            epsilon_conversion_factor = np.max(
-                [atom.epsilon for atom in structure.atoms]
-            )
-            warn(
-                "Assuming epsilon conversion factor of "
-                + str(epsilon_conversion_factor)
-            )
-            if epsilon_conversion_factor == 0:
-                epsilon_conversion_factor = 1
-                warn(
-                    "epsilon conversion factor cannot be inferred from the maximum epsilon value in the ParmEd Structure. "
-                    "Setting the epsilon conversion factor to 1"
-                )
-
-        if mass_use_default:
-            mass_conversion_factor = np.max(
-                [atom.mass for atom in structure.atoms]
-            )
-            warn(
-                "Assuming mass conversion factor of "
-                + str(mass_conversion_factor)
-            )
-            if mass_conversion_factor == 0:
-                mass_conversion_factor = 1
-                warn(
-                    "mass conversion factor cannot be inferred from the maximum mass value in the ParmEd Structure. "
-                    "Setting the mass conversion factor to 1"
-                )
-
-        xyz = xyz / sigma_conversion_factor
-        charges = (charges * 1.6021e-19) / np.sqrt(
-            4
-            * np.pi
-            * (sigma_conversion_factor * 1e-10)
-            * (epsilon_conversion_factor * 4184)
-            * epsilon_0
-        )
-        charges[np.isinf(charges)] = 0
-        # TODO: FIX CHARGE UNIT CONVERSION
-    else:
-        sigma_conversion_factor = 1
-        epsilon_conversion_factor = 1
-        mass_conversion_factor = 1
     # lammps does not require the box to be centered at any a specific origin
     # min and max dimensions are therefore needed to write the file in a
     # consistent way the parmed structure only stores the box length.  It is
@@ -306,23 +238,16 @@ def write_lammpsdata(
     # NOTE: 0 to L is current default, mins and maxs should be passed by user
 
     if _check_minsmaxs(mins, maxs):
+        mins = np.array(mins) * NM_TO_ANG
+        maxs = np.array(maxs) * NM_TO_ANG
         box = Box.from_mins_maxs_angles(
             mins=mins, maxs=maxs, angles=structure.box[3:6]
+        )  # box lengths input in nm, so convert to angstrom
+    else:  # Parmed internally converts box to angstroms
+        box = Box(
+            lengths=np.array([val for val in structure.box[0:3]]),
+            angles=structure.box[3:6],
         )
-    else:
-        if unit_style == "real":
-            # Internally use nm
-            box = Box(
-                lengths=np.array(
-                    [1 / NM_TO_ANG * val for val in structure.box[0:3]]
-                ),
-                angles=structure.box[3:6],
-            )
-        if unit_style == "lj":
-            box = Box(
-                lengths=structure.box[0:3],
-                angles=structure.box[3:6],
-            )
 
         warn(
             "Explicit box bounds (i.e., mins and maxs) were not provided. Box "
@@ -333,11 +258,6 @@ def write_lammpsdata(
             "write_lammpsdata function or by passing box info to the save "
             "function."
         )
-    # Divide by conversion factor
-    Lx = box.Lx * (1 / sigma_conversion_factor)
-    Ly = box.Ly * (1 / sigma_conversion_factor)
-    Lz = box.Lz * (1 / sigma_conversion_factor)
-    box = Box(lengths=(Lx, Ly, Lz), angles=box.angles)
 
     # Lammps syntax depends on the functional form
     # Infer functional form based on the properties of the structure
@@ -347,9 +267,7 @@ def write_lammpsdata(
             print("Urey bradley terms detected, will use angle_style charmm")
             use_urey_bradleys = True
         else:
-            print(
-                "No urey bradley terms detected, will use angle_style harmonic"
-            )
+            print("No urey bradley terms detected, will use angle_style harmonic")
             use_urey_bradleys = False
 
         # Check dihedrals
@@ -369,6 +287,7 @@ def write_lammpsdata(
             "Forcefield XML and structure"
         )
 
+    # save atom index information for all bonded params in structure
     bonds = [[b.atom1.idx + 1, b.atom2.idx + 1] for b in structure.bonds]
     angles = [
         [angle.atom1.idx + 1, angle.atom2.idx + 1, angle.atom3.idx + 1]
@@ -400,6 +319,43 @@ def write_lammpsdata(
     if impropers and imp_dihedrals:
         raise ValueError("Use of multiple improper styles is not supported")
 
+    # Get lj conversion factors if they exist and apply lj params to charges and box
+    # Params are in mbuild units of ang, kcal/mol, amu
+    if unit_style == "lj":
+        sigma_conversion_factor = _evaluate_lj_conversion_factors(
+            structure, "sigma", sigma_conversion_factor
+        )
+        epsilon_conversion_factor = _evaluate_lj_conversion_factors(
+            structure, "epsilon", epsilon_conversion_factor
+        )
+        mass_conversion_factor = _evaluate_lj_conversion_factors(
+            structure, "mass", mass_conversion_factor
+        )
+        # Convert coordinates and charges to LJ units
+        xyz = xyz / sigma_conversion_factor
+        charges = (charges * ELEM_TO_COUL) / np.sqrt(
+            4
+            * np.pi
+            * sigma_conversion_factor
+            * NM_TO_ANG ** -1
+            * epsilon_conversion_factor
+            * KCAL_TO_KJ
+            * epsilon_0
+            * 10 ** -6
+        )
+        charges[np.isinf(charges)] = 0
+    else:
+        sigma_conversion_factor = 1
+        epsilon_conversion_factor = 1
+        mass_conversion_factor = 1
+
+    # Divide by conversion factor
+    Lx = box.Lx * (1 / sigma_conversion_factor)
+    Ly = box.Ly * (1 / sigma_conversion_factor)
+    Lz = box.Lz * (1 / sigma_conversion_factor)
+    box = Box(lengths=(Lx, Ly, Lz), angles=box.angles)
+
+    # Get bonded parameter information from structure
     if bonds:
         if len(structure.bond_types) == 0:
             bond_types = np.ones(len(bonds), dtype=int)
@@ -420,10 +376,10 @@ def write_lammpsdata(
         )
 
     if imp_dihedrals:
-        (
-            imp_dihedral_types,
-            unique_imp_dihedral_types,
-        ) = _get_improper_dihedral_types(structure, epsilon_conversion_factor)
+        imp_dihedral_types, unique_imp_dihedral_types = _get_improper_dihedral_types(
+            structure, epsilon_conversion_factor
+        )
+
     if dihedrals:
         dihedral_types, unique_dihedral_types = _get_dihedral_types(
             structure,
@@ -443,20 +399,22 @@ def write_lammpsdata(
         data.write(f"{filename} - created by mBuild; units = {unit_style}\n")
         if unit_style == "lj":
             data.write("#Normalization factors: ")
-            data.write("sigma - {:.3E}, ".format(sigma_conversion_factor))
-            data.write("epsilon - {:.3E}, ".format(epsilon_conversion_factor))
-            data.write("mass - {:.3E}".format(mass_conversion_factor))
+            data.write("sigma - {:.3E} (angstrom), ".format(sigma_conversion_factor))
+            data.write(
+                "epsilon - {:.3E} (kcal/mol), ".format(epsilon_conversion_factor)
+            )
+            data.write("mass - {:.3E} (amu)".format(mass_conversion_factor))
         data.write("\n")
 
+        # Write counts of bonded interactions
         data.write("{:d} atoms\n".format(len(structure.atoms)))
         if atom_style in ["full", "molecular"]:
             data.write("{:d} bonds\n".format(len(bonds)))
             data.write("{:d} angles\n".format(len(angles)))
             data.write("{:d} dihedrals\n".format(len(dihedrals)))
-            data.write(
-                "{:d} impropers\n\n".format(len(impropers) + len(imp_dihedrals))
-            )
+            data.write("{:d} impropers\n\n".format(len(impropers) + len(imp_dihedrals)))
 
+        # Write counts of unique bonded types
         data.write("{:d} atom types\n".format(len(set(types))))
         if atom_style in ["full", "molecular"]:
             if bonds:
@@ -464,457 +422,72 @@ def write_lammpsdata(
             if angles:
                 data.write("{:d} angle types\n".format(len(set(angle_types))))
             if dihedrals:
-                data.write(
-                    "{:d} dihedral types\n".format(len(set(dihedral_types)))
-                )
+                data.write("{:d} dihedral types\n".format(len(set(dihedral_types))))
             if impropers:
-                data.write(
-                    "{:d} improper types\n".format(len(set(improper_types)))
-                )
+                data.write("{:d} improper types\n".format(len(set(improper_types))))
             elif imp_dihedrals:
-                data.write(
-                    "{:d} improper types\n".format(len(set(imp_dihedral_types)))
-                )
+                data.write("{:d} improper types\n".format(len(set(imp_dihedral_types))))
 
         data.write("\n")
-        # If using real units, write our box dimensions in angstrom instead of nm.
-        boxdim_conversion = NM_TO_ANG
-        if unit_style == "lj":
-            boxdim_conversion = 1.0
-        # Box data
+        # Write box data
         # NOTE: Needs better logic handling maxs and mins of a bounding box
-        # NOTE: JBG, "this should be a method/attribute of Compound?"
-        if np.allclose(box.angles, 90.0, atol=1e-5) and (mins is None):
-            for i, dim in enumerate(["x", "y", "z"]):
-                data.write(
-                    "{0:.6f} {1:.6f} {2}lo {2}hi\n".format(
-                        0.0,
-                        boxdim_conversion * box.lengths[i],
-                        dim,
-                    )
-                )
-        # NOTE:
-        # currently non-orthogonal bounding box translates
-        # Compound such that mins are new origin
-        else:
-            a = boxdim_conversion * box.Lx
-            b = boxdim_conversion * box.Ly
-            c = boxdim_conversion * box.Lz
-            alpha, beta, gamma = np.radians(box.angles)
+        # NOTE: CCC, "could be an option to grab mins and maxs of the structure boundingbox"
+        _write_box_information(box, data, mins)
 
-            xy = box.xy
-            xz = box.xz
-            yz = box.yz
-
-            # NOTE: using (0,0,0) as origin
-            xlo, ylo, zlo = (0.0, 0.0, 0.0)
-            xhi = xlo + a
-            yhi = ylo + b
-            zhi = zlo + c
-
-            xlo_bound = xlo + np.min([0.0, xy, xz, xy + xz])
-            xhi_bound = xhi + np.max([0.0, xy, xz, xy + xz])
-            ylo_bound = ylo + np.min([0.0, yz])
-            yhi_bound = yhi + np.max([0.0, yz])
-            zlo_bound = zlo
-            zhi_bound = zhi
-
-            data.write("{0:.6f} {1:.6f} xlo xhi\n".format(xlo_bound, xhi_bound))
-            data.write("{0:.6f} {1:.6f} ylo yhi\n".format(ylo_bound, yhi_bound))
-            data.write("{0:.6f} {1:.6f} zlo zhi\n".format(zlo_bound, zhi_bound))
-            data.write("{0:.6f} {1:.6f} {2:6f} xy xz yz\n".format(xy, xz, yz))
-
-        # Mass data
-        if not forcefield:
-            masses = (
-                np.array([atom.mass for atom in structure.atoms])
-                / mass_conversion_factor
-            )
-        else:
-            tmp_masses = list()
-            for atom in structure.atoms:
-                # handle case where atomtype does not contain a mass
-                try:
-                    tmp_masses.append(atom.atom_type.mass)
-                except AttributeError:
-                    warn(
-                        f"No mass or defined atomtype for atom: {atom}. Using atom mass of {atom.mass / mass_conversion_factor}"
-                    )
-                    tmp_masses.append(atom.mass)
-            masses = np.asarray(tmp_masses) / mass_conversion_factor
-
-        mass_dict = dict(
-            [
-                (unique_types.index(atom_type) + 1, mass)
-                for atom_type, mass in zip(types, masses)
-            ]
+        # Write mass data
+        _write_mass_information(
+            structure, data, mass_conversion_factor, forcefield, unique_types, types
         )
-        data.write("\nMasses\n\n")
-        for atom_type, mass in sorted(mass_dict.items()):
-            data.write(
-                "{:d}\t{:.6f}\t# {}\n".format(
-                    atom_type, mass, unique_types[atom_type - 1]
-                )
-            )
 
         if forcefield:
-            epsilons = (
-                np.array([atom.epsilon for atom in structure.atoms])
-                / epsilon_conversion_factor
-            )
-            sigmas = (
-                np.array([atom.sigma for atom in structure.atoms])
-                / sigma_conversion_factor
-            )
-            forcefields = [atom.type for atom in structure.atoms]
-            epsilon_dict = dict(
-                [
-                    (unique_types.index(atom_type) + 1, epsilon)
-                    for atom_type, epsilon in zip(types, epsilons)
-                ]
-            )
-            sigma_dict = dict(
-                [
-                    (unique_types.index(atom_type) + 1, sigma)
-                    for atom_type, sigma in zip(types, sigmas)
-                ]
-            )
-            forcefield_dict = dict(
-                [
-                    (unique_types.index(atom_type) + 1, forcefield)
-                    for atom_type, forcefield in zip(types, forcefields)
-                ]
+            # Write pair coefficients data
+            _write_pair_information(
+                structure,
+                data,
+                forcefield,
+                sigma_conversion_factor,
+                epsilon_conversion_factor,
+                unique_types,
+                types,
+                pair_coeff_label,
+                unit_style,
+                nbfix_in_data_file,
             )
 
-            # Modified cross-interactions
-            if structure.has_NBFIX():
-                params = ParameterSet.from_structure(structure)
-                # Sort keys (maybe they should be sorted in ParmEd)
-                new_nbfix_types = OrderedDict()
-                for key in params.nbfix_types.keys():
-                    sorted_key = tuple(sorted(key))
-                    if sorted_key in new_nbfix_types:
-                        warn("Sorted key matches an existing key")
-                        if new_nbfix_types[sorted_key]:
-                            warn(
-                                "nbfixes are not symmetric, overwriting old "
-                                "nbfix"
-                            )
-                    new_nbfix_types[sorted_key] = params.nbfix_types[key]
-                params.nbfix_types = new_nbfix_types
-                warn(
-                    "Explicitly writing cross interactions using mixing rule: "
-                    "{}".format(structure.combining_rule)
-                )
-                coeffs = OrderedDict()
-                for combo in it.combinations_with_replacement(unique_types, 2):
-                    # Attempt to find pair coeffis in nbfixes
-                    if combo in params.nbfix_types:
-                        type1 = unique_types.index(combo[0]) + 1
-                        type2 = unique_types.index(combo[1]) + 1
-                        epsilon = params.nbfix_types[combo][
-                            0
-                        ]  # kcal OR lj units
-                        rmin = params.nbfix_types[combo][
-                            1
-                        ]  # Angstrom OR lj units
-                        sigma = rmin / 2 ** (1 / 6)
-                        coeffs[(type1, type2)] = (
-                            round(sigma, 8),
-                            round(epsilon, 8),
-                        )
-                    else:
-                        type1 = unique_types.index(combo[0]) + 1
-                        type2 = unique_types.index(combo[1]) + 1
-                        # Might not be necessary to be this explicit
-                        if type1 == type2:
-                            sigma = sigma_dict[type1]
-                            epsilon = epsilon_dict[type1]
-                        else:
-                            if structure.combining_rule == "lorentz":
-                                sigma = (
-                                    sigma_dict[type1] + sigma_dict[type2]
-                                ) * 0.5
-                            elif structure.combining_rule == "geometric":
-                                sigma = (
-                                    sigma_dict[type1] * sigma_dict[type2]
-                                ) ** 0.5
-                            else:
-                                raise ValueError(
-                                    "Only lorentz and geometric combining "
-                                    "rules are supported"
-                                )
-                            epsilon = (
-                                epsilon_dict[type1] * epsilon_dict[type2]
-                            ) ** 0.5
-                        coeffs[(type1, type2)] = (
-                            round(sigma, 8),
-                            round(epsilon, 8),
-                        )
-                if nbfix_in_data_file:
-                    if pair_coeff_label:
-                        data.write(
-                            "\nPairIJ Coeffs # {}\n".format(pair_coeff_label)
-                        )
-                    else:
-                        data.write("\nPairIJ Coeffs # modified lj\n")
-
-                    data.write(
-                        "# type1 type2\tepsilon (kcal/mol)\tsigma (Angstrom)\n"
-                    )
-
-                    for (type1, type2), (sigma, epsilon) in coeffs.items():
-                        data.write(
-                            "{0} \t{1} \t{2} \t\t{3}\t\t# {4}\t{5}\n".format(
-                                type1,
-                                type2,
-                                epsilon,
-                                sigma,
-                                forcefield_dict[type1],
-                                forcefield_dict[type2],
-                            )
-                        )
-                else:
-                    if pair_coeff_label:
-                        data.write(
-                            "\nPair Coeffs # {}\n".format(pair_coeff_label)
-                        )
-                    else:
-                        data.write("\nPair Coeffs # lj\n")
-
-                    for idx, epsilon in sorted(epsilon_dict.items()):
-                        data.write(
-                            "{}\t{:.5f}\t{:.5f}\n".format(
-                                idx, epsilon, sigma_dict[idx]
-                            )
-                        )
-                    print("Copy these commands into your input script:\n")
-                    print(
-                        "# type1 type2\tepsilon (kcal/mol)\tsigma (Angstrom)\n"
-                    )
-                    for (type1, type2), (sigma, epsilon) in coeffs.items():
-                        print(
-                            "pair_coeff\t{0} \t{1} \t{2} \t\t{3} \t\t# {4} \t{5}".format(
-                                type1,
-                                type2,
-                                epsilon,
-                                sigma,
-                                forcefield_dict[type1],
-                                forcefield_dict[type2],
-                            )
-                        )
-
-            # Pair coefficients
-            else:
-                if pair_coeff_label:
-                    data.write("\nPair Coeffs # {}\n".format(pair_coeff_label))
-                else:
-                    data.write("\nPair Coeffs # lj\n")
-
-                if unit_style == "real":
-                    data.write("#\tepsilon (kcal/mol)\t\tsigma (Angstrom)\n")
-                elif unit_style == "lj":
-                    data.write("#\treduced_epsilon \t\treduced_sigma \n")
-                for idx, epsilon in sorted(epsilon_dict.items()):
-                    data.write(
-                        "{}\t{:.5f}\t\t{:.5f}\t\t# {}\n".format(
-                            idx, epsilon, sigma_dict[idx], forcefield_dict[idx]
-                        )
-                    )
-
-            # Bond coefficients
+            # Write bond coefficients
             if bonds:
-                data.write("\nBond Coeffs # harmonic\n")
-                if unit_style == "real":
-                    data.write("#\tk(kcal/mol/angstrom^2)\t\treq(angstrom)\n")
-                elif unit_style == "lj":
-                    data.write("#\treduced_k\t\treduced_req\n")
-                sorted_bond_types = {
-                    k: v
-                    for k, v in sorted(
-                        unique_bond_types.items(), key=lambda item: item[1]
-                    )
-                }
-                for params, idx in sorted_bond_types.items():
-                    # If the user specified LJ unit style, revert the internal conversion of k by ParmEd
-                    if unit_style == "lj":
-                        data.write(
-                            "{}\t{}\t\t{}\t\t# {}\t{}\n".format(
-                                idx,
-                                params[0] * KCAL_TO_KJ * NM2_TO_ANG2 * 2.0,
-                                params[1] / NM_TO_ANG,
-                                params[2][0],
-                                params[2][1],
-                            )
-                        )
-                    else:
-                        data.write(
-                            "{}\t{}\t\t{}\t\t# {}\t{}\n".format(
-                                idx,
-                                params[0],
-                                params[1],
-                                params[2][0],
-                                params[2][1],
-                            )
-                        )
-            # Angle coefficients
+                _write_bond_information(structure, data, unique_bond_types, unit_style)
+
+            # Write angle coefficients
             if angles:
-                sorted_angle_types = {
-                    k: v
-                    for k, v in sorted(
-                        unique_angle_types.items(), key=lambda item: item[1]
-                    )
-                }
-                if use_urey_bradleys:
-                    data.write("\nAngle Coeffs # charmm\n")
-                    data.write(
-                        "#\tk(kcal/mol/rad^2)\t\ttheteq(deg)\tk(kcal/mol/angstrom^2)\treq(angstrom)\n"
-                    )
-                    for params, idx in sorted_angle_types.items():
-                        data.write(
-                            "{}\t{}\t{:.5f}\t{:.5f}\t{:.5f}\n".format(
-                                idx, *params
-                            )
-                        )
+                _write_angle_information(
+                    structure, data, unique_angle_types, use_urey_bradleys, unit_style
+                )
 
-                else:
-                    data.write("\nAngle Coeffs # harmonic\n")
-
-                    if unit_style == "lj":
-                        data.write("#\treduced_k\t\ttheteq(deg)\n")
-                    else:
-                        data.write("#\tk(kcal/mol/rad^2)\t\ttheteq(deg)\n")
-
-                    for params, idx in sorted_angle_types.items():
-                        # If the user specified LJ unit style, revert the internal conversion of k by ParmEd
-                        if unit_style == "lj":
-                            data.write(
-                                "{}\t{}\t\t{:.5f}\t# {}\t{}\t{}\n".format(
-                                    idx,
-                                    params[0] * KCAL_TO_KJ * 2.0,
-                                    params[1],
-                                    params[3][0],
-                                    params[2],
-                                    params[3][1],
-                                )
-                            )
-                        else:
-                            data.write(
-                                "{}\t{}\t\t{:.5f}\t# {}\t{}\t{}\n".format(
-                                    idx,
-                                    params[0],
-                                    params[1],
-                                    params[3][0],
-                                    params[2],
-                                    params[3][1],
-                                )
-                            )
-
-            # Dihedral coefficients
+            # Write dihedral coefficients
             if dihedrals:
-                sorted_dihedral_types = {
-                    k: v
-                    for k, v in sorted(
-                        unique_dihedral_types.items(), key=lambda item: item[1]
-                    )
-                }
-                if use_rb_torsions:
-                    data.write("\nDihedral Coeffs # opls\n")
-                    if unit_style == "real":
-                        data.write(
-                            "#\tf1(kcal/mol)\tf2(kcal/mol)\tf3(kcal/mol)\tf4(kcal/mol)\n"
-                        )
-                    elif unit_style == "lj":
-                        data.write("#\tf1\tf2\tf3\tf4 (all lj reduced units)\n")
-                    for params, idx in sorted_dihedral_types.items():
-                        opls_coeffs = RB_to_OPLS(
-                            params[0],
-                            params[1],
-                            params[2],
-                            params[3],
-                            params[4],
-                            params[5],
-                            error_if_outside_tolerance=False,
-                        )
-                        data.write(
-                            "{}\t{:.5f}\t{:.5f}\t\t{:.5f}\t\t{:.5f}\t# {}\t{}\t{}\t{}\n".format(
-                                idx,
-                                opls_coeffs[1],
-                                opls_coeffs[2],
-                                opls_coeffs[3],
-                                opls_coeffs[4],
-                                params[8],
-                                params[9],
-                                params[10],
-                                params[11],
-                            )
-                        )
-                elif use_dihedrals:
-                    data.write("\nDihedral Coeffs # charmm\n")
-                    data.write("#k, n, phi, weight\n")
-                    for params, idx in sorted_dihedral_types.items():
-                        data.write(
-                            "{}\t{:.5f}\t{:d}\t{:.2f}\t{:.5f}\t# {}\t{}\t{}\t{}\n".format(
-                                idx,
-                                params[0] * KCAL_TO_KJ,
-                                params[1],
-                                params[2],
-                                params[3],
-                                params[6],
-                                params[7],
-                                params[8],
-                                params[9],
-                            )
-                        )
+                _write_dihedral_information(
+                    structure,
+                    data,
+                    unique_dihedral_types,
+                    unit_style,
+                    use_rb_torsions,
+                    use_dihedrals,
+                )
 
-            # Improper coefficients
+            # Write improper coefficients
             if impropers:
-                sorted_improper_types = {
-                    k: v
-                    for k, v in sorted(
-                        unique_improper_types.items(), key=lambda item: item[1]
-                    )
-                }
-                data.write("\nImproper Coeffs # harmonic\n")
-                data.write("#k, phi\n")
-                for params, idx in sorted_improper_types.items():
-                    data.write(
-                        "{}\t{:.5f}\t{:.5f}\t# {}\t{}\t{}\t{}\n".format(
-                            idx,
-                            params[0],
-                            params[1],
-                            params[2],
-                            params[3],
-                            params[4],
-                            params[5],
-                        )
-                    )
+                _write_improper_information(
+                    structure, data, unique_improper_types, unit_style
+                )
+                # Write improper dihedrals
             elif imp_dihedrals:
-                # Improper dihedral coefficients
-                sorted_imp_dihedral_types = {
-                    k: v
-                    for k, v in sorted(
-                        unique_imp_dihedral_types.items(),
-                        key=lambda item: item[1],
-                    )
-                }
-                data.write("\nImproper Coeffs # cvff\n")
-                data.write("#K, d, n\n")
-                for params, idx in sorted_imp_dihedral_types.items():
-                    data.write(
-                        "{}\t{:.5f}\t{:d}\t{:d}\t# {}\t{}\t{}\t{}\n".format(
-                            idx,
-                            params[0],
-                            params[1],
-                            params[2],
-                            params[5],
-                            params[6],
-                            params[7],
-                            params[8],
-                        )
-                    )
+                _write_imp_dihedral_information(
+                    structure, data, unique_imp_dihedral_types, unit_style
+                )
 
-        # Atom data
+        # Write Atom data
+        # _write_atom_data(atom_style, unit_style)
         data.write("\nAtoms # {}\n\n".format(atom_style))
         if atom_style == "atomic":
             atom_line = "{index:d}\t{type_index:d}\t{x:.6f}\t{y:.6f}\t{z:.6f}\n"
@@ -924,7 +497,9 @@ def write_lammpsdata(
             elif unit_style == "lj":
                 atom_line = "{index:d}\t{type_index:d}\t{charge:.4ef}\t{x:.6f}\t{y:.6f}\t{z:.6f}\n"
         elif atom_style == "molecular":
-            atom_line = "{index:d}\t{zero:d}\t{type_index:d}\t{x:.6f}\t{y:.6f}\t{z:.6f}\n"
+            atom_line = (
+                "{index:d}\t{zero:d}\t{type_index:d}\t{x:.6f}\t{y:.6f}\t{z:.6f}\n"
+            )
         elif atom_style == "full":
             if unit_style == "real":
                 atom_line = "{index:d}\t{zero:d}\t{type_index:d}\t{charge:.6f}\t{x:.6f}\t{y:.6f}\t{z:.6f}\n"
@@ -932,30 +507,17 @@ def write_lammpsdata(
                 atom_line = "{index:d}\t{zero:d}\t{type_index:d}\t{charge:.4e}\t{x:.6f}\t{y:.6f}\t{z:.6f}\n"
 
         for i, coords in enumerate(xyz):
-            if unit_style == "lj":
-                data.write(
-                    atom_line.format(
-                        index=i + 1,
-                        type_index=unique_types.index(types[i]) + 1,
-                        zero=structure.atoms[i].residue.idx + moleculeID_offset,
-                        charge=charges[i],
-                        x=coords[0] / NM_TO_ANG,
-                        y=coords[1] / NM_TO_ANG,
-                        z=coords[2] / NM_TO_ANG,
-                    )
+            data.write(
+                atom_line.format(
+                    index=i + 1,
+                    type_index=unique_types.index(types[i]) + 1,
+                    zero=structure.atoms[i].residue.idx + moleculeID_offset,
+                    charge=charges[i],
+                    x=coords[0],
+                    y=coords[1],
+                    z=coords[2],
                 )
-            else:
-                data.write(
-                    atom_line.format(
-                        index=i + 1,
-                        type_index=unique_types.index(types[i]) + 1,
-                        zero=structure.atoms[i].residue.idx + moleculeID_offset,
-                        charge=charges[i],
-                        x=coords[0],
-                        y=coords[1],
-                        z=coords[2],
-                    )
-                )
+            )
 
         if atom_style in ["full", "molecular"]:
             # Bond data
@@ -1023,42 +585,39 @@ def write_lammpsdata(
                         )
                     )
 
+    return
+
 
 def _get_bond_types(
     structure, bonds, sigma_conversion_factor, epsilon_conversion_factor
 ):
-    unique_bond_types = dict(
+    """
+    Will get the bond types from a parmed structure and convert them to lammps
+    real units.
+    """
+    unique_bond_types = OrderedDict(
         enumerate(
-            set(
-                [
-                    (
-                        round(
-                            bond.type.k
-                            * (
-                                sigma_conversion_factor ** 2
-                                / epsilon_conversion_factor
-                            ),
-                            3,
-                        ),
-                        round(bond.type.req / sigma_conversion_factor, 3),
-                        tuple(sorted((bond.atom1.type, bond.atom2.type))),
-                    )
-                    for bond in structure.bonds
-                ]
-            )
+            [
+                (
+                    round(
+                        bond.type.k
+                        * (sigma_conversion_factor ** 2 / epsilon_conversion_factor),
+                        3,
+                    ),
+                    round(bond.type.req / sigma_conversion_factor, 3),
+                    tuple(sorted((bond.atom1.type, bond.atom2.type))),
+                )
+                for bond in structure.bonds
+            ]
         )
     )
-    unique_bond_types = OrderedDict(
-        [(y, x + 1) for x, y in unique_bond_types.items()]
-    )
+    unique_bond_types = OrderedDict([(y, x + 1) for x, y in unique_bond_types.items()])
     bond_types = [
         unique_bond_types[
             (
                 round(
                     bond.type.k
-                    * (
-                        sigma_conversion_factor ** 2 / epsilon_conversion_factor
-                    ),
+                    * (sigma_conversion_factor ** 2 / epsilon_conversion_factor),
                     3,
                 ),
                 round(bond.type.req / sigma_conversion_factor, 3),
@@ -1088,11 +647,7 @@ def _get_angle_types(
             charmm_angle_types.append(
                 (
                     round(
-                        angle.type.k
-                        * (
-                            sigma_conversion_factor ** 2
-                            / epsilon_conversion_factor
-                        ),
+                        angle.type.k * (1 / epsilon_conversion_factor),
                         3,
                     ),
                     round(angle.type.theteq, 3),
@@ -1102,35 +657,27 @@ def _get_angle_types(
                 )
             )
 
-        unique_angle_types = dict(enumerate(set(charmm_angle_types)))
+        unique_angle_types = OrderedDict(enumerate(set(charmm_angle_types)))
         unique_angle_types = OrderedDict(
             [(y, x + 1) for x, y in unique_angle_types.items()]
         )
-        angle_types = [
-            unique_angle_types[ub_info] for ub_info in charmm_angle_types
-        ]
+        angle_types = [unique_angle_types[ub_info] for ub_info in charmm_angle_types]
 
     else:
-        unique_angle_types = dict(
+        unique_angle_types = OrderedDict(
             enumerate(
-                set(
-                    [
-                        (
-                            round(
-                                angle.type.k
-                                * (
-                                    sigma_conversion_factor ** 2
-                                    / epsilon_conversion_factor
-                                ),
-                                3,
-                            ),
-                            round(angle.type.theteq, 3),
-                            angle.atom2.type,
-                            tuple(sorted((angle.atom1.type, angle.atom3.type))),
-                        )
-                        for angle in structure.angles
-                    ]
-                )
+                [
+                    (
+                        round(
+                            angle.type.k * (1 / epsilon_conversion_factor),
+                            3,
+                        ),
+                        round(angle.type.theteq, 3),
+                        angle.atom2.type,
+                        tuple(sorted((angle.atom1.type, angle.atom3.type))),
+                    )
+                    for angle in structure.angles
+                ]
             )
         )
         unique_angle_types = OrderedDict(
@@ -1140,11 +687,7 @@ def _get_angle_types(
             unique_angle_types[
                 (
                     round(
-                        angle.type.k
-                        * (
-                            sigma_conversion_factor ** 2
-                            / epsilon_conversion_factor
-                        ),
+                        angle.type.k * (1 / epsilon_conversion_factor),
                         3,
                     ),
                     round(angle.type.theteq, 3),
@@ -1167,27 +710,25 @@ def _get_dihedral_types(
 ):
     lj_unit = 1.0 / epsilon_conversion_factor
     if use_rb_torsions:
-        unique_dihedral_types = dict(
+        unique_dihedral_types = OrderedDict(
             enumerate(
-                set(
-                    [
-                        (
-                            round(dihedral.type.c0 * lj_unit, 3),
-                            round(dihedral.type.c1 * lj_unit, 3),
-                            round(dihedral.type.c2 * lj_unit, 3),
-                            round(dihedral.type.c3 * lj_unit, 3),
-                            round(dihedral.type.c4 * lj_unit, 3),
-                            round(dihedral.type.c5 * lj_unit, 3),
-                            round(dihedral.type.scee, 1),
-                            round(dihedral.type.scnb, 1),
-                            dihedral.atom1.type,
-                            dihedral.atom2.type,
-                            dihedral.atom3.type,
-                            dihedral.atom4.type,
-                        )
-                        for dihedral in structure.rb_torsions
-                    ]
-                )
+                [
+                    (
+                        round(dihedral.type.c0 * lj_unit, 5),
+                        round(dihedral.type.c1 * lj_unit, 5),
+                        round(dihedral.type.c2 * lj_unit, 5),
+                        round(dihedral.type.c3 * lj_unit, 5),
+                        round(dihedral.type.c4 * lj_unit, 5),
+                        round(dihedral.type.c5 * lj_unit, 5),
+                        round(dihedral.type.scee, 1),
+                        round(dihedral.type.scnb, 1),
+                        dihedral.atom1.type,
+                        dihedral.atom2.type,
+                        dihedral.atom3.type,
+                        dihedral.atom4.type,
+                    )
+                    for dihedral in structure.rb_torsions
+                ]
             )
         )
         unique_dihedral_types = OrderedDict(
@@ -1196,12 +737,12 @@ def _get_dihedral_types(
         dihedral_types = [
             unique_dihedral_types[
                 (
-                    round(dihedral.type.c0 * lj_unit, 3),
-                    round(dihedral.type.c1 * lj_unit, 3),
-                    round(dihedral.type.c2 * lj_unit, 3),
-                    round(dihedral.type.c3 * lj_unit, 3),
-                    round(dihedral.type.c4 * lj_unit, 3),
-                    round(dihedral.type.c5 * lj_unit, 3),
+                    round(dihedral.type.c0 * lj_unit, 5),
+                    round(dihedral.type.c1 * lj_unit, 5),
+                    round(dihedral.type.c2 * lj_unit, 5),
+                    round(dihedral.type.c3 * lj_unit, 5),
+                    round(dihedral.type.c4 * lj_unit, 5),
+                    round(dihedral.type.c5 * lj_unit, 5),
                     round(dihedral.type.scee, 1),
                     round(dihedral.type.scnb, 1),
                     dihedral.atom1.type,
@@ -1237,13 +778,12 @@ def _get_dihedral_types(
                         )
                     )
 
-        unique_dihedral_types = dict(enumerate(set(charmm_dihedrals)))
+        unique_dihedral_types = OrderedDict(enumerate(set(charmm_dihedrals)))
         unique_dihedral_types = OrderedDict(
             [(y, x + 1) for x, y in unique_dihedral_types.items()]
         )
         dihedral_types = [
-            unique_dihedral_types[dihedral_info]
-            for dihedral_info in charmm_dihedrals
+            unique_dihedral_types[dihedral_info] for dihedral_info in charmm_dihedrals
         ]
 
     return dihedral_types, unique_dihedral_types
@@ -1280,8 +820,7 @@ def _get_improper_dihedral_types(structure, epsilon_conversion_factor):
         [(y, x + 1) for x, y in unique_imp_dihedral_types.items()]
     )
     imp_dihedral_types = [
-        unique_imp_dihedral_types[dihedral_info]
-        for dihedral_info in improper_dihedrals
+        unique_imp_dihedral_types[dihedral_info] for dihedral_info in improper_dihedrals
     ]
 
     return imp_dihedral_types, unique_imp_dihedral_types
@@ -1326,7 +865,402 @@ def _get_impropers(structure, epsilon_conversion_factor):
     return improper_types, unique_improper_types
 
 
-def _get_box_information(
-    structure,
+def _write_box_information(box, data, mins):
+    """Write box information to lammps data file, can handle non-orthogonal boxes."""
+    if np.allclose(box.angles, 90.0, atol=1e-5) and (mins is None):
+        for i, dim in enumerate(["x", "y", "z"]):
+            data.write(
+                "{0:.6f} {1:.6f} {2}lo {2}hi\n".format(
+                    0.0,
+                    box.lengths[i],
+                    dim,
+                )
+            )
+    # NOTE:
+    # currently non-orthogonal bounding box translates
+    # Compound such that mins are new origin
+    else:
+        a = box.Lx
+        b = box.Ly
+        c = box.Lz
+        alpha, beta, gamma = np.radians(box.angles)
+
+        xy = box.xy
+        xz = box.xz
+        yz = box.yz
+
+        # NOTE: using (0,0,0) as origin
+        xlo, ylo, zlo = (0.0, 0.0, 0.0)
+        xhi = xlo + a
+        yhi = ylo + b
+        zhi = zlo + c
+
+        xlo_bound = xlo + np.min([0.0, xy, xz, xy + xz])
+        xhi_bound = xhi + np.max([0.0, xy, xz, xy + xz])
+        ylo_bound = ylo + np.min([0.0, yz])
+        yhi_bound = yhi + np.max([0.0, yz])
+        zlo_bound = zlo
+        zhi_bound = zhi
+
+        data.write("{0:.6f} {1:.6f} xlo xhi\n".format(xlo_bound, xhi_bound))
+        data.write("{0:.6f} {1:.6f} ylo yhi\n".format(ylo_bound, yhi_bound))
+        data.write("{0:.6f} {1:.6f} zlo zhi\n".format(zlo_bound, zhi_bound))
+        data.write("{0:.6f} {1:.6f} {2:6f} xy xz yz\n".format(xy, xz, yz))
+
+    return
+
+
+def _write_mass_information(
+    structure, data, mass_conversion_factor, forcefield, unique_types, types
 ):
-    pass
+    """Write mass information from structure to lammps data file."""
+    if not forcefield:
+        masses = (
+            np.array([atom.mass for atom in structure.atoms]) / mass_conversion_factor
+        )
+    else:
+        tmp_masses = list()
+        for atom in structure.atoms:
+            # handle case where atomtype does not contain a mass
+            try:
+                tmp_masses.append(atom.atom_type.mass)
+            except AttributeError:
+                warn(
+                    f"No mass or defined atomtype for atom: {atom}. Using atom mass of {atom.mass / mass_conversion_factor}"
+                )
+                tmp_masses.append(atom.mass)
+        masses = np.asarray(tmp_masses) / mass_conversion_factor
+
+    mass_dict = OrderedDict(
+        [
+            (unique_types.index(atom_type) + 1, mass)
+            for atom_type, mass in zip(types, masses)
+        ]
+    )
+    data.write("\nMasses\n\n")
+    for atom_type, mass in sorted(mass_dict.items()):
+        data.write(
+            "{:d}\t{:.6f}\t# {}\n".format(atom_type, mass, unique_types[atom_type - 1])
+        )
+
+    return
+
+
+def _write_pair_information(
+    structure,
+    data,
+    forcefield,
+    sigma_conversion_factor,
+    epsilon_conversion_factor,
+    unique_types,
+    types,
+    pair_coeff_label,
+    unit_style,
+    nbfix_in_data_file,
+):
+    """Write nonbonded pair information to lammps data file."""
+    epsilons = (
+        np.array([atom.epsilon for atom in structure.atoms]) / epsilon_conversion_factor
+    )
+    sigmas = (
+        np.array([atom.sigma for atom in structure.atoms]) / sigma_conversion_factor
+    )
+    forcefields = [atom.type for atom in structure.atoms]
+    epsilon_dict = dict(
+        [
+            (unique_types.index(atom_type) + 1, epsilon)
+            for atom_type, epsilon in zip(types, epsilons)
+        ]
+    )
+    sigma_dict = dict(
+        [
+            (unique_types.index(atom_type) + 1, sigma)
+            for atom_type, sigma in zip(types, sigmas)
+        ]
+    )
+    forcefield_dict = dict(
+        [
+            (unique_types.index(atom_type) + 1, forcefield)
+            for atom_type, forcefield in zip(types, forcefields)
+        ]
+    )
+
+    # Modified cross-interactions
+    if structure.has_NBFIX():
+        params = ParameterSet.from_structure(structure)
+        # Sort keys (maybe they should be sorted in ParmEd)
+        new_nbfix_types = OrderedDict()
+        for key in params.nbfix_types.keys():
+            sorted_key = tuple(sorted(key))
+            if sorted_key in new_nbfix_types:
+                warn("Sorted key matches an existing key")
+                if new_nbfix_types[sorted_key]:
+                    warn("nbfixes are not symmetric, overwriting old " "nbfix")
+            new_nbfix_types[sorted_key] = params.nbfix_types[key]
+        params.nbfix_types = new_nbfix_types
+        warn(
+            "Explicitly writing cross interactions using mixing rule: "
+            "{}".format(structure.combining_rule)
+        )
+        coeffs = OrderedDict()
+        for combo in it.combinations_with_replacement(unique_types, 2):
+            # Attempt to find pair coeffis in nbfixes
+            if combo in params.nbfix_types:
+                type1 = unique_types.index(combo[0]) + 1
+                type2 = unique_types.index(combo[1]) + 1
+                epsilon = params.nbfix_types[combo][0]  # kcal OR lj units
+                rmin = params.nbfix_types[combo][1]  # Angstrom OR lj units
+                sigma = rmin / 2 ** (1 / 6)
+                coeffs[(type1, type2)] = (
+                    round(sigma, 8),
+                    round(epsilon, 8),
+                )
+            else:
+                type1 = unique_types.index(combo[0]) + 1
+                type2 = unique_types.index(combo[1]) + 1
+                # Might not be necessary to be this explicit
+                if type1 == type2:
+                    sigma = sigma_dict[type1]
+                    epsilon = epsilon_dict[type1]
+                else:
+                    if structure.combining_rule == "lorentz":
+                        sigma = (sigma_dict[type1] + sigma_dict[type2]) * 0.5
+                    elif structure.combining_rule == "geometric":
+                        sigma = (sigma_dict[type1] * sigma_dict[type2]) ** 0.5
+                    else:
+                        raise ValueError(
+                            "Only lorentz and geometric combining "
+                            "rules are supported"
+                        )
+                    epsilon = (epsilon_dict[type1] * epsilon_dict[type2]) ** 0.5
+                coeffs[(type1, type2)] = (
+                    round(sigma, 8),
+                    round(epsilon, 8),
+                )
+        if nbfix_in_data_file:
+            if pair_coeff_label:
+                data.write("\nPairIJ Coeffs # {}\n".format(pair_coeff_label))
+            else:
+                data.write("\nPairIJ Coeffs # modified lj\n")
+
+            data.write("# type1 type2\tepsilon (kcal/mol)\tsigma (Angstrom)\n")
+
+            for (type1, type2), (sigma, epsilon) in coeffs.items():
+                data.write(
+                    "{0} \t{1} \t{2} \t\t{3}\t\t# {4}\t{5}\n".format(
+                        type1,
+                        type2,
+                        epsilon,
+                        sigma,
+                        forcefield_dict[type1],
+                        forcefield_dict[type2],
+                    )
+                )
+        else:
+            if pair_coeff_label:
+                data.write("\nPair Coeffs # {}\n".format(pair_coeff_label))
+            else:
+                data.write("\nPair Coeffs # lj\n")
+
+            for idx, epsilon in sorted(epsilon_dict.items()):
+                data.write("{}\t{:.5f}\t{:.5f}\n".format(idx, epsilon, sigma_dict[idx]))
+            print("Copy these commands into your input script:\n")
+            print("# type1 type2\tepsilon (kcal/mol)\tsigma (Angstrom)\n")
+            for (type1, type2), (sigma, epsilon) in coeffs.items():
+                print(
+                    "pair_coeff\t{0} \t{1} \t{2} \t\t{3} \t\t# {4} \t{5}".format(
+                        type1,
+                        type2,
+                        epsilon,
+                        sigma,
+                        forcefield_dict[type1],
+                        forcefield_dict[type2],
+                    )
+                )
+
+    # Pair coefficients
+    else:
+        if pair_coeff_label:
+            data.write("\nPair Coeffs # {}\n".format(pair_coeff_label))
+        else:
+            data.write("\nPair Coeffs # lj\n")
+
+        if unit_style == "real":
+            data.write("#\tepsilon (kcal/mol)\t\tsigma (Angstrom)\n")
+        elif unit_style == "lj":
+            data.write("#\treduced_epsilon \t\treduced_sigma \n")
+        for idx, epsilon in sorted(epsilon_dict.items()):
+            data.write(
+                "{}\t{:.5f}\t\t{:.5f}\t\t# {}\n".format(
+                    idx, epsilon, sigma_dict[idx], forcefield_dict[idx]
+                )
+            )
+
+    return
+
+
+def _write_bond_information(structure, data, unique_bond_types, unit_style):
+    data.write("\nBond Coeffs # harmonic\n")
+    if unit_style == "real":
+        data.write("#\tk(kcal/mol/angstrom^2)\t\treq(angstrom)\n")
+    elif unit_style == "lj":
+        data.write("#\treduced_k\t\treduced_req\n")
+    sorted_bond_types = {
+        k: v for k, v in sorted(unique_bond_types.items(), key=lambda item: item[1])
+    }
+    for params, idx in sorted_bond_types.items():
+        data.write(
+            "{}\t{}\t\t{}\t\t# {}\t{}\n".format(
+                idx,
+                params[0],
+                params[1],
+                params[2][0],
+                params[2][1],
+            )
+        )
+
+
+def _write_angle_information(
+    structure, data, unique_angle_types, use_urey_bradleys, unit_style
+):
+    sorted_angle_types = {
+        k: v for k, v in sorted(unique_angle_types.items(), key=lambda item: item[1])
+    }
+    if use_urey_bradleys:
+        data.write("\nAngle Coeffs # charmm\n")
+        data.write(
+            "#\tk(kcal/mol/rad^2)\t\ttheteq(deg)\tk(kcal/mol/angstrom^2)\treq(angstrom)\n"
+        )
+        for params, idx in sorted_angle_types.items():
+            data.write("{}\t{}\t{:.5f}\t{:.5f}\t{:.5f}\n".format(idx, *params))
+
+    else:
+        data.write("\nAngle Coeffs # harmonic\n")
+
+        if unit_style == "lj":
+            data.write("#\treduced_k\t\ttheteq(deg)\n")
+        else:
+            data.write("#\tk(kcal/mol/rad^2)\t\ttheteq(deg)\n")
+
+        for params, idx in sorted_angle_types.items():
+            data.write(
+                "{}\t{}\t\t{:.5f}\t# {}\t{}\t{}\n".format(
+                    idx,
+                    params[0],
+                    params[1],
+                    params[3][0],
+                    params[2],
+                    params[3][1],
+                )
+            )
+
+    return
+
+
+def _write_dihedral_information(
+    structure, data, unique_dihedral_types, unit_style, use_rb_torsions, use_dihedrals
+):
+    sorted_dihedral_types = {
+        k: v for k, v in sorted(unique_dihedral_types.items(), key=lambda item: item[1])
+    }
+    if use_rb_torsions:
+        data.write("\nDihedral Coeffs # opls\n")
+        if unit_style == "real":
+            data.write("#\tf1(kcal/mol)\tf2(kcal/mol)\tf3(kcal/mol)\tf4(kcal/mol)\n")
+        elif unit_style == "lj":
+            data.write("#\tf1\tf2\tf3\tf4 (all lj reduced units)\n")
+        for params, idx in sorted_dihedral_types.items():
+            opls_coeffs = RB_to_OPLS(
+                params[0],
+                params[1],
+                params[2],
+                params[3],
+                params[4],
+                params[5],
+                error_if_outside_tolerance=False,
+            )
+            data.write(
+                "{}\t{:.5f}\t{:.5f}\t\t{:.5f}\t\t{:.5f}\t# {}\t{}\t{}\t{}\n".format(
+                    idx,
+                    opls_coeffs[1],
+                    opls_coeffs[2],
+                    opls_coeffs[3],
+                    opls_coeffs[4],
+                    params[8],
+                    params[9],
+                    params[10],
+                    params[11],
+                )
+            )
+    elif use_dihedrals:
+        data.write("\nDihedral Coeffs # charmm\n")
+        data.write("#k, n, phi, weight\n")
+        for params, idx in sorted_dihedral_types.items():
+            data.write(
+                "{}\t{:.5f}\t{:d}\t{:.2f}\t{:.5f}\t# {}\t{}\t{}\t{}\n".format(
+                    idx,
+                    params[0],
+                    params[1],
+                    params[2],
+                    params[3],
+                    params[6],
+                    params[7],
+                    params[8],
+                    params[9],
+                )
+            )
+
+    return
+
+
+def _write_improper_information(structure, data, unique_improper_types, unit_style):
+    # Impropers
+    sorted_improper_types = {
+        k: v for k, v in sorted(unique_improper_types.items(), key=lambda item: item[1])
+    }
+    data.write("\nImproper Coeffs # harmonic\n")
+    data.write("#k, phi\n")
+    for params, idx in sorted_improper_types.items():
+        data.write(
+            "{}\t{:.5f}\t{:.5f}\t# {}\t{}\t{}\t{}\n".format(
+                idx,
+                params[0],
+                params[1],
+                params[2],
+                params[3],
+                params[4],
+                params[5],
+            )
+        )
+
+    return
+
+
+def _write_imp_dihedral_information(
+    structure, data, unique_imp_dihedral_types, unit_style
+):
+    # Improper dihedral coefficients
+    sorted_imp_dihedral_types = {
+        k: v
+        for k, v in sorted(
+            unique_imp_dihedral_types.items(),
+            key=lambda item: item[1],
+        )
+    }
+    data.write("\nImproper Coeffs # cvff\n")
+    data.write("#K, d, n\n")
+    for params, idx in sorted_imp_dihedral_types.items():
+        data.write(
+            "{}\t{:.5f}\t{:d}\t{:d}\t# {}\t{}\t{}\t{}\n".format(
+                idx,
+                params[0],
+                params[1],
+                params[2],
+                params[5],
+                params[6],
+                params[7],
+                params[8],
+            )
+        )
+
+    return
