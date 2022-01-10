@@ -229,10 +229,10 @@ def _get_all_possible_input_variables(description=False):
         "distance between any atoms. "
         "Sets a specific radius in Angstroms that non-bonded interaction "
         'Note: Rswitch is only used when the "Potential" = SWITCH. '
-        'WARNING: When using a molecule that has charge atoms with non-bonded epsilon values of zero (i.e., water), '
-        'the RcutLow need to be greater than zero, typically 1 angstrom. '  
-        'WARNING: When using the free energy calculations, RcutLow needs to be set to zero (RcutLow=0);'
-        'otherwise, the free energy calculations can produce results that are slightly off or wrong. '
+        "WARNING: When using a molecule that has charge atoms with non-bonded epsilon values of zero (i.e., water), "
+        "the RcutLow need to be greater than zero, typically 1 angstrom. "
+        "WARNING: When using the free energy calculations, RcutLow needs to be set to zero (RcutLow=0);"
+        "otherwise, the free energy calculations can produce results that are slightly off or wrong. "
         "".format(_get_default_variables_dict()["RcutLow"]),
         "LRC": "Simulation info (all ensembles): boolean, default = {}. "
         "If True, the simulation considers the long range tail corrections for the non-bonded VDW or "
@@ -5166,7 +5166,9 @@ class GOMCControl:
                                     ) in target_swap_tag_id_dict_key_data[
                                         "subvolumedim"
                                     ]:
-                                        if not isinstance(set_x_y_z_dim_i, (int, float)):
+                                        if not isinstance(
+                                            set_x_y_z_dim_i, (int, float)
+                                        ):
                                             bad_input_variables_values_list.append(
                                                 "subvolumedim"
                                             )
@@ -5845,10 +5847,10 @@ class GOMCControl:
 
         # check that all required free energy values are provided and RcutLow is zero (0)
         if (
-                self.FreeEnergyCalc is not None
-                or self.MoleculeType is not None
-                or self.InitialState is not None
-                or self.LambdaVDW is not None
+            self.FreeEnergyCalc is not None
+            or self.MoleculeType is not None
+            or self.InitialState is not None
+            or self.LambdaVDW is not None
         ):
             if (
                 self.FreeEnergyCalc is None

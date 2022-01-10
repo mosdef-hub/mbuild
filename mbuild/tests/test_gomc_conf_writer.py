@@ -6456,8 +6456,8 @@ class TestGOMCControlFileWriter(BaseTest):
         with pytest.warns(
             UserWarning,
             match="WARNING: The free energy calculations are being used when RcutLow is not zero \(0\), "
-                  "which can produce free energy results that are slightly off or wrong. "
-                  "Please set RcutLow to zero \(RcutLow=0\) when using the free energy calculations.",
+            "which can produce free energy results that are slightly off or wrong. "
+            "Please set RcutLow to zero \(RcutLow=0\) when using the free energy calculations.",
         ):
             gomc_control.write_gomc_control_file(
                 charmm,
