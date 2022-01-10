@@ -1726,7 +1726,7 @@ class TestGOMCControlFileWriter(BaseTest):
                 "LRC": False,
                 "IPC": True,
                 "Rcut": 12,
-                "RcutLow": 8,
+                "RcutLow": 0,
                 "Exclude": "1-4",
                 "Ewald": False,
                 "ElectroStatic": False,
@@ -1921,7 +1921,7 @@ class TestGOMCControlFileWriter(BaseTest):
                 elif line.startswith("RcutLow "):
                     variables_read_dict["RcutLow"] = True
                     split_line = line.split()
-                    assert split_line[1] == "8"
+                    assert split_line[1] == "0"
 
                 elif line.startswith("Exclude "):
                     variables_read_dict["Exclude"] = True
@@ -2336,6 +2336,7 @@ class TestGOMCControlFileWriter(BaseTest):
                 300,
                 check_input_files_exist=False,
                 input_variables_dict={
+                    "RcutLow": 0,
                     "FreeEnergyCalc": [True, 10],
                     "MoleculeType": ["ETH", 1],
                     "InitialState": 3,
@@ -2356,6 +2357,7 @@ class TestGOMCControlFileWriter(BaseTest):
                 300,
                 check_input_files_exist=False,
                 input_variables_dict={
+                    "RcutLow": 0,
                     "FreeEnergyCalc": [True, 10],
                     "MoleculeType": ["ETH", 1],
                     "InitialState": 3,
@@ -2376,6 +2378,7 @@ class TestGOMCControlFileWriter(BaseTest):
                 300,
                 check_input_files_exist=False,
                 input_variables_dict={
+                    "RcutLow": 0,
                     "FreeEnergyCalc": [True, 10],
                     "MoleculeType": ["ETH", 1],
                     "InitialState": 3,
@@ -2395,6 +2398,7 @@ class TestGOMCControlFileWriter(BaseTest):
                 300,
                 check_input_files_exist=False,
                 input_variables_dict={
+                    "RcutLow": 0,
                     "FreeEnergyCalc": [True, 10],
                     "MoleculeType": ["ETH", 1],
                     "InitialState": 3,
@@ -3220,6 +3224,7 @@ class TestGOMCControlFileWriter(BaseTest):
                 300,
                 check_input_files_exist=False,
                 input_variables_dict={
+                    "RcutLow": 0,
                     "FreeEnergyCalc": "s",
                     "MoleculeType": ["ETH", 1],
                     "InitialState": 1,
@@ -3243,6 +3248,7 @@ class TestGOMCControlFileWriter(BaseTest):
                 300,
                 check_input_files_exist=False,
                 input_variables_dict={
+                    "RcutLow": 0,
                     "FreeEnergyCalc": [True, 10000],
                     "MoleculeType": ["ETH", "s"],
                     "InitialState": 1,
@@ -3266,6 +3272,7 @@ class TestGOMCControlFileWriter(BaseTest):
                 300,
                 check_input_files_exist=False,
                 input_variables_dict={
+                    "RcutLow": 0,
                     "FreeEnergyCalc": [True, 10000],
                     "MoleculeType": [["ETH"], 1],
                     "InitialState": 1,
@@ -3289,6 +3296,7 @@ class TestGOMCControlFileWriter(BaseTest):
                 300,
                 check_input_files_exist=False,
                 input_variables_dict={
+                    "RcutLow": 0,
                     "FreeEnergyCalc": [True, 10000],
                     "MoleculeType": [{"ETH": "1"}, 1],
                     "InitialState": 1,
@@ -3312,6 +3320,7 @@ class TestGOMCControlFileWriter(BaseTest):
                 300,
                 check_input_files_exist=False,
                 input_variables_dict={
+                    "RcutLow": 0,
                     "FreeEnergyCalc": [True, 10000],
                     "MoleculeType": ["ETH", 1],
                     "InitialState": "s",
@@ -3335,6 +3344,7 @@ class TestGOMCControlFileWriter(BaseTest):
                 300,
                 check_input_files_exist=False,
                 input_variables_dict={
+                    "RcutLow": 0,
                     "FreeEnergyCalc": [True, 10000],
                     "MoleculeType": ["ETH", 1],
                     "InitialState": 1,
@@ -3358,6 +3368,7 @@ class TestGOMCControlFileWriter(BaseTest):
                 300,
                 check_input_files_exist=False,
                 input_variables_dict={
+                    "RcutLow": 0,
                     "FreeEnergyCalc": [True, 10000],
                     "MoleculeType": ["ETH", 1],
                     "InitialState": 1,
@@ -3379,7 +3390,9 @@ class TestGOMCControlFileWriter(BaseTest):
                 10,
                 300,
                 check_input_files_exist=False,
-                input_variables_dict={"FreeEnergyCalc": [True, 10000]},
+                input_variables_dict={"RcutLow": 0,
+                                      "FreeEnergyCalc": [True, 10000]
+                                      },
             )
 
         with pytest.raises(
@@ -4578,6 +4591,7 @@ class TestGOMCControlFileWriter(BaseTest):
                 300,
                 check_input_files_exist=False,
                 input_variables_dict={
+                    "RcutLow": 0,
                     "FreeEnergyCalc": [],
                     "MoleculeType": ["ETH", 1],
                     "InitialState": 1,
@@ -4601,6 +4615,7 @@ class TestGOMCControlFileWriter(BaseTest):
                 300,
                 check_input_files_exist=False,
                 input_variables_dict={
+                    "RcutLow": 0,
                     "FreeEnergyCalc": [True, 10000],
                     "MoleculeType": ["ETH", []],
                     "InitialState": 1,
@@ -4624,6 +4639,7 @@ class TestGOMCControlFileWriter(BaseTest):
                 300,
                 check_input_files_exist=False,
                 input_variables_dict={
+                    "RcutLow": 0,
                     "FreeEnergyCalc": [True, 10000],
                     "MoleculeType": [["ETH"], 1],
                     "InitialState": 1,
@@ -4647,6 +4663,7 @@ class TestGOMCControlFileWriter(BaseTest):
                 300,
                 check_input_files_exist=False,
                 input_variables_dict={
+                    "RcutLow": 0,
                     "FreeEnergyCalc": [True, 10000],
                     "MoleculeType": [{"ETH": "1"}, 1],
                     "InitialState": 1,
@@ -4670,6 +4687,7 @@ class TestGOMCControlFileWriter(BaseTest):
                 300,
                 check_input_files_exist=False,
                 input_variables_dict={
+                    "RcutLow": 0,
                     "FreeEnergyCalc": [True, 10000],
                     "MoleculeType": ["ETH", 1],
                     "InitialState": [],
@@ -4693,6 +4711,7 @@ class TestGOMCControlFileWriter(BaseTest):
                 300,
                 check_input_files_exist=False,
                 input_variables_dict={
+                    "RcutLow": 0,
                     "FreeEnergyCalc": [True, 10000],
                     "MoleculeType": ["ETH", 1],
                     "InitialState": 1,
@@ -4716,6 +4735,7 @@ class TestGOMCControlFileWriter(BaseTest):
                 300,
                 check_input_files_exist=False,
                 input_variables_dict={
+                    "RcutLow": 0,
                     "FreeEnergyCalc": [True, 10000],
                     "MoleculeType": ["ETH", 1],
                     "InitialState": 1,
@@ -4737,7 +4757,10 @@ class TestGOMCControlFileWriter(BaseTest):
                 10,
                 300,
                 check_input_files_exist=False,
-                input_variables_dict={"FreeEnergyCalc": [True, 10000]},
+                input_variables_dict={
+                    "RcutLow": 0,
+                    "FreeEnergyCalc": [True, 10000]
+                },
             )
 
         with pytest.raises(
@@ -5609,6 +5632,7 @@ class TestGOMCControlFileWriter(BaseTest):
                 300,
                 check_input_files_exist=False,
                 input_variables_dict={
+                    "RcutLow": 0,
                     "FreeEnergyCalc": [True, 10000],
                     "MoleculeType": ["ETH", 1],
                     "InitialState": 1,
@@ -5631,6 +5655,7 @@ class TestGOMCControlFileWriter(BaseTest):
                 300,
                 check_input_files_exist=False,
                 input_variables_dict={
+                    "RcutLow": 0,
                     "FreeEnergyCalc": [False, 10000],
                     "MoleculeType": ["ETO", 1],
                     "InitialState": 1,
@@ -5652,6 +5677,7 @@ class TestGOMCControlFileWriter(BaseTest):
                 300,
                 check_input_files_exist=False,
                 input_variables_dict={
+                    "RcutLow": 0,
                     "FreeEnergyCalc": [True, 10000],
                     "MoleculeType": ["ETH", 1],
                     "InitialState": 1,
@@ -5674,6 +5700,7 @@ class TestGOMCControlFileWriter(BaseTest):
                 300,
                 check_input_files_exist=False,
                 input_variables_dict={
+                    "RcutLow": 0,
                     "FreeEnergyCalc": [False, 10000],
                     "MoleculeType": ["ETO", 1],
                     "InitialState": 1,
@@ -5700,6 +5727,7 @@ class TestGOMCControlFileWriter(BaseTest):
                 300,
                 check_input_files_exist=False,
                 input_variables_dict={
+                    "RcutLow": 0,
                     "MoleculeType": ["ETO", 1],
                     "InitialState": 1,
                     "LambdaVDW": [0.0, 0.1, 0.2, 0.4, 1.0],
@@ -5721,6 +5749,7 @@ class TestGOMCControlFileWriter(BaseTest):
                 300,
                 check_input_files_exist=False,
                 input_variables_dict={
+                    "RcutLow": 0,
                     "FreeEnergyCalc": [False, 10000],
                     "InitialState": 1,
                     "LambdaVDW": [0.0, 0.1, 0.2, 0.4, 1.0],
@@ -5742,6 +5771,7 @@ class TestGOMCControlFileWriter(BaseTest):
                 300,
                 check_input_files_exist=False,
                 input_variables_dict={
+                    "RcutLow": 0,
                     "FreeEnergyCalc": [False, 10000],
                     "MoleculeType": ["ETO", 1],
                     "LambdaVDW": [0.0, 0.1, 0.2, 0.4, 1.0],
@@ -5763,6 +5793,7 @@ class TestGOMCControlFileWriter(BaseTest):
                 300,
                 check_input_files_exist=False,
                 input_variables_dict={
+                    "RcutLow": 0,
                     "FreeEnergyCalc": [False, 10000],
                     "MoleculeType": ["ETO", 1],
                     "InitialState": 1,
@@ -5779,6 +5810,7 @@ class TestGOMCControlFileWriter(BaseTest):
                 300,
                 check_input_files_exist=False,
                 input_variables_dict={
+                    "RcutLow": 0,
                     "FreeEnergyCalc": [False, 10000],
                     "MoleculeType": ["ETO", 1],
                     "InitialState": 1,
@@ -5806,6 +5838,7 @@ class TestGOMCControlFileWriter(BaseTest):
                 300,
                 check_input_files_exist=False,
                 input_variables_dict={
+                    "RcutLow": 0,
                     "FreeEnergyCalc": [1, 10000],
                     "MoleculeType": ["ETO", 1],
                     "InitialState": 1,
@@ -5829,6 +5862,7 @@ class TestGOMCControlFileWriter(BaseTest):
                 300,
                 check_input_files_exist=False,
                 input_variables_dict={
+                    "RcutLow": 0,
                     "FreeEnergyCalc": ["1", 10000],
                     "MoleculeType": ["ETO", 1],
                     "InitialState": 1,
@@ -5852,6 +5886,7 @@ class TestGOMCControlFileWriter(BaseTest):
                 300,
                 check_input_files_exist=False,
                 input_variables_dict={
+                    "RcutLow": 0,
                     "FreeEnergyCalc": [["1"], 10000],
                     "MoleculeType": ["ETO", 1],
                     "InitialState": 1,
@@ -5875,6 +5910,7 @@ class TestGOMCControlFileWriter(BaseTest):
                 300,
                 check_input_files_exist=False,
                 input_variables_dict={
+                    "RcutLow": 0,
                     "FreeEnergyCalc": [{"a": "1"}, 10000],
                     "MoleculeType": ["ETO", 1],
                     "InitialState": 1,
@@ -5892,6 +5928,7 @@ class TestGOMCControlFileWriter(BaseTest):
                 300,
                 check_input_files_exist=False,
                 input_variables_dict={
+                    "RcutLow": 0,
                     "FreeEnergyCalc": [False, 10000],
                     "MoleculeType": ["ETO", 1],
                     "InitialState": 1,
@@ -5919,6 +5956,7 @@ class TestGOMCControlFileWriter(BaseTest):
                 300,
                 check_input_files_exist=False,
                 input_variables_dict={
+                    "RcutLow": 0,
                     "FreeEnergyCalc": [True, 1.0],
                     "MoleculeType": ["ETO", 1],
                     "InitialState": 1,
@@ -5942,6 +5980,7 @@ class TestGOMCControlFileWriter(BaseTest):
                 300,
                 check_input_files_exist=False,
                 input_variables_dict={
+                    "RcutLow": 0,
                     "FreeEnergyCalc": [True, "1"],
                     "MoleculeType": ["ETO", 1],
                     "InitialState": 1,
@@ -5965,6 +6004,7 @@ class TestGOMCControlFileWriter(BaseTest):
                 300,
                 check_input_files_exist=False,
                 input_variables_dict={
+                    "RcutLow": 0,
                     "FreeEnergyCalc": [True, ["1"]],
                     "MoleculeType": ["ETO", 1],
                     "InitialState": 1,
@@ -5988,6 +6028,7 @@ class TestGOMCControlFileWriter(BaseTest):
                 300,
                 check_input_files_exist=False,
                 input_variables_dict={
+                    "RcutLow": 0,
                     "FreeEnergyCalc": [True, {"a": "1"}],
                     "MoleculeType": ["ETO", 1],
                     "InitialState": 1,
@@ -6011,6 +6052,7 @@ class TestGOMCControlFileWriter(BaseTest):
                 300,
                 check_input_files_exist=False,
                 input_variables_dict={
+                    "RcutLow": 0,
                     "FreeEnergyCalc": [True, 10000, "s"],
                     "MoleculeType": ["ETO", 1],
                     "InitialState": 1,
@@ -6035,6 +6077,7 @@ class TestGOMCControlFileWriter(BaseTest):
                 300,
                 check_input_files_exist=False,
                 input_variables_dict={
+                    "RcutLow": 0,
                     "FreeEnergyCalc": [True, 10000],
                     "MoleculeType": [1, 1],
                     "InitialState": 1,
@@ -6058,6 +6101,7 @@ class TestGOMCControlFileWriter(BaseTest):
                 300,
                 check_input_files_exist=False,
                 input_variables_dict={
+                    "RcutLow": 0,
                     "FreeEnergyCalc": [True, 10000],
                     "MoleculeType": [[1], 1],
                     "InitialState": 1,
@@ -6081,6 +6125,7 @@ class TestGOMCControlFileWriter(BaseTest):
                 300,
                 check_input_files_exist=False,
                 input_variables_dict={
+                    "RcutLow": 0,
                     "FreeEnergyCalc": [True, 10000],
                     "MoleculeType": [{"a": "1"}, 1],
                     "InitialState": 1,
@@ -6104,6 +6149,7 @@ class TestGOMCControlFileWriter(BaseTest):
                 300,
                 check_input_files_exist=False,
                 input_variables_dict={
+                    "RcutLow": 0,
                     "FreeEnergyCalc": [True, 10000],
                     "MoleculeType": ["ETO", "1"],
                     "InitialState": 1,
@@ -6127,6 +6173,7 @@ class TestGOMCControlFileWriter(BaseTest):
                 300,
                 check_input_files_exist=False,
                 input_variables_dict={
+                    "RcutLow": 0,
                     "FreeEnergyCalc": [True, 10000],
                     "MoleculeType": ["ETO", ["1"]],
                     "InitialState": 1,
@@ -6150,6 +6197,7 @@ class TestGOMCControlFileWriter(BaseTest):
                 300,
                 check_input_files_exist=False,
                 input_variables_dict={
+                    "RcutLow": 0,
                     "FreeEnergyCalc": [True, 10000],
                     "MoleculeType": ["ETO", {"a": "1"}],
                     "InitialState": 1,
@@ -6173,6 +6221,7 @@ class TestGOMCControlFileWriter(BaseTest):
                 300,
                 check_input_files_exist=False,
                 input_variables_dict={
+                    "RcutLow": 0,
                     "FreeEnergyCalc": [True, 10000],
                     "MoleculeType": ["ETOa", 1],
                     "InitialState": 1,
@@ -6197,6 +6246,7 @@ class TestGOMCControlFileWriter(BaseTest):
                 300,
                 check_input_files_exist=False,
                 input_variables_dict={
+                    "RcutLow": 0,
                     "FreeEnergyCalc": [True, 10000],
                     "MoleculeType": ["ETO", 1],
                     "InitialState": "s",
@@ -6220,6 +6270,7 @@ class TestGOMCControlFileWriter(BaseTest):
                 300,
                 check_input_files_exist=False,
                 input_variables_dict={
+                    "RcutLow": 0,
                     "FreeEnergyCalc": [True, 10000],
                     "MoleculeType": ["ETO", 1],
                     "InitialState": ["s"],
@@ -6243,6 +6294,7 @@ class TestGOMCControlFileWriter(BaseTest):
                 300,
                 check_input_files_exist=False,
                 input_variables_dict={
+                    "RcutLow": 0,
                     "FreeEnergyCalc": [True, 10000],
                     "MoleculeType": ["ETO", 1],
                     "InitialState": {"a": "1"},
@@ -6266,6 +6318,7 @@ class TestGOMCControlFileWriter(BaseTest):
                 300,
                 check_input_files_exist=False,
                 input_variables_dict={
+                    "RcutLow": 0,
                     "FreeEnergyCalc": [True, 10000],
                     "MoleculeType": ["ETO", 1],
                     "InitialState": 1.0,
@@ -6290,6 +6343,7 @@ class TestGOMCControlFileWriter(BaseTest):
                 300,
                 check_input_files_exist=False,
                 input_variables_dict={
+                    "RcutLow": 0,
                     "FreeEnergyCalc": [True, 10000],
                     "MoleculeType": ["ETO", 1],
                     "InitialState": 1,
@@ -6313,6 +6367,7 @@ class TestGOMCControlFileWriter(BaseTest):
                 300,
                 check_input_files_exist=False,
                 input_variables_dict={
+                    "RcutLow": 0,
                     "FreeEnergyCalc": [True, 10000],
                     "MoleculeType": ["ETO", 1],
                     "InitialState": 1,
@@ -6336,6 +6391,7 @@ class TestGOMCControlFileWriter(BaseTest):
                 300,
                 check_input_files_exist=False,
                 input_variables_dict={
+                    "RcutLow": 0,
                     "FreeEnergyCalc": [True, 10000],
                     "MoleculeType": ["ETO", 1],
                     "InitialState": 1,
@@ -6360,6 +6416,7 @@ class TestGOMCControlFileWriter(BaseTest):
                 300,
                 check_input_files_exist=False,
                 input_variables_dict={
+                    "RcutLow": 0,
                     "FreeEnergyCalc": [True, 10000],
                     "MoleculeType": ["ETO", 1],
                     "InitialState": 1,
@@ -6383,6 +6440,7 @@ class TestGOMCControlFileWriter(BaseTest):
                 300,
                 check_input_files_exist=False,
                 input_variables_dict={
+                    "RcutLow": 0,
                     "FreeEnergyCalc": [True, 10000],
                     "MoleculeType": ["ETO", 1],
                     "InitialState": 1,
@@ -6406,6 +6464,7 @@ class TestGOMCControlFileWriter(BaseTest):
                 300,
                 check_input_files_exist=False,
                 input_variables_dict={
+                    "RcutLow": 0,
                     "FreeEnergyCalc": [True, 10000],
                     "MoleculeType": ["ETO", 1],
                     "InitialState": 1,
@@ -6425,6 +6484,7 @@ class TestGOMCControlFileWriter(BaseTest):
                 300,
                 check_input_files_exist=False,
                 input_variables_dict={
+                    "RcutLow": 0,
                     "FreeEnergyCalc": [True, 10000],
                     "MoleculeType": ["ETO", 1],
                     "InitialState": 1,
@@ -6445,11 +6505,34 @@ class TestGOMCControlFileWriter(BaseTest):
                 300,
                 check_input_files_exist=False,
                 input_variables_dict={
+                    "RcutLow": 0,
                     "FreeEnergyCalc": [True, 10000],
                     "MoleculeType": ["ETO", 1],
                     "InitialState": 1,
                     "LambdaVDW": [0.0, 0.1, 0.2, 0.4, 1.0],
                     "LambdaCoulomb": [0.0, 0.3, 0.8, 1.0],
+                },
+            )
+
+        with pytest.warns(
+            UserWarning,
+            match="WARNING: The free energy calculations are being used when RcutLow is not zero \(0\), "
+                  "which can produce free energy results that are slightly off or wrong. "
+                  "Please set RcutLow to zero \(RcutLow=0\) when using the free energy calculations.",
+        ):
+            gomc_control.write_gomc_control_file(
+                charmm,
+                "test_RcutLow_not_0_for_free_energy",
+                "NVT",
+                1000,
+                300,
+                check_input_files_exist=False,
+                input_variables_dict={
+                    "RcutLow": 1,
+                    "FreeEnergyCalc": [True, 10000],
+                    "MoleculeType": ["ETO", 1],
+                    "InitialState": 1,
+                    "LambdaVDW": [0.0, 0.1, 0.2, 0.4, 1.0],
                 },
             )
 

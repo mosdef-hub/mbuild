@@ -229,6 +229,8 @@ def _get_all_possible_input_variables(description=False):
         "distance between any atoms. "
         "Sets a specific radius in Angstroms that non-bonded interaction "
         'Note: Rswitch is only used when the "Potential" = SWITCH. '
+        'WARNING: When using the free energy calculations, RcutLow needs to be set to zero (RcutLow=0);'
+        'otherwise, the free energy calculations can produce results that are slightly off or wrong. '
         "".format(_get_default_variables_dict()["RcutLow"]),
         "LRC": "Simulation info (all ensembles): boolean, default = {}. "
         "If True, the simulation considers the long range tail corrections for the non-bonded VDW or "
@@ -1578,6 +1580,8 @@ class GOMCControl:
         The minimum possible distance between any atoms.
         Sets a specific radius in Angstroms that non-bonded interaction
         Note: Rswitch is only used when the "Potential" = SWITCH.
+        WARNING: When using the free energy calculations, RcutLow needs to be set to zero (RcutLow=0);
+        otherwise, the free energy calculations can produce results that are slightly off or wrong.
     LRC : boolean, default = True
         If True, the simulation considers the long range tail corrections for the
         non-bonded VDW or dispersion interactions.
@@ -5833,25 +5837,34 @@ class GOMCControl:
                     )
                     raise ValueError(print_error_message)
 
-        # check that all required free energy values are provided
+        # check that all required free energy values are provided and RcutLow is zero (0)
         if (
-            self.FreeEnergyCalc is not None
-            or self.MoleculeType is not None
-            or self.InitialState is not None
-            or self.LambdaVDW is not None
-        ) and (
-            self.FreeEnergyCalc is None
-            or self.MoleculeType is None
-            or self.InitialState is None
-            or self.LambdaVDW is None
+                self.FreeEnergyCalc is not None
+                or self.MoleculeType is not None
+                or self.InitialState is not None
+                or self.LambdaVDW is not None
         ):
-            self.input_error = True
-            print_error_message = (
-                "ERROR: To utilize the free energy calculations all the following "
-                "variables need to be set, and not equal to None: "
-                "FreeEnergyCalc, MoleculeType, InitialState, LambdaVDW."
-            )
-            raise ValueError(print_error_message)
+            if (
+                self.FreeEnergyCalc is None
+                or self.MoleculeType is None
+                or self.InitialState is None
+                or self.LambdaVDW is None
+            ):
+                self.input_error = True
+                print_error_message = (
+                    "ERROR: To utilize the free energy calculations all the following "
+                    "variables need to be set, and not equal to None: "
+                    "FreeEnergyCalc, MoleculeType, InitialState, LambdaVDW."
+                )
+                raise ValueError(print_error_message)
+
+            if self.RcutLow != 0:
+                print_warning_message = (
+                    "WARNING: The free energy calculations are being used when RcutLow is not zero (0), "
+                    "which can produce free energy results that are slightly off or wrong. "
+                    "Please set RcutLow to zero (RcutLow=0) when using the free energy calculations."
+                )
+                warn(print_warning_message)
 
         if (
             self.LambdaVDW is not None
@@ -8131,6 +8144,8 @@ def write_gomc_control_file(
         The minimum possible distance between any atoms.
         Sets a specific radius in Angstroms that non-bonded interaction
         Note: Rswitch is only used when the "Potential" = SWITCH.
+        WARNING: When using the free energy calculations, RcutLow needs to be set to zero (RcutLow=0);
+        otherwise, the free energy calculations can produce results that are slightly off or wrong.
     LRC : boolean, default = True
         If True, the simulation considers the long range tail corrections for the
         non-bonded VDW or dispersion interactions.
