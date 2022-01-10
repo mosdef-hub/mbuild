@@ -417,9 +417,9 @@ def _parse_particle_information(
     scaled_mass = masses / ref_mass
 
     charges = np.array([atom.charge for atom in structure.atoms])
-    e0 = 2.396452e-03
+    e0 = 2.396452e-04
     """
-    Permittivity of free space = 2.396452e-03 e^2/((kcal/mol) nm),
+    Permittivity of free space = 2.396452e-04 e^2/((kcal/mol) Angstrom),
     where e is the elementary charge
     """
     charge_factor = (4.0 * np.pi * e0 * ref_distance * ref_energy) ** 0.5
