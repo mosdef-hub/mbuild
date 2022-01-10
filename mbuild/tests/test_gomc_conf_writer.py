@@ -3390,9 +3390,10 @@ class TestGOMCControlFileWriter(BaseTest):
                 10,
                 300,
                 check_input_files_exist=False,
-                input_variables_dict={"RcutLow": 0,
-                                      "FreeEnergyCalc": [True, 10000]
-                                      },
+                input_variables_dict={
+                    "RcutLow": 0,
+                    "FreeEnergyCalc": [True, 10000],
+                },
             )
 
         with pytest.raises(
@@ -4759,7 +4760,7 @@ class TestGOMCControlFileWriter(BaseTest):
                 check_input_files_exist=False,
                 input_variables_dict={
                     "RcutLow": 0,
-                    "FreeEnergyCalc": [True, 10000]
+                    "FreeEnergyCalc": [True, 10000],
                 },
             )
 
@@ -6517,8 +6518,8 @@ class TestGOMCControlFileWriter(BaseTest):
         with pytest.warns(
             UserWarning,
             match="WARNING: The free energy calculations are being used when RcutLow is not zero \(0\), "
-                  "which can produce free energy results that are slightly off or wrong. "
-                  "Please set RcutLow to zero \(RcutLow=0\) when using the free energy calculations.",
+            "which can produce free energy results that are slightly off or wrong. "
+            "Please set RcutLow to zero \(RcutLow=0\) when using the free energy calculations.",
         ):
             gomc_control.write_gomc_control_file(
                 charmm,
