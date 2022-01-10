@@ -229,8 +229,10 @@ def _get_all_possible_input_variables(description=False):
         "distance between any atoms. "
         "Sets a specific radius in Angstroms that non-bonded interaction "
         'Note: Rswitch is only used when the "Potential" = SWITCH. '
-        "WARNING: When using the free energy calculations, RcutLow needs to be set to zero (RcutLow=0);"
-        "otherwise, the free energy calculations can produce results that are slightly off or wrong. "
+        'WARNING: When using a molecule that has charge atoms with non-bonded epsilon values of zero (i.e., water), '
+        'the RcutLow need to be greater than zero, typically 1 angstrom. '  
+        'WARNING: When using the free energy calculations, RcutLow needs to be set to zero (RcutLow=0);'
+        'otherwise, the free energy calculations can produce results that are slightly off or wrong. '
         "".format(_get_default_variables_dict()["RcutLow"]),
         "LRC": "Simulation info (all ensembles): boolean, default = {}. "
         "If True, the simulation considers the long range tail corrections for the non-bonded VDW or "
@@ -553,6 +555,8 @@ def _get_all_possible_input_variables(description=False):
         "[Generate_data_bool , steps_per_data_output_int], default = {}. "
         "bool = True enabling free energy calculation during the simulation, false disables "
         "the calculation. The int/step frequency sets the frequency of calculating the free energy."
+        "WARNING: When using the free energy calculations, RcutLow needs to be set to zero (RcutLow=0);"
+        "otherwise, the free energy calculations can produce results that are slightly off or wrong."
         "".format(_get_default_variables_dict()["FreeEnergyCalc"]),
         "MoleculeType": "Free Energy Calcs (NVT and NPT only): list [str , int (> 0)] or "
         '["residue_name" , residue_ID], '
@@ -963,7 +967,7 @@ def _get_default_variables_dict():
         "RcutCoulomb_box_1": None,
         "Pressure": 1.01325,
         "Rcut": 10,
-        "RcutLow": 1,
+        "RcutLow": 0,
         "LRC": True,
         "IPC": False,
         "Exclude": "1-3",
@@ -1574,12 +1578,14 @@ class GOMCControl:
         energy and force will be considered and calculated using defined potential function.
         The distance in Angstoms to truncate the LJ, Mie, or other VDW type potential at.
         Note: Rswitch is only used when the "Potential" = SWITCH.
-    RcutLow : int or float (>= 0 and RcutLow < Rswitch < Rcut), default = 1
+    RcutLow : int or float (>= 0 and RcutLow < Rswitch < Rcut), default = 0
         Sets a specific minimum possible distance in Angstroms that reject
         any move that places any atom closer than specified distance.
         The minimum possible distance between any atoms.
         Sets a specific radius in Angstroms that non-bonded interaction
         Note: Rswitch is only used when the "Potential" = SWITCH.
+        WARNING: When using a molecule that has charge atoms with non-bonded epsilon values of zero (i.e., water),
+        the RcutLow need to be greater than zero, typically 1 angstrom.
         WARNING: When using the free energy calculations, RcutLow needs to be set to zero (RcutLow=0);
         otherwise, the free energy calculations can produce results that are slightly off or wrong.
     LRC : boolean, default = True
@@ -1839,6 +1845,8 @@ class GOMCControl:
         default = None
         bool = True enabling free energy calculation during the simulation, false disables
         the calculation. The int/step frequency sets the frequency of calculating the free energy.
+        WARNING: When using the free energy calculations, RcutLow needs to be set to zero (RcutLow=0);
+        otherwise, the free energy calculations can produce results that are slightly off or wrong.
     MoleculeType : list [str , int (> 0)] or ["residue_name" , residue_ID], default = None
         The user must set this variable as there is no working default.
         Note: ONLY 4 characters can be used for the string (i.e., "residue_name").
@@ -5158,9 +5166,7 @@ class GOMCControl:
                                     ) in target_swap_tag_id_dict_key_data[
                                         "subvolumedim"
                                     ]:
-                                        if not isinstance(
-                                            set_x_y_z_dim_i, (int, float)
-                                        ):
+                                        if not isinstance(set_x_y_z_dim_i, (int, float)):
                                             bad_input_variables_values_list.append(
                                                 "subvolumedim"
                                             )
@@ -5839,10 +5845,10 @@ class GOMCControl:
 
         # check that all required free energy values are provided and RcutLow is zero (0)
         if (
-            self.FreeEnergyCalc is not None
-            or self.MoleculeType is not None
-            or self.InitialState is not None
-            or self.LambdaVDW is not None
+                self.FreeEnergyCalc is not None
+                or self.MoleculeType is not None
+                or self.InitialState is not None
+                or self.LambdaVDW is not None
         ):
             if (
                 self.FreeEnergyCalc is None
@@ -8138,12 +8144,14 @@ def write_gomc_control_file(
         energy and force will be considered and calculated using defined potential function.
         The distance in Angstoms to truncate the LJ, Mie, or other VDW type potential at.
         Note: Rswitch is only used when the "Potential" = SWITCH.
-    RcutLow : int or float (>= 0 and RcutLow < Rswitch < Rcut), default = 1
+    RcutLow : int or float (>= 0 and RcutLow < Rswitch < Rcut), default = 0
         Sets a specific minimum possible distance in Angstroms that reject
         any move that places any atom closer than specified distance.
         The minimum possible distance between any atoms.
         Sets a specific radius in Angstroms that non-bonded interaction
         Note: Rswitch is only used when the "Potential" = SWITCH.
+        WARNING: When using a molecule that has charge atoms with non-bonded epsilon values of zero (i.e., water),
+        the RcutLow need to be greater than zero, typically 1 angstrom.
         WARNING: When using the free energy calculations, RcutLow needs to be set to zero (RcutLow=0);
         otherwise, the free energy calculations can produce results that are slightly off or wrong.
     LRC : boolean, default = True
@@ -8403,6 +8411,8 @@ def write_gomc_control_file(
         default = None
         bool = True enabling free energy calculation during the simulation, false disables
         the calculation. The int/step frequency sets the frequency of calculating the free energy.
+        WARNING: When using the free energy calculations, RcutLow needs to be set to zero (RcutLow=0);
+        otherwise, the free energy calculations can produce results that are slightly off or wrong.
     MoleculeType : list [str , int (> 0)] or ["residue_name" , residue_ID], default = None
         The user must set this variable as there is no working default.
         Note: ONLY 4 characters can be used for the string (i.e., "residue_name").
