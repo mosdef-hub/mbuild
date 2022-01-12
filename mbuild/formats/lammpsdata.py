@@ -54,7 +54,7 @@ def _evaluate_lj_conversion_factors(structure, conversion_name, conversion_facto
         if conversion_name == "sigma":
             conversion_factor *= NM_TO_ANG
         elif conversion_name == "epsilon":
-            conversion_factor *= 1 / KCAL_TO_KJ / NM_TO_ANG ** 2
+            conversion_factor *= 1 / KCAL_TO_KJ
         elif conversion_name == "mass":
             pass
     return conversion_factor

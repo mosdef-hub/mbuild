@@ -2,11 +2,16 @@ import numpy as np
 import pytest
 from pytest import FixtureRequest
 from pathlib import Path
+import warnings
+import parmed
 
 import mbuild as mb
 from mbuild.formats.lammpsdata import write_lammpsdata
 from mbuild.tests.base_test import BaseTest
 from mbuild.utils.io import get_fn, has_foyer
+
+KCAL_TO_KJ = 4.184
+ANG_TO_NM = 0.10
 
 
 @pytest.mark.skipif(not has_foyer, reason="Foyer package not installed")
@@ -15,7 +20,29 @@ class TestLammpsData(BaseTest):
         ethane.save(filename="ethane.lammps")
 
     @pytest.fixture(scope="session")
-    def lj_save(self, tmpdir_factory):
+    def lj_save(self, tmpdir_factory, sigma=None, epsilon=None, mass=None):
+        tmp = tmpdir_factory
+
+        def _create_lammps(ethane, tmp, sigma=sigma, epsilon=epsilon, mass=mass):
+            from foyer import Forcefield
+
+            OPLSAA = Forcefield(name="oplsaa")
+            structure = OPLSAA.apply(ethane)
+            fn = tmpdir_factory.mktemp("data").join("lj.lammps")
+            write_lammpsdata(
+                filename=str(fn),
+                structure=structure,
+                unit_style="lj",
+                sigma_conversion_factor=sigma,
+                epsilon_conversion_factor=epsilon,
+                mass_conversion_factor=mass,
+            )
+            return str(fn)
+
+        return _create_lammps
+
+    @pytest.fixture(scope="session")
+    def real_save(self, tmpdir_factory):
         tmp = tmpdir_factory
 
         def _create_lammps(ethane, tmp):
@@ -24,7 +51,7 @@ class TestLammpsData(BaseTest):
             OPLSAA = Forcefield(name="oplsaa")
             structure = OPLSAA.apply(ethane)
             fn = tmpdir_factory.mktemp("data").join("lj.lammps")
-            write_lammpsdata(filename=str(fn), structure=structure, unit_style="lj")
+            write_lammpsdata(filename=str(fn), structure=structure, unit_style="real")
             return str(fn)
 
         return _create_lammps
@@ -412,7 +439,6 @@ class TestLammpsData(BaseTest):
 
     def test_lj_masses(self, ethane, lj_save):
         fn = lj_save(ethane, Path.cwd())
-
         checked_section = False
         with open(fn, "r") as fi:
             while not checked_section:
@@ -421,6 +447,18 @@ class TestLammpsData(BaseTest):
                     fi.readline()
                     line = float(fi.readline().split()[1])
                     assert np.isclose(line, 1.00)
+                    checked_section = True
+
+    def test_real_masses(self, ethane, real_save):
+        fn = real_save(ethane, Path.cwd())
+        checked_section = False
+        with open(fn, "r") as fi:
+            while not checked_section:
+                line = fi.readline()
+                if "Masses" in line:
+                    fi.readline()
+                    line = float(fi.readline().split()[1])
+                    assert np.isclose(line, 12.010780)
                     checked_section = True
 
     def test_lj_pairs(self, ethane, lj_save):
@@ -438,6 +476,41 @@ class TestLammpsData(BaseTest):
                     assert np.isclose(sigma, 1.00)
                     checked_section = True
 
+    def test_lj_passed_pairs(self, ethane, lj_save):
+        fn = lj_save(
+            ethane,
+            Path.cwd(),
+            sigma=1,
+            epsilon=1,
+        )
+        checked_section = False
+        with open(fn, "r") as fi:
+            while not checked_section:
+                line = fi.readline()
+                if "Pair Coeffs" in line:
+                    fi.readline()
+                    line = fi.readline().split()
+                    epsilon = float(line[1])
+                    sigma = float(line[2])
+                    assert np.isclose(epsilon, 0.276144, atol=1e-5)
+                    assert np.isclose(sigma, 0.35)
+                    checked_section = True
+
+    def test_real_pairs(self, ethane, real_save):
+        fn = real_save(ethane, Path.cwd())
+        checked_section = False
+        with open(fn, "r") as fi:
+            while not checked_section:
+                line = fi.readline()
+                if "Pair Coeffs" in line:
+                    fi.readline()
+                    line = fi.readline().split()
+                    epsilon = float(line[1])
+                    sigma = float(line[2])
+                    assert np.isclose(epsilon, 0.066)
+                    assert np.isclose(sigma, 3.5)
+                    checked_section = True
+
     def test_lj_bonds(self, ethane, lj_save):
         fn = lj_save(ethane, Path.cwd())
         checked_section = False
@@ -452,6 +525,29 @@ class TestLammpsData(BaseTest):
                 if "Bond Coeffs" in line:
                     fi.readline()
                     for bond_params in ethane_lj_bonds:
+                        print(bond_params)
+                        line = fi.readline()
+                        assert np.allclose(
+                            (float(line.split()[1]), float(line.split()[2])),
+                            bond_params,
+                            atol=1e-3,
+                        )
+                    checked_section = True
+
+    def test_real_bonds(self, ethane, real_save):
+        fn = real_save(ethane, Path.cwd())
+        checked_section = False
+        ethane_bondsk = (
+            np.array([224262.4, 284512.0]) / KCAL_TO_KJ * ANG_TO_NM ** 2 / 2
+        )  # kj/mol/nm**2 to lammps
+        ethane_bondsreq = np.array([0.1529, 0.109]) / ANG_TO_NM
+        ethane_real_bonds = zip(ethane_bondsk, ethane_bondsreq)
+        with open(fn, "r") as fi:
+            while not checked_section:
+                line = fi.readline()
+                if "Bond Coeffs" in line:
+                    fi.readline()
+                    for bond_params in ethane_real_bonds:
                         print(bond_params)
                         line = fi.readline()
                         assert np.allclose(
@@ -484,12 +580,56 @@ class TestLammpsData(BaseTest):
                         )
                     checked_section = True
 
+    def test_real_angles(self, ethane, real_save):
+        fn = real_save(ethane, Path.cwd())
+        checked_section = False
+        ethane_anglesk = (
+            np.array([313.8, 276.144]) / 2 / KCAL_TO_KJ
+        )  # kj/mol to lammps kcal/mol
+        ethane_anglesreq = (
+            np.array([1.93207948196, 1.88146493365]) * 180 / np.pi
+        )  # radians to lammps
+        ethane_real_angles = zip(ethane_anglesk, ethane_anglesreq)
+        with open(fn, "r") as fi:
+            while not checked_section:
+                line = fi.readline()
+                if "Angle Coeffs" in line:
+                    fi.readline()
+                    for angle_params in ethane_real_angles:
+                        line = fi.readline()
+                        assert np.allclose(
+                            (float(line.split()[1]), float(line.split()[2])),
+                            angle_params,
+                        )
+                    checked_section = True
+
     def test_lj_dihedrals(self, ethane, lj_save):
         fn = lj_save(ethane, Path.cwd())
         checked_section = False
         ethane_diheds = (
             np.array([-0.00000, -0.00000, 0.30000, -0.00000]) / 0.066
         )  # kcal/mol to lammps
+        with open(fn, "r") as fi:
+            while not checked_section:
+                line = fi.readline()
+                if "Dihedral Coeffs" in line:
+                    fi.readline()
+                    line = fi.readline()
+                    assert np.allclose(
+                        (
+                            float(line.split()[1]),
+                            float(line.split()[2]),
+                            float(line.split()[3]),
+                            float(line.split()[4]),
+                        ),
+                        ethane_diheds,
+                    )
+                    checked_section = True
+
+    def test_real_dihedrals(self, ethane, real_save):
+        fn = real_save(ethane, Path.cwd())
+        checked_section = False
+        ethane_diheds = np.array([-0.00000, -0.00000, 0.30000, -0.00000])
         with open(fn, "r") as fi:
             while not checked_section:
                 line = fi.readline()
