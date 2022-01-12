@@ -836,6 +836,7 @@ class Compound(object):
         for port in all_ports_list:
             if port.anchor not in [i for i in self.particles()]:
                 self.remove(port)
+                self["port"].remove(port)
 
         # Check and reorder rigid id
         for _ in particles_to_remove:
