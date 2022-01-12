@@ -3,7 +3,6 @@ from pathlib import Path
 import numpy as np
 import pytest
 from pytest import FixtureRequest
-from pathlib import Path
 
 import mbuild as mb
 from mbuild.formats.lammpsdata import write_lammpsdata
@@ -23,7 +22,9 @@ class TestLammpsData(BaseTest):
     def lj_save(self, tmpdir_factory, sigma=None, epsilon=None, mass=None):
         tmp = tmpdir_factory
 
-        def _create_lammps(ethane, tmp, sigma=sigma, epsilon=epsilon, mass=mass):
+        def _create_lammps(
+            ethane, tmp, sigma=sigma, epsilon=epsilon, mass=mass
+        ):
             from foyer import Forcefield
 
             OPLSAA = Forcefield(name="oplsaa")
@@ -51,7 +52,9 @@ class TestLammpsData(BaseTest):
             OPLSAA = Forcefield(name="oplsaa")
             structure = OPLSAA.apply(ethane)
             fn = tmpdir_factory.mktemp("data").join("lj.lammps")
-            write_lammpsdata(filename=str(fn), structure=structure, unit_style="real")
+            write_lammpsdata(
+                filename=str(fn), structure=structure, unit_style="real"
+            )
             return str(fn)
 
         return _create_lammps
