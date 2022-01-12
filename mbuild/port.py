@@ -183,11 +183,11 @@ class Port(Compound):
         descr.append(self.name + ", ")
 
         if self.anchor:
-            descr.append("anchor: '{}', ".format(self.anchor.name))
+            descr.append(f"anchor: '{self.anchor.name}', ")
         else:
             descr.append("anchor: None, ")
 
-        descr.append("labels: {}, ".format(", ".join(self.access_labels)))
+        descr.append(f"labels: {self.access_labels}, ")
 
-        descr.append("id: {}>".format(id(self)))
+        descr.append(f"id: {id(self)}>")
         return "".join(descr)

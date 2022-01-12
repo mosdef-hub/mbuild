@@ -1544,9 +1544,11 @@ class Compound(object):
         remove_old_label : bool, optional, default=True
             Remove the old label associate with the target descendent.
         """
+        from mbuild.port import Port
+
         if remove_old_label:
-            if isinstance(descendent, mb.Port):
-                for old_label in descendent.access_labels():
+            if isinstance(descendent, Port):
+                for old_label in descendent.access_labels:
                     self.labels.pop(old_label)
             elif isinstance(descendent, mb.Compound):
                 for label, item in self.labels.items():
@@ -1557,15 +1559,6 @@ class Compound(object):
             raise ValueError(f"{label} have already been used in {self}")
         else:
             self.labels[new_label] = descendent
-
-        if remove_old_label:
-            if isinstance(descendent, mb.Port):
-                for old_label in descendent.access_labels():
-                    self.labels.pop(old_label)
-            elif isinstance(descendent, mb.Compound):
-                for label, item in self.labels.items():
-                    if descendent == item:
-                        self.labels.pop(label)
 
     def update_coordinates(self, filename, update_port_locations=True):
         """Update the coordinates of this Compound from a file.
