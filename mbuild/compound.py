@@ -1547,7 +1547,7 @@ class Compound(object):
         if new_label in self.labels:
             raise ValueError(f"{label} have already been used in {self}")
         else:
-            self[new_label] = descendent
+            self.labels[new_label] = descendent
 
         if remove_old_label:
             if isinstance(descendent, mb.Port):
