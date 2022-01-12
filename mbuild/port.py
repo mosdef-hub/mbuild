@@ -171,9 +171,9 @@ class Port(Compound):
             ]
             if referrer is self.root:
                 for label in port_labels:
-                    access_labels.append("['{}']".format(label))
+                    access_labels.append(label)
             for label in itertools.product(referrer_labels, port_labels):
-                access_labels.append("['{}']".format("']['".join(label)))
+                access_labels.append(label)
 
         return access_labels
 
