@@ -835,7 +835,7 @@ class Compound(object):
         all_ports_list = list(self.all_ports())
         for port in all_ports_list:
             if port.anchor not in [i for i in self.particles()]:
-                port.parent.children.remove(port)
+                self.remove(port)
 
         # Check and reorder rigid id
         for _ in particles_to_remove:
@@ -1532,6 +1532,30 @@ class Compound(object):
             widget.add_ball_and_stick("_VS", aspect_ratio=1.0, color="#991f00")
         overwrite_nglview_default(widget)
         return widget
+
+    def update_label(self, descendent, new_label, remove_old_label=True):
+        """Update the label of one a descendent of this Compound.
+
+        Parameters
+        ----------
+        descendent : mb.Port or mb.Compound
+            Descendent of this Compound whose label need to be updated.
+        remove_old_label : bool, optional, default=True
+            Remove the old label associate with the target descendent.
+        """
+        if new_label in self.labels:
+            raise ValueError(f"{label} have already been used in {self}")
+        else:
+            self[new_label] = descendent
+
+        if remove_old_label:
+            if isinstance(descendent, mb.Port):
+                for old_label in descendent.access_labels():
+                    self.labels.pop(old_label)
+            elif isinstance(descendent, mb.Compound):
+                for label, item in self.labels.items():
+                    if descendent == item:
+                        self.labels.pop(label)
 
     def update_coordinates(self, filename, update_port_locations=True):
         """Update the coordinates of this Compound from a file.
