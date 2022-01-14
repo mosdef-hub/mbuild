@@ -13993,8 +13993,8 @@ class TestGOMCControlFileWriter(BaseTest):
         with pytest.raises(
             ValueError,
             match=r"ERROR: When starting a simulation, the values must be in this order "
-            r"RunSteps >= EqSteps >= AdjSteps "
-            "\({} >= {} >= {}\)".format(run_steps, equilb_steps, adjust_steps),
+            r"RunSteps > EqSteps >= AdjSteps "
+            "\({} > {} >= {}\)".format(run_steps, equilb_steps, adjust_steps),
         ):
             gomc_control.write_gomc_control_file(
                 charmm,
@@ -14016,8 +14016,8 @@ class TestGOMCControlFileWriter(BaseTest):
         with pytest.raises(
             ValueError,
             match=r"ERROR: When starting a simulation, the values must be in this order "
-            r"RunSteps >= EqSteps >= AdjSteps "
-            "\({} >= {} >= {}\)".format(run_steps, equilb_steps, adjust_steps),
+            r"RunSteps > EqSteps >= AdjSteps "
+            "\({} > {} >= {}\)".format(run_steps, equilb_steps, adjust_steps),
         ):
             gomc_control.write_gomc_control_file(
                 charmm,
@@ -14038,8 +14038,8 @@ class TestGOMCControlFileWriter(BaseTest):
         adjust_steps = 1000
         with pytest.raises(
             ValueError,
-            match=r"ERROR: When restarting a simulation, this must be true RunSteps >= EqSteps "
-            "\({} >= {}\)".format(run_steps, equilb_steps),
+            match=r"ERROR: When restarting a simulation, this must be true RunSteps > EqSteps "
+            "\({} > {}\)".format(run_steps, equilb_steps),
         ):
             gomc_control.write_gomc_control_file(
                 charmm,
