@@ -20,6 +20,7 @@ from mbuild.box import Box
 from mbuild.coordinate_transform import _rotate, _translate
 from mbuild.exceptions import MBuildError
 from mbuild.periodic_kdtree import PeriodicKDTree
+from mbuild.utils.decorators import experimental_feature
 from mbuild.utils.exceptions import RemovedFuncError
 from mbuild.utils.io import import_, run_from_ipython
 from mbuild.utils.jsutils import overwrite_nglview_default
@@ -979,9 +980,9 @@ class Compound(object):
         name_b : str
             The name of the other Particle to be in each bond
         dmin : float
-            The minimum distance between Particles for considering a bond
+            The minimum distance (in nm) between Particles for considering a bond
         dmax : float
-            The maximum distance between Particles for considering a bond
+            The maximum distance (in nm) between Particles for considering a bond
         """
         if self.box is None:
             self.box = self.get_boundingbox()
@@ -1008,6 +1009,70 @@ class Compound(object):
                 if (p2.name == name_b) and (dmin <= min_dist <= dmax):
                     self.add_bond((p1, p2))
                     added_bonds.append(bond_tuple)
+
+    @experimental_feature()
+    def freud_generate_bonds(
+        self,
+        name_a,
+        name_b,
+        dmin,
+        dmax,
+        exclude_ii=True,
+    ):
+        """Add Bonds between all pairs of types a/b within [dmin, dmax].
+
+        Parameters
+        ----------
+        name_a : str
+            The name of one of the Particles to be in each bond
+        name_b : str
+            The name of the other Particle to be in each bond
+        dmin : float
+            The minimum distance (in nm) between Particles for considering a bond
+        dmax : float
+            The maximum distance (in nm) between Particles for considering a bond
+        exclude_ii : bool, optional, default=True
+            Whether or not to include neighbors with the same index.
+
+        Notes
+        -----
+        This is an experimental feature and some behavior might change out of step of a standard development release.
+
+        """
+        freud = import_("freud")
+        if self.box is None:
+            box = self.get_boundingbox()
+        else:
+            box = self.box
+        moved_positions = self.xyz - np.array(
+            [box.Lx / 2, box.Ly / 2, box.Lz / 2]
+        )
+
+        freud_box = freud.box.Box.from_matrix(box.vectors.T)
+        freud.box.periodic = self.periodicity
+
+        a_indices = []
+        b_indices = []
+        for i, part in enumerate(self.particles()):
+            if part.name == name_a:
+                a_indices.append(i)
+            if part.name == name_b:
+                b_indices.append(i)
+
+        aq = freud.locality.AABBQuery(freud_box, moved_positions[b_indices])
+
+        nlist = aq.query(
+            moved_positions[a_indices],
+            dict(
+                r_min=dmin,
+                r_max=dmax,
+                exclude_ii=exclude_ii,
+            ),
+        ).toNeighborList()
+
+        part_list = [part for part in self.particles(include_ports=False)]
+        for i, j in nlist[:]:
+            self.add_bond((part_list[a_indices[i]], part_list[b_indices[j]]))
 
     def remove_bond(self, particle_pair):
         """Delete a bond between a pair of Particles.
