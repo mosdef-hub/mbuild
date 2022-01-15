@@ -5561,7 +5561,7 @@ class GOMCControl:
             )
             raise ValueError(print_error_message)
 
-        # Check that RunSteps >= EqSteps >= AdjSteps
+        # Check that RunSteps > EqSteps >= AdjSteps
         print("self.RunSteps = " + str(self.RunSteps))
         if (
             self.RunSteps <= self.EqSteps
