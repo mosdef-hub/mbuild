@@ -185,10 +185,6 @@ def load_object(
         md = import_("mdtraj")
         type_dict.update({md.Trajectory: from_trajectory})
 
-    if has_gmso:
-        gmso = import_("gmso")
-        type_dict.update({gmso.Topology: from_gmso})
-
     # Check if the given object is an mb.Compound
     if isinstance(obj, mb.Compound):
         if not compound:
@@ -530,13 +526,12 @@ def from_parmed(
                 f"Structure: {len(structure.atoms)} atoms"
                 f"Compound: {compound.n_particles} atoms"
             )
-        atoms_particles = zip(
-            structure.atoms, compound.particles(include_ports=False)
-        )
         if None in compound._particles(include_ports=False):
             raise ValueError("Some particles are None")
 
-        for pmd_atom, particle in atoms_particles:
+        for pmd_atom, particle in zip(
+            structures.atoms, compound.particles(include_ports=False)
+        ):
             particle.pos = (
                 np.array([pmd_atom.xx, pmd_atom.xy, pmd_atom.xz]) / 10
             )
@@ -633,14 +628,12 @@ def from_trajectory(
                     **locals()
                 )
             )
-        atoms_particles = zip(
-            traj.topology.atoms, compound.particles(include_ports=False)
-        )
-
         if None in compound._particles(include_ports=False):
             raise ValueError("Some particles are None")
 
-        for mdtraj_atom, particle in atoms_particles:
+        for mdtraj_atom, particle in zip(
+            traj.topology.atoms, compound.particles(include_ports=False)
+        ):
             particle.pos = traj.xyz[frame, mdtraj_atom.index]
         return compound
 
@@ -863,7 +856,9 @@ def from_rdkit(rdkit_mol, compound=None, coords_only=False, smiles_seed=0):
     return comp
 
 
-def from_gmso(topology, compound=None, coords_only=False, infer_hierarchy=True):
+def from_gmso(
+    topology, compound=None, coords_only=False, infer_hierarchy=True, **kwargs
+):
     """Convert a GMSO Topology to mBuild Compound.
 
     Parameter
@@ -882,6 +877,7 @@ def from_gmso(topology, compound=None, coords_only=False, infer_hierarchy=True):
     compound : mb.Compound
     """
     import unyt as u
+    from gmso.external.convert_mbuild import to_mbuild
 
     if compound and coords_only:
         if topology.n_sites != compound.n_particles:
@@ -890,29 +886,23 @@ def from_gmso(topology, compound=None, coords_only=False, infer_hierarchy=True):
                 f"Topology: {topology.n_sites} sites"
                 f"Compound: {compound.n_particles} particles"
             )
-        atoms_particles = zip(
-            topology.sites, compound.particles(include_ports=False)
-        )
-        if None in compound._particles(include_ports=None):
+
+        if None in compound._particles(include_ports=False):
             raise ValueError("Some particles are None")
 
-        for site, particle in atoms_particles:
+        for site, particle in zip(
+            topology.sites, compound.particles(include_ports=False)
+        ):
             particle.pos = np.array(site.position.to(u.nm).value)
         return compound
     elif not compound and coords_only:
         raise MBuildError("coords_only=True but host compound is not provided")
 
-    # Initialize a compound if none is provided
-    if not compound:
-        compound = mb.Compound()
-
     # Convert gmso Topology to mbuild Compound
-    from gmso.external.convert_mbuild import to_mbuild
-
     if not compound:
-        return to_mbuild(topology)
+        return to_mbuild(topology, **kwargs)
     else:
-        compound.add(to_mbuild(topology))
+        compound.add(to_mbuild(topology), **kwargs)
     return compound
 
 

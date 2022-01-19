@@ -2258,9 +2258,7 @@ class Compound(object):
         -------
         compound : mb.Compound
         """
-        from mbuild.conversion import from_gmso
-
-        return from_gmso(
+        return conversion.from_gmso(
             topology=topology,
             compound=self,
             coords_only=coords_only,
@@ -2280,9 +2278,7 @@ class Compound(object):
         topology : gmso.Topology
             The converted gmso Topology
         """
-        from mbuild.conversion import to_gmso
-
-        return to_gmso(self)
+        return conversion.to_gmso(self)
 
     # Interface to Trajectory for reading/writing .pdb and .mol2 files.
     # -----------------------------------------------------------------
