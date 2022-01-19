@@ -530,7 +530,7 @@ def from_parmed(
             raise ValueError("Some particles are None")
 
         for pmd_atom, particle in zip(
-            structures.atoms, compound.particles(include_ports=False)
+            structure.atoms, compound.particles(include_ports=False)
         ):
             particle.pos = (
                 np.array([pmd_atom.xx, pmd_atom.xy, pmd_atom.xz]) / 10
