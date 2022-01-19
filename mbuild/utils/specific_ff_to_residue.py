@@ -390,6 +390,7 @@ def specific_ff_to_residue(
                 ff_iteration = Forcefield(name=ff_data[residues[i]])
                 residues_applied_list.append(residues[i])
 
+            new_compound_iteration.box = None
             new_structure_iteration = ff_iteration.apply(
                 new_compound_iteration, residues=[residues[i]]
             )

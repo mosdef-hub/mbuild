@@ -412,7 +412,7 @@ def _init_hoomd_rb_torsions(structure, ref_energy=1.0):
             dihedral_type.c5 / ref_energy,
         )
         rb_torsion.params[name] = dict(
-            k1=F_coeffs[0], k2=F_coeffs[1], k3=F_coeffs[2], k4=F_coeffs[3]
+            k1=F_coeffs[1], k2=F_coeffs[2], k3=F_coeffs[3], k4=F_coeffs[4]
         )
 
     return rb_torsion
