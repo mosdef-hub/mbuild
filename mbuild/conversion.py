@@ -86,7 +86,7 @@ def load(
         If True, ignore warning if no box is present. Defaults to True when
         loading from SMILES
     ``**kwargs`` : keyword arguments
-        Key word arguments passed to mdTraj, RDKit, or pybel for loading.
+        Key word arguments passed to mdTraj, GMSO, RDKit, or pybel for loading.
 
     Returns
     -------
@@ -499,7 +499,7 @@ def load_file(
 
 
 def from_parmed(
-    structure, compound=None, coords_only=False, infer_hierarchy=True
+    structure, compound=None, coords_only=False, infer_hierarchy=True, **kwargs
 ):
     """Backend-specific loading function - parmed.
 
@@ -595,7 +595,12 @@ def from_parmed(
 
 
 def from_trajectory(
-    traj, compound=None, frame=-1, coords_only=False, infer_hierarchy=True
+    traj,
+    compound=None,
+    frame=-1,
+    coords_only=False,
+    infer_hierarchy=True,
+    **kwargs,
 ):
     """Extract atoms and bonds from a md.Trajectory.
 
@@ -691,6 +696,7 @@ def from_pybel(
     coords_only=False,
     infer_hierarchy=True,
     ignore_box_warn=False,
+    **kwarggs,
 ):
     """Create a Compound from a Pybel.Molecule.
 
