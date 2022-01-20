@@ -553,7 +553,9 @@ def write_lammpsdata(
     return
 
 
-def _evaluate_lj_conversion_factors(structure, conversion_name, conversion_factor):
+def _evaluate_lj_conversion_factors(
+    structure, conversion_name, conversion_factor
+):
     """Get Lennard Jones style conversion factors. `conversion_name`` can be sigma, epsilon, or mass."""
 
     if conversion_factor is None:
