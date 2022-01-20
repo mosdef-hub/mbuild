@@ -20,7 +20,9 @@ class TestLammpsData(BaseTest):
 
     @pytest.fixture(scope="session")
     def lj_save(self, tmpdir_factory, sigma=None, epsilon=None, mass=None):
-        def _create_lammps(ethane, tmp, sigma=sigma, epsilon=epsilon, mass=mass):
+        def _create_lammps(
+            ethane, tmp, sigma=sigma, epsilon=epsilon, mass=mass
+        ):
             from foyer import Forcefield
 
             OPLSAA = Forcefield(name="oplsaa")
@@ -46,7 +48,9 @@ class TestLammpsData(BaseTest):
             OPLSAA = Forcefield(name="oplsaa")
             structure = OPLSAA.apply(ethane)
             fn = tmpdir_factory.mktemp("data").join("lj.lammps")
-            write_lammpsdata(filename=str(fn), structure=structure, unit_style="real")
+            write_lammpsdata(
+                filename=str(fn), structure=structure, unit_style="real"
+            )
             return str(fn)
 
         return _create_lammps
@@ -124,7 +128,9 @@ class TestLammpsData(BaseTest):
             box=cmpd.get_boundingbox(),
             residues=set([p.parent.name for p in cmpd.particles()]),
         )
-        ff = Forcefield(forcefield_files=[get_fn("charmm_truncated_singleterm.xml")])
+        ff = Forcefield(
+            forcefield_files=[get_fn("charmm_truncated_singleterm.xml")]
+        )
         structure = ff.apply(structure, assert_dihedral_params=False)
         write_lammpsdata(structure, "charmm_dihedral_singleterm.lammps")
         out_lammps = open("charmm_dihedral_singleterm.lammps", "r").readlines()
@@ -134,7 +140,9 @@ class TestLammpsData(BaseTest):
                 assert "# charmm" in line
                 assert "#k, n, phi, weight" in out_lammps[i + 1]
                 assert len(out_lammps[i + 2].split("#")[0].split()) == 5
-                assert float(out_lammps[i + 2].split("#")[0].split()[4]) == float("1.0")
+                assert float(
+                    out_lammps[i + 2].split("#")[0].split()[4]
+                ) == float("1.0")
                 found_dihedrals = True
             else:
                 pass
@@ -189,7 +197,9 @@ class TestLammpsData(BaseTest):
         ff = Forcefield(forcefield_files=[get_fn("gaff_test.xml")])
         structure = ff.apply(cmpd)
 
-        write_lammpsdata(structure, "amber.lammps", zero_dihedral_weighting_factor=True)
+        write_lammpsdata(
+            structure, "amber.lammps", zero_dihedral_weighting_factor=True
+        )
         out_lammps = open("amber.lammps", "r").readlines()
         found_angles = False
         found_dihedrals = False
@@ -197,7 +207,9 @@ class TestLammpsData(BaseTest):
         for i, line in enumerate(out_lammps):
             if "Angle Coeffs" in line:
                 assert "# harmonic" in line
-                assert "#\tk(kcal/mol/rad^2)\t\ttheteq(deg)" in out_lammps[i + 1]
+                assert (
+                    "#\tk(kcal/mol/rad^2)\t\ttheteq(deg)" in out_lammps[i + 1]
+                )
                 assert len(out_lammps[i + 2].split("#")[0].split()) == 3
                 found_angles = True
             elif "Dihedral Coeffs" in line:
@@ -249,7 +261,9 @@ class TestLammpsData(BaseTest):
     @pytest.mark.skipif(not has_foyer, reason="Foyer package not installed")
     @pytest.mark.parametrize("unit_style", ["real", "lj"])
     def test_save_box(self, ethane, unit_style):
-        box = mb.Box(lengths=np.array([2.0, 2.0, 2.0]), angles=[90.0, 90.0, 90.0])
+        box = mb.Box(
+            lengths=np.array([2.0, 2.0, 2.0]), angles=[90.0, 90.0, 90.0]
+        )
         ethane.save(
             filename="ethane-box.lammps",
             forcefield_name="oplsaa",
@@ -296,11 +310,15 @@ class TestLammpsData(BaseTest):
 
     def test_save_triclinic_box(self, ethane):
         box = mb.Box(lengths=np.array([2.0, 2.0, 2.0]), angles=[60, 70, 80])
-        ethane.save(filename="triclinic-box.lammps", forcefield_name="oplsaa", box=box)
+        ethane.save(
+            filename="triclinic-box.lammps", forcefield_name="oplsaa", box=box
+        )
 
     def test_save_orthorhombic_box(self, ethane):
         box = mb.Box(lengths=np.array([2.0, 2.0, 2.0]))
-        ethane.save(filename="ortho-box.lammps", forcefield_name="oplsaa", box=box)
+        ethane.save(
+            filename="ortho-box.lammps", forcefield_name="oplsaa", box=box
+        )
         with open("ortho-box.lammps", "r") as fi:
             for line in fi:
                 assert "xy" not in line
@@ -336,7 +354,9 @@ class TestLammpsData(BaseTest):
             for i, line in enumerate(f):
                 if "Atoms" in line:
                     break
-        atom_lines = open("compound.lammps", "r").readlines()[i + 2 : i + n_atoms + 2]
+        atom_lines = open("compound.lammps", "r").readlines()[
+            i + 2 : i + n_atoms + 2
+        ]
         for line in atom_lines:
             res_list.append(line.rstrip().split()[1])
         assert set(res_list) == set(expected_value)
@@ -386,7 +406,9 @@ class TestLammpsData(BaseTest):
 
                     checked_section = True
 
-        write_lammpsdata(filename="box.lammps", structure=structure, unit_style="real")
+        write_lammpsdata(
+            filename="box.lammps", structure=structure, unit_style="real"
+        )
 
         checked_section = False
         with open("box.lammps", "r") as fi:
