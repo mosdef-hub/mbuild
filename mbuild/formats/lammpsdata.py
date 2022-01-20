@@ -137,7 +137,6 @@ def write_lammpsdata(
         --- atomtype 3 : dihedral.atom3.type
         --- atomtype 4 : dihedral.atom4.type
     """
-
     if atom_style not in ["atomic", "charge", "molecular", "full"]:
         raise ValueError(
             'Atom style "{}" is invalid or is not currently supported'.format(
@@ -541,7 +540,7 @@ def write_lammpsdata(
 
 
 def _evaluate_lj_conversion_factors(structure, conversion_name, conversion_factor):
-    """Get Lennard Jones style conversion factors. conversion_name can be sigma, epsilon, or mass"""
+    """Get Lennard Jones style conversion factors. conversion_name can be sigma, epsilon, or mass."""
     if conversion_factor is None:
         # Check if structure is parametrized
         if any([atom.sigma for atom in structure.atoms]) is None:
@@ -579,10 +578,7 @@ def _evaluate_lj_conversion_factors(structure, conversion_name, conversion_facto
 
 
 def _check_minsmaxs(mins, maxs):
-    """
-    Returns True if both mins and maxs have been defined, and each have length 3
-    otherwise returns False.
-    """
+    """Return True if both mins and maxs have been defined, and each have length 3 otherwise returns False."""
 
     if mins and maxs:
         if len(mins) == 3 and len(maxs) == 3:
@@ -600,10 +596,8 @@ def _check_minsmaxs(mins, maxs):
 def _get_bond_types(
     structure, bonds, sigma_conversion_factor, epsilon_conversion_factor
 ):
-    """
-    Will get the bond types from a parmed structure and convert them to lammps
-    real units.
-    """
+    """Will get the bond types from a parmed structure and convert them to lammps real units."""
+
     unique_bond_types = OrderedDict(
         enumerate(
             [
@@ -645,9 +639,10 @@ def _get_angle_types(
     epsilon_conversion_factor,
 ):
     """
-    Will get the angle types from a parmed structure and convert them to lammps
-    real units. Can get the parameters if urey bradleys or harmonic angles.
+    Will get the angle types from a parmed structure and convert them to lammps real units.
+    Can get the parameters if urey bradleys or harmonic angles.
     """
+
     if use_urey_bradleys:
         charmm_angle_types = []
         for angle in structure.angles:
@@ -722,9 +717,10 @@ def _get_dihedral_types(
     zero_dihedral_weighting_factor,
 ):
     """
-    Will get the dihedral types from a parmed structure and convert them to lammps
-    real units. Can be in the form of rb_torsions or charmm dihedrals.
+    Will get the dihedral types from a parmed structure and convert them to lammps real units.
+    Can be in the form of rb_torsions or charmm dihedrals.
     """
+
     lj_unit = 1.0 / epsilon_conversion_factor
     if use_rb_torsions:
         unique_dihedral_types = OrderedDict(
@@ -808,9 +804,10 @@ def _get_dihedral_types(
 
 def _get_improper_dihedral_types(structure, epsilon_conversion_factor):
     """
-    Will get the improper types from a parmed structure and convert them to lammps
-    real units. Type harmonic https://docs.lammps.org/improper_harmonic.html.
+    Will get the improper types from a parmed structure and convert them to lammps real units.
+    Type harmonic https://docs.lammps.org/improper_harmonic.html.
     """
+
     lj_unit = 1 / epsilon_conversion_factor
     improper_dihedrals = []
     for dihedral in structure.dihedrals:
@@ -849,9 +846,10 @@ def _get_improper_dihedral_types(structure, epsilon_conversion_factor):
 
 def _get_impropers(structure, epsilon_conversion_factor):
     """
-    Will get the improper types from a parmed structure and convert them to lammps
-    real units. Type cvff https://docs.lammps.org/improper_cvff.html
+    Will get the improper types from a parmed structure and convert them to lammps real units.
+    Type cvff https://docs.lammps.org/improper_cvff.html
     """
+
     lj_unit = 1 / epsilon_conversion_factor
     unique_improper_types = dict(
         enumerate(
