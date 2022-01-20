@@ -157,7 +157,6 @@ class TestCharmmWriterData(BaseTest):
                 ):
                     dihedrals_read = True
                     dihed_types = [
-                        ["B", "A", "A", "B", "0.300000", "0", "90.0"],
                         ["B", "A", "A", "B", "0.000000", "1", "180.0"],
                         ["B", "A", "A", "B", "0.000000", "2", "0.0"],
                         ["B", "A", "A", "B", "-0.150000", "3", "180.0"],
@@ -507,7 +506,6 @@ class TestCharmmWriterData(BaseTest):
                 ):
                     dihedrals_read = True
                     dihedral_types = [
-                        ["A", "B", "D", "C", "0.647232", "0", "90.0"],
                         ["A", "B", "D", "C", "-0.392135", "1", "180.0"],
                         ["A", "B", "D", "C", "-0.062518", "2", "0.0"],
                         ["A", "B", "D", "C", "0.345615", "3", "180.0"],

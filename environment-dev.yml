@@ -6,6 +6,7 @@ dependencies:
   - codecov
   - ele
   - foyer>=0.9.4
+  - freud>=2.0.0
   - garnett>=0.7.1
   - gsd>=2
   - hoomd=2.9.6

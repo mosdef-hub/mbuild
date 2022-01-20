@@ -14,6 +14,7 @@ from mbuild.utils.geometry import calc_dihedral
 from mbuild.utils.io import (
     get_fn,
     has_foyer,
+    has_freud,
     has_intermol,
     has_mdtraj,
     has_networkx,
@@ -465,6 +466,20 @@ class TestCompound(BaseTest):
     def test_generate_bonds(self, ch3):
         ch3.generate_bonds("H", "H", dmin=0.01, dmax=2.0)
         assert ch3.n_bonds == 3 + 3
+
+    @pytest.mark.skipif(not has_freud, reason="Freud not installed.")
+    def test_freud_generate_bonds(self, ch3):
+        bounding_box = ch3.get_boundingbox()
+        ch3.box = mb.Box(lengths=[max(bounding_box.lengths) + 1] * 3)
+        ch3.freud_generate_bonds("H", "H", dmin=0.01, dmax=0.2, exclude_ii=True)
+        assert ch3.n_bonds == 3 + 3
+
+    @pytest.mark.skipif(not has_freud, reason="Freud not installed.")
+    def test_freud_generate_bonds_expected(self, ch3):
+        bounding_box = ch3.get_boundingbox()
+        ch3.box = mb.Box(lengths=[max(bounding_box.lengths) + 1] * 3)
+        ch3.freud_generate_bonds("H", "H", dmin=0.01, dmax=0.1, exclude_ii=True)
+        assert ch3.n_bonds == 3
 
     def test_remove_from_box(self, ethane):
         n_ethanes = 5
