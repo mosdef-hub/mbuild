@@ -2,6 +2,7 @@ from pathlib import Path
 
 import numpy as np
 import pytest
+from ele.element import element_from_symbol
 from pytest import FixtureRequest
 from scipy.constants import epsilon_0
 
@@ -312,7 +313,11 @@ class TestLammpsData(BaseTest):
                     break
         structure.combining_rule = "geometric"
         write_lammpsdata(filename="nbfix.lammps", structure=structure)
-        write_lammpsdata(filename="nbfix.lammps", structure=structure, nbfix_in_data_file=False)
+        write_lammpsdata(
+            filename="nbfix.lammps",
+            structure=structure,
+            nbfix_in_data_file=False,
+        )
         with pytest.raises(ValueError) as exc_info:
             structure.combining_rule = "error"
             write_lammpsdata(filename="nbfix.lammps", structure=structure)
@@ -682,10 +687,15 @@ class TestLammpsData(BaseTest):
     def test_lj_charges(self, ethane, lj_save):
         fn = lj_save(ethane, Path.cwd())
         checked_section = False
-        charge_dict = {'C':-0.18, 'H':0.06}
-        ethane_charges = np.array([charge_dict[part.name] for part in ethane.particles()])
+        charge_dict = {"C": -0.18, "H": 0.06}
+        ethane_charges = np.array(
+            [charge_dict[part.name] for part in ethane.particles()]
+        )
         # in coulombs, convert to lj units
-        ethane_charges /= np.sqrt(4 * np.pi * 0.276144 * 0.35 * epsilon_0  * 10**-6) / ELEM_TO_COUL
+        ethane_charges /= (
+            np.sqrt(4 * np.pi * 0.276144 * 0.35 * epsilon_0 * 10 ** -6)
+            / ELEM_TO_COUL
+        )
         print(ethane_charges)
         with open(fn, "r") as fi:
             while not checked_section:
@@ -693,20 +703,21 @@ class TestLammpsData(BaseTest):
                 if "Atoms " in line:
                     fi.readline()
                     assert np.allclose(
-                            float(fi.readline().split()[3]),
-                            ethane_charges[0],
-                            atol = 1e-15
+                        float(fi.readline().split()[3]),
+                        ethane_charges[0],
+                        atol=1e-15,
                     )
                     assert np.allclose(
-                            float(fi.readline().split()[3]),
-                            ethane_charges[1],
-                            atol = 1e-15
+                        float(fi.readline().split()[3]),
+                        ethane_charges[1],
+                        atol=1e-15,
                     )
                     checked_section = True
+
     def test_real_charges(self, ethane, real_save):
         fn = real_save(ethane, Path.cwd())
         checked_section = False
-        charge_dict = {'C':-0.18, 'H':0.06}
+        charge_dict = {"C": -0.18, "H": 0.06}
         ethane_charges = [charge_dict[part.name] for part in ethane.particles()]
         print(ethane_charges)
         # in coulombs
@@ -716,11 +727,11 @@ class TestLammpsData(BaseTest):
                 if "Atoms " in line:
                     fi.readline()
                     assert np.allclose(
-                            float(fi.readline().split()[3]),
-                            ethane_charges[0],
+                        float(fi.readline().split()[3]),
+                        ethane_charges[0],
                     )
                     assert np.allclose(
-                            float(fi.readline().split()[3]),
-                            ethane_charges[1],
+                        float(fi.readline().split()[3]),
+                        ethane_charges[1],
                     )
                     checked_section = True
