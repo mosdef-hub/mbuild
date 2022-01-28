@@ -84,6 +84,18 @@ def write_lammpsdata(
     zero_dihedral_weighting_factor:
         If True, will set weighting parameter to zero in CHARMM-style dihedrals.
         This should be True if the CHARMM dihedral style is used in non-CHARMM forcefields.
+    sigma_conversion_factor: None, float
+        If unit_style is set to 'lj', then sigma conversion factor is used to non-dimensionalize.
+        Assume to be in units of nm. Default is None. If None, will take the largest sigma value in
+        the structure.atoms.sigma values.
+    epsilon_conversion_factor: None, float
+        If unit_style is set to 'lj', then epsilon conversion factor is used to non-dimensionalize.
+        Assume to be in units of kCal/mol. Default is None. If None, will take the largest epsilon value in
+        the structure.atoms.epsilon values.
+    mass_conversion_factor: None, float
+        If unit_style is set to 'lj', then mass conversion factor is used to non-dimensionalize.
+        Assume to be in units of amu. Default is None. If None, will take the largest mass value in
+        the structure.atoms.mass values.
     moleculeID_offset : int , optional, default=1
         Since LAMMPS treats the MoleculeID as an additional set of information
         to identify what molecule an atom belongs to, this currently

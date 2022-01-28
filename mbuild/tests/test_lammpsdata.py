@@ -4,7 +4,6 @@ import numpy as np
 import pytest
 from pytest import FixtureRequest
 from scipy.constants import epsilon_0
-from ele.element import element_from_symbol
 
 import mbuild as mb
 from mbuild.formats.lammpsdata import write_lammpsdata
@@ -317,7 +316,6 @@ class TestLammpsData(BaseTest):
         with pytest.raises(ValueError) as exc_info:
             structure.combining_rule = "error"
             write_lammpsdata(filename="nbfix.lammps", structure=structure)
-
         assert str(exc_info.value).startswith("combining_rule must be")
 
     def test_save_triclinic_box(self, ethane):
@@ -524,25 +522,11 @@ class TestLammpsData(BaseTest):
                     assert np.isclose(epsilon, 0.276144, atol=1e-5)
                     assert np.isclose(sigma, 0.35)
                     checked_section = True
-        with pytest.raises(ValueError) as exc_info:
-            fn = lj_save(
-                ethane,
-                Path.cwd(),
-                sigma=0,
-                epsilon=1,
-            )
-        exception_str = "The sigma conversion factor to convert to LJ"
-        assert str(exc_info.value).startswith(exception_str)
-        with pytest.raises(ValueError) as exc_info:
-            fn = lj_save(
-                ethane,
-                Path.cwd(),
-                sigma=0,
-                epsilon=1,
-            )
-        exception_str = "The sigma conversion factor to convert to LJ"
-        assert str(exc_info.value).startswith(exception_str)
 
+        with pytest.raises(ValueError) as exc_info:
+            lj_save(ethane, Path.cwd(), sigma=0)
+        exception_str = "The sigma conversion factor to convert to LJ"
+        assert str(exc_info.value).startswith(exception_str)
 
     def test_real_pairs(self, ethane, real_save):
         fn = real_save(ethane, Path.cwd())
