@@ -550,8 +550,6 @@ def write_lammpsdata(
                         )
                     )
 
-    return
-
 
 def _evaluate_lj_conversion_factors(
     structure, conversion_name, conversion_factor
@@ -955,8 +953,6 @@ def _write_box_information(box, data, mins):
         data.write("{0:.6f} {1:.6f} zlo zhi\n".format(zlo_bound, zhi_bound))
         data.write("{0:.6f} {1:.6f} {2:6f} xy xz yz\n".format(xy, xz, yz))
 
-    return
-
 
 def _write_mass_information(
     structure, data, mass_conversion_factor, forcefield, unique_types, types
@@ -993,8 +989,6 @@ def _write_mass_information(
                 atom_type, mass, unique_types[atom_type - 1]
             )
         )
-
-    return
 
 
 def _write_pair_information(
@@ -1151,8 +1145,6 @@ def _write_pair_information(
                 )
             )
 
-    return
-
 
 def _write_bond_information(structure, data, unique_bond_types, unit_style):
     """Write Bond Coeffs section of lammps data file."""
@@ -1212,8 +1204,6 @@ def _write_angle_information(
                     params[3][1],
                 )
             )
-
-    return
 
 
 def _write_dihedral_information(
@@ -1280,8 +1270,6 @@ def _write_dihedral_information(
                 )
             )
 
-    return
-
 
 def _write_improper_information(
     structure, data, unique_improper_types, unit_style
@@ -1307,8 +1295,6 @@ def _write_improper_information(
                 params[5],
             )
         )
-
-    return
 
 
 def _write_imp_dihedral_information(
@@ -1337,5 +1323,3 @@ def _write_imp_dihedral_information(
                 params[8],
             )
         )
-
-    return

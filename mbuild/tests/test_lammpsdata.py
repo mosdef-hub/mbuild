@@ -3,6 +3,8 @@ from pathlib import Path
 import numpy as np
 import pytest
 from pytest import FixtureRequest
+from scipy.constants import epsilon_0
+from ele.element import element_from_symbol
 
 import mbuild as mb
 from mbuild.formats.lammpsdata import write_lammpsdata
@@ -11,6 +13,7 @@ from mbuild.utils.io import get_fn, has_foyer
 
 KCAL_TO_KJ = 4.184
 ANG_TO_NM = 0.10
+ELEM_TO_COUL = 1.602176634e-19
 
 
 @pytest.mark.skipif(not has_foyer, reason="Foyer package not installed")
@@ -276,6 +279,7 @@ class TestLammpsData(BaseTest):
 
         OPLSAA = Forcefield(name="oplsaa")
         structure = OPLSAA.apply(ethane)
+        structure.combining_rule = "lorentz"
         # Add nbfixes
         types = list(set([a.atom_type for a in structure.atoms]))
         types[0].add_nbfix(types[1].name, 1.2, 2.1)
@@ -307,6 +311,14 @@ class TestLammpsData(BaseTest):
                 # Break if PairIJ Coeffs is not found
                 if "Atoms" in line:
                     break
+        structure.combining_rule = "geometric"
+        write_lammpsdata(filename="nbfix.lammps", structure=structure)
+        write_lammpsdata(filename="nbfix.lammps", structure=structure, nbfix_in_data_file=False)
+        with pytest.raises(ValueError) as exc_info:
+            structure.combining_rule = "error"
+            write_lammpsdata(filename="nbfix.lammps", structure=structure)
+
+        assert str(exc_info.value).startswith("combining_rule must be")
 
     def test_save_triclinic_box(self, ethane):
         box = mb.Box(lengths=np.array([2.0, 2.0, 2.0]), angles=[60, 70, 80])
@@ -512,6 +524,25 @@ class TestLammpsData(BaseTest):
                     assert np.isclose(epsilon, 0.276144, atol=1e-5)
                     assert np.isclose(sigma, 0.35)
                     checked_section = True
+        with pytest.raises(ValueError) as exc_info:
+            fn = lj_save(
+                ethane,
+                Path.cwd(),
+                sigma=0,
+                epsilon=1,
+            )
+        exception_str = "The sigma conversion factor to convert to LJ"
+        assert str(exc_info.value).startswith(exception_str)
+        with pytest.raises(ValueError) as exc_info:
+            fn = lj_save(
+                ethane,
+                Path.cwd(),
+                sigma=0,
+                epsilon=1,
+            )
+        exception_str = "The sigma conversion factor to convert to LJ"
+        assert str(exc_info.value).startswith(exception_str)
+
 
     def test_real_pairs(self, ethane, real_save):
         fn = real_save(ethane, Path.cwd())
@@ -661,5 +692,51 @@ class TestLammpsData(BaseTest):
                             float(line.split()[4]),
                         ),
                         ethane_diheds,
+                    )
+                    checked_section = True
+
+    def test_lj_charges(self, ethane, lj_save):
+        fn = lj_save(ethane, Path.cwd())
+        checked_section = False
+        charge_dict = {'C':-0.18, 'H':0.06}
+        ethane_charges = np.array([charge_dict[part.name] for part in ethane.particles()])
+        # in coulombs, convert to lj units
+        ethane_charges /= np.sqrt(4 * np.pi * 0.276144 * 0.35 * epsilon_0  * 10**-6) / ELEM_TO_COUL
+        print(ethane_charges)
+        with open(fn, "r") as fi:
+            while not checked_section:
+                line = fi.readline()
+                if "Atoms " in line:
+                    fi.readline()
+                    assert np.allclose(
+                            float(fi.readline().split()[3]),
+                            ethane_charges[0],
+                            atol = 1e-15
+                    )
+                    assert np.allclose(
+                            float(fi.readline().split()[3]),
+                            ethane_charges[1],
+                            atol = 1e-15
+                    )
+                    checked_section = True
+    def test_real_charges(self, ethane, real_save):
+        fn = real_save(ethane, Path.cwd())
+        checked_section = False
+        charge_dict = {'C':-0.18, 'H':0.06}
+        ethane_charges = [charge_dict[part.name] for part in ethane.particles()]
+        print(ethane_charges)
+        # in coulombs
+        with open(fn, "r") as fi:
+            while not checked_section:
+                line = fi.readline()
+                if "Atoms " in line:
+                    fi.readline()
+                    assert np.allclose(
+                            float(fi.readline().split()[3]),
+                            ethane_charges[0],
+                    )
+                    assert np.allclose(
+                            float(fi.readline().split()[3]),
+                            ethane_charges[1],
                     )
                     checked_section = True
