@@ -868,7 +868,7 @@ def _get_bond_types(
                         round(
                             bond.type.k
                             * (
-                                sigma_conversion_factor ** 2
+                                sigma_conversion_factor**2
                                 / epsilon_conversion_factor
                             ),
                             3,
@@ -890,7 +890,7 @@ def _get_bond_types(
                 round(
                     bond.type.k
                     * (
-                        sigma_conversion_factor ** 2 / epsilon_conversion_factor
+                        sigma_conversion_factor**2 / epsilon_conversion_factor
                     ),
                     3,
                 ),
@@ -923,7 +923,7 @@ def _get_angle_types(
                     round(
                         angle.type.k
                         * (
-                            sigma_conversion_factor ** 2
+                            sigma_conversion_factor**2
                             / epsilon_conversion_factor
                         ),
                         3,
@@ -952,7 +952,7 @@ def _get_angle_types(
                             round(
                                 angle.type.k
                                 * (
-                                    sigma_conversion_factor ** 2
+                                    sigma_conversion_factor**2
                                     / epsilon_conversion_factor
                                 ),
                                 3,
@@ -975,7 +975,7 @@ def _get_angle_types(
                     round(
                         angle.type.k
                         * (
-                            sigma_conversion_factor ** 2
+                            sigma_conversion_factor**2
                             / epsilon_conversion_factor
                         ),
                         3,
