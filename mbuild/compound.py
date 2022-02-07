@@ -1400,7 +1400,7 @@ class Compound(object):
                     "Periodic distance calculation is not implemented "
                     "for non-orthorhombic boxes"
                 )
-        return np.sqrt((d ** 2).sum(axis=-1))
+        return np.sqrt((d**2).sum(axis=-1))
 
     def particles_in_range(
         self,
@@ -1590,7 +1590,7 @@ class Compound(object):
                 ]
                 widget.add_ball_and_stick(
                     f"@{','.join(ids)}",
-                    aspect_ratio=0.17 ** 1.5 * scale,
+                    aspect_ratio=0.17**1.5 * scale,
                     color="grey",
                 )
         if show_ports:

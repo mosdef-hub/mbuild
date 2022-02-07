@@ -556,7 +556,7 @@ def fill_sphere(
                     int(
                         density
                         / total_mass
-                        * (4 / 3 * np.pi * radius ** 3)
+                        * (4 / 3 * np.pi * radius**3)
                         * 0.60224
                     )
                 ]
@@ -579,7 +579,7 @@ def fill_sphere(
                 n_prototypes = int(
                     density
                     / prototype_mass
-                    * (4 / 3 * np.pi * radius ** 3)
+                    * (4 / 3 * np.pi * radius**3)
                     * 0.60224
                 )
                 n_compounds = list()
