@@ -135,7 +135,7 @@ def _particle_info(cmpd, include_ports=False):
     particle_dict = OrderedDict()
     particle_dict["id"] = id(cmpd)
     particle_dict["name"] = cmpd.name
-    particle_dict["pos"] = list(np.asarray(cmpd.pos, dtype=float))
+    particle_dict["pos"] = cmpd.pos.tolist()
     particle_dict["charge"] = cmpd.charge
     particle_dict["element"] = cmpd.element
 
