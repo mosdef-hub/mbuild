@@ -3,7 +3,6 @@ import json
 from collections import OrderedDict
 
 import ele
-import numpy as np
 
 import mbuild as mb
 from mbuild.exceptions import MBuildError
