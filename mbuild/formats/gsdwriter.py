@@ -77,9 +77,9 @@ def write_gsd(
         lx = a
         xy = b * np.cos(gamma)
         xz = c * np.cos(beta)
-        ly = np.sqrt(b ** 2 - xy ** 2)
+        ly = np.sqrt(b**2 - xy**2)
         yz = (b * c * np.cos(alpha) - xy * xz) / ly
-        lz = np.sqrt(c ** 2 - xz ** 2 - yz ** 2)
+        lz = np.sqrt(c**2 - xz**2 - yz**2)
 
         gsd_snapshot.configuration.box = np.array([lx, ly, lz, xy, xz, yz])
 

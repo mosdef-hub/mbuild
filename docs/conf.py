@@ -154,7 +154,7 @@ master_doc = "index"
 # General information about the project.
 project = "mbuild"
 author = "Mosdef Team"
-copyright = u"2014-2019, Vanderbilt University"
+copyright = "2014-2019, Vanderbilt University"
 
 # The version info for the project you're documenting, acts as replacement for
 # |version| and |release|, also used in various other places throughout the

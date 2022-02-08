@@ -1,3 +1,5 @@
+import numpy as np
+
 import mbuild as mb
 from mbuild.formats.json_formats import compound_from_json, compound_to_json
 from mbuild.tests.base_test import BaseTest
@@ -93,3 +95,10 @@ class TestJSONFormats(BaseTest):
         ):
             assert child.labels.keys() == child_copy.labels.keys()
         assert parent_copy.available_ports() == parent.available_ports()
+
+    def test_float_64_position(self):
+        ethane = mb.lib.molecules.Ethane()
+        ethane.xyz = np.asarray(ethane.xyz, dtype=np.float64)
+        compound_to_json(ethane, "ethane.json", include_ports=True)
+        ethane_copy = compound_from_json("ethane.json")
+        assert np.allclose(ethane.xyz, ethane_copy.xyz, atol=10**-6)

@@ -554,7 +554,7 @@ class TestLammpsData(BaseTest):
         ethane_bondsk = (
             np.array([224262.4, 284512.0]) * (0.35) ** 2 / (0.276144) / 2
         )  # kj/mol/nm**2 to lammps
-        ethane_bondsreq = np.array([0.1529, 0.109]) * 0.35 ** -1  # unitless
+        ethane_bondsreq = np.array([0.1529, 0.109]) * 0.35**-1  # unitless
         ethane_lj_bonds = zip(ethane_bondsk, ethane_bondsreq)
         with open(fn, "r") as fi:
             while not checked_section:
@@ -575,7 +575,7 @@ class TestLammpsData(BaseTest):
         fn = real_save(ethane, Path.cwd())
         checked_section = False
         ethane_bondsk = (
-            np.array([224262.4, 284512.0]) / KCAL_TO_KJ * ANG_TO_NM ** 2 / 2
+            np.array([224262.4, 284512.0]) / KCAL_TO_KJ * ANG_TO_NM**2 / 2
         )  # kj/mol/nm**2 to lammps
         ethane_bondsreq = np.array([0.1529, 0.109]) / ANG_TO_NM
         ethane_real_bonds = zip(ethane_bondsk, ethane_bondsreq)
@@ -693,7 +693,7 @@ class TestLammpsData(BaseTest):
         )
         # in coulombs, convert to lj units
         ethane_charges /= (
-            np.sqrt(4 * np.pi * 0.276144 * 0.35 * epsilon_0 * 10 ** -6)
+            np.sqrt(4 * np.pi * 0.276144 * 0.35 * epsilon_0 * 10**-6)
             / ELEM_TO_COUL
         )
         print(ethane_charges)

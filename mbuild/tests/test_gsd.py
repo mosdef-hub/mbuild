@@ -116,8 +116,8 @@ class TestGSD(BaseTest):
         lx, ly, lz, xy, xz, yz = frame.configuration.box
 
         a = lx
-        b = np.sqrt(ly ** 2 + xy ** 2)
-        c = np.sqrt(lz ** 2 + xz ** 2 + yz ** 2)
+        b = np.sqrt(ly**2 + xy**2)
+        c = np.sqrt(lz**2 + xz**2 + yz**2)
 
         assert np.isclose(np.cos(np.radians(92)), (xy * xz + ly * yz) / (b * c))
         assert np.isclose(np.cos(np.radians(104)), xz / c)

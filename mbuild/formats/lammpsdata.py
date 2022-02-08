@@ -290,11 +290,11 @@ def write_lammpsdata(
             4
             * np.pi
             * sigma_conversion_factor
-            * NM_TO_ANG ** -1
+            * NM_TO_ANG**-1
             * epsilon_conversion_factor
             * KCAL_TO_KJ
             * epsilon_0
-            * 10 ** -6
+            * 10**-6
         )
         charges[np.isinf(charges)] = 0
     else:
@@ -629,7 +629,7 @@ def _get_bond_types(
                     round(
                         bond.type.k
                         * (
-                            sigma_conversion_factor ** 2
+                            sigma_conversion_factor**2
                             / epsilon_conversion_factor
                         ),
                         3,
@@ -650,7 +650,7 @@ def _get_bond_types(
                 round(
                     bond.type.k
                     * (
-                        sigma_conversion_factor ** 2 / epsilon_conversion_factor
+                        sigma_conversion_factor**2 / epsilon_conversion_factor
                     ),
                     3,
                 ),
@@ -686,7 +686,11 @@ def _get_angle_types(
             charmm_angle_types.append(
                 (
                     round(
-                        angle.type.k * (1 / epsilon_conversion_factor),
+                        angle.type.k
+                        * (
+                            sigma_conversion_factor**2
+                            / epsilon_conversion_factor
+                        ),
                         3,
                     ),
                     round(angle.type.theteq, 3),
@@ -728,7 +732,11 @@ def _get_angle_types(
             unique_angle_types[
                 (
                     round(
-                        angle.type.k * (1 / epsilon_conversion_factor),
+                        angle.type.k
+                        * (
+                            sigma_conversion_factor**2
+                            / epsilon_conversion_factor
+                        ),
                         3,
                     ),
                     round(angle.type.theteq, 3),

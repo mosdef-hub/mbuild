@@ -234,19 +234,19 @@ def _init_hoomd_lj(structure, nl, r_cut, ref_distance=1.0, ref_energy=1.0):
                         atom_type_params[a1].epsilon
                         * atom_type_params[a2].epsilon
                     )
-                    / ref_energy ** 2
+                    / ref_energy**2
                 ) ** 0.5
             elif structure.combining_rule == "geometric":
                 sigma = (
                     (atom_type_params[a1].sigma * atom_type_params[a2].sigma)
-                    / ref_distance ** 2
+                    / ref_distance**2
                 ) ** 0.5
                 epsilon = (
                     (
                         atom_type_params[a1].epsilon
                         * atom_type_params[a2].epsilon
                     )
-                    / ref_energy ** 2
+                    / ref_energy**2
                 ) ** 0.5
             else:
                 raise ValueError(
@@ -340,7 +340,7 @@ def _init_hoomd_bonds(structure, ref_distance=1.0, ref_energy=1.0):
         else:
             harmonic_bond.bond_coeff.set(
                 name,
-                k=2 * bond_type.k * ref_distance ** 2 / ref_energy,
+                k=2 * bond_type.k * ref_distance**2 / ref_energy,
                 r0=bond_type.req / ref_distance,
             )
 

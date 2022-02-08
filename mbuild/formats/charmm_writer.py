@@ -51,7 +51,7 @@ def _get_bond_type_key(
     """
     bond_k_constant = round(
         bond.type.k
-        * (sigma_conversion_factor ** 2 / epsilon_conversion_factor),
+        * (sigma_conversion_factor**2 / epsilon_conversion_factor),
         8,
     )
     bond_bo_length = round(bond.type.req / sigma_conversion_factor, 8)
@@ -107,7 +107,7 @@ def _get_angle_type_key(
 
     angle_k_constant = round(
         angle.type.k
-        * (sigma_conversion_factor ** 2 / epsilon_conversion_factor),
+        * (sigma_conversion_factor**2 / epsilon_conversion_factor),
         8,
     )
     angle_theta_o = round(angle.type.theteq, 8)
