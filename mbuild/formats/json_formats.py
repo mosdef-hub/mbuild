@@ -125,7 +125,6 @@ def compound_to_json(cmpd, file_path, include_ports=False):
     compound_json["mbuild-version"] = version
     compound_json["type"] = "Compound"
     compound_json["Compound"] = compound_dict
-
     with open(file_path, "w") as datafile:
         json.dump(compound_json, datafile, indent=2)
 
@@ -135,7 +134,7 @@ def _particle_info(cmpd, include_ports=False):
     particle_dict = OrderedDict()
     particle_dict["id"] = id(cmpd)
     particle_dict["name"] = cmpd.name
-    particle_dict["pos"] = list(cmpd.pos)
+    particle_dict["pos"] = cmpd.pos.tolist()
     particle_dict["charge"] = cmpd.charge
     particle_dict["element"] = cmpd.element
 
