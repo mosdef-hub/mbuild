@@ -696,7 +696,7 @@ def from_pybel(
     coords_only=False,
     infer_hierarchy=True,
     ignore_box_warn=False,
-    **kwarggs,
+    **kwargs,
 ):
     """Create a Compound from a Pybel.Molecule.
 
