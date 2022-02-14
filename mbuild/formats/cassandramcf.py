@@ -120,22 +120,23 @@ def write_mcf(
                 )
     if lj14 is None:
         if len(structure.adjusts) > 0:
-            type1_eps = structure.adjusts[0].atom1.epsilon
-            type2_eps = structure.adjusts[0].atom2.epsilon
-            scaled_eps = structure.adjusts[0].type.epsilon
             if (
                 structure.combining_rule == "geometric"
                 or structure.combining_rule == "lorentz"
             ):
-                combined_eps = sqrt(type1_eps * type2_eps)
-                if combined_eps == 0:
+                combined_eps_list = [sqrt(adj.atom1.epsilon * adj.atom2.epsilon) for adj in structure.adjusts]
+                if all([c_eps == 0 for c_eps in combined_eps_list]):
                     lj14 = 0.0
                     warnings.warn(
                         "Unable to infer LJ 1-4 scaling factor. Setting to "
                         "{:.1f}".format(lj14)
                     )
                 else:
-                    lj14 = scaled_eps / combined_eps
+                    scaled_eps_list = [adj.type.epsilon for adj in structure.adjusts]
+                    for i_adj, combined_eps in enumerate(combined_eps_list):
+                        if combined_eps != 0:
+                            lj14 = scaled_eps_list[i_adj] / combined_eps
+                            break
             else:
                 lj14 = 0.0
                 warnings.warn(
