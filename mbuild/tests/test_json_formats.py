@@ -17,6 +17,15 @@ class TestJSONFormats(BaseTest):
         assert ethane.n_bonds == ethane_copy.n_bonds
         assert len(ethane.children) == len(ethane_copy.children)
 
+    def test_box(self):
+        meth = mb.load("C", smiles=True)
+        meth.box = mb.Box(lengths=(3, 3, 3), angles=(45, 45, 45))
+        meth.save("meth_with_box.json")
+
+        loaded_meth = mb.load("meth_with_box.json")
+        assert meth.box.lengths == loaded_meth.box.lengths == (3, 3, 3)
+        assert meth.box.angles == loaded_meth.box.angles
+
     def test_loop_with_ports(self):
         from mbuild.lib.moieties import CH3
 

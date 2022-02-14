@@ -184,6 +184,7 @@ def _dict_to_mb(compound_dict):
     charge = compound_dict.get("charge", 0.0)
     periodicity = compound_dict.get("periodicity", (False, False, False))
     element = compound_dict.get("element", None)
+    box = compound_dict.get("box", None)
     if isinstance(element, ele.element.Element):
         pass
     elif isinstance(element, list):
@@ -194,12 +195,16 @@ def _dict_to_mb(compound_dict):
     else:
         pass
 
+    if box is not None:
+        box = mb.Box(lengths=box["lengths"], angles=box["angles"])
+
     this_particle = mb.Compound(
         name=name,
         pos=pos,
         charge=charge,
         periodicity=periodicity,
         element=element,
+        box=box,
     )
     return this_particle
 
