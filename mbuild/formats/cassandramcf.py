@@ -124,7 +124,10 @@ def write_mcf(
                 structure.combining_rule == "geometric"
                 or structure.combining_rule == "lorentz"
             ):
-                combined_eps_list = [sqrt(adj.atom1.epsilon * adj.atom2.epsilon) for adj in structure.adjusts]
+                combined_eps_list = [
+                    sqrt(adj.atom1.epsilon * adj.atom2.epsilon)
+                    for adj in structure.adjusts
+                ]
                 if all([c_eps == 0 for c_eps in combined_eps_list]):
                     lj14 = 0.0
                     warnings.warn(
@@ -132,7 +135,9 @@ def write_mcf(
                         "{:.1f}".format(lj14)
                     )
                 else:
-                    scaled_eps_list = [adj.type.epsilon for adj in structure.adjusts]
+                    scaled_eps_list = [
+                        adj.type.epsilon for adj in structure.adjusts
+                    ]
                     for i_adj, combined_eps in enumerate(combined_eps_list):
                         if combined_eps != 0:
                             lj14 = scaled_eps_list[i_adj] / combined_eps
