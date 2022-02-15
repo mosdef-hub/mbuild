@@ -19,12 +19,22 @@ class TestJSONFormats(BaseTest):
 
     def test_box(self):
         meth = mb.load("C", smiles=True)
+
+        meth.save("meth_no_box.json")
+        meth_no_box = mb.load("meth_no_box.json")
+        assert meth_no_box.box is None
+
         meth.box = mb.Box(lengths=(3, 3, 3), angles=(45, 45, 45))
         meth.save("meth_with_box.json")
-
-        loaded_meth = mb.load("meth_with_box.json")
-        assert meth.box.lengths == loaded_meth.box.lengths == (3, 3, 3)
-        assert meth.box.angles == loaded_meth.box.angles
+        meth_with_box = mb.load("meth_with_box.json")
+        assert (
+            meth.n_particles
+            == meth_with_box.n_particles
+            == meth_no_box.n_particles
+        )
+        assert meth.n_bonds == meth_with_box.n_bonds == meth_no_box.n_bonds
+        assert meth.box.lengths == meth_with_box.box.lengths == (3, 3, 3)
+        assert meth.box.angles == meth_with_box.box.angles
 
     def test_loop_with_ports(self):
         from mbuild.lib.moieties import CH3
