@@ -1566,6 +1566,19 @@ class TestCompound(BaseTest):
         with pytest.warns(UserWarning):
             compound.box = Box(lengths=[1.0, 1.0, 1.0], angles=angles)
 
+    def test_get_boundingbox_extrema(self):
+        h1 = mb.Compound()
+        h2 = mb.Compound()
+        h1.pos = [-0.07590747, 0.00182889, 0.00211742]
+        h2.pos = [0.07590747, -0.00182889, -0.00211742]
+        container = mb.Compound([h1, h2])
+        with pytest.raises(
+            MBuildError, match=r"The vectors to define the box are co\-linear\,"
+        ):
+            container.get_boundingbox()
+
+        assert container.get_boundingbox(pad_box=True)
+
     @pytest.mark.skipif(not has_py3Dmol, reason="Py3Dmol is not installed")
     def test_visualize_py3dmol(self, ethane):
         py3Dmol = import_("py3Dmol")

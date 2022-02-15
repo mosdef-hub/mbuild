@@ -1298,10 +1298,15 @@ class Compound(object):
         """Return the maximum x, y, z coordinate of any particle in this compound."""
         return self.xyz.max(axis=0)
 
-    def get_boundingbox(self):
+    def get_boundingbox(self, pad_box=False):
         """Compute the bounding box of the compound.
 
         Compute and store the rectangular bounding box of the Compound.
+
+        Parameters
+        ----------
+        pad_box: bool, optional, default=False
+            If bounding box would result in co-linear vectors, pad each box length by 1nm.
 
         Returns
         -------
@@ -1347,7 +1352,24 @@ class Compound(object):
         for i, dim in enumerate(has_dimension):
             if not dim:
                 vecs[i][i] = 1.0
-        return Box.from_vectors(vectors=np.asarray([vecs]).reshape(3, 3))
+        try:
+            bounding_box = Box.from_vectors(
+                vectors=np.asarray([vecs]).reshape(3, 3)
+            )
+        except MBuildError as err:
+            if (
+                "The vectors to define the box are co-linear" in err.args[0]
+                and pad_box
+            ):
+                for dim in range(len(vecs)):
+                    vecs[dim][dim] = vecs[dim][dim] + 1.0  # 1nm padding
+                bounding_box = Box.from_vectors(
+                    vectors=np.asarray([vecs]).reshape(3, 3)
+                )
+            else:
+                raise (err)
+
+        return bounding_box
 
     def min_periodic_distance(self, xyz0, xyz1):
         """Vectorized distance calculation considering minimum image.
