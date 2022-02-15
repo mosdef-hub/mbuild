@@ -68,6 +68,9 @@ def compound_from_json(json_file):
         _add_ports(compound_dict, converted_dict)
         _add_bonds(compound_dict, parent, converted_dict)
 
+        box = compound_dict.get("box")
+        if box is not None:
+            parent.box = mb.Box(lengths=box["lengths"], angles=box["angles"])
         return parent
 
 
@@ -137,6 +140,7 @@ def _particle_info(cmpd, include_ports=False):
     particle_dict["pos"] = cmpd.pos.tolist()
     particle_dict["charge"] = cmpd.charge
     particle_dict["element"] = cmpd.element
+    particle_dict["box"] = _box_info(cmpd)
 
     if include_ports:
         particle_dict["ports"] = list()
@@ -163,6 +167,16 @@ def _bond_info(cmpd):
     return bond_list
 
 
+def _box_info(cmpd):
+    """Given a compound, return the box information."""
+    if cmpd.box:
+        box_info = {"lengths": cmpd.box.lengths, "angles": cmpd.box.angles}
+    else:
+        box_info = None
+
+    return box_info
+
+
 def _dict_to_mb(compound_dict):
     """Given a dictionary, return the equivelent mb.Compound."""
     name = compound_dict.get("name", "Compound")
@@ -170,6 +184,7 @@ def _dict_to_mb(compound_dict):
     charge = compound_dict.get("charge", 0.0)
     periodicity = compound_dict.get("periodicity", (False, False, False))
     element = compound_dict.get("element", None)
+    box = compound_dict.get("box", None)
     if isinstance(element, ele.element.Element):
         pass
     elif isinstance(element, list):
@@ -180,12 +195,16 @@ def _dict_to_mb(compound_dict):
     else:
         pass
 
+    if box is not None:
+        box = mb.Box(lengths=box["lengths"], angles=box["angles"])
+
     this_particle = mb.Compound(
         name=name,
         pos=pos,
         charge=charge,
         periodicity=periodicity,
         element=element,
+        box=box,
     )
     return this_particle
 
