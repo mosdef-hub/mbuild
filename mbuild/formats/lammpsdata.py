@@ -723,6 +723,7 @@ def _get_angle_types(
                     )
                     for angle in structure.angles
                 ]
+
             )
         )
         unique_angle_types = OrderedDict(
@@ -732,11 +733,7 @@ def _get_angle_types(
             unique_angle_types[
                 (
                     round(
-                        angle.type.k
-                        * (
-                            sigma_conversion_factor**2
-                            / epsilon_conversion_factor
-                        ),
+                        angle.type.k * (1 / epsilon_conversion_factor),
                         3,
                     ),
                     round(angle.type.theteq, 3),
