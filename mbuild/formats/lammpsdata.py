@@ -723,7 +723,6 @@ def _get_angle_types(
                     )
                     for angle in structure.angles
                 ]
-
             )
         )
         unique_angle_types = OrderedDict(
