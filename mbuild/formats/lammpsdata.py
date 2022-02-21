@@ -624,21 +624,23 @@ def _get_bond_types(
     """Will get the bond types from a parmed structure and convert them to lammps real units."""
     unique_bond_types = OrderedDict(
         enumerate(
-            [
-                (
-                    round(
-                        bond.type.k
-                        * (
-                            sigma_conversion_factor**2
-                            / epsilon_conversion_factor
+            set(
+                 [
+                     (
+                        round(
+                            bond.type.k
+                            * (
+                                sigma_conversion_factor**2
+                                / epsilon_conversion_factor
+                            ),
+                            3,
                         ),
-                        3,
-                    ),
-                    round(bond.type.req / sigma_conversion_factor, 3),
-                    tuple(sorted((bond.atom1.type, bond.atom2.type))),
-                )
-                for bond in structure.bonds
-            ]
+                        round(bond.type.req / sigma_conversion_factor, 3),
+                        tuple(sorted((bond.atom1.type, bond.atom2.type))),
+                    )
+                    for bond in structure.bonds
+                ]
+            )
         )
     )
     unique_bond_types = OrderedDict(
@@ -711,18 +713,20 @@ def _get_angle_types(
     else:
         unique_angle_types = OrderedDict(
             enumerate(
-                [
-                    (
-                        round(
-                            angle.type.k * (1 / epsilon_conversion_factor),
-                            3,
-                        ),
-                        round(angle.type.theteq, 3),
-                        angle.atom2.type,
-                        tuple(sorted((angle.atom1.type, angle.atom3.type))),
-                    )
-                    for angle in structure.angles
-                ]
+                set(
+                    [
+                        (
+                            round(
+                                angle.type.k * (1 / epsilon_conversion_factor),
+                                3,
+                            ),
+                            round(angle.type.theteq, 3),
+			    angle.atom2.type,
+			    tuple(sorted((angle.atom1.type, angle.atom3.type))),
+		        )
+		        for angle in structure.angles
+		    ]
+                )
             )
         )
         unique_angle_types = OrderedDict(
@@ -762,23 +766,25 @@ def _get_dihedral_types(
     if use_rb_torsions:
         unique_dihedral_types = OrderedDict(
             enumerate(
-                [
-                    (
-                        round(dihedral.type.c0 * lj_unit, 5),
-                        round(dihedral.type.c1 * lj_unit, 5),
-                        round(dihedral.type.c2 * lj_unit, 5),
-                        round(dihedral.type.c3 * lj_unit, 5),
-                        round(dihedral.type.c4 * lj_unit, 5),
-                        round(dihedral.type.c5 * lj_unit, 5),
-                        round(dihedral.type.scee, 1),
-                        round(dihedral.type.scnb, 1),
-                        dihedral.atom1.type,
-                        dihedral.atom2.type,
-                        dihedral.atom3.type,
-                        dihedral.atom4.type,
-                    )
+                set(
+                    [
+                        (
+			    round(dihedral.type.c0 * lj_unit, 5),
+			    round(dihedral.type.c1 * lj_unit, 5),
+			    round(dihedral.type.c2 * lj_unit, 5),
+			    round(dihedral.type.c3 * lj_unit, 5),
+			    round(dihedral.type.c4 * lj_unit, 5),
+			    round(dihedral.type.c5 * lj_unit, 5),
+			    round(dihedral.type.scee, 1),
+			    round(dihedral.type.scnb, 1),
+			    dihedral.atom1.type,
+			    dihedral.atom2.type,
+			    dihedral.atom3.type,
+			    dihedral.atom4.type,
+                        )
                     for dihedral in structure.rb_torsions
-                ]
+                    ]
+                )
             )
         )
         unique_dihedral_types = OrderedDict(
