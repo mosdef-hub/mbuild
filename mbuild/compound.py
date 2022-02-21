@@ -2239,6 +2239,47 @@ class Compound(object):
         self.rotate(theta, around)
         self.translate(center_pos)
 
+    # Interface to GMSO Topology for reading/writing mol2 files
+    def from_gmso(self, topology, coords_only=False, infer_hierarchy=True):
+        """Convert a GMSO Topology to mBuild Compound.
+
+        Parameter
+        ---------
+        topology : gmso.Topology
+            The GMSO Topology to be converted.
+        compound : mb.Compound, optional, default=None
+            Host mb.Compound that we are loading to.
+        coords_only : bool, optional, default=False
+            Set preexisting atoms in compound to coordinates given by Topology.
+        infer_hierarchy : bool, optional, default=True
+            If True, infer compound hierarchy from Topology residue, to be implemented.
+
+        Returns
+        -------
+        compound : mb.Compound
+        """
+        return conversion.from_gmso(
+            topology=topology,
+            compound=self,
+            coords_only=coords_only,
+            infer_hierarchy=infer_hierarchy,
+        )
+
+    def to_gmso(self):
+        """Create a GMSO Topology from a mBuild Compound.
+
+        Parameters
+        ----------
+        compound : mb.Compound
+            The mb.Compound to be converted.
+
+        Returns
+        -------
+        topology : gmso.Topology
+            The converted gmso Topology
+        """
+        return conversion.to_gmso(self)
+
     # Interface to Trajectory for reading/writing .pdb and .mol2 files.
     # -----------------------------------------------------------------
     def from_trajectory(

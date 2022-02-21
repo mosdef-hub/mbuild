@@ -25,6 +25,7 @@ from mbuild.formats.lammpsdata import write_lammpsdata
 from mbuild.formats.par_writer import write_par
 from mbuild.formats.xyz import read_xyz, write_xyz
 from mbuild.utils.io import (
+    has_gmso,
     has_mdtraj,
     has_networkx,
     has_openbabel,
@@ -85,7 +86,7 @@ def load(
         If True, ignore warning if no box is present. Defaults to True when
         loading from SMILES
     ``**kwargs`` : keyword arguments
-        Key word arguments passed to mdTraj, RDKit, or pybel for loading.
+        Key word arguments passed to mdTraj, GMSO, RDKit, or pybel for loading.
 
     Returns
     -------
@@ -172,6 +173,10 @@ def load_object(
     # Create type_dict type -> loading method
     # Will need to add a gmso method soon
     type_dict = {pmd.Structure: from_parmed}
+    if has_gmso:
+        gmso = import_("gmso")
+        type_dict.update({gmso.Topology: from_gmso})
+
     if has_openbabel:
         pybel = import_("pybel")
         type_dict.update({pybel.Molecule: from_pybel})
@@ -419,6 +424,18 @@ def load_file(
         elif extension == ".xyz" and "top" in kwargs:
             backend = "mdtraj"
 
+    # Then gmso reader
+    if backend == "gmso":
+        gmso = import_("gmso")
+
+        top = gmso.Topology.load(filename=filename)
+        compound = from_gmso(
+            topology=top,
+            compound=compound,
+            coords_only=coords_only,
+            infer_hierarchy=infer_hierarchy,
+        )
+
     # Then pybel reader
     elif backend == "pybel":
         pybel = import_("pybel")
@@ -482,7 +499,7 @@ def load_file(
 
 
 def from_parmed(
-    structure, compound=None, coords_only=False, infer_hierarchy=True
+    structure, compound=None, coords_only=False, infer_hierarchy=True, **kwargs
 ):
     """Backend-specific loading function - parmed.
 
@@ -509,13 +526,12 @@ def from_parmed(
                 f"Structure: {len(structure.atoms)} atoms"
                 f"Compound: {compound.n_particles} atoms"
             )
-        atoms_particles = zip(
-            structure.atoms, compound.particles(include_ports=False)
-        )
         if None in compound._particles(include_ports=False):
             raise ValueError("Some particles are None")
 
-        for pmd_atom, particle in atoms_particles:
+        for pmd_atom, particle in zip(
+            structure.atoms, compound.particles(include_ports=False)
+        ):
             particle.pos = (
                 np.array([pmd_atom.xx, pmd_atom.xy, pmd_atom.xz]) / 10
             )
@@ -579,7 +595,12 @@ def from_parmed(
 
 
 def from_trajectory(
-    traj, compound=None, frame=-1, coords_only=False, infer_hierarchy=True
+    traj,
+    compound=None,
+    frame=-1,
+    coords_only=False,
+    infer_hierarchy=True,
+    **kwargs,
 ):
     """Extract atoms and bonds from a md.Trajectory.
 
@@ -612,14 +633,12 @@ def from_trajectory(
                     **locals()
                 )
             )
-        atoms_particles = zip(
-            traj.topology.atoms, compound.particles(include_ports=False)
-        )
-
         if None in compound._particles(include_ports=False):
             raise ValueError("Some particles are None")
 
-        for mdtraj_atom, particle in atoms_particles:
+        for mdtraj_atom, particle in zip(
+            traj.topology.atoms, compound.particles(include_ports=False)
+        ):
             particle.pos = traj.xyz[frame, mdtraj_atom.index]
         return compound
 
@@ -677,6 +696,7 @@ def from_pybel(
     coords_only=False,
     infer_hierarchy=True,
     ignore_box_warn=False,
+    **kwargs,
 ):
     """Create a Compound from a Pybel.Molecule.
 
@@ -840,6 +860,56 @@ def from_rdkit(rdkit_mol, compound=None, coords_only=False, smiles_seed=0):
         )
 
     return comp
+
+
+def from_gmso(
+    topology, compound=None, coords_only=False, infer_hierarchy=True, **kwargs
+):
+    """Convert a GMSO Topology to mBuild Compound.
+
+    Parameter
+    ---------
+    topology : gmso.Topology
+        The GMSO Topology to be converted.
+    compound : mb.Compound, optional, default=None
+        Host mb.Compound that we are loading to.
+    coords_only : bool, optional, default=False
+        Set preexisting atoms in compound to coordinates given by Topology.
+    infer_hierarchy : bool, optional, default=True
+        If True, infer compound hierarchy from Topology residue, to be implemented.
+
+    Returns
+    -------
+    compound : mb.Compound
+    """
+    import unyt as u
+    from gmso.external.convert_mbuild import to_mbuild
+
+    if compound and coords_only:
+        if topology.n_sites != compound.n_particles:
+            raise ValueError(
+                f"Number of sites in {topology} does not match {compound}"
+                f"Topology: {topology.n_sites} sites"
+                f"Compound: {compound.n_particles} particles"
+            )
+
+        if None in compound._particles(include_ports=False):
+            raise ValueError("Some particles are None")
+
+        for site, particle in zip(
+            topology.sites, compound.particles(include_ports=False)
+        ):
+            particle.pos = np.array(site.position.to(u.nm).value)
+        return compound
+    elif not compound and coords_only:
+        raise MBuildError("coords_only=True but host compound is not provided")
+
+    # Convert gmso Topology to mbuild Compound
+    if not compound:
+        return to_mbuild(topology, **kwargs)
+    else:
+        compound.add(to_mbuild(topology), **kwargs)
+    return compound
 
 
 def save(
@@ -1535,6 +1605,24 @@ def _iterate_children(compound, nodes, edges, names_only=False):
             child, nodes, edges, names_only=names_only
         )
     return nodes, edges
+
+
+def to_gmso(compound):
+    """Create a GMSO Topology from a mBuild Compound.
+
+    Parameters
+    ----------
+    compound : mb.Compound
+        The mb.Compound to be converted.
+
+    Returns
+    -------
+    topology : gmso.Topology
+        The converted gmso Topology
+    """
+    from gmso.external.convert_mbuild import from_mbuild
+
+    return from_mbuild(compound)
 
 
 def to_intermol(compound, molecule_types=None):  # pragma: no cover

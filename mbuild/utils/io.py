@@ -303,6 +303,7 @@ try:
     del mdtraj
 except ImportError:
     has_mdtraj = False
+
 try:
     import foyer
 
@@ -310,6 +311,13 @@ try:
     del foyer
 except ImportError:
     has_foyer = False
+
+try:
+    import gmso
+
+    has_gmso = True
+except ImportError:
+    has_gmso = False
 
 try:
     import networkx
