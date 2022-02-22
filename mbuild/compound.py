@@ -7,6 +7,7 @@ import tempfile
 from collections import OrderedDict
 from collections.abc import Iterable
 from copy import deepcopy
+from typing import Sequence
 from warnings import warn
 
 import ele
@@ -1298,15 +1299,19 @@ class Compound(object):
         """Return the maximum x, y, z coordinate of any particle in this compound."""
         return self.xyz.max(axis=0)
 
-    def get_boundingbox(self, pad_box=False):
+    def get_boundingbox(self, pad_box=None):
         """Compute the bounding box of the compound.
 
         Compute and store the rectangular bounding box of the Compound.
 
         Parameters
         ----------
-        pad_box: bool, optional, default=False
-            If bounding box would result in co-linear vectors, pad each box length by 1nm.
+        pad_box: Sequence, optional, default=None
+            Pad all lengths or a list of lengths by a specified amount in nm.
+            Acceptable values are:
+                * A single float: apply this pad value to all 3 box lengths.
+                * A sequence of length 1: apply this pad value to all 3 box lengths.
+                * A sequence of length 3: apply these pad values to the a, b, c box lengths.
 
         Returns
         -------
@@ -1352,23 +1357,31 @@ class Compound(object):
         for i, dim in enumerate(has_dimension):
             if not dim:
                 vecs[i][i] = 1.0
-        try:
-            bounding_box = Box.from_vectors(
-                vectors=np.asarray([vecs]).reshape(3, 3)
-            )
-        except MBuildError as err:
-            if (
-                "The vectors to define the box are co-linear" in err.args[0]
-                and pad_box
-            ):
-                for dim in range(len(vecs)):
-                    vecs[dim][dim] = vecs[dim][dim] + 1.0  # 1nm padding
-                bounding_box = Box.from_vectors(
-                    vectors=np.asarray([vecs]).reshape(3, 3)
-                )
-            else:
-                raise (err)
 
+        if pad_box is not None:
+            if isinstance(pad_box, (int, float, str, Sequence)):
+                if isinstance(pad_box, Sequence):
+                    if len(pad_box) == 1:
+                        padding = [float(pad_box[0])] * 3
+                    elif len(pad_box) == 3:
+                        padding = [float(val) for val in pad_box]
+                    else:
+                        raise TypeError(
+                            f"Expected a Sequence of length 1 or 3 for pad_box. Provided: {len(pad_box)}"
+                        )
+                else:
+                    pad_box = float(pad_box)
+                    padding = [pad_box] * 3
+            else:
+                raise TypeError(
+                    f"Expected a value of type: int, float, str, or Sequence, was provided: {type(pad_box)}"
+                )
+            for dim, val in enumerate(padding):
+                vecs[dim][dim] = vecs[dim][dim] + val
+
+        bounding_box = Box.from_vectors(
+            vectors=np.asarray([vecs]).reshape(3, 3)
+        )
         return bounding_box
 
     def min_periodic_distance(self, xyz0, xyz1):
