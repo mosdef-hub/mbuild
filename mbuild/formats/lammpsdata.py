@@ -11,6 +11,7 @@ from scipy.constants import epsilon_0
 from mbuild import Box
 from mbuild.utils.conversion import RB_to_OPLS
 from mbuild.utils.sorting import natural_sort
+from mbuild.utils.orderedset import OrderedSet
 
 __all__ = ["write_lammpsdata"]
 # Define constants for conversions
@@ -624,8 +625,8 @@ def _get_bond_types(
     """Will get the bond types from a parmed structure and convert them to lammps real units."""
     unique_bond_types = OrderedDict(
         enumerate(
-            set(
-                 [
+            OrderedSet(
+                 *[
                      (
                         round(
                             bond.type.k
@@ -702,7 +703,7 @@ def _get_angle_types(
                 )
             )
 
-        unique_angle_types = OrderedDict(enumerate(set(charmm_angle_types)))
+        unique_angle_types = OrderedDict(enumerate(OrderedSet(*charmm_angle_types)))
         unique_angle_types = OrderedDict(
             [(y, x + 1) for x, y in unique_angle_types.items()]
         )
@@ -713,8 +714,8 @@ def _get_angle_types(
     else:
         unique_angle_types = OrderedDict(
             enumerate(
-                set(
-                    [
+                OrderedSet(
+                    *[
                         (
                             round(
                                 angle.type.k * (1 / epsilon_conversion_factor),
@@ -766,8 +767,8 @@ def _get_dihedral_types(
     if use_rb_torsions:
         unique_dihedral_types = OrderedDict(
             enumerate(
-                set(
-                    [
+                OrderedSet(
+                    *[
                         (
 			    round(dihedral.type.c0 * lj_unit, 5),
 			    round(dihedral.type.c1 * lj_unit, 5),
