@@ -657,7 +657,7 @@ def _get_bond_types(
                     ),
                     bond_precision,
                 ),
-                round(bond.type.req / sigma_conversion_factor, bond_precision,
+                round(bond.type.req / sigma_conversion_factor, bond_precision),
                 tuple(sorted((bond.atom1.type, bond.atom2.type))),
             )
         ]
@@ -741,7 +741,7 @@ def _get_angle_types(
                 (
                     round(
                         angle.type.k * (1 / epsilon_conversion_factor),
-                        angle_precision),
+                        angle_precision,
                     ),
                     round(angle.type.theteq, angle_precision),
                     angle.atom2.type,
@@ -781,7 +781,7 @@ def _get_dihedral_types(
                             round(dihedral.type.c4 * lj_unit, dihedral_precision),
                             round(dihedral.type.c5 * lj_unit, dihedral_precision),
                             round(dihedral.type.scee, 1),
-                            round(dihedral.type.scnb, 1)
+                            round(dihedral.type.scnb, 1),
                             dihedral.atom1.type,
                             dihedral.atom2.type,
                             dihedral.atom3.type,
@@ -873,7 +873,7 @@ def _get_improper_dihedral_types(structure, epsilon_conversion_factor, imp_dih_p
                 d = 1
             improper_dihedrals.append(
                 (
-                    round(dih_type.phi_k * lj_unit, imp_dih_precision)),
+                    round(dih_type.phi_k * lj_unit, imp_dih_precision),
                     d,
                     int(round(dih_type.per, 0)),
                     round(dih_type.scee, 1),
