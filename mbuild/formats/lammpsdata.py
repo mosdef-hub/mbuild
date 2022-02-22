@@ -10,8 +10,8 @@ from scipy.constants import epsilon_0
 
 from mbuild import Box
 from mbuild.utils.conversion import RB_to_OPLS
-from mbuild.utils.sorting import natural_sort
 from mbuild.utils.orderedset import OrderedSet
+from mbuild.utils.sorting import natural_sort
 
 __all__ = ["write_lammpsdata"]
 # Define constants for conversions
@@ -626,8 +626,8 @@ def _get_bond_types(
     unique_bond_types = OrderedDict(
         enumerate(
             OrderedSet(
-                 *[
-                     (
+                *[
+                    (
                         round(
                             bond.type.k
                             * (
@@ -703,7 +703,9 @@ def _get_angle_types(
                 )
             )
 
-        unique_angle_types = OrderedDict(enumerate(OrderedSet(*charmm_angle_types)))
+        unique_angle_types = OrderedDict(
+            enumerate(OrderedSet(*charmm_angle_types))
+        )
         unique_angle_types = OrderedDict(
             [(y, x + 1) for x, y in unique_angle_types.items()]
         )
@@ -722,11 +724,11 @@ def _get_angle_types(
                                 3,
                             ),
                             round(angle.type.theteq, 3),
-			    angle.atom2.type,
-			    tuple(sorted((angle.atom1.type, angle.atom3.type))),
-		        )
-		        for angle in structure.angles
-		    ]
+                            angle.atom2.type,
+                            tuple(sorted((angle.atom1.type, angle.atom3.type))),
+                        )
+                        for angle in structure.angles
+                    ]
                 )
             )
         )
@@ -770,20 +772,20 @@ def _get_dihedral_types(
                 OrderedSet(
                     *[
                         (
-			    round(dihedral.type.c0 * lj_unit, 5),
-			    round(dihedral.type.c1 * lj_unit, 5),
-			    round(dihedral.type.c2 * lj_unit, 5),
-			    round(dihedral.type.c3 * lj_unit, 5),
-			    round(dihedral.type.c4 * lj_unit, 5),
-			    round(dihedral.type.c5 * lj_unit, 5),
-			    round(dihedral.type.scee, 1),
-			    round(dihedral.type.scnb, 1),
-			    dihedral.atom1.type,
-			    dihedral.atom2.type,
-			    dihedral.atom3.type,
-			    dihedral.atom4.type,
+                            round(dihedral.type.c0 * lj_unit, 5),
+                            round(dihedral.type.c1 * lj_unit, 5),
+                            round(dihedral.type.c2 * lj_unit, 5),
+                            round(dihedral.type.c3 * lj_unit, 5),
+                            round(dihedral.type.c4 * lj_unit, 5),
+                            round(dihedral.type.c5 * lj_unit, 5),
+                            round(dihedral.type.scee, 1),
+                            round(dihedral.type.scnb, 1),
+                            dihedral.atom1.type,
+                            dihedral.atom2.type,
+                            dihedral.atom3.type,
+                            dihedral.atom4.type,
                         )
-                    for dihedral in structure.rb_torsions
+                        for dihedral in structure.rb_torsions
                     ]
                 )
             )
