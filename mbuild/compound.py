@@ -1309,9 +1309,11 @@ class Compound(object):
         pad_box: Sequence, optional, default=None
             Pad all lengths or a list of lengths by a specified amount in nm.
             Acceptable values are:
-                * A single float: apply this pad value to all 3 box lengths.
-                * A sequence of length 1: apply this pad value to all 3 box lengths.
-                * A sequence of length 3: apply these pad values to the a, b, c box lengths.
+
+                - A single float: apply this pad value to all 3 box lengths.
+                - A sequence of length 1: apply this pad value to all 3 box lengths.
+                - A sequence of length 3: apply these pad values to the a, b, c box lengths.
+
 
         Returns
         -------
