@@ -186,6 +186,7 @@ class TestLammpsData(BaseTest):
                 assert "# harmonic" in line
                 assert "k, phi" in out_lammps[i + 1]
                 assert len(out_lammps[i + 2].split("#")[0].split()) == 3
+                assert out_lammps[i + 2].split("#")[0].split()[0] == "1"
                 found_impropers = True
         assert found_impropers
 
@@ -214,18 +215,21 @@ class TestLammpsData(BaseTest):
                     "#\tk(kcal/mol/rad^2)\t\ttheteq(deg)" in out_lammps[i + 1]
                 )
                 assert len(out_lammps[i + 2].split("#")[0].split()) == 3
+                assert out_lammps[i + 2].split("#")[0].split()[0] == "1"
                 found_angles = True
             elif "Dihedral Coeffs" in line:
                 assert "# charmm" in line
                 assert "#k, n, phi, weight" in out_lammps[i + 1]
                 assert len(out_lammps[i + 2].split("#")[0].split()) == 5
                 assert float(out_lammps[i + 2].split("#")[0].split()[4]) == 0.0
+                assert out_lammps[i + 2].split("#")[0].split()[0] == "1"
                 found_dihedrals = True
             elif "Improper Coeffs" in line:
                 assert "# cvff" in line
                 assert "#K, d, n" in out_lammps[i + 1]
                 assert len(out_lammps[i + 2].split("#")[0].split()) == 4
                 assert out_lammps[i + 2].split("#")[0].split()[2] == "-1"
+                assert out_lammps[i + 2].split("#")[0].split()[0] == "1"
                 found_impropers = True
             else:
                 pass

@@ -835,7 +835,7 @@ def _get_dihedral_types(
                         )
                     )
 
-        unique_dihedral_types = OrderedDict(enumerate(set(charmm_dihedrals)))
+        unique_dihedral_types = OrderedDict(enumerate(OrderedSet(*charmm_dihedrals)))
         unique_dihedral_types = OrderedDict(
             [(y, x + 1) for x, y in unique_dihedral_types.items()]
         )
@@ -878,7 +878,7 @@ def _get_improper_dihedral_types(structure, epsilon_conversion_factor):
                     dihedral.atom4.type,
                 )
             )
-    unique_imp_dihedral_types = dict(enumerate(set(improper_dihedrals)))
+    unique_imp_dihedral_types = dict(enumerate(OrderedSet(*improper_dihedrals)))
     unique_imp_dihedral_types = OrderedDict(
         [(y, x + 1) for x, y in unique_imp_dihedral_types.items()]
     )
@@ -899,8 +899,8 @@ def _get_impropers(structure, epsilon_conversion_factor):
     lj_unit = 1 / epsilon_conversion_factor
     unique_improper_types = dict(
         enumerate(
-            set(
-                [
+            OrderedSet(
+                *[
                     (
                         round(improper.type.psi_k * lj_unit, 3),
                         round(improper.type.psi_eq, 3),
