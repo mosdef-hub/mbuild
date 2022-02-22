@@ -839,7 +839,9 @@ def _get_dihedral_types(
                         )
                     )
 
-        unique_dihedral_types = OrderedDict(enumerate(OrderedSet(*charmm_dihedrals)))
+        unique_dihedral_types = OrderedDict(
+            enumerate(OrderedSet(*charmm_dihedrals))
+        )
         unique_dihedral_types = OrderedDict(
             [(y, x + 1) for x, y in unique_dihedral_types.items()]
         )
