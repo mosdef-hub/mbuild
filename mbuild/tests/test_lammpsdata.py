@@ -561,7 +561,7 @@ class TestLammpsData(BaseTest):
                 line = fi.readline()
                 if "Bond Coeffs" in line:
                     fi.readline()
-                    for i,bond_params in enumerate(ethane_lj_bonds):
+                    for i, bond_params in enumerate(ethane_lj_bonds):
                         print(bond_params)
                         line = fi.readline()
                         assert np.allclose(
@@ -633,7 +633,7 @@ class TestLammpsData(BaseTest):
                 line = fi.readline()
                 if "Angle Coeffs" in line:
                     fi.readline()
-                    for i,angle_params in enumerate(ethane_real_angles):
+                    for i, angle_params in enumerate(ethane_real_angles):
                         line = fi.readline()
                         assert np.allclose(
                             (float(line.split()[1]), float(line.split()[2])),
