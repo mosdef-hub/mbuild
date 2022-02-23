@@ -1052,7 +1052,7 @@ def save(
             foyer_kwargs = {}
         structure = ff.apply(structure, **foyer_kwargs)
         if structure.combining_rule != combining_rule:
-            warnings.warn(
+            warn(
                 "Trying to set a new combining rule for Structure."
                 "Please note this will not update Structure.adjusts if"
                 "that field is used to store the vdw 1-4 interactions."
