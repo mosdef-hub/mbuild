@@ -1051,7 +1051,12 @@ def save(
         if not foyer_kwargs:
             foyer_kwargs = {}
         structure = ff.apply(structure, **foyer_kwargs)
+        # Raise warning
         structure.combining_rule = combining_rule
+        if structure.defaults:
+            structure.defaults.comb_rule = (
+                2 if combining_rule == "lorentz" else 3
+            )
 
     total_charge = sum([atom.charge for atom in structure])
     if round(total_charge, 4) != 0.0:
