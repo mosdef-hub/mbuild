@@ -1058,7 +1058,7 @@ def save(
                 "that field is used to store the vdw 1-4 interactions."
             )
         structure.combining_rule = combining_rule
-        if structure.defaults:
+        if structure.__dict__.get("defaults"):
             structure.defaults.comb_rule = (
                 2 if combining_rule == "lorentz" else 3
             )
