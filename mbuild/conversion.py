@@ -1053,9 +1053,11 @@ def save(
         structure = ff.apply(structure, **foyer_kwargs)
         if structure.combining_rule != combining_rule:
             warn(
-                "Trying to set a new combining rule for Structure."
-                "Please note this will not update Structure.adjusts if"
-                "that field is used to store the vdw 1-4 interactions."
+                f"Overwriting forcefield-specified combining rule ({combining_rule})"
+                f"to new combining rule ({combining_rule})."
+                "This can cause inconsistent between the 1-4 pair interactions,"
+                "calculated in foyer, and the new combining rule."
+                "Consider directly changing the metadata of the Forcefield."
             )
         structure.combining_rule = combining_rule
         if structure.__dict__.get("defaults"):
