@@ -186,6 +186,7 @@ class TestLammpsData(BaseTest):
                 assert "# harmonic" in line
                 assert "k, phi" in out_lammps[i + 1]
                 assert len(out_lammps[i + 2].split("#")[0].split()) == 3
+                assert out_lammps[i + 2].split("#")[0].split()[0] == "1"
                 found_impropers = True
         assert found_impropers
 
@@ -214,18 +215,21 @@ class TestLammpsData(BaseTest):
                     "#\tk(kcal/mol/rad^2)\t\ttheteq(deg)" in out_lammps[i + 1]
                 )
                 assert len(out_lammps[i + 2].split("#")[0].split()) == 3
+                assert out_lammps[i + 2].split("#")[0].split()[0] == "1"
                 found_angles = True
             elif "Dihedral Coeffs" in line:
                 assert "# charmm" in line
                 assert "#k, n, phi, weight" in out_lammps[i + 1]
                 assert len(out_lammps[i + 2].split("#")[0].split()) == 5
                 assert float(out_lammps[i + 2].split("#")[0].split()[4]) == 0.0
+                assert out_lammps[i + 2].split("#")[0].split()[0] == "1"
                 found_dihedrals = True
             elif "Improper Coeffs" in line:
                 assert "# cvff" in line
                 assert "#K, d, n" in out_lammps[i + 1]
                 assert len(out_lammps[i + 2].split("#")[0].split()) == 4
                 assert out_lammps[i + 2].split("#")[0].split()[2] == "-1"
+                assert out_lammps[i + 2].split("#")[0].split()[0] == "1"
                 found_impropers = True
             else:
                 pass
@@ -552,16 +556,16 @@ class TestLammpsData(BaseTest):
         fn = lj_save(ethane, Path.cwd())
         checked_section = False
         ethane_bondsk = (
-            np.array([224262.4, 284512.0]) * (0.35) ** 2 / (0.276144) / 2
+            np.array([284512.0, 224262.4]) * (0.35) ** 2 / (0.276144) / 2
         )  # kj/mol/nm**2 to lammps
-        ethane_bondsreq = np.array([0.1529, 0.109]) * 0.35**-1  # unitless
+        ethane_bondsreq = np.array([0.109, 0.1529]) * 0.35**-1  # unitless
         ethane_lj_bonds = zip(ethane_bondsk, ethane_bondsreq)
         with open(fn, "r") as fi:
             while not checked_section:
                 line = fi.readline()
                 if "Bond Coeffs" in line:
                     fi.readline()
-                    for bond_params in ethane_lj_bonds:
+                    for i, bond_params in enumerate(ethane_lj_bonds):
                         print(bond_params)
                         line = fi.readline()
                         assert np.allclose(
@@ -569,15 +573,16 @@ class TestLammpsData(BaseTest):
                             bond_params,
                             atol=1e-3,
                         )
+                    assert int(line.split()[0]) == i + 1
                     checked_section = True
 
     def test_real_bonds(self, ethane, real_save):
         fn = real_save(ethane, Path.cwd())
         checked_section = False
         ethane_bondsk = (
-            np.array([224262.4, 284512.0]) / KCAL_TO_KJ * ANG_TO_NM**2 / 2
+            np.array([284512.0, 224262.4]) / KCAL_TO_KJ * ANG_TO_NM**2 / 2
         )  # kj/mol/nm**2 to lammps
-        ethane_bondsreq = np.array([0.1529, 0.109]) / ANG_TO_NM
+        ethane_bondsreq = np.array([0.109, 0.1529]) / ANG_TO_NM
         ethane_real_bonds = zip(ethane_bondsk, ethane_bondsreq)
         with open(fn, "r") as fi:
             while not checked_section:
@@ -632,12 +637,13 @@ class TestLammpsData(BaseTest):
                 line = fi.readline()
                 if "Angle Coeffs" in line:
                     fi.readline()
-                    for angle_params in ethane_real_angles:
+                    for i, angle_params in enumerate(ethane_real_angles):
                         line = fi.readline()
                         assert np.allclose(
                             (float(line.split()[1]), float(line.split()[2])),
                             angle_params,
                         )
+                        assert int(line.split()[0]) == i + 1
                     checked_section = True
 
     def test_lj_dihedrals(self, ethane, lj_save):
@@ -682,6 +688,7 @@ class TestLammpsData(BaseTest):
                         ),
                         ethane_diheds,
                     )
+                    assert int(line.split()[0]) == 1
                     checked_section = True
 
     def test_lj_charges(self, ethane, lj_save):
