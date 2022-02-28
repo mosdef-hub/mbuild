@@ -10,6 +10,7 @@ from scipy.constants import epsilon_0
 
 from mbuild import Box
 from mbuild.utils.conversion import RB_to_OPLS
+from mbuild.utils.orderedset import OrderedSet
 from mbuild.utils.sorting import natural_sort
 
 __all__ = ["write_lammpsdata"]
@@ -619,26 +620,35 @@ def _check_minsmaxs(mins, maxs):
 
 
 def _get_bond_types(
-    structure, bonds, sigma_conversion_factor, epsilon_conversion_factor
+    structure,
+    bonds,
+    sigma_conversion_factor,
+    epsilon_conversion_factor,
+    bond_precision=3,
 ):
     """Will get the bond types from a parmed structure and convert them to lammps real units."""
     unique_bond_types = OrderedDict(
         enumerate(
-            [
-                (
-                    round(
-                        bond.type.k
-                        * (
-                            sigma_conversion_factor**2
-                            / epsilon_conversion_factor
+            OrderedSet(
+                *[
+                    (
+                        round(
+                            bond.type.k
+                            * (
+                                sigma_conversion_factor**2
+                                / epsilon_conversion_factor
+                            ),
+                            bond_precision,
                         ),
-                        3,
-                    ),
-                    round(bond.type.req / sigma_conversion_factor, 3),
-                    tuple(sorted((bond.atom1.type, bond.atom2.type))),
-                )
-                for bond in structure.bonds
-            ]
+                        round(
+                            bond.type.req / sigma_conversion_factor,
+                            bond_precision,
+                        ),
+                        tuple(sorted((bond.atom1.type, bond.atom2.type))),
+                    )
+                    for bond in structure.bonds
+                ]
+            )
         )
     )
     unique_bond_types = OrderedDict(
@@ -652,9 +662,9 @@ def _get_bond_types(
                     * (
                         sigma_conversion_factor**2 / epsilon_conversion_factor
                     ),
-                    3,
+                    bond_precision,
                 ),
-                round(bond.type.req / sigma_conversion_factor, 3),
+                round(bond.type.req / sigma_conversion_factor, bond_precision),
                 tuple(sorted((bond.atom1.type, bond.atom2.type))),
             )
         ]
@@ -668,6 +678,7 @@ def _get_angle_types(
     use_urey_bradleys,
     sigma_conversion_factor,
     epsilon_conversion_factor,
+    angle_precision=3,
 ):
     """
     Will get the angle types from a parmed structure and convert them to lammps real units.
@@ -691,16 +702,18 @@ def _get_angle_types(
                             sigma_conversion_factor**2
                             / epsilon_conversion_factor
                         ),
-                        3,
+                        angle_precision,
                     ),
-                    round(angle.type.theteq, 3),
-                    round(ub_k / epsilon_conversion_factor, 3),
-                    round(ub_req, 3),
+                    round(angle.type.theteq, angle_precision),
+                    round(ub_k / epsilon_conversion_factor, angle_precision),
+                    round(ub_req, angle_precision),
                     tuple(sorted((angle.atom1.type, angle.atom3.type))),
                 )
             )
 
-        unique_angle_types = OrderedDict(enumerate(set(charmm_angle_types)))
+        unique_angle_types = OrderedDict(
+            enumerate(OrderedSet(*charmm_angle_types))
+        )
         unique_angle_types = OrderedDict(
             [(y, x + 1) for x, y in unique_angle_types.items()]
         )
@@ -711,18 +724,20 @@ def _get_angle_types(
     else:
         unique_angle_types = OrderedDict(
             enumerate(
-                [
-                    (
-                        round(
-                            angle.type.k * (1 / epsilon_conversion_factor),
-                            3,
-                        ),
-                        round(angle.type.theteq, 3),
-                        angle.atom2.type,
-                        tuple(sorted((angle.atom1.type, angle.atom3.type))),
-                    )
-                    for angle in structure.angles
-                ]
+                OrderedSet(
+                    *[
+                        (
+                            round(
+                                angle.type.k * (1 / epsilon_conversion_factor),
+                                angle_precision,
+                            ),
+                            round(angle.type.theteq, angle_precision),
+                            angle.atom2.type,
+                            tuple(sorted((angle.atom1.type, angle.atom3.type))),
+                        )
+                        for angle in structure.angles
+                    ]
+                )
             )
         )
         unique_angle_types = OrderedDict(
@@ -733,9 +748,9 @@ def _get_angle_types(
                 (
                     round(
                         angle.type.k * (1 / epsilon_conversion_factor),
-                        3,
+                        angle_precision,
                     ),
-                    round(angle.type.theteq, 3),
+                    round(angle.type.theteq, angle_precision),
                     angle.atom2.type,
                     tuple(sorted((angle.atom1.type, angle.atom3.type))),
                 )
@@ -752,6 +767,7 @@ def _get_dihedral_types(
     use_dihedrals,
     epsilon_conversion_factor,
     zero_dihedral_weighting_factor,
+    dihedral_precision=5,
 ):
     """
     Will get the dihedral types from a parmed structure and convert them to lammps real units.
@@ -762,23 +778,37 @@ def _get_dihedral_types(
     if use_rb_torsions:
         unique_dihedral_types = OrderedDict(
             enumerate(
-                [
-                    (
-                        round(dihedral.type.c0 * lj_unit, 5),
-                        round(dihedral.type.c1 * lj_unit, 5),
-                        round(dihedral.type.c2 * lj_unit, 5),
-                        round(dihedral.type.c3 * lj_unit, 5),
-                        round(dihedral.type.c4 * lj_unit, 5),
-                        round(dihedral.type.c5 * lj_unit, 5),
-                        round(dihedral.type.scee, 1),
-                        round(dihedral.type.scnb, 1),
-                        dihedral.atom1.type,
-                        dihedral.atom2.type,
-                        dihedral.atom3.type,
-                        dihedral.atom4.type,
-                    )
-                    for dihedral in structure.rb_torsions
-                ]
+                OrderedSet(
+                    *[
+                        (
+                            round(
+                                dihedral.type.c0 * lj_unit, dihedral_precision
+                            ),
+                            round(
+                                dihedral.type.c1 * lj_unit, dihedral_precision
+                            ),
+                            round(
+                                dihedral.type.c2 * lj_unit, dihedral_precision
+                            ),
+                            round(
+                                dihedral.type.c3 * lj_unit, dihedral_precision
+                            ),
+                            round(
+                                dihedral.type.c4 * lj_unit, dihedral_precision
+                            ),
+                            round(
+                                dihedral.type.c5 * lj_unit, dihedral_precision
+                            ),
+                            round(dihedral.type.scee, 1),
+                            round(dihedral.type.scnb, 1),
+                            dihedral.atom1.type,
+                            dihedral.atom2.type,
+                            dihedral.atom3.type,
+                            dihedral.atom4.type,
+                        )
+                        for dihedral in structure.rb_torsions
+                    ]
+                )
             )
         )
         unique_dihedral_types = OrderedDict(
@@ -787,12 +817,12 @@ def _get_dihedral_types(
         dihedral_types = [
             unique_dihedral_types[
                 (
-                    round(dihedral.type.c0 * lj_unit, 5),
-                    round(dihedral.type.c1 * lj_unit, 5),
-                    round(dihedral.type.c2 * lj_unit, 5),
-                    round(dihedral.type.c3 * lj_unit, 5),
-                    round(dihedral.type.c4 * lj_unit, 5),
-                    round(dihedral.type.c5 * lj_unit, 5),
+                    round(dihedral.type.c0 * lj_unit, dihedral_precision),
+                    round(dihedral.type.c1 * lj_unit, dihedral_precision),
+                    round(dihedral.type.c2 * lj_unit, dihedral_precision),
+                    round(dihedral.type.c3 * lj_unit, dihedral_precision),
+                    round(dihedral.type.c4 * lj_unit, dihedral_precision),
+                    round(dihedral.type.c5 * lj_unit, dihedral_precision),
                     round(dihedral.type.scee, 1),
                     round(dihedral.type.scnb, 1),
                     dihedral.atom1.type,
@@ -828,7 +858,9 @@ def _get_dihedral_types(
                         )
                     )
 
-        unique_dihedral_types = OrderedDict(enumerate(set(charmm_dihedrals)))
+        unique_dihedral_types = OrderedDict(
+            enumerate(OrderedSet(*charmm_dihedrals))
+        )
         unique_dihedral_types = OrderedDict(
             [(y, x + 1) for x, y in unique_dihedral_types.items()]
         )
@@ -840,7 +872,9 @@ def _get_dihedral_types(
     return dihedral_types, unique_dihedral_types
 
 
-def _get_improper_dihedral_types(structure, epsilon_conversion_factor):
+def _get_improper_dihedral_types(
+    structure, epsilon_conversion_factor, imp_dih_precision=3
+):
     """
     Will get the improper types from a parmed structure and convert them to lammps real units.
 
@@ -860,7 +894,7 @@ def _get_improper_dihedral_types(structure, epsilon_conversion_factor):
                 d = 1
             improper_dihedrals.append(
                 (
-                    round(dih_type.phi_k * lj_unit, 3),
+                    round(dih_type.phi_k * lj_unit, imp_dih_precision),
                     d,
                     int(round(dih_type.per, 0)),
                     round(dih_type.scee, 1),
@@ -871,7 +905,7 @@ def _get_improper_dihedral_types(structure, epsilon_conversion_factor):
                     dihedral.atom4.type,
                 )
             )
-    unique_imp_dihedral_types = dict(enumerate(set(improper_dihedrals)))
+    unique_imp_dihedral_types = dict(enumerate(OrderedSet(*improper_dihedrals)))
     unique_imp_dihedral_types = OrderedDict(
         [(y, x + 1) for x, y in unique_imp_dihedral_types.items()]
     )
@@ -883,7 +917,7 @@ def _get_improper_dihedral_types(structure, epsilon_conversion_factor):
     return imp_dihedral_types, unique_imp_dihedral_types
 
 
-def _get_impropers(structure, epsilon_conversion_factor):
+def _get_impropers(structure, epsilon_conversion_factor, improper_precision=3):
     """
     Will get the improper types from a parmed structure and convert them to lammps real units.
 
@@ -892,11 +926,13 @@ def _get_impropers(structure, epsilon_conversion_factor):
     lj_unit = 1 / epsilon_conversion_factor
     unique_improper_types = dict(
         enumerate(
-            set(
-                [
+            OrderedSet(
+                *[
                     (
-                        round(improper.type.psi_k * lj_unit, 3),
-                        round(improper.type.psi_eq, 3),
+                        round(
+                            improper.type.psi_k * lj_unit, improper_precision
+                        ),
+                        round(improper.type.psi_eq, improper_precision),
                         improper.atom3.type,
                         improper.atom2.type,
                         improper.atom1.type,
@@ -913,8 +949,8 @@ def _get_impropers(structure, epsilon_conversion_factor):
     improper_types = [
         unique_improper_types[
             (
-                round(improper.type.psi_k * lj_unit, 3),
-                round(improper.type.psi_eq, 3),
+                round(improper.type.psi_k * lj_unit, improper_precision),
+                round(improper.type.psi_eq, improper_precision),
                 improper.atom3.type,
                 improper.atom2.type,
                 improper.atom1.type,
