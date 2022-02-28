@@ -293,12 +293,21 @@ class TestCompound(BaseTest):
         combining_rules = ["lorentz", "geometric"]
         gmx_rules = {"lorentz": 2, "geometric": 3}
         for combining_rule in combining_rules:
-            methane.save(
-                "methane.top",
-                forcefield_name="oplsaa",
-                combining_rule=combining_rule,
-                overwrite=True,
-            )
+            if combining_rule == "geometric":
+                methane.save(
+                    "methane.top",
+                    forcefield_name="oplsaa",
+                    combining_rule=combining_rule,
+                    overwrite=True,
+                )
+            else:
+                with pytest.warns(UserWarning):
+                    methane.save(
+                        "methane.top",
+                        forcefield_name="oplsaa",
+                        combining_rule=combining_rule,
+                        overwrite=True,
+                    )
             with open("methane.top") as fp:
                 for i, line in enumerate(fp):
                     if i == 18:

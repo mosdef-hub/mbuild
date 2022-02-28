@@ -1051,7 +1051,19 @@ def save(
         if not foyer_kwargs:
             foyer_kwargs = {}
         structure = ff.apply(structure, **foyer_kwargs)
+        if structure.combining_rule != combining_rule:
+            warn(
+                f"Overwriting forcefield-specified combining rule ({combining_rule})"
+                f"to new combining rule ({combining_rule})."
+                "This can cause inconsistent between the 1-4 pair interactions,"
+                "calculated in foyer, and the new combining rule."
+                "Consider directly changing the metadata of the Forcefield."
+            )
         structure.combining_rule = combining_rule
+        if structure.__dict__.get("defaults"):
+            structure.defaults.comb_rule = (
+                2 if combining_rule == "lorentz" else 3
+            )
 
     total_charge = sum([atom.charge for atom in structure])
     if round(total_charge, 4) != 0.0:
