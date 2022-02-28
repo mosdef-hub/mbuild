@@ -1575,6 +1575,43 @@ class TestCompound(BaseTest):
         with pytest.warns(UserWarning):
             compound.box = Box(lengths=[1.0, 1.0, 1.0], angles=angles)
 
+    def test_get_boundingbox_extrema(self):
+        h1 = mb.Compound()
+        h2 = mb.Compound()
+        h1.pos = [-0.07590747, 0.00182889, 0.00211742]
+        h2.pos = [0.07590747, -0.00182889, -0.00211742]
+        container = mb.Compound([h1, h2])
+        distances = container.maxs - container.mins
+        with pytest.raises(
+            MBuildError, match=r"The vectors to define the box are co\-linear\,"
+        ):
+            container.get_boundingbox()
+        distance_list = [val for val in distances]
+        distance_list = [val + 1.0 for val in distance_list]
+        np.testing.assert_almost_equal(
+            container.get_boundingbox(pad_box=1.0).lengths,
+            distance_list,
+            decimal=6,
+        )
+
+        distance_list = [val for val in distances]
+        distance_list[0] = distance_list[0] + 1.0
+        distance_list[1] = distance_list[1] + 2.0
+        distance_list[2] = distance_list[2] + 3.0
+        np.testing.assert_almost_equal(
+            container.get_boundingbox(pad_box=[1.0, 2.0, 3.0]).lengths,
+            distance_list,
+            decimal=6,
+        )
+
+    @pytest.mark.parametrize(
+        "bad_value", [[1.0, 2.0], set([1, 2, 3]), {"x": 1.0}]
+    )
+    def test_get_boundingbox_error(self, bad_value):
+        with pytest.raises(TypeError):
+            meth = mb.load(get_fn("methyl.pdb"))
+            meth.get_boundingbox(pad_box=bad_value)
+
     @pytest.mark.skipif(not has_py3Dmol, reason="Py3Dmol is not installed")
     def test_visualize_py3dmol(self, ethane):
         py3Dmol = import_("py3Dmol")
