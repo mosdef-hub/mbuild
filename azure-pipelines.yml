@@ -30,24 +30,24 @@ stages:
       - job: NoBleeding
         strategy:
           matrix:
-            Python36Ubuntu:
-              imageName: 'ubuntu-latest'
-              python.version: 3.6
             Python37Ubuntu:
               imageName: 'ubuntu-latest'
               python.version: 3.7
             Python38Ubuntu:
               imageName: 'ubuntu-latest'
               python.version: 3.8
-            Python36macOS:
-              imageName: 'macOS-latest'
-              python.version: 3.6
+            Python39Ubuntu:
+              imageName: 'ubuntu-latest'
+              python.version: 3.9
             Python37macOS:
               imageName: 'macOS-latest'
               python.version: 3.7
             Python38macOS:
               imageName: 'macOS-latest'
               python.version: 3.8
+            Python39macOS:
+              imageName: 'macOS-latest'
+              python.version: 3.9
 
         pool:
           vmImage: $(imageName)
@@ -84,7 +84,7 @@ stages:
 
           - bash: |
               source activate mbuild-dev
-              mamba update -c conda-forge/label/hoomd_dev -c conda-forge hoomd
+              mamba update -c conda-forge/label/hoomd_dev -c conda-forge hoomd=3.0.0dev12
               python -m pytest -v --cov=mbuild --cov-report=html --color=yes mbuild/tests/test_hoomd.py --cov-config=setup.cfg --cov-append
             condition: and( eq( variables['Agent.OS'], 'Linux' ), eq( variables['python.version'], '3.8' ) )
             displayName: Run tests for hoomdv3
@@ -113,12 +113,12 @@ stages:
           vmImage: 'windows-latest'
         strategy:
           matrix:
-            Python36:
-              python.version: 3.6
             Python37:
               python.version: 3.7
             Python38:
               python.version: 3.8
+            Python39:
+              python.version: 3.9
 
         steps:
           - powershell: Write-Host "##vso[task.prependpath]$env:CONDA\Scripts"

@@ -6,7 +6,8 @@ dependencies:
   - bump2version
   - codecov
   - ele
-  - foyer>=0.9.4
+  - gmso>=0.7.3
+  - foyer>=0.11.0
   - garnett>=0.7.1
   - gsd>=1.2
   - intermol
@@ -24,6 +25,6 @@ dependencies:
   - pycifrw
   - pytest>=3.0
   - pytest-cov
-  - python<=3.8
+  - python>=3.7
   - rdkit
   - scipy

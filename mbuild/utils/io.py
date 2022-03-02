@@ -149,6 +149,16 @@ pycifrw can be installed with conda using:
 """
 
 MESSAGES[
+    "freud"
+] = """
+The code at {filename}:{line_number} requires the "freud" package
+
+freud can be installed with conda using:
+
+# conda install -c conda-forge freud
+"""
+
+MESSAGES[
     "protobuf"
 ] = """
 The code at {filename}:{line_number} requires the "protobuf" package
@@ -293,6 +303,7 @@ try:
     del mdtraj
 except ImportError:
     has_mdtraj = False
+
 try:
     import foyer
 
@@ -300,6 +311,13 @@ try:
     del foyer
 except ImportError:
     has_foyer = False
+
+try:
+    import gmso
+
+    has_gmso = True
+except ImportError:
+    has_gmso = False
 
 try:
     import networkx
@@ -356,6 +374,14 @@ try:
     del rdkit
 except ImportError:
     has_rdkit = False
+
+try:
+    import freud
+
+    has_freud = True
+    del freud
+except ImportError:
+    has_freud = False
 
 
 def get_fn(name):

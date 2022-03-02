@@ -1,17 +1,62 @@
+from pathlib import Path
+
 import numpy as np
 import pytest
+from ele.element import element_from_symbol
 from pytest import FixtureRequest
+from scipy.constants import epsilon_0
 
 import mbuild as mb
 from mbuild.formats.lammpsdata import write_lammpsdata
 from mbuild.tests.base_test import BaseTest
 from mbuild.utils.io import get_fn, has_foyer
 
+KCAL_TO_KJ = 4.184
+ANG_TO_NM = 0.10
+ELEM_TO_COUL = 1.602176634e-19
+
 
 @pytest.mark.skipif(not has_foyer, reason="Foyer package not installed")
 class TestLammpsData(BaseTest):
     def test_save(self, ethane):
         ethane.save(filename="ethane.lammps")
+
+    @pytest.fixture(scope="session")
+    def lj_save(self, tmpdir_factory, sigma=None, epsilon=None, mass=None):
+        def _create_lammps(
+            ethane, tmp, sigma=sigma, epsilon=epsilon, mass=mass
+        ):
+            from foyer import Forcefield
+
+            OPLSAA = Forcefield(name="oplsaa")
+            structure = OPLSAA.apply(ethane)
+            fn = tmpdir_factory.mktemp("data").join("lj.lammps")
+            write_lammpsdata(
+                filename=str(fn),
+                structure=structure,
+                unit_style="lj",
+                sigma_conversion_factor=sigma,
+                epsilon_conversion_factor=epsilon,
+                mass_conversion_factor=mass,
+            )
+            return str(fn)
+
+        return _create_lammps
+
+    @pytest.fixture(scope="session")
+    def real_save(self, tmpdir_factory):
+        def _create_lammps(ethane, tmp):
+            from foyer import Forcefield
+
+            OPLSAA = Forcefield(name="oplsaa")
+            structure = OPLSAA.apply(ethane)
+            fn = tmpdir_factory.mktemp("data").join("lj.lammps")
+            write_lammpsdata(
+                filename=str(fn), structure=structure, unit_style="real"
+            )
+            return str(fn)
+
+        return _create_lammps
 
     @pytest.mark.parametrize("unit_style", ["real", "lj"])
     def test_save_forcefield(self, ethane, unit_style):
@@ -40,8 +85,6 @@ class TestLammpsData(BaseTest):
     @pytest.mark.skipif(not has_foyer, reason="Foyer package not installed")
     def test_save_charmm(self):
         from foyer import Forcefield
-
-        from mbuild.formats.lammpsdata import write_lammpsdata
 
         cmpd = mb.load(get_fn("charmm_dihedral.mol2"))
         for i in cmpd.particles():
@@ -143,6 +186,7 @@ class TestLammpsData(BaseTest):
                 assert "# harmonic" in line
                 assert "k, phi" in out_lammps[i + 1]
                 assert len(out_lammps[i + 2].split("#")[0].split()) == 3
+                assert out_lammps[i + 2].split("#")[0].split()[0] == "1"
                 found_impropers = True
         assert found_impropers
 
@@ -167,20 +211,25 @@ class TestLammpsData(BaseTest):
         for i, line in enumerate(out_lammps):
             if "Angle Coeffs" in line:
                 assert "# harmonic" in line
-                assert "#\treduced_k\t\ttheteq(deg)" in out_lammps[i + 1]
+                assert (
+                    "#\tk(kcal/mol/rad^2)\t\ttheteq(deg)" in out_lammps[i + 1]
+                )
                 assert len(out_lammps[i + 2].split("#")[0].split()) == 3
+                assert out_lammps[i + 2].split("#")[0].split()[0] == "1"
                 found_angles = True
             elif "Dihedral Coeffs" in line:
                 assert "# charmm" in line
                 assert "#k, n, phi, weight" in out_lammps[i + 1]
                 assert len(out_lammps[i + 2].split("#")[0].split()) == 5
                 assert float(out_lammps[i + 2].split("#")[0].split()[4]) == 0.0
+                assert out_lammps[i + 2].split("#")[0].split()[0] == "1"
                 found_dihedrals = True
             elif "Improper Coeffs" in line:
                 assert "# cvff" in line
                 assert "#K, d, n" in out_lammps[i + 1]
                 assert len(out_lammps[i + 2].split("#")[0].split()) == 4
                 assert out_lammps[i + 2].split("#")[0].split()[2] == "-1"
+                assert out_lammps[i + 2].split("#")[0].split()[0] == "1"
                 found_impropers = True
             else:
                 pass
@@ -234,6 +283,7 @@ class TestLammpsData(BaseTest):
 
         OPLSAA = Forcefield(name="oplsaa")
         structure = OPLSAA.apply(ethane)
+        structure.combining_rule = "lorentz"
         # Add nbfixes
         types = list(set([a.atom_type for a in structure.atoms]))
         types[0].add_nbfix(types[1].name, 1.2, 2.1)
@@ -265,6 +315,17 @@ class TestLammpsData(BaseTest):
                 # Break if PairIJ Coeffs is not found
                 if "Atoms" in line:
                     break
+        structure.combining_rule = "geometric"
+        write_lammpsdata(filename="nbfix.lammps", structure=structure)
+        write_lammpsdata(
+            filename="nbfix.lammps",
+            structure=structure,
+            nbfix_in_data_file=False,
+        )
+        with pytest.raises(ValueError) as exc_info:
+            structure.combining_rule = "error"
+            write_lammpsdata(filename="nbfix.lammps", structure=structure)
+        assert str(exc_info.value).startswith("combining_rule must be")
 
     def test_save_triclinic_box(self, ethane):
         box = mb.Box(lengths=np.array([2.0, 2.0, 2.0]), angles=[60, 70, 80])
@@ -392,40 +453,30 @@ class TestLammpsData(BaseTest):
 
                     checked_section = True
 
-    def test_lj_box(self, ethane):
-        from foyer import Forcefield
-
-        OPLSAA = Forcefield(name="oplsaa")
-        structure = OPLSAA.apply(ethane)
-        write_lammpsdata(
-            filename="lj.lammps", structure=structure, unit_style="lj"
-        )
-
+    def test_lj_box(self, ethane, lj_save):
+        fn = lj_save(ethane, Path.cwd())
         checked_section = False
-        with open("lj.lammps", "r") as fi:
+        ethane_sigma = 0.35  # nm
+        box_length = np.array(ethane.get_boundingbox().lengths) + [
+            0.5,
+            0.5,
+            0.5,
+        ]  # 0.5nm buffer around box
+        box_length /= ethane_sigma  # Unitless
+        with open(str(fn), "r") as fi:
             while not checked_section:
                 line = fi.readline()
-                if "dihedral types" in line:
+                if "dihedral types" in line:  # line before box info
                     fi.readline()
-                    line = float(fi.readline().split()[1])
-                    assert np.isclose(float(line), 2.04)
-                    line = float(fi.readline().split()[1])
-                    assert np.isclose(line, 2.268)
-                    line = float(fi.readline().split()[1])
-                    assert np.isclose(line, 1.898857)
+                    for i in range(len(box_length)):
+                        line = float(fi.readline().split()[1])
+                        assert np.isclose(float(line), box_length[i])
                     checked_section = True
 
-    def test_lj_masses(self, ethane):
-        from foyer import Forcefield
-
-        OPLSAA = Forcefield(name="oplsaa")
-        structure = OPLSAA.apply(ethane)
-        write_lammpsdata(
-            filename="lj.lammps", structure=structure, unit_style="lj"
-        )
-
+    def test_lj_masses(self, ethane, lj_save):
+        fn = lj_save(ethane, Path.cwd())
         checked_section = False
-        with open("lj.lammps", "r") as fi:
+        with open(fn, "r") as fi:
             while not checked_section:
                 line = fi.readline()
                 if "Masses" in line:
@@ -434,17 +485,22 @@ class TestLammpsData(BaseTest):
                     assert np.isclose(line, 1.00)
                     checked_section = True
 
-    def test_lj_pairs(self, ethane):
-        from foyer import Forcefield
-
-        OPLSAA = Forcefield(name="oplsaa")
-        structure = OPLSAA.apply(ethane)
-        write_lammpsdata(
-            filename="lj.lammps", structure=structure, unit_style="lj"
-        )
-
+    def test_real_masses(self, ethane, real_save):
+        fn = real_save(ethane, Path.cwd())
         checked_section = False
-        with open("lj.lammps", "r") as fi:
+        with open(fn, "r") as fi:
+            while not checked_section:
+                line = fi.readline()
+                if "Masses" in line:
+                    fi.readline()
+                    line = float(fi.readline().split()[1])
+                    assert np.isclose(line, 12.010780)
+                    checked_section = True
+
+    def test_lj_pairs(self, ethane, lj_save):
+        fn = lj_save(ethane, Path.cwd())
+        checked_section = False
+        with open(fn, "r") as fi:
             while not checked_section:
                 line = fi.readline()
                 if "Pair Coeffs" in line:
@@ -456,65 +512,233 @@ class TestLammpsData(BaseTest):
                     assert np.isclose(sigma, 1.00)
                     checked_section = True
 
-    def test_lj_bonds(self, ethane):
-        from foyer import Forcefield
-
-        OPLSAA = Forcefield(name="oplsaa")
-        structure = OPLSAA.apply(ethane)
-        write_lammpsdata(
-            filename="lj.lammps", structure=structure, unit_style="lj"
+    def test_lj_passed_pairs(self, ethane, lj_save):
+        fn = lj_save(
+            ethane,
+            Path.cwd(),
+            sigma=1,
+            epsilon=1,
         )
-
         checked_section = False
-        with open("lj.lammps", "r") as fi:
+        with open(fn, "r") as fi:
+            while not checked_section:
+                line = fi.readline()
+                if "Pair Coeffs" in line:
+                    fi.readline()
+                    line = fi.readline().split()
+                    epsilon = float(line[1])
+                    sigma = float(line[2])
+                    assert np.isclose(epsilon, 0.276144, atol=1e-5)
+                    assert np.isclose(sigma, 0.35)
+                    checked_section = True
+
+        with pytest.raises(ValueError) as exc_info:
+            lj_save(ethane, Path.cwd(), sigma=0)
+        exception_str = "The sigma conversion factor to convert to LJ"
+        assert str(exc_info.value).startswith(exception_str)
+
+    def test_real_pairs(self, ethane, real_save):
+        fn = real_save(ethane, Path.cwd())
+        checked_section = False
+        with open(fn, "r") as fi:
+            while not checked_section:
+                line = fi.readline()
+                if "Pair Coeffs" in line:
+                    fi.readline()
+                    line = fi.readline().split()
+                    epsilon = float(line[1])
+                    sigma = float(line[2])
+                    assert np.isclose(epsilon, 0.066)
+                    assert np.isclose(sigma, 3.5)
+                    checked_section = True
+
+    def test_lj_bonds(self, ethane, lj_save):
+        fn = lj_save(ethane, Path.cwd())
+        checked_section = False
+        ethane_bondsk = (
+            np.array([284512.0, 224262.4]) * (0.35) ** 2 / (0.276144) / 2
+        )  # kj/mol/nm**2 to lammps
+        ethane_bondsreq = np.array([0.109, 0.1529]) * 0.35**-1  # unitless
+        ethane_lj_bonds = zip(ethane_bondsk, ethane_bondsreq)
+        with open(fn, "r") as fi:
             while not checked_section:
                 line = fi.readline()
                 if "Bond Coeffs" in line:
                     fi.readline()
-                    bonds = list()
-                    bonds.append(float(fi.readline().split()[1]))
-                    bonds.append(float(fi.readline().split()[1]))
-                    assert np.allclose(sorted(bonds), [49742.424, 63106.06])
+                    for i, bond_params in enumerate(ethane_lj_bonds):
+                        print(bond_params)
+                        line = fi.readline()
+                        assert np.allclose(
+                            (float(line.split()[1]), float(line.split()[2])),
+                            bond_params,
+                            atol=1e-3,
+                        )
+                    assert int(line.split()[0]) == i + 1
                     checked_section = True
 
-    def test_lj_angles(self, ethane):
-        from foyer import Forcefield
-
-        OPLSAA = Forcefield(name="oplsaa")
-        structure = OPLSAA.apply(ethane)
-        write_lammpsdata(
-            filename="lj.lammps", structure=structure, unit_style="lj"
-        )
-
+    def test_real_bonds(self, ethane, real_save):
+        fn = real_save(ethane, Path.cwd())
         checked_section = False
-        with open("lj.lammps", "r") as fi:
+        ethane_bondsk = (
+            np.array([284512.0, 224262.4]) / KCAL_TO_KJ * ANG_TO_NM**2 / 2
+        )  # kj/mol/nm**2 to lammps
+        ethane_bondsreq = np.array([0.109, 0.1529]) / ANG_TO_NM
+        ethane_real_bonds = zip(ethane_bondsk, ethane_bondsreq)
+        with open(fn, "r") as fi:
+            while not checked_section:
+                line = fi.readline()
+                if "Bond Coeffs" in line:
+                    fi.readline()
+                    for bond_params in ethane_real_bonds:
+                        print(bond_params)
+                        line = fi.readline()
+                        assert np.allclose(
+                            (float(line.split()[1]), float(line.split()[2])),
+                            bond_params,
+                            atol=1e-3,
+                        )
+                    checked_section = True
+
+    def test_lj_angles(self, ethane, lj_save):
+        fn = lj_save(ethane, Path.cwd())
+        checked_section = False
+        ethane_anglesk = (
+            np.array([313.8, 276.144]) / 0.276144 / 2
+        )  # kj/mol/nm**2 to lammps
+        ethane_anglesreq = (
+            np.array([1.93207948196, 1.88146493365]) * 180 / np.pi
+        )  # radians to lammps
+        ethane_lj_angles = zip(ethane_anglesk, ethane_anglesreq)
+        with open(fn, "r") as fi:
             while not checked_section:
                 line = fi.readline()
                 if "Angle Coeffs" in line:
                     fi.readline()
-                    angles = list()
-                    angles.append(float(fi.readline().split()[1]))
-                    angles.append(float(fi.readline().split()[1]))
-
-                    assert np.allclose(sorted(angles), [6125.0, 6960.227])
+                    for angle_params in ethane_lj_angles:
+                        line = fi.readline()
+                        assert np.allclose(
+                            (float(line.split()[1]), float(line.split()[2])),
+                            angle_params,
+                        )
                     checked_section = True
 
-    def test_lj_dihedrals(self, ethane):
-        from foyer import Forcefield
-
-        OPLSAA = Forcefield(name="oplsaa")
-        structure = OPLSAA.apply(ethane)
-        write_lammpsdata(
-            filename="lj.lammps", structure=structure, unit_style="lj"
-        )
-
+    def test_real_angles(self, ethane, real_save):
+        fn = real_save(ethane, Path.cwd())
         checked_section = False
-        with open("lj.lammps", "r") as fi:
+        ethane_anglesk = (
+            np.array([313.8, 276.144]) / 2 / KCAL_TO_KJ
+        )  # kj/mol to lammps kcal/mol
+        ethane_anglesreq = (
+            np.array([1.93207948196, 1.88146493365]) * 180 / np.pi
+        )  # radians to lammps
+        ethane_real_angles = zip(ethane_anglesk, ethane_anglesreq)
+        with open(fn, "r") as fi:
+            while not checked_section:
+                line = fi.readline()
+                if "Angle Coeffs" in line:
+                    fi.readline()
+                    for i, angle_params in enumerate(ethane_real_angles):
+                        line = fi.readline()
+                        assert np.allclose(
+                            (float(line.split()[1]), float(line.split()[2])),
+                            angle_params,
+                        )
+                        assert int(line.split()[0]) == i + 1
+                    checked_section = True
+
+    def test_lj_dihedrals(self, ethane, lj_save):
+        fn = lj_save(ethane, Path.cwd())
+        checked_section = False
+        ethane_diheds = (
+            np.array([-0.00000, -0.00000, 0.30000, -0.00000]) / 0.066
+        )  # kcal/mol to lammps
+        with open(fn, "r") as fi:
             while not checked_section:
                 line = fi.readline()
                 if "Dihedral Coeffs" in line:
                     fi.readline()
-                    dihedrals = fi.readline().split()[1:5]
-                    dihedrals = [float(i) for i in dihedrals]
-                    assert np.allclose(dihedrals, [0.0005, 0.0, 4.5455, -0.0])
+                    line = fi.readline()
+                    assert np.allclose(
+                        (
+                            float(line.split()[1]),
+                            float(line.split()[2]),
+                            float(line.split()[3]),
+                            float(line.split()[4]),
+                        ),
+                        ethane_diheds,
+                    )
+                    checked_section = True
+
+    def test_real_dihedrals(self, ethane, real_save):
+        fn = real_save(ethane, Path.cwd())
+        checked_section = False
+        ethane_diheds = np.array([-0.00000, -0.00000, 0.30000, -0.00000])
+        with open(fn, "r") as fi:
+            while not checked_section:
+                line = fi.readline()
+                if "Dihedral Coeffs" in line:
+                    fi.readline()
+                    line = fi.readline()
+                    assert np.allclose(
+                        (
+                            float(line.split()[1]),
+                            float(line.split()[2]),
+                            float(line.split()[3]),
+                            float(line.split()[4]),
+                        ),
+                        ethane_diheds,
+                    )
+                    assert int(line.split()[0]) == 1
+                    checked_section = True
+
+    def test_lj_charges(self, ethane, lj_save):
+        fn = lj_save(ethane, Path.cwd())
+        checked_section = False
+        charge_dict = {"C": -0.18, "H": 0.06}
+        ethane_charges = np.array(
+            [charge_dict[part.name] for part in ethane.particles()]
+        )
+        # in coulombs, convert to lj units
+        ethane_charges /= (
+            np.sqrt(4 * np.pi * 0.276144 * 0.35 * epsilon_0 * 10**-6)
+            / ELEM_TO_COUL
+        )
+        print(ethane_charges)
+        with open(fn, "r") as fi:
+            while not checked_section:
+                line = fi.readline()
+                if "Atoms " in line:
+                    fi.readline()
+                    assert np.allclose(
+                        float(fi.readline().split()[3]),
+                        ethane_charges[0],
+                        atol=1e-15,
+                    )
+                    assert np.allclose(
+                        float(fi.readline().split()[3]),
+                        ethane_charges[1],
+                        atol=1e-15,
+                    )
+                    checked_section = True
+
+    def test_real_charges(self, ethane, real_save):
+        fn = real_save(ethane, Path.cwd())
+        checked_section = False
+        charge_dict = {"C": -0.18, "H": 0.06}
+        ethane_charges = [charge_dict[part.name] for part in ethane.particles()]
+        print(ethane_charges)
+        # in coulombs
+        with open(fn, "r") as fi:
+            while not checked_section:
+                line = fi.readline()
+                if "Atoms " in line:
+                    fi.readline()
+                    assert np.allclose(
+                        float(fi.readline().split()[3]),
+                        ethane_charges[0],
+                    )
+                    assert np.allclose(
+                        float(fi.readline().split()[3]),
+                        ethane_charges[1],
+                    )
                     checked_section = True

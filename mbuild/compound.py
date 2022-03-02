@@ -7,6 +7,7 @@ import tempfile
 from collections import OrderedDict
 from collections.abc import Iterable
 from copy import deepcopy
+from typing import Sequence
 from warnings import warn
 
 import ele
@@ -20,6 +21,7 @@ from mbuild.box import Box
 from mbuild.coordinate_transform import _rotate, _translate
 from mbuild.exceptions import MBuildError
 from mbuild.periodic_kdtree import PeriodicKDTree
+from mbuild.utils.decorators import experimental_feature
 from mbuild.utils.exceptions import RemovedFuncError
 from mbuild.utils.io import import_, run_from_ipython
 from mbuild.utils.jsutils import overwrite_nglview_default
@@ -979,9 +981,9 @@ class Compound(object):
         name_b : str
             The name of the other Particle to be in each bond
         dmin : float
-            The minimum distance between Particles for considering a bond
+            The minimum distance (in nm) between Particles for considering a bond
         dmax : float
-            The maximum distance between Particles for considering a bond
+            The maximum distance (in nm) between Particles for considering a bond
         """
         if self.box is None:
             self.box = self.get_boundingbox()
@@ -1008,6 +1010,70 @@ class Compound(object):
                 if (p2.name == name_b) and (dmin <= min_dist <= dmax):
                     self.add_bond((p1, p2))
                     added_bonds.append(bond_tuple)
+
+    @experimental_feature()
+    def freud_generate_bonds(
+        self,
+        name_a,
+        name_b,
+        dmin,
+        dmax,
+        exclude_ii=True,
+    ):
+        """Add Bonds between all pairs of types a/b within [dmin, dmax].
+
+        Parameters
+        ----------
+        name_a : str
+            The name of one of the Particles to be in each bond
+        name_b : str
+            The name of the other Particle to be in each bond
+        dmin : float
+            The minimum distance (in nm) between Particles for considering a bond
+        dmax : float
+            The maximum distance (in nm) between Particles for considering a bond
+        exclude_ii : bool, optional, default=True
+            Whether or not to include neighbors with the same index.
+
+        Notes
+        -----
+        This is an experimental feature and some behavior might change out of step of a standard development release.
+
+        """
+        freud = import_("freud")
+        if self.box is None:
+            box = self.get_boundingbox()
+        else:
+            box = self.box
+        moved_positions = self.xyz - np.array(
+            [box.Lx / 2, box.Ly / 2, box.Lz / 2]
+        )
+
+        freud_box = freud.box.Box.from_matrix(box.vectors.T)
+        freud.box.periodic = self.periodicity
+
+        a_indices = []
+        b_indices = []
+        for i, part in enumerate(self.particles()):
+            if part.name == name_a:
+                a_indices.append(i)
+            if part.name == name_b:
+                b_indices.append(i)
+
+        aq = freud.locality.AABBQuery(freud_box, moved_positions[b_indices])
+
+        nlist = aq.query(
+            moved_positions[a_indices],
+            dict(
+                r_min=dmin,
+                r_max=dmax,
+                exclude_ii=exclude_ii,
+            ),
+        ).toNeighborList()
+
+        part_list = [part for part in self.particles(include_ports=False)]
+        for i, j in nlist[:]:
+            self.add_bond((part_list[a_indices[i]], part_list[b_indices[j]]))
 
     def remove_bond(self, particle_pair):
         """Delete a bond between a pair of Particles.
@@ -1233,10 +1299,21 @@ class Compound(object):
         """Return the maximum x, y, z coordinate of any particle in this compound."""
         return self.xyz.max(axis=0)
 
-    def get_boundingbox(self):
+    def get_boundingbox(self, pad_box=None):
         """Compute the bounding box of the compound.
 
         Compute and store the rectangular bounding box of the Compound.
+
+        Parameters
+        ----------
+        pad_box: Sequence, optional, default=None
+            Pad all lengths or a list of lengths by a specified amount in nm.
+            Acceptable values are:
+
+                - A single float: apply this pad value to all 3 box lengths.
+                - A sequence of length 1: apply this pad value to all 3 box lengths.
+                - A sequence of length 3: apply these pad values to the a, b, c box lengths.
+
 
         Returns
         -------
@@ -1282,7 +1359,32 @@ class Compound(object):
         for i, dim in enumerate(has_dimension):
             if not dim:
                 vecs[i][i] = 1.0
-        return Box.from_vectors(vectors=np.asarray([vecs]).reshape(3, 3))
+
+        if pad_box is not None:
+            if isinstance(pad_box, (int, float, str, Sequence)):
+                if isinstance(pad_box, Sequence):
+                    if len(pad_box) == 1:
+                        padding = [float(pad_box[0])] * 3
+                    elif len(pad_box) == 3:
+                        padding = [float(val) for val in pad_box]
+                    else:
+                        raise TypeError(
+                            f"Expected a Sequence of length 1 or 3 for pad_box. Provided: {len(pad_box)}"
+                        )
+                else:
+                    pad_box = float(pad_box)
+                    padding = [pad_box] * 3
+            else:
+                raise TypeError(
+                    f"Expected a value of type: int, float, str, or Sequence, was provided: {type(pad_box)}"
+                )
+            for dim, val in enumerate(padding):
+                vecs[dim][dim] = vecs[dim][dim] + val
+
+        bounding_box = Box.from_vectors(
+            vectors=np.asarray([vecs]).reshape(3, 3)
+        )
+        return bounding_box
 
     def min_periodic_distance(self, xyz0, xyz1):
         """Vectorized distance calculation considering minimum image.
@@ -1335,7 +1437,7 @@ class Compound(object):
                     "Periodic distance calculation is not implemented "
                     "for non-orthorhombic boxes"
                 )
-        return np.sqrt((d ** 2).sum(axis=-1))
+        return np.sqrt((d**2).sum(axis=-1))
 
     def particles_in_range(
         self,
@@ -1525,7 +1627,7 @@ class Compound(object):
                 ]
                 widget.add_ball_and_stick(
                     f"@{','.join(ids)}",
-                    aspect_ratio=0.17 ** 1.5 * scale,
+                    aspect_ratio=0.17**1.5 * scale,
                     color="grey",
                 )
         if show_ports:
@@ -2173,6 +2275,47 @@ class Compound(object):
         self.translate(-center_pos)
         self.rotate(theta, around)
         self.translate(center_pos)
+
+    # Interface to GMSO Topology for reading/writing mol2 files
+    def from_gmso(self, topology, coords_only=False, infer_hierarchy=True):
+        """Convert a GMSO Topology to mBuild Compound.
+
+        Parameter
+        ---------
+        topology : gmso.Topology
+            The GMSO Topology to be converted.
+        compound : mb.Compound, optional, default=None
+            Host mb.Compound that we are loading to.
+        coords_only : bool, optional, default=False
+            Set preexisting atoms in compound to coordinates given by Topology.
+        infer_hierarchy : bool, optional, default=True
+            If True, infer compound hierarchy from Topology residue, to be implemented.
+
+        Returns
+        -------
+        compound : mb.Compound
+        """
+        return conversion.from_gmso(
+            topology=topology,
+            compound=self,
+            coords_only=coords_only,
+            infer_hierarchy=infer_hierarchy,
+        )
+
+    def to_gmso(self):
+        """Create a GMSO Topology from a mBuild Compound.
+
+        Parameters
+        ----------
+        compound : mb.Compound
+            The mb.Compound to be converted.
+
+        Returns
+        -------
+        topology : gmso.Topology
+            The converted gmso Topology
+        """
+        return conversion.to_gmso(self)
 
     # Interface to Trajectory for reading/writing .pdb and .mol2 files.
     # -----------------------------------------------------------------

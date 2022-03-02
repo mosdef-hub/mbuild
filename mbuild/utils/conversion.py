@@ -365,7 +365,7 @@ def _to_base(number, base=62):
     power = 1
 
     while num != 0:
-        num = int(number / base ** power)
+        num = int(number / base**power)
 
         if num == base:
             base_n_values = start_values[base] + base_n_values
