@@ -289,7 +289,7 @@ class TestGSD(BaseTest):
 
         charge_dict = {"C": -0.18, "H": 0.06}
         charges = frame.particles.charge.astype(float)
-        e0 = 2.39725e-4
+        e0 = 2.396452e-4
         charge_factor = (4.0 * np.pi * e0 * ref_distance * ref_energy) ** 0.5
         for charge, particle in zip(charges, ethane.particles()):
             reduced_charge = charge_dict[particle.name] / charge_factor
