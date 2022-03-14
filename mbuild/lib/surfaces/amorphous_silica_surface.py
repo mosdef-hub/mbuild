@@ -13,6 +13,7 @@ class AmorphousSilicaSurface(mb.Compound):
                 "amorphous_silica_sr1.0.pdb",
                 compound=self,
                 relative_to_module=self.__module__,
+                backend="gmso",
             )
             self.periodicity = (True, True, False)
             self.box = mb.Box([5.4366, 4.7082, 1.0])
