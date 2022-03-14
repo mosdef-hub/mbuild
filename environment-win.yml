@@ -23,7 +23,7 @@ dependencies:
   - protobuf
   - py3Dmol
   - pycifrw
-  - pytest>=3.0
+  - pytest=7.0
   - pytest-cov
   - python>=3.7
   - rdkit>=2021
