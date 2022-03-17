@@ -476,6 +476,26 @@ class TestCompound(BaseTest):
         ch3.generate_bonds("H", "H", dmin=0.01, dmax=2.0)
         assert ch3.n_bonds == 3 + 3
 
+    @pytest.makr.skipif(not has_freud, reason="Freud not installed.")
+    def test_freud_generated_bonds_periodicity(self, ch3):
+        bounding_box = ch3.get_boundingbox()
+
+        ch3_clone = mb.cloe(ch3)
+        ch3_clone.box = mb.Box(lengths=[max(bounding_box.lengths) + 1] * 3)
+        ch3_clone.periodicity = (True, True, True)
+        ch3_clone.freud_generate_bonds(
+            "H", "H", dmin=0.01, dmax=0.2, exclude_ii=True
+        )
+        assert ch3_clone.n_bonds == 3 + 3
+
+        ch3_clone2 = mb.cloe(ch3)
+        ch3_clone2.box = mb.Box(lengths=[max(bounding_box.lengths) + 1] * 3)
+        ch3_clone2.periodicity = (True, True, False)
+        ch3_clone2.freud_generate_bonds(
+            "H", "H", dmin=0.01, dmax=0.2, exclude_ii=True
+        )
+        assert ch3_clone2.n_bonds == 3 + 3
+
     @pytest.mark.skipif(not has_freud, reason="Freud not installed.")
     def test_freud_generate_bonds(self, ch3):
         bounding_box = ch3.get_boundingbox()
