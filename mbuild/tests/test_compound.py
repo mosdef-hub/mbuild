@@ -476,7 +476,7 @@ class TestCompound(BaseTest):
         ch3.generate_bonds("H", "H", dmin=0.01, dmax=2.0)
         assert ch3.n_bonds == 3 + 3
 
-    @pytest.makr.skipif(not has_freud, reason="Freud not installed.")
+    @pytest.mark.skipif(not has_freud, reason="Freud not installed.")
     def test_freud_generated_bonds_periodicity(self, ch3):
         bounding_box = ch3.get_boundingbox()
 
