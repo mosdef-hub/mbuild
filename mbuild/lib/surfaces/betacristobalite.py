@@ -26,6 +26,7 @@ class Betacristobalite(mb.Compound):
             "beta-cristobalite-expanded.mol2",
             compound=self,
             relative_to_module=self.__module__,
+            backend="gmso",
         )
         self.periodicity = (True, True, False)
         # 1.3200 taken from boundingbox length rounded to 4 decimal places
