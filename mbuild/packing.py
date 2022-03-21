@@ -843,8 +843,8 @@ def _validate_box(box):
 def _new_xyz_file():
     """Generate PDB file using tempfile.NamedTemporaryFile.
 
-    Return
-    ------
+    Returns
+    -------
     _ : file-object
         Temporary PDB file.
     """
@@ -863,8 +863,8 @@ def _create_topology(container, comp_to_add, n_compounds):
     container : int or list of int, required
         Amount of comp_to_add to container.
 
-    Return
-    ------
+    Returns
+    -------
     container : mb.Compound
         Compound with added compounds from PACKMOL.
     """

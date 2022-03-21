@@ -40,8 +40,8 @@ def from_snapshot(snapshot, scale=1.0):
     -------
     comp : Compound
 
-    Note
-    ----
+    Notes
+    -----
     GSD and HOOMD snapshots center their boxes on the origin (0,0,0), so the
     compound is shifted by half the box lengths
     """

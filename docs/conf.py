@@ -80,6 +80,7 @@ extensions = [
     "sphinx.ext.intersphinx",
     "sphinx.ext.autosummary",
     "numpydoc",
+    "autoapi.extension",
 ]
 
 # nbsphinx specific configuration
@@ -88,6 +89,14 @@ nbsphinx_input_prompt = "%s"
 nbsphinx_prompt_width = "1.1"
 html_scaled_image_link = False
 nbsphinx_allow_errors = False
+
+# autoapi specific configuration
+autoapi_dirs = ["../mbuild"]
+autoapi_root = "./autoapi"
+autoapi_ignore = ["*tests*"]
+autoapi_add_toctree_entry = False
+
+suppress_warnings = ["autoapi"]
 
 # Prolog: Displayed on top of the notebook
 

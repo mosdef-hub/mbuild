@@ -100,31 +100,14 @@ class PeriodicKDTree(KDTree):
         The number of points at which the algorithm switches over to
         brute-force.
 
-    Note
-    ----
+    Notes
+    -----
     To ensure that no two distinct images of the same point appear in the
     results, it is essential to restrict the maximum distance between a query
     point and a data point to half the smallest box dimension.
     """
 
     def __init__(self, bounds, data, leafsize=10):
-        """Construct Cython kd-tree for nearest-neighbor lookup with periodic boundaries.
-
-        Parameters
-        ----------
-        bounds : array_like, shape (m,)
-            Size of the periodic box along each spatial dimension.  A
-            negative or zero size for dimension k means that space is not
-            periodic along k.
-        data : array-like, shape (n,m)
-            The n data points of dimension m to be indexed. This array is
-            not copied unless this is necessary to produce a contiguous
-            array of doubles, and so modifying this data will result in
-            bogus results.
-        leafsize : positive integer
-            The number of points at which the algorithm switches over to
-            brute-force.
-        """
         # Map all points to canonical periodic image
         self.bounds = np.array(bounds)
         self.real_data = np.asarray(data)
@@ -162,8 +145,8 @@ class PeriodicKDTree(KDTree):
             The number of points at which the algorithm switches over to
             brute-force.
 
-        Note
-        ----
+        Notes
+        -----
         To ensure that no two distinct images of the same point appear in the
         results, it is essential to restrict the maximum distance between a query
         point and a data point to half the smallest box dimension.
