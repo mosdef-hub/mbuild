@@ -51,7 +51,7 @@ def _get_bond_type_key(
     """
     bond_k_constant = round(
         bond.type.k
-        * (sigma_conversion_factor ** 2 / epsilon_conversion_factor),
+        * (sigma_conversion_factor**2 / epsilon_conversion_factor),
         8,
     )
     bond_bo_length = round(bond.type.req / sigma_conversion_factor, 8)
@@ -107,7 +107,7 @@ def _get_angle_type_key(
 
     angle_k_constant = round(
         angle.type.k
-        * (sigma_conversion_factor ** 2 / epsilon_conversion_factor),
+        * (sigma_conversion_factor**2 / epsilon_conversion_factor),
         8,
     )
     angle_theta_o = round(angle.type.theteq, 8)
@@ -2933,37 +2933,10 @@ class Charmm:
                             # check the error between the convertions of RB_tortions to CHARMM DIHEDRALS (end)
                             # **************************************
                             dihedral_format = "{}\t{}\t{}\t{}\t{:.6f}\t{}\t{}\t\t! {}\t{}\t{}\t{}\n"
-                            data.write(
-                                dihedral_format.format(
-                                    base10_to_base52_alph(
-                                        self.atom_types_to_index_value_dict[
-                                            params[8] + "_" + params[12]
-                                        ]
-                                    ),
-                                    base10_to_base52_alph(
-                                        self.atom_types_to_index_value_dict[
-                                            params[9] + "_" + params[13]
-                                        ]
-                                    ),
-                                    base10_to_base52_alph(
-                                        self.atom_types_to_index_value_dict[
-                                            params[10] + "_" + params[14]
-                                        ]
-                                    ),
-                                    base10_to_base52_alph(
-                                        self.atom_types_to_index_value_dict[
-                                            params[11] + "_" + params[15]
-                                        ]
-                                    ),
-                                    charmm_coeffs[0, 0],
-                                    int(charmm_coeffs[0, 1]),
-                                    charmm_coeffs[0, 2],
-                                    params[8] + "_" + params[12],
-                                    params[9] + "_" + params[13],
-                                    params[10] + "_" + params[14],
-                                    params[11] + "_" + params[15],
-                                )
-                            )
+
+                            # Note the Charmm C0 or K0 dihedral term is not printed as it is used/read
+                            # as a harmonic potential in the Charmm format
+
                             data.write(
                                 dihedral_format.format(
                                     base10_to_base52_alph(

@@ -116,8 +116,8 @@ class TestGSD(BaseTest):
         lx, ly, lz, xy, xz, yz = frame.configuration.box
 
         a = lx
-        b = np.sqrt(ly ** 2 + xy ** 2)
-        c = np.sqrt(lz ** 2 + xz ** 2 + yz ** 2)
+        b = np.sqrt(ly**2 + xy**2)
+        c = np.sqrt(lz**2 + xz**2 + yz**2)
 
         assert np.isclose(np.cos(np.radians(92)), (xy * xz + ly * yz) / (b * c))
         assert np.isclose(np.cos(np.radians(104)), xz / c)
@@ -289,7 +289,7 @@ class TestGSD(BaseTest):
 
         charge_dict = {"C": -0.18, "H": 0.06}
         charges = frame.particles.charge.astype(float)
-        e0 = 2.39725e-4
+        e0 = 2.396452e-4
         charge_factor = (4.0 * np.pi * e0 * ref_distance * ref_energy) ** 0.5
         for charge, particle in zip(charges, ethane.particles()):
             reduced_charge = charge_dict[particle.name] / charge_factor

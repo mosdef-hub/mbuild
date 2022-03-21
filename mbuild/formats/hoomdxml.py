@@ -210,7 +210,7 @@ def _write_particle_information(
 
     charges = [atom.charge for atom in structure.atoms]
     xml_file.write("<charge>\n")
-    e0 = 5.72956500956023e-4  # e^2-mol/kJ-nm, permittivity of free space
+    e0 = 2.396452e-04  # e^2 mol/(kcal A), permittivity of free space
     charge_factor = (4.0 * np.pi * e0 * ref_distance * ref_energy) ** 0.5
     for charge in charges:
         xml_file.write("{}\n".format(charge / charge_factor))
@@ -271,7 +271,7 @@ def _write_bond_information(xml_file, structure, ref_distance, ref_energy):
         xml_file.write(
             "{} {} {}\n".format(
                 bond_type,
-                k * 2.0 / ref_energy * ref_distance ** 2.0,
+                k * 2.0 / ref_energy * ref_distance**2.0,
                 req / ref_distance,
             )
         )
@@ -425,8 +425,8 @@ def _write_box_information(xml_file, structure, ref_distance):
         lx = a
         xy = b * np.cos(gamma)
         xz = c * np.cos(beta)
-        ly = np.sqrt(b ** 2 - xy ** 2)
+        ly = np.sqrt(b**2 - xy**2)
         yz = (b * c * np.cos(alpha) - xy * xz) / ly
-        lz = np.sqrt(c ** 2 - xz ** 2 - yz ** 2)
+        lz = np.sqrt(c**2 - xz**2 - yz**2)
         box_str = '<box units="sigma"  Lx="{}" Ly="{}" Lz="{}" xy="{}" xz="{}" yz="{}"/>\n'
         xml_file.write(box_str.format(lx, ly, lz, xy, xz, yz))

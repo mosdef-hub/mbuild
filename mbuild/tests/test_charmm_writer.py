@@ -157,7 +157,6 @@ class TestCharmmWriterData(BaseTest):
                 ):
                     dihedrals_read = True
                     dihed_types = [
-                        ["B", "A", "A", "B", "0.300000", "0", "90.0"],
                         ["B", "A", "A", "B", "0.000000", "1", "180.0"],
                         ["B", "A", "A", "B", "0.000000", "2", "0.0"],
                         ["B", "A", "A", "B", "-0.150000", "3", "180.0"],
@@ -507,7 +506,6 @@ class TestCharmmWriterData(BaseTest):
                 ):
                     dihedrals_read = True
                     dihedral_types = [
-                        ["A", "B", "D", "C", "0.647232", "0", "90.0"],
                         ["A", "B", "D", "C", "-0.392135", "1", "180.0"],
                         ["A", "B", "D", "C", "-0.062518", "2", "0.0"],
                         ["A", "B", "D", "C", "0.345615", "3", "180.0"],
@@ -1456,8 +1454,8 @@ class TestCharmmWriterData(BaseTest):
             [200, "c8"],
             [1000, "3e8"],
             [5000, "1388"],
-            [int(16 ** 3 - 1), "fff"],
-            [int(16 ** 3), "1000"],
+            [int(16**3 - 1), "fff"],
+            [int(16**3), "1000"],
         ]
 
         for test_base_16_iter in range(0, len(list_base_10_and_16)):
@@ -1468,7 +1466,7 @@ class TestCharmmWriterData(BaseTest):
             )
 
         unique_entries_base_16_list = []
-        for test_unique_base_16 in range(0, 16 ** 2):
+        for test_unique_base_16 in range(0, 16**2):
             unique_entries_base_16_list.append(
                 base10_to_base16_alph_num(test_unique_base_16)
             )
@@ -1500,8 +1498,8 @@ class TestCharmmWriterData(BaseTest):
             [200, "HS"],
             [1000, "BMM"],
             [5000, "HKI"],
-            [int(26 ** 3 - 1), "ZZZ"],
-            [int(26 ** 3), "BAAA"],
+            [int(26**3 - 1), "ZZZ"],
+            [int(26**3), "BAAA"],
         ]
 
         for test_base_26_iter in range(0, len(list_base_10_and_26)):
@@ -1510,7 +1508,7 @@ class TestCharmmWriterData(BaseTest):
             assert str(base10_to_base26_alph(test_10_iter)) == str(test_26_iter)
 
         unique_entries_base_26_list = []
-        for test_unique_base_26 in range(0, 26 ** 2):
+        for test_unique_base_26 in range(0, 26**2):
             unique_entries_base_26_list.append(
                 base10_to_base26_alph(test_unique_base_26)
             )
@@ -1542,8 +1540,8 @@ class TestCharmmWriterData(BaseTest):
             [200, "Ds"],
             [1000, "TM"],
             [5000, "BsI"],
-            [int(52 ** 3 - 1), "zzz"],
-            [int(52 ** 3), "BAAA"],
+            [int(52**3 - 1), "zzz"],
+            [int(52**3), "BAAA"],
         ]
 
         for test_base_52_iter in range(0, len(list_base_10_and_52)):
@@ -1552,7 +1550,7 @@ class TestCharmmWriterData(BaseTest):
             assert str(base10_to_base52_alph(test_10_iter)) == str(test_52_iter)
 
         unique_entries_base_52_list = []
-        for test_unique_base_52 in range(0, 52 ** 2):
+        for test_unique_base_52 in range(0, 52**2):
             unique_entries_base_52_list.append(
                 base10_to_base52_alph(test_unique_base_52)
             )
@@ -1584,8 +1582,8 @@ class TestCharmmWriterData(BaseTest):
             [200, "3E"],
             [1000, "G8"],
             [5000, "1Ie"],
-            [int(62 ** 3 - 1), "zzz"],
-            [int(62 ** 3), "1000"],
+            [int(62**3 - 1), "zzz"],
+            [int(62**3), "1000"],
         ]
 
         for test_base_62_iter in range(0, len(list_base_10_and_62)):
@@ -1596,7 +1594,7 @@ class TestCharmmWriterData(BaseTest):
             )
 
         unique_entries_base_62_list = []
-        for test_unique_base_62 in range(0, 62 ** 2):
+        for test_unique_base_62 in range(0, 62**2):
             unique_entries_base_62_list.append(
                 base10_to_base62_alph_num(test_unique_base_62)
             )
@@ -2431,7 +2429,7 @@ class TestCharmmWriterData(BaseTest):
                             round(
                                 angle.type.k
                                 * (
-                                    sigma_conversion_factor ** 2
+                                    sigma_conversion_factor**2
                                     / epsilon_conversion_factor
                                 ),
                                 3,

@@ -5,7 +5,9 @@ dependencies:
   - bump2version
   - codecov
   - ele
-  - foyer>=0.9.4
+  - gmso>=0.7.3
+  - foyer>=0.11.0
+  - freud>=2.0.0
   - garnett>=0.7.1
   - gsd>=2
   - hoomd=2.9.6
@@ -22,9 +24,9 @@ dependencies:
   - protobuf
   - py3Dmol
   - pycifrw
-  - pytest
+  - pytest=7.0
   - pytest-azurepipelines
   - pytest-cov
-  - python<=3.8
-  - rdkit
+  - python>=3.7
+  - rdkit>=2021
   - scipy

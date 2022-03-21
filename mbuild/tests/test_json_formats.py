@@ -1,3 +1,5 @@
+import numpy as np
+
 import mbuild as mb
 from mbuild.formats.json_formats import compound_from_json, compound_to_json
 from mbuild.tests.base_test import BaseTest
@@ -14,6 +16,25 @@ class TestJSONFormats(BaseTest):
         assert ethane.n_particles == ethane_copy.n_particles
         assert ethane.n_bonds == ethane_copy.n_bonds
         assert len(ethane.children) == len(ethane_copy.children)
+
+    def test_box(self):
+        meth = mb.load("C", smiles=True)
+
+        meth.save("meth_no_box.json")
+        meth_no_box = mb.load("meth_no_box.json")
+        assert meth_no_box.box is None
+
+        meth.box = mb.Box(lengths=(3, 3, 3), angles=(45, 45, 45))
+        meth.save("meth_with_box.json")
+        meth_with_box = mb.load("meth_with_box.json")
+        assert (
+            meth.n_particles
+            == meth_with_box.n_particles
+            == meth_no_box.n_particles
+        )
+        assert meth.n_bonds == meth_with_box.n_bonds == meth_no_box.n_bonds
+        assert meth.box.lengths == meth_with_box.box.lengths == (3, 3, 3)
+        assert meth.box.angles == meth_with_box.box.angles
 
     def test_loop_with_ports(self):
         from mbuild.lib.moieties import CH3
@@ -93,3 +114,10 @@ class TestJSONFormats(BaseTest):
         ):
             assert child.labels.keys() == child_copy.labels.keys()
         assert parent_copy.available_ports() == parent.available_ports()
+
+    def test_float_64_position(self):
+        ethane = mb.lib.molecules.Ethane()
+        ethane.xyz = np.asarray(ethane.xyz, dtype=np.float64)
+        compound_to_json(ethane, "ethane.json", include_ports=True)
+        ethane_copy = compound_from_json("ethane.json")
+        assert np.allclose(ethane.xyz, ethane_copy.xyz, atol=10**-6)

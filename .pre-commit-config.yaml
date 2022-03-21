@@ -16,7 +16,7 @@ repos:
     - id: end-of-file-fixer
     - id: trailing-whitespace
 - repo: https://github.com/psf/black
-  rev: 21.12b0
+  rev: 22.1.0
   hooks:
     - id: black
       args: [--line-length=80]
@@ -30,5 +30,5 @@ repos:
   rev: '6.1.1'
   hooks:
     - id: pydocstyle
-      exclude: ^(mbuild/tests/|docs/|devtools/|setup.py|mbuild/formats/charmm_writer.py|mbuild/formats/gomc_conf_writer.py|mbuild/utils/specific_ff_to_residue.py)
+      exclude: ^(mbuild/tests/|docs/|devtools/|setup.py|setup.cfg|mbuild/formats/charmm_writer.py|mbuild/formats/gomc_conf_writer.py|mbuild/utils/specific_ff_to_residue.py)
       args: [--convention=numpy]

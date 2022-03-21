@@ -14,6 +14,7 @@ from mbuild.utils.geometry import calc_dihedral
 from mbuild.utils.io import (
     get_fn,
     has_foyer,
+    has_freud,
     has_intermol,
     has_mdtraj,
     has_networkx,
@@ -292,12 +293,21 @@ class TestCompound(BaseTest):
         combining_rules = ["lorentz", "geometric"]
         gmx_rules = {"lorentz": 2, "geometric": 3}
         for combining_rule in combining_rules:
-            methane.save(
-                "methane.top",
-                forcefield_name="oplsaa",
-                combining_rule=combining_rule,
-                overwrite=True,
-            )
+            if combining_rule == "geometric":
+                methane.save(
+                    "methane.top",
+                    forcefield_name="oplsaa",
+                    combining_rule=combining_rule,
+                    overwrite=True,
+                )
+            else:
+                with pytest.warns(UserWarning):
+                    methane.save(
+                        "methane.top",
+                        forcefield_name="oplsaa",
+                        combining_rule=combining_rule,
+                        overwrite=True,
+                    )
             with open("methane.top") as fp:
                 for i, line in enumerate(fp):
                     if i == 18:
@@ -465,6 +475,40 @@ class TestCompound(BaseTest):
     def test_generate_bonds(self, ch3):
         ch3.generate_bonds("H", "H", dmin=0.01, dmax=2.0)
         assert ch3.n_bonds == 3 + 3
+
+    @pytest.mark.skipif(not has_freud, reason="Freud not installed.")
+    def test_freud_generated_bonds_periodicity(self, ch3):
+        bounding_box = ch3.get_boundingbox()
+
+        ch3_clone = mb.clone(ch3)
+        ch3_clone.box = mb.Box(lengths=[max(bounding_box.lengths) + 1] * 3)
+        ch3_clone.periodicity = (True, True, True)
+        ch3_clone.freud_generate_bonds(
+            "H", "H", dmin=0.01, dmax=0.2, exclude_ii=True
+        )
+        assert ch3_clone.n_bonds == 3 + 3
+
+        ch3_clone2 = mb.clone(ch3)
+        ch3_clone2.box = mb.Box(lengths=[max(bounding_box.lengths) + 1] * 3)
+        ch3_clone2.periodicity = (True, True, False)
+        ch3_clone2.freud_generate_bonds(
+            "H", "H", dmin=0.01, dmax=0.2, exclude_ii=True
+        )
+        assert ch3_clone2.n_bonds == 3 + 3
+
+    @pytest.mark.skipif(not has_freud, reason="Freud not installed.")
+    def test_freud_generate_bonds(self, ch3):
+        bounding_box = ch3.get_boundingbox()
+        ch3.box = mb.Box(lengths=[max(bounding_box.lengths) + 1] * 3)
+        ch3.freud_generate_bonds("H", "H", dmin=0.01, dmax=0.2, exclude_ii=True)
+        assert ch3.n_bonds == 3 + 3
+
+    @pytest.mark.skipif(not has_freud, reason="Freud not installed.")
+    def test_freud_generate_bonds_expected(self, ch3):
+        bounding_box = ch3.get_boundingbox()
+        ch3.box = mb.Box(lengths=[max(bounding_box.lengths) + 1] * 3)
+        ch3.freud_generate_bonds("H", "H", dmin=0.01, dmax=0.1, exclude_ii=True)
+        assert ch3.n_bonds == 3
 
     def test_remove_from_box(self, ethane):
         n_ethanes = 5
@@ -1550,6 +1594,43 @@ class TestCompound(BaseTest):
         compound.box = Box(lengths=[5.0, 4.0, 4.0], angles=angles)
         with pytest.warns(UserWarning):
             compound.box = Box(lengths=[1.0, 1.0, 1.0], angles=angles)
+
+    def test_get_boundingbox_extrema(self):
+        h1 = mb.Compound()
+        h2 = mb.Compound()
+        h1.pos = [-0.07590747, 0.00182889, 0.00211742]
+        h2.pos = [0.07590747, -0.00182889, -0.00211742]
+        container = mb.Compound([h1, h2])
+        distances = container.maxs - container.mins
+        with pytest.raises(
+            MBuildError, match=r"The vectors to define the box are co\-linear\,"
+        ):
+            container.get_boundingbox()
+        distance_list = [val for val in distances]
+        distance_list = [val + 1.0 for val in distance_list]
+        np.testing.assert_almost_equal(
+            container.get_boundingbox(pad_box=1.0).lengths,
+            distance_list,
+            decimal=6,
+        )
+
+        distance_list = [val for val in distances]
+        distance_list[0] = distance_list[0] + 1.0
+        distance_list[1] = distance_list[1] + 2.0
+        distance_list[2] = distance_list[2] + 3.0
+        np.testing.assert_almost_equal(
+            container.get_boundingbox(pad_box=[1.0, 2.0, 3.0]).lengths,
+            distance_list,
+            decimal=6,
+        )
+
+    @pytest.mark.parametrize(
+        "bad_value", [[1.0, 2.0], set([1, 2, 3]), {"x": 1.0}]
+    )
+    def test_get_boundingbox_error(self, bad_value):
+        with pytest.raises(TypeError):
+            meth = mb.load(get_fn("methyl.pdb"))
+            meth.get_boundingbox(pad_box=bad_value)
 
     @pytest.mark.skipif(not has_py3Dmol, reason="Py3Dmol is not installed")
     def test_visualize_py3dmol(self, ethane):

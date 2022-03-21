@@ -180,9 +180,9 @@ def to_hoomdsnapshot(
         lx = a
         xy = b * np.cos(gamma)
         xz = c * np.cos(beta)
-        ly = np.sqrt(b ** 2 - xy ** 2)
+        ly = np.sqrt(b**2 - xy**2)
         yz = (b * c * np.cos(alpha) - xy * xz) / ly
-        lz = np.sqrt(c ** 2 - xz ** 2 - yz ** 2)
+        lz = np.sqrt(c**2 - xz**2 - yz**2)
 
     (
         n_particles,
@@ -417,9 +417,9 @@ def _parse_particle_information(
     scaled_mass = masses / ref_mass
 
     charges = np.array([atom.charge for atom in structure.atoms])
-    e0 = 2.39725e-4
+    e0 = 2.396452e-04
     """
-    Permittivity of free space = 2.39725e-4 e^2/((kcal/mol)(angstrom)),
+    Permittivity of free space = 2.396452e-04 e^2/((kcal/mol) Angstrom),
     where e is the elementary charge
     """
     charge_factor = (4.0 * np.pi * e0 * ref_distance * ref_energy) ** 0.5
