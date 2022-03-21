@@ -7,5 +7,5 @@ dependencies:
   - packmol>=18
   - parmed>=3.4.3
   - python<=3.8
-  - rdkit
+  - rdkit>=2021
   - scipy
