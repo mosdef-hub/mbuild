@@ -132,9 +132,9 @@ def _write_particle_information(
     gsd_snapshot.particles.mass = masses / ref_mass
 
     charges = np.array([atom.charge for atom in structure.atoms])
-    e0 = 2.39725e-4
+    e0 = 2.396452e-04
     """
-    Permittivity of free space = 2.39725e-4 e^2/((kcal/mol)(angstrom)),
+    Permittivity of free space = 2.396452e-04 e^2/((kcal/mol) Angstrom),
     where e is the elementary charge
     """
     charge_factor = (4.0 * np.pi * e0 * ref_distance * ref_energy) ** 0.5

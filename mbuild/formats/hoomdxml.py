@@ -210,7 +210,7 @@ def _write_particle_information(
 
     charges = [atom.charge for atom in structure.atoms]
     xml_file.write("<charge>\n")
-    e0 = 5.72956500956023e-4  # e^2-mol/kJ-nm, permittivity of free space
+    e0 = 2.396452e-04  # e^2 mol/(kcal A), permittivity of free space
     charge_factor = (4.0 * np.pi * e0 * ref_distance * ref_energy) ** 0.5
     for charge in charges:
         xml_file.write("{}\n".format(charge / charge_factor))
