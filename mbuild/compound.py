@@ -1049,8 +1049,28 @@ class Compound(object):
             [box.Lx / 2, box.Ly / 2, box.Lz / 2]
         )
 
-        freud_box = freud.box.Box.from_matrix(box.vectors.T)
-        freud.box.periodic = self.periodicity
+        # quadruple box lengths for non-periodic dimensions
+        # since freud boxes are centered at the origin, extend box
+        #   lengths 2x in the positive and negative direction
+
+        # we are periodic in all directions, no need to change anything
+        if all(self.periodicity):
+            freud_box = freud.box.Box.from_matrix(box.vectors.T)
+        # not periodic in some dimensions, lets make them pseudo-periodic
+        else:
+            tmp_lengths = [l for l in box.lengths]
+            max_tmp_length = max(tmp_lengths)
+            for i, is_periodic in enumerate(self.periodicity):
+                if is_periodic:
+                    continue
+                else:
+                    tmp_lengths[i] = tmp_lengths[i] + 4 * max_tmp_length
+            tmp_box = Box.from_lengths_angles(
+                lengths=tmp_lengths, angles=box.angles
+            )
+            freud_box = freud.box.Box.from_matrix(tmp_box.vectors.T)
+
+        freud_box.periodic = (True, True, True)
 
         a_indices = []
         b_indices = []
