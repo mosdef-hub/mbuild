@@ -5,7 +5,7 @@ cff-version: 1.2.0
 title: >-
   mBuild: A hierarchical, component based molecule
   builder
-message: Please cite this software using these metadata.
+message: Please cite this software using these metadata and the preferred citation.
 type: software
 authors:
   - given-names: Christoph
@@ -70,7 +70,7 @@ keywords:
   - chemistry
   - 'TRUE'
   - mosdef
-references:
+preferred-citation:
   - type: article
   - authors:
     - given-names: Christoph
