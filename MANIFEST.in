@@ -1,2 +1,2 @@
 include LICENSE.rst
-global-include *.pdb *.mol2 *.smi *.xml *.xyz
+global-include *.pdb *.mol2 *.smi *.xml *.xyz *.gsd *.cif *.sdf
