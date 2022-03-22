@@ -1,0 +1,102 @@
+# This CITATION.cff file was generated with cffinit.
+# Visit https://bit.ly/cffinit to generate yours today!
+
+cff-version: 1.2.0
+title: >-
+  mBuild: A hierarchical, component based molecule
+  builder
+message: Please cite this software using these metadata and the preferred citation.
+type: software
+authors:
+  - given-names: Christoph
+    family-names: Klein
+    affiliation: Vanderbilt University
+  - given-names: Andrew Z.
+    family-names: Summers
+    affiliation: Vanderbilt University
+    orcid: 'https://orcid.org/0000-0001-8477-3059'
+  - given-names: Matthew W.
+    family-names: Thompson
+    affiliation: Vanderbilt University
+    orcid: 'https://orcid.org/0000-0002-1460-3983'
+  - given-names: Justin B.
+    family-names: Gilmer
+    affiliation: Vanderbilt University
+    orcid: 'https://orcid.org/0000-0002-6915-5591'
+  - given-names: Co D.
+    family-names: Quach
+    affiliation: Vanderbilt University
+    orcid: 'https://orcid.org/0000-0002-1255-4161'
+  - given-names: Umesh
+    family-names: Timalsina
+    affiliation: Vanderbilt University
+    orcid: 'https://orcid.org/0000-0002-5430-3993'
+  - given-names: Peter
+    family-names: Volgyesi
+    orcid: 'https://orcid.org/0000-0002-7478-4317'
+    affiliation: Vanderbilt University
+  - given-names: Janos
+    family-names: Sallai
+    affiliation: Vanderbilt University
+  - given-names: Chris R.
+    family-names: Iacovella
+    affiliation: Vanderbilt University
+    orcid: 'https://orcid.org/0000-0003-0557-0427'
+  - given-names: Clare M.
+    family-names: McCabe
+    affiliation: Vanderbilt University
+    orcid: 'https://orcid.org/0000-0002-8552-9135'
+  - given-names: Peter T.
+    family-names: Cummings
+    affiliation: Vanderbilt University
+    orcid: 'https://orcid.org/0000-0002-9766-2216'
+repository-code: 'https://github.com/mosdef-hub/mbuild'
+url: 'https://mbuild.mosdef.org'
+repository: 'https://github.com/mosdef-hub/mbuild'
+repository-artifact: 'https://github.com/mosdef-hub/mbuild/releases'
+abstract: >-
+  With just a few lines of mBuild code, you can
+  assemble reusable components into complex molecular
+  systems for molecular simulations.
+
+      mBuild is designed to minimize or even eliminate the need to explicitly translate and orient components when building systems: you simply tell it to connect two pieces!
+
+      mBuild keeps track of the system’s topology so you don’t have to worry about manually defining bonds when constructing chemically bonded structures from smaller components.
+keywords:
+  - Python
+  - Reproducibility
+  - Molecular Simulation
+  - computational chemistry
+  - chemistry
+  - 'TRUE'
+  - mosdef
+preferred-citation:
+  - type: article
+  - authors:
+    - given-names: Christoph
+      family-names: Klein
+      affiliation: Vanderbilt University
+    - given-names: Janos
+      family-names: Sallai
+      affiliation: Vanderbilt University
+    - given-names: Trevor J.
+      family-names: Jones
+      affiliation: Vanderbilt University
+    - given-names: Chris R.
+      family-names: Iacovella
+      affiliation: Vanderbilt University
+      orcid: 'https://orcid.org/0000-0003-0557-0427'
+    - given-names: Clare M.
+      family-names: McCabe
+      affiliation: Vanderbilt University
+      orcid: 'https://orcid.org/0000-0002-8552-9135'
+    - given-names: Peter T.
+      family-names: Cummings
+      affiliation: Vanderbilt University
+      orcid: 'https://orcid.org/0000-0002-9766-2216'
+  - title: "A Hierarchical, Component Based Approach to Screening Properties of Soft Matter"
+  - booktitle: "Foundations of Molecular Modeling and Simulation",
+  - series: "Molecular Modeling and Simulation: Applications and Perspectives",
+  - year: "2016",
+  - doi: "http://dx.doi.org/10.1007/978-981-10-1128-3_5"
+license: MIT
