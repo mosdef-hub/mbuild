@@ -837,7 +837,10 @@ class Compound(object):
         all_ports_list = list(self.all_ports())
         for port in all_ports_list:
             if port.anchor not in [i for i in self.particles()]:
-                self.remove(port)
+                port.parent.children.remove(port)
+                for label, obj in self.labels.items():
+                    if port is obj:
+                        self.labels.pop(label)
 
         # Check and reorder rigid id
         for _ in particles_to_remove:
