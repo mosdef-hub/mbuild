@@ -95,8 +95,8 @@ preferred-citation:
       affiliation: Vanderbilt University
       orcid: 'https://orcid.org/0000-0002-9766-2216'
   - title: "A Hierarchical, Component Based Approach to Screening Properties of Soft Matter"
-  - booktitle: "Foundations of Molecular Modeling and Simulation",
-  - series: "Molecular Modeling and Simulation: Applications and Perspectives",
-  - year: "2016",
+  - booktitle: "Foundations of Molecular Modeling and Simulation"
+  - series: "Molecular Modeling and Simulation: Applications and Perspectives"
+  - year: "2016"
   - doi: "http://dx.doi.org/10.1007/978-981-10-1128-3_5"
 license: MIT
