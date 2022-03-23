@@ -1278,6 +1278,20 @@ class TestCompound(BaseTest):
         assert len(hydrogen.all_ports()) == 0
         assert len(h_clone.all_ports()) == 0
 
+    def test_pruning_ghost_ports(self, ethane):
+        eth1 = ethane
+        h1 = eth1.particles_by_name("H")
+        eth1.remove(h1)
+        assert len(eth1.all_ports()) == 6
+        for port in eth1.all_ports():
+            assert port.anchor in list(eth1.particles())
+
+        eth2 = mb.load("CC", smiles=True)
+        h2 = eth2[-1]
+        eth2.remove(h2)
+        assert len(eth2.all_ports()) == len(eth2.available_ports()) == 1
+        assert eth2.all_ports()[0] is eth2.available_ports()[0]
+
     def test_remove_bond_add_ports(self, hydrogen):
         h_clone = mb.clone(hydrogen)
         h2 = Compound(subcompounds=(hydrogen, h_clone))
