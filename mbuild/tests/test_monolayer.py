@@ -13,7 +13,7 @@ class TestMonolayer(BaseTest):
 
         chain = mb.recipes.Polymer(monomers=[ch2])
         chain.build(n=10, add_hydrogens=False)
-        monolayer = mb.recipes.Monolayer(
+        monolayer = Monolayer(
             surface=Betacristobalite(),
             chains=chain,
             backfill=H(),
@@ -31,7 +31,7 @@ class TestMonolayer(BaseTest):
         chain = mb.recipes.Polymer(monomers=[ch2])
         chain.build(n=10, add_hydrogens=False)
 
-        monolayer = mb.recipes.Monolayer(
+        monolayer = Monolayer(
             surface=Betacristobalite(),
             chains=H(),
             guest_port_name="up",
@@ -57,7 +57,7 @@ class TestMonolayer(BaseTest):
         chain_b = mb.recipes.Polymer(monomers=[ch2])
         chain_b.build(n=15, add_hydrogens=False)
 
-        monolayer = mb.recipes.Monolayer(
+        monolayer = Monolayer(
             surface=Betacristobalite(),
             chains=[chain_a, chain_b],
             fractions=fractions,
