@@ -1319,6 +1319,19 @@ class Compound(object):
         """Return the maximum x, y, z coordinate of any particle in this compound."""
         return self.xyz.max(axis=0)
 
+    def is_independent(self):
+        """Return True if there is no bond between particles of the Compound to an external Compound."""
+        if not self.parent:
+            return True
+        else:
+            bond_graph_dict = self.root.bond_graph._adj
+            for particle in self:
+                for neigh in bond_graph_dict[particle]:
+                    if neigh not in self:
+                        return False
+            else:
+                return True
+
     def get_boundingbox(self, pad_box=None):
         """Compute the bounding box of the compound.
 
