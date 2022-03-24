@@ -1088,6 +1088,18 @@ class TestCompound(BaseTest):
             for particle in ch3_nobonds.particles()
         )
 
+    def test_is_independent(self):
+        from mbuild.lib.molecules import WaterSPC
+
+        box_of_water = mb.fill_box(WaterSPC(), n_compounds=100, box=[3, 3, 3])
+        assert box_of_water.is_independent()
+
+        for particle in box_of_water.particles():
+            assert not particle.is_independent()
+
+        for child in box_of_water.children:
+            assert child.is_independent()
+
     def test_update_coords_update_ports(self, ch2):
         distances = np.round(
             [

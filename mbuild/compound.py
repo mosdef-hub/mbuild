@@ -1329,8 +1329,7 @@ class Compound(object):
                 for neigh in bond_graph_dict[particle]:
                     if neigh not in self:
                         return False
-            else:
-                return True
+            return True
 
     def get_boundingbox(self, pad_box=None):
         """Compute the bounding box of the compound.
