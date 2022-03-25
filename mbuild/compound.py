@@ -833,16 +833,23 @@ class Compound(object):
                 removed_part.parent.children.remove(removed_part)
             self._remove_references(removed_part)
 
-        # Remove ghost ports
-        all_ports_list = list(self.all_ports())
-        for port in all_ports_list:
-            if port.anchor not in [i for i in self.particles()]:
-                port.parent.children.remove(port)
-
         # Check and reorder rigid id
         for _ in particles_to_remove:
             if self.contains_rigid:
                 self.root._reorder_rigid_ids()
+
+        # Remove ghsot ports
+        self._prune_ghost_ports()
+
+    def _prune_ghost_ports(self):
+        """Worker for remove(). Remove all ports whose anchor has been deleted."""
+        all_ports_list = list(self.all_ports())
+        particles = list(self.particles())
+        for port in all_ports_list:
+            if port.anchor not in particles:
+                self._remove(port)
+                port.parent.children.remove(port)
+                self._remove_references(port)
 
     def _remove(self, removed_part):
         """Worker for remove(). Fixes rigid IDs and removes bonds."""

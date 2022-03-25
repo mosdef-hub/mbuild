@@ -3,52 +3,51 @@
 
 cff-version: 1.2.0
 title: >-
-  mBuild: A hierarchical, component based molecule
-  builder
-message: Please cite this software using these metadata and the preferred citation.
+  "mBuild: A hierarchical, component based molecule builder."
+message: "Please cite this software using these metadata and the preferred citation."
 type: software
 authors:
   - given-names: Christoph
     family-names: Klein
-    affiliation: Vanderbilt University
-  - given-names: Andrew Z.
+    affiliation: "Vanderbilt University"
+  - given-names: "Andrew Z."
     family-names: Summers
-    affiliation: Vanderbilt University
+    affiliation: "Vanderbilt University"
     orcid: 'https://orcid.org/0000-0001-8477-3059'
-  - given-names: Matthew W.
+  - given-names: "Matthew W."
     family-names: Thompson
-    affiliation: Vanderbilt University
+    affiliation: "Vanderbilt University"
     orcid: 'https://orcid.org/0000-0002-1460-3983'
-  - given-names: Justin B.
+  - given-names: "Justin B."
     family-names: Gilmer
-    affiliation: Vanderbilt University
+    affiliation: "Vanderbilt University"
     orcid: 'https://orcid.org/0000-0002-6915-5591'
-  - given-names: Co D.
+  - given-names: "Co D."
     family-names: Quach
-    affiliation: Vanderbilt University
+    affiliation: "Vanderbilt University"
     orcid: 'https://orcid.org/0000-0002-1255-4161'
   - given-names: Umesh
     family-names: Timalsina
-    affiliation: Vanderbilt University
+    affiliation: "Vanderbilt University"
     orcid: 'https://orcid.org/0000-0002-5430-3993'
   - given-names: Peter
     family-names: Volgyesi
     orcid: 'https://orcid.org/0000-0002-7478-4317'
-    affiliation: Vanderbilt University
+    affiliation: "Vanderbilt University"
   - given-names: Janos
     family-names: Sallai
-    affiliation: Vanderbilt University
-  - given-names: Chris R.
+    affiliation: "Vanderbilt University"
+  - given-names: "Chris R."
     family-names: Iacovella
-    affiliation: Vanderbilt University
+    affiliation: "Vanderbilt University"
     orcid: 'https://orcid.org/0000-0003-0557-0427'
-  - given-names: Clare M.
+  - given-names: "Clare M."
     family-names: McCabe
-    affiliation: Vanderbilt University
+    affiliation: "Vanderbilt University"
     orcid: 'https://orcid.org/0000-0002-8552-9135'
-  - given-names: Peter T.
+  - given-names: "Peter T."
     family-names: Cummings
-    affiliation: Vanderbilt University
+    affiliation: "Vanderbilt University"
     orcid: 'https://orcid.org/0000-0002-9766-2216'
 repository-code: 'https://github.com/mosdef-hub/mbuild'
 url: 'https://mbuild.mosdef.org'
@@ -65,38 +64,36 @@ abstract: >-
 keywords:
   - Python
   - Reproducibility
-  - Molecular Simulation
-  - computational chemistry
+  - "Molecular Simulation"
+  - "computational chemistry"
   - chemistry
   - 'TRUE'
   - mosdef
+license: "MIT"
 preferred-citation:
-  - type: article
-  - authors:
+  type: "article"
+  authors:
     - given-names: Christoph
       family-names: Klein
-      affiliation: Vanderbilt University
+      affiliation: "Vanderbilt University"
     - given-names: Janos
       family-names: Sallai
-      affiliation: Vanderbilt University
-    - given-names: Trevor J.
+      affiliation: "Vanderbilt University"
+    - given-names: "Trevor J."
       family-names: Jones
-      affiliation: Vanderbilt University
-    - given-names: Chris R.
+      affiliation: "Vanderbilt University"
+    - given-names: "Chris R."
       family-names: Iacovella
-      affiliation: Vanderbilt University
+      affiliation: "Vanderbilt University"
       orcid: 'https://orcid.org/0000-0003-0557-0427'
-    - given-names: Clare M.
+    - given-names: "Clare"
       family-names: McCabe
-      affiliation: Vanderbilt University
+      affiliation: "Vanderbilt University"
       orcid: 'https://orcid.org/0000-0002-8552-9135'
-    - given-names: Peter T.
+    - given-names: "Peter T."
       family-names: Cummings
-      affiliation: Vanderbilt University
+      affiliation: "Vanderbilt University"
       orcid: 'https://orcid.org/0000-0002-9766-2216'
-  - title: "A Hierarchical, Component Based Approach to Screening Properties of Soft Matter"
-  - booktitle: "Foundations of Molecular Modeling and Simulation",
-  - series: "Molecular Modeling and Simulation: Applications and Perspectives",
-  - year: "2016",
-  - doi: "http://dx.doi.org/10.1007/978-981-10-1128-3_5"
-license: MIT
+  title: "A Hierarchical, Component Based Approach to Screening Properties of Soft Matter"
+  year: "2016"
+  doi: "10.1007/978-981-10-1128-3_5"
