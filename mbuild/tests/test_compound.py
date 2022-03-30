@@ -1100,6 +1100,26 @@ class TestCompound(BaseTest):
         for child in box_of_water.children:
             assert child.is_independent()
 
+    def test_is_independent_progression(self):
+        from mbuild.lib.moieties import CH3
+
+        ch3_1 = CH3()
+        ch3_2 = CH3()
+        assert ch3_1.is_independent()
+        assert ch3_2.is_independent()
+
+        eth = mb.Compound()
+        eth.add(ch3_1, "methyl1")
+        eth.add(ch3_2, "methyl2")
+        assert ch3_1.is_independent()
+        assert ch3_2.is_independent()
+
+        mb.force_overlap(
+            eth["methyl1"], eth["methyl1"]["up"], eth["methyl2"]["up"]
+        )
+        assert not ch3_1.is_independent()
+        assert not ch3_2.is_independent()
+
     def test_update_coords_update_ports(self, ch2):
         distances = np.round(
             [
