@@ -107,7 +107,7 @@ class TestCompound(BaseTest):
         for p in hydrogens:
             ethane.remove(p)
         assert ethane[0].n_bonds == 1
-        
+
     def test_load_protein(self):
         # Testing the loading function with complicated protein,
         # The protein file is taken from RCSB protein data bank
