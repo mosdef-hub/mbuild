@@ -176,6 +176,7 @@ class Compound(object):
         self.referrers = set()
 
         self.bond_graph = None
+        self._direct_bonds = 0
         self.port_particle = port_particle
 
         self._rigid_id = None
@@ -963,7 +964,10 @@ class Compound(object):
         int
             The number of bonds in the Compound
         """
-        return sum(1 for _ in self.bonds())
+        if list(self.particles()) == [self]:
+            return self._direct_bonds
+        else:
+            return sum(1 for _ in self.bonds())
 
     def add_bond(self, particle_pair):
         """Add a bond between two Particles.
@@ -977,6 +981,8 @@ class Compound(object):
             self.root.bond_graph = BondGraph()
 
         self.root.bond_graph.add_edge(particle_pair[0], particle_pair[1])
+        particle_pair[0]._direct_bonds += 1
+        particle_pair[1]._direct_bonds += 1
 
     def generate_bonds(self, name_a, name_b, dmin, dmax):
         """Add Bonds between all pairs of types a/b within [dmin, dmax].
@@ -1142,6 +1148,8 @@ class Compound(object):
             ),
             "port[$]",
         )
+        particle_pair[0]._direct_bonds -= 1
+        particle_pair[0]._direct_bonds -= 1
 
     @property
     def pos(self):
