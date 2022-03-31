@@ -79,7 +79,7 @@ def force_overlap(move_this, from_positions, to_positions, add_bond=True):
                 to_positions.anchor.parent.add_bond(
                     (from_positions.anchor, to_positions.anchor)
                 )
-                # Account for double addings anchor particles _direct_bonds
+                # Account for double adding anchor particles _direct_bonds
                 from_positions.anchor._direct_bonds -= 1
                 to_positions.anchor._direct_bonds -= 1
                 from_positions.anchor.parent.remove(from_positions)
