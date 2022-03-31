@@ -100,6 +100,14 @@ class TestCompound(BaseTest):
     def test_update_from_file(self, ch3):
         ch3.update_coordinates(get_fn("methyl.pdb"))
 
+    def test_particle_n_bonds(self, ethane):
+        assert ethane[0].n_bonds == 4
+        assert ethane[-1].n_bonds == 1
+        hydrogens = [p for p in ethane.particles_by_name("H")]
+        for p in hydrogens:
+            ethane.remove(p)
+        assert ethane[0].n_bonds == 1
+        
     def test_load_protein(self):
         # Testing the loading function with complicated protein,
         # The protein file is taken from RCSB protein data bank

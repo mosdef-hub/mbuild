@@ -1149,7 +1149,7 @@ class Compound(object):
             "port[$]",
         )
         particle_pair[0]._direct_bonds -= 1
-        particle_pair[0]._direct_bonds -= 1
+        particle_pair[1]._direct_bonds -= 1
 
     @property
     def pos(self):
