@@ -2699,7 +2699,7 @@ class Compound(object):
         newone._rigid_id = deepcopy(self._rigid_id)
         newone._charge = deepcopy(self._charge)
         newone._mass = deepcopy(self._mass)
-        newone._direct_bonds = deepcopy(self._direct_bonds)
+        newone._direct_bonds = 0 
         if hasattr(self, "index"):
             newone.index = deepcopy(self.index)
 
