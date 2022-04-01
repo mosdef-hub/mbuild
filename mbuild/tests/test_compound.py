@@ -1120,6 +1120,10 @@ class TestCompound(BaseTest):
         assert not ch3_1.is_independent()
         assert not ch3_2.is_independent()
 
+        eth.remove_bond(list(eth.particles_by_name("C")))
+        assert ch3_1.is_independent()
+        assert ch3_2.is_independent()
+
     def test_update_coords_update_ports(self, ch2):
         distances = np.round(
             [
