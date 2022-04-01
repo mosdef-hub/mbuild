@@ -119,8 +119,10 @@ class TestCompound(BaseTest):
     def test_n_bonds_packing(self, ethane):
         filled = mb.fill_box(ethane, n_compounds=5, density=1)
         assert filled.n_bonds == 5 * ethane.n_bonds
-        assert sum(p.n_bonds for p in filled.particles()) == sum(
-                p.n_bonds for p in ethane.particles())*5
+        assert (
+            sum(p.n_bonds for p in filled.particles())
+            == sum(p.n_bonds for p in ethane.particles()) * 5
+        )
 
     def test_n_bonds_smiles(self):
         ethane = mb.load("CC", smiles=True)
