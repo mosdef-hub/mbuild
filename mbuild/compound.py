@@ -1331,7 +1331,7 @@ class Compound(object):
         if not self.parent:
             # This is the very top level, and hence have to be independent
             return True
-        elif not self.root.bonds:
+        elif not list(self.root.bonds()):
             # If there is no bond in the top level, then everything is independent
             return True
         else:
