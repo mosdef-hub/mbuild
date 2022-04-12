@@ -1091,6 +1091,7 @@ class TestCompound(BaseTest):
     def test_is_independent(self):
         from mbuild.lib.molecules import WaterSPC
 
+        # Test the normal case
         box_of_water = mb.fill_box(WaterSPC(), n_compounds=100, box=[3, 3, 3])
         assert box_of_water.is_independent()
 
@@ -1099,6 +1100,18 @@ class TestCompound(BaseTest):
 
         for child in box_of_water.children:
             assert child.is_independent()
+
+        # Test the case where there is no bond
+        top_comp = mb.Compound(name="top")
+        mid_comp = mb.Compound(name="mid")
+        bot_comp = mb.Compound(name="bot")
+
+        top_comp.add(mid_comp)
+        mid_comp.add(bot_comp)
+
+        assert top_comp.is_independent()
+        assert mid_comp.is_independent()
+        assert bot_comp.is_independent()
 
     def test_is_independent_progression(self):
         from mbuild.lib.moieties import CH3
