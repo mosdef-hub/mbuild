@@ -1662,6 +1662,31 @@ class Compound(object):
         overwrite_nglview_default(widget)
         return widget
 
+    def flatten(self):
+        """Flatten the hierarchical structure of the Compound."""
+        # TO DO: handle ports when flatten out a structure
+        childern_list = list(self.children)
+        particle_list = list(self.particles())
+        bond_graph = self.root.bond_graph
+
+        # Make a list of bond that involved the particles of this compound.
+        # This include bonds made exist between this compound and other
+        # component of the system
+        new_bonds = list()
+        for particle in particle_list:
+            for neighbor in bond_graph._adj.get(particle, []):
+                new_bonds.append((particle, neighbor))
+
+        # Remove all the children
+        for child in children_list:
+            # Need to handle the case when child is a port
+            self.remove(child)
+
+        # Re-add the particles and bonds
+        self.add(particle_list)
+        for bond in new_bonds:
+            compound.add_bond(bond)
+
     def update_coordinates(self, filename, update_port_locations=True):
         """Update the coordinates of this Compound from a file.
 
