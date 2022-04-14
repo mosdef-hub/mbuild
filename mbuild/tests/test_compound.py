@@ -692,6 +692,33 @@ class TestCompound(BaseTest):
         assert len(list(parent.ancestors())) == 0
         assert next(parent.particles_by_name("A")) == part
 
+    def test_flatten_eth(self, ethane):
+        # Before flattening
+        assert len(eth.children) == 2
+        assert len(list(eth.partilces())) == 8
+        assert len(list(eth.bonds())) == 7
+
+        # After flattening
+        eth.flatten()
+        assert len(eth.children) == len(list(eth.particles())) == 6
+        assert len(list(eth.bonds())) == 7
+
+    def test_flatten_box_of_eth(self, ethane):
+        box_of_eth = mb.fill_box(compound=ethane, n_compounds=2, box=[1, 1, 1])
+        # Before flattening
+        assert len(box_of_eth.children) == 2
+        assert len(list(box_of_eth.bonds())) == 7 * 2
+        assert len(list(box_of_eth.particles())) == 8 * 2
+
+        # After flattening
+        box_of_eth.flatten()
+        assert (
+            len(box_of_eth.children)
+            == len(list(box_of_eth.particles()))
+            == 8 * 2
+        )
+        assert len(list(box_of_eth.bonds())) == 7 * 2
+
     @pytest.mark.skipif(
         not has_openbabel, reason="Open Babel package not installed"
     )
