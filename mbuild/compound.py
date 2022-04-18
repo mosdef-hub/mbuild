@@ -968,8 +968,9 @@ class Compound(object):
         if self.root.bond_graph is None:
             return 0
         # n_bonds of a particle with no children
-        elif (list(self.particles()) == [self] and 
-                self.root.bond_graph.has_node(self)):
+        elif list(self.particles()) == [self] and self.root.bond_graph.has_node(
+            self
+        ):
             particle_bonds = self.root.bond_graph._adj[self]
             return len(particle_bonds)
         # n_bonds of a compound with children
