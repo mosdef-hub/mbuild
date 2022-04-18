@@ -957,8 +957,6 @@ class Compound(object):
     @property
     def n_bonds(self):
         """Return the total number of bonds in the Compound.
-        If the Compound contains no children compounds, then
-        the number of bonds the Compound is directly invovled in is returned
 
         Returns
         -------
