@@ -176,7 +176,6 @@ class Compound(object):
         self.referrers = set()
 
         self.bond_graph = None
-        self._direct_bonds = 0
         self.port_particle = port_particle
 
         self._rigid_id = None
@@ -957,15 +956,23 @@ class Compound(object):
 
     @property
     def n_bonds(self):
-        """Return the number of bonds in the Compound.
+        """Return the total number of bonds in the Compound.
+        If the Compound contains no children compounds, then
+        the number of bonds the Compound is directly invovled in is returned
 
         Returns
         -------
         int
             The number of bonds in the Compound
         """
-        if list(self.particles()) == [self]:
-            return self._direct_bonds
+        if self.root.bond_graph is None:
+            return 0
+        # n_bonds of a particle with no children
+        elif (list(self.particles()) == [self] and 
+                self.root.bond_graph.has_node(self)):
+            particle_bonds = self.root.bond_graph._adj[self]
+            return len(particle_bonds)
+        # n_bonds of a compound with children
         else:
             return sum(1 for _ in self.bonds())
 
@@ -981,8 +988,6 @@ class Compound(object):
             self.root.bond_graph = BondGraph()
 
         self.root.bond_graph.add_edge(particle_pair[0], particle_pair[1])
-        particle_pair[0]._direct_bonds += 1
-        particle_pair[1]._direct_bonds += 1
 
     def generate_bonds(self, name_a, name_b, dmin, dmax):
         """Add Bonds between all pairs of types a/b within [dmin, dmax].
@@ -1148,8 +1153,6 @@ class Compound(object):
             ),
             "port[$]",
         )
-        particle_pair[0]._direct_bonds -= 1
-        particle_pair[1]._direct_bonds -= 1
 
     @property
     def pos(self):
@@ -2699,7 +2702,6 @@ class Compound(object):
         newone._rigid_id = deepcopy(self._rigid_id)
         newone._charge = deepcopy(self._charge)
         newone._mass = deepcopy(self._mass)
-        newone._direct_bonds = 0
         if hasattr(self, "index"):
             newone.index = deepcopy(self.index)
 
