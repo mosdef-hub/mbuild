@@ -163,6 +163,7 @@ stages:
               conda update -c defaults conda
               conda install -c conda-forge mamba
               conda update --all
+              rm /usr/share/miniconda/pkgs/cache/*.json
               git clone https://github.com/mosdef-hub/foyer.git
               git clone https://github.com/mosdef-hub/gmso.git
               mamba env create --name bleeding -f environment-dev.yml
