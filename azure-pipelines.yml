@@ -71,6 +71,7 @@ stages:
           - bash: |
               mamba update -c defaults conda
               mamba update --all
+              rm /usr/share/miniconda/pkgs/cache/*.json
               sed -i -E 's/python.*$/python='$(python.version)'/' environment-dev.yml
               mamba env create -f environment-dev.yml
               source activate mbuild-dev
@@ -131,6 +132,7 @@ stages:
           - script: |
               conda update -c defaults conda
               conda update conda -yq
+              rm /usr/share/miniconda/pkgs/cache/*.json
               sed -i -E 's/python.*$/python='$(python.version)'/' environment-win.yml
               conda env create -f environment-win.yml
               call activate mbuild-dev
