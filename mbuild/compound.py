@@ -1665,7 +1665,7 @@ class Compound(object):
     def flatten(self):
         """Flatten the hierarchical structure of the Compound."""
         # TO DO: handle ports when flatten out a structure
-        childern_list = list(self.children)
+        children_list = list(self.children)
         particle_list = list(self.particles())
         bond_graph = self.root.bond_graph
 
@@ -1685,7 +1685,7 @@ class Compound(object):
         # Re-add the particles and bonds
         self.add(particle_list)
         for bond in new_bonds:
-            compound.add_bond(bond)
+            self.add_bond(bond)
 
     def update_coordinates(self, filename, update_port_locations=True):
         """Update the coordinates of this Compound from a file.
