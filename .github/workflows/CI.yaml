@@ -58,6 +58,7 @@ jobs:
         with:
           name: mBuild-Coverage
           verbose: true
+          files: ./coverage.xml
 
   bleeding-edge-test:
     if: github.event.pull_request.draft == false
