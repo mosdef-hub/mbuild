@@ -78,19 +78,19 @@ jobs:
           extra-specs: |
             python=3.8
 
-      - name: Clone mBuild and GMSO
+      - name: Clone Foyer and GMSO
         run: |
-          git clone https://github.com/mosdef-hub/mbuild.git
+          git clone https://github.com/mosdef-hub/foyer.git
           git clone https://github.com/mosdef-hub/gmso.git
 
-      - name: Update Environment with mbuild/gmso Dependencies
+      - name: Update Environment with foyer/gmso Dependencies
         run: |
-          micromamba update --name mbuild-dev --file mbuild/environment.yml
+          micromamba update --name mbuild-dev --file foyer/environment.yml
           micromamba update --name mbuild-dev --file gmso/environment.yml
 
       - name: Install Packages from Source
         run: |
-          pip install -e mbuild
+          pip install -e foyer
           pip install -e gmso
           pip install -e .
 
