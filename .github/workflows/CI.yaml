@@ -51,7 +51,6 @@ jobs:
 
       - name: Test (OS -> ${{ matrix.os }} / Python -> ${{ matrix.python-version }})
         run: python -m pytest -v --cov=mbuild --cov-report=xml --cov-append --cov-config=setup.cfg --color yes --pyargs mbuild
-        continue-on-error: true
 
       - name: Upload Coverage Report
         uses: codecov/codecov-action@v2
