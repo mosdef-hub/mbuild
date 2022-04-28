@@ -24,7 +24,7 @@ dependencies:
   - protobuf
   - py3Dmol
   - pycifrw
-  - pytest=7.0
+  - pytest
   - pytest-azurepipelines
   - pytest-cov
   - python>=3.7
