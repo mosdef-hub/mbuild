@@ -33,3 +33,20 @@ class TestMol2(BaseTest):
         for particle in gmso_silica_surface:
             element_set.add(particle.element)
         assert len(element_set) == 2
+
+    def test_gmso_backend_lj_site_type(self):
+        pmd_silica_surface = mb.load(
+            filename_or_object=get_fn("beta-cristobalite-expanded.mol2"),
+            backend="parmed",
+        )
+        gmso_silica_surface = mb.load(
+            filename_or_object=get_fn("beta-cristobalite-expanded.mol2"),
+            backend="gmso",
+            site_type="lj",
+        )
+
+        assert pmd_silica_surface.n_particles == gmso_silica_surface.n_particles
+        assert pmd_silica_surface.n_bonds == gmso_silica_surface.n_bonds
+
+        for particle in gmso_silica_surface:
+            assert particle.element is None
