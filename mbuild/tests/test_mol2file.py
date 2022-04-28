@@ -38,7 +38,6 @@ class TestMol2(BaseTest):
         pmd_silica_surface = mb.load(
             filename_or_object=get_fn("beta-cristobalite-expanded.mol2"),
             backend="parmed",
-            site_type="lj",
         )
         gmso_silica_surface = mb.load(
             filename_or_object=get_fn("beta-cristobalite-expanded.mol2"),
