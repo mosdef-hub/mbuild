@@ -1662,9 +1662,23 @@ class Compound(object):
         overwrite_nglview_default(widget)
         return widget
 
-    def flatten(self):
-        """Flatten the hierarchical structure of the Compound."""
-        # TO DO: handle ports when flatten out a structure
+    def flatten(self, inplace=True):
+        """Flatten the hierarchical structure of the Compound.
+
+        Modify the mBuild Compound to become a Compound where there is
+        a single container (self) that contains all the particles.
+
+        Parameter
+        ---------
+        inplace : bool, optional, default=True
+            Option to perform the flatten operation inplace or return a copy
+
+        Return
+        ------
+        self : mb.Compound or None
+            return a flatten Compound if inplace is False.
+        """
+        ports_list = list(self.all_ports())
         children_list = list(self.children)
         particle_list = list(self.particles())
         bond_graph = self.root.bond_graph
@@ -1678,14 +1692,33 @@ class Compound(object):
                 new_bonds.append((particle, neighbor))
 
         # Remove all the children
-        for child in children_list:
-            # Need to handle the case when child is a port
-            self.remove(child)
+        if inplace:
+            for child in children_list:
+                # Need to handle the case when child is a port
+                self.remove(child)
 
-        # Re-add the particles and bonds
-        self.add(particle_list)
-        for bond in new_bonds:
-            self.add_bond(bond)
+            # Re-add the particles and bonds
+            self.add(particle_list)
+
+            for port in ports_list:
+                # TO DO: properly handle labels
+                self.add(port, containment=False)
+
+            for bond in new_bonds:
+                self.add_bond(bond)
+        else:
+            comp = mb.Compound(name=self.name)
+            comp.add(particle_list)
+            for bond in new_bonds:
+                if (
+                    new_bonds[0] in particle_list
+                    and new_bonds[1] in particle_list
+                ):
+                    return comd.add_bond(bond)
+                else:
+                    # Do not add bond that beyond the boundary
+                    continue
+            return comp
 
     def update_coordinates(self, filename, update_port_locations=True):
         """Update the coordinates of this Compound from a file.
