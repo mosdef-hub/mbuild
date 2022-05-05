@@ -694,14 +694,14 @@ class TestCompound(BaseTest):
 
     def test_flatten_eth(self, ethane):
         # Before flattening
-        assert len(eth.children) == 2
-        assert len(list(eth.partilces())) == 8
-        assert len(list(eth.bonds())) == 7
+        assert len(ethane.children) == 2
+        assert len(list(ethane.partilces())) == 8
+        assert len(list(ethane.bonds())) == 7
 
         # After flattening
-        eth.flatten()
-        assert len(eth.children) == len(list(eth.particles())) == 6
-        assert len(list(eth.bonds())) == 7
+        ethane.flatten()
+        assert len(ethane.children) == len(list(ethane.particles())) == 6
+        assert len(list(ethane.bonds())) == 7
 
     def test_flatten_box_of_eth(self, ethane):
         box_of_eth = mb.fill_box(compound=ethane, n_compounds=2, box=[1, 1, 1])
