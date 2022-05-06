@@ -719,6 +719,13 @@ class TestCompound(BaseTest):
         )
         assert len(list(box_of_eth.bonds())) == 7 * 2
 
+    def test_flatten_box_with_port(self, ethane):
+        ethane.remove(ethane[2])
+        original_ports = ethane.all_ports()
+        ethane.flatten()
+        assert len(ethane.all_ports()) == len(original_ports)
+        assert ethane.all_ports()[0] == original_ports[0]
+
     @pytest.mark.skipif(
         not has_openbabel, reason="Open Babel package not installed"
     )

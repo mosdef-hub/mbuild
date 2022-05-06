@@ -1699,16 +1699,14 @@ class Compound(object):
 
             # Re-add the particles and bonds
             self.add(particle_list)
-
-            for port in ports_list:
-                # TO DO: properly handle labels
-                self.add(port, containment=False)
+            self.add(ports_list)
 
             for bond in new_bonds:
                 self.add_bond(bond)
         else:
             comp = mb.Compound(name=self.name)
             comp.add(particle_list)
+            comp.add(ports_list)
             for bond in new_bonds:
                 if (
                     new_bonds[0] in particle_list
