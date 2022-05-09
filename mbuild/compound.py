@@ -1704,18 +1704,8 @@ class Compound(object):
             for bond in new_bonds:
                 self.add_bond(bond)
         else:
-            comp = mb.Compound(name=self.name)
-            comp.add(particle_list)
-            comp.add(ports_list)
-            for bond in new_bonds:
-                if (
-                    new_bonds[0] in particle_list
-                    and new_bonds[1] in particle_list
-                ):
-                    return comd.add_bond(bond)
-                else:
-                    # Do not add bond that beyond the boundary
-                    continue
+            comp = clone(self)
+            comp.flatten(inplace=True)
             return comp
 
     def update_coordinates(self, filename, update_port_locations=True):

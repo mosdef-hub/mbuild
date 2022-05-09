@@ -695,31 +695,32 @@ class TestCompound(BaseTest):
     def test_flatten_eth(self, ethane):
         # Before flattening
         assert len(ethane.children) == 2
-        assert len(list(ethane.particles())) == 8
-        assert len(list(ethane.bonds())) == 7
+        assert ethane.n_particles == 8
+        assert ethane.n_bonds == 7
+
+        # Flatten with inplace = False
+        copy = ethane.flatten(inplace=False)
+        assert ethane.n_particles == copy.n_particles == len(copy.children)
+        assert ethane.n_bonds == copy.n_bonds
 
         # After flattening
         ethane.flatten()
-        assert len(ethane.children) == len(list(ethane.particles())) == 8
-        assert len(list(ethane.bonds())) == 7
+        assert len(ethane.children) == ethane.n_particles == 8
+        assert ethane.n_bonds == 7
 
     def test_flatten_box_of_eth(self, ethane):
         box_of_eth = mb.fill_box(compound=ethane, n_compounds=2, box=[1, 1, 1])
         # Before flattening
         assert len(box_of_eth.children) == 2
-        assert len(list(box_of_eth.bonds())) == 7 * 2
-        assert len(list(box_of_eth.particles())) == 8 * 2
+        assert box_of_eth.n_bonds == 7 * 2
+        assert box_of_eth.n_particles == 8 * 2
 
         # After flattening
         box_of_eth.flatten()
-        assert (
-            len(box_of_eth.children)
-            == len(list(box_of_eth.particles()))
-            == 8 * 2
-        )
-        assert len(list(box_of_eth.bonds())) == 7 * 2
+        assert len(box_of_eth.children) == box_of_eth.n_particles == 8 * 2
+        assert box_of_eth.n_bonds == 7 * 2
 
-    def test_flatten_box_with_port(self, ethane):
+    def test_flatten_with_port(self, ethane):
         ethane.remove(ethane[2])
         original_ports = ethane.all_ports()
         ethane.flatten()
