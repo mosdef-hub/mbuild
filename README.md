@@ -1,7 +1,7 @@
 ## mBuild: a hierarchical, component based molecule builder
 
 [![Gitter chat](https://badges.gitter.im/mosdef-hub/gitter.svg)](https://gitter.im/mosdef-hub/Lobby)
-[![AZP Build Status](https://dev.azure.com/mosdef/mbuild/_apis/build/status/mosdef-hub.mbuild?branchName=master)](https://dev.azure.com/mosdef/mbuild/_build/latest?definitionId=1&branchName=master)
+[![CI](https://github.com/mosdef-hub/mbuild/actions/workflows/CI.yaml/badge.svg)](https://github.com/mosdef-hub/mbuild/actions/workflows/CI.yaml)
 [![Anaconda Badge](https://anaconda.org/conda-forge/mbuild/badges/version.svg)](https://anaconda.org/conda-forge/mbuild)
 [![codecov](https://codecov.io/gh/mosdef-hub/mbuild/branch/master/graph/badge.svg)](https://codecov.io/gh/mosdef-hub/mbuild)
 

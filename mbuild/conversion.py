@@ -428,7 +428,7 @@ def load_file(
     if backend == "gmso":
         gmso = import_("gmso")
 
-        top = gmso.Topology.load(filename=filename)
+        top = gmso.Topology.load(filename=filename, **kwargs)
         compound = from_gmso(
             topology=top,
             compound=compound,
