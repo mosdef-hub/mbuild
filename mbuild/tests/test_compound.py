@@ -1123,6 +1123,55 @@ class TestCompound(BaseTest):
             for particle in ch3_nobonds.particles()
         )
 
+    def test_is_independent(self):
+        from mbuild.lib.molecules import WaterSPC
+
+        # Test the normal case
+        box_of_water = mb.fill_box(WaterSPC(), n_compounds=100, box=[3, 3, 3])
+        assert box_of_water.is_independent()
+
+        for particle in box_of_water.particles():
+            assert not particle.is_independent()
+
+        for child in box_of_water.children:
+            assert child.is_independent()
+
+        # Test the case where there is no bond
+        top_comp = mb.Compound(name="top")
+        mid_comp = mb.Compound(name="mid")
+        bot_comp = mb.Compound(name="bot")
+
+        top_comp.add(mid_comp)
+        mid_comp.add(bot_comp)
+
+        assert top_comp.is_independent()
+        assert mid_comp.is_independent()
+        assert bot_comp.is_independent()
+
+    def test_is_independent_progression(self):
+        from mbuild.lib.moieties import CH3
+
+        ch3_1 = CH3()
+        ch3_2 = CH3()
+        assert ch3_1.is_independent()
+        assert ch3_2.is_independent()
+
+        eth = mb.Compound()
+        eth.add(ch3_1, "methyl1")
+        eth.add(ch3_2, "methyl2")
+        assert ch3_1.is_independent()
+        assert ch3_2.is_independent()
+
+        mb.force_overlap(
+            eth["methyl1"], eth["methyl1"]["up"], eth["methyl2"]["up"]
+        )
+        assert not ch3_1.is_independent()
+        assert not ch3_2.is_independent()
+
+        eth.remove_bond(list(eth.particles_by_name("C")))
+        assert ch3_1.is_independent()
+        assert ch3_2.is_independent()
+
     def test_update_coords_update_ports(self, ch2):
         distances = np.round(
             [
