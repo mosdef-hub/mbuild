@@ -963,7 +963,7 @@ class Compound(object):
         Returns
         -------
         int
-            The number of compounds this compound is directly bonded to. 
+            The number of compounds this compound is directly bonded to.
         """
         if list(self.particles()) != [self]:
             raise MBuildError(
