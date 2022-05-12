@@ -953,6 +953,26 @@ class Compound(object):
                 ).edges_iter()
         else:
             return iter(())
+    @property
+    def direct_bonds(self):
+        """Returns the number of bonds a particle is directly involved in.
+        This method should only be used on on compounds at the bottom
+        of their hierarchy (i.e. a particle).
+
+        Returns
+        -------
+        int
+            The number of bonds in the Compound
+        """
+        if list(self.particles()) != [self]:
+            raise MBuildError("The direct_bonds method can only " 
+                    "be used on compounds at the bottom of their hierarchy."
+            )
+        if self.root.bond_graph.has_node(self):
+            particle_bonds = self.root.bond_graph._adj[self]
+            return len(particle_bonds)
+        else:
+            return 0
 
     @property
     def n_bonds(self):
@@ -963,17 +983,7 @@ class Compound(object):
         int
             The number of bonds in the Compound
         """
-        if self.root.bond_graph is None:
-            return 0
-        # n_bonds of a particle with no children
-        elif list(self.particles()) == [self] and self.root.bond_graph.has_node(
-            self
-        ):
-            particle_bonds = self.root.bond_graph._adj[self]
-            return len(particle_bonds)
-        # n_bonds of a compound with children
-        else:
-            return sum(1 for _ in self.bonds())
+        return sum(1 for _ in self.bonds())
 
     def add_bond(self, particle_pair):
         """Add a bond between two Particles.

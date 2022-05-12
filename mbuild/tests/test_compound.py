@@ -100,36 +100,20 @@ class TestCompound(BaseTest):
     def test_update_from_file(self, ch3):
         ch3.update_coordinates(get_fn("methyl.pdb"))
 
-    def test_particle_n_bonds(self, ethane):
-        assert ethane[0].n_bonds == 4
-        assert ethane[-1].n_bonds == 1
+    def test_direct_bonds(self, ethane):
+        assert ethane[0].direct_bonds == 4
+        assert ethane[-1].direct_bonds == 1
         hydrogens = [p for p in ethane.particles_by_name("H")]
         for p in hydrogens:
             ethane.remove(p)
-        assert ethane[0].n_bonds == 1
+        assert ethane[0].direct_bonds == 1
         ethane.remove(ethane[-1])
-        assert ethane[0].n_bonds == 0
+        assert ethane[0].direct_bonds == 0
 
-    def test_n_bonds_cloning(self, ethane):
+    def test_direct_bonds_cloning(self, ethane):
         ethane_clone = mb.clone(ethane)
-        assert ethane_clone.n_bonds == ethane.n_bonds
         for p1, p2 in zip(ethane.particles(), ethane_clone.particles()):
-            assert p1.n_bonds == p2.n_bonds
-
-    def test_n_bonds_packing(self, ethane):
-        filled = mb.fill_box(ethane, n_compounds=5, density=1)
-        assert filled.n_bonds == 5 * ethane.n_bonds
-        assert (
-            sum(p.n_bonds for p in filled.particles())
-            == sum(p.n_bonds for p in ethane.particles()) * 5
-        )
-
-    def test_n_bonds_smiles(self):
-        ethane = mb.load("CC", smiles=True)
-        for p in ethane.particles_by_name("C"):
-            assert p.n_bonds == 4
-        for p in ethane.particles_by_name("H"):
-            assert p.n_bonds == 1
+            assert p1.direct_bonds == p2.direct_bonds
 
     def test_load_protein(self):
         # Testing the loading function with complicated protein,
