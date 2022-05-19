@@ -951,7 +951,9 @@ class Compound(object):
             )
         if not self.root.bond_graph:
             return iter(()) 
-        elif self.root.bond_graph.has_node(self):
+        else:
+            if len(self.root.bond_graph._adj[self]) == 0:
+                return iter(())
             for i in self.root.bond_graph._adj[self]:
                 yield i
 
@@ -995,10 +997,7 @@ class Compound(object):
                 "The direct_bonds method can only "
                 "be used on compounds at the bottom of their hierarchy."
             )
-        if not self.root.bond_graph:
-            return 0
-        elif self.root.bond_graph.has_node(self):
-            return sum(1 for i in self.direct_bonds())
+        return sum(1 for _ in self.direct_bonds())
 
     @property
     def n_bonds(self):
