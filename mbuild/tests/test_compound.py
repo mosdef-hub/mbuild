@@ -99,21 +99,33 @@ class TestCompound(BaseTest):
 
     def test_update_from_file(self, ch3):
         ch3.update_coordinates(get_fn("methyl.pdb"))
+    
+    def test_direct_bonds(self, methane):
+        with pytest.raises(MBuildError):
+            bond_particles = methane.direct_bonds()
+        bond_particles = methane[0].direct_bonds()
+        for H in methane.particles_by_name("H"):
+            assert H in bond_particles
 
-    def test_direct_bonds(self, ethane):
-        assert ethane[0].direct_bonds == 4
-        assert ethane[-1].direct_bonds == 1
+    def test_n_direct_bonds(self, ethane):
+        assert ethane[0].n_direct_bonds == 4
+        assert ethane[-1].n_direct_bonds == 1
         hydrogens = [p for p in ethane.particles_by_name("H")]
         for p in hydrogens:
             ethane.remove(p)
-        assert ethane[0].direct_bonds == 1
+        assert ethane[0].n_direct_bonds == 1
         ethane.remove(ethane[-1])
-        assert ethane[0].direct_bonds == 0
+        assert ethane[0].n_direct_bonds == 0
+
+    def test_direct_bonds_no_graph(self):
+        comp = mb.Compound(name="A", pos=[0,0,0])
+        assert comp.n_direct_bonds == 0
+        assert comp.direct_bonds() is None
 
     def test_direct_bonds_cloning(self, ethane):
         ethane_clone = mb.clone(ethane)
         for p1, p2 in zip(ethane.particles(), ethane_clone.particles()):
-            assert p1.direct_bonds == p2.direct_bonds
+            assert p1.n_direct_bonds == p2.n_direct_bonds
 
     def test_load_protein(self):
         # Testing the loading function with complicated protein,
