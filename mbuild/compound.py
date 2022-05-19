@@ -935,10 +935,10 @@ class Compound(object):
     def direct_bonds(self):
         """Returns all bonds a particle is directly involved in.
 
-        Returns 
+        Returns
         -----
         List of mb.Compound
-        
+
         See Also
         --------
         bond_graph.edges_iter : Iterations over all edges in a BondGraph
