@@ -936,7 +936,7 @@ class Compound(object):
         """Returns all bonds a particle is directly involved in.
 
         Returns
-        -----
+        -------
         List of mb.Compound
 
         See Also
@@ -950,9 +950,10 @@ class Compound(object):
                 "be used on compounds at the bottom of their hierarchy."
             )
         if not self.root.bond_graph:
-            return None
+            return iter(()) 
         elif self.root.bond_graph.has_node(self):
-            return self.root.bond_graph._adj[self]
+            for i in self.root.bond_graph._adj[self]:
+                yield i
 
     def bonds(self):
         """Return all bonds in the Compound and sub-Compounds.
@@ -995,10 +996,9 @@ class Compound(object):
                 "be used on compounds at the bottom of their hierarchy."
             )
         if not self.root.bond_graph:
-            retrun 0
+            return 0
         elif self.root.bond_graph.has_node(self):
-            particle_bonds = self.root.bond_graph._adj[self]
-            return len(particle_bonds)
+            return sum(1 for i in self.direct_bonds())
 
     @property
     def n_bonds(self):
@@ -1011,9 +1011,9 @@ class Compound(object):
         """
         if list(self.particles()) == [self]:
             raise MBuildError(
-                "The n_bonds() method cannot be used on particles "
+                "n_bonds cannot be used on Compounds "
                 "at the bottom of their hierarchy (particles). "
-                "Use the n_direct_bonds() method"
+                "Use n_direct_bonds instead."
             )
         return sum(1 for _ in self.bonds())
 
@@ -2710,6 +2710,7 @@ class Compound(object):
 
         if self.children:
             descr.append("{:d} particles, ".format(self.n_particles))
+            descr.append("{:d} bonds, ".format(self.n_bonds))
             if self.box is not None:
                 descr.append("System box: {}, ".format(self.box))
             else:
@@ -2718,8 +2719,7 @@ class Compound(object):
             descr.append(
                 "pos=({}), ".format(np.array2string(self.pos, precision=4))
             )
-
-        descr.append("{:d} bonds, ".format(self.n_bonds))
+            descr.append("{:d} bonds, ".format(self.n_direct_bonds))
 
         descr.append("id: {}>".format(id(self)))
         return "".join(descr)
