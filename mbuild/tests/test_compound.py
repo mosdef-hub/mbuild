@@ -99,9 +99,9 @@ class TestCompound(BaseTest):
 
     def test_update_from_file(self, ch3):
         ch3.update_coordinates(get_fn("methyl.pdb"))
-    
+
     def test_n_bonds_particle(self):
-        comp = mb.Compound(name="A", pos=[0,0,0])
+        comp = mb.Compound(name="A", pos=[0, 0, 0])
         with pytest.raises(MBuildError):
             comp.n_bonds
 
@@ -113,7 +113,7 @@ class TestCompound(BaseTest):
         bond_particles = [i for i in methane[0].direct_bonds()]
         for H in methane.particles_by_name("H"):
             assert H in bond_particles
-    
+
     def test_n_direct_bonds_parent(self, ethane):
         with pytest.raises(MBuildError):
             ethane.n_direct_bonds
