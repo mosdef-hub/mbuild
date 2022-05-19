@@ -102,8 +102,9 @@ class TestCompound(BaseTest):
 
     def test_direct_bonds(self, methane):
         with pytest.raises(MBuildError):
-            bond_particles = methane.direct_bonds()
-        bond_particles = methane[0].direct_bonds()
+            bond_particles = [i for i in methane.direct_bonds()]
+
+        bond_particles = [i for i in methane[0].direct_bonds()]
         for H in methane.particles_by_name("H"):
             assert H in bond_particles
 
@@ -117,10 +118,9 @@ class TestCompound(BaseTest):
         ethane.remove(ethane[-1])
         assert ethane[0].n_direct_bonds == 0
 
-    def test_direct_bonds_no_graph(self):
+    def test_n_direct_bonds_no_graph(self):
         comp = mb.Compound(name="A", pos=[0, 0, 0])
         assert comp.n_direct_bonds == 0
-        assert comp.direct_bonds() is None
 
     def test_direct_bonds_cloning(self, ethane):
         ethane_clone = mb.clone(ethane)
