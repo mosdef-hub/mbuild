@@ -950,10 +950,8 @@ class Compound(object):
                 "be used on compounds at the bottom of their hierarchy."
             )
         if not self.root.bond_graph:
-            return iter(()) 
-        else:
-            if len(self.root.bond_graph._adj[self]) == 0:
-                return iter(())
+            return iter(())
+        elif self.root.bond_graph.has_node(self):
             for i in self.root.bond_graph._adj[self]:
                 yield i
 
