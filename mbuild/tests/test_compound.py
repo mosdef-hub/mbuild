@@ -99,14 +99,24 @@ class TestCompound(BaseTest):
 
     def test_update_from_file(self, ch3):
         ch3.update_coordinates(get_fn("methyl.pdb"))
+    
+    def test_n_bonds_particle(self):
+        comp = mb.Compound(name="A", pos=[0,0,0])
+        with pytest.raises(MBuildError):
+            comp.n_bonds
 
-    def test_direct_bonds(self, methane):
+    def test_direct_bonds_parent(self, methane):
         with pytest.raises(MBuildError):
             bond_particles = [i for i in methane.direct_bonds()]
 
+    def test_direct_bonds(self, methane):
         bond_particles = [i for i in methane[0].direct_bonds()]
         for H in methane.particles_by_name("H"):
             assert H in bond_particles
+    
+    def test_n_direct_bonds_parent(self, ethane):
+        with pytest.raises(MBuildError):
+            ethane.n_direct_bonds
 
     def test_n_direct_bonds(self, ethane):
         assert ethane[0].n_direct_bonds == 4
@@ -575,7 +585,7 @@ class TestCompound(BaseTest):
         carbons = ethane1.particles_by_name("C")
         ethane1.remove(carbons)
         assert ethane1.n_particles == 1  # left with the highest Compound
-        assert ethane1.n_bonds == 0
+        assert ethane1.n_direct_bonds == 0
         assert len(ethane1.children) == 0  # left with highest Compound
 
         # Test remove all particles belong to a single child of an Ethane
@@ -595,7 +605,7 @@ class TestCompound(BaseTest):
         ethane4 = mb.clone(ethane)
         ethane4.remove(ethane4)
         assert ethane4.n_particles == 1  # left with the highest Compound
-        assert ethane4.n_bonds == 0
+        assert ethane4.n_direct_bonds == 0
         assert len(ethane4.children) == 0  # left with highest Compound
 
         # Test remove one subcompound and part of another
@@ -614,7 +624,7 @@ class TestCompound(BaseTest):
 
         assert ethane.n_particles == 1
         assert ethane._n_particles() == 0
-        assert ethane.n_bonds == 0
+        assert ethane.n_direct_bonds == 0
         for part in ethane.children:
             assert isinstance(part, Port)
 
@@ -633,7 +643,7 @@ class TestCompound(BaseTest):
 
         assert ethane.n_particles == 1
         assert ethane._n_particles() == 0
-        assert ethane.n_bonds == 0
+        assert ethane.n_direct_bonds == 0
         assert len(ethane.children) == 0
 
     def test_remove_no_bond_graph(self):
