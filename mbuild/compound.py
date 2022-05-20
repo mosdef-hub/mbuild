@@ -933,7 +933,7 @@ class Compound(object):
         ]
 
     def direct_bonds(self):
-        """Returns all bonds a particle is directly involved in.
+        """Return all bonds a particle is directly involved in.
 
         Returns
         -------
@@ -981,7 +981,8 @@ class Compound(object):
 
     @property
     def n_direct_bonds(self):
-        """Returns the number of bonds a particle is directly involved in.
+        """Return the number of bonds a particle is directly involved in.
+
         This method should only be used on on compounds at the bottom
         of their hierarchy (i.e. a particle).
 
