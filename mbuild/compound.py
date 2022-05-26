@@ -1331,7 +1331,7 @@ class Compound(object):
         if not self.parent:
             # This is the very top level, and hence have to be independent
             return True
-        elif not list(self.root.bonds()):
+        elif not self.root.bond_graph:
             # If there is no bond in the top level, then everything is independent
             return True
         else:
@@ -1678,6 +1678,52 @@ class Compound(object):
             widget.add_ball_and_stick("_VS", aspect_ratio=1.0, color="#991f00")
         overwrite_nglview_default(widget)
         return widget
+
+    def flatten(self, inplace=True):
+        """Flatten the hierarchical structure of the Compound.
+
+        Modify the mBuild Compound to become a Compound where there is
+        a single container (self) that contains all the particles.
+
+        Parameter
+        ---------
+        inplace : bool, optional, default=True
+            Option to perform the flatten operation inplace or return a copy
+
+        Return
+        ------
+        self : mb.Compound or None
+            return a flatten Compound if inplace is False.
+        """
+        ports_list = list(self.all_ports())
+        children_list = list(self.children)
+        particle_list = list(self.particles())
+        bond_graph = self.root.bond_graph
+
+        # Make a list of bond that involved the particles of this compound.
+        # This include bonds made exist between this compound and other
+        # component of the system
+        new_bonds = list()
+        for particle in particle_list:
+            for neighbor in bond_graph._adj.get(particle, []):
+                new_bonds.append((particle, neighbor))
+
+        # Remove all the children
+        if inplace:
+            for child in children_list:
+                # Need to handle the case when child is a port
+                self.remove(child)
+
+            # Re-add the particles and bonds
+            self.add(particle_list)
+            self.add(ports_list)
+
+            for bond in new_bonds:
+                self.add_bond(bond)
+        else:
+            comp = clone(self)
+            comp.flatten(inplace=True)
+            return comp
 
     def update_coordinates(self, filename, update_port_locations=True):
         """Update the coordinates of this Compound from a file.
