@@ -175,7 +175,9 @@ class Compound(object):
         self.labels = OrderedDict()
         self.referrers = set()
 
-        self.bond_graph = None
+        self.bond_graph = BondGraph()
+        self.bond_graph.add_node(self)
+
         self.port_particle = port_particle
 
         self._rigid_id = None
@@ -703,7 +705,10 @@ class Compound(object):
             new_child.parent = self
 
             if new_child.bond_graph is not None:
-                if self.root.bond_graph is None:
+                if (
+                    len(self.root.bond_graph.nodes()) == 1
+                    and self.root.bond_graph.nodes()[0] == self
+                ):
                     self.root.bond_graph = new_child.bond_graph
                 else:
                     self.root.bond_graph.compose(new_child.bond_graph)
