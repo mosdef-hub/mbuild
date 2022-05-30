@@ -933,7 +933,7 @@ class Compound(object):
         ]
 
     def direct_bonds(self):
-        """Return all bonds a particle is directly involved in.
+        """Return a list of particles that this particle bonds to.
 
         Returns
         -------
