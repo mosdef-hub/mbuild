@@ -704,7 +704,7 @@ class Compound(object):
             self.children.add(new_child)
             new_child.parent = self
 
-            if new_child.bond_graph is not None:
+            if new_child.bond_graph is not None and not isinstance(self, Port):
                 # If anything is added at self level, it is no longer a particle
                 # search for self in self.root.bond_graph and remove self
                 if self.root.bond_graph.has_node(self):
