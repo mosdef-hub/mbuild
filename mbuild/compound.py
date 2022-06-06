@@ -1337,7 +1337,7 @@ class Compound(object):
         else:
             # Cover the other cases
             bond_graph_dict = self.root.bond_graph._adj
-            for particle in self:
+            for particle in self.particles():
                 for neigh in bond_graph_dict[particle]:
                     if neigh not in self.particles():
                         return False
