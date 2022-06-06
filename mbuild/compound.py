@@ -2803,6 +2803,9 @@ class Compound(object):
     def _clone_bonds(self, clone_of=None):
         """Clone the bond of the source compound to clone compound."""
         newone = clone_of[self]
+        newone.bond_graph = BondGraph()
+        for particle in self.particles():
+            newone.bond_graph.add_node(clone_of[particle])
         for c1, c2 in self.bonds():
             try:
                 newone.add_bond((clone_of[c1], clone_of[c2]))
