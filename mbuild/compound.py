@@ -705,13 +705,12 @@ class Compound(object):
             new_child.parent = self
 
             if new_child.bond_graph is not None:
-                if (
-                    len(self.root.bond_graph.nodes()) == 1
-                    and self.root.bond_graph.nodes()[0] == self
-                ):
-                    self.root.bond_graph = new_child.bond_graph
-                else:
-                    self.root.bond_graph.compose(new_child.bond_graph)
+                # If anything is added at self level, it is no longer a particle
+                # search for self in self.root.bond_graph and remove self
+                if self.root.bond_graph.has_node(self):
+                    self.root.bond_graph.remove_node(self)
+                # Compose bond_graph of new child
+                self.root.bond_graph.compose(new_child.bond_graph)
 
                 new_child.bond_graph = None
 

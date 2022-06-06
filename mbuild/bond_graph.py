@@ -66,6 +66,7 @@ class BondGraph(object):
         for other_node in self.nodes():
             if node in adj[other_node]:
                 self.remove_edge(node, other_node)
+        del adj[node]
 
     def has_node(self, node):
         """Determine whether the graph contains a node."""
