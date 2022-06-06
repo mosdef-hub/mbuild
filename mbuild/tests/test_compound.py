@@ -1836,3 +1836,22 @@ class TestCompound(BaseTest):
         for bond2, bond in zip(ethane2.bonds(), ethane.bonds()):
             assert bond2[0].name == bond[0].name
             assert all(bond2[0].pos == bond[0].pos)
+
+    def test_top_down_molecules(self):
+        cpd1 = mb.load("CCCC", smiles=True)
+        cpd1.name = "Butane"
+        cpd2 = mb.load("CCCCO", smiles=True)
+        cpd2.name = "Butanol"
+        box = mb.packing.solvate(
+            solvent=cpd1,
+            solute=cpd2,
+            box=mb.Box([5, 5, 5]),
+            n_solvent=100,
+        )
+        box2 = mb.packing.fill_box(cpd1, box=mb.Box([5, 5, 5]), n_compounds=50)
+        box2.translate([5, 0, 0])
+        box.add(box2)
+        partitioned_box = box.group_by_molecules()
+        names = [child.name for child in partitioned_box.children]
+        for molecule_name in ["Butane", "Butanol"]:
+            assert molecule_name in names

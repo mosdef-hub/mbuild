@@ -2807,5 +2807,80 @@ class Compound(object):
                     "Particles outside of its containment hierarchy."
                 )
 
+    def group_by_molecules(compound):
+        """Create a restructured compound where each molecule is grouped together.
+
+        This top down method looks through the children in a compound and identifies
+        individual molecules looking until is_independent() returns False. Then,
+        the parent of that child is added to a list of molecule and grouped into one
+        master compound.
+
+        Parameters
+        ----------
+        compound : mbuild.Compound with molecules in the hierarchy
+
+        Returns
+        -------
+        grouped_compound : mb.Compound where each child are the uniquely named
+        independent molecules in the syste,
+
+        See Also
+        --------
+        mbuild.compound.Compound._recursive_id_molecules
+
+        Examples
+        --------
+        Creating a per molecule compound:
+
+        >>> import mbuild as mb
+        >>> cpd1 = mb.load("CCCC", smiles=True)
+        >>> cpd1.name = "Butane"
+        >>> cpd2 = mb.load("CCCCO", smiles=True)
+        >>> cpd2.name = "Butanol"
+        >>> box = mb.packing.solvate(
+            solvent = cpd1,
+            solute = cpd2,
+            box = mb.Box([5,5,5]),
+            n_solvent = 100,
+        )
+        >>> box2 = mb.packing.fill_box(cpd1, box=mb.Box([5,5,5]), n_compounds=100)
+        >>> box2.translate([5,0,0])
+        >>> box.add(box2)
+        >>> partitioned_box = box.group_by_molecules()
+        >>> print(child.name for child in partitioned_box.children)
+        Output
+        ["Butane", "Butanol"]
+
+        """
+        grouped_compound = Compound()
+        molecule_list = compound._recursive_id_molecules()
+        if molecule_list:
+            subtops = {}
+            for molecule in molecule_list:
+                if subtops.get(molecule.name):
+                    subtops[molecule.name].add(clone(molecule))
+                else:
+                    subtops[molecule.name] = mb.Compound(name=molecule.name)
+                    subtops[molecule.name].add(clone(molecule))
+            for subtop in subtops.values():
+                grouped_compound.add(subtop)
+            return grouped_compound
+        msg = f"No molecules were found in {compound.name}. Verify that your molecule\
+            has independent structure in its hierarchy."
+        raise MBuildError(msg)
+
+    def _recursive_id_molecules(self, molecule_list=None):
+        """Iterate through the compound top down to identify independent structures."""
+        if not molecule_list:
+            molecule_list = []
+        for child in self.children:
+            if not child.is_independent():
+                molecule_list.append(self)
+                break
+            else:
+                child._recursive_id_molecules(molecule_list=molecule_list)
+
+        return molecule_list
+
 
 Particle = Compound
