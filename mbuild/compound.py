@@ -2807,7 +2807,7 @@ class Compound(object):
                     "Particles outside of its containment hierarchy."
                 )
 
-    def group_by_molecules(compound):
+    def group_by_molecules(self):
         """Create a restructured compound where each molecule is grouped together.
 
         This top down method looks through the children in a compound and identifies
@@ -2853,21 +2853,22 @@ class Compound(object):
 
         """
         grouped_compound = Compound()
-        molecule_list = compound._recursive_id_molecules()
+        molecule_list = self._recursive_id_molecules()
         if molecule_list:
             subtops = {}
             for molecule in molecule_list:
                 if subtops.get(molecule.name):
                     subtops[molecule.name].add(clone(molecule))
                 else:
-                    subtops[molecule.name] = mb.Compound(name=molecule.name)
+                    subtops[molecule.name] = Compound(name=molecule.name)
                     subtops[molecule.name].add(clone(molecule))
             for subtop in subtops.values():
                 grouped_compound.add(subtop)
             return grouped_compound
-        msg = f"No molecules were found in {compound.name}. Verify that your molecule\
-            has independent structure in its hierarchy."
-        raise MBuildError(msg)
+        else:
+            msg = f"""No molecules were found in {self.name}. Verify that the molecule
+                has independent structure in its hierarchy."""
+            raise MBuildError(msg)
 
     def _recursive_id_molecules(self, molecule_list=None):
         """Iterate through the compound top down to identify independent structures."""
@@ -2876,9 +2877,11 @@ class Compound(object):
         for child in self.children:
             if not child.is_independent():
                 molecule_list.append(self)
-                break
+                return molecule_list
             else:
-                child._recursive_id_molecules(molecule_list=molecule_list)
+                molecule_list = child._recursive_id_molecules(
+                    molecule_list=molecule_list
+                )
 
         return molecule_list
 
