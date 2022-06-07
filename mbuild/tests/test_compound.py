@@ -1097,14 +1097,20 @@ class TestCompound(BaseTest):
         )
 
         ch3_nobonds = mb.clone(ch3)
-        for bond in ch3_nobonds.bonds():
+        bonds_list = list(ch3_nobonds.bonds())
+        for bond in bonds_list:
             ch3_nobonds.remove_bond(bond)
         compound.add(ch3_nobonds)
         assert compound.n_bonds == 3
-        assert not any(
+        assert all(
             compound.bond_graph.has_node(particle)
             for particle in ch3_nobonds.particles()
         )
+        assert not any(
+            compound.bond_graph.has_edge(bond[0], bond[1])
+            for bond in bonds_list
+        )
+        assert compound.bond_graph.has_edge
 
         carbons = list(compound.particles_by_name("C"))
         compound.add_bond((carbons[0], carbons[1]))
@@ -1118,7 +1124,7 @@ class TestCompound(BaseTest):
         )
 
         compound.remove_bond((carbons[0], carbons[1]))
-        assert not any(
+        assert all(
             compound.bond_graph.has_node(particle)
             for particle in ch3_nobonds.particles()
         )

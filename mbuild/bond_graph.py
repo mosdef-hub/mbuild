@@ -96,10 +96,6 @@ class BondGraph(object):
         if self.has_node(node1) and self.has_node(node2):
             adj[node1].remove(node2)
             adj[node2].remove(node1)
-            if not adj[node1]:
-                del adj[node1]
-            if not adj[node2]:
-                del adj[node2]
         else:
             raise ValueError(
                 "There is no edge between {} and {}".format(node1, node2)

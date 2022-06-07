@@ -860,7 +860,7 @@ class Compound(object):
         if removed_part.rigid_id is not None:
             for ancestor in removed_part.ancestors():
                 ancestor._check_if_contains_rigid_bodies = True
-        if self.root.bond_graph and self.root.bond_graph.has_node(removed_part):
+        if self.root.bond_graph.has_node(removed_part):
             for neighbor in self.root.bond_graph.neighbors(removed_part):
                 self.root.remove_bond((removed_part, neighbor))
             self.root.bond_graph.remove_node(removed_part)
