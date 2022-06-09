@@ -932,6 +932,29 @@ class Compound(object):
             if isinstance(p, Port) and not p.used
         ]
 
+    def direct_bonds(self):
+        """Return a list of particles that this particle bonds to.
+
+        Returns
+        -------
+        List of mb.Compound
+
+        See Also
+        --------
+        bond_graph.edges_iter : Iterations over all edges in a BondGraph
+        Compound.n_direct_bonds() : Returns the number of bonds a particle contains
+        """
+        if list(self.particles()) != [self]:
+            raise MBuildError(
+                "The direct_bonds method can only "
+                "be used on compounds at the bottom of their hierarchy."
+            )
+        if not self.root.bond_graph:
+            return iter(())
+        elif self.root.bond_graph.has_node(self):
+            for i in self.root.bond_graph._adj[self]:
+                yield i
+
     def bonds(self):
         """Return all bonds in the Compound and sub-Compounds.
 
@@ -943,6 +966,8 @@ class Compound(object):
         See Also
         --------
         bond_graph.edges_iter : Iterates over all edges in a BondGraph
+        Compound.n_bonds() : Returns the total number of bonds in the Compound
+        and sub-Compounds
         """
         if self.root.bond_graph:
             if self.root == self:
@@ -955,14 +980,39 @@ class Compound(object):
             return iter(())
 
     @property
+    def n_direct_bonds(self):
+        """Return the number of bonds a particle is directly involved in.
+
+        This method should only be used on on compounds at the bottom
+        of their hierarchy (i.e. a particle).
+
+        Returns
+        -------
+        int
+            The number of compounds this compound is directly bonded to.
+        """
+        if list(self.particles()) != [self]:
+            raise MBuildError(
+                "The direct_bonds method can only "
+                "be used on compounds at the bottom of their hierarchy."
+            )
+        return sum(1 for _ in self.direct_bonds())
+
+    @property
     def n_bonds(self):
-        """Return the number of bonds in the Compound.
+        """Return the total number of bonds in the Compound.
 
         Returns
         -------
         int
             The number of bonds in the Compound
         """
+        if list(self.particles()) == [self]:
+            raise MBuildError(
+                "n_bonds cannot be used on Compounds "
+                "at the bottom of their hierarchy (particles). "
+                "Use n_direct_bonds instead."
+            )
         return sum(1 for _ in self.bonds())
 
     def add_bond(self, particle_pair):
@@ -2704,6 +2754,7 @@ class Compound(object):
 
         if self.children:
             descr.append("{:d} particles, ".format(self.n_particles))
+            descr.append("{:d} bonds, ".format(self.n_bonds))
             if self.box is not None:
                 descr.append("System box: {}, ".format(self.box))
             else:
@@ -2712,8 +2763,7 @@ class Compound(object):
             descr.append(
                 "pos=({}), ".format(np.array2string(self.pos, precision=4))
             )
-
-        descr.append("{:d} bonds, ".format(self.n_bonds))
+            descr.append("{:d} bonds, ".format(self.n_direct_bonds))
 
         descr.append("id: {}>".format(id(self)))
         return "".join(descr)
