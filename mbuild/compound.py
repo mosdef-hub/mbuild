@@ -2436,7 +2436,7 @@ class Compound(object):
         G.remove_edge(*bond)
         assert len([i for i in nx.connected_components(G)]) == 2
         components = [G.subgraph(c).copy() for c in nx.connected_components(G)]
-        component1 = components[1] # One piece of the compound
+        component1 = components[1]  # One piece of the compound
 
         # Get original coordinates
         original_bond_positions = [bond[0].pos, bond[1].pos]
@@ -2459,7 +2459,6 @@ class Compound(object):
 
         for atom in component1.nodes:
             atom.translate(trans_vec)
-
 
     # Interface to GMSO Topology for reading/writing mol2 files
     def from_gmso(self, topology, coords_only=False, infer_hierarchy=True):
