@@ -2417,7 +2417,9 @@ class Compound(object):
         self.translate(center_pos)
 
     def rotate_dihedral(self, bond, phi):
-        """Rotate a dihedral about a central bond
+        """Rotate a dihedral about a central bond.
+
+        Parameters
         ----------
         bond : indexable object, length=2, dtype=mb.Compound
             The pair of bonded Particles in the central bond of the dihedral
