@@ -346,6 +346,17 @@ class TestCoordinateTransform(BaseTest):
             before[:, 1], -1 * after[:, 1], atol=1e-16
         ) and np.allclose(before[:, 0], -1 * after[:, 0], atol=1e-16)
 
+    def test_rotate_dihedral(self, ethane):
+        bond = (ethane[0], ethane[4])
+        rotate_angle = np.deg2rad(60)
+        ethane.rotate_dihedral(bond, rotate_angle)
+
+        CH_vec1 = ethane[1].pos - ethane[0].pos
+        CH_vec2 = ethane[5].pos - ethane[4].pos
+        cos_dihedral = np.dot(CH_vec1, CH_vec2) / (np.linalg.norm(CH_vec1) * np.linalg.norm(CH_vec2))
+        dihedral = np.rad2deg(np.arccos(cos_dihedral))
+        assert np.allclose(dihedral, 120, atol=1e-15)
+
     def test_equivalence_transform(self, ch2, ch3, methane):
         ch2_atoms = list(ch2.particles())
         methane_atoms = list(methane.particles())
