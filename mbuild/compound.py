@@ -2424,6 +2424,7 @@ class Compound(object):
         phi : float
             The angle by which to rotate the dihedral, in radians.
         """
+        nx = import_("networkx")
 
         # Generate a bond graph and convert to networkX
         mb_bondgraph = self.bond_graph
