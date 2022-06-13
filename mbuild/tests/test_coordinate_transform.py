@@ -353,7 +353,9 @@ class TestCoordinateTransform(BaseTest):
 
         CH_vec1 = ethane[1].pos - ethane[0].pos
         CH_vec2 = ethane[5].pos - ethane[4].pos
-        cos_dihedral = np.dot(CH_vec1, CH_vec2) / (np.linalg.norm(CH_vec1) * np.linalg.norm(CH_vec2))
+        cos_dihedral = np.dot(CH_vec1, CH_vec2) / (
+            np.linalg.norm(CH_vec1) * np.linalg.norm(CH_vec2)
+        )
         dihedral = np.rad2deg(np.arccos(cos_dihedral))
         assert np.allclose(dihedral, 120, atol=1e-15)
 
