@@ -2454,12 +2454,11 @@ class Compound(object):
         # This is neccessary since the piece is rotated about its center
         if bond[0] in set(component1.nodes):
             trans_vec = original_bond_positions[0] - bond[0].pos
-            for atom in component1.nodes:
-                atom.translate(trans_vec)
         elif bond[1] in set(component1.nodes):
             trans_vec = original_bond_positions[1] - bond[1].pos
-            for atom in component1.nodes:
-                atom.translate(trans_vec)
+
+        for atom in component1.nodes:
+            atom.translate(trans_vec)
 
 
     # Interface to GMSO Topology for reading/writing mol2 files
