@@ -100,6 +100,43 @@ class TestCompound(BaseTest):
     def test_update_from_file(self, ch3):
         ch3.update_coordinates(get_fn("methyl.pdb"))
 
+    def test_n_bonds_particle(self):
+        comp = mb.Compound(name="A", pos=[0, 0, 0])
+        with pytest.raises(MBuildError):
+            comp.n_bonds
+
+    def test_direct_bonds_parent(self, methane):
+        with pytest.raises(MBuildError):
+            bond_particles = [i for i in methane.direct_bonds()]
+
+    def test_direct_bonds(self, methane):
+        bond_particles = [i for i in methane[0].direct_bonds()]
+        for H in methane.particles_by_name("H"):
+            assert H in bond_particles
+
+    def test_n_direct_bonds_parent(self, ethane):
+        with pytest.raises(MBuildError):
+            ethane.n_direct_bonds
+
+    def test_n_direct_bonds(self, ethane):
+        assert ethane[0].n_direct_bonds == 4
+        assert ethane[-1].n_direct_bonds == 1
+        hydrogens = [p for p in ethane.particles_by_name("H")]
+        for p in hydrogens:
+            ethane.remove(p)
+        assert ethane[0].n_direct_bonds == 1
+        ethane.remove(ethane[-1])
+        assert ethane[0].n_direct_bonds == 0
+
+    def test_n_direct_bonds_no_graph(self):
+        comp = mb.Compound(name="A", pos=[0, 0, 0])
+        assert comp.n_direct_bonds == 0
+
+    def test_direct_bonds_cloning(self, ethane):
+        ethane_clone = mb.clone(ethane)
+        for p1, p2 in zip(ethane.particles(), ethane_clone.particles()):
+            assert p1.n_direct_bonds == p2.n_direct_bonds
+
     def test_load_protein(self):
         # Testing the loading function with complicated protein,
         # The protein file is taken from RCSB protein data bank
@@ -548,7 +585,7 @@ class TestCompound(BaseTest):
         carbons = ethane1.particles_by_name("C")
         ethane1.remove(carbons)
         assert ethane1.n_particles == 1  # left with the highest Compound
-        assert ethane1.n_bonds == 0
+        assert ethane1.n_direct_bonds == 0
         assert len(ethane1.children) == 0  # left with highest Compound
 
         # Test remove all particles belong to a single child of an Ethane
@@ -568,7 +605,7 @@ class TestCompound(BaseTest):
         ethane4 = mb.clone(ethane)
         ethane4.remove(ethane4)
         assert ethane4.n_particles == 1  # left with the highest Compound
-        assert ethane4.n_bonds == 0
+        assert ethane4.n_direct_bonds == 0
         assert len(ethane4.children) == 0  # left with highest Compound
 
         # Test remove one subcompound and part of another
@@ -587,7 +624,7 @@ class TestCompound(BaseTest):
 
         assert ethane.n_particles == 1
         assert ethane._n_particles() == 0
-        assert ethane.n_bonds == 0
+        assert ethane.n_direct_bonds == 0
         for part in ethane.children:
             assert isinstance(part, Port)
 
@@ -606,7 +643,7 @@ class TestCompound(BaseTest):
 
         assert ethane.n_particles == 1
         assert ethane._n_particles() == 0
-        assert ethane.n_bonds == 0
+        assert ethane.n_direct_bonds == 0
         assert len(ethane.children) == 0
 
     def test_remove_no_bond_graph(self):
@@ -691,6 +728,41 @@ class TestCompound(BaseTest):
         assert parent.root == parent
         assert len(list(parent.ancestors())) == 0
         assert next(parent.particles_by_name("A")) == part
+
+    def test_flatten_eth(self, ethane):
+        # Before flattening
+        assert len(ethane.children) == 2
+        assert ethane.n_particles == 8
+        assert ethane.n_bonds == 7
+
+        # Flatten with inplace = False
+        copy = ethane.flatten(inplace=False)
+        assert ethane.n_particles == copy.n_particles == len(copy.children)
+        assert ethane.n_bonds == copy.n_bonds
+
+        # After flattening
+        ethane.flatten()
+        assert len(ethane.children) == ethane.n_particles == 8
+        assert ethane.n_bonds == 7
+
+    def test_flatten_box_of_eth(self, ethane):
+        box_of_eth = mb.fill_box(compound=ethane, n_compounds=2, box=[1, 1, 1])
+        # Before flattening
+        assert len(box_of_eth.children) == 2
+        assert box_of_eth.n_bonds == 7 * 2
+        assert box_of_eth.n_particles == 8 * 2
+
+        # After flattening
+        box_of_eth.flatten()
+        assert len(box_of_eth.children) == box_of_eth.n_particles == 8 * 2
+        assert box_of_eth.n_bonds == 7 * 2
+
+    def test_flatten_with_port(self, ethane):
+        ethane.remove(ethane[2])
+        original_ports = ethane.all_ports()
+        ethane.flatten()
+        assert len(ethane.all_ports()) == len(original_ports)
+        assert ethane.all_ports()[0] == original_ports[0]
 
     @pytest.mark.skipif(
         not has_openbabel, reason="Open Babel package not installed"
