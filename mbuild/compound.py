@@ -2924,6 +2924,12 @@ class Compound(object):
         """Iterate through the compound top down to identify independent structures."""
         if not molecule_list:
             molecule_list = []
+
+        # Handle the case where self is a lone particle
+        if not self.children and self.is_independent():
+            molecule_list.append(self)
+            return molecule_list
+
         for child in self.children:
             if not child.is_independent():
                 molecule_list.append(self)
