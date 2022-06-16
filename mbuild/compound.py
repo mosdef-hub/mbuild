@@ -2916,9 +2916,9 @@ class Compound(object):
                 grouped_compound.add(subtop)
             return grouped_compound
         else:
-            msg = f"""No molecules were found in {self.name}. Verify that the molecule
-                has independent structure in its hierarchy."""
-            raise MBuildError(msg)
+            msg = f"""No molecules were found in {self.name}. Return molecule as is."""
+            warnings.warn(msg)
+            return self
 
     def _recursive_id_molecules(self, molecule_list=None):
         """Iterate through the compound top down to identify independent structures."""
