@@ -2917,7 +2917,7 @@ class Compound(object):
             return grouped_compound
         else:
             msg = f"""No molecules were found in {self.name}. Return molecule as is."""
-            warnings.warn(msg)
+            warn(msg)
             return self
 
     def _recursive_id_molecules(self, molecule_list=None):
