@@ -2903,6 +2903,7 @@ class Compound(object):
 
         """
         grouped_compound = Compound()
+        grouped_compound.box = self.box
         molecule_list = self._recursive_id_molecules()
         if molecule_list:
             subtops = {}
@@ -2918,7 +2919,7 @@ class Compound(object):
         else:
             msg = f"""No molecules were found in {self.name}. Return molecule as is."""
             warn(msg)
-            return self
+            return mb.clone(self)
 
     def _recursive_id_molecules(self, molecule_list=None):
         """Iterate through the compound top down to identify independent structures."""
