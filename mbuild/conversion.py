@@ -906,9 +906,11 @@ def from_gmso(
 
     # Convert gmso Topology to mbuild Compound
     if not compound:
-        return to_mbuild(topology, **kwargs)
+        return to_mbuild(topology, infer_hierarchy=infer_hierarchy, **kwargs)
     else:
-        compound.add(to_mbuild(topology), **kwargs)
+        compound.add(
+            to_mbuild(topology, infer_hierarchy=infer_hierarchy), **kwargs
+        )
     return compound
 
 
@@ -1619,14 +1621,17 @@ def _iterate_children(compound, nodes, edges, names_only=False):
     return nodes, edges
 
 
-def to_gmso(compound):
+def to_gmso(compound, box=None, parse_label=True, **kwargs):
     """Create a GMSO Topology from a mBuild Compound.
 
     Parameters
     ----------
     compound : mb.Compound
         The mb.Compound to be converted.
-
+    box : mb.Box, optional, default=None
+        The mb.Box to be converted, if different that compound.box
+    parse_label : bool, optional, default=True
+        Option to parse hierarchy information into sites' labels
     Returns
     -------
     topology : gmso.Topology
@@ -1634,7 +1639,7 @@ def to_gmso(compound):
     """
     from gmso.external.convert_mbuild import from_mbuild
 
-    return from_mbuild(compound)
+    return from_mbuild(compound, box=None, parse_label=parse_label**kwargs)
 
 
 def to_intermol(compound, molecule_types=None):  # pragma: no cover
