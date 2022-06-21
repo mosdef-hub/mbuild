@@ -953,11 +953,8 @@ class Compound(object):
                 "The direct_bonds method can only "
                 "be used on compounds at the bottom of their hierarchy."
             )
-        if not self.root.bond_graph:
-            return iter(())
-        elif self.root.bond_graph.has_node(self):
-            for i in self.root.bond_graph._adj[self]:
-                yield i
+        for i in self.root.bond_graph._adj[self]:
+            yield i
 
     def bonds(self):
         """Return all bonds in the Compound and sub-Compounds.

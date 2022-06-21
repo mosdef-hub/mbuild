@@ -1639,7 +1639,7 @@ def to_gmso(compound, box=None, parse_label=True, **kwargs):
     """
     from gmso.external.convert_mbuild import from_mbuild
 
-    return from_mbuild(compound, box=None, parse_label=parse_label**kwargs)
+    return from_mbuild(compound, box=None, parse_label=parse_label, **kwargs)
 
 
 def to_intermol(compound, molecule_types=None):  # pragma: no cover
