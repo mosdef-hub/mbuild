@@ -2904,6 +2904,7 @@ class Compound(object):
         """
         grouped_compound = Compound()
         grouped_compound.box = self.box
+        grouped_compound.name = self.name
         molecule_list = self._recursive_id_molecules()
         if molecule_list:
             subtops = {}
