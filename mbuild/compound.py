@@ -2431,6 +2431,7 @@ class Compound(object):
             Set preexisting atoms in compound to coordinates given by Topology.
         infer_hierarchy : bool, optional, default=True
             If True, infer compound hierarchy from Topology residue, to be implemented.
+            Pending new GMSO release.
 
         Returns
         -------
@@ -2440,10 +2441,11 @@ class Compound(object):
             topology=topology,
             compound=self,
             coords_only=coords_only,
-            infer_hierarchy=infer_hierarchy,
+            # infer_hierarchy=infer_hierarchy,
+            # TO DO: enable this with new release of GMSO
         )
 
-    def to_gmso(self):
+    def to_gmso(self, **kwargs):
         """Create a GMSO Topology from a mBuild Compound.
 
         Parameters

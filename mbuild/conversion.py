@@ -433,7 +433,8 @@ def load_file(
             topology=top,
             compound=compound,
             coords_only=coords_only,
-            infer_hierarchy=infer_hierarchy,
+            # infer_hierarchy=infer_hierarchy,
+            # TODO: enable this with new release of GMSO
         )
 
     # Then pybel reader
@@ -877,6 +878,7 @@ def from_gmso(
         Set preexisting atoms in compound to coordinates given by Topology.
     infer_hierarchy : bool, optional, default=True
         If True, infer compound hierarchy from Topology residue, to be implemented.
+        Pending new GMSO release.
 
     Returns
     -------
@@ -906,10 +908,20 @@ def from_gmso(
 
     # Convert gmso Topology to mbuild Compound
     if not compound:
-        return to_mbuild(topology, infer_hierarchy=infer_hierarchy, **kwargs)
+        return to_mbuild(
+            topology,
+            # infer_hierarchy=infer_hierarchy,
+            # TODO: enable this with new release of GMSO
+            **kwargs,
+        )
     else:
         compound.add(
-            to_mbuild(topology, infer_hierarchy=infer_hierarchy), **kwargs
+            to_mbuild(
+                topology,
+                # infer_hierarchy=infer_hierarchy),
+                # TODP: enable this with new release of GMSO
+                **kwargs,
+            )
         )
     return compound
 
