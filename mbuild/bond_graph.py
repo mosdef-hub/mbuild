@@ -66,6 +66,7 @@ class BondGraph(object):
         for other_node in self.nodes():
             if node in adj[other_node]:
                 self.remove_edge(node, other_node)
+        del adj[node]
 
     def has_node(self, node):
         """Determine whether the graph contains a node."""
@@ -95,10 +96,6 @@ class BondGraph(object):
         if self.has_node(node1) and self.has_node(node2):
             adj[node1].remove(node2)
             adj[node2].remove(node1)
-            if not adj[node1]:
-                del adj[node1]
-            if not adj[node2]:
-                del adj[node2]
         else:
             raise ValueError(
                 "There is no edge between {} and {}".format(node1, node2)
@@ -151,7 +148,8 @@ class BondGraph(object):
         for node, neighbors in graph._adj.items():
             if self.has_node(node):
                 (adj[node].add(neighbor) for neighbor in neighbors)
-            elif neighbors:
+            else:
+                # Add new node even if it has no bond/neighbor
                 adj[node] = neighbors
 
     def subgraph(self, nodes):
