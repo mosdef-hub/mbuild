@@ -147,8 +147,8 @@ class Compound(object):
         subcompounds=None,
         name=None,
         pos=None,
-        mass=0.0,
-        charge=0.0,
+        mass=None,
+        charge=None,
         periodicity=None,
         box=None,
         element=None,
@@ -202,7 +202,7 @@ class Compound(object):
                 raise MBuildError(
                     "Can't set the mass of a Compound with subcompounds. "
                 )
-            self._charge = 0.0
+            self._charge = None
             self._mass = mass
             self.add(subcompounds)
         else:
@@ -386,7 +386,13 @@ class Compound(object):
     @property
     def charge(self):
         """Get the charge of the Compound."""
-        return sum([particle._charge for particle in self.particles()])
+        return sum(
+            [
+                particle._charge
+                for particle in self.particles()
+                if particle._charge is not None
+            ]
+        )
 
     @charge.setter
     def charge(self, value):
