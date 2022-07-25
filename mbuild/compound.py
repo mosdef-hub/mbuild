@@ -679,7 +679,7 @@ class Compound(object):
                 "Only objects that inherit from mbuild.Compound can be added "
                 f"to Compounds. You tried to add '{new_child}'."
             )
-        if self._mass != 0.0 and not isinstance(new_child, Port):
+        if self._mass is not None and not isinstance(new_child, Port):
             warn(
                 f"{self} has a pre-defined mass of {self._mass}, "
                 "which will be reset to zero now that it contains children "
