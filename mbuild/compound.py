@@ -361,9 +361,13 @@ class Compound(object):
             particle_masses = [self._particle_mass(p) for p in self.particles()]
             if None in particle_masses:
                 warn(
-                    f"Some particle in this Compound has not had their mass set."
+                    f"Some particle of {self} does not have mass."
+                    "They will not be accounted for during this calculation."
                 )
-            return sum([self._particle_mass(p) for p in self.particles()])
+            filtered_masses = [
+                mass for mass in particle_masses if mass is not None
+            ]
+            return sum(filtered_masses) if filtered_masses else None
 
     @staticmethod
     def _particle_mass(particle):

@@ -462,6 +462,22 @@ class TestCompound(BaseTest):
         A.add(mb.Port())
         assert A.mass == 2.0
 
+    def test_none_mass(self):
+        A = mb.Compound()
+        assert A.mass == None
+
+        container = mb.Compound(subcompounds=[A])
+        with pytest.warns(UserWarning):
+            container_mass = container.mass
+            assert container_mass == None
+
+        A.mass = 1
+        B = mb.Compound()
+        container.add(B)
+        with pytest.warns(UserWarning):
+            container_mass = container.mass
+            assert container_mass == A.mass == 1
+
     def test_add_existing_parent(self, ethane, h2o):
         water_in_water = mb.clone(h2o)
         h2o.add(water_in_water)
@@ -474,7 +490,7 @@ class TestCompound(BaseTest):
             ethane.add(mb.clone(h2o), label="water")
 
     def test_set_pos(self, ethane):
-        with pytest.raises(MBuildError):
+        with pytest.raises(MBuildErrorq):
             ethane.pos = [0, 0, 0]
 
     def test_xyz(self, ch3):
