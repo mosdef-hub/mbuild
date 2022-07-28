@@ -490,7 +490,7 @@ class TestCompound(BaseTest):
             ethane.add(mb.clone(h2o), label="water")
 
     def test_set_pos(self, ethane):
-        with pytest.raises(MBuildErrorq):
+        with pytest.raises(MBuildError):
             ethane.pos = [0, 0, 0]
 
     def test_xyz(self, ch3):
