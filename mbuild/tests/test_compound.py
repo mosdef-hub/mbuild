@@ -396,7 +396,7 @@ class TestCompound(BaseTest):
         assert bead_overwrite.mass == 1.0
 
         bead_no_mass = mb.Compound(name="A")
-        assert bead_no_mass.mass == 0.0
+        assert bead_no_mass.mass == None
 
     def test_init_with_bad_mass(self):
         with pytest.raises(MBuildError):

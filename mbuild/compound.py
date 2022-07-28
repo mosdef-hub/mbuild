@@ -358,6 +358,11 @@ class Compound(object):
         if self._contains_only_ports():
             return self._particle_mass(self)
         else:
+            particle_masses = [self._particle_mass(p) for p in self.particles()]
+            if None in particle_masses:
+                warn(
+                    f"Some particle in this Compound has not had their mass set."
+                )
             return sum([self._particle_mass(p) for p in self.particles()])
 
     @staticmethod
@@ -368,7 +373,7 @@ class Compound(object):
             if particle.element:
                 return particle.element.mass
             else:
-                warn(f"Particle {particle} has no element or assigned mass.")
+                return None
 
     @mass.setter
     def mass(self, value):
