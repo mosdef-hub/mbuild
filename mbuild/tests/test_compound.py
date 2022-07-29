@@ -1266,7 +1266,7 @@ class TestCompound(BaseTest):
         compound = Compound(charge=2.0)
         assert compound.charge == 2.0
         compound2 = Compound()
-        assert compound2.charge == 0.0
+        assert compound2.charge == None
 
         ch2[0].charge = 0.5
         ch2[1].charge = -0.25
@@ -1292,6 +1292,20 @@ class TestCompound(BaseTest):
         benzene[0].charge = 0.25
         with pytest.warns(UserWarning):
             benzene.save("charge-test.mol2")
+
+    def test_none_charge(self):
+        A = mb.Compound()
+        with pytest.warns(UserWarning):
+            A.charge
+
+        A.charge = 1
+        B = mb.Compound()
+        container = mb.Compound(subcompounds=[A, B])
+        with pytest.warns(UserWarning):
+            container_charge = container.charge
+            assert A.charge == 1
+            assert B.charge == None
+            assert container_charge == 1
 
     @pytest.mark.skipif(
         not has_openbabel, reason="Open Babel package not installed"

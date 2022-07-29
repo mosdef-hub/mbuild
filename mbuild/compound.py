@@ -395,13 +395,14 @@ class Compound(object):
     @property
     def charge(self):
         """Get the charge of the Compound."""
-        return sum(
-            [
-                particle._charge
-                for particle in self.particles()
-                if particle._charge is not None
-            ]
-        )
+        charges = [p._charge for p in self.particles()]
+        if None in charges:
+            warn(
+                f"Some particle of {self} does not have a charge."
+                "They will not be accounted for during this calculation."
+            )
+        filtered_charges = [charge for charge in charges if charge is not None]
+        return sum(filtered_charges) if filtered_charges else None
 
     @charge.setter
     def charge(self, value):
