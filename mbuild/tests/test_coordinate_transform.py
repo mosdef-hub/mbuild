@@ -448,3 +448,16 @@ class TestCoordinateTransform(BaseTest):
         for i in range(4):
             z_axis_transform(h2o)
         assert np.allclose(h2o.xyz, init_xyz, atol=1e-4)
+
+    def test_bondgraph(self, ch3):
+        ch3_2 = mb.clone(ch3)
+        mb.force_overlap(ch3_2, ch3_2["up"], ch3["up"])
+        ch3.add(ch3_2)
+        bgraph = ch3.bond_graph
+        for edge0, edge1 in bgraph.edges():
+            assert bgraph.has_edge(edge0, edge1)
+            assert bgraph.has_edge(edge1, edge0)
+        neighbors = {"C":4, "H":1}
+        for node in bgraph.nodes():
+            x = map(lambda node: node.name, bgraph._adj[node])
+            assert neighbors[node.name] == len(list(x))
