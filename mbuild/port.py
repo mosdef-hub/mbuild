@@ -40,8 +40,8 @@ class Port(Compound):
 
     def __init__(self, anchor=None, orientation=None, separation=0):
         super(Port, self).__init__(name="Port", port_particle=True)
+        self.bond_graph = None
         self.anchor = anchor
-
         default_direction = np.array([0, 1, 0])
         if orientation is None:
             orientation = [0, 1, 0]

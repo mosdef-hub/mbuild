@@ -175,7 +175,9 @@ class Compound(object):
         self.labels = OrderedDict()
         self.referrers = set()
 
-        self.bond_graph = None
+        self.bond_graph = BondGraph()
+        self.bond_graph.add_node(self)
+
         self.port_particle = port_particle
 
         self._rigid_id = None
@@ -702,11 +704,13 @@ class Compound(object):
             self.children.add(new_child)
             new_child.parent = self
 
-            if new_child.bond_graph is not None:
-                if self.root.bond_graph is None:
-                    self.root.bond_graph = new_child.bond_graph
-                else:
-                    self.root.bond_graph.compose(new_child.bond_graph)
+            if new_child.bond_graph is not None and not isinstance(self, Port):
+                # If anything is added at self level, it is no longer a particle
+                # search for self in self.root.bond_graph and remove self
+                if self.root.bond_graph.has_node(self):
+                    self.root.bond_graph.remove_node(self)
+                # Compose bond_graph of new child
+                self.root.bond_graph.compose(new_child.bond_graph)
 
                 new_child.bond_graph = None
 
@@ -856,7 +860,7 @@ class Compound(object):
         if removed_part.rigid_id is not None:
             for ancestor in removed_part.ancestors():
                 ancestor._check_if_contains_rigid_bodies = True
-        if self.root.bond_graph and self.root.bond_graph.has_node(removed_part):
+        if self.root.bond_graph.has_node(removed_part):
             for neighbor in self.root.bond_graph.neighbors(removed_part):
                 self.root.remove_bond((removed_part, neighbor))
             self.root.bond_graph.remove_node(removed_part)
@@ -949,11 +953,8 @@ class Compound(object):
                 "The direct_bonds method can only "
                 "be used on compounds at the bottom of their hierarchy."
             )
-        if not self.root.bond_graph:
-            return iter(())
-        elif self.root.bond_graph.has_node(self):
-            for i in self.root.bond_graph._adj[self]:
-                yield i
+        for i in self.root.bond_graph._adj[self]:
+            yield i
 
     def bonds(self):
         """Return all bonds in the Compound and sub-Compounds.
@@ -1381,7 +1382,7 @@ class Compound(object):
         if not self.parent:
             # This is the very top level, and hence have to be independent
             return True
-        elif not self.root.bond_graph:
+        elif not self.root.bond_graph.edges():
             # If there is no bond in the top level, then everything is independent
             return True
         else:
@@ -2474,6 +2475,7 @@ class Compound(object):
             Set preexisting atoms in compound to coordinates given by Topology.
         infer_hierarchy : bool, optional, default=True
             If True, infer compound hierarchy from Topology residue, to be implemented.
+            Pending new GMSO release.
 
         Returns
         -------
@@ -2483,10 +2485,11 @@ class Compound(object):
             topology=topology,
             compound=self,
             coords_only=coords_only,
-            infer_hierarchy=infer_hierarchy,
+            # infer_hierarchy=infer_hierarchy,
+            # TO DO: enable this with new release of GMSO
         )
 
-    def to_gmso(self):
+    def to_gmso(self, **kwargs):
         """Create a GMSO Topology from a mBuild Compound.
 
         Parameters
@@ -2892,6 +2895,9 @@ class Compound(object):
     def _clone_bonds(self, clone_of=None):
         """Clone the bond of the source compound to clone compound."""
         newone = clone_of[self]
+        newone.bond_graph = BondGraph()
+        for particle in self.particles():
+            newone.bond_graph.add_node(clone_of[particle])
         for c1, c2 in self.bonds():
             try:
                 newone.add_bond((clone_of[c1], clone_of[c2]))

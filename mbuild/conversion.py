@@ -433,7 +433,8 @@ def load_file(
             topology=top,
             compound=compound,
             coords_only=coords_only,
-            infer_hierarchy=infer_hierarchy,
+            # infer_hierarchy=infer_hierarchy,
+            # TODO: enable this with new release of GMSO
         )
 
     # Then pybel reader
@@ -877,6 +878,7 @@ def from_gmso(
         Set preexisting atoms in compound to coordinates given by Topology.
     infer_hierarchy : bool, optional, default=True
         If True, infer compound hierarchy from Topology residue, to be implemented.
+        Pending new GMSO release.
 
     Returns
     -------
@@ -906,9 +908,21 @@ def from_gmso(
 
     # Convert gmso Topology to mbuild Compound
     if not compound:
-        return to_mbuild(topology, **kwargs)
+        return to_mbuild(
+            topology,
+            # infer_hierarchy=infer_hierarchy,
+            # TODO: enable this with new release of GMSO
+            **kwargs,
+        )
     else:
-        compound.add(to_mbuild(topology), **kwargs)
+        compound.add(
+            to_mbuild(
+                topology,
+                # infer_hierarchy=infer_hierarchy),
+                # TODP: enable this with new release of GMSO
+                **kwargs,
+            )
+        )
     return compound
 
 
@@ -1619,13 +1633,15 @@ def _iterate_children(compound, nodes, edges, names_only=False):
     return nodes, edges
 
 
-def to_gmso(compound):
+def to_gmso(compound, box=None, **kwargs):
     """Create a GMSO Topology from a mBuild Compound.
 
     Parameters
     ----------
     compound : mb.Compound
         The mb.Compound to be converted.
+    box : mb.Box, optional, default=None
+        The mb.Box to be converted, if different that compound.box
 
     Returns
     -------
@@ -1634,7 +1650,7 @@ def to_gmso(compound):
     """
     from gmso.external.convert_mbuild import from_mbuild
 
-    return from_mbuild(compound)
+    return from_mbuild(compound, box=None, **kwargs)
 
 
 def to_intermol(compound, molecule_types=None):  # pragma: no cover
