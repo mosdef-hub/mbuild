@@ -396,7 +396,7 @@ class TestCompound(BaseTest):
         assert bead_overwrite.mass == 1.0
 
         bead_no_mass = mb.Compound(name="A")
-        assert bead_no_mass.mass == 0.0
+        assert bead_no_mass.mass == None
 
     def test_init_with_bad_mass(self):
         with pytest.raises(MBuildError):
@@ -461,6 +461,22 @@ class TestCompound(BaseTest):
         A = mb.Compound(mass=2.0)
         A.add(mb.Port())
         assert A.mass == 2.0
+
+    def test_none_mass(self):
+        A = mb.Compound()
+        assert A.mass == None
+
+        container = mb.Compound(subcompounds=[A])
+        with pytest.warns(UserWarning):
+            container_mass = container.mass
+            assert container_mass == None
+
+        A.mass = 1
+        B = mb.Compound()
+        container.add(B)
+        with pytest.warns(UserWarning):
+            container_mass = container.mass
+            assert container_mass == A.mass == 1
 
     def test_add_existing_parent(self, ethane, h2o):
         water_in_water = mb.clone(h2o)
@@ -1250,7 +1266,7 @@ class TestCompound(BaseTest):
         compound = Compound(charge=2.0)
         assert compound.charge == 2.0
         compound2 = Compound()
-        assert compound2.charge == 0.0
+        assert compound2.charge == None
 
         ch2[0].charge = 0.5
         ch2[1].charge = -0.25
@@ -1276,6 +1292,20 @@ class TestCompound(BaseTest):
         benzene[0].charge = 0.25
         with pytest.warns(UserWarning):
             benzene.save("charge-test.mol2")
+
+    def test_none_charge(self):
+        A = mb.Compound()
+        with pytest.warns(UserWarning):
+            A.charge
+
+        A.charge = 1
+        B = mb.Compound()
+        container = mb.Compound(subcompounds=[A, B])
+        with pytest.warns(UserWarning):
+            container_charge = container.charge
+            assert A.charge == 1
+            assert B.charge == None
+            assert container_charge == 1
 
     @pytest.mark.skipif(
         not has_openbabel, reason="Open Babel package not installed"

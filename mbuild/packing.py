@@ -772,9 +772,10 @@ def _validate_mass(compound, n_compounds):
     found_zero_mass = False
     total_mass = 0
     for c, n in zip(compound, n_compounds):
-        comp_masses = [c._particle_mass(p) for p in c.particles()]
-        if 0.0 in comp_masses:
+        comp_masses = np.array([c._particle_mass(p) for p in c.particles()])
+        if 0.0 in comp_masses or None in comp_masses:
             found_zero_mass = True
+        comp_masses[comp_masses == None] = 0.0
         total_mass += np.sum(comp_masses) * n
 
     if total_mass == 0:
@@ -788,7 +789,7 @@ def _validate_mass(compound, n_compounds):
     if found_zero_mass:
         warnings.warn(
             "Some of the compounds or subcompounds in `compound` "
-            "have a mass of zero. This may have an effect on "
+            "have a mass of zero/None. This may have an effect on "
             "density calculations"
         )
     return total_mass
