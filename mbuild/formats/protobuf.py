@@ -93,7 +93,7 @@ def _mb_to_proto(cmpd, proto):
     """Given mb.Compound, parse propertes into compound_pb2.Compound."""
     proto.name = cmpd.name
     proto.pos.x, proto.pos.y, proto.pos.z = cmpd.pos
-    proto.charge = cmpd.charge
+    proto.charge = cmpd.charge if cmpd.charge else 0.0
     proto.id = id(cmpd)
     (
         proto.periodicity.x,

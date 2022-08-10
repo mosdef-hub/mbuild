@@ -91,11 +91,11 @@ class Compound(object):
         The type of Compound.
     pos : np.ndarray, shape=(3,), dtype=float, optional, default=[0, 0, 0]
         The position of the Compound in Cartestian space
-    mass : float, optional, default=0.0
+    mass : float, optional, default=None
         The mass of the compound. If none is set, then will try to
         infer the mass from a compound's element attribute.
         If neither `mass` or `element` are specified, then the
-        mass will be zero.
+        mass will be None.
     charge : float, optional, default=0.0
         Currently not used. Likely removed in next release.
     periodicity : tuple of bools, length=3, optional, default=None
@@ -147,8 +147,8 @@ class Compound(object):
         subcompounds=None,
         name=None,
         pos=None,
-        mass=0.0,
-        charge=0.0,
+        mass=None,
+        charge=None,
         periodicity=None,
         box=None,
         element=None,
@@ -202,7 +202,7 @@ class Compound(object):
                 raise MBuildError(
                     "Can't set the mass of a Compound with subcompounds. "
                 )
-            self._charge = 0.0
+            self._charge = None
             self._mass = mass
             self.add(subcompounds)
         else:
@@ -358,17 +358,26 @@ class Compound(object):
         if self._contains_only_ports():
             return self._particle_mass(self)
         else:
-            return sum([self._particle_mass(p) for p in self.particles()])
+            particle_masses = [self._particle_mass(p) for p in self.particles()]
+            if None in particle_masses:
+                warn(
+                    f"Some particle of {self} does not have mass."
+                    "They will not be accounted for during this calculation."
+                )
+            filtered_masses = [
+                mass for mass in particle_masses if mass is not None
+            ]
+            return sum(filtered_masses) if filtered_masses else None
 
     @staticmethod
     def _particle_mass(particle):
-        if particle._mass:
+        if particle._mass is not None:
             return particle._mass
         else:
             if particle.element:
                 return particle.element.mass
             else:
-                return 0
+                return None
 
     @mass.setter
     def mass(self, value):
@@ -386,7 +395,14 @@ class Compound(object):
     @property
     def charge(self):
         """Get the charge of the Compound."""
-        return sum([particle._charge for particle in self.particles()])
+        charges = [p._charge for p in self.particles()]
+        if None in charges:
+            warn(
+                f"Some particle of {self} does not have a charge."
+                "They will not be accounted for during this calculation."
+            )
+        filtered_charges = [charge for charge in charges if charge is not None]
+        return sum(filtered_charges) if filtered_charges else None
 
     @charge.setter
     def charge(self, value):
@@ -673,7 +689,7 @@ class Compound(object):
                 "Only objects that inherit from mbuild.Compound can be added "
                 f"to Compounds. You tried to add '{new_child}'."
             )
-        if self._mass != 0.0 and not isinstance(new_child, Port):
+        if self._mass is not None and not isinstance(new_child, Port):
             warn(
                 f"{self} has a pre-defined mass of {self._mass}, "
                 "which will be reset to zero now that it contains children "
