@@ -2433,6 +2433,50 @@ class Compound(object):
         self.rotate(theta, around)
         self.translate(center_pos)
 
+    def rotate_dihedral(self, bond, phi):
+        """Rotate a dihedral about a central bond.
+
+        Parameters
+        ----------
+        bond : indexable object, length=2, dtype=mb.Compound
+            The pair of bonded Particles in the central bond of the dihedral
+        phi : float
+            The angle by which to rotate the dihedral, in radians.
+        """
+        nx = import_("networkx")
+
+        # Generate a bond graph and convert to networkX
+        mb_bondgraph = self.bond_graph
+        G = nx.Graph(mb_bondgraph.edges())
+
+        # Remove separate the compound in to two pieces by removing the bond
+        G.remove_edge(*bond)
+        assert len([i for i in nx.connected_components(G)]) == 2
+        components = [G.subgraph(c).copy() for c in nx.connected_components(G)]
+        component1 = components[1]  # One piece of the compound
+
+        # Get original coordinates
+        original_bond_positions = [bond[0].pos, bond[1].pos]
+
+        # Get the vector along the bond
+        bond_vec = bond[1].pos - bond[0].pos
+
+        # Rotate the coordinates of the piece by phi about the bond vector
+        xyz = np.array([p.pos for p in component1.nodes])
+        transformed_xyz = _rotate(xyz, phi, bond_vec)
+        for atom, coord in zip(component1.nodes, transformed_xyz):
+            atom.translate_to(coord)
+
+        # Move atoms involved in the bond to original positions
+        # This is neccessary since the piece is rotated about its center
+        if bond[0] in set(component1.nodes):
+            trans_vec = original_bond_positions[0] - bond[0].pos
+        elif bond[1] in set(component1.nodes):
+            trans_vec = original_bond_positions[1] - bond[1].pos
+
+        for atom in component1.nodes:
+            atom.translate(trans_vec)
+
     # Interface to GMSO Topology for reading/writing mol2 files
     def from_gmso(self, topology, coords_only=False, infer_hierarchy=True):
         """Convert a GMSO Topology to mBuild Compound.
