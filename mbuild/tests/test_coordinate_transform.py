@@ -359,6 +359,37 @@ class TestCoordinateTransform(BaseTest):
         dihedral = np.rad2deg(np.arccos(cos_dihedral))
         assert np.allclose(dihedral, 120, atol=1e-15)
 
+        # Extra test on asymmetric molecule
+        compound = mb.load("FCCO", smiles=True)
+
+        # Making sure this is the dihedral we are expecting
+        assert compound[0].element.symbol == "F"
+        assert compound[1].element.symbol == "C"
+        assert compound[2].element.symbol == "C"
+        assert compound[3].element.symbol == "O"
+
+        original_dihedral = [
+            compound[0].pos,
+            compound[1].pos,
+            compound[2].pos,
+            compound[3].pos,
+        ]
+        original_angle = dihedral_angle(original_dihedral)
+
+        bond = (compound[1], compound[2])
+        rotate_angle = np.deg2rad(68)
+        compound.rotate_dihedral(bond, rotate_angle)
+
+        new_dihedral = [
+            compound[0].pos,
+            compound[1].pos,
+            compound[2].pos,
+            compound[3].pos,
+        ]
+        new_angle = dihedral_angle(new_dihedral)
+
+        assert np.allclose(new_angle - original_angle, 68, atol=1e-15)
+
     def test_equivalence_transform(self, ch2, ch3, methane):
         ch2_atoms = list(ch2.particles())
         methane_atoms = list(methane.particles())
@@ -474,3 +505,18 @@ class TestCoordinateTransform(BaseTest):
         for node in bgraph.nodes():
             x = map(lambda node: node.name, bgraph._adj[node])
             assert neighbors[node.name] == len(list(x))
+
+
+# Code to calculate angle of dihedral (stole from https://stackoverflow.com/questions/20305272/dihedral-torsion-angle-from-four-points-in-cartesian-coordinates-in-python#:~:text=The%20angle%20is%20given%20by,Similar%20to%20your%20dihedral2.)
+def dihedral_angle(p):
+    b1 = p[2] - p[1]
+    b0, b1, b2 = -(p[1] - p[0]), b1 / np.sqrt((b1 * b1).sum()), p[3] - p[2]
+    v = b0 - (b0[0] * b1[0] + b0[1] * b1[1] + b0[2] * b1[2]) * b1
+    w = b2 - (b2[0] * b1[0] + b2[1] * b1[1] + b2[2] * b1[2]) * b1
+    x = v[0] * w[0] + v[1] * w[1] + v[2] * w[2]
+    y = (
+        (b1[1] * v[2] - b1[2] * v[1]) * w[0]
+        + (b1[2] * v[0] - b1[0] * v[2]) * w[1]
+        + (b1[0] * v[1] - b1[1] * v[0]) * w[2]
+    )
+    return 180 * np.arctan2(y, x) / np.pi
