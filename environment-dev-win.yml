@@ -6,7 +6,7 @@ dependencies:
   - bump2version
   - codecov
   - ele
-  - gmso>=0.7.3
+  - gmso>=0.9.0
   - foyer>=0.11.0
   - garnett>=0.7.1
   - gsd>=1.2

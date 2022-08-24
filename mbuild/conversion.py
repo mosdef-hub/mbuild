@@ -433,8 +433,7 @@ def load_file(
             topology=top,
             compound=compound,
             coords_only=coords_only,
-            # infer_hierarchy=infer_hierarchy,
-            # TODO: enable this with new release of GMSO
+            infer_hierarchy=infer_hierarchy,
         )
 
     # Then pybel reader
@@ -910,16 +909,14 @@ def from_gmso(
     if not compound:
         return to_mbuild(
             topology,
-            # infer_hierarchy=infer_hierarchy,
-            # TODO: enable this with new release of GMSO
+            infer_hierarchy=infer_hierarchy,
             **kwargs,
         )
     else:
         compound.add(
             to_mbuild(
                 topology,
-                # infer_hierarchy=infer_hierarchy),
-                # TODP: enable this with new release of GMSO
+                infer_hierarchy=infer_hierarchy,
                 **kwargs,
             )
         )
