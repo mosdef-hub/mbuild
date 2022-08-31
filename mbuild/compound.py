@@ -360,10 +360,10 @@ class Compound(object):
         else:
             particle_masses = [self._particle_mass(p) for p in self.particles()]
             if None in particle_masses:
-                warn(
-                    f"Some particle of {self} does not have mass."
-                    "They will not be accounted for during this calculation."
-                )
+#                 warn(
+#                     f"Some particle of {self} does not have mass."
+#                     "They will not be accounted for during this calculation."
+#                 )
             filtered_masses = [
                 mass for mass in particle_masses if mass is not None
             ]
