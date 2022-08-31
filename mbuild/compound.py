@@ -359,11 +359,11 @@ class Compound(object):
             return self._particle_mass(self)
         else:
             particle_masses = [self._particle_mass(p) for p in self.particles()]
-#             if None in particle_masses:
-#                 warn(
-#                     f"Some particle of {self} does not have mass."
-#                     "They will not be accounted for during this calculation."
-#                 )
+            if None in particle_masses:
+                warn(
+                    f"Some particle of {self} does not have mass."
+                    "They will not be accounted for during this calculation."
+                )
             filtered_masses = [
                 mass for mass in particle_masses if mass is not None
             ]
@@ -396,11 +396,11 @@ class Compound(object):
     def charge(self):
         """Get the charge of the Compound."""
         charges = [p._charge for p in self.particles()]
-        if None in charges:
-            warn(
-                f"Some particle of {self} does not have a charge."
-                "They will not be accounted for during this calculation."
-            )
+#         if None in charges:
+#             warn(
+#                 f"Some particle of {self} does not have a charge."
+#                 "They will not be accounted for during this calculation."
+#             )
         filtered_charges = [charge for charge in charges if charge is not None]
         return sum(filtered_charges) if filtered_charges else None
 
