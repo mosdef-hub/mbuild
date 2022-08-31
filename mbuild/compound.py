@@ -359,7 +359,7 @@ class Compound(object):
             return self._particle_mass(self)
         else:
             particle_masses = [self._particle_mass(p) for p in self.particles()]
-            if None in particle_masses:
+#             if None in particle_masses:
 #                 warn(
 #                     f"Some particle of {self} does not have mass."
 #                     "They will not be accounted for during this calculation."
