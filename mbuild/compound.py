@@ -2417,7 +2417,7 @@ class Compound(object):
         new_positions = _rotate(self.xyz_with_ports, theta, around)
         self.xyz_with_ports = new_positions
 
-    def spin(self, theta, around):
+    def spin(self, theta, around, anchor=None):
         """Rotate Compound in place around an arbitrary vector.
 
         Parameters
@@ -2426,12 +2426,23 @@ class Compound(object):
             The angle by which to rotate the Compound, in radians.
         around : np.ndarray, shape=(3,), dtype=float
             The axis about which to spin the Compound.
+        anchor : mb.Compound, optional, default=None (self)
+            Anchor compound/particle to perform spinning.
+            If the anchor is not a particle, the spin will be
+            around the center of the anchor Compound.
         """
         around = np.asarray(around).reshape(3)
-        center_pos = self.center
-        self.translate(-center_pos)
+
+        if anchor:
+            msg = f"{anchor} is not part of {self}."
+            assert anchor in self.successors(), msg
+        else:
+            anchor = self
+        anchor_pos = anchor.center
+
+        self.translate(-anchor_pos)
         self.rotate(theta, around)
-        self.translate(center_pos)
+        self.translate(anchor_pos)
 
     def rotate_dihedral(self, bond, phi):
         """Rotate a dihedral about a central bond.

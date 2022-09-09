@@ -6,25 +6,11 @@ simplefilter("always", DeprecationWarning)
 import numpy as np
 from numpy.linalg import inv, norm, svd
 
-from mbuild.utils.exceptions import RemovedFuncError
-
 __all__ = [
     "force_overlap",
     "x_axis_transform",
     "y_axis_transform",
     "z_axis_transform",
-    # Deprecated
-    "equivalence_transform",
-    "rotate",
-    "rotate_around_x",
-    "rotate_around_y",
-    "rotate_around_z",
-    "spin",
-    "spin_x",
-    "spin_y",
-    "spin_z",
-    "translate",
-    "translate_to",
 ]
 
 
@@ -450,36 +436,6 @@ def _choose_correct_port(from_port, to_port):
     return [(correct_port, to_port["up"])], T
 
 
-def translate(compound, pos):
-    """Translate a compound by a vector.
-
-    Parameters
-    ----------
-    compound : mb.Compound
-        The compound being translated.
-    pos : np.ndarray, shape=(3,), dtype=float
-        The vector to translate the compound by.
-    """
-    raise RemovedFuncError(
-        "translate()", "Compound.translate()", "0.7.0", "0.11.0"
-    )
-
-
-def translate_to(compound, pos):
-    """Translate a compound to a coordinate.
-
-    Parameters
-    ----------
-    compound : mb.Compound
-        The compound being translated.
-    pos : np.ndarray, shape=(3,), dtype=float
-        The coordinate to translate the compound to.
-    """
-    raise RemovedFuncError(
-        "translate_to()", "Compound.translate_to()", "0.7.0", "0.11.0"
-    )
-
-
 def _translate(coordinates, by):
     """Translate a set of coordinates by a vector.
 
@@ -525,81 +481,6 @@ def _rotate(coordinates, theta, around):
     return Rotation(theta, around).apply_to(coordinates)
 
 
-def rotate(compound, theta, around):
-    """Rotate a compound around an arbitrary vector.
-
-    Parameters
-    ----------
-    compound : mb.Compound
-        The compound being rotated.
-    theta : float
-        The angle by which to rotate the compound, in radians.
-    around : np.ndarray, shape=(3,), dtype=float
-        The vector about which to rotate the compound.
-    """
-    raise RemovedFuncError("rotate()", "Compound.rotate()", "0.7.0", "0.11.0")
-
-
-def rotate_around_x(compound, theta):
-    """Rotate a compound around the x axis.
-
-    Parameters
-    ----------
-    compound : mb.Compound
-        The compound being rotated.
-    theta : float
-        The angle by which to rotate the compound.
-    """
-    raise RemovedFuncError(
-        "rotate_around_x()", "Compound.rotate()", "0.7.0", "0.11.0"
-    )
-
-
-def rotate_around_y(compound, theta):
-    """Rotate a compound around the y axis.
-
-    Parameters
-    ----------
-    compound : mb.Compound
-        The compound being rotated.
-    theta : float
-        The angle by which to rotate the compound.
-    """
-    raise RemovedFuncError(
-        "rotate_around_y()", "Compound.rotate()", "0.7.0", "0.11.0"
-    )
-
-
-def rotate_around_z(compound, theta):
-    """Rotate a compound around the z axis.
-
-    Parameters
-    ----------
-    compound : mb.Compound
-        The compound being rotated.
-    theta : float
-        The angle by which to rotate the compound.
-    """
-    raise RemovedFuncError(
-        "rotate_around_z()", "Compound.rotate()", "0.7.0", "0.11.0"
-    )
-
-
-def spin(compound, theta, around):
-    """Rotate a compound in place around an arbitrary vector.
-
-    Parameters
-    ----------
-    compound : mb.Compound
-        The compound being rotated.
-    theta : float
-        The angle by which to rotate the compound, in radians.
-    around : np.ndarray, shape=(3,), dtype=float
-        The axis about which to spin the compound.
-    """
-    raise RemovedFuncError("spin()", "Compound.spin()", "0.7.0", "0.11.0")
-
-
 def _spin(coordinates, theta, around):
     """Rotate a set of coordinates in place around an arbitrary vector.
 
@@ -620,45 +501,6 @@ def _spin(coordinates, theta, around):
     coordinates = _rotate(coordinates, theta, around)
     coordinates += center_pos
     return coordinates
-
-
-def spin_x(compound, theta):
-    """Rotate a compound in place around the x axis.
-
-    Parameters
-    ----------
-    compound : mb.Compound
-        The compound being rotated.
-    theta : float
-        The angle by which to rotate the compound.
-    """
-    raise RemovedFuncError("spin_x()", "Compound.spin_x()", "0.7.0", "0.11.0")
-
-
-def spin_y(compound, theta):
-    """Rotate a compound in place around the y axis.
-
-    Parameters
-    ----------
-    compound : mb.Compound
-        The compound being rotated.
-    theta : float
-        The angle by which to rotate the compound.
-    """
-    raise RemovedFuncError("spin_y()", "Compound.spin_y()", "0.7.0", "0.11.0")
-
-
-def spin_z(compound, theta):
-    """Rotate a compound in place around the z axis.
-
-    Parameters
-    ----------
-    compound : mb.Compound
-        The compound being rotated.
-    theta : float
-        The angle by which to rotate the compound.
-    """
-    raise RemovedFuncError("spin_z()", "Compound.spin_z()", "0.7.0", "0.11.0")
 
 
 def x_axis_transform(
