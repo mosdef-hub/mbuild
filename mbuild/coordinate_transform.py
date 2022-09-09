@@ -11,6 +11,7 @@ __all__ = [
     "x_axis_transform",
     "y_axis_transform",
     "z_axis_transform",
+    "equivalence_transform",
 ]
 
 

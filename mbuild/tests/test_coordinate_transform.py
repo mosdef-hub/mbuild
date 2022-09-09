@@ -17,22 +17,11 @@ from mbuild.coordinate_transform import (
     _spin,
     angle,
     force_overlap,
-    rotate,
-    rotate_around_x,
-    rotate_around_y,
-    rotate_around_z,
-    spin,
-    spin_x,
-    spin_y,
-    spin_z,
-    translate,
-    translate_to,
     x_axis_transform,
     y_axis_transform,
     z_axis_transform,
 )
 from mbuild.tests.base_test import BaseTest
-from mbuild.utils.exceptions import RemovedFuncError
 
 
 class TestCoordinateTransform(BaseTest):
@@ -248,36 +237,12 @@ class TestCoordinateTransform(BaseTest):
         compound2.spin(np.pi * 1.23456789, around=np.asarray([0, 0, 1]))
         assert np.allclose(compound2.xyz, sixpoints.xyz, atol=1e-16)
 
-    def test_spin_deprecated_x(self, sixpoints):
-        with pytest.raises(RemovedFuncError):
-            spin_x(sixpoints, np.pi * 3 / 2)
-
-    def test_spin_deprecated_y(self, sixpoints):
-        with pytest.raises(RemovedFuncError):
-            spin_y(sixpoints, np.pi * 3 / 2)
-
-    def test_spin_deprecated_z(self, sixpoints):
-        with pytest.raises(RemovedFuncError):
-            spin_z(sixpoints, 69)
-
     def test_spin_arbitraty(self, sixpoints):
         before = mb.clone(sixpoints)
         sixpoints.spin(np.pi, np.asarray([1, 1, 0]))
         assert np.allclose(
             sixpoints["up"].xyz, before["right"].xyz, atol=1e-16
         ) and np.allclose(sixpoints["down"].xyz, before["left"].xyz, atol=1e-16)
-
-    def test_error_rotate_x(self, methane):
-        with pytest.raises(RemovedFuncError):
-            rotate_around_x(methane, np.pi)
-
-    def test_error_rotate_y(self, methane):
-        with pytest.raises(RemovedFuncError):
-            rotate_around_y(methane, np.pi)
-
-    def test_error_rotate_z(self, methane):
-        with pytest.raises(RemovedFuncError):
-            rotate_around_z(methane, np.pi)
 
     def test_spin_relative_compound_coordinates(self, sixpoints):
         """Check compounds's relative coordinates don't change upon spinning"""
