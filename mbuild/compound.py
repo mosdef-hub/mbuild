@@ -2728,6 +2728,22 @@ class Compound(object):
             show_ports=show_ports,
         )
 
+    def to_smiles(self, backend="pybel"):
+        """Create a SMILES string from an mbuild compound.
+
+        Parameters
+        ----------
+        compound : mb.Compound.
+            The mbuild compound to be converted.
+        backend : str, optional, default="pybel"
+            Backend used to do the conversion.
+
+        Return
+        ------
+        smiles_string : str
+        """
+        return conversion.to_smiles(self, backend)
+
     def from_pybel(
         self,
         pybel_mol,
