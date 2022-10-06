@@ -125,6 +125,14 @@ class TestCoordinateTransform(BaseTest):
         methane.spin(6.9, [1, 0, 0])
         methane.spin(6.9, (1, 0, 0))
 
+    def test_spin_with_anchor(self, methane):
+        original_posH = methane[1].pos
+        original_posC = methane[0].pos
+        methane.spin(6.9, [1, 0, 0], anchor=methane[1])
+
+        assert all(methane[1].pos == original_posH)
+        assert any(methane[0].pos != original_posC)
+
     def test_rotate_inputs(self, methane):
         methane.rotate(6.9, [1, 0, 0])
         methane.rotate(6.9, (1, 0, 0))
