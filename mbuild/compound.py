@@ -962,7 +962,7 @@ class Compound(object):
         See Also
         --------
         bond_graph.edges_iter : Iterations over all edges in a BondGraph
-        Compound.n_direct_bonds() : Returns the number of bonds a particle contains
+        Compound.n_direct_bonds : Returns the number of bonds a particle contains
         """
         if list(self.particles()) != [self]:
             raise MBuildError(
@@ -983,8 +983,7 @@ class Compound(object):
         See Also
         --------
         bond_graph.edges_iter : Iterates over all edges in a BondGraph
-        Compound.n_bonds() : Returns the total number of bonds in the Compound
-        and sub-Compounds
+        Compound.n_bonds : Returns the total number of bonds in the Compound and sub-Compounds
         """
         if self.root.bond_graph:
             if self.root == self:
