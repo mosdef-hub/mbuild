@@ -1564,6 +1564,35 @@ def to_pybel(
     return pybelmol
 
 
+def to_smiles(compound, backend="pybel"):
+    """Create a SMILES string from an mbuild compound.
+
+    Parameters
+    ----------
+    compound : mb.Compound.
+        The mbuild compound to be converted.
+    backend : str, optional, default="pybel"
+        Backend used to do the conversion.
+
+    Return
+    ------
+    smiles_string : str
+    """
+    if backend == "pybel":
+        mol = to_pybel(compound)
+
+        warn(
+            "The bond orders will be guessed using pybel"
+            "OBMol.PerceviedBondOrders()"
+        )
+        mol.OBMol.PerceiveBondOrders()
+        smiles_string = mol.write("smi").replace("\t", " ").split(" ")[0]
+
+        return smiles_string
+    else:
+        raise NotImplementedError(f"Backend {backend} not implemented.")
+
+
 def to_networkx(compound, names_only=False):
     """Create a NetworkX graph representing the hierarchy of a Compound.
 

@@ -800,6 +800,22 @@ class TestCompound(BaseTest):
         assert p3ht1.n_particles == 33
         assert p3ht1.n_bonds == 33
 
+    @pytest.mark.skipif(
+        not has_openbabel, reason="Open Bable package not installed"
+    )
+    def test_to_smiles(self, ethane, benzene):
+        # Test predefined molecule
+        eth_smiles = "CC"
+        benzene_smiles = "c1ccccc1"
+
+        assert ethane.to_smiles() == eth_smiles
+        assert benzene.to_smiles() == benzene_smiles
+
+        # Test molecules loaded in with smiles string
+        for smiles in ["CCO", "CC(O)O", "Cc1ccccc1"]:
+            compound = mb.load(smiles, smiles=True)
+            assert compound.to_smiles() == smiles
+
     @pytest.mark.parametrize(
         "extension", [(".xyz"), (".pdb"), (".mol2"), (".gro")]
     )
