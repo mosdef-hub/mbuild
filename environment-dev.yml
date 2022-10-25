@@ -27,6 +27,6 @@ dependencies:
   - pytest
   - pytest-azurepipelines
   - pytest-cov
-  - python
+  - python<3.10
   - rdkit>=2021
   - scipy

@@ -25,6 +25,6 @@ dependencies:
   - pycifrw
   - pytest
   - pytest-cov
-  - python
+  - python<3.10
   - rdkit>=2021
   - scipy
