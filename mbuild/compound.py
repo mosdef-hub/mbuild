@@ -1849,7 +1849,7 @@ class Compound(object):
             particle.pos += (np.random.rand(3) - 0.5) / 100
         self._update_port_locations(xyz_init)
 
-    def energy_minimize(self, forcefield="UFF", steps=1000, **kwargs):
+    def energy_minimize(self, forcefield="UFF", steps=1000, shift_com=False, anchor=None, **kwargs):
         """Perform an energy minimization on a Compound.
 
         Default behavior utilizes `Open Babel <http://openbabel.org/docs/dev/>`_
@@ -1973,6 +1973,21 @@ class Compound(object):
            (2001) J. Comput. Chem. 22, 1229-1242
 
         """
+        com = self.pos
+        anchor_in_compound = False
+        if anchor is not None:
+            # check to see if the anchor exists
+            # in the Compound to be energy minimized
+            for succesor in self.successors():
+                if id(anchor) == id(succesor):
+                    anchor_in_compound = True
+                    anchor_pos_old = anchor.pos
+
+            if anchor_in_compound == False:
+                raise MBuildError(
+                    f"Anchor: {anchor} is not part of the Compound: {self}"
+                    "that you are trying to energy minimize."
+                    )
         tmp_dir = tempfile.mkdtemp()
         original = clone(self)
         self._kick()
@@ -2001,7 +2016,14 @@ class Compound(object):
             )
 
         self.update_coordinates(os.path.join(tmp_dir, "minimized.pdb"))
-
+        if shift_com:
+            self.translate_to(com)
+        
+        if anchor_in_compound == True:
+            anchor_pos_new = anchor.pos
+            delta = anchor_pos_old-anchor_pos_new
+            self.translate(delta)
+            
     def _energy_minimize_openmm(
         self,
         tmp_dir,
