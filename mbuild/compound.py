@@ -1450,7 +1450,8 @@ class Compound(object):
         has_dimension = [True, True, True]
         if not is_one_particle:
             missing_dimensions = np.all(
-                np.isclose(self.xyz, self.xyz[0, :],  atol=1e-2), axis=0,
+                np.isclose(self.xyz, self.xyz[0, :], atol=1e-2),
+                axis=0,
             )
             for i, truthy in enumerate(missing_dimensions):
                 has_dimension[i] = not truthy
@@ -1465,7 +1466,6 @@ class Compound(object):
             v3 = np.asarray((0.0, 0.0, self.maxs[2] - self.mins[2]))
         vecs = [v1, v2, v3]
 
-        
         # handle any missing dimensions (planar molecules)
         for i, dim in enumerate(has_dimension):
             if not dim:
