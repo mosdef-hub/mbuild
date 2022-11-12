@@ -1849,7 +1849,14 @@ class Compound(object):
             particle.pos += (np.random.rand(3) - 0.5) / 100
         self._update_port_locations(xyz_init)
 
-    def energy_minimize(self, forcefield="UFF", steps=1000, shift_com=True, anchor=None, **kwargs):
+    def energy_minimize(
+        self,
+        forcefield="UFF",
+        steps=1000,
+        shift_com=True,
+        anchor=None,
+        **kwargs,
+    ):
         """Perform an energy minimization on a Compound.
 
         Default behavior utilizes `Open Babel <http://openbabel.org/docs/dev/>`_
@@ -2029,7 +2036,7 @@ class Compound(object):
                 raise MBuildError(
                     f"Anchor: {anchor} is not part of the Compound: {self}"
                     "that you are trying to energy minimize."
-                    )
+                )
         tmp_dir = tempfile.mkdtemp()
         original = clone(self)
         self._kick()
@@ -2060,12 +2067,12 @@ class Compound(object):
         self.update_coordinates(os.path.join(tmp_dir, "minimized.pdb"))
         if shift_com:
             self.translate_to(com)
-        
+
         if anchor_in_compound == True:
             anchor_pos_new = anchor.pos
-            delta = anchor_pos_old-anchor_pos_new
+            delta = anchor_pos_old - anchor_pos_new
             self.translate(delta)
-            
+
     def _energy_minimize_openmm(
         self,
         tmp_dir,
@@ -2232,8 +2239,15 @@ class Compound(object):
         )
 
     def _energy_minimize_openbabel(
-        self, tmp_dir, steps=1000, algorithm="cg", forcefield="UFF", constraint_factor=50000.0,
-        distance_constraints=None, fixed_compounds=None, ignore_compounds=None
+        self,
+        tmp_dir,
+        steps=1000,
+        algorithm="cg",
+        forcefield="UFF",
+        constraint_factor=50000.0,
+        distance_constraints=None,
+        fixed_compounds=None,
+        ignore_compounds=None,
     ):
         """Perform an energy minimization on a Compound.
 
@@ -2290,7 +2304,7 @@ class Compound(object):
             constraint_factor; the energy of this spring is considering during the minimization.
             As such, very small values of the constraint_factor may result in an energy
             minimized state that does not adequately restrain the distance/position of atom(s)e.
-            
+
 
         References
         ----------
@@ -2332,7 +2346,7 @@ class Compound(object):
                                 particle, particle.name
                             )
                         )
-        #initialize constraints
+        # initialize constraints
         ob_constraints = openbabel.OBFFConstraints()
 
         if distance_constraints is not None:
@@ -2340,19 +2354,23 @@ class Compound(object):
             # so that a user passed a 1D array corresponding to only a the
             # tuple for the pair and the distance, it doesn't try to
             # loop over the list
-            
+
             temp1 = np.array(distance_constraints)
             if len(temp1.shape) == 1:
                 distance_constraints = [distance_constraints]
-                
+
             for con_temp in distance_constraints:
                 p1 = con_temp[0][0]
                 p2 = con_temp[0][1]
-                
-                if id(p1) ==  id(p2):
-                    raise MBuildError(f"Cannot create a constraint between a particle and itself: {p1} {p2} .")
+
+                if id(p1) == id(p2):
+                    raise MBuildError(
+                        f"Cannot create a constraint between a particle and itself: {p1} {p2} ."
+                    )
                 if len(p1.children) != 0 or len(p2.children) != 0:
-                    raise MBuildError(f"Constraints must correspond to individual atoms in Compounds.")
+                    raise MBuildError(
+                        f"Constraints must correspond to individual atoms in Compounds."
+                    )
 
                 p1_in_compound = False
                 p2_in_compound = False
@@ -2362,32 +2380,40 @@ class Compound(object):
                     if id(p2) == id(successor):
                         p2_in_compound = True
                 if p1_in_compound == False and p2_in_compound == True:
-                    raise MBuildError(f"{p1} is not a member of Compound {self}.")
+                    raise MBuildError(
+                        f"{p1} is not a member of Compound {self}."
+                    )
                 elif p1_in_compound == True and p2_in_compound == False:
-                    raise MBuildError(f"{p2} is not a member of Compound {self}.")
+                    raise MBuildError(
+                        f"{p2} is not a member of Compound {self}."
+                    )
                 elif p1_in_compound == False and p2_in_compound == False:
-                    raise MBuildError(f"{p1} and {p2} are not members of Compound {self}.")
-                    
+                    raise MBuildError(
+                        f"{p1} and {p2} are not members of Compound {self}."
+                    )
+
                 pid_1 = -1
                 pid_2 = -1
-                index = 1 #openbabel indices start at 1
-                dist = con_temp[1]*10.0 #convert to angstroms
+                index = 1  # openbabel indices start at 1
+                dist = con_temp[1] * 10.0  # convert to angstroms
                 # obenbabel uses angstroms, not nm,
                 # scale distance by 10.0
-                #indices_temp=[(0,0),dist*10.0]
+                # indices_temp=[(0,0),dist*10.0]
                 for particle in self.particles():
                     if id(p1) == id(particle):
                         pid_1 = index
                     if id(p2) == id(particle):
                         pid_2 = index
-                    index +=1
+                    index += 1
                 if pid_1 == pid_2:
-                     raise MBuildError(f"Cannot add constraint between a particle and itself")
+                    raise MBuildError(
+                        f"Cannot add constraint between a particle and itself"
+                    )
                 else:
-                    #indices_temp[0] = (pid_1, pid_2)
-                    #constraint_by_id.append(indices_temp)
+                    # indices_temp[0] = (pid_1, pid_2)
+                    # constraint_by_id.append(indices_temp)
                     ob_constraints.AddDistanceConstraint(pid_1, pid_2, dist)
-        
+
         if fixed_compounds is not None:
             # check the dimensions of the array
             # so that a user passed a 1D array corresponding to only a single Compound
@@ -2396,7 +2422,7 @@ class Compound(object):
             # since Compounds are iterable, we do not need to do anything if .shape == 0,
             # i.e., only a single Compound passed instead of a list of Compounds
             temp1 = np.array(fixed_compounds)
-            
+
             shape = len(temp1.shape)
             if shape == 1:
                 if len(fixed_compounds) == 2:
@@ -2416,31 +2442,37 @@ class Compound(object):
                             check0 = isinstance(fixed_temp[1][0], bool)
                             check1 = isinstance(fixed_temp[1][1], bool)
                             check2 = isinstance(fixed_temp[1][2], bool)
-                            if  check0 and check1 and check2:
-                                dims = [fixed_temp[1][0],fixed_temp[1][1],fixed_temp[1][2]]
+                            if check0 and check1 and check2:
+                                dims = [
+                                    fixed_temp[1][0],
+                                    fixed_temp[1][1],
+                                    fixed_temp[1][2],
+                                ]
                             else:
-                                raise MBuildError(f"Expected bool values for which directions are fixed."
-                                                   f"Found instead {str(type(fixed_temp[1][0]))}, "
-                                                   f"{str(type(fixed_temp[1][1]))}, "
-                                                   f"{str(type(fixed_temp[1][2]))}."
-                                                  )
+                                raise MBuildError(
+                                    f"Expected bool values for which directions are fixed."
+                                    f"Found instead {str(type(fixed_temp[1][0]))}, "
+                                    f"{str(type(fixed_temp[1][1]))}, "
+                                    f"{str(type(fixed_temp[1][2]))}."
+                                )
                         else:
-                            raise MBuildError("Expected tuple or list of length 3 to set"
-                                             "which dimensions to fix motion, "
-                                             f"{str(len(fixed_temp[1]))} found."
-                                              )
-                    #if the list is defined as [[compound1],[compound2]]
+                            raise MBuildError(
+                                "Expected tuple or list of length 3 to set"
+                                "which dimensions to fix motion, "
+                                f"{str(len(fixed_temp[1]))} found."
+                            )
+                    # if the list is defined as [[compound1],[compound2]]
                     elif len(fixed_temp) == 1:
                         p1 = fixed_temp[0]
                         dims = [True, True, True]
                 else:
                     p1 = fixed_temp
                     dims = [True, True, True]
-                
+
                 all_true = False
                 if dims[0] == dims[1] == dims[2] == True:
                     all_true = True
-                    
+
                 p1_in_compound = False
                 for successor in self.successors():
                     if id(p1) == id(successor):
@@ -2449,7 +2481,9 @@ class Compound(object):
                     p1_in_compound = True
 
                 if p1_in_compound == False:
-                    raise MBuildError(f"{p1} is not a member of Compound {self}.")
+                    raise MBuildError(
+                        f"{p1} is not a member of Compound {self}."
+                    )
 
                 if len(p1.children) == 0:
                     index = 1
@@ -2464,7 +2498,7 @@ class Compound(object):
                                 ob_constraints.AddAtomYConstraint(pid)
                             elif dims[2] == True:
                                 ob_constraints.AddAtomZConstraint(pid)
-                        index +=1
+                        index += 1
                 else:
                     for successor in p1.successors():
                         index = 1
@@ -2479,12 +2513,11 @@ class Compound(object):
                                     ob_constraints.AddAtomYConstraint(pid)
                                 elif dims[2] == True:
                                     ob_constraints.AddAtomZConstraint(pid)
-                            index +=1
+                            index += 1
 
-    
         if ignore_compounds is not None:
             temp1 = np.array(ignore_compounds)
-            if  len(temp1.shape) == 2:
+            if len(temp1.shape) == 2:
                 ignore_compounds = list(temp1.reshape(-1))
             for ignore in ignore_compounds:
                 p1 = ignore
@@ -2495,8 +2528,10 @@ class Compound(object):
                 if id(p1) == id(self):
                     p1_in_compound = True
                 if p1_in_compound == False:
-                    raise MBuildError(f"{p1} is not a member of Compound {self}.")
-                
+                    raise MBuildError(
+                        f"{p1} is not a member of Compound {self}."
+                    )
+
                 if len(p1.children) == 0:
                     index = 1
                     for particle in self.particles():
@@ -2504,7 +2539,7 @@ class Compound(object):
                             pid = index
                             ob_constraints.AddIgnore(pid)
 
-                        index +=1
+                        index += 1
                 else:
                     for successor in p1.successors():
                         index = 1
@@ -2512,8 +2547,8 @@ class Compound(object):
                             if id(successor) == id(particle):
                                 pid = index
                                 ob_constraints.AddIgnore(pid)
-                            index +=1
-                            
+                            index += 1
+
         obConversion = openbabel.OBConversion()
         obConversion.SetInAndOutFormats("mol2", "pdb")
         mol = openbabel.OBMol()
@@ -2533,8 +2568,12 @@ class Compound(object):
             "Please refer to the documentation to find the appropriate "
             f"citations for Open Babel and the {forcefield} force field"
         )
-        
-        if distance_constraints is not None or fixed_compounds is not None or ignore_compounds:
+
+        if (
+            distance_constraints is not None
+            or fixed_compounds is not None
+            or ignore_compounds
+        ):
             ob_constraints.SetFactor(constraint_factor)
             if ff.Setup(mol, ob_constraints) == 0:
                 raise MBuildError(
