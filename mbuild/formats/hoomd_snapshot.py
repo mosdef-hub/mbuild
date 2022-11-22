@@ -157,7 +157,7 @@ def to_hoomdsnapshot(
     The Parmed.Structure values are divided by the reference values
 
     Examples:
-        To convert the energy units from kcal/mol to kj/mol: 
+        To convert the energy units from kcal/mol to kj/mol:
             use ref_energy = 0.2390057 (kcal/kj)
         To convert the distance units from Angstrom to nm:
             use ref_distance = 10 (angstroms/nm)
