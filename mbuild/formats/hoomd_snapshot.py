@@ -142,7 +142,7 @@ def to_hoomdsnapshot(
     Note about units
     ----------------
     This method operates on a Parmed.Structure object where the units used
-    differ from those used in mBuild and Foyer, which may have used
+    differ from those used in mBuild and Foyer, which may have been used
     when creating the typed Parmed.Structure.
 
     The default units used when writing out the HOOMD Snapshot are:

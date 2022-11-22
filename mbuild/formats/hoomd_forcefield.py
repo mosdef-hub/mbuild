@@ -75,7 +75,7 @@ def create_hoomd_forcefield(
     Note about units
     ----------------
     This method operates on a Parmed.Structure object where the units used
-    differ from those used in mBuild and Foyer, which may have used
+    differ from those used in mBuild and Foyer, which may have been used
     when creating the typed Parmed.Structure.
 
     The default units used when writing out the HOOMD Snapshot are:
@@ -84,7 +84,7 @@ def create_hoomd_forcefield(
     Energy (kcal/mol)
 
     If you wish to convert this unit system to another, you can use the
-    reference parameters (ref_distance, ref_mass, ref_energy)
+    reference parameters (ref_distance, ref_mass, ref_energy).
     The values used here should be expected to convert from the Parmed
     Structure units (above) to your desired units.
 
