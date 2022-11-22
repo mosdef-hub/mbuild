@@ -87,8 +87,9 @@ def create_hoomd_forcefield(
     reference parameters (ref_distance, ref_mass, ref_energy).
     The values used here should be expected to convert from the Parmed
     Structure units (above) to your desired units.
+    The Parmed.Structure values are divided by the reference values.
 
-    Examples: The Parmed.Structure values are divided by the reference values
+    Examples:
         To convert the enregy units from kcal/mol to kj/mol:
             use ref_energy = 0.2390057 (kcal/kj)
         To convert the distance units from Angstrom to nm:

@@ -133,11 +133,11 @@ def to_hoomdsnapshot(
     ReferenceValues : namedtuple
         Values used in scaling
 
-        Note
-        -----
-        This method does not create hoomd forcefield objects, and
-        the snapshot returned does not store the forcefield parameters.
-        See mbuild.formts.hoomd_forcefield.create_hoomd_forcefield()
+    Note
+    -----
+    This method does not create hoomd forcefield objects, and
+    the snapshot returned does not store the forcefield parameters.
+    See mbuild.formts.hoomd_forcefield.create_hoomd_forcefield()
 
     Note about units
     ----------------
@@ -154,14 +154,17 @@ def to_hoomdsnapshot(
     reference parameters (ref_distance, ref_mass, ref_energy)
     The values used here should be expected to convert from the Parmed
     Structure units (above) to your desired units.
+    The Parmed.Structure values are divided by the reference values
 
-    Examples: The Parmed.Structure values are divided by the reference values
+    Examples:
+        To convert the energy units from kcal/mol to kj/mol: 
             use ref_energy = 0.2390057 (kcal/kj)
         To convert the distance units from Angstrom to nm:
             use ref_distance = 10 (angstroms/nm)
 
     You can also use the auto_scale parameter to convert distance, energy
     and mass to a reduced (unitless) system.
+
     """
     if not isinstance(structure, (Compound, pmd.Structure)):
         raise ValueError(
