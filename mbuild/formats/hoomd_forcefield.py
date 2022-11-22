@@ -70,9 +70,33 @@ def create_hoomd_forcefield(
     ----
     If you pass a non-parametrized pmd.Structure, you will not have
     angle, dihedral, or force field information. You may be better off
-    creating a hoomd.Snapshot
-    Reference units should be expected to convert parmed Structure units :
-        angstroms, kcal/mol, and daltons
+    creating a hoomd.Snapshot.
+
+    Note about units
+    ----------------
+    This method operates on a Parmed.Structure object where the units used
+    differ from those used in mBuild and Foyer, which may have used
+    when creating the typed Parmed.Structure.
+
+    The default units used when writing out the HOOMD Snapshot are:
+    Distance (Angstrom)
+    Mass (Dalton)
+    Energy (kcal/mol)
+
+    If you wish to convert this unit system to another, you can use the
+    reference parameters (ref_distance, ref_mass, ref_energy)
+    The values used here should be expected to convert from the Parmed
+    Structure units (above) to your desired units.
+
+    Examples: The Parmed.Structure values are divided by the reference values
+        To convert the enregy units from kcal/mol to kj/mol:
+            use ref_energy = 0.2390057 (kcal/kj)
+        To convert the distance units from Angstrom to nm:
+            use ref_distance = 10 (angstroms/nm)
+
+    You can also use the auto_scale parameter to convert distance, energy
+    and mass to a reduced (unitless) system.
+
     """
     if isinstance(structure, mb.Compound):
         raise ValueError(
