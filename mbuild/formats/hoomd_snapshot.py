@@ -107,7 +107,7 @@ def to_hoomdsnapshot(
     ref_mass : float, optional, default=1.0
         Reference mass for unit conversion (from Dalton)
     ref_energy : float, optional, default=1.0
-        Reference energy for unit conversion (from kcal/mol) 
+        Reference energy for unit conversion (from kcal/mol)
     rigid_bodies : list of int, optional, default=None
         List of rigid body information. An integer value is required for
         each atom corresponding to the index of the rigid body the particle
@@ -132,12 +132,12 @@ def to_hoomdsnapshot(
     hoomd_snapshot : hoomd.Snapshot
     ReferenceValues : namedtuple
         Values used in scaling
-	
-	Note
-	-----
-	This method does not create hoomd forcefield objects, and
-	the snapshot returned does not store the forcefield parameters.
-	See mbuild.formts.hoomd_forcefield.create_hoomd_forcefield()
+
+        Note
+        -----
+        This method does not create hoomd forcefield objects, and
+        the snapshot returned does not store the forcefield parameters.
+        See mbuild.formts.hoomd_forcefield.create_hoomd_forcefield()
 
     Note about units
     ----------------
