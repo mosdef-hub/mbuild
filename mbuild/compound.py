@@ -2351,7 +2351,7 @@ class Compound(object):
 
         if distance_constraints is not None:
             # check the dimensions of the array
-            # so that a user passed a 1D array corresponding to only a the
+            # so that a user passed a 1D array corresponding to only the
             # tuple for the pair and the distance, it doesn't try to
             # loop over the list
 
