@@ -2287,7 +2287,7 @@ class Compound(object):
             An individual compound or list of Compounds whose underlying particles
             will have their positions fixed and not interact with other atoms via
             the specified force field during the energy minimization process.
-            Note, a restraining potential used and thus absolute position may vary
+            Note, a restraining potential is used and thus absolute position may vary
             as a result of the energy minimization process.
             Interactions of these ignored atoms can  be specified by the user,
             e.g., by explicitly setting a distance constraint.
