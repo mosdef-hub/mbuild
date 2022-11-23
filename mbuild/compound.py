@@ -2280,7 +2280,7 @@ class Compound(object):
             Position fixing will apply to all Particles (i.e., atoms) that exist
             in the Compound and to particles in any subsequent sub-Compounds.
             By default x,y, and z position is fixed. This can be toggled by instead
-            passing a list containing the Compound and an list or tuple of bool values
+            passing a list containing the Compound and a list or tuple of bool values
             corresponding to x,y and z; e.g., [Compound, (True, True, False)]
             will fix the x and y position but allow z to be free.
         ignore_compounds: Compound, optional, default=None
