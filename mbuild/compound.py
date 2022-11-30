@@ -2374,12 +2374,14 @@ class Compound(object):
                     raise MBuildError(
                         f"Constraints must correspond to individual atoms in Compounds."
                     )
-                
+
                 for part in [p1, p2]:
-                    if id(part) not in list(map(lambda x: id(x), self.successors())):
+                    if id(part) not in list(
+                        map(lambda x: id(x), self.successors())
+                    ):
                         raise MBuildError(
-                                        f"{part} is not a member of Compound {self}."
-                                    )
+                            f"{part} is not a member of Compound {self}."
+                        )
 
                 pid_1 = -1
                 pid_2 = -1
@@ -2427,7 +2429,9 @@ class Compound(object):
                     # if the list is length two
                     # we will validate that 3 bool values have been passed
                     if len(fixed_temp) == 2:
-                        if isinstance(fixed_temp[1], list) or isinstance(fixed_temp[1], tuple):
+                        if isinstance(fixed_temp[1], list) or isinstance(
+                            fixed_temp[1], tuple
+                        ):
                             if len(fixed_temp[1]) == 3:
                                 p1 = fixed_temp[0]
                                 check0 = isinstance(fixed_temp[1][0], bool)
@@ -2468,12 +2472,14 @@ class Compound(object):
                 all_true = False
                 if dims[0] == dims[1] == dims[2] == True:
                     all_true = True
-                
+
                 if id(p1) != id(self):
-                    if id(p1) not in list(map(lambda x: id(x), self.successors() )):
+                    if id(p1) not in list(
+                        map(lambda x: id(x), self.successors())
+                    ):
                         raise MBuildError(
-                                        f"{p1} is not a member of Compound {self}."
-                                        )
+                            f"{p1} is not a member of Compound {self}."
+                        )
 
                 if len(p1.children) == 0:
                     index = 1
@@ -2513,11 +2519,12 @@ class Compound(object):
             for ignore in ignore_compounds:
                 p1 = ignore
                 if id(p1) != id(self):
-                    if id(p1) not in list(map(lambda x: id(x), self.successors())):
+                    if id(p1) not in list(
+                        map(lambda x: id(x), self.successors())
+                    ):
                         raise MBuildError(
-                                    f"{p1} is not a member of Compound {self}."
-                                    )
-
+                            f"{p1} is not a member of Compound {self}."
+                        )
 
                 if len(p1.children) == 0:
                     index = 1

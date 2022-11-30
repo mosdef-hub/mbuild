@@ -1370,7 +1370,7 @@ class TestCompound(BaseTest):
             fixed_compounds=octane, shift_com=False, constraint_factor=1e6
         )
         assert np.allclose(octane.pos, old_com, rtol=1e-2, atol=1e-2)
-        
+
         # primarily focus on checking inputs are parsed correctly
         octane.energy_minimize(fixed_compounds=[octane])
         octane.energy_minimize(fixed_compounds=carbon_end)
@@ -1379,7 +1379,7 @@ class TestCompound(BaseTest):
         octane.energy_minimize(
             fixed_compounds=[methyl_end0, (True, True, True)]
         )
-        
+
         octane.energy_minimize(
             fixed_compounds=[methyl_end0, (True, True, False)]
         )
@@ -1415,15 +1415,11 @@ class TestCompound(BaseTest):
                 fixed_compounds=[methyl_end0, [True, False, False, False]]
             )
         with pytest.raises(MBuildError):
-            octane.energy_minimize(
-                fixed_compounds=[methyl_end0, (True, False)]
-            )
-                
+            octane.energy_minimize(fixed_compounds=[methyl_end0, (True, False)])
+
         with pytest.raises(MBuildError):
-            octane.energy_minimize(
-                fixed_compounds=[methyl_end0, (True)]
-            )
-        
+            octane.energy_minimize(fixed_compounds=[methyl_end0, (True)])
+
         with pytest.raises(MBuildError):
             octane.energy_minimize(
                 fixed_compounds=[methyl_end0, ("True", True, True)]
@@ -1456,6 +1452,7 @@ class TestCompound(BaseTest):
             octane.energy_minimize(
                 fixed_compounds=[methyl_end0, (123.0, 231, "True")]
             )
+
     @pytest.mark.skipif(
         not has_openbabel, reason="Open Babel package not installed"
     )
