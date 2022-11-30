@@ -2022,6 +2022,8 @@ class Compound(object):
            (2001) J. Comput. Chem. 22, 1229-1242
 
         """
+        # TODO: Update mbuild tutorials to provide overview of new features
+        #   Preliminary tutorials: https://github.com/chrisiacovella/mbuild_energy_minimization
         com = self.pos
         anchor_in_compound = False
         if anchor is not None:
@@ -2350,11 +2352,12 @@ class Compound(object):
         ob_constraints = openbabel.OBFFConstraints()
 
         if distance_constraints is not None:
-            # check the dimensions of the array
-            # so that a user passed a 1D array corresponding to only the
-            # tuple for the pair and the distance, it doesn't try to
-            # loop over the list
-
+            # check the dimensions of the array so that if a user passes
+            # a single constraint as a 1-D array,
+            # i.e., [(p1,p2), 2.0]  rather than [[(p1,p2), 2.0]],
+            # the for loop doesn't try to loop over the elements in the constraint
+            # as if they were each a constraint.
+            # if it is 1-d, just add it to a list.
             temp1 = np.array(distance_constraints)
             if len(temp1.shape) == 1:
                 distance_constraints = [distance_constraints]
@@ -2371,26 +2374,12 @@ class Compound(object):
                     raise MBuildError(
                         f"Constraints must correspond to individual atoms in Compounds."
                     )
-
-                p1_in_compound = False
-                p2_in_compound = False
-                for successor in self.successors():
-                    if id(p1) == id(successor):
-                        p1_in_compound = True
-                    if id(p2) == id(successor):
-                        p2_in_compound = True
-                if p1_in_compound == False and p2_in_compound == True:
-                    raise MBuildError(
-                        f"{p1} is not a member of Compound {self}."
-                    )
-                elif p1_in_compound == True and p2_in_compound == False:
-                    raise MBuildError(
-                        f"{p2} is not a member of Compound {self}."
-                    )
-                elif p1_in_compound == False and p2_in_compound == False:
-                    raise MBuildError(
-                        f"{p1} and {p2} are not members of Compound {self}."
-                    )
+                
+                for part in [p1, p2]:
+                    if id(part) not in list(map(lambda x: id(x), self.successors())):
+                        raise MBuildError(
+                                        f"{part} is not a member of Compound {self}."
+                                    )
 
                 pid_1 = -1
                 pid_2 = -1
@@ -2415,20 +2404,21 @@ class Compound(object):
                     ob_constraints.AddDistanceConstraint(pid_1, pid_2, dist)
 
         if fixed_compounds is not None:
-            # check the dimensions of the array
-            # so that a user passed a 1D array corresponding to only a single Compound
-            # and bool values for dimensions to fix, we don't accidentally try to loop over
-            # the bool entry as if it were other Compounds
-            # since Compounds are iterable, we do not need to do anything if .shape == 0,
-            # i.e., only a single Compound passed instead of a list of Compounds
+            # check the dimensions of the array so that if user passes a 1D array
+            # corresponding to only a single Compound (and associated bool values for dimensions to fix),
+            # the code doesn't accidentally try to loop over the bool entry as if it were other Compounds
+            # as that will obviously cause an error.
             temp1 = np.array(fixed_compounds)
 
             shape = len(temp1.shape)
             if shape == 1:
                 if len(fixed_compounds) == 2:
-                    # At this point, we only want to see if the second element in the list
-                    # is a Compound. If it is a Compound we will do nothing
-                    # other checking of this second elementy will be performed later
+                    # At this point in the code, we only want to see if the second element in the list
+                    # is a Compound. If it is a Compound we don't need to santize the input.
+                    # If it is not a Compound, (e.g., if the list passed is of the form  [Compound, [True, true,True]],
+                    # we will just put this entry into a list so we can properly loop.
+                    # Other checking of this second, non-Compound element will be performed later to ensure
+                    # it contains 3 bool values.
                     if isinstance(fixed_compounds[1], Compound) == False:
                         fixed_compounds = [fixed_compounds]
 
@@ -2437,29 +2427,35 @@ class Compound(object):
                     # if the list is length two
                     # we will validate that 3 bool values have been passed
                     if len(fixed_temp) == 2:
-                        if len(fixed_temp[1]) == 3:
-                            p1 = fixed_temp[0]
-                            check0 = isinstance(fixed_temp[1][0], bool)
-                            check1 = isinstance(fixed_temp[1][1], bool)
-                            check2 = isinstance(fixed_temp[1][2], bool)
-                            if check0 and check1 and check2:
-                                dims = [
-                                    fixed_temp[1][0],
-                                    fixed_temp[1][1],
-                                    fixed_temp[1][2],
-                                ]
+                        if isinstance(fixed_temp[1], list) or isinstance(fixed_temp[1], tuple):
+                            if len(fixed_temp[1]) == 3:
+                                p1 = fixed_temp[0]
+                                check0 = isinstance(fixed_temp[1][0], bool)
+                                check1 = isinstance(fixed_temp[1][1], bool)
+                                check2 = isinstance(fixed_temp[1][2], bool)
+                                if check0 and check1 and check2:
+                                    dims = [
+                                        fixed_temp[1][0],
+                                        fixed_temp[1][1],
+                                        fixed_temp[1][2],
+                                    ]
+                                else:
+                                    raise MBuildError(
+                                        f"Expected bool values for which directions are fixed."
+                                        f"Found instead {type(fixed_temp[1][0])}, "
+                                        f"{fixed_temp[1][1]}, "
+                                        f"{fixed_temp[1][2]}."
+                                    )
                             else:
                                 raise MBuildError(
-                                    f"Expected bool values for which directions are fixed."
-                                    f"Found instead {str(type(fixed_temp[1][0]))}, "
-                                    f"{str(type(fixed_temp[1][1]))}, "
-                                    f"{str(type(fixed_temp[1][2]))}."
+                                    "Expected tuple or list of length 3 to set"
+                                    "which dimensions to fix motion, "
+                                    f"{len(fixed_temp[1])} found."
                                 )
                         else:
                             raise MBuildError(
                                 "Expected tuple or list of length 3 to set"
-                                "which dimensions to fix motion, "
-                                f"{str(len(fixed_temp[1]))} found."
+                                "which dimensions to fix motion. "
                             )
                     # if the list is defined as [[compound1],[compound2]]
                     elif len(fixed_temp) == 1:
@@ -2472,18 +2468,12 @@ class Compound(object):
                 all_true = False
                 if dims[0] == dims[1] == dims[2] == True:
                     all_true = True
-
-                p1_in_compound = False
-                for successor in self.successors():
-                    if id(p1) == id(successor):
-                        p1_in_compound = True
-                if id(p1) == id(self):
-                    p1_in_compound = True
-
-                if p1_in_compound == False:
-                    raise MBuildError(
-                        f"{p1} is not a member of Compound {self}."
-                    )
+                
+                if id(p1) != id(self):
+                    if id(p1) not in list(map(lambda x: id(x), self.successors() )):
+                        raise MBuildError(
+                                        f"{p1} is not a member of Compound {self}."
+                                        )
 
                 if len(p1.children) == 0:
                     index = 1
@@ -2492,12 +2482,13 @@ class Compound(object):
                             pid = index
                             if all_true == True:
                                 ob_constraints.AddAtomConstraint(pid)
-                            elif dims[0] == True:
-                                ob_constraints.AddAtomXConstraint(pid)
-                            elif dims[1] == True:
-                                ob_constraints.AddAtomYConstraint(pid)
-                            elif dims[2] == True:
-                                ob_constraints.AddAtomZConstraint(pid)
+                            else:
+                                if dims[0] == True:
+                                    ob_constraints.AddAtomXConstraint(pid)
+                                if dims[1] == True:
+                                    ob_constraints.AddAtomYConstraint(pid)
+                                if dims[2] == True:
+                                    ob_constraints.AddAtomZConstraint(pid)
                         index += 1
                 else:
                     for successor in p1.successors():
@@ -2521,16 +2512,12 @@ class Compound(object):
                 ignore_compounds = list(temp1.reshape(-1))
             for ignore in ignore_compounds:
                 p1 = ignore
-                p1_in_compound = False
-                for successor in self.successors():
-                    if id(p1) == id(successor):
-                        p1_in_compound = True
-                if id(p1) == id(self):
-                    p1_in_compound = True
-                if p1_in_compound == False:
-                    raise MBuildError(
-                        f"{p1} is not a member of Compound {self}."
-                    )
+                if id(p1) != id(self):
+                    if id(p1) not in list(map(lambda x: id(x), self.successors())):
+                        raise MBuildError(
+                                    f"{p1} is not a member of Compound {self}."
+                                    )
+
 
                 if len(p1.children) == 0:
                     index = 1
