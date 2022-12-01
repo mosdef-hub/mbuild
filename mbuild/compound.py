@@ -2348,6 +2348,13 @@ class Compound(object):
                                 particle, particle.name
                             )
                         )
+        # Create a dict containing particle id and associated index to speed up looping
+        particle_idx = {id(particle): idx for idx, particle in enumerate(self.particles())}
+        # A dict containing all compounds contained in self used to check to ensure we are applying
+        # constraints to compounds that are part of the Compound we are wishing to minimize
+        successors_idx = {id(compound): idx for idx, compound in enumerate(self.successors())}
+
+
         # initialize constraints
         ob_constraints = openbabel.OBFFConstraints()
 
@@ -2376,32 +2383,17 @@ class Compound(object):
                     )
                 
                 for part in [p1, p2]:
-                    if id(part) not in list(map(lambda x: id(x), self.successors())):
+                    if id(part) not in particle_idx:
                         raise MBuildError(
                                         f"{part} is not a member of Compound {self}."
                                     )
 
-                pid_1 = -1
-                pid_2 = -1
-                index = 1  # openbabel indices start at 1
-                dist = con_temp[1] * 10.0  # convert to angstroms
-                # obenbabel uses angstroms, not nm,
-                # scale distance by 10.0
-                # indices_temp=[(0,0),dist*10.0]
-                for particle in self.particles():
-                    if id(p1) == id(particle):
-                        pid_1 = index
-                    if id(p2) == id(particle):
-                        pid_2 = index
-                    index += 1
-                if pid_1 == pid_2:
-                    raise MBuildError(
-                        f"Cannot add constraint between a particle and itself"
-                    )
-                else:
-                    # indices_temp[0] = (pid_1, pid_2)
-                    # constraint_by_id.append(indices_temp)
-                    ob_constraints.AddDistanceConstraint(pid_1, pid_2, dist)
+
+                pid_1 = particle_idx[id(p1)]+1 # openbabel indices start at 1
+                pid_2 = particle_idx[id(p2)]+1 #openbabel indices start at 1
+                dist = con_temp[1] * 10.0  # obenbabel uses angstroms, not nm, convert to angstroms
+            
+                ob_constraints.AddDistanceConstraint(pid_1, pid_2, dist)
 
         if fixed_compounds is not None:
             # check the dimensions of the array so that if user passes a 1D array
@@ -2469,42 +2461,36 @@ class Compound(object):
                 if dims[0] == dims[1] == dims[2] == True:
                     all_true = True
                 
-                if id(p1) != id(self):
-                    if id(p1) not in list(map(lambda x: id(x), self.successors() )):
+                if id(p1) != id(self) and id(p1) not in successors_idx:  # don't check successors if we simply tell it to fix the entire Compound
+                    if id(p1) not in successors_idx:
                         raise MBuildError(
                                         f"{p1} is not a member of Compound {self}."
                                         )
 
                 if len(p1.children) == 0:
-                    index = 1
-                    for particle in self.particles():
-                        if id(p1) == id(particle):
-                            pid = index
-                            if all_true == True:
-                                ob_constraints.AddAtomConstraint(pid)
-                            else:
-                                if dims[0] == True:
-                                    ob_constraints.AddAtomXConstraint(pid)
-                                if dims[1] == True:
-                                    ob_constraints.AddAtomYConstraint(pid)
-                                if dims[2] == True:
-                                    ob_constraints.AddAtomZConstraint(pid)
-                        index += 1
+                    pid = particle_idx[id(p1)]+1 # openbabel indices start at 1
+                    
+                    if all_true == True:
+                        ob_constraints.AddAtomConstraint(pid)
+                    else:
+                        if dims[0] == True:
+                            ob_constraints.AddAtomXConstraint(pid)
+                        if dims[1] == True:
+                            ob_constraints.AddAtomYConstraint(pid)
+                        if dims[2] == True:
+                            ob_constraints.AddAtomZConstraint(pid)
                 else:
-                    for successor in p1.successors():
-                        index = 1
-                        for particle in self.particles():
-                            if id(successor) == id(particle):
-                                pid = index
-                                if all_true == True:
-                                    ob_constraints.AddAtomConstraint(pid)
-                                elif dims[0] == True:
-                                    ob_constraints.AddAtomXConstraint(pid)
-                                elif dims[1] == True:
-                                    ob_constraints.AddAtomYConstraint(pid)
-                                elif dims[2] == True:
-                                    ob_constraints.AddAtomZConstraint(pid)
-                            index += 1
+                    for particle in p1.particles():
+                        pid = particle_idx[id(particle)]+1 # openbabel indices start at 1
+                    
+                        if all_true == True:
+                            ob_constraints.AddAtomConstraint(pid)
+                        elif dims[0] == True:
+                            ob_constraints.AddAtomXConstraint(pid)
+                        elif dims[1] == True:
+                            ob_constraints.AddAtomYConstraint(pid)
+                        elif dims[2] == True:
+                            ob_constraints.AddAtomZConstraint(pid)
 
         if ignore_compounds is not None:
             temp1 = np.array(ignore_compounds)
@@ -2513,28 +2499,20 @@ class Compound(object):
             for ignore in ignore_compounds:
                 p1 = ignore
                 if id(p1) != id(self):
-                    if id(p1) not in list(map(lambda x: id(x), self.successors())):
+                    if id(p1) not in successors_idx:
                         raise MBuildError(
                                     f"{p1} is not a member of Compound {self}."
                                     )
 
 
                 if len(p1.children) == 0:
-                    index = 1
-                    for particle in self.particles():
-                        if id(p1) == id(particle):
-                            pid = index
-                            ob_constraints.AddIgnore(pid)
+                    pid = particle_idx[id(p1)]+1 # openbabel indices start at 1
+                    ob_constraints.AddIgnore(pid)
 
-                        index += 1
                 else:
-                    for successor in p1.successors():
-                        index = 1
-                        for particle in self.particles():
-                            if id(successor) == id(particle):
-                                pid = index
-                                ob_constraints.AddIgnore(pid)
-                            index += 1
+                    for particle in p1.particles():
+                        pid = particle_idx[id(particle)]+1 # openbabel indices start at 1
+                        ob_constraints.AddIgnore(pid)
 
         obConversion = openbabel.OBConversion()
         obConversion.SetInAndOutFormats("mol2", "pdb")
