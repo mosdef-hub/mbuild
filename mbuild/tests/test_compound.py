@@ -1370,7 +1370,7 @@ class TestCompound(BaseTest):
             fixed_compounds=octane, shift_com=False, constraint_factor=1e6
         )
         assert np.allclose(octane.pos, old_com, rtol=1e-2, atol=1e-2)
-        
+
         # primarily focus on checking inputs are parsed correctly
         octane.energy_minimize(fixed_compounds=[octane])
         octane.energy_minimize(fixed_compounds=carbon_end)
@@ -1379,7 +1379,7 @@ class TestCompound(BaseTest):
         octane.energy_minimize(
             fixed_compounds=[methyl_end0, (True, True, True)]
         )
-        
+
         octane.energy_minimize(
             fixed_compounds=[methyl_end0, (True, True, False)]
         )
@@ -1437,6 +1437,7 @@ class TestCompound(BaseTest):
             )
         
         with pytest.raises(Exception):
+
             octane.energy_minimize(
                 fixed_compounds=[methyl_end0, ("True", True, True)]
             )
@@ -1468,6 +1469,7 @@ class TestCompound(BaseTest):
             octane.energy_minimize(
                 fixed_compounds=[methyl_end0, (123.0, 231, "True")]
             )
+
     @pytest.mark.skipif(
         not has_openbabel, reason="Open Babel package not installed"
     )
@@ -2009,12 +2011,14 @@ class TestCompound(BaseTest):
         h2.pos = [0.07590747, -0.00182889, -0.00211742]
         container = mb.Compound([h1, h2])
         distances = container.maxs - container.mins
-        with pytest.raises(
-            MBuildError, match=r"The vectors to define the box are co\-linear\,"
-        ):
-            container.get_boundingbox()
+        # Behavior changed due to new co-linear tolerance define in Compound.get_boundingbox()
+        assert container.get_boundingbox()
+
         distance_list = [val for val in distances]
-        distance_list = [val + 1.0 for val in distance_list]
+        for i in range(len(distance_list)):
+            if np.isclose(distance_list[i], 0, atol=1e-2):
+                distance_list[i] = 0.1
+        distance_list = [val + 1 for val in distance_list]
         np.testing.assert_almost_equal(
             container.get_boundingbox(pad_box=1.0).lengths,
             distance_list,
@@ -2022,6 +2026,9 @@ class TestCompound(BaseTest):
         )
 
         distance_list = [val for val in distances]
+        for i in range(len(distance_list)):
+            if np.isclose(distance_list[i], 0, atol=1e-2):
+                distance_list[i] = 0.1
         distance_list[0] = distance_list[0] + 1.0
         distance_list[1] = distance_list[1] + 2.0
         distance_list[2] = distance_list[2] + 3.0

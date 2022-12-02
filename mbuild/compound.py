@@ -1450,7 +1450,8 @@ class Compound(object):
         has_dimension = [True, True, True]
         if not is_one_particle:
             missing_dimensions = np.all(
-                np.isclose(self.xyz, self.xyz[0, :]), axis=0
+                np.isclose(self.xyz, self.xyz[0, :], atol=1e-2),
+                axis=0,
             )
             for i, truthy in enumerate(missing_dimensions):
                 has_dimension[i] = not truthy
@@ -1468,7 +1469,7 @@ class Compound(object):
         # handle any missing dimensions (planar molecules)
         for i, dim in enumerate(has_dimension):
             if not dim:
-                vecs[i][i] = 1.0
+                vecs[i][i] = 0.1
 
         if pad_box is not None:
             if isinstance(pad_box, (int, float, str, Sequence)):
@@ -2452,7 +2453,7 @@ class Compound(object):
                 else:
                     p1 = fixed_temp
                     dims = [True, True, True]
-                
+   
                 all_true = all(dims)
                 
                 self._check_openbabel_constraints([p1], successors_list)
@@ -2493,7 +2494,6 @@ class Compound(object):
 
             for ignore in ignore_compounds:
                 p1 = ignore
-
                 if len(p1.children) == 0:
                     pid = particle_idx[id(p1)]+1 # openbabel indices start at 1
                     ob_constraints.AddIgnore(pid)
