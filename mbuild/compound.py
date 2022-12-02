@@ -2240,30 +2240,27 @@ class Compound(object):
         reporter.report(
             simulation, simulation.context.getState(getPositions=True)
         )
-    def _check_openbabel_constraints(self,
+
+    def _check_openbabel_constraints(
+        self,
         particle_list,
         successors_list,
         check_if_particle=False,
-        ):
-        """Provide routines commonly used to check constraint inputs
-        """
-    
-    
+    ):
+        """Provide routines commonly used to check constraint inputs"""
+
         for part in particle_list:
             if not isinstance(part, Compound):
-                raise MBuildError(
-                                f"{part} is not a Compound."
-                            )
+                raise MBuildError(f"{part} is not a Compound.")
             if id(part) != id(self) and id(part) not in successors_list:
-                raise MBuildError(
-                                f"{part} is not a member of Compound {self}."
-                            )
-            
+                raise MBuildError(f"{part} is not a member of Compound {self}.")
+
             if check_if_particle:
                 if len(part.children) != 0:
                     raise MBuildError(
                         f"{part} does not correspond to an individual particle."
                     )
+
     def _energy_minimize_openbabel(
         self,
         tmp_dir,
@@ -2373,12 +2370,13 @@ class Compound(object):
                             )
                         )
         # Create a dict containing particle id and associated index to speed up looping
-        particle_idx = {id(particle): idx for idx, particle in enumerate(self.particles())}
-        
+        particle_idx = {
+            id(particle): idx for idx, particle in enumerate(self.particles())
+        }
+
         # A list containing all Compounds ids contained in self. Will be used to check if
         # compounds refered to in the constrains are actually in the Compound we are minimizing.
         successors_list = [id(compound) for compound in self.successors()]
-
 
         # initialize constraints
         ob_constraints = openbabel.OBFFConstraints()
@@ -2393,25 +2391,29 @@ class Compound(object):
             for con_temp in distance_constraints:
                 p1 = con_temp[0][0]
                 p2 = con_temp[0][1]
-                
-                self._check_openbabel_constraints([p1,p2], successors_list, check_if_particle=True)
+
+                self._check_openbabel_constraints(
+                    [p1, p2], successors_list, check_if_particle=True
+                )
                 if id(p1) == id(p2):
                     raise MBuildError(
                         f"Cannot create a constraint between a Particle and itself: {p1} {p2} ."
                     )
 
-                pid_1 = particle_idx[id(p1)]+1 # openbabel indices start at 1
-                pid_2 = particle_idx[id(p2)]+1 #openbabel indices start at 1
-                dist = con_temp[1] * 10.0  # obenbabel uses angstroms, not nm, convert to angstroms
-            
+                pid_1 = particle_idx[id(p1)] + 1  # openbabel indices start at 1
+                pid_2 = particle_idx[id(p2)] + 1  # openbabel indices start at 1
+                dist = (
+                    con_temp[1] * 10.0
+                )  # obenbabel uses angstroms, not nm, convert to angstroms
+
                 ob_constraints.AddDistanceConstraint(pid_1, pid_2, dist)
 
         if fixed_compounds is not None:
-            #if we are just passed a single Compound, wrap it into
+            # if we are just passed a single Compound, wrap it into
             # and array so we can just use the same looping code
             if isinstance(fixed_compounds, Compound):
                 fixed_compounds = [fixed_compounds]
-                
+
             # if fixed_compounds is a 1-d array and it is of length 2, we need to determine whether it is
             # a list of two Compounds or if fixed_compounds[1] should correspond to the directions to constrain
             if len(np.array(fixed_compounds).shape) == 1:
@@ -2419,31 +2421,34 @@ class Compound(object):
                     if not isinstance(fixed_compounds[1], Compound):
                         # if it is not a list of two Compounds, make a 2d array so we can use the same looping code
                         fixed_compounds = [fixed_compounds]
-            
-           
 
             for fixed_temp in fixed_compounds:
-                #if an individual entry is a list, validate the input
+                # if an individual entry is a list, validate the input
                 if isinstance(fixed_temp, list):
                     if len(fixed_temp) == 2:
-                    
-                        msg1 = ("Expected tuple or list of length 3 to set"
-                                    "which dimensions to fix motion.")
+
+                        msg1 = (
+                            "Expected tuple or list of length 3 to set"
+                            "which dimensions to fix motion."
+                        )
                         assert isinstance(fixed_temp[1], (list, tuple)), msg1
 
-                        msg2 = ("Expected tuple or list of length 3 to set"
-                                    "which dimensions to fix motion, "
-                                    f"{len(fixed_temp[1])} found.")
+                        msg2 = (
+                            "Expected tuple or list of length 3 to set"
+                            "which dimensions to fix motion, "
+                            f"{len(fixed_temp[1])} found."
+                        )
                         assert len(fixed_temp[1]) == 3, msg2
-                        
+
                         dims = [dim for dim in fixed_temp[1]]
-                        msg3 = ("Expected bool values for which directions are fixed."
-                                f"Found instead {dims}.")
+                        msg3 = (
+                            "Expected bool values for which directions are fixed."
+                            f"Found instead {dims}."
+                        )
                         assert all(isinstance(dim, bool) for dim in dims), msg3
-                        
+
                         p1 = fixed_temp[0]
 
-                      
                     # if fixed_compounds is defined as [[Compound],[Compound]],
                     # fixed_temp will be a list of length 1
                     elif len(fixed_temp) == 1:
@@ -2453,14 +2458,16 @@ class Compound(object):
                 else:
                     p1 = fixed_temp
                     dims = [True, True, True]
-   
+
                 all_true = all(dims)
-                
+
                 self._check_openbabel_constraints([p1], successors_list)
 
                 if len(p1.children) == 0:
-                    pid = particle_idx[id(p1)]+1 # openbabel indices start at 1
-                    
+                    pid = (
+                        particle_idx[id(p1)] + 1
+                    )  # openbabel indices start at 1
+
                     if all_true == True:
                         ob_constraints.AddAtomConstraint(pid)
                     else:
@@ -2472,8 +2479,10 @@ class Compound(object):
                             ob_constraints.AddAtomZConstraint(pid)
                 else:
                     for particle in p1.particles():
-                        pid = particle_idx[id(particle)]+1 # openbabel indices start at 1
-                    
+                        pid = (
+                            particle_idx[id(particle)] + 1
+                        )  # openbabel indices start at 1
+
                         if all_true == True:
                             ob_constraints.AddAtomConstraint(pid)
                         elif dims[0] == True:
@@ -2495,12 +2504,16 @@ class Compound(object):
             for ignore in ignore_compounds:
                 p1 = ignore
                 if len(p1.children) == 0:
-                    pid = particle_idx[id(p1)]+1 # openbabel indices start at 1
+                    pid = (
+                        particle_idx[id(p1)] + 1
+                    )  # openbabel indices start at 1
                     ob_constraints.AddIgnore(pid)
 
                 else:
                     for particle in p1.particles():
-                        pid = particle_idx[id(particle)]+1 # openbabel indices start at 1
+                        pid = (
+                            particle_idx[id(particle)] + 1
+                        )  # openbabel indices start at 1
                         ob_constraints.AddIgnore(pid)
 
         obConversion = openbabel.OBConversion()
