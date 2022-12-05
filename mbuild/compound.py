@@ -1850,7 +1850,14 @@ class Compound(object):
             particle.pos += (np.random.rand(3) - 0.5) / 100
         self._update_port_locations(xyz_init)
 
-    def energy_minimize(self, forcefield="UFF", steps=1000, **kwargs):
+    def energy_minimize(
+        self,
+        forcefield="UFF",
+        steps=1000,
+        shift_com=True,
+        anchor=None,
+        **kwargs,
+    ):
         """Perform an energy minimization on a Compound.
 
         Default behavior utilizes `Open Babel <http://openbabel.org/docs/dev/>`_
@@ -1880,6 +1887,13 @@ class Compound(object):
             XML file with valid SMARTS strings. Please refer to `OpenMM docs
             <http://docs.openmm.org/7.0.0/userguide/application.html#creating-force-fields>`_
             for more information.
+        shift_com : bool, optional, default=True
+            If True, the energy-minimized Compound is translated such that the
+            center-of-mass is unchanged relative to the initial configuration.
+        anchor : Compound, optional, default=None
+            Translates the energy-minimized Compound such that the
+            position of the anchor Compound is unchanged relative to the
+            initial configuration.
 
 
         Other Parameters
@@ -1888,6 +1902,41 @@ class Compound(object):
             The energy minimization algorithm.  Valid options are 'steep', 'cg',
             and 'md', corresponding to steepest descent, conjugate gradient, and
             equilibrium molecular dynamics respectively.
+            For _energy_minimize_openbabel
+        fixed_compounds : Compound, optional, default=None
+            An individual Compound or list of Compounds that will have their
+            position fixed during energy minimization. Note, positions are fixed
+            using a restraining potential and thus may change slightly.
+            Position fixing will apply to all Particles (i.e., atoms) that exist
+            in the Compound and to particles in any subsequent sub-Compounds.
+            By default x,y, and z position is fixed. This can be toggled by instead
+            passing a list containing the Compound and an list or tuple of bool values
+            corresponding to x,y and z; e.g., [Compound, (True, True, False)]
+            will fix the x and y position but allow z to be free.
+            For _energy_minimize_openbabel
+        ignore_compounds: Compound, optional, default=None
+            An individual compound or list of Compounds whose underlying particles
+            will have their positions fixed and not interact with other atoms via
+            the specified force field during the energy minimization process.
+            Note, a restraining potential used and thus absolute position may vary
+            as a result of the energy minimization process.
+            Interactions of these ignored atoms can  be specified by the user,
+            e.g., by explicitly setting a distance constraint.
+            For _energy_minimize_openbabel
+        distance_constraints: list, optional, default=None
+            A list containing a pair of Compounds as a tuple or list and
+            a float value specifying the target distance between the two Compounds, e.g.,:
+            [(compound1, compound2), distance].
+            To specify more than one constraint, pass constraints as a 2D list, e.g.,:
+            [ [(compound1, compound2), distance1],  [(compound3, compound4), distance2] ].
+            Note, Compounds specified here must represent individual point particles.
+            For _energy_minimize_openbabel
+        constraint_factor: float, optional, default=50000.0
+            Harmonic springs are used to constrain distances and fix atom positions, where
+            the resulting energy associated with the spring is scaled by the
+            constraint_factor; the energy of this spring is considering during the minimization.
+            As such, very small values of the constraint_factor may result in an energy
+            minimized state that does not adequately restrain the distance/position of atoms.
             For _energy_minimize_openbabel
         scale_bonds : float, optional, default=1
             Scales the bond force constant (1 is completely on).
@@ -1974,6 +2023,23 @@ class Compound(object):
            (2001) J. Comput. Chem. 22, 1229-1242
 
         """
+        # TODO: Update mbuild tutorials to provide overview of new features
+        #   Preliminary tutorials: https://github.com/chrisiacovella/mbuild_energy_minimization
+        com = self.pos
+        anchor_in_compound = False
+        if anchor is not None:
+            # check to see if the anchor exists
+            # in the Compound to be energy minimized
+            for succesor in self.successors():
+                if id(anchor) == id(succesor):
+                    anchor_in_compound = True
+                    anchor_pos_old = anchor.pos
+
+            if anchor_in_compound == False:
+                raise MBuildError(
+                    f"Anchor: {anchor} is not part of the Compound: {self}"
+                    "that you are trying to energy minimize."
+                )
         tmp_dir = tempfile.mkdtemp()
         original = clone(self)
         self._kick()
@@ -2002,6 +2068,13 @@ class Compound(object):
             )
 
         self.update_coordinates(os.path.join(tmp_dir, "minimized.pdb"))
+        if shift_com:
+            self.translate_to(com)
+
+        if anchor_in_compound == True:
+            anchor_pos_new = anchor.pos
+            delta = anchor_pos_old - anchor_pos_new
+            self.translate(delta)
 
     def _energy_minimize_openmm(
         self,
@@ -2168,8 +2241,36 @@ class Compound(object):
             simulation, simulation.context.getState(getPositions=True)
         )
 
+    def _check_openbabel_constraints(
+        self,
+        particle_list,
+        successors_list,
+        check_if_particle=False,
+    ):
+        """Provide routines commonly used to check constraint inputs"""
+
+        for part in particle_list:
+            if not isinstance(part, Compound):
+                raise MBuildError(f"{part} is not a Compound.")
+            if id(part) != id(self) and id(part) not in successors_list:
+                raise MBuildError(f"{part} is not a member of Compound {self}.")
+
+            if check_if_particle:
+                if len(part.children) != 0:
+                    raise MBuildError(
+                        f"{part} does not correspond to an individual particle."
+                    )
+
     def _energy_minimize_openbabel(
-        self, tmp_dir, steps=1000, algorithm="cg", forcefield="UFF"
+        self,
+        tmp_dir,
+        steps=1000,
+        algorithm="cg",
+        forcefield="UFF",
+        constraint_factor=50000.0,
+        distance_constraints=None,
+        fixed_compounds=None,
+        ignore_compounds=None,
     ):
         """Perform an energy minimization on a Compound.
 
@@ -2192,9 +2293,41 @@ class Compound(object):
         forcefield : str, optional, default='UFF'
             The generic force field to apply to the Compound for minimization.
             Valid options are 'MMFF94', 'MMFF94s', ''UFF', 'GAFF', 'Ghemical'.
-            Please refer to the Open Babel documentation (http://open-babel.
-            readthedocs.io/en/latest/Forcefields/Overview.html) when considering
-            your choice of force field.
+            Please refer to the Open Babel documentation
+            (http://open-babel.readthedocs.io/en/latest/Forcefields/Overview.html)
+            when considering your choice of force field.
+        fixed_compounds : Compound, optional, default=None
+            An individual Compound or list of Compounds that will have their
+            position fixed during energy minimization. Note, positions are fixed
+            using a restraining potential and thus may change slightly.
+            Position fixing will apply to all Particles (i.e., atoms) that exist
+            in the Compound and to particles in any subsequent sub-Compounds.
+            By default x,y, and z position is fixed. This can be toggled by instead
+            passing a list containing the Compound and a list or tuple of bool values
+            corresponding to x,y and z; e.g., [Compound, (True, True, False)]
+            will fix the x and y position but allow z to be free.
+        ignore_compounds: Compound, optional, default=None
+            An individual compound or list of Compounds whose underlying particles
+            will have their positions fixed and not interact with other atoms via
+            the specified force field during the energy minimization process.
+            Note, a restraining potential is used and thus absolute position may vary
+            as a result of the energy minimization process.
+            Interactions of these ignored atoms can  be specified by the user,
+            e.g., by explicitly setting a distance constraint.
+        distance_constraints: list, optional, default=None
+            A list containing a pair of Compounds as a tuple or list and
+            a float value specifying the target distance between the two Compounds, e.g.,:
+            [(compound1, compound2), distance].
+            To specify more than one constraint, pass constraints as a 2D list, e.g.,:
+            [ [(compound1, compound2), distance1],  [(compound3, compound4), distance2] ].
+            Note, Compounds specified here must represent individual point particles.
+        constraint_factor: float, optional, default=50000.0
+            Harmonic springs are used to constrain distances and fix atom positions, where
+            the resulting energy associated with the spring is scaled by the
+            constraint_factor; the energy of this spring is considering during the minimization.
+            As such, very small values of the constraint_factor may result in an energy
+            minimized state that does not adequately restrain the distance/position of atom(s)e.
+
 
         References
         ----------
@@ -2236,6 +2369,153 @@ class Compound(object):
                                 particle, particle.name
                             )
                         )
+        # Create a dict containing particle id and associated index to speed up looping
+        particle_idx = {
+            id(particle): idx for idx, particle in enumerate(self.particles())
+        }
+
+        # A list containing all Compounds ids contained in self. Will be used to check if
+        # compounds refered to in the constrains are actually in the Compound we are minimizing.
+        successors_list = [id(compound) for compound in self.successors()]
+
+        # initialize constraints
+        ob_constraints = openbabel.OBFFConstraints()
+
+        if distance_constraints is not None:
+            # if a user passes single constraint as a 1-D array,
+            # i.e., [(p1,p2), 2.0]  rather than [[(p1,p2), 2.0]],
+            # just add it to a list so we can use the same looping code
+            if len(np.array(distance_constraints).shape) == 1:
+                distance_constraints = [distance_constraints]
+
+            for con_temp in distance_constraints:
+                p1 = con_temp[0][0]
+                p2 = con_temp[0][1]
+
+                self._check_openbabel_constraints(
+                    [p1, p2], successors_list, check_if_particle=True
+                )
+                if id(p1) == id(p2):
+                    raise MBuildError(
+                        f"Cannot create a constraint between a Particle and itself: {p1} {p2} ."
+                    )
+
+                pid_1 = particle_idx[id(p1)] + 1  # openbabel indices start at 1
+                pid_2 = particle_idx[id(p2)] + 1  # openbabel indices start at 1
+                dist = (
+                    con_temp[1] * 10.0
+                )  # obenbabel uses angstroms, not nm, convert to angstroms
+
+                ob_constraints.AddDistanceConstraint(pid_1, pid_2, dist)
+
+        if fixed_compounds is not None:
+            # if we are just passed a single Compound, wrap it into
+            # and array so we can just use the same looping code
+            if isinstance(fixed_compounds, Compound):
+                fixed_compounds = [fixed_compounds]
+
+            # if fixed_compounds is a 1-d array and it is of length 2, we need to determine whether it is
+            # a list of two Compounds or if fixed_compounds[1] should correspond to the directions to constrain
+            if len(np.array(fixed_compounds).shape) == 1:
+                if len(fixed_compounds) == 2:
+                    if not isinstance(fixed_compounds[1], Compound):
+                        # if it is not a list of two Compounds, make a 2d array so we can use the same looping code
+                        fixed_compounds = [fixed_compounds]
+
+            for fixed_temp in fixed_compounds:
+                # if an individual entry is a list, validate the input
+                if isinstance(fixed_temp, list):
+                    if len(fixed_temp) == 2:
+
+                        msg1 = (
+                            "Expected tuple or list of length 3 to set"
+                            "which dimensions to fix motion."
+                        )
+                        assert isinstance(fixed_temp[1], (list, tuple)), msg1
+
+                        msg2 = (
+                            "Expected tuple or list of length 3 to set"
+                            "which dimensions to fix motion, "
+                            f"{len(fixed_temp[1])} found."
+                        )
+                        assert len(fixed_temp[1]) == 3, msg2
+
+                        dims = [dim for dim in fixed_temp[1]]
+                        msg3 = (
+                            "Expected bool values for which directions are fixed."
+                            f"Found instead {dims}."
+                        )
+                        assert all(isinstance(dim, bool) for dim in dims), msg3
+
+                        p1 = fixed_temp[0]
+
+                    # if fixed_compounds is defined as [[Compound],[Compound]],
+                    # fixed_temp will be a list of length 1
+                    elif len(fixed_temp) == 1:
+                        p1 = fixed_temp[0]
+                        dims = [True, True, True]
+
+                else:
+                    p1 = fixed_temp
+                    dims = [True, True, True]
+
+                all_true = all(dims)
+
+                self._check_openbabel_constraints([p1], successors_list)
+
+                if len(p1.children) == 0:
+                    pid = (
+                        particle_idx[id(p1)] + 1
+                    )  # openbabel indices start at 1
+
+                    if all_true == True:
+                        ob_constraints.AddAtomConstraint(pid)
+                    else:
+                        if dims[0] == True:
+                            ob_constraints.AddAtomXConstraint(pid)
+                        if dims[1] == True:
+                            ob_constraints.AddAtomYConstraint(pid)
+                        if dims[2] == True:
+                            ob_constraints.AddAtomZConstraint(pid)
+                else:
+                    for particle in p1.particles():
+                        pid = (
+                            particle_idx[id(particle)] + 1
+                        )  # openbabel indices start at 1
+
+                        if all_true == True:
+                            ob_constraints.AddAtomConstraint(pid)
+                        else:
+                            if dims[0] == True:
+                                ob_constraints.AddAtomXConstraint(pid)
+                            if dims[1] == True:
+                                ob_constraints.AddAtomYConstraint(pid)
+                            if dims[2] == True:
+                                ob_constraints.AddAtomZConstraint(pid)
+
+        if ignore_compounds is not None:
+            temp1 = np.array(ignore_compounds)
+            if len(temp1.shape) == 2:
+                ignore_compounds = list(temp1.reshape(-1))
+
+            # Since the ignore_compounds can only be passed as a list
+            # we can check the whole list at once before looping over it
+            self._check_openbabel_constraints(ignore_compounds, successors_list)
+
+            for ignore in ignore_compounds:
+                p1 = ignore
+                if len(p1.children) == 0:
+                    pid = (
+                        particle_idx[id(p1)] + 1
+                    )  # openbabel indices start at 1
+                    ob_constraints.AddIgnore(pid)
+
+                else:
+                    for particle in p1.particles():
+                        pid = (
+                            particle_idx[id(particle)] + 1
+                        )  # openbabel indices start at 1
+                        ob_constraints.AddIgnore(pid)
 
         obConversion = openbabel.OBConversion()
         obConversion.SetInAndOutFormats("mol2", "pdb")
@@ -2256,7 +2536,23 @@ class Compound(object):
             "Please refer to the documentation to find the appropriate "
             f"citations for Open Babel and the {forcefield} force field"
         )
-        ff.Setup(mol)
+
+        if (
+            distance_constraints is not None
+            or fixed_compounds is not None
+            or ignore_compounds is not None
+        ):
+            ob_constraints.SetFactor(constraint_factor)
+            if ff.Setup(mol, ob_constraints) == 0:
+                raise MBuildError(
+                    "Could not setup forcefield for OpenBabel Optimization."
+                )
+        else:
+            if ff.Setup(mol) == 0:
+                raise MBuildError(
+                    "Could not setup forcefield for OpenBabel Optimization."
+                )
+
         if algorithm == "steep":
             ff.SteepestDescent(steps)
         elif algorithm == "md":
