@@ -2485,12 +2485,13 @@ class Compound(object):
 
                         if all_true == True:
                             ob_constraints.AddAtomConstraint(pid)
-                        elif dims[0] == True:
-                            ob_constraints.AddAtomXConstraint(pid)
-                        elif dims[1] == True:
-                            ob_constraints.AddAtomYConstraint(pid)
-                        elif dims[2] == True:
-                            ob_constraints.AddAtomZConstraint(pid)
+                        else:
+                            if dims[0] == True:
+                                ob_constraints.AddAtomXConstraint(pid)
+                            if dims[1] == True:
+                                ob_constraints.AddAtomYConstraint(pid)
+                            if dims[2] == True:
+                                ob_constraints.AddAtomZConstraint(pid)
 
         if ignore_compounds is not None:
             temp1 = np.array(ignore_compounds)
