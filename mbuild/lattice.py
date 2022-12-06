@@ -1,9 +1,12 @@
 """mBuild lattice module for working with crystalline systems."""
 import itertools as it
 import pathlib
+import warnings
 from collections import defaultdict
 
 import numpy as np
+from ele.element import element_from_name, element_from_symbol
+from ele.exceptions import ElementError
 
 import mbuild as mb
 from mbuild.utils.io import import_
@@ -631,9 +634,19 @@ class Lattice(object):
         ret_lattice = mb.Compound()
 
         # Create (clone) a mb.Compound for the newly generate positions
+        elementsSet = set()
         if compound_dict is None:
             for key_id, all_pos in cell.items():
-                particle = mb.Compound(name=key_id, pos=[0, 0, 0])
+                for idElement in [element_from_symbol, element_from_name]:
+                    try:  # populate element info if it's there
+                        element = idElement(key_id)
+                        elementsSet.add(element)
+                        break
+                    except ElementError:
+                        element = None
+                particle = mb.Compound(
+                    name=key_id, pos=[0, 0, 0], element=element
+                )
                 for pos in all_pos:
                     particle_to_add = mb.clone(particle)
                     particle_to_add.translate_to(list(pos))
@@ -654,6 +667,12 @@ class Lattice(object):
                             key_id, err_type
                         )
                     )
+        # Raise warnings about assumed elements
+        for element in elementsSet:
+            warnings.warn(
+                f"Element assumed from cif file to be {element}.", UserWarning
+            )
+
         # Create mbuild.box
         ret_lattice.box = mb.Box(
             lengths=[a * x, b * y, c * z], angles=self.angles

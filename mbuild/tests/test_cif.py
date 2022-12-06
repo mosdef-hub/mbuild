@@ -170,3 +170,14 @@ class TestCif(BaseTest):
         assert np.all(np.isclose(manual_lengths, list(periodic_box.lengths)))
         assert np.all(np.isclose(manual_angles, list(periodic_box.angles)))
         assert len(periodic_boxed_molecule.children) == manual_num_atoms
+        assert None not in list(
+            map(lambda x: x.element, periodic_boxed_molecule.particles())
+        )
+
+    def test_cif_raise_warnings(self):
+        with pytest.warns(
+            UserWarning,
+            match=r"Element assumed from cif file to be Element: silicon, symbol: Si, atomic number: 14, mass: 28.085.",
+        ):
+            lattice_cif = load_cif(file_or_path=get_fn("ETV_triclinic.cif"))
+            periodic_boxed_molecule = lattice_cif.populate(x=1, y=1, z=1)
