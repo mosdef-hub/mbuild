@@ -139,8 +139,8 @@ def to_hoomdsnapshot(
     See mbuild.formats.hoomd_forcefield.create_hoomd_forcefield()
 
     About units: This method operates on a Parmed.Structure object
-	where the units used differ from those used in mBuild and Foyer
-	which may have been used when creating the typed Parmed.Structure.
+        where the units used differ from those used in mBuild and Foyer
+        which may have been used when creating the typed Parmed.Structure.
 
     The default units used when writing out the HOOMD Snapshot are:
     Distance (Angstrom)

@@ -87,7 +87,7 @@ def create_hoomd_forcefield(
     The values used here should be expected to convert from the Parmed
     Structure units (above) to your desired units.
     The Parmed.Structure values are divided by the reference values.
-    
+
     If you wish to used a reduced unit system, set auto_scale = True.
     When auto_scale is True, the reference parameters won't be used.
 
