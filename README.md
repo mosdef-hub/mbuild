@@ -17,7 +17,7 @@ complex molecular systems for molecular dynamics simulations.
 
 To learn more, get started or contribute, check out our [website](http://mbuild.mosdef.org).
 
-#### mBuild within the MoSDeF Ecosystem
+### mBuild within the MoSDeF Ecosystem
 <p align="center">
   <img src="docs/images/mosdef.svg?raw=true" alt="mBuild within the MoSDeF Ecosystem" width="500" height="500"/>
 </p>
@@ -30,6 +30,46 @@ we also recommend users to follow the [TRUE](https://www.tandfonline.com/doi/ful
 (Transparent, Reproducible, Usable-by-others, and Extensible) standard, which is a set of common
 practices meant to improve the reproducibility of computational simulation research.
 
+Installation
+------------
+For full, detailed instructions, refer to the [documentation for installation](https://mbuild.mosdef.org/en/stable/getting_started/installation/installation_toc.html)
+
+#### `conda` installation quickstart
+`mBuild` is available on `conda` and can be installed as:
+```bash
+conda install -c conda-forge mbuild
+```
+
+#### Installing from source
+
+Dependencies of mBuild are listed in the files ``environment.yml`` (lightweight environment specification containing minimal dependencies) and ``environment-dev.yml`` (comprehensive environment specification including optional and testing packages for developers).
+The ``mbuild`` or ``mbuild-dev`` conda environments can be created with
+
+
+```.. code-block:: bash
+git clone https://github.com/mosdef-hub/mbuild.git
+cd mbuild
+# for mbuild conda environment
+conda env create -f environment.yml
+conda activate mbuild
+
+# for mbuild-dev
+conda env create -f environment-dev.yml
+conda activate mbuild
+
+# install a non-editable version of mbuild
+pip install .
+```
+
+#### Install an editable version from source
+
+Once all dependencies have been installed and the ``conda`` environment has been created, the ``mBuild`` itself can be installed.
+
+``` code-block:: bash
+cd mbuild
+conda activate mbuild-dev # or mbuild depending on your installation
+pip install -e .
+```
 #### Quick Start with Docker
 To use `mbuild` in a jupyter-notebook that runs from a docker container with all the dependencies installed use the following command:
 
@@ -47,7 +87,7 @@ $ docker run -it --name mbuild mosdef/mbuild:latest
 
 To learn more about using `mBuild` with docker, please refer to the documentation [here](https://mbuild.mosdef.org/en/latest/docker.html).
 
-#### Tutorials
+### Tutorials
 
 *Interactive tutorials can be found here:*
 
@@ -74,7 +114,7 @@ pmpc_layer = PMPCLayer(chain_length=20, pattern=pattern, tile_x=3, tile_y=2)
 ```
 
 ![Zwitterionic brushes on beta-cristobalite substrate](docs/images/pmpc.png)
-#### Community Recipes
+### Community Recipes
 Use case-specific systems can be generated via mBuild recipes.
 Some users have graciously contributed recipes for particular systems, including:
 
@@ -83,7 +123,7 @@ Some users have graciously contributed recipes for particular systems, including
 * [Coarse-grained DNA](https://github.com/zijiewu3/mbuild_ONA)
 * [Lipid bilayers](https://github.com/uppittu11/mbuild_bilayer)
 
-#### Citing mBuild
+### Citing mBuild
 
 If you use this package, please cite [our paper](http://dx.doi.org/10.1007/978-981-10-1128-3_5
 ). The BibTeX reference is
@@ -98,7 +138,7 @@ If you use this package, please cite [our paper](http://dx.doi.org/10.1007/978-9
 }
 ```
 
-#### [![License](https://img.shields.io/badge/license-MIT-blue.svg)](http://opensource.org/licenses/MIT)
+### [![License](https://img.shields.io/badge/license-MIT-blue.svg)](http://opensource.org/licenses/MIT)
 
 Various sub-portions of this library may be independently distributed under
 different licenses. See those files for their specific terms.
