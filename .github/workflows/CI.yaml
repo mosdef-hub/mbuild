@@ -22,6 +22,7 @@ jobs:
         exclude:
           - os: windows-latest
             python-version: 3.8
+        fail-fast: false
     defaults:
       run:
         shell: bash -l {0}
