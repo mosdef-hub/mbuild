@@ -317,6 +317,7 @@ def write_lammpsdata(
             bond_types, unique_bond_types = _get_bond_types(
                 structure,
                 bonds,
+                unique_types,
                 sigma_conversion_factor,
                 epsilon_conversion_factor,
             )
@@ -324,6 +325,7 @@ def write_lammpsdata(
     if angles:
         angle_types, unique_angle_types = _get_angle_types(
             structure,
+            unique_types,
             use_urey_bradleys,
             sigma_conversion_factor,
             epsilon_conversion_factor,
@@ -332,12 +334,14 @@ def write_lammpsdata(
     if imp_dihedrals:
         (
             imp_dihedral_types,
+            unique_types,
             unique_imp_dihedral_types,
         ) = _get_improper_dihedral_types(structure, epsilon_conversion_factor)
 
     if dihedrals:
         dihedral_types, unique_dihedral_types = _get_dihedral_types(
             structure,
+            unique_types,
             use_rb_torsions,
             use_dihedrals,
             epsilon_conversion_factor,
@@ -622,6 +626,7 @@ def _check_minsmaxs(mins, maxs):
 def _get_bond_types(
     structure,
     bonds,
+    atom_types,
     sigma_conversion_factor,
     epsilon_conversion_factor,
     bond_precision=3,
@@ -651,9 +656,22 @@ def _get_bond_types(
             )
         )
     )
+
+    lx = len(atom_types)
+    bond_sets = [x[2] for _, x in unique_bond_types.items()]
+    ordered_bond_sets = [
+        (atom_types[x], atom_types[y])
+        for x in range(lx)
+        for y in range(x, lx)
+        if (atom_types[x], atom_types[y]) in bond_sets
+    ]
     unique_bond_types = OrderedDict(
-        [(y, x + 1) for x, y in unique_bond_types.items()]
+        [
+            (unique_bond_types[bond_sets.index(x)], i + 1)
+            for i, x in enumerate(ordered_bond_sets)
+        ]
     )
+
     bond_types = [
         unique_bond_types[
             (
@@ -675,6 +693,7 @@ def _get_bond_types(
 
 def _get_angle_types(
     structure,
+    atom_types,
     use_urey_bradleys,
     sigma_conversion_factor,
     epsilon_conversion_factor,
@@ -714,13 +733,6 @@ def _get_angle_types(
         unique_angle_types = OrderedDict(
             enumerate(OrderedSet(*charmm_angle_types))
         )
-        unique_angle_types = OrderedDict(
-            [(y, x + 1) for x, y in unique_angle_types.items()]
-        )
-        angle_types = [
-            unique_angle_types[ub_info] for ub_info in charmm_angle_types
-        ]
-
     else:
         unique_angle_types = OrderedDict(
             enumerate(
@@ -740,9 +752,30 @@ def _get_angle_types(
                 )
             )
         )
-        unique_angle_types = OrderedDict(
-            [(y, x + 1) for x, y in unique_angle_types.items()]
-        )
+
+    lx = len(atom_types)
+    angle_sets = [
+        (x[2], x[3][0], x[3][1]) for _, x in unique_angle_types.items()
+    ]
+    ordered_angle_sets = [
+        (atom_types[x], atom_types[y], atom_types[z])
+        for x in range(lx)
+        for y in range(lx)
+        for z in range(y, lx)
+        if (atom_types[x], atom_types[y], atom_types[z]) in angle_sets
+    ]
+    unique_angle_types = OrderedDict(
+        [
+            (unique_angle_types[angle_sets.index(x)], i + 1)
+            for i, x in enumerate(ordered_angle_sets)
+        ]
+    )
+
+    if use_urey_bradleys:
+        angle_types = [
+            unique_angle_types[ub_info] for ub_info in charmm_angle_types
+        ]
+    else:
         angle_types = [
             unique_angle_types[
                 (
@@ -763,6 +796,7 @@ def _get_angle_types(
 
 def _get_dihedral_types(
     structure,
+    atom_types,
     use_rb_torsions,
     use_dihedrals,
     epsilon_conversion_factor,
@@ -811,28 +845,6 @@ def _get_dihedral_types(
                 )
             )
         )
-        unique_dihedral_types = OrderedDict(
-            [(y, x + 1) for x, y in unique_dihedral_types.items()]
-        )
-        dihedral_types = [
-            unique_dihedral_types[
-                (
-                    round(dihedral.type.c0 * lj_unit, dihedral_precision),
-                    round(dihedral.type.c1 * lj_unit, dihedral_precision),
-                    round(dihedral.type.c2 * lj_unit, dihedral_precision),
-                    round(dihedral.type.c3 * lj_unit, dihedral_precision),
-                    round(dihedral.type.c4 * lj_unit, dihedral_precision),
-                    round(dihedral.type.c5 * lj_unit, dihedral_precision),
-                    round(dihedral.type.scee, 1),
-                    round(dihedral.type.scnb, 1),
-                    dihedral.atom1.type,
-                    dihedral.atom2.type,
-                    dihedral.atom3.type,
-                    dihedral.atom4.type,
-                )
-            ]
-            for dihedral in structure.rb_torsions
-        ]
     elif use_dihedrals:
         charmm_dihedrals = []
         structure.join_dihedrals()
@@ -861,9 +873,46 @@ def _get_dihedral_types(
         unique_dihedral_types = OrderedDict(
             enumerate(OrderedSet(*charmm_dihedrals))
         )
-        unique_dihedral_types = OrderedDict(
-            [(y, x + 1) for x, y in unique_dihedral_types.items()]
-        )
+
+    lx = len(atom_types)
+    dihedral_sets = [x[8:] for _, x in unique_dihedral_types.items()]
+    ordered_dihedral_sets = [
+        (atom_types[x], atom_types[y], atom_types[z], atom_types[w])
+        for x in range(lx)
+        for y in range(lx)
+        for z in range(lx)
+        for w in range(lx)
+        if (atom_types[x], atom_types[y], atom_types[z], atom_types[w])
+        in dihedral_sets
+    ]
+    unique_dihedral_types = OrderedDict(
+        [
+            (unique_dihedral_types[dihedral_sets.index(x)], i + 1)
+            for i, x in enumerate(ordered_dihedral_sets)
+        ]
+    )
+
+    if use_rb_torsions:
+        dihedral_types = [
+            unique_dihedral_types[
+                (
+                    round(dihedral.type.c0 * lj_unit, dihedral_precision),
+                    round(dihedral.type.c1 * lj_unit, dihedral_precision),
+                    round(dihedral.type.c2 * lj_unit, dihedral_precision),
+                    round(dihedral.type.c3 * lj_unit, dihedral_precision),
+                    round(dihedral.type.c4 * lj_unit, dihedral_precision),
+                    round(dihedral.type.c5 * lj_unit, dihedral_precision),
+                    round(dihedral.type.scee, 1),
+                    round(dihedral.type.scnb, 1),
+                    dihedral.atom1.type,
+                    dihedral.atom2.type,
+                    dihedral.atom3.type,
+                    dihedral.atom4.type,
+                )
+            ]
+            for dihedral in structure.rb_torsions
+        ]
+    elif use_dihedrals:
         dihedral_types = [
             unique_dihedral_types[dihedral_info]
             for dihedral_info in charmm_dihedrals
@@ -943,9 +992,11 @@ def _get_impropers(structure, epsilon_conversion_factor, improper_precision=3):
             )
         )
     )
+
     unique_improper_types = OrderedDict(
         [(y, x + 1) for x, y in unique_improper_types.items()]
     )
+
     improper_types = [
         unique_improper_types[
             (
