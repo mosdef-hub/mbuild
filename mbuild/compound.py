@@ -2951,8 +2951,9 @@ class Compound(object):
             checking against Compound.name.
         show_ports : boolean, optional, default=False
             Include all port atoms when converting to a `Structure`.
-        infer_residues : bool, optional, default=False
-            Attempt to assign residues based on names of children.
+        infer_residues : bool, optional, default=True
+            Attempt to assign residues based on names of children for the level
+            of compound hierarchy without a box definition.
 
         Returns
         -------

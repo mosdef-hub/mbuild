@@ -1123,7 +1123,7 @@ def to_parmed(
     title="",
     residues=None,
     show_ports=False,
-    infer_residues=False,
+    infer_residues=True,
 ):
     """Create a Parmed Structure from a Compound.
 
@@ -1143,8 +1143,9 @@ def to_parmed(
         against Compound.name.
     show_ports : boolean, optional, default=False
         Include all port atoms when converting to a `Structure`.
-    infer_residues : bool, optional, default=False
-        Attempt to assign residues based on names of children.
+    infer_residues : bool, optional, default=True
+        Attempt to assign residues based on names of children for the level
+        of compound hierarchy without a box definition.
 
     Returns
     -------
@@ -1155,14 +1156,44 @@ def to_parmed(
     --------
     parmed.structure.Structure : Details on the ParmEd Structure object
     """
+
+    def _pull_hierarchical_attrs(
+        compound,
+        target_attr="name",
+        hierarchical_attr="children",
+        target_attr_conditions={"_box": None},
+    ):
+        """List of attributes from children in an obscure hierarchy."""
+        value_list = []
+        if any(
+            [
+                getattr(compound, x) == y
+                for x, y in target_attr_conditions.items()
+            ]
+        ):
+            value_list.append(getattr(compound, target_attr))
+        else:
+            for child in getattr(compound, "children"):
+                value_list.extend(
+                    _pull_hierarchical_attrs(
+                        child,
+                        target_attr=target_attr,
+                        hierarchical_attr=hierarchical_attr,
+                        target_attr_conditions=target_attr_conditions,
+                    )
+                )
+
+        return value_list
+
     structure = pmd.Structure()
     structure.title = title if title else compound.name
     atom_mapping = {}  # For creating bonds below
     guessed_elements = set()
 
-    # Attempt to grab residue names based on names of children
+    # Attempt to grab residue names based on names of children for the first
+    # level of hierarchy without a box definition
     if not residues and infer_residues:
-        residues = list(set([child.name for child in compound.children]))
+        residues = _pull_hierarchical_attrs(compound)
 
     if isinstance(residues, str):
         residues = [residues]
