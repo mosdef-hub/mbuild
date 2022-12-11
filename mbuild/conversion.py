@@ -935,6 +935,7 @@ def save(
     residues=None,
     combining_rule="lorentz",
     foyer_kwargs=None,
+    parmed_kwargs=None,
     **kwargs,
 ):
     """Save the Compound to a file.
@@ -975,6 +976,8 @@ def save(
         geometric combining rules respectively.
     foyer_kwargs : dict, optional, default=None
         Keyword arguments to provide to `foyer.Forcefield.apply`.
+    parmed_kwargs : dict, optional, default=None
+        Keyword arguments to provide to :meth:`mbuild.Compound.to_parmed`
     **kwargs
         Depending on the file extension these will be passed to either
         `write_gsd`, `write_hoomdxml`, `write_lammpsdata`, `write_mcf`, or
@@ -1047,8 +1050,13 @@ def save(
     if os.path.exists(filename) and not overwrite:
         raise IOError("{0} exists; not overwriting".format(filename))
 
+    if not parmed_kwargs:
+        parmed_kwargs = {}
     structure = compound.to_parmed(
-        box=box, residues=residues, show_ports=show_ports
+        box=box,
+        residues=residues,
+        show_ports=show_ports,
+        **parmed_kwargs,
     )
     # Apply a force field with foyer if specified
     if forcefield_name or forcefield_files:

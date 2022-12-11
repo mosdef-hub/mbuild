@@ -5,6 +5,9 @@ test-output.xml
 # C extensions
 *.so
 
+# Tmp Files
+*.swp
+
 # Packages
 *.egg
 *.egg-info

@@ -2247,8 +2247,7 @@ class Compound(object):
         successors_list,
         check_if_particle=False,
     ):
-        """Provide routines commonly used to check constraint inputs"""
-
+        """Provide routines commonly used to check constraint inputs."""
         for part in particle_list:
             if not isinstance(part, Compound):
                 raise MBuildError(f"{part} is not a Compound.")
@@ -2580,6 +2579,7 @@ class Compound(object):
         residues=None,
         combining_rule="lorentz",
         foyer_kwargs=None,
+        parmed_kwargs=None,
         **kwargs,
     ):
         """Save the Compound to a file.
@@ -2624,6 +2624,14 @@ class Compound(object):
             `write_mcf`, or `parmed.Structure.save`.
             See `parmed structure documentation
             <https://parmed.github.io/ParmEd/html/structobj/parmed.structure.Structure.html#parmed.structure.Structure.save>`_
+        parmed_kwargs : dict, optional, default=None
+            Keyword arguments to provide to :meth:`mbuild.Compound.to_parmed`
+        **kwargs
+            Depending on the file extension these will be passed to either
+            `write_gsd`, `write_hoomdxml`, `write_lammpsdata`, `write_mcf`, or
+            `parmed.Structure.save`.
+            See https://parmed.github.io/ParmEd/html/structobj/parmed.structure.
+            Structure.html#parmed.structure.Structure.save
 
         Other Parameters
         ----------------
@@ -2678,6 +2686,7 @@ class Compound(object):
             residues,
             combining_rule,
             foyer_kwargs,
+            parmed_kwargs,
             **kwargs,
         )
 
