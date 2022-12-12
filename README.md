@@ -55,7 +55,7 @@ conda activate mbuild
 
 # for mbuild-dev
 conda env create -f environment-dev.yml
-conda activate mbuild
+conda activate mbuild-dev
 
 # install a non-editable version of mbuild
 pip install .
