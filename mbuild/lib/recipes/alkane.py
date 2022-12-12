@@ -64,7 +64,8 @@ class Alkane(mb.Compound):
                         )
                         self.add(chain["up"], "up", containment=False)
                 else:
-                    chain = CH2()
+                    chain = mb.recipes.Polymer(monomers=[CH2()])
+                    chain.build(2, add_hydrogens=False)
                     self.add(chain, "chain")
                     self.add(chain["down"], "down", containment=False)
                     self.add(chain["up"], "up", containment=False)
