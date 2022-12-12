@@ -1332,6 +1332,222 @@ class TestCompound(BaseTest):
     def test_energy_minimize(self, octane):
         octane.energy_minimize()
 
+    @pytest.mark.skipif(
+        not has_openbabel, reason="Open Babel package not installed"
+    )
+    def test_energy_minimize_shift_com(self, octane):
+        com_old = octane.pos
+        octane.energy_minimize()
+        # check to see if COM of energy minimized Compound
+        # has been shifted back to the original COM
+        assert np.allclose(com_old, octane.pos)
+
+    @pytest.mark.skipif(
+        not has_openbabel, reason="Open Babel package not installed"
+    )
+    def test_energy_minimize_shift_anchor(self, octane):
+        anchor_compound = octane.labels["chain"].labels["CH3"][0]
+        pos_old = anchor_compound.pos
+        octane.energy_minimize(anchor=anchor_compound)
+        # check to see if COM of the anchor Compound
+        # has been shifted back to the original COM
+        assert np.allclose(pos_old, anchor_compound.pos)
+
+    @pytest.mark.skipif(
+        not has_openbabel, reason="Open Babel package not installed"
+    )
+    def test_energy_minimize_fix_compounds(self, octane):
+        methyl_end0 = octane.labels["chain"].labels["CH3"][0]
+        methyl_end1 = octane.labels["chain"].labels["CH3"][1]
+        carbon_end = octane.labels["chain"].labels["CH3"][0].labels["C"][0]
+        not_in_compound = mb.Compound(name="H")
+
+        # fix the whole molecule and make sure positions are close
+        # given stochastic nature and use of restraining springs
+        # we need to have a pretty loose tolerance for checking
+        old_com = octane.pos
+        octane.energy_minimize(
+            fixed_compounds=octane, shift_com=False, constraint_factor=1e6
+        )
+        assert np.allclose(octane.pos, old_com, rtol=1e-2, atol=1e-2)
+
+        # primarily focus on checking inputs are parsed correctly
+        octane.energy_minimize(fixed_compounds=[octane])
+        octane.energy_minimize(fixed_compounds=carbon_end)
+        octane.energy_minimize(fixed_compounds=methyl_end0)
+        octane.energy_minimize(fixed_compounds=[methyl_end0])
+        octane.energy_minimize(
+            fixed_compounds=[methyl_end0, (True, True, True)]
+        )
+
+        octane.energy_minimize(
+            fixed_compounds=[methyl_end0, (True, True, False)]
+        )
+        octane.energy_minimize(
+            fixed_compounds=[methyl_end0, [True, True, False]]
+        )
+        octane.energy_minimize(
+            fixed_compounds=[methyl_end0, (True, False, False)]
+        )
+        octane.energy_minimize(
+            fixed_compounds=[methyl_end0, (False, False, False)]
+        )
+
+        octane.energy_minimize(fixed_compounds=[methyl_end0, methyl_end1])
+        octane.energy_minimize(fixed_compounds=[[methyl_end0], [methyl_end1]])
+        octane.energy_minimize(
+            fixed_compounds=[
+                [methyl_end0, (True, True, True)],
+                [methyl_end1, (True, True, True)],
+            ]
+        )
+
+        with pytest.raises(MBuildError):
+            octane.energy_minimize(fixed_compounds=not_in_compound)
+        with pytest.raises(MBuildError):
+            octane.energy_minimize(fixed_compounds=[not_in_compound])
+        with pytest.raises(MBuildError):
+            octane.energy_minimize(
+                fixed_compounds=[12323.3, (True, False, False)]
+            )
+        with pytest.raises(Exception):
+            octane.energy_minimize(
+                fixed_compounds=[methyl_end0, (True, False, False, False)]
+            )
+        with pytest.raises(Exception):
+            octane.energy_minimize(
+                fixed_compounds=[methyl_end0, True, False, False]
+            )
+        with pytest.raises(Exception):
+            octane.energy_minimize(fixed_compounds=[methyl_end0, True])
+        with pytest.raises(Exception):
+            octane.energy_minimize(
+                fixed_compounds=[methyl_end0, [True, False, False, False]]
+            )
+        with pytest.raises(Exception):
+            octane.energy_minimize(fixed_compounds=[methyl_end0, (True, False)])
+
+        with pytest.raises(Exception):
+            octane.energy_minimize(fixed_compounds=[methyl_end0, (True)])
+
+        with pytest.raises(Exception):
+
+            octane.energy_minimize(
+                fixed_compounds=[methyl_end0, ("True", True, True)]
+            )
+        with pytest.raises(Exception):
+            octane.energy_minimize(
+                fixed_compounds=[methyl_end0, (True, "True", True)]
+            )
+        with pytest.raises(Exception):
+            octane.energy_minimize(
+                fixed_compounds=[methyl_end0, (True, True, "True")]
+            )
+        with pytest.raises(Exception):
+            octane.energy_minimize(
+                fixed_compounds=[methyl_end0, ("True", True, "True")]
+            )
+        with pytest.raises(Exception):
+            octane.energy_minimize(
+                fixed_compounds=[methyl_end0, (True, "True", "True")]
+            )
+        with pytest.raises(Exception):
+            octane.energy_minimize(
+                fixed_compounds=[methyl_end0, ("True", "True", True)]
+            )
+        with pytest.raises(Exception):
+            octane.energy_minimize(
+                fixed_compounds=[methyl_end0, ("True", "True", "True")]
+            )
+        with pytest.raises(Exception):
+            octane.energy_minimize(
+                fixed_compounds=[methyl_end0, (123.0, 231, "True")]
+            )
+
+    @pytest.mark.skipif(
+        not has_openbabel, reason="Open Babel package not installed"
+    )
+    def test_energy_minimize_ignore_compounds(self, octane):
+        methyl_end0 = octane.labels["chain"].labels["CH3"][0]
+        methyl_end1 = octane.labels["chain"].labels["CH3"][1]
+        carbon_end = octane.labels["chain"].labels["CH3"][0].labels["C"][0]
+        not_in_compound = mb.Compound(name="H")
+
+        # fix the whole molecule and make sure positions are close
+        # given stochastic nature and use of restraining springs
+        # we need to have a pretty loose tolerance for checking
+        old_com = octane.pos
+        octane.energy_minimize(
+            ignore_compounds=octane, shift_com=False, constraint_factor=1e6
+        )
+        assert np.allclose(octane.pos, old_com, rtol=1e-2, atol=1e-2)
+
+        # primarily focus on checking inputs are parsed correctly
+        octane.energy_minimize(ignore_compounds=[octane])
+        octane.energy_minimize(ignore_compounds=carbon_end)
+        octane.energy_minimize(ignore_compounds=methyl_end0)
+        octane.energy_minimize(ignore_compounds=[methyl_end0])
+        octane.energy_minimize(ignore_compounds=[methyl_end0, methyl_end1])
+        octane.energy_minimize(ignore_compounds=[[methyl_end0], [methyl_end1]])
+
+        with pytest.raises(MBuildError):
+            octane.energy_minimize(ignore_compounds=not_in_compound)
+        with pytest.raises(MBuildError):
+            octane.energy_minimize(ignore_compounds=[1231, 123124])
+
+    @pytest.mark.skipif(
+        not has_openbabel, reason="Open Babel package not installed"
+    )
+    def test_energy_minimize_distance_constraints(self, octane):
+        methyl_end0 = octane.labels["chain"].labels["CH3"][0]
+        methyl_end1 = octane.labels["chain"].labels["CH3"][1]
+
+        carbon_end0 = octane.labels["chain"].labels["CH3"][0].labels["C"][0]
+        carbon_end1 = octane.labels["chain"].labels["CH3"][1].labels["C"][0]
+        h_end0 = octane.labels["chain"].labels["CH3"][0].labels["H"][0]
+
+        not_in_compound = mb.Compound(name="H")
+
+        # given stochastic nature and use of restraining springs
+        # we need to have a pretty loose tolerance for checking
+        octane.energy_minimize(
+            distance_constraints=[(carbon_end0, carbon_end1), 0.7],
+            constraint_factor=1e20,
+        )
+        assert np.allclose(
+            np.linalg.norm(carbon_end0.pos - carbon_end1.pos),
+            0.7,
+            rtol=1e-2,
+            atol=1e-2,
+        )
+
+        octane.energy_minimize(
+            distance_constraints=[[(carbon_end0, carbon_end1), 0.7]]
+        )
+        octane.energy_minimize(
+            distance_constraints=[
+                [(carbon_end0, carbon_end1), 0.7],
+                [(carbon_end0, h_end0), 0.1],
+            ]
+        )
+
+        with pytest.raises(MBuildError):
+            octane.energy_minimize(
+                distance_constraints=[(carbon_end0, not_in_compound), 0.7]
+            )
+        with pytest.raises(MBuildError):
+            octane.energy_minimize(
+                distance_constraints=[(carbon_end0, carbon_end0), 0.7]
+            )
+        with pytest.raises(MBuildError):
+            octane.energy_minimize(
+                distance_constraints=[(methyl_end0, carbon_end1), 0.7]
+            )
+        with pytest.raises(MBuildError):
+            octane.energy_minimize(
+                distance_constraints=[(methyl_end0, methyl_end1), 0.7]
+            )
+
     @pytest.mark.skipif(has_openbabel, reason="Open Babel package is installed")
     def test_energy_minimize_openbabel_warn(self, octane):
         with pytest.raises(MBuildError):
@@ -1789,12 +2005,14 @@ class TestCompound(BaseTest):
         h2.pos = [0.07590747, -0.00182889, -0.00211742]
         container = mb.Compound([h1, h2])
         distances = container.maxs - container.mins
-        with pytest.raises(
-            MBuildError, match=r"The vectors to define the box are co\-linear\,"
-        ):
-            container.get_boundingbox()
+        # Behavior changed due to new co-linear tolerance define in Compound.get_boundingbox()
+        assert container.get_boundingbox()
+
         distance_list = [val for val in distances]
-        distance_list = [val + 1.0 for val in distance_list]
+        for i in range(len(distance_list)):
+            if np.isclose(distance_list[i], 0, atol=1e-2):
+                distance_list[i] = 0.1
+        distance_list = [val + 1 for val in distance_list]
         np.testing.assert_almost_equal(
             container.get_boundingbox(pad_box=1.0).lengths,
             distance_list,
@@ -1802,6 +2020,9 @@ class TestCompound(BaseTest):
         )
 
         distance_list = [val for val in distances]
+        for i in range(len(distance_list)):
+            if np.isclose(distance_list[i], 0, atol=1e-2):
+                distance_list[i] = 0.1
         distance_list[0] = distance_list[0] + 1.0
         distance_list[1] = distance_list[1] + 2.0
         distance_list[2] = distance_list[2] + 3.0

@@ -230,7 +230,7 @@ def import_(module):
                 "release. Consider upgrading to 3.x."
             )
             warnings.warn(msg, DeprecationWarning)
-            return pybel
+            return openbabel
         except ModuleNotFoundError:
             pass
     try:
