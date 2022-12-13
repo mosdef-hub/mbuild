@@ -1,4 +1,5 @@
 import os
+import sys
 import time
 
 import numpy as np
@@ -780,9 +781,7 @@ class TestCompound(BaseTest):
         assert len(ethane.all_ports()) == len(original_ports)
         assert ethane.all_ports()[0] == original_ports[0]
 
-    @pytest.mark.skipif(
-        not has_openbabel, reason="Open Babel package not installed"
-    )
+    @pytest.mark.skipif(not has_openbabel, reason="Open Babel not installed")
     def test_reload(self):
         # Create a compound and write it to file.
         p3ht1 = mb.load("CCCCCCC1=C(SC(=C1)C)C", smiles=True, backend="pybel")
@@ -1323,17 +1322,16 @@ class TestCompound(BaseTest):
             assert B.charge == None
             assert container_charge == 1
 
+    @pytest.mark.skipif(not has_openbabel, reason="Open Babel not installed")
     @pytest.mark.skipif(
-        not has_openbabel, reason="Open Babel package not installed"
-    )
-    @pytest.mark.skipif(
-        not has_openbabel, reason="Open Babel package not installed"
+        "win" in sys.platform, reason="Unknown issue with Window's Open Babel "
     )
     def test_energy_minimize(self, octane):
         octane.energy_minimize()
 
+    @pytest.mark.skipif(not has_openbabel, reason="Open Babel not installed")
     @pytest.mark.skipif(
-        not has_openbabel, reason="Open Babel package not installed"
+        "win" in sys.platform, reason="Unknown issue with Window's Open Babel "
     )
     def test_energy_minimize_shift_com(self, octane):
         com_old = octane.pos
@@ -1342,8 +1340,9 @@ class TestCompound(BaseTest):
         # has been shifted back to the original COM
         assert np.allclose(com_old, octane.pos)
 
+    @pytest.mark.skipif(not has_openbabel, reason="Open Babel not installed")
     @pytest.mark.skipif(
-        not has_openbabel, reason="Open Babel package not installed"
+        "win" in sys.platform, reason="Unknown issue with Window's Open Babel "
     )
     def test_energy_minimize_shift_anchor(self, octane):
         anchor_compound = octane.labels["chain"].labels["CH3"][0]
@@ -1353,8 +1352,9 @@ class TestCompound(BaseTest):
         # has been shifted back to the original COM
         assert np.allclose(pos_old, anchor_compound.pos)
 
+    @pytest.mark.skipif(not has_openbabel, reason="Open Babel not installed")
     @pytest.mark.skipif(
-        not has_openbabel, reason="Open Babel package not installed"
+        "win" in sys.platform, reason="Unknown issue with Window's Open Babel "
     )
     def test_energy_minimize_fix_compounds(self, octane):
         methyl_end0 = octane.labels["chain"].labels["CH3"][0]
@@ -1464,8 +1464,9 @@ class TestCompound(BaseTest):
                 fixed_compounds=[methyl_end0, (123.0, 231, "True")]
             )
 
+    @pytest.mark.skipif(not has_openbabel, reason="Open Babel not installed")
     @pytest.mark.skipif(
-        not has_openbabel, reason="Open Babel package not installed"
+        "win" in sys.platform, reason="Unknown issue with Window's Open Babel "
     )
     def test_energy_minimize_ignore_compounds(self, octane):
         methyl_end0 = octane.labels["chain"].labels["CH3"][0]
@@ -1495,8 +1496,9 @@ class TestCompound(BaseTest):
         with pytest.raises(MBuildError):
             octane.energy_minimize(ignore_compounds=[1231, 123124])
 
+    @pytest.mark.skipif(not has_openbabel, reason="Open Babel not installed")
     @pytest.mark.skipif(
-        not has_openbabel, reason="Open Babel package not installed"
+        "win" in sys.platform, reason="Unknown issue with Window's Open Babel "
     )
     def test_energy_minimize_distance_constraints(self, octane):
         methyl_end0 = octane.labels["chain"].labels["CH3"][0]
@@ -1549,12 +1551,16 @@ class TestCompound(BaseTest):
             )
 
     @pytest.mark.skipif(has_openbabel, reason="Open Babel package is installed")
+    @pytest.mark.skipif(
+        "win" in sys.platform, reason="Unknown issue with Window's Open Babel "
+    )
     def test_energy_minimize_openbabel_warn(self, octane):
         with pytest.raises(MBuildError):
             octane.energy_minimize()
 
+    @pytest.mark.skipif(not has_openbabel, reason="Open Babel not installed")
     @pytest.mark.skipif(
-        not has_openbabel, reason="Open Babel package not installed"
+        "win" in sys.platform, reason="Unknown issue with Window's Open Babel "
     )
     def test_energy_minimize_ff(self, octane):
         for ff in ["UFF", "GAFF", "MMFF94", "MMFF94s", "Ghemical"]:
@@ -1562,8 +1568,9 @@ class TestCompound(BaseTest):
         with pytest.raises(IOError):
             octane.energy_minimize(forcefield="fakeFF")
 
+    @pytest.mark.skipif(not has_openbabel, reason="Open Babel not installed")
     @pytest.mark.skipif(
-        not has_openbabel, reason="Open Babel package not installed"
+        "win" in sys.platform, reason="Unknown issue with Window's Open Babel "
     )
     def test_energy_minimize_algorithm(self, octane):
         for algorithm in ["cg", "steep", "md"]:
@@ -1571,8 +1578,9 @@ class TestCompound(BaseTest):
         with pytest.raises(MBuildError):
             octane.energy_minimize(algorithm="fakeAlg")
 
+    @pytest.mark.skipif(not has_openbabel, reason="Open Babel not installed")
     @pytest.mark.skipif(
-        not has_openbabel, reason="Open Babel package not installed"
+        "win" in sys.platform, reason="Unknown issue with Window's Open Babel "
     )
     def test_energy_minimize_non_element(self, octane):
         for particle in octane.particles():
@@ -1585,8 +1593,9 @@ class TestCompound(BaseTest):
         with pytest.raises(MBuildError):
             octane.energy_minimize()
 
+    @pytest.mark.skipif(not has_openbabel, reason="Open Babel not installed")
     @pytest.mark.skipif(
-        not has_openbabel, reason="Open Babel package not installed"
+        "win" in sys.platform, reason="Unknown issue with Window's Open Babel "
     )
     def test_energy_minimize_ports(self, octane):
         distances = np.round(
