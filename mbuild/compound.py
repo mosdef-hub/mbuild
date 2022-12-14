@@ -2247,8 +2247,7 @@ class Compound(object):
         successors_list,
         check_if_particle=False,
     ):
-        """Provide routines commonly used to check constraint inputs"""
-
+        """Provide routines commonly used to check constraint inputs."""
         for part in particle_list:
             if not isinstance(part, Compound):
                 raise MBuildError(f"{part} is not a Compound.")
