@@ -2934,6 +2934,7 @@ class Compound(object):
         residues=None,
         show_ports=False,
         infer_residues=False,
+        infer_residues_kwargs={},
     ):
         """Create a ParmEd Structure from a Compound.
 
@@ -2951,9 +2952,11 @@ class Compound(object):
             checking against Compound.name.
         show_ports : boolean, optional, default=False
             Include all port atoms when converting to a `Structure`.
-        infer_residues : bool, optional, default=True
+        infer_residues : bool, optional, default=False
             Attempt to assign residues based on names of children for the level
             of compound hierarchy without a box definition.
+        infer_residues_kwargs : dict, optional, default={}
+            Keyword arguments for :func:`mbuild.conversion.pull_residues`
 
         Returns
         -------
@@ -2972,6 +2975,7 @@ class Compound(object):
             residues=residues,
             show_ports=show_ports,
             infer_residues=infer_residues,
+            infer_residues_kwargs=infer_residues_kwargs,
         )
 
     def to_networkx(self, names_only=False):

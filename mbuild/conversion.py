@@ -1117,13 +1117,94 @@ def save(
         structure.save(filename, overwrite=overwrite, **kwargs)
 
 
+def pull_residues(
+    compound,
+    segment_level=0,
+    include_base_level=False,
+):
+    """Pull residues from a Compound object.
+
+    Search class instance for completed compounds based on the number of
+    particles and bonds. If for example and peptide chain with three
+    individual peptides that were connected and hydrated with thirty water
+    molecules, the list will contain 31 residues. However, if the water and
+    the individual peptides should be labeled as individual residues, set
+    ``segment_level==1`` to receive a list with 33 residues. Depending on
+    the method used to assemble the peptides, this procedure may continue to
+    set ``segment_level=2`` and breakdown the peptide into functional groups.
+    Setting ``include_base_level==True`` will allow this procedure to
+    function with coarse-grained systems, while the default behavior will
+    end a search at the level before atoms are obtained.
+
+    Parameters
+    ----------
+    compound : obj
+        An instance of :class:`mbuild.compound.Compound`
+    segment_level : int, optional, default=0
+        Level of full residue architecture to be identified
+    include_base_level : bool, optional, default=False
+        Set whether a search should continue if the list of children are single particles.
+
+    Returns
+    -------
+    residues : list
+        List of residue names (str).
+    """
+    value_list = []
+    no_grandchildren = [not child.children for child in compound.children]
+    balanced_bonds = (
+        None
+        if not compound.children
+        else compound.n_particles - compound.n_bonds == 1
+    )
+
+    if (
+        balanced_bonds and segment_level == 0
+    ):  # All atoms are bonded, at chosen tier
+        value_list.append(compound.name)
+    elif balanced_bonds is None:  # Currently at the base level
+        if include_base_level:
+            value_list.append(compound.name)
+        else:
+            raise ValueError(
+                "Did not expect to reach single segments with"
+                " `include_base_level=False`."
+            )
+    elif (
+        all(no_grandchildren) and not include_base_level
+    ):  # One above base level
+        value_list.append(compound.name)
+    else:
+        if balanced_bonds:  # Go to the next tier below
+            if segment_level > 0:
+                segment_level -= 1
+            elif segment_level < 0:
+                raise ValueError("`segment_level` must be greater than zero.")
+
+        # Check the next tier of compounds.
+        for i, child in enumerate(compound.children):
+            if no_grandchildren[i]:  # single atom particle
+                value_list.append(child.name)
+            else:
+                value_list.extend(
+                    pull_residues(
+                        child,
+                        segment_level=segment_level,
+                        include_base_level=include_base_level,
+                    )
+                )
+
+    return value_list
+
+
 def to_parmed(
     compound,
     box=None,
     title="",
     residues=None,
     show_ports=False,
-    infer_residues=True,
+    infer_residues=False,
+    infer_residues_kwargs={},
 ):
     """Create a Parmed Structure from a Compound.
 
@@ -1143,11 +1224,13 @@ def to_parmed(
         against Compound.name.
     show_ports : boolean, optional, default=False
         Include all port atoms when converting to a `Structure`.
-    infer_residues : bool, optional, default=True
+    infer_residues : bool, optional, default=False
         Attempt to assign residues based on names of children for the level
         of compound hierarchy without a box definition.
+    infer_residues_kwargs : dict, optional, default={}
+        Keyword arguments for :func:`mbuild.conversion.pull_residues`
 
-    Returns
+    Returnsd
     -------
     parmed.structure.Structure
         ParmEd Structure object converted from compound
@@ -1156,35 +1239,6 @@ def to_parmed(
     --------
     parmed.structure.Structure : Details on the ParmEd Structure object
     """
-
-    def _pull_hierarchical_attrs(
-        compound,
-        target_attr="name",
-        hierarchical_attr="children",
-        target_attr_conditions={"_box": None},
-    ):
-        """List of attributes from children in an obscure hierarchy."""
-        value_list = []
-        if any(
-            [
-                getattr(compound, x) == y
-                for x, y in target_attr_conditions.items()
-            ]
-        ):
-            value_list.append(getattr(compound, target_attr))
-        else:
-            for child in getattr(compound, "children"):
-                value_list.extend(
-                    _pull_hierarchical_attrs(
-                        child,
-                        target_attr=target_attr,
-                        hierarchical_attr=hierarchical_attr,
-                        target_attr_conditions=target_attr_conditions,
-                    )
-                )
-
-        return value_list
-
     structure = pmd.Structure()
     structure.title = title if title else compound.name
     atom_mapping = {}  # For creating bonds below
@@ -1193,7 +1247,8 @@ def to_parmed(
     # Attempt to grab residue names based on names of children for the first
     # level of hierarchy without a box definition
     if not residues and infer_residues:
-        residues = _pull_hierarchical_attrs(compound)
+        residues = pull_residues(compound, **infer_residues_kwargs)
+        print(residues)
 
     if isinstance(residues, str):
         residues = [residues]
