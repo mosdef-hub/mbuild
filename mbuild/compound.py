@@ -91,11 +91,11 @@ class Compound(object):
         The type of Compound.
     pos : np.ndarray, shape=(3,), dtype=float, optional, default=[0, 0, 0]
         The position of the Compound in Cartestian space
-    mass : float, optional, default=0.0
+    mass : float, optional, default=None
         The mass of the compound. If none is set, then will try to
         infer the mass from a compound's element attribute.
         If neither `mass` or `element` are specified, then the
-        mass will be zero.
+        mass will be None.
     charge : float, optional, default=0.0
         Currently not used. Likely removed in next release.
     periodicity : tuple of bools, length=3, optional, default=None
@@ -147,8 +147,8 @@ class Compound(object):
         subcompounds=None,
         name=None,
         pos=None,
-        mass=0.0,
-        charge=0.0,
+        mass=None,
+        charge=None,
         periodicity=None,
         box=None,
         element=None,
@@ -175,7 +175,9 @@ class Compound(object):
         self.labels = OrderedDict()
         self.referrers = set()
 
-        self.bond_graph = None
+        self.bond_graph = BondGraph()
+        self.bond_graph.add_node(self)
+
         self.port_particle = port_particle
 
         self._rigid_id = None
@@ -200,7 +202,7 @@ class Compound(object):
                 raise MBuildError(
                     "Can't set the mass of a Compound with subcompounds. "
                 )
-            self._charge = 0.0
+            self._charge = None
             self._mass = mass
             self.add(subcompounds)
         else:
@@ -356,17 +358,26 @@ class Compound(object):
         if self._contains_only_ports():
             return self._particle_mass(self)
         else:
-            return sum([self._particle_mass(p) for p in self.particles()])
+            particle_masses = [self._particle_mass(p) for p in self.particles()]
+            if None in particle_masses:
+                warn(
+                    f"Some particle of {self} does not have mass."
+                    "They will not be accounted for during this calculation."
+                )
+            filtered_masses = [
+                mass for mass in particle_masses if mass is not None
+            ]
+            return sum(filtered_masses) if filtered_masses else None
 
     @staticmethod
     def _particle_mass(particle):
-        if particle._mass:
+        if particle._mass is not None:
             return particle._mass
         else:
             if particle.element:
                 return particle.element.mass
             else:
-                return 0
+                return None
 
     @mass.setter
     def mass(self, value):
@@ -384,7 +395,14 @@ class Compound(object):
     @property
     def charge(self):
         """Get the charge of the Compound."""
-        return sum([particle._charge for particle in self.particles()])
+        charges = [p._charge for p in self.particles()]
+        if None in charges:
+            warn(
+                f"Some particle of {self} does not have a charge."
+                "They will not be accounted for during this calculation."
+            )
+        filtered_charges = [charge for charge in charges if charge is not None]
+        return sum(filtered_charges) if filtered_charges else None
 
     @charge.setter
     def charge(self, value):
@@ -671,7 +689,7 @@ class Compound(object):
                 "Only objects that inherit from mbuild.Compound can be added "
                 f"to Compounds. You tried to add '{new_child}'."
             )
-        if self._mass != 0.0 and not isinstance(new_child, Port):
+        if self._mass is not None and not isinstance(new_child, Port):
             warn(
                 f"{self} has a pre-defined mass of {self._mass}, "
                 "which will be reset to zero now that it contains children "
@@ -702,11 +720,13 @@ class Compound(object):
             self.children.add(new_child)
             new_child.parent = self
 
-            if new_child.bond_graph is not None:
-                if self.root.bond_graph is None:
-                    self.root.bond_graph = new_child.bond_graph
-                else:
-                    self.root.bond_graph.compose(new_child.bond_graph)
+            if new_child.bond_graph is not None and not isinstance(self, Port):
+                # If anything is added at self level, it is no longer a particle
+                # search for self in self.root.bond_graph and remove self
+                if self.root.bond_graph.has_node(self):
+                    self.root.bond_graph.remove_node(self)
+                # Compose bond_graph of new child
+                self.root.bond_graph.compose(new_child.bond_graph)
 
                 new_child.bond_graph = None
 
@@ -856,7 +876,7 @@ class Compound(object):
         if removed_part.rigid_id is not None:
             for ancestor in removed_part.ancestors():
                 ancestor._check_if_contains_rigid_bodies = True
-        if self.root.bond_graph and self.root.bond_graph.has_node(removed_part):
+        if self.root.bond_graph.has_node(removed_part):
             for neighbor in self.root.bond_graph.neighbors(removed_part):
                 self.root.remove_bond((removed_part, neighbor))
             self.root.bond_graph.remove_node(removed_part)
@@ -932,6 +952,26 @@ class Compound(object):
             if isinstance(p, Port) and not p.used
         ]
 
+    def direct_bonds(self):
+        """Return a list of particles that this particle bonds to.
+
+        Returns
+        -------
+        List of mb.Compound
+
+        See Also
+        --------
+        bond_graph.edges_iter : Iterations over all edges in a BondGraph
+        Compound.n_direct_bonds : Returns the number of bonds a particle contains
+        """
+        if list(self.particles()) != [self]:
+            raise MBuildError(
+                "The direct_bonds method can only "
+                "be used on compounds at the bottom of their hierarchy."
+            )
+        for i in self.root.bond_graph._adj[self]:
+            yield i
+
     def bonds(self):
         """Return all bonds in the Compound and sub-Compounds.
 
@@ -943,6 +983,7 @@ class Compound(object):
         See Also
         --------
         bond_graph.edges_iter : Iterates over all edges in a BondGraph
+        Compound.n_bonds : Returns the total number of bonds in the Compound and sub-Compounds
         """
         if self.root.bond_graph:
             if self.root == self:
@@ -955,14 +996,39 @@ class Compound(object):
             return iter(())
 
     @property
+    def n_direct_bonds(self):
+        """Return the number of bonds a particle is directly involved in.
+
+        This method should only be used on on compounds at the bottom
+        of their hierarchy (i.e. a particle).
+
+        Returns
+        -------
+        int
+            The number of compounds this compound is directly bonded to.
+        """
+        if list(self.particles()) != [self]:
+            raise MBuildError(
+                "The direct_bonds method can only "
+                "be used on compounds at the bottom of their hierarchy."
+            )
+        return sum(1 for _ in self.direct_bonds())
+
+    @property
     def n_bonds(self):
-        """Return the number of bonds in the Compound.
+        """Return the total number of bonds in the Compound.
 
         Returns
         -------
         int
             The number of bonds in the Compound
         """
+        if list(self.particles()) == [self]:
+            raise MBuildError(
+                "n_bonds cannot be used on Compounds "
+                "at the bottom of their hierarchy (particles). "
+                "Use n_direct_bonds instead."
+            )
         return sum(1 for _ in self.bonds())
 
     def add_bond(self, particle_pair):
@@ -1331,15 +1397,15 @@ class Compound(object):
         if not self.parent:
             # This is the very top level, and hence have to be independent
             return True
-        elif not list(self.root.bonds()):
+        elif not self.root.bond_graph.edges():
             # If there is no bond in the top level, then everything is independent
             return True
         else:
             # Cover the other cases
             bond_graph_dict = self.root.bond_graph._adj
-            for particle in self:
+            for particle in self.particles():
                 for neigh in bond_graph_dict[particle]:
-                    if neigh not in self:
+                    if neigh not in self.particles():
                         return False
             return True
 
@@ -1384,7 +1450,8 @@ class Compound(object):
         has_dimension = [True, True, True]
         if not is_one_particle:
             missing_dimensions = np.all(
-                np.isclose(self.xyz, self.xyz[0, :]), axis=0
+                np.isclose(self.xyz, self.xyz[0, :], atol=1e-2),
+                axis=0,
             )
             for i, truthy in enumerate(missing_dimensions):
                 has_dimension[i] = not truthy
@@ -1402,7 +1469,7 @@ class Compound(object):
         # handle any missing dimensions (planar molecules)
         for i, dim in enumerate(has_dimension):
             if not dim:
-                vecs[i][i] = 1.0
+                vecs[i][i] = 0.1
 
         if pad_box is not None:
             if isinstance(pad_box, (int, float, str, Sequence)):
@@ -1679,6 +1746,52 @@ class Compound(object):
         overwrite_nglview_default(widget)
         return widget
 
+    def flatten(self, inplace=True):
+        """Flatten the hierarchical structure of the Compound.
+
+        Modify the mBuild Compound to become a Compound where there is
+        a single container (self) that contains all the particles.
+
+        Parameter
+        ---------
+        inplace : bool, optional, default=True
+            Option to perform the flatten operation inplace or return a copy
+
+        Return
+        ------
+        self : mb.Compound or None
+            return a flatten Compound if inplace is False.
+        """
+        ports_list = list(self.all_ports())
+        children_list = list(self.children)
+        particle_list = list(self.particles())
+        bond_graph = self.root.bond_graph
+
+        # Make a list of bond that involved the particles of this compound.
+        # This include bonds made exist between this compound and other
+        # component of the system
+        new_bonds = list()
+        for particle in particle_list:
+            for neighbor in bond_graph._adj.get(particle, []):
+                new_bonds.append((particle, neighbor))
+
+        # Remove all the children
+        if inplace:
+            for child in children_list:
+                # Need to handle the case when child is a port
+                self.remove(child)
+
+            # Re-add the particles and bonds
+            self.add(particle_list)
+            self.add(ports_list)
+
+            for bond in new_bonds:
+                self.add_bond(bond)
+        else:
+            comp = clone(self)
+            comp.flatten(inplace=True)
+            return comp
+
     def update_coordinates(self, filename, update_port_locations=True):
         """Update the coordinates of this Compound from a file.
 
@@ -1737,7 +1850,14 @@ class Compound(object):
             particle.pos += (np.random.rand(3) - 0.5) / 100
         self._update_port_locations(xyz_init)
 
-    def energy_minimize(self, forcefield="UFF", steps=1000, **kwargs):
+    def energy_minimize(
+        self,
+        forcefield="UFF",
+        steps=1000,
+        shift_com=True,
+        anchor=None,
+        **kwargs,
+    ):
         """Perform an energy minimization on a Compound.
 
         Default behavior utilizes `Open Babel <http://openbabel.org/docs/dev/>`_
@@ -1767,6 +1887,13 @@ class Compound(object):
             XML file with valid SMARTS strings. Please refer to `OpenMM docs
             <http://docs.openmm.org/7.0.0/userguide/application.html#creating-force-fields>`_
             for more information.
+        shift_com : bool, optional, default=True
+            If True, the energy-minimized Compound is translated such that the
+            center-of-mass is unchanged relative to the initial configuration.
+        anchor : Compound, optional, default=None
+            Translates the energy-minimized Compound such that the
+            position of the anchor Compound is unchanged relative to the
+            initial configuration.
 
 
         Other Parameters
@@ -1775,6 +1902,41 @@ class Compound(object):
             The energy minimization algorithm.  Valid options are 'steep', 'cg',
             and 'md', corresponding to steepest descent, conjugate gradient, and
             equilibrium molecular dynamics respectively.
+            For _energy_minimize_openbabel
+        fixed_compounds : Compound, optional, default=None
+            An individual Compound or list of Compounds that will have their
+            position fixed during energy minimization. Note, positions are fixed
+            using a restraining potential and thus may change slightly.
+            Position fixing will apply to all Particles (i.e., atoms) that exist
+            in the Compound and to particles in any subsequent sub-Compounds.
+            By default x,y, and z position is fixed. This can be toggled by instead
+            passing a list containing the Compound and an list or tuple of bool values
+            corresponding to x,y and z; e.g., [Compound, (True, True, False)]
+            will fix the x and y position but allow z to be free.
+            For _energy_minimize_openbabel
+        ignore_compounds: Compound, optional, default=None
+            An individual compound or list of Compounds whose underlying particles
+            will have their positions fixed and not interact with other atoms via
+            the specified force field during the energy minimization process.
+            Note, a restraining potential used and thus absolute position may vary
+            as a result of the energy minimization process.
+            Interactions of these ignored atoms can  be specified by the user,
+            e.g., by explicitly setting a distance constraint.
+            For _energy_minimize_openbabel
+        distance_constraints: list, optional, default=None
+            A list containing a pair of Compounds as a tuple or list and
+            a float value specifying the target distance between the two Compounds, e.g.,:
+            [(compound1, compound2), distance].
+            To specify more than one constraint, pass constraints as a 2D list, e.g.,:
+            [ [(compound1, compound2), distance1],  [(compound3, compound4), distance2] ].
+            Note, Compounds specified here must represent individual point particles.
+            For _energy_minimize_openbabel
+        constraint_factor: float, optional, default=50000.0
+            Harmonic springs are used to constrain distances and fix atom positions, where
+            the resulting energy associated with the spring is scaled by the
+            constraint_factor; the energy of this spring is considering during the minimization.
+            As such, very small values of the constraint_factor may result in an energy
+            minimized state that does not adequately restrain the distance/position of atoms.
             For _energy_minimize_openbabel
         scale_bonds : float, optional, default=1
             Scales the bond force constant (1 is completely on).
@@ -1861,6 +2023,23 @@ class Compound(object):
            (2001) J. Comput. Chem. 22, 1229-1242
 
         """
+        # TODO: Update mbuild tutorials to provide overview of new features
+        #   Preliminary tutorials: https://github.com/chrisiacovella/mbuild_energy_minimization
+        com = self.pos
+        anchor_in_compound = False
+        if anchor is not None:
+            # check to see if the anchor exists
+            # in the Compound to be energy minimized
+            for succesor in self.successors():
+                if id(anchor) == id(succesor):
+                    anchor_in_compound = True
+                    anchor_pos_old = anchor.pos
+
+            if anchor_in_compound == False:
+                raise MBuildError(
+                    f"Anchor: {anchor} is not part of the Compound: {self}"
+                    "that you are trying to energy minimize."
+                )
         tmp_dir = tempfile.mkdtemp()
         original = clone(self)
         self._kick()
@@ -1889,6 +2068,13 @@ class Compound(object):
             )
 
         self.update_coordinates(os.path.join(tmp_dir, "minimized.pdb"))
+        if shift_com:
+            self.translate_to(com)
+
+        if anchor_in_compound == True:
+            anchor_pos_new = anchor.pos
+            delta = anchor_pos_old - anchor_pos_new
+            self.translate(delta)
 
     def _energy_minimize_openmm(
         self,
@@ -2055,8 +2241,35 @@ class Compound(object):
             simulation, simulation.context.getState(getPositions=True)
         )
 
+    def _check_openbabel_constraints(
+        self,
+        particle_list,
+        successors_list,
+        check_if_particle=False,
+    ):
+        """Provide routines commonly used to check constraint inputs."""
+        for part in particle_list:
+            if not isinstance(part, Compound):
+                raise MBuildError(f"{part} is not a Compound.")
+            if id(part) != id(self) and id(part) not in successors_list:
+                raise MBuildError(f"{part} is not a member of Compound {self}.")
+
+            if check_if_particle:
+                if len(part.children) != 0:
+                    raise MBuildError(
+                        f"{part} does not correspond to an individual particle."
+                    )
+
     def _energy_minimize_openbabel(
-        self, tmp_dir, steps=1000, algorithm="cg", forcefield="UFF"
+        self,
+        tmp_dir,
+        steps=1000,
+        algorithm="cg",
+        forcefield="UFF",
+        constraint_factor=50000.0,
+        distance_constraints=None,
+        fixed_compounds=None,
+        ignore_compounds=None,
     ):
         """Perform an energy minimization on a Compound.
 
@@ -2079,9 +2292,41 @@ class Compound(object):
         forcefield : str, optional, default='UFF'
             The generic force field to apply to the Compound for minimization.
             Valid options are 'MMFF94', 'MMFF94s', ''UFF', 'GAFF', 'Ghemical'.
-            Please refer to the Open Babel documentation (http://open-babel.
-            readthedocs.io/en/latest/Forcefields/Overview.html) when considering
-            your choice of force field.
+            Please refer to the Open Babel documentation
+            (http://open-babel.readthedocs.io/en/latest/Forcefields/Overview.html)
+            when considering your choice of force field.
+        fixed_compounds : Compound, optional, default=None
+            An individual Compound or list of Compounds that will have their
+            position fixed during energy minimization. Note, positions are fixed
+            using a restraining potential and thus may change slightly.
+            Position fixing will apply to all Particles (i.e., atoms) that exist
+            in the Compound and to particles in any subsequent sub-Compounds.
+            By default x,y, and z position is fixed. This can be toggled by instead
+            passing a list containing the Compound and a list or tuple of bool values
+            corresponding to x,y and z; e.g., [Compound, (True, True, False)]
+            will fix the x and y position but allow z to be free.
+        ignore_compounds: Compound, optional, default=None
+            An individual compound or list of Compounds whose underlying particles
+            will have their positions fixed and not interact with other atoms via
+            the specified force field during the energy minimization process.
+            Note, a restraining potential is used and thus absolute position may vary
+            as a result of the energy minimization process.
+            Interactions of these ignored atoms can  be specified by the user,
+            e.g., by explicitly setting a distance constraint.
+        distance_constraints: list, optional, default=None
+            A list containing a pair of Compounds as a tuple or list and
+            a float value specifying the target distance between the two Compounds, e.g.,:
+            [(compound1, compound2), distance].
+            To specify more than one constraint, pass constraints as a 2D list, e.g.,:
+            [ [(compound1, compound2), distance1],  [(compound3, compound4), distance2] ].
+            Note, Compounds specified here must represent individual point particles.
+        constraint_factor: float, optional, default=50000.0
+            Harmonic springs are used to constrain distances and fix atom positions, where
+            the resulting energy associated with the spring is scaled by the
+            constraint_factor; the energy of this spring is considering during the minimization.
+            As such, very small values of the constraint_factor may result in an energy
+            minimized state that does not adequately restrain the distance/position of atom(s)e.
+
 
         References
         ----------
@@ -2123,6 +2368,153 @@ class Compound(object):
                                 particle, particle.name
                             )
                         )
+        # Create a dict containing particle id and associated index to speed up looping
+        particle_idx = {
+            id(particle): idx for idx, particle in enumerate(self.particles())
+        }
+
+        # A list containing all Compounds ids contained in self. Will be used to check if
+        # compounds refered to in the constrains are actually in the Compound we are minimizing.
+        successors_list = [id(compound) for compound in self.successors()]
+
+        # initialize constraints
+        ob_constraints = openbabel.OBFFConstraints()
+
+        if distance_constraints is not None:
+            # if a user passes single constraint as a 1-D array,
+            # i.e., [(p1,p2), 2.0]  rather than [[(p1,p2), 2.0]],
+            # just add it to a list so we can use the same looping code
+            if len(np.array(distance_constraints).shape) == 1:
+                distance_constraints = [distance_constraints]
+
+            for con_temp in distance_constraints:
+                p1 = con_temp[0][0]
+                p2 = con_temp[0][1]
+
+                self._check_openbabel_constraints(
+                    [p1, p2], successors_list, check_if_particle=True
+                )
+                if id(p1) == id(p2):
+                    raise MBuildError(
+                        f"Cannot create a constraint between a Particle and itself: {p1} {p2} ."
+                    )
+
+                pid_1 = particle_idx[id(p1)] + 1  # openbabel indices start at 1
+                pid_2 = particle_idx[id(p2)] + 1  # openbabel indices start at 1
+                dist = (
+                    con_temp[1] * 10.0
+                )  # obenbabel uses angstroms, not nm, convert to angstroms
+
+                ob_constraints.AddDistanceConstraint(pid_1, pid_2, dist)
+
+        if fixed_compounds is not None:
+            # if we are just passed a single Compound, wrap it into
+            # and array so we can just use the same looping code
+            if isinstance(fixed_compounds, Compound):
+                fixed_compounds = [fixed_compounds]
+
+            # if fixed_compounds is a 1-d array and it is of length 2, we need to determine whether it is
+            # a list of two Compounds or if fixed_compounds[1] should correspond to the directions to constrain
+            if len(np.array(fixed_compounds).shape) == 1:
+                if len(fixed_compounds) == 2:
+                    if not isinstance(fixed_compounds[1], Compound):
+                        # if it is not a list of two Compounds, make a 2d array so we can use the same looping code
+                        fixed_compounds = [fixed_compounds]
+
+            for fixed_temp in fixed_compounds:
+                # if an individual entry is a list, validate the input
+                if isinstance(fixed_temp, list):
+                    if len(fixed_temp) == 2:
+
+                        msg1 = (
+                            "Expected tuple or list of length 3 to set"
+                            "which dimensions to fix motion."
+                        )
+                        assert isinstance(fixed_temp[1], (list, tuple)), msg1
+
+                        msg2 = (
+                            "Expected tuple or list of length 3 to set"
+                            "which dimensions to fix motion, "
+                            f"{len(fixed_temp[1])} found."
+                        )
+                        assert len(fixed_temp[1]) == 3, msg2
+
+                        dims = [dim for dim in fixed_temp[1]]
+                        msg3 = (
+                            "Expected bool values for which directions are fixed."
+                            f"Found instead {dims}."
+                        )
+                        assert all(isinstance(dim, bool) for dim in dims), msg3
+
+                        p1 = fixed_temp[0]
+
+                    # if fixed_compounds is defined as [[Compound],[Compound]],
+                    # fixed_temp will be a list of length 1
+                    elif len(fixed_temp) == 1:
+                        p1 = fixed_temp[0]
+                        dims = [True, True, True]
+
+                else:
+                    p1 = fixed_temp
+                    dims = [True, True, True]
+
+                all_true = all(dims)
+
+                self._check_openbabel_constraints([p1], successors_list)
+
+                if len(p1.children) == 0:
+                    pid = (
+                        particle_idx[id(p1)] + 1
+                    )  # openbabel indices start at 1
+
+                    if all_true == True:
+                        ob_constraints.AddAtomConstraint(pid)
+                    else:
+                        if dims[0] == True:
+                            ob_constraints.AddAtomXConstraint(pid)
+                        if dims[1] == True:
+                            ob_constraints.AddAtomYConstraint(pid)
+                        if dims[2] == True:
+                            ob_constraints.AddAtomZConstraint(pid)
+                else:
+                    for particle in p1.particles():
+                        pid = (
+                            particle_idx[id(particle)] + 1
+                        )  # openbabel indices start at 1
+
+                        if all_true == True:
+                            ob_constraints.AddAtomConstraint(pid)
+                        else:
+                            if dims[0] == True:
+                                ob_constraints.AddAtomXConstraint(pid)
+                            if dims[1] == True:
+                                ob_constraints.AddAtomYConstraint(pid)
+                            if dims[2] == True:
+                                ob_constraints.AddAtomZConstraint(pid)
+
+        if ignore_compounds is not None:
+            temp1 = np.array(ignore_compounds)
+            if len(temp1.shape) == 2:
+                ignore_compounds = list(temp1.reshape(-1))
+
+            # Since the ignore_compounds can only be passed as a list
+            # we can check the whole list at once before looping over it
+            self._check_openbabel_constraints(ignore_compounds, successors_list)
+
+            for ignore in ignore_compounds:
+                p1 = ignore
+                if len(p1.children) == 0:
+                    pid = (
+                        particle_idx[id(p1)] + 1
+                    )  # openbabel indices start at 1
+                    ob_constraints.AddIgnore(pid)
+
+                else:
+                    for particle in p1.particles():
+                        pid = (
+                            particle_idx[id(particle)] + 1
+                        )  # openbabel indices start at 1
+                        ob_constraints.AddIgnore(pid)
 
         obConversion = openbabel.OBConversion()
         obConversion.SetInAndOutFormats("mol2", "pdb")
@@ -2143,7 +2535,23 @@ class Compound(object):
             "Please refer to the documentation to find the appropriate "
             f"citations for Open Babel and the {forcefield} force field"
         )
-        ff.Setup(mol)
+
+        if (
+            distance_constraints is not None
+            or fixed_compounds is not None
+            or ignore_compounds is not None
+        ):
+            ob_constraints.SetFactor(constraint_factor)
+            if ff.Setup(mol, ob_constraints) == 0:
+                raise MBuildError(
+                    "Could not setup forcefield for OpenBabel Optimization."
+                )
+        else:
+            if ff.Setup(mol) == 0:
+                raise MBuildError(
+                    "Could not setup forcefield for OpenBabel Optimization."
+                )
+
         if algorithm == "steep":
             ff.SteepestDescent(steps)
         elif algorithm == "md":
@@ -2304,7 +2712,7 @@ class Compound(object):
         new_positions = _rotate(self.xyz_with_ports, theta, around)
         self.xyz_with_ports = new_positions
 
-    def spin(self, theta, around):
+    def spin(self, theta, around, anchor=None):
         """Rotate Compound in place around an arbitrary vector.
 
         Parameters
@@ -2313,12 +2721,67 @@ class Compound(object):
             The angle by which to rotate the Compound, in radians.
         around : np.ndarray, shape=(3,), dtype=float
             The axis about which to spin the Compound.
+        anchor : mb.Compound, optional, default=None (self)
+            Anchor compound/particle to perform spinning.
+            If the anchor is not a particle, the spin will be
+            around the center of the anchor Compound.
         """
         around = np.asarray(around).reshape(3)
-        center_pos = self.center
-        self.translate(-center_pos)
+
+        if anchor:
+            msg = f"{anchor} is not part of {self}."
+            assert anchor in self.successors(), msg
+        else:
+            anchor = self
+        anchor_pos = anchor.center
+
+        self.translate(-anchor_pos)
         self.rotate(theta, around)
-        self.translate(center_pos)
+        self.translate(anchor_pos)
+
+    def rotate_dihedral(self, bond, phi):
+        """Rotate a dihedral about a central bond.
+
+        Parameters
+        ----------
+        bond : indexable object, length=2, dtype=mb.Compound
+            The pair of bonded Particles in the central bond of the dihedral
+        phi : float
+            The angle by which to rotate the dihedral, in radians.
+        """
+        nx = import_("networkx")
+
+        # Generate a bond graph and convert to networkX
+        mb_bondgraph = self.bond_graph
+        G = nx.Graph(mb_bondgraph.edges())
+
+        # Remove separate the compound in to two pieces by removing the bond
+        G.remove_edge(*bond)
+        assert len([i for i in nx.connected_components(G)]) == 2
+        components = [G.subgraph(c).copy() for c in nx.connected_components(G)]
+        component1 = components[1]  # One piece of the compound
+
+        # Get original coordinates
+        original_bond_positions = [bond[0].pos, bond[1].pos]
+
+        # Get the vector along the bond
+        bond_vec = bond[1].pos - bond[0].pos
+
+        # Rotate the coordinates of the piece by phi about the bond vector
+        xyz = np.array([p.pos for p in component1.nodes])
+        transformed_xyz = _rotate(xyz, phi, bond_vec)
+        for atom, coord in zip(component1.nodes, transformed_xyz):
+            atom.translate_to(coord)
+
+        # Move atoms involved in the bond to original positions
+        # This is neccessary since the piece is rotated about its center
+        if bond[0] in set(component1.nodes):
+            trans_vec = original_bond_positions[0] - bond[0].pos
+        elif bond[1] in set(component1.nodes):
+            trans_vec = original_bond_positions[1] - bond[1].pos
+
+        for atom in component1.nodes:
+            atom.translate(trans_vec)
 
     # Interface to GMSO Topology for reading/writing mol2 files
     def from_gmso(self, topology, coords_only=False, infer_hierarchy=True):
@@ -2334,6 +2797,7 @@ class Compound(object):
             Set preexisting atoms in compound to coordinates given by Topology.
         infer_hierarchy : bool, optional, default=True
             If True, infer compound hierarchy from Topology residue, to be implemented.
+            Pending new GMSO release.
 
         Returns
         -------
@@ -2343,10 +2807,11 @@ class Compound(object):
             topology=topology,
             compound=self,
             coords_only=coords_only,
-            infer_hierarchy=infer_hierarchy,
+            # infer_hierarchy=infer_hierarchy,
+            # TO DO: enable this with new release of GMSO
         )
 
-    def to_gmso(self):
+    def to_gmso(self, **kwargs):
         """Create a GMSO Topology from a mBuild Compound.
 
         Parameters
@@ -2570,6 +3035,22 @@ class Compound(object):
             show_ports=show_ports,
         )
 
+    def to_smiles(self, backend="pybel"):
+        """Create a SMILES string from an mbuild compound.
+
+        Parameters
+        ----------
+        compound : mb.Compound.
+            The mbuild compound to be converted.
+        backend : str, optional, default="pybel"
+            Backend used to do the conversion.
+
+        Return
+        ------
+        smiles_string : str
+        """
+        return conversion.to_smiles(self, backend)
+
     def from_pybel(
         self,
         pybel_mol,
@@ -2658,6 +3139,7 @@ class Compound(object):
 
         if self.children:
             descr.append("{:d} particles, ".format(self.n_particles))
+            descr.append("{:d} bonds, ".format(self.n_bonds))
             if self.box is not None:
                 descr.append("System box: {}, ".format(self.box))
             else:
@@ -2666,8 +3148,7 @@ class Compound(object):
             descr.append(
                 "pos=({}), ".format(np.array2string(self.pos, precision=4))
             )
-
-        descr.append("{:d} bonds, ".format(self.n_bonds))
+            descr.append("{:d} bonds, ".format(self.n_direct_bonds))
 
         descr.append("id: {}>".format(id(self)))
         return "".join(descr)
@@ -2752,6 +3233,9 @@ class Compound(object):
     def _clone_bonds(self, clone_of=None):
         """Clone the bond of the source compound to clone compound."""
         newone = clone_of[self]
+        newone.bond_graph = BondGraph()
+        for particle in self.particles():
+            newone.bond_graph.add_node(clone_of[particle])
         for c1, c2 in self.bonds():
             try:
                 newone.add_bond((clone_of[c1], clone_of[c2]))

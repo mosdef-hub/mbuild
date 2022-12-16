@@ -40,8 +40,8 @@ class Port(Compound):
 
     def __init__(self, anchor=None, orientation=None, separation=0):
         super(Port, self).__init__(name="Port", port_particle=True)
+        self.bond_graph = None
         self.anchor = anchor
-
         default_direction = np.array([0, 1, 0])
         if orientation is None:
             orientation = [0, 1, 0]
@@ -161,7 +161,7 @@ class Port(Compound):
         list of str
             Strings that can be used to access this Port relative to self.root
         """
-        access_labels = []
+        access_labels = set()
         for referrer in self.referrers:
             referrer_labels = [
                 key for key, val in self.root.labels.items() if val == referrer
@@ -171,9 +171,13 @@ class Port(Compound):
             ]
             if referrer is self.root:
                 for label in port_labels:
-                    access_labels.append("['{}']".format(label))
+                    access_labels.add("['{}']".format(label))
             for label in itertools.product(referrer_labels, port_labels):
-                access_labels.append("['{}']".format("']['".join(label)))
+                access_labels.add("['{}']".format("']['".join(label)))
+
+        for key, val in self.root.labels.items():
+            if self is val:
+                access_labels.add(f"['{key}']")
 
         return access_labels
 

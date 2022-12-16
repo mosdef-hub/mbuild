@@ -91,11 +91,11 @@ class TestPattern(BaseTest):
         port = mb.Port()
         compound = mb.Compound()
         compound.add(port, label="foo")
-        assert port.access_labels == ["['foo']"]
+        assert port.access_labels == {"['foo']"}
 
         compound2 = mb.Compound(name="C2")
         compound2.add(compound, label="bar")
-        assert port.access_labels == ["['bar']['foo']"]
+        assert port.access_labels == {"['bar']['foo']"}
 
     def test_up_down_reverse_orientation_axes(self):
         for vector in [[1, 0, 0], [0, 1, 0], [0, 0, 1]]:
@@ -120,3 +120,11 @@ class TestPattern(BaseTest):
             assert np.allclose(
                 port1["down"].xyz_with_ports, port2["up"].xyz_with_ports
             )
+
+    def test_port_access_labels(self, ethane):
+        ethane.remove(ethane[2])
+        assert len(ethane["methyl1"]["port[1]"].access_labels) == 1
+
+        ethane.labels["new_port"] = ethane["methyl1"]["port[1]"]
+        assert len(ethane["new_port"].access_labels) == 2
+        assert "['new_port']" in ethane["new_port"].access_labels

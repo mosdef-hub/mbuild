@@ -51,3 +51,19 @@ class TestGMSO(BaseTest):
         meth = mb.load("C", smiles=True)
         with pytest.raises(ValueError):
             meth.from_gmso(gmso_eth, coords_only=True)
+
+    def test_infer_hier(selfs, ethane):
+        # Create an ethane box, should be a four structure
+        eth_box = mb.packing.fill_box(compound=ethane, n_compounds=1, density=1)
+
+        # infer_hierarchy=False
+        unlabeled_top = eth_box.to_gmso(infer_hierarchy=False)
+        for site in unlabeled_top.sites:
+            assert not site.residue or site.molecule or site.group
+
+        # infer_hierarchy=True
+        labeled_top = eth_box.to_gmso(infer_hierarchy=True)
+        for site in labeled_top.sites:
+            assert site.group == "Ethane"
+            assert site.molecule.name == "Ethane"
+            assert site.residue.name == "CH3"

@@ -310,3 +310,33 @@ class TestLattice(BaseTest):
         assert isinstance(mylat.box, mb.Box)
         np.testing.assert_allclose([90, 90, 120], mylat.box.angles)
         np.testing.assert_allclose(expected_lengths, mylat.box.lengths)
+
+    def test_populate_with_element_symbol(self):
+        lattice = mb.Lattice(
+            lattice_spacing=[0.5, 0.5, 1],
+            angles=[90, 90, 120],
+            lattice_points={"O": [[0, 0, 0]]},
+        )
+        cpd_lat = lattice.populate(x=1, y=1, z=1)
+        for part in cpd_lat:
+            assert part.element.name == "oxygen"
+
+    def test_populate_with_element_name(self):
+        lattice = mb.Lattice(
+            lattice_spacing=[0.5, 0.5, 1],
+            angles=[90, 90, 120],
+            lattice_points={"Oxygen": [[0, 0, 0]]},
+        )
+        cpd_lat = lattice.populate(x=1, y=1, z=1)
+        for part in cpd_lat:
+            assert part.element.name == "oxygen"
+
+    def test_populate_no_element(self):
+        lattice = mb.Lattice(
+            lattice_spacing=[0.5, 0.5, 1],
+            angles=[90, 90, 120],
+            lattice_points={"A": [[0, 0, 0]]},
+        )
+        cpd_lat = lattice.populate(x=1, y=1, z=1)
+        for part in cpd_lat:
+            assert part.element is None

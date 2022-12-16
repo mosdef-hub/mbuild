@@ -17,22 +17,11 @@ from mbuild.coordinate_transform import (
     _spin,
     angle,
     force_overlap,
-    rotate,
-    rotate_around_x,
-    rotate_around_y,
-    rotate_around_z,
-    spin,
-    spin_x,
-    spin_y,
-    spin_z,
-    translate,
-    translate_to,
     x_axis_transform,
     y_axis_transform,
     z_axis_transform,
 )
 from mbuild.tests.base_test import BaseTest
-from mbuild.utils.exceptions import RemovedFuncError
 
 
 class TestCoordinateTransform(BaseTest):
@@ -135,6 +124,14 @@ class TestCoordinateTransform(BaseTest):
     def test_spin_inputs(self, methane):
         methane.spin(6.9, [1, 0, 0])
         methane.spin(6.9, (1, 0, 0))
+
+    def test_spin_with_anchor(self, methane):
+        original_posH = methane[1].pos
+        original_posC = methane[0].pos
+        methane.spin(6.9, [1, 0, 0], anchor=methane[1])
+
+        assert all(methane[1].pos == original_posH)
+        assert any(methane[0].pos != original_posC)
 
     def test_rotate_inputs(self, methane):
         methane.rotate(6.9, [1, 0, 0])
@@ -248,36 +245,12 @@ class TestCoordinateTransform(BaseTest):
         compound2.spin(np.pi * 1.23456789, around=np.asarray([0, 0, 1]))
         assert np.allclose(compound2.xyz, sixpoints.xyz, atol=1e-16)
 
-    def test_spin_deprecated_x(self, sixpoints):
-        with pytest.raises(RemovedFuncError):
-            spin_x(sixpoints, np.pi * 3 / 2)
-
-    def test_spin_deprecated_y(self, sixpoints):
-        with pytest.raises(RemovedFuncError):
-            spin_y(sixpoints, np.pi * 3 / 2)
-
-    def test_spin_deprecated_z(self, sixpoints):
-        with pytest.raises(RemovedFuncError):
-            spin_z(sixpoints, 69)
-
     def test_spin_arbitraty(self, sixpoints):
         before = mb.clone(sixpoints)
         sixpoints.spin(np.pi, np.asarray([1, 1, 0]))
         assert np.allclose(
             sixpoints["up"].xyz, before["right"].xyz, atol=1e-16
         ) and np.allclose(sixpoints["down"].xyz, before["left"].xyz, atol=1e-16)
-
-    def test_error_rotate_x(self, methane):
-        with pytest.raises(RemovedFuncError):
-            rotate_around_x(methane, np.pi)
-
-    def test_error_rotate_y(self, methane):
-        with pytest.raises(RemovedFuncError):
-            rotate_around_y(methane, np.pi)
-
-    def test_error_rotate_z(self, methane):
-        with pytest.raises(RemovedFuncError):
-            rotate_around_z(methane, np.pi)
 
     def test_spin_relative_compound_coordinates(self, sixpoints):
         """Check compounds's relative coordinates don't change upon spinning"""
@@ -345,6 +318,50 @@ class TestCoordinateTransform(BaseTest):
         assert np.allclose(
             before[:, 1], -1 * after[:, 1], atol=1e-16
         ) and np.allclose(before[:, 0], -1 * after[:, 0], atol=1e-16)
+
+    def test_rotate_dihedral(self, ethane):
+        bond = (ethane[0], ethane[4])
+        rotate_angle = np.deg2rad(60)
+        ethane.rotate_dihedral(bond, rotate_angle)
+
+        CH_vec1 = ethane[1].pos - ethane[0].pos
+        CH_vec2 = ethane[5].pos - ethane[4].pos
+        cos_dihedral = np.dot(CH_vec1, CH_vec2) / (
+            np.linalg.norm(CH_vec1) * np.linalg.norm(CH_vec2)
+        )
+        dihedral = np.rad2deg(np.arccos(cos_dihedral))
+        assert np.allclose(dihedral, 120, atol=1e-15)
+
+        # Extra test on asymmetric molecule
+        compound = mb.load("FCCO", smiles=True)
+
+        # Making sure this is the dihedral we are expecting
+        assert compound[0].element.symbol == "F"
+        assert compound[1].element.symbol == "C"
+        assert compound[2].element.symbol == "C"
+        assert compound[3].element.symbol == "O"
+
+        original_dihedral = [
+            compound[0].pos,
+            compound[1].pos,
+            compound[2].pos,
+            compound[3].pos,
+        ]
+        original_angle = dihedral_angle(original_dihedral)
+
+        bond = (compound[1], compound[2])
+        rotate_angle = np.deg2rad(68)
+        compound.rotate_dihedral(bond, rotate_angle)
+
+        new_dihedral = [
+            compound[0].pos,
+            compound[1].pos,
+            compound[2].pos,
+            compound[3].pos,
+        ]
+        new_angle = dihedral_angle(new_dihedral)
+
+        assert np.allclose(new_angle - original_angle, 68, atol=1e-15)
 
     def test_equivalence_transform(self, ch2, ch3, methane):
         ch2_atoms = list(ch2.particles())
@@ -448,3 +465,31 @@ class TestCoordinateTransform(BaseTest):
         for i in range(4):
             z_axis_transform(h2o)
         assert np.allclose(h2o.xyz, init_xyz, atol=1e-4)
+
+    def test_bondgraph(self, ch3):
+        ch3_2 = mb.clone(ch3)
+        mb.force_overlap(ch3_2, ch3_2["up"], ch3["up"])
+        ch3.add(ch3_2)
+        bgraph = ch3.bond_graph
+        for edge0, edge1 in bgraph.edges():
+            assert bgraph.has_edge(edge0, edge1)
+            assert bgraph.has_edge(edge1, edge0)
+        neighbors = {"C": 4, "H": 1}
+        for node in bgraph.nodes():
+            x = map(lambda node: node.name, bgraph._adj[node])
+            assert neighbors[node.name] == len(list(x))
+
+
+# Code to calculate angle of dihedral (stole from https://stackoverflow.com/questions/20305272/dihedral-torsion-angle-from-four-points-in-cartesian-coordinates-in-python#:~:text=The%20angle%20is%20given%20by,Similar%20to%20your%20dihedral2.)
+def dihedral_angle(p):
+    b1 = p[2] - p[1]
+    b0, b1, b2 = -(p[1] - p[0]), b1 / np.sqrt((b1 * b1).sum()), p[3] - p[2]
+    v = b0 - (b0[0] * b1[0] + b0[1] * b1[1] + b0[2] * b1[2]) * b1
+    w = b2 - (b2[0] * b1[0] + b2[1] * b1[1] + b2[2] * b1[2]) * b1
+    x = v[0] * w[0] + v[1] * w[1] + v[2] * w[2]
+    y = (
+        (b1[1] * v[2] - b1[2] * v[1]) * w[0]
+        + (b1[2] * v[0] - b1[0] * v[2]) * w[1]
+        + (b1[0] * v[1] - b1[1] * v[0]) * w[2]
+    )
+    return 180 * np.arctan2(y, x) / np.pi

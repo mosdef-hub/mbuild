@@ -877,6 +877,7 @@ def from_gmso(
         Set preexisting atoms in compound to coordinates given by Topology.
     infer_hierarchy : bool, optional, default=True
         If True, infer compound hierarchy from Topology residue, to be implemented.
+        Pending new GMSO release.
 
     Returns
     -------
@@ -906,9 +907,19 @@ def from_gmso(
 
     # Convert gmso Topology to mbuild Compound
     if not compound:
-        return to_mbuild(topology, **kwargs)
+        return to_mbuild(
+            topology,
+            infer_hierarchy=infer_hierarchy,
+            **kwargs,
+        )
     else:
-        compound.add(to_mbuild(topology), **kwargs)
+        compound.add(
+            to_mbuild(
+                topology,
+                infer_hierarchy=infer_hierarchy,
+                **kwargs,
+            )
+        )
     return compound
 
 
@@ -1553,6 +1564,35 @@ def to_pybel(
     return pybelmol
 
 
+def to_smiles(compound, backend="pybel"):
+    """Create a SMILES string from an mbuild compound.
+
+    Parameters
+    ----------
+    compound : mb.Compound.
+        The mbuild compound to be converted.
+    backend : str, optional, default="pybel"
+        Backend used to do the conversion.
+
+    Return
+    ------
+    smiles_string : str
+    """
+    if backend == "pybel":
+        mol = to_pybel(compound)
+
+        warn(
+            "The bond orders will be guessed using pybel"
+            "OBMol.PerceviedBondOrders()"
+        )
+        mol.OBMol.PerceiveBondOrders()
+        smiles_string = mol.write("smi").replace("\t", " ").split(" ")[0]
+
+        return smiles_string
+    else:
+        raise NotImplementedError(f"Backend {backend} not implemented.")
+
+
 def to_networkx(compound, names_only=False):
     """Create a NetworkX graph representing the hierarchy of a Compound.
 
@@ -1619,13 +1659,15 @@ def _iterate_children(compound, nodes, edges, names_only=False):
     return nodes, edges
 
 
-def to_gmso(compound):
+def to_gmso(compound, box=None, **kwargs):
     """Create a GMSO Topology from a mBuild Compound.
 
     Parameters
     ----------
     compound : mb.Compound
         The mb.Compound to be converted.
+    box : mb.Box, optional, default=None
+        The mb.Box to be converted, if different that compound.box
 
     Returns
     -------
@@ -1634,7 +1676,7 @@ def to_gmso(compound):
     """
     from gmso.external.convert_mbuild import from_mbuild
 
-    return from_mbuild(compound)
+    return from_mbuild(compound, box=None, **kwargs)
 
 
 def to_intermol(compound, molecule_types=None):  # pragma: no cover
