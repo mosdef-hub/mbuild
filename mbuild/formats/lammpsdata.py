@@ -334,7 +334,6 @@ def write_lammpsdata(
     if imp_dihedrals:
         (
             imp_dihedral_types,
-            unique_types,
             unique_imp_dihedral_types,
         ) = _get_improper_dihedral_types(
             structure,
@@ -986,6 +985,7 @@ def _get_improper_dihedral_types(
                 )
             )
     unique_imp_dihedral_types = dict(enumerate(OrderedSet(*improper_dihedrals)))
+    print(unique_imp_dihedral_types)
     lx = len(atom_types)
     dihedral_sets = [
         (x[1], x[5:]) for _, x in unique_imp_dihedral_types.items()
@@ -1005,10 +1005,6 @@ def _get_improper_dihedral_types(
             (unique_imp_dihedral_types[dihedral_sets.index(x)], i + 1)
             for i, x in enumerate(ordered_dihedral_sets)
         ]
-    )
-
-    unique_imp_dihedral_types = OrderedDict(
-        [(y, x + 1) for x, y in unique_imp_dihedral_types.items()]
     )
     imp_dihedral_types = [
         unique_imp_dihedral_types[dihedral_info]
@@ -1063,10 +1059,6 @@ def _get_impropers(
             (unique_improper_types[improper_sets.index(x)], i + 1)
             for i, x in enumerate(ordered_improper_sets)
         ]
-    )
-
-    unique_improper_types = OrderedDict(
-        [(y, x + 1) for x, y in unique_improper_types.items()]
     )
 
     improper_types = [
