@@ -77,7 +77,6 @@ def from_snapshot(snapshot, scale=1.0):
         comp.add(atom, label=str(i))
 
     # Add bonds
-    particle_dict = {idx: p for idx, p in enumerate(comp.particles())}
     for i in range(bond_array.shape[0]):
         atom1 = int(bond_array[i][0])
         atom2 = int(bond_array[i][1])
@@ -103,12 +102,11 @@ def to_hoomdsnapshot(
     ----------
     structure : parmed.Structure
         ParmEd Structure object
-    ref_distance : float, optional, default=1.0
-        Reference distance for conversion to reduced units
+        Reference distance for unit conversion ((Angstrom) / (desired units))
     ref_mass : float, optional, default=1.0
-        Reference mass for conversion to reduced units
+        Reference mass for unit conversion ((Dalton) / (desired units))
     ref_energy : float, optional, default=1.0
-        Reference energy for conversion to reduced units
+        Reference energy for unit conversion ((kcal/mol) / (desired units))
     rigid_bodies : list of int, optional, default=None
         List of rigid body information. An integer value is required for
         each atom corresponding to the index of the rigid body the particle
@@ -134,10 +132,42 @@ def to_hoomdsnapshot(
     ReferenceValues : namedtuple
         Values used in scaling
 
-
     Notes
     -----
-    Force field parameters are not written to the hoomd_snapshot
+    This method does not create hoomd forcefield objects and
+    the snapshot returned does not store the forcefield parameters.
+    See mbuild.formats.hoomd_forcefield.create_hoomd_forcefield()
+
+    About units: This method operates on a Parmed.Structure object
+        where the units used differ from those used in mBuild and Foyer
+        which may have been used when creating the typed Parmed.Structure.
+
+    The default units used when writing out the HOOMD Snapshot are:
+    Distance (Angstrom)
+    Mass (Dalton)
+    Energy (kcal/mol)
+
+    If you wish to convert this unit system to another, you can use the
+    reference parameters (ref_distance, ref_mass, ref_energy).
+    The values used here should be expected to convert from the Parmed
+    Structure units (above) to your desired units.
+    The Parmed.Structure values are divided by the reference values.
+
+    If you wish to used a reduced unit system, set auto_scale = True.
+    When auto_scale is True, the reference parameters won't be used.
+
+    Examples
+    --------
+        To convert the energy units from kcal/mol to kj/mol:
+            use ref_energy = 0.2390057 (kcal/kj)
+
+        To convert the distance units from Angstrom to nm:
+            use ref_distance = 10 (angstroms/nm)
+
+        To use a reduced unit system, where mass, sigma, and epsilon are
+        scaled by the largest value of each:
+            use auto_scale = True, ref_distance = ref_energy = ref_mass = 1
+
     """
     if not isinstance(structure, (Compound, pmd.Structure)):
         raise ValueError(
