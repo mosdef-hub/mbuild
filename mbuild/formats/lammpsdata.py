@@ -662,18 +662,18 @@ def _get_bond_types(
         )
     )
 
-    lx = len(atom_types)
-    bond_sets = [x[2] for _, x in unique_bond_types.items()]
-    ordered_bond_sets = [
-        (atom_types[x], atom_types[y])
-        for x in range(lx)
-        for y in range(x, lx)
-        if (atom_types[x], atom_types[y]) in bond_sets
-    ]
+    magnitude = np.ceil(np.log10(len(atom_types)))
+    bond_tuples = [x[2] for x in unique_bond_types.values()]
+    ordered_bond_tuples = bond_tuples.copy()
+    ordered_bond_tuples.sort(
+        key=lambda x: atom_types.index(x[0]) * 10**magnitude
+        + atom_types.index(x[1])
+    )
+
     unique_bond_types = OrderedDict(
         [
-            (unique_bond_types[bond_sets.index(x)], i + 1)
-            for i, x in enumerate(ordered_bond_sets)
+            (unique_bond_types[bond_tuples.index(x)], i + 1)
+            for i, x in enumerate(ordered_bond_tuples)
         ]
     )
 
@@ -738,14 +738,15 @@ def _get_angle_types(
         unique_angle_types = OrderedDict(
             enumerate(OrderedSet(*charmm_angle_types))
         )
-        lx = len(atom_types)
-        angle_sets = [x[-1] for _, x in unique_angle_types.items()]
-        ordered_angle_sets = [
-            (atom_types[x], atom_types[y])
-            for x in range(lx)
-            for y in range(x, lx)
-            if (atom_types[x], atom_types[y]) in angle_sets
-        ]
+
+        magnitude = np.ceil(np.log10(len(atom_types)))
+        angle_tuples = [x[-1] for x in unique_angle_types.values()]
+        ordered_angle_tuples = angle_tuples.copy()
+        ordered_angle_tuples.sort(
+            key=lambda x: atom_types.index(x[0]) * 10**magnitude
+            + atom_types.index(x[1])
+        )
+
     else:
         unique_angle_types = OrderedDict(
             enumerate(
@@ -766,22 +767,21 @@ def _get_angle_types(
             )
         )
 
-        lx = len(atom_types)
-        angle_sets = [
-            (x[2], x[-1][0], x[-1][1]) for _, x in unique_angle_types.items()
+        magnitude = np.ceil(np.log10(len(atom_types)))
+        angle_tuples = [
+            (x[2], x[-1][0], x[-1][1]) for x in unique_angle_types.values()
         ]
-        ordered_angle_sets = [
-            (atom_types[x], atom_types[y], atom_types[z])
-            for x in range(lx)
-            for y in range(lx)
-            for z in range(y, lx)
-            if (atom_types[x], atom_types[y], atom_types[z]) in angle_sets
-        ]
+        ordered_angle_tuples = angle_tuples.copy()
+        ordered_angle_tuples.sort(
+            key=lambda x: atom_types.index(x[0]) * 10 ** (2 * magnitude)
+            + atom_types.index(x[1]) * 10**magnitude
+            + atom_types.index(x[2])
+        )
 
     unique_angle_types = OrderedDict(
         [
-            (unique_angle_types[angle_sets.index(x)], i + 1)
-            for i, x in enumerate(ordered_angle_sets)
+            (unique_angle_types[angle_tuples.index(x)], i + 1)
+            for i, x in enumerate(ordered_angle_tuples)
         ]
     )
 
@@ -859,17 +859,16 @@ def _get_dihedral_types(
                 )
             )
         )
-        lx = len(atom_types)
-        dihedral_sets = [x[8:] for _, x in unique_dihedral_types.items()]
-        ordered_dihedral_sets = [
-            (atom_types[x], atom_types[y], atom_types[z], atom_types[w])
-            for x in range(lx)
-            for y in range(lx)
-            for z in range(lx)
-            for w in range(lx)
-            if (atom_types[x], atom_types[y], atom_types[z], atom_types[w])
-            in dihedral_sets
-        ]
+        magnitude = np.ceil(np.log10(len(atom_types)))
+        dihedral_tuples = [x[8:] for x in unique_dihedral_types.values()]
+        ordered_dihedral_tuples = dihedral_tuples.copy()
+        ordered_dihedral_tuples.sort(
+            key=lambda x: atom_types.index(x[0]) * 10 ** (3 * magnitude)
+            + atom_types.index(x[1]) * 10 ** (2 * magnitude)
+            + atom_types.index(x[2]) * 10**magnitude
+            + atom_types.index(x[3])
+        )
+
     elif use_dihedrals:
         charmm_dihedrals = []
         structure.join_dihedrals()
@@ -898,26 +897,23 @@ def _get_dihedral_types(
         unique_dihedral_types = OrderedDict(
             enumerate(OrderedSet(*charmm_dihedrals))
         )
-        lx = len(atom_types)
-        dihedral_sets = [
-            (x[1], x[6:]) for _, x in unique_dihedral_types.items()
+        magnitude = np.ceil(np.log10(len(atom_types)))
+        dihedral_tuples = [
+            (x[1], x[6:]) for x in unique_dihedral_types.values()
         ]
-
-        ordered_dihedral_sets = [
-            (n, (atom_types[x], atom_types[y], atom_types[z], atom_types[w]))
-            for x in range(lx)
-            for y in range(lx)
-            for z in range(lx)
-            for w in range(lx)
-            for n in range(1, 10)
-            if (n, (atom_types[x], atom_types[y], atom_types[z], atom_types[w]))
-            in dihedral_sets
-        ]
+        ordered_dihedral_tuples = dihedral_tuples.copy()
+        ordered_dihedral_tuples.sort(
+            key=lambda x: atom_types.index(x[1][0]) * 10 ** (4 * magnitude)
+            + atom_types.index(x[1][1]) * 10 ** (3 * magnitude)
+            + atom_types.index(x[1][2]) * 10 ** (2 * magnitude)
+            + atom_types.index(x[1][3]) * 10**magnitude
+            + x[0]
+        )
 
     unique_dihedral_types = OrderedDict(
         [
-            (unique_dihedral_types[dihedral_sets.index(x)], i + 1)
-            for i, x in enumerate(ordered_dihedral_sets)
+            (unique_dihedral_types[dihedral_tuples.index(x)], i + 1)
+            for i, x in enumerate(ordered_dihedral_tuples)
         ]
     )
 
@@ -985,25 +981,23 @@ def _get_improper_dihedral_types(
                 )
             )
     unique_imp_dihedral_types = dict(enumerate(OrderedSet(*improper_dihedrals)))
-    print(unique_imp_dihedral_types)
-    lx = len(atom_types)
-    dihedral_sets = [
-        (x[1], x[5:]) for _, x in unique_imp_dihedral_types.items()
+    magnitude = np.ceil(np.log10(len(atom_types)))
+    dihedral_tuples = [
+        (x[1], x[5:]) for x in unique_imp_dihedral_types.values()
     ]
-    ordered_dihedral_sets = [
-        (n, (atom_types[x], atom_types[y], atom_types[z], atom_types[w]))
-        for x in range(lx)
-        for y in range(lx)
-        for z in range(lx)
-        for w in range(lx)
-        for n in [-1, 1]
-        if (n, (atom_types[x], atom_types[y], atom_types[z], atom_types[w]))
-        in dihedral_sets
-    ]
+    ordered_dihedral_tuples = dihedral_tuples.copy()
+    ordered_dihedral_tuples.sort(
+        key=lambda x: atom_types.index(x[1][0]) * 10 ** (4 * magnitude)
+        + atom_types.index(x[1][1]) * 10 ** (3 * magnitude)
+        + atom_types.index(x[1][2]) * 10 ** (2 * magnitude)
+        + atom_types.index(x[1][3]) * 10**magnitude
+        + x[0]
+    )
+
     unique_imp_dihedral_types = OrderedDict(
         [
-            (unique_imp_dihedral_types[dihedral_sets.index(x)], i + 1)
-            for i, x in enumerate(ordered_dihedral_sets)
+            (unique_imp_dihedral_types[dihedral_tuples.index(x)], i + 1)
+            for i, x in enumerate(ordered_dihedral_tuples)
         ]
     )
     imp_dihedral_types = [
@@ -1043,21 +1037,20 @@ def _get_impropers(
         )
     )
 
-    lx = len(atom_types)
-    improper_sets = [x[2:] for _, x in unique_improper_types.items()]
-    ordered_improper_sets = [
-        (atom_types[x], atom_types[y], atom_types[z], atom_types[w])
-        for x in range(lx)
-        for y in range(lx)
-        for z in range(lx)
-        for w in range(lx)
-        if (atom_types[x], atom_types[y], atom_types[z], atom_types[w])
-        in improper_sets
-    ]
+    magnitude = np.ceil(np.log10(len(atom_types)))
+    improper_tuples = [x[2:] for x in unique_improper_types.values()]
+    ordered_improper_tuples = improper_tuples.copy()
+    ordered_improper_tuples.sort(
+        key=lambda x: atom_types.index(x[0]) * 10 ** (4 * magnitude)
+        + atom_types.index(x[1]) * 10 ** (3 * magnitude)
+        + atom_types.index(x[2]) * 10 ** (2 * magnitude)
+        + atom_types.index(x[3]) * 10**magnitude
+    )
+
     unique_improper_types = OrderedDict(
         [
-            (unique_improper_types[improper_sets.index(x)], i + 1)
-            for i, x in enumerate(ordered_improper_sets)
+            (unique_improper_types[improper_tuples.index(x)], i + 1)
+            for i, x in enumerate(ordered_improper_tuples)
         ]
     )
 
