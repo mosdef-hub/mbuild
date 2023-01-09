@@ -38,11 +38,11 @@ def create_hoomd_forcefield(
     r_cut : float
         Cutoff radius in simulation units
     ref_distance : float, optional, default=1.0
-        Reference distance for unit conversion (from Angstrom)
+        Reference distance for unit conversion ((Angstrom) / (desired units))
     ref_mass : float, optional, default=1.0
-        Reference mass for unit conversion (from Dalton)
+        Reference mass for unit conversion ((Dalton) / (desired units))
     ref_energy : float, optional, default=1.0
-        Reference energy for unit conversion (from kcal/mol)
+        Reference energy for unit conversion ((kcal/mol) / (desired units))
     auto_scale : bool, optional, default=False
         Scale to reduced units by automatically using the largest sigma value
         as ref_distance, largest mass value as ref_mass, and largest epsilon
@@ -66,13 +66,43 @@ def create_hoomd_forcefield(
     ReferenceValues : namedtuple
         Values used in scaling
 
-    Note
-    ----
+    Notes
+    -----
     If you pass a non-parametrized pmd.Structure, you will not have
     angle, dihedral, or force field information. You may be better off
-    creating a hoomd.Snapshot
-    Reference units should be expected to convert parmed Structure units :
-        angstroms, kcal/mol, and daltons
+    creating a hoomd.Snapshot.
+    See mbuild.formats.hoomd_snapshot.to_hoomdsnapshot()
+
+    About units: This method operates on a Parmed.Structure object
+    where the units used differ from those used in mBuild and Foyer
+    which may have been used when creating the typed Parmed.Structure.
+
+    The default units used when writing out the HOOMD Snapshot are:
+    Distance (Angstrom)
+    Mass (Dalton)
+    Energy (kcal/mol)
+
+    If you wish to convert this unit system to another, you can use the
+    reference parameters (ref_distance, ref_mass, ref_energy).
+    The values used here should be expected to convert from the Parmed
+    Structure units (above) to your desired units.
+    The Parmed.Structure values are divided by the reference values.
+
+    If you wish to used a reduced unit system, set auto_scale = True.
+    When auto_scale is True, the reference parameters won't be used.
+
+    Examples
+    --------
+        To convert the energy units from kcal/mol to kj/mol:
+            use ref_energy = 0.2390057 (kcal/kj)
+
+        To convert the distance units from Angstrom to nm:
+            use ref_distance = 10 (angstroms/nm)
+
+        To use a reduced unit system, where mass, sigma, and epsilon are
+        scaled by the largest value of each:
+            use auto_scale = True, ref_distance = ref_energy = ref_mass = 1
+
     """
     if isinstance(structure, mb.Compound):
         raise ValueError(
