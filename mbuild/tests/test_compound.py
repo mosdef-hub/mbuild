@@ -1370,6 +1370,15 @@ class TestCompound(BaseTest):
             fixed_compounds=octane, shift_com=False, constraint_factor=1e6
         )
         assert np.allclose(octane.pos, old_com, rtol=1e-2, atol=1e-2)
+
+        # primarily focus on checking inputs are parsed correctly
+        octane.energy_minimize(fixed_compounds=[octane])
+        octane.energy_minimize(fixed_compounds=carbon_end)
+        octane.energy_minimize(fixed_compounds=methyl_end0)
+        octane.energy_minimize(fixed_compounds=[methyl_end0])
+        octane.energy_minimize(
+            fixed_compounds=[methyl_end0, [True, True, True]]
+        )
         
     def test_energy_minimize_fix_compounds(self, octane):
         methyl_end0 = octane.labels["chain"].labels["CH3"][0]
