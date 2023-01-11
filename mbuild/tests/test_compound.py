@@ -1370,7 +1370,7 @@ class TestCompound(BaseTest):
             fixed_compounds=octane, shift_com=False, constraint_factor=1e6
         )
         assert np.allclose(octane.pos, old_com, rtol=1e-2, atol=1e-2)
-        
+
     def test_energy_minimize_fix_compounds(self, octane):
         methyl_end0 = octane.labels["chain"].labels["CH3"][0]
         methyl_end1 = octane.labels["chain"].labels["CH3"][1]
