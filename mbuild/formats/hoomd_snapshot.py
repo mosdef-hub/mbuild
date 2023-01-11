@@ -77,6 +77,7 @@ def from_snapshot(snapshot, scale=1.0):
         comp.add(atom, label=str(i))
 
     # Add bonds
+    particle_dict = {idx: p for idx, p in enumerate(comp.particles())}
     for i in range(bond_array.shape[0]):
         atom1 = int(bond_array[i][0])
         atom2 = int(bond_array[i][1])
