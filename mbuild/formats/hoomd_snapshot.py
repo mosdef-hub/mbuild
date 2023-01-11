@@ -77,6 +77,7 @@ def from_snapshot(snapshot, scale=1.0):
         comp.add(atom, label=str(i))
 
     # Add bonds
+    particle_dict = {idx: p for idx, p in enumerate(comp.particles())}
     for i in range(bond_array.shape[0]):
         atom1 = int(bond_array[i][0])
         atom2 = int(bond_array[i][1])
@@ -249,7 +250,8 @@ def to_hoomdsnapshot(
         improper_typeids,
         improper_groups,
     ) = _parse_improper_information(structure)
-    pair_types, pair_typeid, pairs, n_pairs = _parse_pair_information(structure)
+    pair_types, pair_typeid, pairs, n_pairs = _parse_pair_information(
+        structure)
 
     if hoomd_snapshot is not None:
         n_init = hoomd_snapshot.particles.N
@@ -303,7 +305,8 @@ def to_hoomdsnapshot(
         elif hoomd_version.major == 3:
             hoomd_snapshot.configuration.box = [lx, ly, lz, xy, xz, yz]
         else:
-            raise RuntimeError("Unsupported HOOMD version:", str(hoomd_version))
+            raise RuntimeError("Unsupported HOOMD version:",
+                               str(hoomd_version))
 
         init_bonds = hoomd_snapshot.bonds.N
         if init_bonds > 0:
@@ -345,7 +348,8 @@ def to_hoomdsnapshot(
         if hoomd_version.major == 2:
             hoomd_snapshot = hoomd.data.make_snapshot(
                 N=n_particles,
-                box=hoomd.data.boxdim(Lx=lx, Ly=ly, Lz=lz, xy=xy, xz=xz, yz=yz),
+                box=hoomd.data.boxdim(
+                    Lx=lx, Ly=ly, Lz=lz, xy=xy, xz=xz, yz=yz),
                 particle_types=unique_types,
                 bond_types=unique_bond_types,
                 angle_types=unique_angle_types,
@@ -365,7 +369,8 @@ def to_hoomdsnapshot(
             hoomd_snapshot.pairs.types = pair_types
             box = hoomd.Box(Lx=lx, Ly=ly, Lz=lz, xy=xy, xz=xz, yz=yz)
         else:
-            raise RuntimeError("Unsupported HOOMD version:", str(hoomd_version))
+            raise RuntimeError("Unsupported HOOMD version:",
+                               str(hoomd_version))
 
     # wrap particles into the box manually for v2
     if hoomd_version.major == 2:
@@ -379,7 +384,8 @@ def to_hoomdsnapshot(
         elif hoomd_version.major == 3:
             obj.N = n
         else:
-            raise RuntimeError("Unsupported HOOMD version:", str(hoomd_version))
+            raise RuntimeError("Unsupported HOOMD version:",
+                               str(hoomd_version))
 
     set_size(hoomd_snapshot.particles, n_particles)
     hoomd_snapshot.particles.position[n_init:] = scaled_positions
@@ -539,7 +545,8 @@ def _parse_angle_information(structure):
         t1, t3 = sorted([t1, t3], key=natural_sort)
         angle_type = "-".join((t1, t2, t3))
         angle_typeids.append(unique_angle_types.index(angle_type))
-        angle_groups.append((angle.atom1.idx, angle.atom2.idx, angle.atom3.idx))
+        angle_groups.append(
+            (angle.atom1.idx, angle.atom2.idx, angle.atom3.idx))
 
     return n_angles, unique_angle_types, angle_typeids, angle_groups
 
