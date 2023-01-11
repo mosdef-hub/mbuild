@@ -1356,30 +1356,7 @@ class TestCompound(BaseTest):
     @pytest.mark.skipif(
         "win" in sys.platform, reason="Unknown issue with Window's Open Babel "
     )
-    def test_energy_minimize_fix_compounds2(self, octane):
-        methyl_end0 = octane.labels["chain"].labels["CH3"][0]
-        methyl_end1 = octane.labels["chain"].labels["CH3"][1]
-        carbon_end = octane.labels["chain"].labels["CH3"][0].labels["C"][0]
-        not_in_compound = mb.Compound(name="H")
 
-        # fix the whole molecule and make sure positions are close
-        # given stochastic nature and use of restraining springs
-        # we need to have a pretty loose tolerance for checking
-        old_com = octane.pos
-        octane.energy_minimize(
-            fixed_compounds=octane, shift_com=False, constraint_factor=1e6
-        )
-        assert np.allclose(octane.pos, old_com, rtol=1e-2, atol=1e-2)
-
-        # primarily focus on checking inputs are parsed correctly
-        octane.energy_minimize(fixed_compounds=[octane])
-        octane.energy_minimize(fixed_compounds=carbon_end)
-        octane.energy_minimize(fixed_compounds=methyl_end0)
-        octane.energy_minimize(fixed_compounds=[methyl_end0])
-        octane.energy_minimize(
-            fixed_compounds=[methyl_end0, [True, True, True]]
-        )
-        
     def test_energy_minimize_fix_compounds(self, octane):
         methyl_end0 = octane.labels["chain"].labels["CH3"][0]
         methyl_end1 = octane.labels["chain"].labels["CH3"][1]
