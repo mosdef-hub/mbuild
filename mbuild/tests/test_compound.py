@@ -1356,7 +1356,6 @@ class TestCompound(BaseTest):
     @pytest.mark.skipif(
         "win" in sys.platform, reason="Unknown issue with Window's Open Babel "
     )
-
     def test_energy_minimize_fix_compounds(self, octane):
         methyl_end0 = octane.labels["chain"].labels["CH3"][0]
         methyl_end1 = octane.labels["chain"].labels["CH3"][1]
