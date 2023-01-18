@@ -2384,7 +2384,7 @@ class Compound(object):
             # if a user passes single constraint as a 1-D array,
             # i.e., [(p1,p2), 2.0]  rather than [[(p1,p2), 2.0]],
             # just add it to a list so we can use the same looping code
-            if len(np.array(distance_constraints).shape) == 1:
+            if len(np.array(distance_constraints, dtype=object).shape) == 1:
                 distance_constraints = [distance_constraints]
 
             for con_temp in distance_constraints:
@@ -2415,7 +2415,7 @@ class Compound(object):
 
             # if fixed_compounds is a 1-d array and it is of length 2, we need to determine whether it is
             # a list of two Compounds or if fixed_compounds[1] should correspond to the directions to constrain
-            if len(np.array(fixed_compounds).shape) == 1:
+            if len(np.array(fixed_compounds, dtype=object).shape) == 1:
                 if len(fixed_compounds) == 2:
                     if not isinstance(fixed_compounds[1], Compound):
                         # if it is not a list of two Compounds, make a 2d array so we can use the same looping code
@@ -2493,7 +2493,7 @@ class Compound(object):
                                 ob_constraints.AddAtomZConstraint(pid)
 
         if ignore_compounds is not None:
-            temp1 = np.array(ignore_compounds)
+            temp1 = np.array(ignore_compounds, dtype=object)
             if len(temp1.shape) == 2:
                 ignore_compounds = list(temp1.reshape(-1))
 
