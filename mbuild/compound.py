@@ -2070,7 +2070,7 @@ class Compound(object):
                 )
 
             self.update_coordinates(os.path.join(tmp_dir, "minimized.pdb"))
-            
+
         if shift_com:
             self.translate_to(com)
 
@@ -2523,14 +2523,16 @@ class Compound(object):
         obConversion.SetInAndOutFormats("mol2", "pdb")
         mol = openbabel.OBMol()
 
-        #obConversion.ReadFile(mol, os.path.join(tmp_dir, "un-minimized.mol2"))
-        
+        # obConversion.ReadFile(mol, os.path.join(tmp_dir, "un-minimized.mol2"))
+
         # convert compound to openbabel mol
         ids = {}
         for i, part in enumerate(self):
-            ids[id(part)] = i+1
+            ids[id(part)] = i + 1
             a = mol.NewAtom()
-            a.SetVector(part.pos[0]*10.0, part.pos[1]*10.0, part.pos[2]*10.0)
+            a.SetVector(
+                part.pos[0] * 10.0, part.pos[1] * 10.0, part.pos[2] * 10.0
+            )
             a.SetAtomicNum(part.element.atomic_number)
             a.SetType(part.element.symbol)
 
@@ -2538,7 +2540,7 @@ class Compound(object):
         # we will set bond order to 1 and call PerceiveBondOrders
         for bond in self.bonds():
             mol.AddBond(ids[id(bond[0])], ids[id(bond[1])], 1)
-        
+
         mol.PerceiveBondOrders()
         mol.SetAtomTypesPerceived()
 
@@ -2585,14 +2587,13 @@ class Compound(object):
             )
         ff.UpdateCoordinates(mol)
 
-        #obConversion.WriteFile(mol, os.path.join(tmp_dir, "minimized.pdb"))
-        #update the coordinates in the Compound
+        # obConversion.WriteFile(mol, os.path.join(tmp_dir, "minimized.pdb"))
+        # update the coordinates in the Compound
         for i, obatom in enumerate(openbabel.OBMolAtomIter(mol)):
-            x = obatom.GetX()/10.0
-            y = obatom.GetY()/10.0
-            z = obatom.GetZ()/10.0
-            self[i].pos = np.array([x,y,z])
-
+            x = obatom.GetX() / 10.0
+            y = obatom.GetY() / 10.0
+            z = obatom.GetZ() / 10.0
+            self[i].pos = np.array([x, y, z])
 
     def save(
         self,
