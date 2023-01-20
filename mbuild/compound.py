@@ -2519,11 +2519,8 @@ class Compound(object):
                         )  # openbabel indices start at 1
                         ob_constraints.AddIgnore(pid)
 
-        obConversion = openbabel.OBConversion()
-        obConversion.SetInAndOutFormats("mol2", "pdb")
         mol = openbabel.OBMol()
 
-        # obConversion.ReadFile(mol, os.path.join(tmp_dir, "un-minimized.mol2"))
 
         # convert compound to openbabel mol
         ids = {}
@@ -2587,7 +2584,6 @@ class Compound(object):
             )
         ff.UpdateCoordinates(mol)
 
-        # obConversion.WriteFile(mol, os.path.join(tmp_dir, "minimized.pdb"))
         # update the coordinates in the Compound
         for i, obatom in enumerate(openbabel.OBMolAtomIter(mol)):
             x = obatom.GetX() / 10.0
