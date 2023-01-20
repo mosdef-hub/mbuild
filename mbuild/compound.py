@@ -2521,7 +2521,6 @@ class Compound(object):
 
         mol = openbabel.OBMol()
 
-
         # convert compound to openbabel mol
         ids = {}
         for i, part in enumerate(self):
