@@ -2359,7 +2359,7 @@ class Compound(object):
         for particle in self.particles():
             if particle.element is None:
                 try:
-                    element_from_symbol(particle.name)
+                    particle._element = element_from_symbol(particle.name)
                 except ElementError:
                     try:
                         element_from_name(particle.name)
