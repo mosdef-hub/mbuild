@@ -1589,7 +1589,9 @@ class TestCompound(BaseTest):
         octane.energy_minimize()
         for particle in octane.particles():
             particle.name = "Q"
-        # Fail once names don't match elements
+            particle.element = None
+
+        # Fail once names cannot be set as elements
         with pytest.raises(MBuildError):
             octane.energy_minimize()
 
