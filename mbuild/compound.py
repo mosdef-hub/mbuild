@@ -2527,7 +2527,9 @@ class Compound(object):
             ids[id(part)] = i + 1
             a = mol.NewAtom()
             a.SetVector(
-                np.round(part.pos[0] * 10.0, 4), np.round(part.pos[1] * 10.0, 4), np.round(part.pos[2] * 10.0, 4)
+                np.round(part.pos[0] * 10.0, 4),
+                np.round(part.pos[1] * 10.0, 4),
+                np.round(part.pos[2] * 10.0, 4),
             )
             a.SetAtomicNum(part.element.atomic_number)
             a.SetType(part.element.symbol)
@@ -2847,7 +2849,7 @@ class Compound(object):
         topology : gmso.Topology
             The converted gmso Topology
         """
-        return conversion.to_gmso(self,**kwargs)
+        return conversion.to_gmso(self, **kwargs)
 
     # Interface to Trajectory for reading/writing .pdb and .mol2 files.
     # -----------------------------------------------------------------
