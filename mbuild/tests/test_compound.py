@@ -1082,7 +1082,9 @@ class TestCompound(BaseTest):
 
     def test_resnames_parmed(self, h2o, ethane):
         system = Compound([h2o, mb.clone(h2o), ethane])
-        struct = system.to_parmed(residues=["Ethane", "H2O"])
+        struct = system.to_parmed(
+            residues=["Ethane", "H2O"],
+        )
         assert len(struct.residues) == 3
         assert struct.residues[0].name == "H2O"
         assert struct.residues[1].name == "H2O"
@@ -1111,6 +1113,19 @@ class TestCompound(BaseTest):
         assert struct.residues[0].name == "H2O"
         assert struct.residues[1].name == "H2O"
         assert struct.residues[2].name == "Ethane"
+        assert sum(len(res.atoms) for res in struct.residues) == len(
+            struct.atoms
+        )
+
+        struct = system.to_parmed(
+            infer_residues=True,
+            infer_residues_kwargs={"segment_level": 1},
+        )
+        assert len(struct.residues) == 4
+        assert struct.residues[0].name == "H2O"
+        assert struct.residues[1].name == "H2O"
+        assert struct.residues[2].name == "CH3"
+        assert struct.residues[3].name == "CH3"
         assert sum(len(res.atoms) for res in struct.residues) == len(
             struct.atoms
         )

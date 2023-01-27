@@ -1161,10 +1161,10 @@ def pull_residues(
     if (
         balanced_bonds and segment_level == 0
     ):  # All atoms are bonded, at chosen tier
-        value_list.append(compound.name)
+        value_list.append(id(compound))
     elif balanced_bonds is None:  # Currently at the base level
         if include_base_level:
-            value_list.append(compound.name)
+            value_list.append(id(compound))
         else:
             raise ValueError(
                 "Did not expect to reach single segments with"
@@ -1173,7 +1173,7 @@ def pull_residues(
     elif (
         all(no_grandchildren) and not include_base_level
     ):  # One above base level
-        value_list.append(compound.name)
+        value_list.append(id(compound))
     else:
         if balanced_bonds:  # Go to the next tier below
             if segment_level > 0:
@@ -1184,7 +1184,7 @@ def pull_residues(
         # Check the next tier of compounds.
         for i, child in enumerate(compound.children):
             if no_grandchildren[i]:  # single atom particle
-                value_list.append(child.name)
+                value_list.append(id(child))
             else:
                 value_list.extend(
                     pull_residues(
@@ -1246,9 +1246,10 @@ def to_parmed(
 
     # Attempt to grab residue names based on names of children for the first
     # level of hierarchy without a box definition
+    flag_res_str = True
     if not residues and infer_residues:
         residues = pull_residues(compound, **infer_residues_kwargs)
-        print(residues)
+        flag_res_str = False
 
     if isinstance(residues, str):
         residues = [residues]
@@ -1273,13 +1274,15 @@ def to_parmed(
             pmd_atom.xx, pmd_atom.xy, pmd_atom.xz = atom.pos * 10  # Angstroms
 
         else:
-            if residues and atom.name in residues:
+            tmp_check = atom.name if flag_res_str else id(atom)
+            if residues and tmp_check in residues:
                 current_residue = pmd.Residue(atom.name)
                 atom_residue_map[atom] = current_residue
                 compound_residue_map[atom] = current_residue
             elif residues:
                 for parent in atom.ancestors():
-                    if residues and parent.name in residues:
+                    tmp_check = parent.name if flag_res_str else id(parent)
+                    if residues and tmp_check in residues:
                         if parent not in compound_residue_map:
                             current_residue = pmd.Residue(parent.name)
                             compound_residue_map[parent] = current_residue
