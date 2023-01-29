@@ -138,6 +138,18 @@ class TestCompound(BaseTest):
         for p1, p2 in zip(ethane.particles(), ethane_clone.particles()):
             assert p1.n_direct_bonds == p2.n_direct_bonds
 
+    def test_bond_speedup(self, ethane):
+        ethane_clone = mb.clone(ethane)
+        assert [bond for bond in ethane_clone.bonds()] == [bond for bond in ethane_clone._bonds()]
+        
+        ethane_clone2 = mb.clone(ethane)
+        system = mb.Compound()
+        system.add(ethane_clone)
+        system.add(ethane_clone2)
+        
+        assert [bond for bond in system.bonds()] == [bond for bond in system._bonds()]
+        assert [bond for bond in system.bonds()] == [bond for bond in system.bonds(use_connected=False)]
+
     def test_load_protein(self):
         # Testing the loading function with complicated protein,
         # The protein file is taken from RCSB protein data bank
@@ -1650,7 +1662,7 @@ class TestCompound(BaseTest):
         compound = Compound()
         compound.add(ch2)
         mb.force_overlap(ch3, ch3["up"], ch2["up"])
-        with pytest.raises(MBuildError):
+        with pytest.raises(IndexError):
             ch3_clone = mb.clone(ch3)
 
     def test_load_nonelement_mol2(self):
