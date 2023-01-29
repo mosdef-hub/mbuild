@@ -9,6 +9,8 @@ from collections.abc import Iterable
 from copy import deepcopy
 from typing import Sequence
 from warnings import warn
+from boltons.setutils import IndexedSet
+
 
 import ele
 import numpy as np
@@ -972,7 +974,7 @@ class Compound(object):
         for i in self.root.bond_graph._adj[self]:
             yield i
 
-    def bonds(self):
+    def _bonds(self):
         """Return all bonds in the Compound and sub-Compounds.
 
         Yields
@@ -994,6 +996,33 @@ class Compound(object):
                 ).edges_iter()
         else:
             return iter(())
+            
+    def bonds(self, use_connected= True):
+        if use_connected:
+            if self.bond_graph:
+                connected_subgraph = self.bond_graph.connected_components()
+                bonds = []
+                molecule_tags = {}
+                for molecule in connected_subgraph:
+                    if len(molecule) == 1:
+                        ancestors = [molecule[0]]
+                    else:
+                        ancestors = IndexedSet(molecule[0].ancestors())
+                        for particle in molecule[1:]:
+                            ancestors = ancestors.intersection(
+                                IndexedSet(particle.ancestors())
+                            )
+                       
+                    molecule_tags[ancestors[0]] = ancestors[0]
+                    #molecumolecule_tag = ancestors[0]
+                for molecule_tag in molecule_tags:
+                    for bond in molecule_tag._bonds():
+                        bonds.append(bond)
+                return iter(bonds)
+            else:
+                return self._bonds()
+        else:
+            return self._bonds()
 
     @property
     def n_direct_bonds(self):
