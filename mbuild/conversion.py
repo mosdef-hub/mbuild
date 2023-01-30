@@ -1197,7 +1197,7 @@ def to_parmed(
     title="",
     residues=None,
     show_ports=False,
-    infer_residues=False,
+    infer_residues=True,
     infer_residues_kwargs={},
 ):
     """Create a Parmed Structure from a Compound.
@@ -1213,14 +1213,14 @@ def to_parmed(
         with the same 0.25nm buffers.
     title : str, optional, default=compound.name
         Title/name of the ParmEd Structure
-    residues : str of list of str
+    residues : str of list of str, optional, default=None
         Labels of residues in the Compound. Residues are assigned by checking
         against Compound.name.
     show_ports : boolean, optional, default=False
         Include all port atoms when converting to a `Structure`.
-    infer_residues : bool, optional, default=False
-        Attempt to assign residues based on names of children for the level
-        of compound hierarchy without a box definition.
+    infer_residues : bool, optional, default=True
+        Attempt to assign residues based on the number of bonds and particles in
+        an object. This option is not used if `residues == None`
     infer_residues_kwargs : dict, optional, default={}
         Keyword arguments for :func:`mbuild.conversion.pull_residues`
 

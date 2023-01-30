@@ -1101,7 +1101,9 @@ class TestCompound(BaseTest):
             struct.atoms
         )
 
-        struct = system.to_parmed()
+        struct = system.to_parmed(
+            infer_residues=False,
+        )
         assert len(struct.residues) == 1
         assert struct.residues[0].name == "RES"
         assert sum(len(res.atoms) for res in struct.residues) == len(
