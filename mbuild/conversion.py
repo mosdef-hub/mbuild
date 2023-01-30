@@ -1163,13 +1163,7 @@ def pull_residues(
     ):  # All atoms are bonded, at chosen tier
         value_list.append(id(compound))
     elif balanced_bonds is None:  # Currently at the base level
-        if include_base_level:
-            value_list.append(id(compound))
-        else:
-            raise ValueError(
-                "Did not expect to reach single segments with"
-                " `include_base_level=False`."
-            )
+        value_list.append(id(compound))
     elif (
         all(no_grandchildren) and not include_base_level
     ):  # One above base level
@@ -1230,7 +1224,7 @@ def to_parmed(
     infer_residues_kwargs : dict, optional, default={}
         Keyword arguments for :func:`mbuild.conversion.pull_residues`
 
-    Returnsd
+    Returns
     -------
     parmed.structure.Structure
         ParmEd Structure object converted from compound

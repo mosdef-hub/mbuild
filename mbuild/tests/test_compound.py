@@ -1130,6 +1130,34 @@ class TestCompound(BaseTest):
             struct.atoms
         )
 
+        errmsg = "`segment_level` must be greater than zero."
+        with pytest.raises(ValueError, match=errmsg):
+            struct = system.to_parmed(
+                infer_residues=True,
+                infer_residues_kwargs={"segment_level": -1},
+            )
+
+        struct = system.to_parmed(
+            infer_residues=True,
+            infer_residues_kwargs={
+                "segment_level": 1,
+                "include_base_level": True,
+            },
+        )
+        assert len(struct.residues) == 8
+        print([x.name for x in struct.residues])
+        assert struct.residues[0].name == "O"
+        assert struct.residues[1].name == "H"
+        assert struct.residues[2].name == "H"
+        assert struct.residues[3].name == "O"
+        assert struct.residues[4].name == "H"
+        assert struct.residues[5].name == "H"
+        assert struct.residues[6].name == "CH3"
+        assert struct.residues[7].name == "CH3"
+        assert sum(len(res.atoms) for res in struct.residues) == len(
+            struct.atoms
+        )
+
     def test_parmed_element_guess(self):
         compound = Particle(name="foobar")
         with pytest.warns(UserWarning):
