@@ -556,9 +556,9 @@ class TestLammpsData(BaseTest):
         fn = lj_save(ethane, Path.cwd())
         checked_section = False
         ethane_bondsk = (
-            np.array([284512.0, 224262.4]) * (0.35) ** 2 / (0.276144) / 2
+            np.array([224262.4, 284512.0]) * (0.35) ** 2 / (0.276144) / 2
         )  # kj/mol/nm**2 to lammps
-        ethane_bondsreq = np.array([0.109, 0.1529]) * 0.35**-1  # unitless
+        ethane_bondsreq = np.array([0.1529, 0.109]) * 0.35**-1  # unitless
         ethane_lj_bonds = zip(ethane_bondsk, ethane_bondsreq)
         with open(fn, "r") as fi:
             while not checked_section:
@@ -566,7 +566,6 @@ class TestLammpsData(BaseTest):
                 if "Bond Coeffs" in line:
                     fi.readline()
                     for i, bond_params in enumerate(ethane_lj_bonds):
-                        print(bond_params)
                         line = fi.readline()
                         assert np.allclose(
                             (float(line.split()[1]), float(line.split()[2])),
@@ -580,9 +579,9 @@ class TestLammpsData(BaseTest):
         fn = real_save(ethane, Path.cwd())
         checked_section = False
         ethane_bondsk = (
-            np.array([284512.0, 224262.4]) / KCAL_TO_KJ * ANG_TO_NM**2 / 2
+            np.array([224262.4, 284512.0]) / KCAL_TO_KJ * ANG_TO_NM**2 / 2
         )  # kj/mol/nm**2 to lammps
-        ethane_bondsreq = np.array([0.109, 0.1529]) / ANG_TO_NM
+        ethane_bondsreq = np.array([0.1529, 0.109]) / ANG_TO_NM
         ethane_real_bonds = zip(ethane_bondsk, ethane_bondsreq)
         with open(fn, "r") as fi:
             while not checked_section:
@@ -590,7 +589,6 @@ class TestLammpsData(BaseTest):
                 if "Bond Coeffs" in line:
                     fi.readline()
                     for bond_params in ethane_real_bonds:
-                        print(bond_params)
                         line = fi.readline()
                         assert np.allclose(
                             (float(line.split()[1]), float(line.split()[2])),
