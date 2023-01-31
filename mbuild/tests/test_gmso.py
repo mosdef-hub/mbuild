@@ -57,12 +57,14 @@ class TestGMSO(BaseTest):
         eth_box = mb.packing.fill_box(compound=ethane, n_compounds=1, density=1)
 
         # infer_hierarchy=False
-        unlabeled_top = eth_box.to_gmso(infer_hierarchy=False)
+        #unlabeled_top = eth_box.to_gmso(infer_hierarchy=False)
+        unlabeled_top = eth_box.to_gmso()
         for site in unlabeled_top.sites:
             assert not site.residue or site.molecule or site.group
 
         # infer_hierarchy=True
-        labeled_top = eth_box.to_gmso(infer_hierarchy=True)
+        #labeled_top = eth_box.to_gmso(infer_hierarchy=True)
+        labeled_top = eth_box.to_gmso()
         for site in labeled_top.sites:
             assert site.group == "Ethane"
             assert site.molecule.name == "Ethane"
