@@ -997,30 +997,68 @@ class Compound(object):
         else:
             return iter(())
             
-    def bonds(self, use_connected= True):
+    def bonds(self, use_connected=True):
+        """Return all bonds in the Compound and sub-Compounds. By default,
+        this uses the connected components to improve performance when possible.
+
+        Yields
+        ------
+        tuple of mb.Compound
+            The next bond in the Compound
+
+        Parameters
+        ----------
+        use_connected : bool, optional, default=True
+            Uses the connected_components information in the bond_graph to
+            retrieve bonded information for sub-Compounds. In most cases,
+            this will be substantially faster.
+            
+        See Also
+        --------
+        bond_graph.edges_iter : Iterates over all edges in a BondGraph
+        Compound.n_bonds : Returns the total number of bonds in the Compound and sub-Compounds
+        Compound._bonds : Return all bonds in the Compound and sub-Compounds
+        """
+                
         if use_connected:
-            if self.bond_graph:
-                connected_subgraph = self.bond_graph.connected_components()
+            if self.root.bond_graph:
+                connected_subgraph = self.root.bond_graph.connected_components()
                 bonds = []
                 molecule_tags = {}
                 for molecule in connected_subgraph:
-                    if len(molecule) == 1:
-                        ancestors = [molecule[0]]
-                    else:
-                        ancestors = IndexedSet(molecule[0].ancestors())
-                        for particle in molecule[1:]:
-                            ancestors = ancestors.intersection(
-                                IndexedSet(particle.ancestors())
-                            )
-                       
-                    molecule_tags[ancestors[0]] = ancestors[0]
-                    #molecumolecule_tag = ancestors[0]
-                for molecule_tag in molecule_tags:
-                    for bond in molecule_tag._bonds():
-                        bonds.append(bond)
-                return iter(bonds)
+                    #if molecule contains a single particle it will not contain any bonds and can be skipped
+                    if len(molecule) > 1:
+                        #if the Compound of interest is not an ancestor of molecule, move to the next molecule
+                        if self in [ann for ann in molecule[0].ancestors()]:
+                            
+                            # this will set ancestors[0] to the lowest level Compound that
+                            # contains all the connected components in molecule
+                            ancestors = IndexedSet(molecule[0].ancestors())
+                            for particle in molecule[1:]:
+                                ancestors = ancestors.intersection(
+                                    IndexedSet(particle.ancestors())
+                                )
+                            # if the compound we are interested in is the lowest level ancestor or root, find the bonds
+                            if ancestors[0] == self or self == self.root:
+                                for b in self.root.bond_graph.subgraph(molecule).edges_iter():
+                                    bonds.append(b)
+                            # if the Compound of interest is not at a lower level than the lowest level container (i.e. ancestors[0])
+                            # then ancestors[0] is a sub-Compound of the Compound of interest
+                            elif self not in [part for part in ancestors[0].successors()]:
+                                for b in self.root.bond_graph.subgraph(molecule).edges_iter():
+                                    bonds.append(b)
+                                    
+                # If we did not add any bonds to the list that does not mean there are no bonds in the Compound of interest.
+                # It may mean that we are looking at a Compound with bonds to other Compounds
+                # (e.g., a CH3 in ethane; ethane would be the lowest level connected component stored in ancestors[0])
+                # As such, we will just return the original bond routine to retrieve the relevant info
+                if len(bonds) == 0:
+                    return self._bonds()
+                else:
+                    return iter(bonds)
             else:
                 return self._bonds()
+
         else:
             return self._bonds()
 
