@@ -1125,14 +1125,14 @@ def pull_residues(
     """Pull residues from a Compound object.
 
     Search class instance for completed compounds based on the number of
-    particles and bonds. If for example and peptide chain with three
-    individual peptides that were connected and hydrated with thirty water
-    molecules, the list will contain 31 residues. However, if the water and
-    the individual peptides should be labeled as individual residues, set
-    ``segment_level==1`` to receive a list with 33 residues. Depending on
-    the method used to assemble the peptides, this procedure may continue to
-    set ``segment_level=2`` and breakdown the peptide into functional groups.
-    Setting ``include_base_level==True`` will allow this procedure to
+    particles and bonds. If for example a peptide chain with three
+    connected peptides was hydrated with thirty water molecules, the list will
+    contain 31 residues. However, if the water and the individual peptides
+    should be labeled as individual residues, set ``segment_level==1`` to
+    receive a list with 33 residues. Depending on the method used to assemble
+    the peptides, this procedure may continue to set ``segment_level=2`` and
+    breakdown the peptide into functional groups. Setting
+    ``include_base_level==True`` will allow this procedure to
     function with coarse-grained systems, while the default behavior will
     end a search at the level before atoms are obtained.
 
