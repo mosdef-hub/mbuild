@@ -1116,23 +1116,49 @@ def save(
     else:  # ParmEd supported saver.
         structure.save(filename, overwrite=overwrite, **kwargs)
 
+def catalog_bondgraph_type(compound, bond_graph=None):
+    """Identify type of subgraph found at this stage of the compound.
+
+    Returns
+    -------
+    str:
+        "particle_graph" if compound is at the particle level,
+        "one_graph" if compound is a single molecule piece,
+        "multiple_graphs" if compound has multiple molecules
+    """
+    if not compound.children:
+        return "particle_graph"
+    elif bond_graph:
+        # at a subgraph level
+        multiple_connectionsBool = len(bond_graph.subgraph(compound).connected_components()) == 1
+    elif compound.bond_graph:
+        # check at the top level
+        multiple_connectionsBool = len(compound.bond_graph.connected_components()) == 1
+    else:
+        msg = f"`bond_graph` argument was not passed, but compound {compound} has no bond_graph attribute."
+        raise ValueError(msg)
+    if multiple_connectionsBool:
+        return "one_graph"
+    else:
+        return "multiple_graphs"
+
 
 def pull_residues(
     compound,
     segment_level=0,
     include_base_level=False,
+    bond_graph=None
 ):
     """Pull residues from a Compound object.
-
     Search class instance for completed compounds based on the number of
-    particles and bonds. If for example a peptide chain with three
-    connected peptides was hydrated with thirty water molecules, the list will
-    contain 31 residues. However, if the water and the individual peptides
-    should be labeled as individual residues, set ``segment_level==1`` to
-    receive a list with 33 residues. Depending on the method used to assemble
-    the peptides, this procedure may continue to set ``segment_level=2`` and
-    breakdown the peptide into functional groups. Setting
-    ``include_base_level==True`` will allow this procedure to
+    particles and bonds. If for example and peptide chain with three
+    individual peptides that were connected and hydrated with thirty water
+    molecules, the list will contain 31 residues. However, if the water and
+    the individual peptides should be labeled as individual residues, set
+    ``segment_level==1`` to receive a list with 33 residues. Depending on
+    the method used to assemble the peptides, this procedure may continue to
+    set ``segment_level=2`` and breakdown the peptide into functional groups.
+    Setting ``include_base_level==True`` will allow this procedure to
     function with coarse-grained systems, while the default behavior will
     end a search at the level before atoms are obtained.
 
@@ -1144,51 +1170,65 @@ def pull_residues(
         Level of full residue architecture to be identified
     include_base_level : bool, optional, default=False
         Set whether a search should continue if the list of children are single particles.
+    bond_graph: obj
+        An instance of :class:`mbuild.BondGraph`.
+        The top level bondgraph that contains the compound to get residues from.
 
     Returns
     -------
-    residues : list
-        List of residue names (str).
+    residuesList : list
+        List of residue ids (str).
     """
-    value_list = []
-    no_grandchildren = [not child.children for child in compound.children]
-    balanced_bonds = (
-        None
-        if not compound.children
-        else compound.n_particles - compound.n_bonds == 1
-    )
+    residuesList = []
 
+    if not bond_graph: #generate the bond graph is a top level bondgraph was not passed,
+        #useful for recursion
+        bond_graph = compound.bond_graph
+    compound_graphtype = catalog_bondgraph_type(compound, bond_graph=bond_graph)
+
+    # Checks segment_level and graphtype for adding particles to the residuesList
     if (
-        balanced_bonds and segment_level == 0
-    ):  # All atoms are bonded, at chosen tier
-        value_list.append(id(compound))
-    elif balanced_bonds is None:  # Currently at the base level
-        value_list.append(id(compound))
-    elif (
-        all(no_grandchildren) and not include_base_level
-    ):  # One above base level
-        value_list.append(id(compound))
-    else:
-        if balanced_bonds:  # Go to the next tier below
-            if segment_level > 0:
-                segment_level -= 1
-            elif segment_level < 0:
-                raise ValueError("`segment_level` must be greater than zero.")
+        segment_level == 0 and compound_graphtype == "multiple_graphs"
+    ):  # All want to write out the children of this state
+        residuesList.extend(list(map(id, compound.children)))
+    elif segment_level == 0 and compound_graphtype == "one_graph":
+        # At top level and a single molecule is here
+        residuesList.append(id(compound))
+    elif compound_graphtype == "particle_graph":  # Currently at the particle level
+        if include_base_level:
+            # only consider adding particles if specified
+            residuesList.append(id(compound))
+        else:
+            residuesList.append(id(compound.parent))
 
-        # Check the next tier of compounds.
+    # Checks for recursion
+    if segment_level > 0 and compound_graphtype == "one_graph":
+        # start reducing segment_level once you hit single molecules
+        segment_level -= 1
         for i, child in enumerate(compound.children):
-            if no_grandchildren[i]:  # single atom particle
-                value_list.append(id(child))
-            else:
-                value_list.extend(
+                residuesList.extend(
                     pull_residues(
                         child,
                         segment_level=segment_level,
                         include_base_level=include_base_level,
+                        bond_graph=bond_graph
                     )
                 )
+    elif segment_level > 0 and compound_graphtype == "multiple_graphs":
+        # Check the next tier until you hit molecules
+        for i, child in enumerate(compound.children):
+                residuesList.extend(
+                    pull_residues(
+                        child,
+                        segment_level=segment_level,
+                        include_base_level=include_base_level,
+                        bond_graph=bond_graph
+                    )
+                )
+    elif segment_level < 0:
+        raise ValueError("`segment_level` must be greater than zero.")
 
-    return value_list
+    return residuesList
 
 
 def to_parmed(
@@ -1278,7 +1318,7 @@ def to_parmed(
                     tmp_check = parent.name if flag_res_str else id(parent)
                     if residues and tmp_check in residues:
                         if parent not in compound_residue_map:
-                            current_residue = pmd.Residue(parent.name)
+                            current_residue = pmd.Residue(parent.name if parent.name else default_residue.name)
                             compound_residue_map[parent] = current_residue
                         atom_residue_map[atom] = current_residue
                         break
