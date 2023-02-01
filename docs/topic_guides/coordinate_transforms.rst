@@ -4,13 +4,13 @@ Coordinate Transformations
 The following utility functions provide mechanisms for spatial transformations for mbuild compounds:
 
 
-.. autofunction:: mbuild.compound.translate
+.. autofunction:: mbuild.compound.compound.translate
 
-.. autofunction:: mbuild.compound.translate_to
+.. autofunction:: mbuild.compound.compound.translate_to
 
-.. autofunction:: mbuild.compound.rotate
+.. autofunction:: mbuild.compound.compound.rotate
 
-.. autofunction:: mbuild.compound.spin
+.. autofunction:: mbuild.compound.compound.spin
 
 .. autofunction:: mbuild.coordinate_transform.force_overlap
 
