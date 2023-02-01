@@ -56,17 +56,14 @@ class TestGMSO(BaseTest):
         # Create an ethane box, should be a four structure
         eth_box = mb.packing.fill_box(compound=ethane, n_compounds=1, density=1)
 
-        # TODO: once infer_hierarchy is implemented in gmso, changes these functions
 
-        # infer_hierarchy=False
-        # unlabeled_top = eth_box.to_gmso(infer_hierarchy=False)
-        unlabeled_top = eth_box.to_gmso()
+        # don't infer_hierarchy, parse_label=False
+        unlabeled_top = eth_box.to_gmso(parse_label=False)
         for site in unlabeled_top.sites:
             assert not site.residue or site.molecule or site.group
 
-        # infer_hierarchy=True
-        # labeled_top = eth_box.to_gmso(infer_hierarchy=True)
-        labeled_top = eth_box.to_gmso()
+        # infer_hierarchy
+        labeled_top = eth_box.to_gmso(parse_label=True)
         for site in labeled_top.sites:
             assert site.group == "Ethane"
             assert site.molecule.name == "Ethane"

@@ -2040,16 +2040,16 @@ class Compound(object):
                     f"Anchor: {anchor} is not part of the Compound: {self}"
                     "that you are trying to energy minimize."
                 )
-        tmp_dir = tempfile.mkdtemp()
         original = clone(self)
         self._kick()
         extension = os.path.splitext(forcefield)[-1]
         openbabel_ffs = ["MMFF94", "MMFF94s", "UFF", "GAFF", "Ghemical"]
         if forcefield in openbabel_ffs:
             self._energy_minimize_openbabel(
-                tmp_dir, forcefield=forcefield, steps=steps, **kwargs
+                forcefield=forcefield, steps=steps, **kwargs
             )
         else:
+            tmp_dir = tempfile.mkdtemp()
             self.save(os.path.join(tmp_dir, "un-minimized.mol2"))
 
             if extension == ".xml":
@@ -2265,7 +2265,6 @@ class Compound(object):
 
     def _energy_minimize_openbabel(
         self,
-        tmp_dir,
         steps=1000,
         algorithm="cg",
         forcefield="UFF",
