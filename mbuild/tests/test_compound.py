@@ -141,20 +141,28 @@ class TestCompound(BaseTest):
     def test_bond_speedup(self, ethane):
         # does the efficient code give the same bonds as the slower code?
         ethane_clone = mb.clone(ethane)
-        assert sum([1 for _ in ethane_clone.bonds()]) == sum([1 for _ in ethane_clone._bonds()])
-        
+        assert sum([1 for _ in ethane_clone.bonds()]) == sum(
+            [1 for _ in ethane_clone._bonds()]
+        )
+
         # with added hierarchy, do we still get the same answers
         ethane_clone2 = mb.clone(ethane)
         system = mb.Compound()
         system.add(ethane_clone)
         system.add(ethane_clone2)
-        
-        assert sum([1 for _ in system.bonds()]) == sum([1 for _ in system._bonds()])
-        assert sum([1 for _ in system.bonds()]) == sum([1 for _ in system.bonds(use_connected=False)])
+
+        assert sum([1 for _ in system.bonds()]) == sum(
+            [1 for _ in system._bonds()]
+        )
+        assert sum([1 for _ in system.bonds()]) == sum(
+            [1 for _ in system.bonds(use_connected=False)]
+        )
 
         # check we can traverse the hierarchy and get the correct number of bonds
         ethane_clone3 = mb.clone(ethane)
-        assert sum([1 for _ in ethane_clone3.bonds()]) == sum([1 for _ in ethane_clone2.bonds()])
+        assert sum([1 for _ in ethane_clone3.bonds()]) == sum(
+            [1 for _ in ethane_clone2.bonds()]
+        )
 
     def test_load_protein(self):
         # Testing the loading function with complicated protein,

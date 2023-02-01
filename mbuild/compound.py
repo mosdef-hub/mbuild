@@ -9,11 +9,10 @@ from collections.abc import Iterable
 from copy import deepcopy
 from typing import Sequence
 from warnings import warn
-from boltons.setutils import IndexedSet
-
 
 import ele
 import numpy as np
+from boltons.setutils import IndexedSet
 from ele.element import Element, element_from_name, element_from_symbol
 from ele.exceptions import ElementError
 
@@ -996,7 +995,7 @@ class Compound(object):
                 ).edges_iter()
         else:
             return iter(())
-            
+
     def bonds(self, use_connected=True):
         """Return all bonds in the Compound and sub-Compounds. By default,
         this uses the connected components to improve performance when possible.
@@ -1012,23 +1011,23 @@ class Compound(object):
             Uses the connected_components information in the bond_graph to
             retrieve bonded information for sub-Compounds. In most cases,
             this will be substantially faster.
-            
+
         See Also
         --------
         bond_graph.edges_iter : Iterates over all edges in a BondGraph
         Compound.n_bonds : Returns the total number of bonds in the Compound and sub-Compounds
         Compound._bonds : Return all bonds in the Compound and sub-Compounds
         """
-                
+
         if use_connected:
             if self.root.bond_graph:
                 connected_subgraph = self.root.bond_graph.connected_components()
                 bonds = []
                 molecule_tags = {}
                 for molecule in connected_subgraph:
-                    #if molecule contains a single particle it will not contain any bonds and can be skipped
+                    # if molecule contains a single particle it will not contain any bonds and can be skipped
                     if len(molecule) > 1:
-                        #if the Compound of interest is not an ancestor of molecule, move to the next molecule
+                        # if the Compound of interest is not an ancestor of molecule, move to the next molecule
                         ancestors = [ann for ann in molecule[0].ancestors()]
                         if self in ancestors:
                             if len(ancestors) > 1:
@@ -1041,14 +1040,20 @@ class Compound(object):
                                     )
                             # if the compound we are interested in is the lowest level ancestor or root, find the bonds
                             if ancestors[0] == self or self == self.root:
-                                for b in self.root.bond_graph.subgraph(molecule).edges_iter():
+                                for b in self.root.bond_graph.subgraph(
+                                    molecule
+                                ).edges_iter():
                                     bonds.append(b)
                             # if the Compound of interest is not at a lower level than the lowest level container (i.e. ancestors[0])
                             # then ancestors[0] is a sub-Compound of the Compound of interest
-                            elif self not in [part for part in ancestors[0].successors()]:
-                                for b in self.root.bond_graph.subgraph(molecule).edges_iter():
+                            elif self not in [
+                                part for part in ancestors[0].successors()
+                            ]:
+                                for b in self.root.bond_graph.subgraph(
+                                    molecule
+                                ).edges_iter():
                                     bonds.append(b)
-                                    
+
                 # If we did not add any bonds to the list that does not mean there are no bonds in the Compound of interest.
                 # It may mean that we are looking at a Compound with bonds to other Compounds
                 # (e.g., a CH3 in ethane; ethane would be the lowest level connected component stored in ancestors[0])
@@ -2595,7 +2600,9 @@ class Compound(object):
             ids[id(part)] = i + 1
             a = mol.NewAtom()
             a.SetVector(
-                np.round(part.pos[0] * 10.0, 4), np.round(part.pos[1] * 10.0, 4), np.round(part.pos[2] * 10.0, 4)
+                np.round(part.pos[0] * 10.0, 4),
+                np.round(part.pos[1] * 10.0, 4),
+                np.round(part.pos[2] * 10.0, 4),
             )
             a.SetAtomicNum(part.element.atomic_number)
             a.SetType(part.element.symbol)
@@ -2915,7 +2922,7 @@ class Compound(object):
         topology : gmso.Topology
             The converted gmso Topology
         """
-        return conversion.to_gmso(self,**kwargs)
+        return conversion.to_gmso(self, **kwargs)
 
     # Interface to Trajectory for reading/writing .pdb and .mol2 files.
     # -----------------------------------------------------------------
