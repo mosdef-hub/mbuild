@@ -2517,10 +2517,10 @@ class Compound(object):
                             particle_idx[id(particle)] + 1
                         )  # openbabel indices start at 1
                         ob_constraints.AddIgnore(pid)
-        
+
         mol = self.to_pybel()
         mol = mol.OBMol
-        
+
         mol.PerceiveBondOrders()
         mol.SetAtomTypesPerceived()
 
