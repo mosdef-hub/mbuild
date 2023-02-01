@@ -12,10 +12,10 @@ The following utility functions provide mechanisms for spatial transformations f
 
 .. autofunction:: mbuild.coordinate_transform.z_axis_transform
 
-.. autofunction:: mbuild.compound.translate
+.. autofunction:: mbuild.compound.Compound.translate
 
-.. autofunction:: mbuild.compound.translate_to
+.. autofunction:: mbuild.compound.Compound.translate_to
 
-.. autofunction:: mbuild.compound.rotate
+.. autofunction:: mbuild.compound.Compound.rotate
 
-.. autofunction:: mbuild.compound.spin
+.. autofunction:: mbuild.compound.Compound.spin
