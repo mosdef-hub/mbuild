@@ -2834,7 +2834,6 @@ class Compound(object):
         """
 
         return conversion.to_gmso(self, **kwargs)
-        #return conversion.to_gmso(self)
 
     # Interface to Trajectory for reading/writing .pdb and .mol2 files.
     # -----------------------------------------------------------------
