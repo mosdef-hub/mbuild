@@ -2203,7 +2203,9 @@ class TestCompound(BaseTest):
     def test_residues_from_hierarchy(self):
         from mbuild.conversion import pull_residues
 
-        benzene = mb.load("C1=CC=CC=C1", smiles=True) #ring structure single molecule
+        benzene = mb.load(
+            "C1=CC=CC=C1", smiles=True
+        )  # ring structure single molecule
         assert len(pull_residues(benzene, bond_graph=benzene.bond_graph)) == 1
 
         compound = mb.Compound([mb.clone(benzene), mb.clone(benzene)])
@@ -2219,9 +2221,14 @@ class TestCompound(BaseTest):
         compound.add_bond([compound.children[0][0], compound.children[1][0]])
         assert len(pull_residues(compound, bond_graph=compound.bond_graph)) == 1
 
-        n_waters = 100 #box of multiple waters
-        compound = mb.fill_box(mb.load("O", smiles=True), n_waters, mb.Box([10, 10, 10]))
-        assert len(pull_residues(compound, bond_graph=compound.bond_graph)) == n_waters
+        n_waters = 100  # box of multiple waters
+        compound = mb.fill_box(
+            mb.load("O", smiles=True), n_waters, mb.Box([10, 10, 10])
+        )
+        assert (
+            len(pull_residues(compound, bond_graph=compound.bond_graph))
+            == n_waters
+        )
 
     def test_catalog_bondgraph_types(self):
         from mbuild.conversion import catalog_bondgraph_type
@@ -2234,6 +2241,12 @@ class TestCompound(BaseTest):
         compound = mb.Compound([mb.clone(benzene), mb.clone(benzene)])
         assert catalog_bondgraph_type(compound) == "multiple_graphs"
         # child of the parent
-        assert catalog_bondgraph_type(compound.children[1], compound.bond_graph) == "one_graph"
+        assert (
+            catalog_bondgraph_type(compound.children[1], compound.bond_graph)
+            == "one_graph"
+        )
         # particle of a compound
-        assert catalog_bondgraph_type(compound.children[1][0], compound.bond_graph) == "particle_graph"
+        assert (
+            catalog_bondgraph_type(compound.children[1][0], compound.bond_graph)
+            == "particle_graph"
+        )
