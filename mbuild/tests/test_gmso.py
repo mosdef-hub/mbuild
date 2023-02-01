@@ -56,7 +56,6 @@ class TestGMSO(BaseTest):
         # Create an ethane box, should be a four structure
         eth_box = mb.packing.fill_box(compound=ethane, n_compounds=1, density=1)
 
-
         # don't infer_hierarchy, parse_label=False
         unlabeled_top = eth_box.to_gmso(parse_label=False)
         for site in unlabeled_top.sites:
