@@ -1029,15 +1029,16 @@ class Compound(object):
                     #if molecule contains a single particle it will not contain any bonds and can be skipped
                     if len(molecule) > 1:
                         #if the Compound of interest is not an ancestor of molecule, move to the next molecule
-                        if self in [ann for ann in molecule[0].ancestors()]:
-                            
-                            # this will set ancestors[0] to the lowest level Compound that
-                            # contains all the connected components in molecule
-                            ancestors = IndexedSet(molecule[0].ancestors())
-                            for particle in molecule[1:]:
-                                ancestors = ancestors.intersection(
-                                    IndexedSet(particle.ancestors())
-                                )
+                        ancestors = [ann for ann in molecule[0].ancestors()]
+                        if self in ancestors:
+                            if len(ancestors) > 1:
+                                # this will set ancestors[0] to the lowest level Compound that
+                                # contains all the connected components in molecule
+                                ancestors = IndexedSet(molecule[0].ancestors())
+                                for particle in molecule[1:]:
+                                    ancestors = ancestors.intersection(
+                                        IndexedSet(particle.ancestors())
+                                    )
                             # if the compound we are interested in is the lowest level ancestor or root, find the bonds
                             if ancestors[0] == self or self == self.root:
                                 for b in self.root.bond_graph.subgraph(molecule).edges_iter():
