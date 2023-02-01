@@ -1668,7 +1668,7 @@ class TestCompound(BaseTest):
         compound = Compound()
         compound.add(ch2)
         mb.force_overlap(ch3, ch3["up"], ch2["up"])
-        with pytest.raises(IndexError):
+        with pytest.raises(MBuildError):
             ch3_clone = mb.clone(ch3)
 
     def test_load_nonelement_mol2(self):
