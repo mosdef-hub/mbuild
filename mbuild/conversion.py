@@ -1116,6 +1116,7 @@ def save(
     else:  # ParmEd supported saver.
         structure.save(filename, overwrite=overwrite, **kwargs)
 
+
 def catalog_bondgraph_type(compound, bond_graph=None):
     """Identify type of subgraph found at this stage of the compound.
 
@@ -1130,10 +1131,14 @@ def catalog_bondgraph_type(compound, bond_graph=None):
         return "particle_graph"
     elif bond_graph:
         # at a subgraph level
-        multiple_connectionsBool = len(bond_graph.subgraph(compound).connected_components()) == 1
+        multiple_connectionsBool = (
+            len(bond_graph.subgraph(compound).connected_components()) == 1
+        )
     elif compound.bond_graph:
         # check at the top level
-        multiple_connectionsBool = len(compound.bond_graph.connected_components()) == 1
+        multiple_connectionsBool = (
+            len(compound.bond_graph.connected_components()) == 1
+        )
     else:
         msg = f"`bond_graph` argument was not passed, but compound {compound} has no bond_graph attribute."
         raise ValueError(msg)
@@ -1144,10 +1149,7 @@ def catalog_bondgraph_type(compound, bond_graph=None):
 
 
 def pull_residues(
-    compound,
-    segment_level=0,
-    include_base_level=False,
-    bond_graph=None
+    compound, segment_level=0, include_base_level=False, bond_graph=None
 ):
     """Pull residues from a Compound object.
     Search class instance for completed compounds based on the number of
@@ -1181,8 +1183,10 @@ def pull_residues(
     """
     residuesList = []
 
-    if not bond_graph: #generate the bond graph is a top level bondgraph was not passed,
-        #useful for recursion
+    if (
+        not bond_graph
+    ):  # generate the bond graph is a top level bondgraph was not passed,
+        # useful for recursion
         bond_graph = compound.bond_graph
     compound_graphtype = catalog_bondgraph_type(compound, bond_graph=bond_graph)
 
@@ -1194,7 +1198,9 @@ def pull_residues(
     elif segment_level == 0 and compound_graphtype == "one_graph":
         # At top level and a single molecule is here
         residuesList.append(id(compound))
-    elif compound_graphtype == "particle_graph":  # Currently at the particle level
+    elif (
+        compound_graphtype == "particle_graph"
+    ):  # Currently at the particle level
         if include_base_level:
             # only consider adding particles if specified
             residuesList.append(id(compound))
@@ -1206,25 +1212,25 @@ def pull_residues(
         # start reducing segment_level once you hit single molecules
         segment_level -= 1
         for i, child in enumerate(compound.children):
-                residuesList.extend(
-                    pull_residues(
-                        child,
-                        segment_level=segment_level,
-                        include_base_level=include_base_level,
-                        bond_graph=bond_graph
-                    )
+            residuesList.extend(
+                pull_residues(
+                    child,
+                    segment_level=segment_level,
+                    include_base_level=include_base_level,
+                    bond_graph=bond_graph,
                 )
+            )
     elif segment_level > 0 and compound_graphtype == "multiple_graphs":
         # Check the next tier until you hit molecules
         for i, child in enumerate(compound.children):
-                residuesList.extend(
-                    pull_residues(
-                        child,
-                        segment_level=segment_level,
-                        include_base_level=include_base_level,
-                        bond_graph=bond_graph
-                    )
+            residuesList.extend(
+                pull_residues(
+                    child,
+                    segment_level=segment_level,
+                    include_base_level=include_base_level,
+                    bond_graph=bond_graph,
                 )
+            )
     elif segment_level < 0:
         raise ValueError("`segment_level` must be greater than zero.")
 
@@ -1318,7 +1324,11 @@ def to_parmed(
                     tmp_check = parent.name if flag_res_str else id(parent)
                     if residues and tmp_check in residues:
                         if parent not in compound_residue_map:
-                            current_residue = pmd.Residue(parent.name if parent.name else default_residue.name)
+                            current_residue = pmd.Residue(
+                                parent.name
+                                if parent.name
+                                else default_residue.name
+                            )
                             compound_residue_map[parent] = current_residue
                         atom_residue_map[atom] = current_residue
                         break
