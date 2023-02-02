@@ -1046,9 +1046,7 @@ class Compound(object):
                                     bonds.append(b)
                             # if the Compound of interest is not at a lower level than the lowest level container (i.e. ancestors[0])
                             # then ancestors[0] is a sub-Compound of the Compound of interest
-                            elif self not in [
-                                part for part in ancestors[0].successors()
-                            ]:
+                            elif self not in [ part for part in ancestors[0].successors()]:
                                 for b in self.root.bond_graph.subgraph(
                                     molecule
                                 ).edges_iter():
