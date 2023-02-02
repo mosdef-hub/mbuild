@@ -2040,34 +2040,37 @@ class Compound(object):
                     f"Anchor: {anchor} is not part of the Compound: {self}"
                     "that you are trying to energy minimize."
                 )
-        tmp_dir = tempfile.mkdtemp()
         original = clone(self)
         self._kick()
-        self.save(os.path.join(tmp_dir, "un-minimized.mol2"))
         extension = os.path.splitext(forcefield)[-1]
         openbabel_ffs = ["MMFF94", "MMFF94s", "UFF", "GAFF", "Ghemical"]
         if forcefield in openbabel_ffs:
             self._energy_minimize_openbabel(
-                tmp_dir, forcefield=forcefield, steps=steps, **kwargs
-            )
-        elif extension == ".xml":
-            self._energy_minimize_openmm(
-                tmp_dir,
-                forcefield_files=forcefield,
-                forcefield_name=None,
-                steps=steps,
-                **kwargs,
+                forcefield=forcefield, steps=steps, **kwargs
             )
         else:
-            self._energy_minimize_openmm(
-                tmp_dir,
-                forcefield_files=None,
-                forcefield_name=forcefield,
-                steps=steps,
-                **kwargs,
-            )
+            tmp_dir = tempfile.mkdtemp()
+            self.save(os.path.join(tmp_dir, "un-minimized.mol2"))
 
-        self.update_coordinates(os.path.join(tmp_dir, "minimized.pdb"))
+            if extension == ".xml":
+                self._energy_minimize_openmm(
+                    tmp_dir,
+                    forcefield_files=forcefield,
+                    forcefield_name=None,
+                    steps=steps,
+                    **kwargs,
+                )
+            else:
+                self._energy_minimize_openmm(
+                    tmp_dir,
+                    forcefield_files=None,
+                    forcefield_name=forcefield,
+                    steps=steps,
+                    **kwargs,
+                )
+
+            self.update_coordinates(os.path.join(tmp_dir, "minimized.pdb"))
+
         if shift_com:
             self.translate_to(com)
 
@@ -2262,7 +2265,6 @@ class Compound(object):
 
     def _energy_minimize_openbabel(
         self,
-        tmp_dir,
         steps=1000,
         algorithm="cg",
         forcefield="UFF",
@@ -2356,7 +2358,7 @@ class Compound(object):
         for particle in self.particles():
             if particle.element is None:
                 try:
-                    element_from_symbol(particle.name)
+                    particle._element = element_from_symbol(particle.name)
                 except ElementError:
                     try:
                         element_from_name(particle.name)
@@ -2516,11 +2518,11 @@ class Compound(object):
                         )  # openbabel indices start at 1
                         ob_constraints.AddIgnore(pid)
 
-        obConversion = openbabel.OBConversion()
-        obConversion.SetInAndOutFormats("mol2", "pdb")
-        mol = openbabel.OBMol()
+        mol = self.to_pybel()
+        mol = mol.OBMol
 
-        obConversion.ReadFile(mol, os.path.join(tmp_dir, "un-minimized.mol2"))
+        mol.PerceiveBondOrders()
+        mol.SetAtomTypesPerceived()
 
         ff = openbabel.OBForceField.FindForceField(forcefield)
         if ff is None:
@@ -2565,7 +2567,12 @@ class Compound(object):
             )
         ff.UpdateCoordinates(mol)
 
-        obConversion.WriteFile(mol, os.path.join(tmp_dir, "minimized.pdb"))
+        # update the coordinates in the Compound
+        for i, obatom in enumerate(openbabel.OBMolAtomIter(mol)):
+            x = obatom.GetX() / 10.0
+            y = obatom.GetY() / 10.0
+            z = obatom.GetZ() / 10.0
+            self[i].pos = np.array([x, y, z])
 
     def save(
         self,
@@ -2834,7 +2841,7 @@ class Compound(object):
         topology : gmso.Topology
             The converted gmso Topology
         """
-        return conversion.to_gmso(self)
+        return conversion.to_gmso(self, **kwargs)
 
     # Interface to Trajectory for reading/writing .pdb and .mol2 files.
     # -----------------------------------------------------------------
