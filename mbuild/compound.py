@@ -2111,16 +2111,16 @@ class Compound(object):
                     f"Anchor: {anchor} is not part of the Compound: {self}"
                     "that you are trying to energy minimize."
                 )
-        tmp_dir = tempfile.mkdtemp()
         original = clone(self)
         self._kick()
         extension = os.path.splitext(forcefield)[-1]
         openbabel_ffs = ["MMFF94", "MMFF94s", "UFF", "GAFF", "Ghemical"]
         if forcefield in openbabel_ffs:
             self._energy_minimize_openbabel(
-                tmp_dir, forcefield=forcefield, steps=steps, **kwargs
+                forcefield=forcefield, steps=steps, **kwargs
             )
         else:
+            tmp_dir = tempfile.mkdtemp()
             self.save(os.path.join(tmp_dir, "un-minimized.mol2"))
 
             if extension == ".xml":
@@ -2336,7 +2336,6 @@ class Compound(object):
 
     def _energy_minimize_openbabel(
         self,
-        tmp_dir,
         steps=1000,
         algorithm="cg",
         forcefield="UFF",
@@ -2590,25 +2589,8 @@ class Compound(object):
                         )  # openbabel indices start at 1
                         ob_constraints.AddIgnore(pid)
 
-        mol = openbabel.OBMol()
-
-        # convert compound to openbabel mol
-        ids = {}
-        for i, part in enumerate(self):
-            ids[id(part)] = i + 1
-            a = mol.NewAtom()
-            a.SetVector(
-                np.round(part.pos[0] * 10.0, 4),
-                np.round(part.pos[1] * 10.0, 4),
-                np.round(part.pos[2] * 10.0, 4),
-            )
-            a.SetAtomicNum(part.element.atomic_number)
-            a.SetType(part.element.symbol)
-
-        # since mbuild doesn't consider bond order,
-        # we will set bond order to 1 and call PerceiveBondOrders
-        for bond in self.bonds():
-            mol.AddBond(ids[id(bond[0])], ids[id(bond[1])], 1)
+        mol = self.to_pybel()
+        mol = mol.OBMol
 
         mol.PerceiveBondOrders()
         mol.SetAtomTypesPerceived()

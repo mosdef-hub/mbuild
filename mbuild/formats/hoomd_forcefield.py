@@ -93,15 +93,15 @@ def create_hoomd_forcefield(
 
     Examples
     --------
-        To convert the energy units from kcal/mol to kj/mol:
-            use ref_energy = 0.2390057 (kcal/kj)
+    To convert the energy units from kcal/mol to kj/mol:
+        use ref_energy = 0.2390057 (kcal/kj)
 
-        To convert the distance units from Angstrom to nm:
-            use ref_distance = 10 (angstroms/nm)
+    To convert the distance units from Angstrom to nm:
+        use ref_distance = 10 (angstroms/nm)
 
-        To use a reduced unit system, where mass, sigma, and epsilon are
-        scaled by the largest value of each:
-            use auto_scale = True, ref_distance = ref_energy = ref_mass = 1
+    To use a reduced unit system, where mass, sigma, and epsilon are
+    scaled by the largest value of each:
+        use auto_scale = True, ref_distance = ref_energy = ref_mass = 1
 
     """
     if isinstance(structure, mb.Compound):
