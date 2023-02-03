@@ -359,9 +359,9 @@ def fill_region(
                 "equal length."
             )
     if bounds is not None:
-        if not isinstance(bounds, (list, set)):
+        if not isinstance(bounds, (list)):
             raise TypeError(
-                "`bounds` must be a list-like of one or more bounding boxes "
+                "`bounds` must be a list of one or more bounding boxes "
                 "and/or `None` for each item in `compound`."
             )
         if len(bounds) != len(n_compounds):
@@ -370,10 +370,10 @@ def fill_region(
                 "for non-bounded items in `compound`."
             )
         for bound in bounds:
-            if bound is not None and len(bound) != 6:
+            if not isinstance(bound, (Box, list)):
                 raise ValueError(
-                    "Each bound in `bounds` must be `None` or a list of "
-                    "[min_x, min_y, min_z, max_x, max_y, max_z]."
+                    "Each bound in `bounds` must be `None`, `Box`, or a "
+                    "list of [min_x, min_y, min_z, max_x, max_y, max_z]."
                     )
 
     # See if region is a single region or list
