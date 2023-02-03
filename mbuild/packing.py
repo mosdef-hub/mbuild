@@ -319,7 +319,7 @@ def fill_region(
     bounds : list-like of list-likes of floats [[min_x, min_y, min_z, max_x, max_y, max_z], ...], units nm, default=None
         Bounding(s) within box to pack compound(s). To pack within a bounding
         area that is not the full extent of the region, bounds are required.
-        Each item of `compound` must have its own bound specified. Use `None` 
+        Each item of `compound` must have its own bound specified. Use `None`
         to indicate a given compound is not bounded, e.g.
         `[ [0., 0., 1., 2., 2., 2.], None]` to bound only the first element
         of `compound` and not the second.
@@ -374,7 +374,7 @@ def fill_region(
                 raise ValueError(
                     "Each bound in `bounds` must be `None`, `Box`, or a "
                     "list of [min_x, min_y, min_z, max_x, max_y, max_z]."
-                    )
+                )
 
     # See if region is a single region or list
     my_regions = []
