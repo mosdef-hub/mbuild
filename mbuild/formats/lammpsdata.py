@@ -101,7 +101,7 @@ def write_lammpsdata(
         If unit_style is set to 'lj', then charge conversion factor may or may not be used to
         non-dimensionalize. Assume to be in elementary charge units. If ``True``, the charges
         are scaled by ``np.sqrt(4*np.pi()*eps_0*sigma_conversion_factor*epsilon_conversion_factor)``.
-        If ``False``, the charges are not scaed and the use must be wary to choose the dielectric
+        If ``False``, the charges are not scaled and the user must be wary to choose the dielectric
         constant properly, which may be more convenient to implement an implicit solvent.
     moleculeID_offset : int , optional, default=1
         Since LAMMPS treats the MoleculeID as an additional set of information
