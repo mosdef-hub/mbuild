@@ -935,6 +935,7 @@ def save(
     residues=None,
     combining_rule="lorentz",
     foyer_kwargs=None,
+    parmed_kwargs=None,
     **kwargs,
 ):
     """Save the Compound to a file.
@@ -975,6 +976,8 @@ def save(
         geometric combining rules respectively.
     foyer_kwargs : dict, optional, default=None
         Keyword arguments to provide to `foyer.Forcefield.apply`.
+    parmed_kwargs : dict, optional, default=None
+        Keyword arguments to provide to :meth:`mbuild.Compound.to_parmed`
     **kwargs
         Depending on the file extension these will be passed to either
         `write_gsd`, `write_hoomdxml`, `write_lammpsdata`, `write_mcf`, or
@@ -1047,8 +1050,13 @@ def save(
     if os.path.exists(filename) and not overwrite:
         raise IOError("{0} exists; not overwriting".format(filename))
 
+    if not parmed_kwargs:
+        parmed_kwargs = {}
     structure = compound.to_parmed(
-        box=box, residues=residues, show_ports=show_ports
+        box=box,
+        residues=residues,
+        show_ports=show_ports,
+        **parmed_kwargs,
     )
     # Apply a force field with foyer if specified
     if forcefield_name or forcefield_files:
@@ -1109,13 +1117,145 @@ def save(
         structure.save(filename, overwrite=overwrite, **kwargs)
 
 
+def catalog_bondgraph_type(compound, bond_graph=None):
+    """Identify type of subgraph found at this stage of the compound.
+
+    Parameters
+    ----------
+    compound : obj
+        An instance of :class:`mbuild.compound.Compound`
+
+    Returns
+    -------
+    str:
+        "particle_graph" if compound is at the particle level,
+        "one_graph" if compound is a single molecule piece,
+        "multiple_graphs" if compound has multiple molecules
+    """
+    if not compound.children:
+        return "particle_graph"
+    elif bond_graph:
+        # at a subgraph level
+        multiple_connectionsBool = (
+            len(bond_graph.subgraph(compound).connected_components()) == 1
+            and len(bond_graph.subgraph(compound).connected_components()[0])
+            == compound.n_particles
+        )
+    elif compound.bond_graph:
+        # check at the top level
+        multiple_connectionsBool = (
+            len(compound.bond_graph.connected_components()) == 1
+            and len(compound.bond_graph.connected_components()[0])
+            == compound.n_particles
+        )
+    else:
+        msg = f"`bond_graph` argument was not passed, but compound {compound} has no bond_graph attribute."
+        raise ValueError(msg)
+
+    if multiple_connectionsBool:
+        return "one_graph"
+    else:
+        return "multiple_graphs"
+
+
+def pull_residues(
+    compound, segment_level=0, include_base_level=False, bond_graph=None
+):
+    """Pull residues from a Compound object.
+
+    Search class instance for completed compounds based on the number of
+    particles and bonds. If for example and peptide chain with three
+    individual peptides that were connected and hydrated with thirty water
+    molecules, the list will contain 31 residues. However, if the water and
+    the individual peptides should be labeled as individual residues, set
+    ``segment_level==1`` to receive a list with 33 residues. Depending on
+    the method used to assemble the peptides, this procedure may continue to
+    set ``segment_level=2`` and breakdown the peptide into functional groups.
+    Setting ``include_base_level==True`` will allow this procedure to
+    function with coarse-grained systems, while the default behavior will
+    end a search at the level before atoms are obtained.
+
+    Parameters
+    ----------
+    compound : obj
+        An instance of :class:`mbuild.compound.Compound`
+    segment_level : int, optional, default=0
+        Level of full residue architecture to be identified
+    include_base_level : bool, optional, default=False
+        Set whether a search should continue if the list of children are single particles.
+    bond_graph: obj
+        An instance of :class:`mbuild.BondGraph`.
+        The top level bondgraph that contains the compound to get residues from.
+
+    Returns
+    -------
+    residuesList : list
+        List of residue ids (str).
+    """
+    residuesList = []
+
+    if (
+        not bond_graph
+    ):  # generate the bond graph is a top level bondgraph was not passed,
+        # useful for recursion
+        bond_graph = compound.bond_graph
+    compound_graphtype = catalog_bondgraph_type(compound, bond_graph=bond_graph)
+
+    # Checks segment_level and graphtype for adding particles to the residuesList
+    if (
+        segment_level == 0 and compound_graphtype == "multiple_graphs"
+    ):  # All want to write out the children of this state
+        residuesList.extend(list(map(id, compound.children)))
+    elif segment_level == 0 and compound_graphtype == "one_graph":
+        # At top level and a single molecule is here
+        residuesList.append(id(compound))
+    elif (
+        compound_graphtype == "particle_graph"
+    ):  # Currently at the particle level
+        if include_base_level:
+            # only consider adding particles if specified
+            residuesList.append(id(compound))
+        else:
+            residuesList.append(id(compound.parent))
+
+    # Checks for recursion
+    if segment_level > 0 and compound_graphtype == "one_graph":
+        # start reducing segment_level once you hit single molecules
+        segment_level -= 1
+        for i, child in enumerate(compound.children):
+            residuesList.extend(
+                pull_residues(
+                    child,
+                    segment_level=segment_level,
+                    include_base_level=include_base_level,
+                    bond_graph=bond_graph,
+                )
+            )
+    elif segment_level > 0 and compound_graphtype == "multiple_graphs":
+        # Check the next tier until you hit molecules
+        for i, child in enumerate(compound.children):
+            residuesList.extend(
+                pull_residues(
+                    child,
+                    segment_level=segment_level,
+                    include_base_level=include_base_level,
+                    bond_graph=bond_graph,
+                )
+            )
+    elif segment_level < 0:
+        raise ValueError("`segment_level` must be greater than zero.")
+
+    return residuesList
+
+
 def to_parmed(
     compound,
     box=None,
     title="",
     residues=None,
     show_ports=False,
-    infer_residues=False,
+    infer_residues=True,
+    infer_residues_kwargs={},
 ):
     """Create a Parmed Structure from a Compound.
 
@@ -1130,13 +1270,16 @@ def to_parmed(
         with the same 0.25nm buffers.
     title : str, optional, default=compound.name
         Title/name of the ParmEd Structure
-    residues : str of list of str
+    residues : str of list of str, optional, default=None
         Labels of residues in the Compound. Residues are assigned by checking
         against Compound.name.
     show_ports : boolean, optional, default=False
         Include all port atoms when converting to a `Structure`.
-    infer_residues : bool, optional, default=False
-        Attempt to assign residues based on names of children.
+    infer_residues : bool, optional, default=True
+        Attempt to assign residues based on the number of bonds and particles in
+        an object. This option is not used if `residues == None`
+    infer_residues_kwargs : dict, optional, default={}
+        Keyword arguments for :func:`mbuild.conversion.pull_residues`
 
     Returns
     -------
@@ -1152,9 +1295,12 @@ def to_parmed(
     atom_mapping = {}  # For creating bonds below
     guessed_elements = set()
 
-    # Attempt to grab residue names based on names of children
+    # Attempt to grab residue names based on names of children for the first
+    # level of hierarchy without a box definition
+    flag_res_str = True
     if not residues and infer_residues:
-        residues = list(set([child.name for child in compound.children]))
+        residues = pull_residues(compound, **infer_residues_kwargs)
+        flag_res_str = False
 
     if isinstance(residues, str):
         residues = [residues]
@@ -1179,15 +1325,21 @@ def to_parmed(
             pmd_atom.xx, pmd_atom.xy, pmd_atom.xz = atom.pos * 10  # Angstroms
 
         else:
-            if residues and atom.name in residues:
+            tmp_check = atom.name if flag_res_str else id(atom)
+            if residues and tmp_check in residues:
                 current_residue = pmd.Residue(atom.name)
                 atom_residue_map[atom] = current_residue
                 compound_residue_map[atom] = current_residue
             elif residues:
                 for parent in atom.ancestors():
-                    if residues and parent.name in residues:
+                    tmp_check = parent.name if flag_res_str else id(parent)
+                    if residues and tmp_check in residues:
                         if parent not in compound_residue_map:
-                            current_residue = pmd.Residue(parent.name)
+                            current_residue = pmd.Residue(
+                                parent.name
+                                if parent.name
+                                else default_residue.name
+                            )
                             compound_residue_map[parent] = current_residue
                         atom_residue_map[atom] = current_residue
                         break
