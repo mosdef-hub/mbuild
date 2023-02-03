@@ -1082,7 +1082,9 @@ class TestCompound(BaseTest):
 
     def test_resnames_parmed(self, h2o, ethane):
         system = Compound([h2o, mb.clone(h2o), ethane])
-        struct = system.to_parmed(residues=["Ethane", "H2O"])
+        struct = system.to_parmed(
+            residues=["Ethane", "H2O"],
+        )
         assert len(struct.residues) == 3
         assert struct.residues[0].name == "H2O"
         assert struct.residues[1].name == "H2O"
@@ -1099,7 +1101,9 @@ class TestCompound(BaseTest):
             struct.atoms
         )
 
-        struct = system.to_parmed()
+        struct = system.to_parmed(
+            infer_residues=False,
+        )
         assert len(struct.residues) == 1
         assert struct.residues[0].name == "RES"
         assert sum(len(res.atoms) for res in struct.residues) == len(
@@ -1113,6 +1117,150 @@ class TestCompound(BaseTest):
         assert struct.residues[2].name == "Ethane"
         assert sum(len(res.atoms) for res in struct.residues) == len(
             struct.atoms
+        )
+
+        struct = system.to_parmed(
+            infer_residues=True,
+            infer_residues_kwargs={"segment_level": 1},
+        )
+        assert len(struct.residues) == 4
+        assert struct.residues[0].name == "H2O"
+        assert struct.residues[1].name == "H2O"
+        assert struct.residues[2].name == "CH3"
+        assert struct.residues[3].name == "CH3"
+        assert sum(len(res.atoms) for res in struct.residues) == len(
+            struct.atoms
+        )
+
+        errmsg = "`segment_level` must be greater than zero."
+        with pytest.raises(ValueError, match=errmsg):
+            system.to_parmed(
+                infer_residues=True,
+                infer_residues_kwargs={"segment_level": -1},
+            )
+
+        struct = system.to_parmed(
+            infer_residues=True,
+            infer_residues_kwargs={
+                "segment_level": 1,
+                "include_base_level": True,
+            },
+        )
+        assert len(struct.residues) == 8
+        assert struct.residues[0].name == "O"
+        assert struct.residues[1].name == "H"
+        assert struct.residues[2].name == "H"
+        assert struct.residues[3].name == "O"
+        assert struct.residues[4].name == "H"
+        assert struct.residues[5].name == "H"
+        assert struct.residues[6].name == "CH3"
+        assert struct.residues[7].name == "CH3"
+        assert sum(len(res.atoms) for res in struct.residues) == len(
+            struct.atoms
+        )
+
+    def test_resnames_parmed_cg(self, benzene, hexane, propyl):
+        particles = [propyl.__class__]
+        cg = mb.coarse_grain(hexane, particle_classes=particles)
+
+        # test single cg molecule
+        struct = cg.to_parmed()
+        assert len(struct.residues) == 1
+
+        # test multiple cg molecules
+        system = mb.Compound([mb.clone(cg), mb.clone(cg)])
+        struct = system.to_parmed()
+        assert len(struct.residues) == 2
+
+        # test hierarchical cg molecules to depth 1
+        two_beads = mb.Compound([mb.clone(cg), mb.clone(cg)])
+        two_beads.add_bond((two_beads.children[0][0], two_beads.children[1][0]))
+        bonded_beads = two_beads
+        two_bonded_beads = mb.Compound(
+            [mb.clone(bonded_beads), mb.clone(bonded_beads)]
+        )
+        struct = two_bonded_beads.to_parmed(
+            infer_residues=True,
+            infer_residues_kwargs={"segment_level": 1},
+        )
+        assert len(struct.residues) == 4
+        assert struct.residues[0].name == "Hexane_PROXY"
+
+        # test cg molecules to depth 2
+        struct = two_bonded_beads.to_parmed(
+            infer_residues=True,
+            infer_residues_kwargs={"segment_level": 2},
+        )
+        assert len(struct.residues) == 4
+
+        # test cg molecules to depth 2 with base_level
+        struct = two_bonded_beads.to_parmed(
+            infer_residues=True,
+            infer_residues_kwargs={
+                "segment_level": 2,
+                "include_base_level": True,
+            },
+        )
+        assert len(struct.residues) == 8
+        assert struct.residues[0].name == "Alkane_PROXY"
+
+        # test cg molecules with no infer residues
+        box_beads = mb.Compound([mb.clone(cg), mb.clone(cg)])
+        struct = box_beads.to_parmed(
+            infer_residues=False,
+        )
+        assert len(struct.residues) == 1
+        assert struct.residues[0].name == "RES"
+
+        # test mixed cg atomistic systems
+        mixed_molecules_box = mb.Compound(
+            [mb.clone(bonded_beads), mb.clone(bonded_beads), benzene]
+        )
+        struct = mixed_molecules_box.to_parmed(
+            infer_residues=True,
+            infer_residues_kwargs={"segment_level": 1},
+        )
+        assert len(struct.residues) == 5
+
+        # test uneven hierarchies
+        uneven_box = mb.Compound(
+            [
+                mb.clone(two_bonded_beads),
+                mb.clone(two_bonded_beads),
+                mb.clone(benzene),
+                mb.clone(benzene),
+                mb.fill_box(hexane, 2, box=mb.Box([5, 5, 5])),
+            ]
+        )
+        struct = uneven_box.to_parmed(
+            infer_residues=True,
+        )
+        assert len(struct.residues) == 5
+        struct = uneven_box.to_parmed(
+            infer_residues=True,
+            infer_residues_kwargs={"segment_level": 1},
+        )
+        assert len(struct.residues) == 14
+        struct = uneven_box.to_parmed(
+            infer_residues=True,
+            infer_residues_kwargs={"segment_level": 2},
+        )
+        assert len(struct.residues) == 14
+        struct = uneven_box.to_parmed(
+            infer_residues=True,
+            infer_residues_kwargs={
+                "segment_level": 2,
+                "include_base_level": True,
+            },
+        )
+        print(struct.residues)
+        # two_bonded beads should generate 8 residues (gets down to particle level) (16 total)
+        # benzene gets down to particle levels (24 total)
+        # hexane is goes from polymer down to monomer level. Made from two propyl groups which gives two monomers (4 total)
+        assert len(
+            struct.residues
+        ) == 2 * two_bonded_beads.n_particles + 2 * benzene.n_particles + 2 * len(
+            hexane.children
         )
 
     def test_parmed_element_guess(self):
@@ -2157,3 +2305,49 @@ class TestCompound(BaseTest):
         for bond2, bond in zip(ethane2.bonds(), ethane.bonds()):
             assert bond2[0].name == bond[0].name
             assert all(bond2[0].pos == bond[0].pos)
+
+    def test_residues_from_hierarchy(self, benzene, h2o):
+        from mbuild.conversion import pull_residues
+
+        # ring structure single molecule
+        assert len(pull_residues(benzene, bond_graph=benzene.bond_graph)) == 1
+
+        compound = mb.Compound([mb.clone(benzene), mb.clone(benzene)])
+        assert len(pull_residues(compound, bond_graph=compound.bond_graph)) == 2
+        compound.add_bond([compound.children[0][0], compound.children[1][0]])
+        assert len(pull_residues(compound, bond_graph=compound.bond_graph)) == 1
+
+        propane = mb.load("CCC", smiles=True)
+        assert len(pull_residues(propane, bond_graph=propane.bond_graph)) == 1
+
+        compound = mb.Compound([mb.clone(propane), mb.clone(propane)])
+        assert len(pull_residues(compound, bond_graph=compound.bond_graph)) == 2
+        compound.add_bond([compound.children[0][0], compound.children[1][0]])
+        assert len(pull_residues(compound, bond_graph=compound.bond_graph)) == 1
+
+        n_waters = 4  # box of multiple waters
+        compound = mb.fill_box(h2o, n_waters, mb.Box([10, 10, 10]))
+        assert (
+            len(pull_residues(compound, bond_graph=compound.bond_graph))
+            == n_waters
+        )
+
+    def test_catalog_bondgraph_types(self, benzene):
+        from mbuild.conversion import catalog_bondgraph_type
+
+        # single molecule
+        assert catalog_bondgraph_type(benzene) == "one_graph"
+
+        # two molecules
+        compound = mb.Compound([mb.clone(benzene), mb.clone(benzene)])
+        assert catalog_bondgraph_type(compound) == "multiple_graphs"
+        # child of the parent
+        assert (
+            catalog_bondgraph_type(compound.children[1], compound.bond_graph)
+            == "one_graph"
+        )
+        # particle of a compound
+        assert (
+            catalog_bondgraph_type(compound.children[1][0], compound.bond_graph)
+            == "particle_graph"
+        )
