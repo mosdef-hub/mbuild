@@ -1120,6 +1120,11 @@ def save(
 def catalog_bondgraph_type(compound, bond_graph=None):
     """Identify type of subgraph found at this stage of the compound.
 
+    Parameters
+    ----------
+    compound : obj
+        An instance of :class:`mbuild.compound.Compound`
+
     Returns
     -------
     str:
@@ -1133,15 +1138,20 @@ def catalog_bondgraph_type(compound, bond_graph=None):
         # at a subgraph level
         multiple_connectionsBool = (
             len(bond_graph.subgraph(compound).connected_components()) == 1
+            and len(bond_graph.subgraph(compound).connected_components()[0])
+            == compound.n_particles
         )
     elif compound.bond_graph:
         # check at the top level
         multiple_connectionsBool = (
             len(compound.bond_graph.connected_components()) == 1
+            and len(compound.bond_graph.connected_components()[0])
+            == compound.n_particles
         )
     else:
         msg = f"`bond_graph` argument was not passed, but compound {compound} has no bond_graph attribute."
         raise ValueError(msg)
+
     if multiple_connectionsBool:
         return "one_graph"
     else:
