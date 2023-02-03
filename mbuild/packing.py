@@ -316,9 +316,13 @@ def fill_region(
     fix_orientation : bool or list of bools
         Specify that compounds should not be rotated when filling the box,
         default=False.
-    bounds : list-like of floats [minx, miny, minz, maxx, maxy, maxz], units nm, default=None
-        Bounding within box to pack compounds, if you want to pack within a bounding
+    bounds : list-like of list-likes of floats [[min_x, min_y, min_z, max_x, max_y, max_z], ...], units nm, default=None
+        Bounding(s) within box to pack compound(s). To pack within a bounding
         area that is not the full extent of the region, bounds are required.
+        Each item of `compound` must have its own bound specified. Use `None` 
+        to indicate a given compound is not bounded, e.g.
+        `[ [0., 0., 1., 2., 2., 2.], None]` to bound only the first element
+        of `compound` and not the second.
     temp_file : str, default=None
         File name to write PACKMOL raw output to.
     update_port_locations : bool, default=False
@@ -354,6 +358,23 @@ def fill_region(
                 "`compound`, `n_compounds`, and `fix_orientation` must be of "
                 "equal length."
             )
+    if bounds is not None:
+        if not isinstance(bounds, (list, set)):
+            raise TypeError(
+                "`bounds` must be a list-like of one or more bounding boxes "
+                "and/or `None` for each item in `compound`."
+            )
+        if len(bounds) != len(n_compounds):
+            raise ValueError(
+                "`compound` and `bounds` must be of equal length. Use `None` "
+                "for non-bounded items in `compound`."
+            )
+        for bound in bounds:
+            if bound is not None and len(bound) != 6:
+                raise ValueError(
+                    "Each bound in `bounds` must be `None` or a list of "
+                    "[min_x, min_y, min_z, max_x, max_y, max_z]."
+                    )
 
     # See if region is a single region or list
     my_regions = []
@@ -373,7 +394,7 @@ def fill_region(
             f"expected a list of type: list or mbuild.Box, was provided {region} of type: {type(region)}"
         )
     container = []
-    if not bounds:
+    if bounds is not None:
         bounds = []
     for bound, reg in zip_longest(bounds, my_regions, fillvalue=None):
         if bound is None:
