@@ -40,6 +40,7 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 """
 
 from collections import defaultdict
+
 import networkx as nx
 
 
@@ -47,7 +48,7 @@ class BondGraph(nx.Graph):
     """This class subclasses nx.Graph to provide a means to access
     store and access connectivity information
     """
-                
+
     def _bfs(self, source):
         seen = set()
         nextlevel = {source}
@@ -59,8 +60,6 @@ class BondGraph(nx.Graph):
                     yield v
                     seen.add(v)
                     nextlevel.update(self.neighbors(v))
-     
-    
+
     def connected_components(self):
         return [list(mol) for mol in nx.connected_components(self)]
-

@@ -11,8 +11,8 @@ from typing import Sequence
 from warnings import warn
 
 import ele
-import numpy as np
 import networkx as nx
+import numpy as np
 from ele.element import Element, element_from_name, element_from_symbol
 from ele.exceptions import ElementError
 
@@ -727,7 +727,9 @@ class Compound(object):
                 if self.root.bond_graph.has_node(self):
                     self.root.bond_graph.remove_node(self)
                 # Compose bond_graph of new child
-                self.root.bond_graph = nx.compose(self.root.bond_graph, new_child.bond_graph)
+                self.root.bond_graph = nx.compose(
+                    self.root.bond_graph, new_child.bond_graph
+                )
 
                 new_child.bond_graph = None
 
@@ -878,7 +880,9 @@ class Compound(object):
             for ancestor in removed_part.ancestors():
                 ancestor._check_if_contains_rigid_bodies = True
         if self.root.bond_graph.has_node(removed_part):
-            for neighbor in nx.neighbors(self.root.bond_graph.copy(), removed_part):
+            for neighbor in nx.neighbors(
+                self.root.bond_graph.copy(), removed_part
+            ):
                 self.root.remove_bond((removed_part, neighbor))
             self.root.bond_graph.remove_node(removed_part)
 
@@ -970,9 +974,8 @@ class Compound(object):
                 "The direct_bonds method can only "
                 "be used on compounds at the bottom of their hierarchy."
             )
-        for b1,b2 in self.root.bond_graph.edges(self):
+        for b1, b2 in self.root.bond_graph.edges(self):
             yield b2
-
 
     def bonds(self):
         """Return all bonds in the Compound and sub-Compounds.
@@ -991,9 +994,7 @@ class Compound(object):
             if self.root == self:
                 return self.root.bond_graph.edges()
             else:
-                return self.root.bond_graph.subgraph(
-                    self.particles()
-                ).edges()
+                return self.root.bond_graph.subgraph(self.particles()).edges()
         else:
             return iter(())
 
@@ -1409,7 +1410,6 @@ class Compound(object):
                     if neigh not in self.particles():
                         return False
             return True
-
 
     def get_boundingbox(self, pad_box=None):
         """Compute the bounding box of the compound.
