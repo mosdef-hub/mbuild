@@ -394,7 +394,7 @@ def fill_region(
             f"expected a list of type: list or mbuild.Box, was provided {region} of type: {type(region)}"
         )
     container = []
-    if bounds is not None:
+    if bounds is None:
         bounds = []
     for bound, reg in zip_longest(bounds, my_regions, fillvalue=None):
         if bound is None:
