@@ -22,13 +22,13 @@ repos:
     - id: black
       args: [--line-length=80]
 - repo: https://github.com/pycqa/isort
-  rev: 5.11.4
+  rev: 5.12.0
   hooks:
     - id: isort
       name: isort (python)
       args: [--profile=black, --line-length=80]
 - repo: https://github.com/pycqa/pydocstyle
-  rev: '6.2.3'
+  rev: '6.3.0'
   hooks:
     - id: pydocstyle
       exclude: ^(mbuild/tests/|docs/|devtools/|setup.py|setup.cfg|mbuild/formats/charmm_writer.py|mbuild/formats/gomc_conf_writer.py|mbuild/utils/specific_ff_to_residue.py)
