@@ -71,7 +71,6 @@ class Monolayer(mb.Compound):
             # Attach chains of each type to binding sites based on
             # respective fractions.
             for chain, fraction in zip(chains[:-1], fractions[:-1]):
-
                 # Create sub-pattern for this chain type
                 subpattern = deepcopy(pattern)
                 n_points = int(round(fraction * n_chains))

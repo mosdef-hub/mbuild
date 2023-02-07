@@ -86,7 +86,6 @@ class TiledCompound(Compound):
         # Bonds that were periodic in the original tile.
         periodic_bonds = set()
         for particle1, particle2 in tile.bonds():
-
             if np.linalg.norm(particle1.pos - particle2.pos) > dist_thresh:
                 periodic_bonds.add((particle1.index, particle2.index))
 
@@ -98,7 +97,10 @@ class TiledCompound(Compound):
         bonds_to_remove = set()
         bonds_to_add = set()
         for particle1, particle2 in self.bonds():
-            if (particle1.index, particle2.index,) not in periodic_bonds and (
+            if (
+                particle1.index,
+                particle2.index,
+            ) not in periodic_bonds and (
                 particle2.index,
                 particle1.index,
             ) not in periodic_bonds:

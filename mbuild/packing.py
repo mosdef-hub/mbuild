@@ -720,9 +720,7 @@ def solvate(
             overlap, solvated_xyz.name, seed, sidemax * 10
         ) + PACKMOL_SOLUTE.format(solute_xyz.name, *center_solute.tolist())
 
-        for (solv, m_solvent, rotate) in zip(
-            solvent, n_solvent, fix_orientation
-        ):
+        for solv, m_solvent, rotate in zip(solvent, n_solvent, fix_orientation):
             m_solvent = int(m_solvent)
             solvent_xyz = _new_xyz_file()
             solvent_xyz_list.append(solvent_xyz)
