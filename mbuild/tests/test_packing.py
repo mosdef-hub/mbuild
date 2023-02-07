@@ -138,6 +138,31 @@ class TestPacking(BaseTest):
                 compound=[ethane], n_compounds=[2], region=box1, bounds=None
             )
 
+    def test_fill_region_bounds_not_list(self, ethane):
+        box1 = Box(lengths=[2, 2, 2], angles=[90.0, 90.0, 90.0])
+        with pytest.raises(TypeError):
+            mb.fill_region(
+                compound=[ethane], n_compounds=[2],
+                 region=box1, bounds=box1
+            )
+
+    def test_fill_region_incorrect_bounds_amount(self, ethane, h2o):
+        box1 = Box(lengths=[2, 2, 2], angles=[90.0, 90.0, 90.0])
+        with pytest.raises(ValueError):
+            mb.fill_region(
+                compound=[ethane, h2o], n_compounds=[2, 2],
+                region=box1, bounds=[box1]
+            )
+
+    def test_fill_region_incorrect_bounds_types(self, ethane, h2o):
+        box1 = Box(lengths=[2, 2, 2], angles=[90.0, 90.0, 90.0])
+        with pytest.raises(ValueError):
+            mb.fill_region(
+                compound=[ethane, h2o], n_compounds=[2, 2],
+                region=box1, bounds=[1.0, 1.0, 1.0]
+            )
+
+
     def test_box_no_bound(self, ethane):
         box1 = Box(lengths=[2, 2, 2], angles=[90.0, 90.0, 90.0])
         mb.fill_region(
