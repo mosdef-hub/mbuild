@@ -2427,7 +2427,6 @@ class Compound(object):
                 # if an individual entry is a list, validate the input
                 if isinstance(fixed_temp, list):
                     if len(fixed_temp) == 2:
-
                         msg1 = (
                             "Expected tuple or list of length 3 to set"
                             "which dimensions to fix motion."

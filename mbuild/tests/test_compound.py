@@ -1579,7 +1579,6 @@ class TestCompound(BaseTest):
             octane.energy_minimize(fixed_compounds=[methyl_end0, (True)])
 
         with pytest.raises(Exception):
-
             octane.energy_minimize(
                 fixed_compounds=[methyl_end0, ("True", True, True)]
             )

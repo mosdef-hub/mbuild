@@ -367,7 +367,6 @@ def write_lammpsdata(
 
     # Write lammps data file https://docs.lammps.org/2001/data_format.html
     with open(filename, "w") as data:
-
         data.write(f"{filename} - created by mBuild; units = {unit_style}\n")
         if unit_style == "lj":
             data.write("#Normalization factors: ")
@@ -945,7 +944,6 @@ def _get_dihedral_types(
             for dihedral in structure.rb_torsions
         ]
     elif use_dihedrals:
-
         dihedral_types = [
             unique_dihedral_types[dihedral_info]
             for dihedral_info in charmm_dihedrals

@@ -61,7 +61,6 @@ class NotebookDirective(Directive):
     final_argument_whitespace = True
 
     def run(self):
-
         # check if raw html is supported
         if not self.state.document.settings.raw_enabled:
             raise self.warning('"%s" directive disabled.' % self.name)
