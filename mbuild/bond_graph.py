@@ -46,6 +46,7 @@ import networkx as nx
 
 class BondGraph(nx.Graph):
     """Subclasses nx.Graph to store connectivity information."""
+
     def _bfs(self, source):
         seen = set()
         nextlevel = {source}
@@ -59,5 +60,5 @@ class BondGraph(nx.Graph):
                     nextlevel.update(self.neighbors(v))
 
     def connected_components(self):
-        """Return list of connected bond component of bondgraph."""        
+        """Return list of connected bond component of bondgraph."""
         return [list(mol) for mol in nx.connected_components(self)]
