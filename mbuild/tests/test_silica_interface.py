@@ -5,7 +5,7 @@ from mbuild.lib.bulk_materials import AmorphousSilicaBulk
 from mbuild.lib.recipes import SilicaInterface
 from mbuild.tests.base_test import BaseTest
 
-'''
+"""
 class TestSilicaInterface(BaseTest):
     def test_silica_interface(self):
         tile_x = 1
@@ -54,4 +54,4 @@ class TestSilicaInterface(BaseTest):
 
         assert np.array_equal(atom_names1, atom_names2)
         assert np.array_equal(interface1.xyz, interface2.xyz)
-'''
+"""
