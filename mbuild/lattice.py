@@ -523,7 +523,6 @@ class Lattice(object):
         return np.asarray([alpha, beta, gamma], dtype=np.float64)
 
     def _sanitize_populate_args(self, x, y, z):
-
         error_dict = {0: "X", 1: "Y", 2: "Z"}
 
         # Make sure neither x, y, z input is None
