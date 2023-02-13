@@ -77,6 +77,7 @@ def from_snapshot(snapshot, scale=1.0):
         comp.add(atom, label=str(i))
 
     # Add bonds
+    particle_dict = {idx: p for idx, p in enumerate(comp.particles())}
     for i in range(bond_array.shape[0]):
         atom1 = int(bond_array[i][0])
         atom2 = int(bond_array[i][1])
@@ -158,15 +159,15 @@ def to_hoomdsnapshot(
 
     Examples
     --------
-        To convert the energy units from kcal/mol to kj/mol:
-            use ref_energy = 0.2390057 (kcal/kj)
+    To convert the energy units from kcal/mol to kj/mol:
+        use ref_energy = 0.2390057 (kcal/kj)
 
-        To convert the distance units from Angstrom to nm:
-            use ref_distance = 10 (angstroms/nm)
+    To convert the distance units from Angstrom to nm:
+        use ref_distance = 10 (angstroms/nm)
 
-        To use a reduced unit system, where mass, sigma, and epsilon are
-        scaled by the largest value of each:
-            use auto_scale = True, ref_distance = ref_energy = ref_mass = 1
+    To use a reduced unit system, where mass, sigma, and epsilon are
+    scaled by the largest value of each:
+        use auto_scale = True, ref_distance = ref_energy = ref_mass = 1
 
     """
     if not isinstance(structure, (Compound, pmd.Structure)):

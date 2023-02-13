@@ -37,6 +37,7 @@ def write_lammpsdata(
     sigma_conversion_factor=None,
     epsilon_conversion_factor=None,
     mass_conversion_factor=None,
+    charge_conversion_factor=True,
     zero_dihedral_weighting_factor=False,
     moleculeID_offset=1,
 ):
@@ -52,51 +53,56 @@ def write_lammpsdata(
         ParmEd structure object
     filename : str
         Path of the output file
-    atom_style: str
+    atom_style: str, optional, default='full'
         Defines the style of atoms to be saved in a LAMMPS data file. The
         following atom styles are currently supported:
         'full', 'atomic', 'charge', 'molecular'
         see http://lammps.sandia.gov/doc/atom_style.html for more information
         on atom styles.
-    unit_style: str
-        Defines to unit style to be save in a LAMMPS data file.  Defaults to
-        'real' units. Current styles are supported: 'real', 'lj'
-        see https://lammps.sandia.gov/doc/99/units.html for more information
-        on unit styles
-    mins : list
-        minimum box dimension in x, y, z directions, nm
-    maxs : list
-        maximum box dimension in x, y, z directions, nm
-    pair_coeff_label : str
+    unit_style : str, optional, default='real'
+        Defines to unit style to be save in a LAMMPS data file. Current styles
+        are supported: 'real', 'lj', see lammps unit style documentation:
+        https://lammps.sandia.gov/doc/99/units.html for more information.
+    mins : list, optional, default=None
+        Minimum box dimension in x, y, z directions, nm
+    maxs : list, optional, default=None
+        Maximum box dimension in x, y, z directions, nm
+    pair_coeff_label : str, optional, default=None
         Provide a custom label to the pair_coeffs section in the lammps data
-        file. Defaults to None, which means a suitable default will be chosen.
-    detect_forcefield_style: boolean
+        file. A value of None means a suitable default will be chosen.
+    detect_forcefield_style : bool, optional, default=True
         If True, format lammpsdata parameters based on the contents of
         the parmed Structure
-    use_urey_bradleys: boolean
+    use_urey_bradleys : bool, optional, default=False
         If True, will treat angles as CHARMM-style angles with urey bradley
         terms while looking for `structure.urey_bradleys`
-    use_rb_torsions:
+    use_rb_torsions : bool, optional, default=True
         If True, will treat dihedrals OPLS-style torsions while looking for
         `structure.rb_torsions`
-    use_dihedrals:
+    use_dihedrals : bool, optional, default=False
         If True, will treat dihedrals as CHARMM-style dihedrals while looking
         for `structure.dihedrals`
-    zero_dihedral_weighting_factor:
+    zero_dihedral_weighting_factor : bool, optional, default=False
         If True, will set weighting parameter to zero in CHARMM-style dihedrals.
         This should be True if the CHARMM dihedral style is used in non-CHARMM forcefields.
-    sigma_conversion_factor: None, float
+    sigma_conversion_factor : float, optional, default=None
         If unit_style is set to 'lj', then sigma conversion factor is used to non-dimensionalize.
-        Assume to be in units of nm. Default is None. If None, will take the largest sigma value in
+        Assume to be in units of nm. If None, will take the largest sigma value in
         the structure.atoms.sigma values.
-    epsilon_conversion_factor: None, float
+    epsilon_conversion_factor : float, optional, default=None
         If unit_style is set to 'lj', then epsilon conversion factor is used to non-dimensionalize.
-        Assume to be in units of kCal/mol. Default is None. If None, will take the largest epsilon value in
+        Assume to be in units of kCal/mol. If None, will take the largest epsilon value in
         the structure.atoms.epsilon values.
-    mass_conversion_factor: None, float
+    mass_conversion_factor : float, optional, default=None
         If unit_style is set to 'lj', then mass conversion factor is used to non-dimensionalize.
-        Assume to be in units of amu. Default is None. If None, will take the largest mass value in
+        Assume to be in units of amu. If None, will take the largest mass value in
         the structure.atoms.mass values.
+    charge_conversion_factor : bool, optional, default=True
+        If unit_style is set to 'lj', then charge conversion factor may or may not be used to
+        non-dimensionalize. Assume to be in elementary charge units. If ``True``, the charges
+        are scaled by ``np.sqrt(4*np.pi()*eps_0*sigma_conversion_factor*epsilon_conversion_factor)``.
+        If ``False``, the charges are not scaled and the user must be wary to choose the dielectric
+        constant properly, which may be more convenient to implement an implicit solvent.
     moleculeID_offset : int , optional, default=1
         Since LAMMPS treats the MoleculeID as an additional set of information
         to identify what molecule an atom belongs to, this currently
@@ -287,16 +293,17 @@ def write_lammpsdata(
         )
         # Convert coordinates and charges to LJ units
         xyz = xyz / sigma_conversion_factor
-        charges = (charges * ELEM_TO_COUL) / np.sqrt(
-            4
-            * np.pi
-            * sigma_conversion_factor
-            * NM_TO_ANG**-1
-            * epsilon_conversion_factor
-            * KCAL_TO_KJ
-            * epsilon_0
-            * 10**-6
-        )
+        if charge_conversion_factor:
+            charges = (charges * ELEM_TO_COUL) / np.sqrt(
+                4
+                * np.pi
+                * sigma_conversion_factor
+                * NM_TO_ANG**-1
+                * epsilon_conversion_factor
+                * KCAL_TO_KJ
+                * epsilon_0
+                * 10**-6
+            )
         charges[np.isinf(charges)] = 0
     else:
         sigma_conversion_factor = 1
@@ -317,6 +324,7 @@ def write_lammpsdata(
             bond_types, unique_bond_types = _get_bond_types(
                 structure,
                 bonds,
+                unique_types,
                 sigma_conversion_factor,
                 epsilon_conversion_factor,
             )
@@ -324,6 +332,7 @@ def write_lammpsdata(
     if angles:
         angle_types, unique_angle_types = _get_angle_types(
             structure,
+            unique_types,
             use_urey_bradleys,
             sigma_conversion_factor,
             epsilon_conversion_factor,
@@ -333,11 +342,16 @@ def write_lammpsdata(
         (
             imp_dihedral_types,
             unique_imp_dihedral_types,
-        ) = _get_improper_dihedral_types(structure, epsilon_conversion_factor)
+        ) = _get_improper_dihedral_types(
+            structure,
+            unique_types,
+            epsilon_conversion_factor,
+        )
 
     if dihedrals:
         dihedral_types, unique_dihedral_types = _get_dihedral_types(
             structure,
+            unique_types,
             use_rb_torsions,
             use_dihedrals,
             epsilon_conversion_factor,
@@ -346,12 +360,13 @@ def write_lammpsdata(
 
     if impropers:
         improper_types, unique_improper_types = _get_impropers(
-            structure, epsilon_conversion_factor
+            structure,
+            unique_types,
+            epsilon_conversion_factor,
         )
 
     # Write lammps data file https://docs.lammps.org/2001/data_format.html
     with open(filename, "w") as data:
-
         data.write(f"{filename} - created by mBuild; units = {unit_style}\n")
         if unit_style == "lj":
             data.write("#Normalization factors: ")
@@ -622,6 +637,7 @@ def _check_minsmaxs(mins, maxs):
 def _get_bond_types(
     structure,
     bonds,
+    atom_types,
     sigma_conversion_factor,
     epsilon_conversion_factor,
     bond_precision=3,
@@ -651,9 +667,22 @@ def _get_bond_types(
             )
         )
     )
-    unique_bond_types = OrderedDict(
-        [(y, x + 1) for x, y in unique_bond_types.items()]
+
+    magnitude = np.ceil(np.log10(len(atom_types)))
+    bond_tuples = [x[2] for x in unique_bond_types.values()]
+    ordered_bond_tuples = bond_tuples.copy()
+    ordered_bond_tuples.sort(
+        key=lambda x: atom_types.index(x[0]) * 10**magnitude
+        + atom_types.index(x[1])
     )
+
+    unique_bond_types = OrderedDict(
+        [
+            (unique_bond_types[bond_tuples.index(x)], i + 1)
+            for i, x in enumerate(ordered_bond_tuples)
+        ]
+    )
+
     bond_types = [
         unique_bond_types[
             (
@@ -675,6 +704,7 @@ def _get_bond_types(
 
 def _get_angle_types(
     structure,
+    atom_types,
     use_urey_bradleys,
     sigma_conversion_factor,
     epsilon_conversion_factor,
@@ -714,12 +744,14 @@ def _get_angle_types(
         unique_angle_types = OrderedDict(
             enumerate(OrderedSet(*charmm_angle_types))
         )
-        unique_angle_types = OrderedDict(
-            [(y, x + 1) for x, y in unique_angle_types.items()]
+
+        magnitude = np.ceil(np.log10(len(atom_types)))
+        angle_tuples = [x[-1] for x in unique_angle_types.values()]
+        ordered_angle_tuples = angle_tuples.copy()
+        ordered_angle_tuples.sort(
+            key=lambda x: atom_types.index(x[0]) * 10**magnitude
+            + atom_types.index(x[1])
         )
-        angle_types = [
-            unique_angle_types[ub_info] for ub_info in charmm_angle_types
-        ]
 
     else:
         unique_angle_types = OrderedDict(
@@ -740,9 +772,30 @@ def _get_angle_types(
                 )
             )
         )
-        unique_angle_types = OrderedDict(
-            [(y, x + 1) for x, y in unique_angle_types.items()]
+
+        magnitude = np.ceil(np.log10(len(atom_types)))
+        angle_tuples = [
+            (x[2], x[-1][0], x[-1][1]) for x in unique_angle_types.values()
+        ]
+        ordered_angle_tuples = angle_tuples.copy()
+        ordered_angle_tuples.sort(
+            key=lambda x: atom_types.index(x[0]) * 10 ** (2 * magnitude)
+            + atom_types.index(x[1]) * 10**magnitude
+            + atom_types.index(x[2])
         )
+
+    unique_angle_types = OrderedDict(
+        [
+            (unique_angle_types[angle_tuples.index(x)], i + 1)
+            for i, x in enumerate(ordered_angle_tuples)
+        ]
+    )
+
+    if use_urey_bradleys:
+        angle_types = [
+            unique_angle_types[ub_info] for ub_info in charmm_angle_types
+        ]
+    else:
         angle_types = [
             unique_angle_types[
                 (
@@ -763,6 +816,7 @@ def _get_angle_types(
 
 def _get_dihedral_types(
     structure,
+    atom_types,
     use_rb_torsions,
     use_dihedrals,
     epsilon_conversion_factor,
@@ -811,28 +865,16 @@ def _get_dihedral_types(
                 )
             )
         )
-        unique_dihedral_types = OrderedDict(
-            [(y, x + 1) for x, y in unique_dihedral_types.items()]
+        magnitude = np.ceil(np.log10(len(atom_types)))
+        dihedral_tuples = [x[8:] for x in unique_dihedral_types.values()]
+        ordered_dihedral_tuples = dihedral_tuples.copy()
+        ordered_dihedral_tuples.sort(
+            key=lambda x: atom_types.index(x[0]) * 10 ** (3 * magnitude)
+            + atom_types.index(x[1]) * 10 ** (2 * magnitude)
+            + atom_types.index(x[2]) * 10**magnitude
+            + atom_types.index(x[3])
         )
-        dihedral_types = [
-            unique_dihedral_types[
-                (
-                    round(dihedral.type.c0 * lj_unit, dihedral_precision),
-                    round(dihedral.type.c1 * lj_unit, dihedral_precision),
-                    round(dihedral.type.c2 * lj_unit, dihedral_precision),
-                    round(dihedral.type.c3 * lj_unit, dihedral_precision),
-                    round(dihedral.type.c4 * lj_unit, dihedral_precision),
-                    round(dihedral.type.c5 * lj_unit, dihedral_precision),
-                    round(dihedral.type.scee, 1),
-                    round(dihedral.type.scnb, 1),
-                    dihedral.atom1.type,
-                    dihedral.atom2.type,
-                    dihedral.atom3.type,
-                    dihedral.atom4.type,
-                )
-            ]
-            for dihedral in structure.rb_torsions
-        ]
+
     elif use_dihedrals:
         charmm_dihedrals = []
         structure.join_dihedrals()
@@ -861,9 +903,47 @@ def _get_dihedral_types(
         unique_dihedral_types = OrderedDict(
             enumerate(OrderedSet(*charmm_dihedrals))
         )
-        unique_dihedral_types = OrderedDict(
-            [(y, x + 1) for x, y in unique_dihedral_types.items()]
+        magnitude = np.ceil(np.log10(len(atom_types)))
+        dihedral_tuples = [
+            (x[1], x[6:]) for x in unique_dihedral_types.values()
+        ]
+        ordered_dihedral_tuples = dihedral_tuples.copy()
+        ordered_dihedral_tuples.sort(
+            key=lambda x: atom_types.index(x[1][0]) * 10 ** (4 * magnitude)
+            + atom_types.index(x[1][1]) * 10 ** (3 * magnitude)
+            + atom_types.index(x[1][2]) * 10 ** (2 * magnitude)
+            + atom_types.index(x[1][3]) * 10**magnitude
+            + x[0]
         )
+
+    unique_dihedral_types = OrderedDict(
+        [
+            (unique_dihedral_types[dihedral_tuples.index(x)], i + 1)
+            for i, x in enumerate(ordered_dihedral_tuples)
+        ]
+    )
+
+    if use_rb_torsions:
+        dihedral_types = [
+            unique_dihedral_types[
+                (
+                    round(dihedral.type.c0 * lj_unit, dihedral_precision),
+                    round(dihedral.type.c1 * lj_unit, dihedral_precision),
+                    round(dihedral.type.c2 * lj_unit, dihedral_precision),
+                    round(dihedral.type.c3 * lj_unit, dihedral_precision),
+                    round(dihedral.type.c4 * lj_unit, dihedral_precision),
+                    round(dihedral.type.c5 * lj_unit, dihedral_precision),
+                    round(dihedral.type.scee, 1),
+                    round(dihedral.type.scnb, 1),
+                    dihedral.atom1.type,
+                    dihedral.atom2.type,
+                    dihedral.atom3.type,
+                    dihedral.atom4.type,
+                )
+            ]
+            for dihedral in structure.rb_torsions
+        ]
+    elif use_dihedrals:
         dihedral_types = [
             unique_dihedral_types[dihedral_info]
             for dihedral_info in charmm_dihedrals
@@ -873,7 +953,7 @@ def _get_dihedral_types(
 
 
 def _get_improper_dihedral_types(
-    structure, epsilon_conversion_factor, imp_dih_precision=3
+    structure, atom_types, epsilon_conversion_factor, imp_dih_precision=3
 ):
     """
     Will get the improper types from a parmed structure and convert them to lammps real units.
@@ -906,8 +986,24 @@ def _get_improper_dihedral_types(
                 )
             )
     unique_imp_dihedral_types = dict(enumerate(OrderedSet(*improper_dihedrals)))
+    magnitude = np.ceil(np.log10(len(atom_types)))
+    dihedral_tuples = [
+        (x[1], x[5:]) for x in unique_imp_dihedral_types.values()
+    ]
+    ordered_dihedral_tuples = dihedral_tuples.copy()
+    ordered_dihedral_tuples.sort(
+        key=lambda x: atom_types.index(x[1][0]) * 10 ** (4 * magnitude)
+        + atom_types.index(x[1][1]) * 10 ** (3 * magnitude)
+        + atom_types.index(x[1][2]) * 10 ** (2 * magnitude)
+        + atom_types.index(x[1][3]) * 10**magnitude
+        + x[0]
+    )
+
     unique_imp_dihedral_types = OrderedDict(
-        [(y, x + 1) for x, y in unique_imp_dihedral_types.items()]
+        [
+            (unique_imp_dihedral_types[dihedral_tuples.index(x)], i + 1)
+            for i, x in enumerate(ordered_dihedral_tuples)
+        ]
     )
     imp_dihedral_types = [
         unique_imp_dihedral_types[dihedral_info]
@@ -917,7 +1013,9 @@ def _get_improper_dihedral_types(
     return imp_dihedral_types, unique_imp_dihedral_types
 
 
-def _get_impropers(structure, epsilon_conversion_factor, improper_precision=3):
+def _get_impropers(
+    structure, atom_types, epsilon_conversion_factor, improper_precision=3
+):
     """
     Will get the improper types from a parmed structure and convert them to lammps real units.
 
@@ -943,9 +1041,24 @@ def _get_impropers(structure, epsilon_conversion_factor, improper_precision=3):
             )
         )
     )
-    unique_improper_types = OrderedDict(
-        [(y, x + 1) for x, y in unique_improper_types.items()]
+
+    magnitude = np.ceil(np.log10(len(atom_types)))
+    improper_tuples = [x[2:] for x in unique_improper_types.values()]
+    ordered_improper_tuples = improper_tuples.copy()
+    ordered_improper_tuples.sort(
+        key=lambda x: atom_types.index(x[0]) * 10 ** (4 * magnitude)
+        + atom_types.index(x[1]) * 10 ** (3 * magnitude)
+        + atom_types.index(x[2]) * 10 ** (2 * magnitude)
+        + atom_types.index(x[3]) * 10**magnitude
     )
+
+    unique_improper_types = OrderedDict(
+        [
+            (unique_improper_types[improper_tuples.index(x)], i + 1)
+            for i, x in enumerate(ordered_improper_tuples)
+        ]
+    )
+
     improper_types = [
         unique_improper_types[
             (
