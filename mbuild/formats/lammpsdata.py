@@ -1309,11 +1309,11 @@ def _write_dihedral_information(
         data.write("#k, n, phi, weight\n")
         for params, idx in sorted_dihedral_types.items():
             data.write(
-                "{}\t{:.5f}\t{:d}\t{:.2f}\t{:.5f}\t# {}\t{}\t{}\t{}\n".format(
+                "{}\t{:.5f}\t{:d}\t{:d}\t{:.5f}\t# {}\t{}\t{}\t{}\n".format(
                     idx,
                     params[0],
                     params[1],
-                    params[2],
+                    int(params[2]),
                     params[3],
                     params[6],
                     params[7],
