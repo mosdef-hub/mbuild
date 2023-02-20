@@ -241,7 +241,6 @@ class Grid2DPattern(Pattern):
     """
 
     def __init__(self, n, m, **kwargs):
-
         points = np.zeros(shape=(n * m, 3), dtype=float)
         for i, j in product(range(n), range(m)):
             points[i * m + j, 0] = i / n

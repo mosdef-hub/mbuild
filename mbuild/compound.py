@@ -2040,34 +2040,37 @@ class Compound(object):
                     f"Anchor: {anchor} is not part of the Compound: {self}"
                     "that you are trying to energy minimize."
                 )
-        tmp_dir = tempfile.mkdtemp()
         original = clone(self)
         self._kick()
-        self.save(os.path.join(tmp_dir, "un-minimized.mol2"))
         extension = os.path.splitext(forcefield)[-1]
         openbabel_ffs = ["MMFF94", "MMFF94s", "UFF", "GAFF", "Ghemical"]
         if forcefield in openbabel_ffs:
             self._energy_minimize_openbabel(
-                tmp_dir, forcefield=forcefield, steps=steps, **kwargs
-            )
-        elif extension == ".xml":
-            self._energy_minimize_openmm(
-                tmp_dir,
-                forcefield_files=forcefield,
-                forcefield_name=None,
-                steps=steps,
-                **kwargs,
+                forcefield=forcefield, steps=steps, **kwargs
             )
         else:
-            self._energy_minimize_openmm(
-                tmp_dir,
-                forcefield_files=None,
-                forcefield_name=forcefield,
-                steps=steps,
-                **kwargs,
-            )
+            tmp_dir = tempfile.mkdtemp()
+            self.save(os.path.join(tmp_dir, "un-minimized.mol2"))
 
-        self.update_coordinates(os.path.join(tmp_dir, "minimized.pdb"))
+            if extension == ".xml":
+                self._energy_minimize_openmm(
+                    tmp_dir,
+                    forcefield_files=forcefield,
+                    forcefield_name=None,
+                    steps=steps,
+                    **kwargs,
+                )
+            else:
+                self._energy_minimize_openmm(
+                    tmp_dir,
+                    forcefield_files=None,
+                    forcefield_name=forcefield,
+                    steps=steps,
+                    **kwargs,
+                )
+
+            self.update_coordinates(os.path.join(tmp_dir, "minimized.pdb"))
+
         if shift_com:
             self.translate_to(com)
 
@@ -2247,8 +2250,7 @@ class Compound(object):
         successors_list,
         check_if_particle=False,
     ):
-        """Provide routines commonly used to check constraint inputs"""
-
+        """Provide routines commonly used to check constraint inputs."""
         for part in particle_list:
             if not isinstance(part, Compound):
                 raise MBuildError(f"{part} is not a Compound.")
@@ -2263,7 +2265,6 @@ class Compound(object):
 
     def _energy_minimize_openbabel(
         self,
-        tmp_dir,
         steps=1000,
         algorithm="cg",
         forcefield="UFF",
@@ -2357,7 +2358,7 @@ class Compound(object):
         for particle in self.particles():
             if particle.element is None:
                 try:
-                    element_from_symbol(particle.name)
+                    particle._element = element_from_symbol(particle.name)
                 except ElementError:
                     try:
                         element_from_name(particle.name)
@@ -2385,7 +2386,7 @@ class Compound(object):
             # if a user passes single constraint as a 1-D array,
             # i.e., [(p1,p2), 2.0]  rather than [[(p1,p2), 2.0]],
             # just add it to a list so we can use the same looping code
-            if len(np.array(distance_constraints).shape) == 1:
+            if len(np.array(distance_constraints, dtype=object).shape) == 1:
                 distance_constraints = [distance_constraints]
 
             for con_temp in distance_constraints:
@@ -2416,7 +2417,7 @@ class Compound(object):
 
             # if fixed_compounds is a 1-d array and it is of length 2, we need to determine whether it is
             # a list of two Compounds or if fixed_compounds[1] should correspond to the directions to constrain
-            if len(np.array(fixed_compounds).shape) == 1:
+            if len(np.array(fixed_compounds, dtype=object).shape) == 1:
                 if len(fixed_compounds) == 2:
                     if not isinstance(fixed_compounds[1], Compound):
                         # if it is not a list of two Compounds, make a 2d array so we can use the same looping code
@@ -2426,7 +2427,6 @@ class Compound(object):
                 # if an individual entry is a list, validate the input
                 if isinstance(fixed_temp, list):
                     if len(fixed_temp) == 2:
-
                         msg1 = (
                             "Expected tuple or list of length 3 to set"
                             "which dimensions to fix motion."
@@ -2494,7 +2494,7 @@ class Compound(object):
                                 ob_constraints.AddAtomZConstraint(pid)
 
         if ignore_compounds is not None:
-            temp1 = np.array(ignore_compounds)
+            temp1 = np.array(ignore_compounds, dtype=object)
             if len(temp1.shape) == 2:
                 ignore_compounds = list(temp1.reshape(-1))
 
@@ -2517,11 +2517,11 @@ class Compound(object):
                         )  # openbabel indices start at 1
                         ob_constraints.AddIgnore(pid)
 
-        obConversion = openbabel.OBConversion()
-        obConversion.SetInAndOutFormats("mol2", "pdb")
-        mol = openbabel.OBMol()
+        mol = self.to_pybel()
+        mol = mol.OBMol
 
-        obConversion.ReadFile(mol, os.path.join(tmp_dir, "un-minimized.mol2"))
+        mol.PerceiveBondOrders()
+        mol.SetAtomTypesPerceived()
 
         ff = openbabel.OBForceField.FindForceField(forcefield)
         if ff is None:
@@ -2566,7 +2566,12 @@ class Compound(object):
             )
         ff.UpdateCoordinates(mol)
 
-        obConversion.WriteFile(mol, os.path.join(tmp_dir, "minimized.pdb"))
+        # update the coordinates in the Compound
+        for i, obatom in enumerate(openbabel.OBMolAtomIter(mol)):
+            x = obatom.GetX() / 10.0
+            y = obatom.GetY() / 10.0
+            z = obatom.GetZ() / 10.0
+            self[i].pos = np.array([x, y, z])
 
     def save(
         self,
@@ -2580,6 +2585,7 @@ class Compound(object):
         residues=None,
         combining_rule="lorentz",
         foyer_kwargs=None,
+        parmed_kwargs=None,
         **kwargs,
     ):
         """Save the Compound to a file.
@@ -2624,6 +2630,14 @@ class Compound(object):
             `write_mcf`, or `parmed.Structure.save`.
             See `parmed structure documentation
             <https://parmed.github.io/ParmEd/html/structobj/parmed.structure.Structure.html#parmed.structure.Structure.save>`_
+        parmed_kwargs : dict, optional, default=None
+            Keyword arguments to provide to :meth:`mbuild.Compound.to_parmed`
+        **kwargs
+            Depending on the file extension these will be passed to either
+            `write_gsd`, `write_hoomdxml`, `write_lammpsdata`, `write_mcf`, or
+            `parmed.Structure.save`.
+            See https://parmed.github.io/ParmEd/html/structobj/parmed.structure.
+            Structure.html#parmed.structure.Structure.save
 
         Other Parameters
         ----------------
@@ -2678,6 +2692,7 @@ class Compound(object):
             residues,
             combining_rule,
             foyer_kwargs,
+            parmed_kwargs,
             **kwargs,
         )
 
@@ -2825,7 +2840,7 @@ class Compound(object):
         topology : gmso.Topology
             The converted gmso Topology
         """
-        return conversion.to_gmso(self)
+        return conversion.to_gmso(self, **kwargs)
 
     # Interface to Trajectory for reading/writing .pdb and .mol2 files.
     # -----------------------------------------------------------------
@@ -2924,7 +2939,8 @@ class Compound(object):
         title="",
         residues=None,
         show_ports=False,
-        infer_residues=False,
+        infer_residues=True,
+        infer_residues_kwargs={},
     ):
         """Create a ParmEd Structure from a Compound.
 
@@ -2937,13 +2953,16 @@ class Compound(object):
             to avoid overlapping atoms.
         title : str, optional, default=self.name
             Title/name of the ParmEd Structure
-        residues : str of list of str
-            Labels of residues in the Compound. Residues are assigned by
-            checking against Compound.name.
+        residues : str of list of str, optional, default=None
+            Labels of residues in the Compound. Residues are assigned by checking
+            against Compound.name.
         show_ports : boolean, optional, default=False
             Include all port atoms when converting to a `Structure`.
-        infer_residues : bool, optional, default=False
-            Attempt to assign residues based on names of children.
+        infer_residues : bool, optional, default=True
+            Attempt to assign residues based on the number of bonds and particles in
+            an object. This option is not used if `residues == None`
+        infer_residues_kwargs : dict, optional, default={}
+            Keyword arguments for :func:`mbuild.conversion.pull_residues`
 
         Returns
         -------
@@ -2962,6 +2981,7 @@ class Compound(object):
             residues=residues,
             show_ports=show_ports,
             infer_residues=infer_residues,
+            infer_residues_kwargs=infer_residues_kwargs,
         )
 
     def to_networkx(self, names_only=False):

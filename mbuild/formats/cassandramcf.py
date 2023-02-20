@@ -165,7 +165,6 @@ def write_mcf(
 
     # Now we write the MCF file
     with open(filename, "w") as mcf_file:
-
         header = (
             "!***************************************"
             "****************************************\n"
