@@ -364,14 +364,18 @@ class Compound(object):
         
         duplicates = {}
         for child in self.children:
-            identifier = f'{child.name}_{len(child.children)}_{child.n_particles}'
+            part_string = ''.join([part.name for part in child.particles()])
+            child_string = ''.join([child.name for child in child.children])
+            identifier = f'{child.name}_{len(child.children)}_{child_string}_{child.n_particles}_{part_string}'
             if not identifier in duplicates:
                 duplicates[identifier] = [1, True]
             else:
                 duplicates[identifier][0] += 1
                 
         for child in self.children:
-            identifier = f'{child.name}_{len(child.children)}_{child.n_particles}'
+            part_string = ''.join([part.name for part in child.particles()])
+            child_string = ''.join([child.name for child in child.children])
+            identifier = f'{child.name}_{len(child.children)}_{child_string}_{child.n_particles}_{part_string}'
 
             if duplicates[identifier][1]:
                 yield  {"level": level, "parent_id": id(self), "comp_id": id(child), "comp": child, "n_dup": duplicates[identifier][0]}
