@@ -9,13 +9,13 @@ from collections.abc import Iterable
 from copy import deepcopy
 from typing import Sequence
 from warnings import warn
-from treelib import Node, Tree
 
 import ele
 import networkx as nx
 import numpy as np
 from ele.element import Element, element_from_name, element_from_symbol
 from ele.exceptions import ElementError
+from treelib import Node, Tree
 
 from mbuild import conversion
 from mbuild.bond_graph import BondGraph
@@ -278,9 +278,8 @@ class Compound(object):
             if not part.port_particle:
                 return False
         return True
-        
+
     def print_hierarchy(self, print_full=False, index=None):
-        
         """Prints out the hierarchy of the Compound. This also returns the
         tree to allow it to be referenced later.
 
@@ -299,9 +298,9 @@ class Compound(object):
             Returns
             ------
             tree, treelib.tree.Tree, hierarchy of the compound as a tree
-            """
+        """
         tree = Tree()
-        
+
         # loop through the hierarchy saving the data to an array hh
         if print_full:
             hh = [h for h in self._get_hierarchy()]
@@ -310,49 +309,70 @@ class Compound(object):
 
         # if our compound does not have any children we need to call n_direct_bonds instead of n_bonds
         if len(self.children) == 0:
-                n_bonds = self.n_direct_bonds
+            n_bonds = self.n_direct_bonds
         else:
             n_bonds = self.n_bonds
-        
+
         # add the top level compound to create the top level of the tree
         # note that node identifiers passed as the second argument
         # correspond to the compound id
-        tree.create_node(f'{self.name}, {self.n_particles} particles, {n_bonds} bonds, {len(self.children)} children', f'{id(self)}')
+        tree.create_node(
+            f"{self.name}, {self.n_particles} particles, {n_bonds} bonds, {len(self.children)} children",
+            f"{id(self)}",
+        )
 
         # if index is specified, ensure we are not selecting an index out of range
         if not index is None:
             if index >= len(self.children):
-                raise Exception(f'Index {index} out of range. The nmber of first level nodes in the tree is {len(self.children)}.')
-       
+                raise Exception(
+                    f"Index {index} out of range. The nmber of first level nodes in the tree is {len(self.children)}."
+                )
+
         count = -1
-       
+
         for h in hh:
-            if len(h['comp'].children) == 0:
-                n_bonds = h['comp'].n_direct_bonds
+            if len(h["comp"].children) == 0:
+                n_bonds = h["comp"].n_direct_bonds
             else:
-                n_bonds = h['comp'].n_bonds
-            if h['level'] == 0:
-                count = count+1
+                n_bonds = h["comp"].n_bonds
+            if h["level"] == 0:
+                count = count + 1
             if print_full:
                 if index is None:
-                    tree.create_node(f"[{h['comp'].name}]: {h['comp'].n_particles} particles, {n_bonds} bonds, {len(h['comp'].children)} children", f"{h['comp_id']}", f"{h['parent_id']}")
+                    tree.create_node(
+                        f"[{h['comp'].name}]: {h['comp'].n_particles} particles, {n_bonds} bonds, {len(h['comp'].children)} children",
+                        f"{h['comp_id']}",
+                        f"{h['parent_id']}",
+                    )
                 elif count == index:
-                    tree.create_node(f"[{h['comp'].name}]: {h['comp'].n_particles} particles, {n_bonds} bonds, {len(h['comp'].children)} children", f"{h['comp_id']}", f"{h['parent_id']}")
+                    tree.create_node(
+                        f"[{h['comp'].name}]: {h['comp'].n_particles} particles, {n_bonds} bonds, {len(h['comp'].children)} children",
+                        f"{h['comp_id']}",
+                        f"{h['parent_id']}",
+                    )
             else:
-                tree.create_node(f"[{h['comp'].name} x {h['n_dup']}], {h['comp'].n_particles} particles, {n_bonds} bonds, {len(h['comp'].children)} children", f"{h['comp_id']}", f"{h['parent_id']}")
+                tree.create_node(
+                    f"[{h['comp'].name} x {h['n_dup']}], {h['comp'].n_particles} particles, {n_bonds} bonds, {len(h['comp'].children)} children",
+                    f"{h['comp_id']}",
+                    f"{h['parent_id']}",
+                )
         tree.show()
         return tree
-        
+
     def _get_hierarchy(self, level=0):
-        """Return an array of dictionaries corresponding to hierarchy of the compound, recursively.
-        """
+        """Return an array of dictionaries corresponding to hierarchy of the compound, recursively."""
         if not self.children:
             return
         for child in self.children:
-            yield {"level": level, "parent_id": id(self), "comp_id": id(child), "comp": child}
-            for subchild in child._get_hierarchy(level+1):
+            yield {
+                "level": level,
+                "parent_id": id(self),
+                "comp_id": id(child),
+                "comp": child,
+            }
+            for subchild in child._get_hierarchy(level + 1):
                 yield subchild
-                
+
     def _get_hierarchy_nodup(self, level=0):
         """Return an array of dictionaries corresponding to hierarchy of the compound, recursively.
         This routine will identify any duplicate compounds at a given level, including the number of
@@ -361,29 +381,34 @@ class Compound(object):
         """
         if not self.children:
             return
-        
+
         duplicates = {}
         for child in self.children:
-            part_string = ''.join([part.name for part in child.particles()])
-            child_string = ''.join([child.name for child in child.children])
-            identifier = f'{child.name}_{len(child.children)}_{child_string}_{child.n_particles}_{part_string}'
+            part_string = "".join([part.name for part in child.particles()])
+            child_string = "".join([child.name for child in child.children])
+            identifier = f"{child.name}_{len(child.children)}_{child_string}_{child.n_particles}_{part_string}"
             if not identifier in duplicates:
                 duplicates[identifier] = [1, True]
             else:
                 duplicates[identifier][0] += 1
-                
+
         for child in self.children:
-            part_string = ''.join([part.name for part in child.particles()])
-            child_string = ''.join([child.name for child in child.children])
-            identifier = f'{child.name}_{len(child.children)}_{child_string}_{child.n_particles}_{part_string}'
+            part_string = "".join([part.name for part in child.particles()])
+            child_string = "".join([child.name for child in child.children])
+            identifier = f"{child.name}_{len(child.children)}_{child_string}_{child.n_particles}_{part_string}"
 
             if duplicates[identifier][1]:
-                yield  {"level": level, "parent_id": id(self), "comp_id": id(child), "comp": child, "n_dup": duplicates[identifier][0]}
-                
-                for subchild in child._get_hierarchy_nodup(level+1):
+                yield {
+                    "level": level,
+                    "parent_id": id(self),
+                    "comp_id": id(child),
+                    "comp": child,
+                    "n_dup": duplicates[identifier][0],
+                }
+
+                for subchild in child._get_hierarchy_nodup(level + 1):
                     yield subchild
                 duplicates[identifier][1] = False
-
 
     def ancestors(self):
         """Generate all ancestors of the Compound recursively.

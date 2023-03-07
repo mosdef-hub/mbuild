@@ -118,7 +118,7 @@ class TestCompound(BaseTest):
     def test_n_direct_bonds_parent(self, ethane):
         with pytest.raises(MBuildError):
             ethane.n_direct_bonds
-    
+
     def test_n_direct_bonds(self, ethane):
         assert ethane[0].n_direct_bonds == 4
         assert ethane[-1].n_direct_bonds == 1
@@ -137,85 +137,90 @@ class TestCompound(BaseTest):
         ethane_clone = mb.clone(ethane)
         for p1, p2 in zip(ethane.particles(), ethane_clone.particles()):
             assert p1.n_direct_bonds == p2.n_direct_bonds
-    
+
     def test_hierarchy(self, ethane):
         # first check the hierarchy returned where we don't print duplicates
         ethane_hierarchy = ethane._get_hierarchy_nodup()
         eh = [t for t in ethane_hierarchy]
         assert len(eh) == 3
-        assert eh[0]['level'] == 0
-        assert eh[0]['parent_id'] == id(ethane)
-        assert eh[0]['comp_id'] == id(ethane.children[0])
-        assert eh[0]['comp'] == ethane.children[0]
-        
-        assert eh[0]['n_dup'] == 2
-        assert eh[1]['level'] == 1
-        assert eh[1]['parent_id'] == id(ethane.children[0])
-        assert eh[1]['comp_id'] == id(ethane.children[0].children[0])
-        assert eh[1]['comp'] == ethane.children[0].children[0]
-        assert eh[1]['n_dup'] == 1
-        
-        assert eh[2]['level'] == 1
-        assert eh[2]['parent_id'] == id(ethane.children[0])
-        assert eh[2]['comp_id'] == id(ethane.children[0].children[1])
-        assert eh[2]['comp'] == ethane.children[0].children[1]
-        assert eh[2]['n_dup'] == 3
+        assert eh[0]["level"] == 0
+        assert eh[0]["parent_id"] == id(ethane)
+        assert eh[0]["comp_id"] == id(ethane.children[0])
+        assert eh[0]["comp"] == ethane.children[0]
+
+        assert eh[0]["n_dup"] == 2
+        assert eh[1]["level"] == 1
+        assert eh[1]["parent_id"] == id(ethane.children[0])
+        assert eh[1]["comp_id"] == id(ethane.children[0].children[0])
+        assert eh[1]["comp"] == ethane.children[0].children[0]
+        assert eh[1]["n_dup"] == 1
+
+        assert eh[2]["level"] == 1
+        assert eh[2]["parent_id"] == id(ethane.children[0])
+        assert eh[2]["comp_id"] == id(ethane.children[0].children[1])
+        assert eh[2]["comp"] == ethane.children[0].children[1]
+        assert eh[2]["n_dup"] == 3
 
         ethane_hierarchy_full = ethane._get_hierarchy()
         ehf = [t for t in ethane_hierarchy_full]
-        assert ehf[0]['level'] == 0
-        assert ehf[1]['level'] == 1
-        assert ehf[2]['level'] == 1
-        assert ehf[3]['level'] == 1
-        assert ehf[4]['level'] == 1
-        assert ehf[5]['level'] == 0
-        assert ehf[6]['level'] == 1
-        assert ehf[7]['level'] == 1
-        assert ehf[8]['level'] == 1
-        assert ehf[9]['level'] == 1
+        assert ehf[0]["level"] == 0
+        assert ehf[1]["level"] == 1
+        assert ehf[2]["level"] == 1
+        assert ehf[3]["level"] == 1
+        assert ehf[4]["level"] == 1
+        assert ehf[5]["level"] == 0
+        assert ehf[6]["level"] == 1
+        assert ehf[7]["level"] == 1
+        assert ehf[8]["level"] == 1
+        assert ehf[9]["level"] == 1
 
         assert len(ehf) == 10
-        assert ehf[0]['parent_id'] == id(ethane)
-        assert ehf[0]['comp_id'] == id(ethane.children[0])
-        assert ehf[0]['comp'] == ethane.children[0]
-        assert ehf[1]['parent_id'] == id(ethane.children[0])
-        assert ehf[1]['comp_id'] == id(ethane.children[0].children[0])
-        assert ehf[1]['comp'] == ethane.children[0].children[0]
-        assert ehf[2]['parent_id'] == id(ethane.children[0])
-        assert ehf[2]['comp_id'] == id(ethane.children[0].children[1])
-        assert ehf[2]['comp'] == ethane.children[0].children[1]
-        assert ehf[3]['parent_id'] == id(ethane.children[0])
-        assert ehf[3]['comp_id'] == id(ethane.children[0].children[2])
-        assert ehf[3]['comp'] == ethane.children[0].children[2]
-        assert ehf[4]['parent_id'] == id(ethane.children[0])
-        assert ehf[4]['comp_id'] == id(ethane.children[0].children[3])
-        assert ehf[4]['comp'] == ethane.children[0].children[3]
-        assert ehf[5]['parent_id'] == id(ethane)
-        assert ehf[5]['comp_id'] == id(ethane.children[1])
-        assert ehf[5]['comp'] == ethane.children[1]
-        assert ehf[6]['parent_id'] == id(ethane.children[1])
-        assert ehf[6]['comp_id'] == id(ethane.children[1].children[0])
-        assert ehf[6]['comp'] == ethane.children[1].children[0]
-        assert ehf[7]['parent_id'] == id(ethane.children[1])
-        assert ehf[7]['comp_id'] == id(ethane.children[1].children[1])
-        assert ehf[7]['comp'] == ethane.children[1].children[1]
-        assert ehf[8]['parent_id'] == id(ethane.children[1])
-        assert ehf[8]['comp_id'] == id(ethane.children[1].children[2])
-        assert ehf[8]['comp'] == ethane.children[1].children[2]
-        assert ehf[9]['parent_id'] == id(ethane.children[1])
-        assert ehf[9]['comp_id'] == id(ethane.children[1].children[3])
-        assert ehf[9]['comp'] == ethane.children[1].children[3]
-
+        assert ehf[0]["parent_id"] == id(ethane)
+        assert ehf[0]["comp_id"] == id(ethane.children[0])
+        assert ehf[0]["comp"] == ethane.children[0]
+        assert ehf[1]["parent_id"] == id(ethane.children[0])
+        assert ehf[1]["comp_id"] == id(ethane.children[0].children[0])
+        assert ehf[1]["comp"] == ethane.children[0].children[0]
+        assert ehf[2]["parent_id"] == id(ethane.children[0])
+        assert ehf[2]["comp_id"] == id(ethane.children[0].children[1])
+        assert ehf[2]["comp"] == ethane.children[0].children[1]
+        assert ehf[3]["parent_id"] == id(ethane.children[0])
+        assert ehf[3]["comp_id"] == id(ethane.children[0].children[2])
+        assert ehf[3]["comp"] == ethane.children[0].children[2]
+        assert ehf[4]["parent_id"] == id(ethane.children[0])
+        assert ehf[4]["comp_id"] == id(ethane.children[0].children[3])
+        assert ehf[4]["comp"] == ethane.children[0].children[3]
+        assert ehf[5]["parent_id"] == id(ethane)
+        assert ehf[5]["comp_id"] == id(ethane.children[1])
+        assert ehf[5]["comp"] == ethane.children[1]
+        assert ehf[6]["parent_id"] == id(ethane.children[1])
+        assert ehf[6]["comp_id"] == id(ethane.children[1].children[0])
+        assert ehf[6]["comp"] == ethane.children[1].children[0]
+        assert ehf[7]["parent_id"] == id(ethane.children[1])
+        assert ehf[7]["comp_id"] == id(ethane.children[1].children[1])
+        assert ehf[7]["comp"] == ethane.children[1].children[1]
+        assert ehf[8]["parent_id"] == id(ethane.children[1])
+        assert ehf[8]["comp_id"] == id(ethane.children[1].children[2])
+        assert ehf[8]["comp"] == ethane.children[1].children[2]
+        assert ehf[9]["parent_id"] == id(ethane.children[1])
+        assert ehf[9]["comp_id"] == id(ethane.children[1].children[3])
+        assert ehf[9]["comp"] == ethane.children[1].children[3]
 
         ethane_tree = ethane.print_hierarchy()
         assert ethane_tree.depth() == 2
         tree_json = ethane_tree.to_json(with_data=False)
-        assert tree_json == '{"Ethane, 8 particles, 7 bonds, 2 children": {"children": [{"[CH3 x 2], 4 particles, 3 bonds, 4 children": {"children": ["[C x 1], 1 particles, 4 bonds, 0 children", "[H x 3], 1 particles, 1 bonds, 0 children"]}}]}}'
-        
+        assert (
+            tree_json
+            == '{"Ethane, 8 particles, 7 bonds, 2 children": {"children": [{"[CH3 x 2], 4 particles, 3 bonds, 4 children": {"children": ["[C x 1], 1 particles, 4 bonds, 0 children", "[H x 3], 1 particles, 1 bonds, 0 children"]}}]}}'
+        )
+
         ethane_tree_full = ethane.print_hierarchy(print_full=True)
         assert ethane_tree_full.depth() == 2
         tree_json_full = ethane_tree_full.to_json(with_data=False)
-        assert tree_json_full == '{"Ethane, 8 particles, 7 bonds, 2 children": {"children": [{"[CH3]: 4 particles, 3 bonds, 4 children": {"children": ["[C]: 1 particles, 4 bonds, 0 children", "[H]: 1 particles, 1 bonds, 0 children", "[H]: 1 particles, 1 bonds, 0 children", "[H]: 1 particles, 1 bonds, 0 children"]}}, {"[CH3]: 4 particles, 3 bonds, 4 children": {"children": ["[C]: 1 particles, 4 bonds, 0 children", "[H]: 1 particles, 1 bonds, 0 children", "[H]: 1 particles, 1 bonds, 0 children", "[H]: 1 particles, 1 bonds, 0 children"]}}]}}'
+        assert (
+            tree_json_full
+            == '{"Ethane, 8 particles, 7 bonds, 2 children": {"children": [{"[CH3]: 4 particles, 3 bonds, 4 children": {"children": ["[C]: 1 particles, 4 bonds, 0 children", "[H]: 1 particles, 1 bonds, 0 children", "[H]: 1 particles, 1 bonds, 0 children", "[H]: 1 particles, 1 bonds, 0 children"]}}, {"[CH3]: 4 particles, 3 bonds, 4 children": {"children": ["[C]: 1 particles, 4 bonds, 0 children", "[H]: 1 particles, 1 bonds, 0 children", "[H]: 1 particles, 1 bonds, 0 children", "[H]: 1 particles, 1 bonds, 0 children"]}}]}}'
+        )
 
         system = mb.Compound()
         system.add(mb.clone(ethane))
@@ -225,14 +230,14 @@ class TestCompound(BaseTest):
 
         sh_array = [t for t in system_hierarchy]
         assert len(sh_array) == 4
-        
+
         # let us change the name to ensure that it doens't see it as a duplicate
-        system.children[0].name = 'Ethane_new_name'
+        system.children[0].name = "Ethane_new_name"
         system_hierarchy = system._get_hierarchy_nodup()
 
         sh_array = [t for t in system_hierarchy]
         assert len(sh_array) == 8
-        
+
     def test_load_protein(self):
         # Testing the loading function with complicated protein,
         # The protein file is taken from RCSB protein data bank
