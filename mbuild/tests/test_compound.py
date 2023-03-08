@@ -160,7 +160,7 @@ class TestCompound(BaseTest):
         assert eh[2]["comp_id"] == id(ethane.children[0].children[1])
         assert eh[2]["comp"] == ethane.children[0].children[1]
         assert eh[2]["n_dup"] == 3
-        
+
         # now check the hierarchy returned with duplicates
         ethane_hierarchy_full = ethane._get_hierarchy()
         ehf = [t for t in ethane_hierarchy_full]
@@ -207,7 +207,7 @@ class TestCompound(BaseTest):
         assert ehf[9]["comp_id"] == id(ethane.children[1].children[3])
         assert ehf[9]["comp"] == ethane.children[1].children[3]
 
-        #examine the tree output from print_hierarchy
+        # examine the tree output from print_hierarchy
         ethane_tree = ethane.print_hierarchy()
         assert ethane_tree.depth() == 2
         tree_json = ethane_tree.to_json(with_data=False)
@@ -248,13 +248,13 @@ class TestCompound(BaseTest):
         assert temp_tree.depth() == 0
 
     def test_show_hierarchy(self, capsys):
-        #test that the output written to the screen is correct
-        temp_particle = mb.Compound(name='C', element='C')
+        # test that the output written to the screen is correct
+        temp_particle = mb.Compound(name="C", element="C")
         temp_particle.print_hierarchy()
 
         captured = capsys.readouterr()
-        assert captured.out.strip() == 'C, 1 particles, 0 bonds, 0 children'
-        
+        assert captured.out.strip() == "C, 1 particles, 0 bonds, 0 children"
+
         temp_particle.print_hierarchy(show_tree=False)
         captured = capsys.readouterr()
         assert captured.out.strip() == ""
