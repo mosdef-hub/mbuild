@@ -279,7 +279,7 @@ class Compound(object):
                 return False
         return True
         
-    def print_hierarchy(self, print_full=False, index=None):
+    def print_hierarchy(self, print_full=False, index=None, show_tree=True):
         
         """Prints out the hierarchy of the Compound. This also returns the
         tree to allow it to be referenced later.
@@ -295,6 +295,8 @@ class Compound(object):
                 Print the branch of the first level of the hiearchy
                 corresponding to the value specified by index.
                 This only applies when print_full is True.
+            show_tree, bool, default=True
+                If False, do not print the tree to the screen.
 
             Returns
             ------
@@ -310,7 +312,7 @@ class Compound(object):
 
         # if our compound does not have any children we need to call n_direct_bonds instead of n_bonds
         if len(self.children) == 0:
-                n_bonds = self.n_direct_bonds
+            n_bonds = self.n_direct_bonds
         else:
             n_bonds = self.n_bonds
         
@@ -322,7 +324,7 @@ class Compound(object):
         # if index is specified, ensure we are not selecting an index out of range
         if not index is None:
             if index >= len(self.children):
-                raise Exception(f'Index {index} out of range. The nmber of first level nodes in the tree is {len(self.children)}.')
+                raise MBuildError(f'Index {index} out of range. The number of first level nodes in the tree is {len(self.children)}.')
        
         count = -1
        
@@ -340,7 +342,8 @@ class Compound(object):
                     tree.create_node(f"[{h['comp'].name}]: {h['comp'].n_particles} particles, {n_bonds} bonds, {len(h['comp'].children)} children", f"{h['comp_id']}", f"{h['parent_id']}")
             else:
                 tree.create_node(f"[{h['comp'].name} x {h['n_dup']}], {h['comp'].n_particles} particles, {n_bonds} bonds, {len(h['comp'].children)} children", f"{h['comp_id']}", f"{h['parent_id']}")
-        tree.show()
+        if show_tree:
+            tree.show()
         return tree
         
     def _get_hierarchy(self, level=0):
