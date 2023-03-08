@@ -15,7 +15,7 @@ import networkx as nx
 import numpy as np
 from ele.element import Element, element_from_name, element_from_symbol
 from ele.exceptions import ElementError
-from treelib import Node, Tree
+from treelib import Tree
 
 from mbuild import conversion
 from mbuild.bond_graph import BondGraph
