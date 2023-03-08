@@ -278,7 +278,7 @@ class Compound(object):
             if not part.port_particle:
                 return False
         return True
-        
+
     def print_hierarchy(self, print_full=False, index=None, show_tree=True):
         """Prints out the hierarchy of the Compound. This also returns the
         tree to allow it to be referenced later.
@@ -326,8 +326,10 @@ class Compound(object):
         # if index is specified, ensure we are not selecting an index out of range
         if not index is None:
             if index >= len(self.children):
-                raise MBuildError(f'Index {index} out of range. The number of first level nodes in the tree is {len(self.children)}.')
-       
+                raise MBuildError(
+                    f"Index {index} out of range. The number of first level nodes in the tree is {len(self.children)}."
+                )
+
         count = -1
 
         for h in hh:
@@ -351,7 +353,11 @@ class Compound(object):
                         f"{h['parent_id']}",
                     )
             else:
-                tree.create_node(f"[{h['comp'].name} x {h['n_dup']}], {h['comp'].n_particles} particles, {n_bonds} bonds, {len(h['comp'].children)} children", f"{h['comp_id']}", f"{h['parent_id']}")
+                tree.create_node(
+                    f"[{h['comp'].name} x {h['n_dup']}], {h['comp'].n_particles} particles, {n_bonds} bonds, {len(h['comp'].children)} children",
+                    f"{h['comp_id']}",
+                    f"{h['parent_id']}",
+                )
         if show_tree:
             tree.show()
         return tree

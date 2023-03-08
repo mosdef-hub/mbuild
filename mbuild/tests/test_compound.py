@@ -239,14 +239,14 @@ class TestCompound(BaseTest):
 
         sh_array = [t for t in system_hierarchy]
         assert len(sh_array) == 8
-        
-        #make sure we throw an error if we try to index out of range
+
+        # make sure we throw an error if we try to index out of range
         with pytest.raises(MBuildError):
             system.print_hierarchy(print_full=True, index=10)
-        temp_particle = mb.Compound(name='C', element='C')
+        temp_particle = mb.Compound(name="C", element="C")
         temp_tree = temp_particle.print_hierarchy()
         assert temp_tree.depth() == 0
-   
+
     def test_show_hierarchy(self, capsys):
         #test that the output written to the screen is correct
         temp_particle = mb.Compound(name='C', element='C')
@@ -256,9 +256,8 @@ class TestCompound(BaseTest):
         assert captured.out.strip() == 'C, 1 particles, 0 bonds, 0 children'
         
         temp_particle.print_hierarchy(show_tree=False)
-
         captured = capsys.readouterr()
-        assert captured.out.strip() == ''
+        assert captured.out.strip() == ""
 
     def test_load_protein(self):
         # Testing the loading function with complicated protein,
