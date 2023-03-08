@@ -223,8 +223,10 @@ class TestCompound(BaseTest):
             tree_json_full
             == '{"Ethane, 8 particles, 7 bonds, 2 children": {"children": [{"[CH3]: 4 particles, 3 bonds, 4 children": {"children": ["[C]: 1 particles, 4 bonds, 0 children", "[H]: 1 particles, 1 bonds, 0 children", "[H]: 1 particles, 1 bonds, 0 children", "[H]: 1 particles, 1 bonds, 0 children"]}}, {"[CH3]: 4 particles, 3 bonds, 4 children": {"children": ["[C]: 1 particles, 4 bonds, 0 children", "[H]: 1 particles, 1 bonds, 0 children", "[H]: 1 particles, 1 bonds, 0 children", "[H]: 1 particles, 1 bonds, 0 children"]}}]}}'
         )
-        
-        ethane_tree_full_index = ethane.print_hierarchy(print_full=True, index=0)
+
+        ethane_tree_full_index = ethane.print_hierarchy(
+            print_full=True, index=0
+        )
         assert ethane_tree_full_index.depth() == 2
         tree_json_full_index = ethane_tree_full_index.to_json(with_data=False)
         assert (
