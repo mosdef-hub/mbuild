@@ -1323,7 +1323,7 @@ def _write_pair_information(
         else:
             data.write("\nPair Coeffs # lj\n")
 
-        if unit_style == "real" or unit_style == "metal":
+        if unit_style in ["real", "metal"]:
             data.write("#\tepsilon (%s)\t\tsigma (Angstrom)\n" % eng_unit_str)
         elif unit_style == "lj":
             data.write("#\treduced_epsilon \t\treduced_sigma \n")
