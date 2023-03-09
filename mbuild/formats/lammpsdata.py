@@ -506,7 +506,7 @@ def write_lammpsdata(
         if atom_style == "atomic":
             atom_line = "{index:d}\t{type_index:d}\t{x:.6f}\t{y:.6f}\t{z:.6f}\n"
         elif atom_style == "charge":
-            if unit_style == "real" or unit_style == "metal":
+            if unit_style in ["real", "metal"]:
                 atom_line = "{index:d}\t{type_index:d}\t{charge:.6f}\t{x:.6f}\t{y:.6f}\t{z:.6f}\n"
             elif unit_style == "lj":
                 atom_line = "{index:d}\t{type_index:d}\t{charge:.4ef}\t{x:.6f}\t{y:.6f}\t{z:.6f}\n"
