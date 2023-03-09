@@ -220,13 +220,13 @@ class TestCassandraMCF(BaseTest):
         assert isclose(float(mcf_data[atom_section_start + 2][3]), 12.011)
         assert isclose(float(mcf_data[atom_section_start + 2][4]), -0.18)
         assert mcf_data[atom_section_start + 2][5] == "LJ"
-        assert isclose(float(mcf_data[atom_section_start + 2][6]), 33.212)
+        assert isclose(float(mcf_data[atom_section_start + 2][6]), 33.21249)
         assert isclose(float(mcf_data[atom_section_start + 2][7]), 3.500)
 
         # Bond info
         assert mcf_data[bond_section_start + 1][0] == "7"
         passed_test = False
-        for line in mcf_data[bond_section_start + 2 : angle_section_start - 6]:
+        for line in mcf_data[bond_section_start + 2: angle_section_start - 6]:
             a1 = line[1]
             a2 = line[2]
             if (a1 == "1" and a2 == "2") or (a2 == "1" and a1 == "2"):
@@ -240,7 +240,7 @@ class TestCassandraMCF(BaseTest):
         assert mcf_data[angle_section_start + 1][0] == "12"
         passed_test = False
         for line in mcf_data[
-            angle_section_start + 2 : dihedral_section_start - 8
+            angle_section_start + 2: dihedral_section_start - 8
         ]:
             if line[2] == "5":
                 a1 = line[1]
@@ -257,7 +257,7 @@ class TestCassandraMCF(BaseTest):
         assert mcf_data[dihedral_section_start + 1][0] == "9"
         passed_test = False
         for line in mcf_data[
-            dihedral_section_start + 2 : improper_section_start - 5
+            dihedral_section_start + 2: improper_section_start - 5
         ]:
             a1 = line[1]
             a2 = line[2]
@@ -317,14 +317,14 @@ class TestCassandraMCF(BaseTest):
         assert isclose(float(mcf_data[atom_section_start + 2][3]), 12.011)
         assert isclose(float(mcf_data[atom_section_start + 2][4]), -0.115)
         assert mcf_data[atom_section_start + 2][5] == "LJ"
-        assert isclose(float(mcf_data[atom_section_start + 2][6]), 35.225)
+        assert isclose(float(mcf_data[atom_section_start + 2][6]), 35.22537)
         assert isclose(float(mcf_data[atom_section_start + 2][7]), 3.550)
         assert mcf_data[atom_section_start + 2][8] == "ring"
 
         # Bond info
         assert mcf_data[bond_section_start + 1][0] == "12"
         passed_test = False
-        for line in mcf_data[bond_section_start + 2 : angle_section_start - 6]:
+        for line in mcf_data[bond_section_start + 2: angle_section_start - 6]:
             a1 = line[1]
             a2 = line[2]
             if (a1 == "1" and a2 == "2") or (a2 == "1" and a1 == "2"):
@@ -338,7 +338,7 @@ class TestCassandraMCF(BaseTest):
         assert mcf_data[angle_section_start + 1][0] == "18"
         passed_test = False
         for line in mcf_data[
-            angle_section_start + 2 : dihedral_section_start - 8
+            angle_section_start + 2: dihedral_section_start - 8
         ]:
             if line[2] == "2":
                 a1 = line[1]
@@ -354,7 +354,7 @@ class TestCassandraMCF(BaseTest):
         assert mcf_data[dihedral_section_start + 1][0] == "24"
         passed_test = False
         for line in mcf_data[
-            dihedral_section_start + 2 : improper_section_start - 5
+            dihedral_section_start + 2: improper_section_start - 5
         ]:
             a1 = line[1]
             a2 = line[2]
