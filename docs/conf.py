@@ -130,7 +130,7 @@ numpydoc_class_members_toctree = False
 numpydoc_show_class_members = False
 numpydoc_show_inherited_class_members = False
 
-_python_doc_base = "https://docs.python.org/3.7"
+_python_doc_base = "https://docs.python.org/3.9"
 
 intersphinx_mapping = {
     _python_doc_base: None,
@@ -154,7 +154,7 @@ master_doc = "index"
 # General information about the project.
 project = "mbuild"
 author = "Mosdef Team"
-copyright = "2014-2019, Vanderbilt University"
+copyright = "2014-2023, Vanderbilt University"
 
 # The version info for the project you're documenting, acts as replacement for
 # |version| and |release|, also used in various other places throughout the
