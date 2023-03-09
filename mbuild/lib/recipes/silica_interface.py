@@ -110,7 +110,7 @@ class SilicaInterface(Compound):
             for atom in self.particles()
             if atom.name == "O"
             and atom.pos[2] > thickness
-            and len(self.bond_graph.neighbors(atom)) == 1
+            and len(list(self.bond_graph.neighbors(atom))) == 1
         ]
 
         n_bridges = int((len(dangling_Os) - target) / 2)
@@ -119,11 +119,11 @@ class SilicaInterface(Compound):
             bridged = False
             while not bridged:
                 O1 = random.choice(dangling_Os)
-                Si1 = self.bond_graph.neighbors(O1)[0]
+                Si1 = list(self.bond_graph.neighbors(O1))[0]
                 for O2 in dangling_Os:
                     if O2 == O1:
                         continue
-                    Si2 = self.bond_graph.neighbors(O2)[0]
+                    Si2 = list(self.bond_graph.neighbors(O2))[0]
                     if Si1 == Si2:
                         continue
                     if any(
@@ -143,7 +143,7 @@ class SilicaInterface(Compound):
     def _identify_surface_sites(self, thickness):
         """Label surface sites and add ports above them."""
         for atom in list(self.particles()):
-            if len(self.bond_graph.neighbors(atom)) == 1:
+            if len(list(self.bond_graph.neighbors(atom))) == 1:
                 if atom.name == "O" and atom.pos[2] > thickness:
                     atom.name = "O_surface"
                     port = Port(anchor=atom)
@@ -162,7 +162,7 @@ class SilicaInterface(Compound):
             for atom in self.particles()
             if atom.name == "O"
             and atom.pos[2] < self._O_buffer
-            and len(self.bond_graph.neighbors(atom)) == 1
+            and len(list(self.bond_graph.neighbors(atom))) == 1
         ]
 
         for _ in range(n_deletions):
