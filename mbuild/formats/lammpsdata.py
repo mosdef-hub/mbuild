@@ -307,7 +307,7 @@ def write_lammpsdata(
             )
         charges[np.isinf(charges)] = 0
         eng_unit_str = " "
-        
+
     elif unit_style == "real":
         sigma_conversion_factor = 1
         epsilon_conversion_factor = 1
