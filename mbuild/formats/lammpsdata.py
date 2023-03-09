@@ -310,13 +310,13 @@ def write_lammpsdata(
         sigma_conversion_factor = 1
         epsilon_conversion_factor = 1
         mass_conversion_factor = 1
-        eng_unit_str = 'kcal/mol'
+        eng_unit_str = "kcal/mol"
 
     elif unit_style == "metal":
-        sigma_conversion_factor = 1                  # unit in Angstrom
-        epsilon_conversion_factor = 1/0.043364115    #  kcal/mol to eV
+        sigma_conversion_factor = 1  # unit in Angstrom
+        epsilon_conversion_factor = 1 / 0.043364115  #  kcal/mol to eV
         mass_conversion_factor = 1
-        eng_unit_str = 'eV'
+        eng_unit_str = "eV"
     else:
         raise ValueError("unit_styles are supported: 'real', 'lj', 'metal' ")
 
@@ -377,7 +377,9 @@ def write_lammpsdata(
 
     # Write lammps data file https://docs.lammps.org/2001/data_format.html
     with open(filename, "w") as data:
-        data.write(f"{filename} - created by mBuild-Thang version; units = {unit_style}\n")
+        data.write(
+            f"{filename} - created by mBuild-Thang version; units = {unit_style}\n"
+        )
         if unit_style == "lj":
             data.write("#Normalization factors: ")
             data.write(
@@ -957,7 +959,6 @@ def _get_dihedral_types(
             for dihedral in structure.rb_torsions
         ]
     elif use_dihedrals:
-
         dihedral_types = [
             unique_dihedral_types[dihedral_info]
             for dihedral_info in charmm_dihedrals
@@ -1270,7 +1271,9 @@ def _write_pair_information(
             else:
                 data.write("\nPairIJ Coeffs # modified lj\n")
 
-            data.write("# type1 type2\tepsilon (%s)\tsigma (Angstrom)\n" % eng_unit_str)
+            data.write(
+                "# type1 type2\tepsilon (%s)\tsigma (Angstrom)\n" % eng_unit_str
+            )
 
             for (type1, type2), (sigma, epsilon) in coeffs.items():
                 data.write(
@@ -1294,7 +1297,9 @@ def _write_pair_information(
                     "{}\t{:.5f}\t{:.5f}\n".format(idx, epsilon, sigma_dict[idx])
                 )
             print("Copy these commands into your input script:\n")
-            print("# type1 type2\tepsilon (%s)\tsigma (Angstrom)\n" % eng_unit_str)
+            print(
+                "# type1 type2\tepsilon (%s)\tsigma (Angstrom)\n" % eng_unit_str
+            )
             for (type1, type2), (sigma, epsilon) in coeffs.items():
                 print(
                     "pair_coeff\t{0} \t{1} \t{2} \t\t{3} \t\t# {4} \t{5}".format(
@@ -1326,7 +1331,9 @@ def _write_pair_information(
             )
 
 
-def _write_bond_information(structure, data, unique_bond_types, unit_style, eng_unit_str):
+def _write_bond_information(
+    structure, data, unique_bond_types, unit_style, eng_unit_str
+):
     """Write Bond Coeffs section of lammps data file."""
     data.write("\nBond Coeffs # harmonic\n")
     if unit_style == "real" or unit_style == "metal":
@@ -1350,7 +1357,12 @@ def _write_bond_information(structure, data, unique_bond_types, unit_style, eng_
 
 
 def _write_angle_information(
-    structure, data, unique_angle_types, use_urey_bradleys, unit_style, eng_unit_str
+    structure,
+    data,
+    unique_angle_types,
+    use_urey_bradleys,
+    unit_style,
+    eng_unit_str,
 ):
     """Write Angle Coeffs section of lammps data file."""
     sorted_angle_types = {
@@ -1360,7 +1372,8 @@ def _write_angle_information(
     if use_urey_bradleys:
         data.write("\nAngle Coeffs # charmm\n")
         data.write(
-            "#\tk(%s/rad^2)\t\ttheteq(deg)\tk(%s/angstrom^2)\treq(angstrom)\n" %(eng_unit_str,eng_unit_str)
+            "#\tk(%s/rad^2)\t\ttheteq(deg)\tk(%s/angstrom^2)\treq(angstrom)\n"
+            % (eng_unit_str, eng_unit_str)
         )
         for params, idx in sorted_angle_types.items():
             data.write("{}\t{}\t{:.5f}\t{:.5f}\t{:.5f}\n".format(idx, *params))
@@ -1371,7 +1384,7 @@ def _write_angle_information(
         if unit_style == "lj":
             data.write("#\treduced_k\t\ttheteq(deg)\n")
         else:
-            data.write("#\tk(%s/rad^2)\t\ttheteq(deg)\n" %eng_unit_str )
+            data.write("#\tk(%s/rad^2)\t\ttheteq(deg)\n" % eng_unit_str)
 
         for params, idx in sorted_angle_types.items():
             data.write(
@@ -1405,7 +1418,10 @@ def _write_dihedral_information(
     if use_rb_torsions:
         data.write("\nDihedral Coeffs # opls\n")
         if unit_style == "real" or unit_style == "metal":
-            data.write( "#\tf1(%s)\tf2(%s)\tf3(%s)\tf4(%s)\n" %(eng_unit_str,eng_unit_str,eng_unit_str,eng_unit_str) )
+            data.write(
+                "#\tf1(%s)\tf2(%s)\tf3(%s)\tf4(%s)\n"
+                % (eng_unit_str, eng_unit_str, eng_unit_str, eng_unit_str)
+            )
         elif unit_style == "lj":
             data.write("#\tf1\tf2\tf3\tf4 (all lj reduced units)\n")
         for params, idx in sorted_dihedral_types.items():
