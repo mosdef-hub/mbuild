@@ -320,7 +320,7 @@ def write_lammpsdata(
         mass_conversion_factor = 1
         eng_unit_str = "eV"
     else:
-        raise ValueError("unit_styles are supported: 'real', 'lj', 'metal' ")
+        raise ValueError("Currently only support 'real', 'lj', and 'metal' unit_styles.")
 
     # Divide by conversion factor
     Lx = box.Lx * (1 / sigma_conversion_factor)
