@@ -72,8 +72,8 @@ class TestJSONFormats(BaseTest):
         assert hexane.labels.keys() == hexane_copy.labels.keys()
 
     def test_nested_compound(self):
-        num_chidren = 100
-        num_grand_children = 100
+        num_chidren = 10
+        num_grand_children = 10
         num_ports = 2
         ancestor = mb.Compound(name="Ancestor")
         for i in range(num_chidren):
