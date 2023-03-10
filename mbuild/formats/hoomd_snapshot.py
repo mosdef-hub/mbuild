@@ -98,7 +98,7 @@ def to_hoomdsnapshot(
     hoomd_snapshot=None,
 ):
     """Convert a Compound or parmed.Structure to hoomd.Snapshot.
-    
+
     Parameters
     ----------
     structure : parmed.Structure
