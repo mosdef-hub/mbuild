@@ -294,7 +294,7 @@ class Compound(object):
                 Print the branch of the first level of the hiearchy
                 corresponding to the value specified by index.
                 This only applies when print_full is True.
-            show_tree, bool, default=True
+            show_tree: bool, optional, default=True
                 If False, do not print the tree to the screen.
 
             Returns
