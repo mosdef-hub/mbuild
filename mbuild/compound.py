@@ -285,7 +285,7 @@ class Compound(object):
 
             Parameters
             ----------
-            print_full, bool, default=False
+            print_full: bool, optional, default=False
                 The full hierarchy will be printed, rather than condensing
                 compounds with identical topologies.
                 Topologies are considered identical if they have the same name,
