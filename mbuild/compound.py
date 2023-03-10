@@ -290,7 +290,7 @@ class Compound(object):
                 compounds with identical topologies.
                 Topologies are considered identical if they have the same name,
                 contain the number of children, and contain the same number of particles.
-            index, int, default=None
+            index: int, optional, default=None
                 Print the branch of the first level of the hiearchy
                 corresponding to the value specified by index.
                 This only applies when print_full is True.
