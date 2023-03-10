@@ -280,7 +280,7 @@ class Compound(object):
         return True
 
     def print_hierarchy(self, print_full=False, index=None, show_tree=True):
-        """Prints out the hierarchy of the Compound.
+        """Print the hierarchy of the Compound.
 
         Parameters
         ----------
@@ -299,7 +299,7 @@ class Compound(object):
             If False, do not print the tree to the screen.
 
         Returns
-        ------
+        -------
         tree, treelib.tree.Tree, hierarchy of the compound as a tree
             
         """
