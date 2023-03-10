@@ -301,7 +301,7 @@ class Compound(object):
         Returns
         -------
         tree, treelib.tree.Tree, hierarchy of the compound as a tree
-            
+
         """
         tree = Tree()
 
@@ -380,7 +380,7 @@ class Compound(object):
 
     def _get_hierarchy_nodup(self, level=0):
         """Return an array of dictionaries corresponding to hierarchy of the compound, recursively.
-        
+
         This routine will identify any duplicate compounds at a given level, including the number of
         duplicates for each compound. Compounds are considered to be identical if the name,
         number of children, and number of particles are the same at the same level.
@@ -392,14 +392,14 @@ class Compound(object):
         for child in self.children:
             part_string = "".join([part.name for part in child.particles()])
             child_string = "".join([child.name for child in child.children])
-            
+
             if len(child.children) == 0:
                 n_bonds = child.n_direct_bonds
             else:
                 n_bonds = child.n_bonds
-                
+
             identifier = f"{child.name}_{len(child.children)}_{child_string}_{child.n_particles}_{part_string}_{n_bonds}"
-            
+
             if not identifier in duplicates:
                 duplicates[identifier] = [1, True]
             else:
@@ -413,7 +413,7 @@ class Compound(object):
                 n_bonds = child.n_direct_bonds
             else:
                 n_bonds = child.n_bonds
-                
+
             identifier = f"{child.name}_{len(child.children)}_{child_string}_{child.n_particles}_{part_string}_{n_bonds}"
 
             if duplicates[identifier][1]:
