@@ -280,26 +280,28 @@ class Compound(object):
         return True
 
     def print_hierarchy(self, print_full=False, index=None, show_tree=True):
-        """Prints out the hierarchy of the Compound. This also returns the
-        tree to allow it to be referenced later.
+        """Prints out the hierarchy of the Compound.
 
-            Parameters
-            ----------
-            print_full: bool, optional, default=False
-                The full hierarchy will be printed, rather than condensing
-                compounds with identical topologies.
-                Topologies are considered identical if they have the same name,
-                contain the number of children, and contain the same number of particles.
-            index: int, optional, default=None
-                Print the branch of the first level of the hiearchy
-                corresponding to the value specified by index.
-                This only applies when print_full is True.
-            show_tree: bool, optional, default=True
-                If False, do not print the tree to the screen.
+        Parameters
+        ----------
+        print_full: bool, optional, default=False
+            The full hierarchy will be printed, rather than condensing
+            compounds with identical topologies.
+            Topologies are considered identical if they have the same name,
+            contain the number and names of children,
+            contain the same number and names of particles,
+            and the same number of bonds.
+        index: int, optional, default=None
+            Print the branch of the first level of the hiearchy
+            corresponding to the value specified by index.
+            This only applies when print_full is True.
+        show_tree: bool, optional, default=True
+            If False, do not print the tree to the screen.
 
-            Returns
-            ------
-            tree, treelib.tree.Tree, hierarchy of the compound as a tree
+        Returns
+        ------
+        tree, treelib.tree.Tree, hierarchy of the compound as a tree
+            
         """
         tree = Tree()
 
@@ -378,6 +380,7 @@ class Compound(object):
 
     def _get_hierarchy_nodup(self, level=0):
         """Return an array of dictionaries corresponding to hierarchy of the compound, recursively.
+        
         This routine will identify any duplicate compounds at a given level, including the number of
         duplicates for each compound. Compounds are considered to be identical if the name,
         number of children, and number of particles are the same at the same level.
@@ -389,7 +392,14 @@ class Compound(object):
         for child in self.children:
             part_string = "".join([part.name for part in child.particles()])
             child_string = "".join([child.name for child in child.children])
-            identifier = f"{child.name}_{len(child.children)}_{child_string}_{child.n_particles}_{part_string}"
+            
+            if len(child.children) == 0:
+                n_bonds = child.n_direct_bonds
+            else:
+                n_bonds = child.n_bonds
+                
+            identifier = f"{child.name}_{len(child.children)}_{child_string}_{child.n_particles}_{part_string}_{n_bonds}"
+            
             if not identifier in duplicates:
                 duplicates[identifier] = [1, True]
             else:
@@ -398,7 +408,13 @@ class Compound(object):
         for child in self.children:
             part_string = "".join([part.name for part in child.particles()])
             child_string = "".join([child.name for child in child.children])
-            identifier = f"{child.name}_{len(child.children)}_{child_string}_{child.n_particles}_{part_string}"
+
+            if len(child.children) == 0:
+                n_bonds = child.n_direct_bonds
+            else:
+                n_bonds = child.n_bonds
+                
+            identifier = f"{child.name}_{len(child.children)}_{child_string}_{child.n_particles}_{part_string}_{n_bonds}"
 
             if duplicates[identifier][1]:
                 yield {
