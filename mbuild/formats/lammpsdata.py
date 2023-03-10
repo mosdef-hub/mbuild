@@ -381,9 +381,7 @@ def write_lammpsdata(
 
     # Write lammps data file https://docs.lammps.org/2001/data_format.html
     with open(filename, "w") as data:
-        data.write(
-            f"{filename} - created by mBuild; units = {unit_style}\n"
-        )
+        data.write(f"{filename} - created by mBuild; units = {unit_style}\n")
         if unit_style == "lj":
             data.write("#Normalization factors: ")
             data.write(
