@@ -59,10 +59,11 @@ def write_lammpsdata(
         'full', 'atomic', 'charge', 'molecular'
         see http://lammps.sandia.gov/doc/atom_style.html for more information
         on atom styles.
-    unit_style : str, optional, default='real'
-        Defines to unit style to be save in a LAMMPS data file. Current styles
-        are supported: 'real', 'lj', see lammps unit style documentation:
-        https://lammps.sandia.gov/doc/99/units.html for more information.
+    unit_style: str, optional, default='real'
+        Defines to unit style to be save in a LAMMPS data file.  Defaults to
+        'real' units. Current styles are supported: 'real', 'lj', 'metal'
+        see https://lammps.sandia.gov/doc/99/units.html for more information
+        on unit styles
     mins : list, optional, default=None
         Minimum box dimension in x, y, z directions, nm
     maxs : list, optional, default=None
@@ -162,7 +163,7 @@ def write_lammpsdata(
                 atom_style
             )
         )
-    if unit_style not in ["real", "lj"]:
+    if unit_style not in ["real", "lj", "metal"]:
         raise ValueError(
             'Unit style "{}" is invalid or is not currently supported'.format(
                 unit_style
@@ -305,10 +306,23 @@ def write_lammpsdata(
                 * 10**-6
             )
         charges[np.isinf(charges)] = 0
-    else:
+        eng_unit_str = " "
+
+    elif unit_style == "real":
         sigma_conversion_factor = 1
         epsilon_conversion_factor = 1
         mass_conversion_factor = 1
+        eng_unit_str = "kcal/mol"
+
+    elif unit_style == "metal":
+        sigma_conversion_factor = 1  # unit in Angstrom
+        epsilon_conversion_factor = 1 / 0.043364115  #  kcal/mol to eV
+        mass_conversion_factor = 1
+        eng_unit_str = "eV"
+    else:
+        raise ValueError(
+            "Currently only support 'real', 'lj', and 'metal' unit_styles."
+        )
 
     # Divide by conversion factor
     Lx = box.Lx * (1 / sigma_conversion_factor)
@@ -441,12 +455,13 @@ def write_lammpsdata(
                 pair_coeff_label,
                 unit_style,
                 nbfix_in_data_file,
+                eng_unit_str,
             )
 
             # Write bond coefficients
             if bonds:
                 _write_bond_information(
-                    structure, data, unique_bond_types, unit_style
+                    structure, data, unique_bond_types, unit_style, eng_unit_str
                 )
 
             # Write angle coefficients
@@ -457,6 +472,7 @@ def write_lammpsdata(
                     unique_angle_types,
                     use_urey_bradleys,
                     unit_style,
+                    eng_unit_str,
                 )
 
             # Write dihedral coefficients
@@ -468,6 +484,7 @@ def write_lammpsdata(
                     unit_style,
                     use_rb_torsions,
                     use_dihedrals,
+                    eng_unit_str,
                 )
 
             # Write improper coefficients
@@ -487,14 +504,14 @@ def write_lammpsdata(
         if atom_style == "atomic":
             atom_line = "{index:d}\t{type_index:d}\t{x:.6f}\t{y:.6f}\t{z:.6f}\n"
         elif atom_style == "charge":
-            if unit_style == "real":
+            if unit_style in ["real", "metal"]:
                 atom_line = "{index:d}\t{type_index:d}\t{charge:.6f}\t{x:.6f}\t{y:.6f}\t{z:.6f}\n"
             elif unit_style == "lj":
                 atom_line = "{index:d}\t{type_index:d}\t{charge:.4ef}\t{x:.6f}\t{y:.6f}\t{z:.6f}\n"
         elif atom_style == "molecular":
             atom_line = "{index:d}\t{zero:d}\t{type_index:d}\t{x:.6f}\t{y:.6f}\t{z:.6f}\n"
         elif atom_style == "full":
-            if unit_style == "real":
+            if unit_style in ["real", "metal"]:
                 atom_line = "{index:d}\t{zero:d}\t{type_index:d}\t{charge:.6f}\t{x:.6f}\t{y:.6f}\t{z:.6f}\n"
             elif unit_style == "lj":
                 atom_line = "{index:d}\t{zero:d}\t{type_index:d}\t{charge:.4e}\t{x:.6f}\t{y:.6f}\t{z:.6f}\n"
@@ -1167,6 +1184,7 @@ def _write_pair_information(
     pair_coeff_label,
     unit_style,
     nbfix_in_data_file,
+    eng_unit_str,
 ):
     """Write nonbonded pair information to lammps data file."""
     epsilons = (
@@ -1255,7 +1273,9 @@ def _write_pair_information(
             else:
                 data.write("\nPairIJ Coeffs # modified lj\n")
 
-            data.write("# type1 type2\tepsilon (kcal/mol)\tsigma (Angstrom)\n")
+            data.write(
+                "# type1 type2\tepsilon (%s)\tsigma (Angstrom)\n" % eng_unit_str
+            )
 
             for (type1, type2), (sigma, epsilon) in coeffs.items():
                 data.write(
@@ -1279,7 +1299,9 @@ def _write_pair_information(
                     "{}\t{:.5f}\t{:.5f}\n".format(idx, epsilon, sigma_dict[idx])
                 )
             print("Copy these commands into your input script:\n")
-            print("# type1 type2\tepsilon (kcal/mol)\tsigma (Angstrom)\n")
+            print(
+                "# type1 type2\tepsilon (%s)\tsigma (Angstrom)\n" % eng_unit_str
+            )
             for (type1, type2), (sigma, epsilon) in coeffs.items():
                 print(
                     "pair_coeff\t{0} \t{1} \t{2} \t\t{3} \t\t# {4} \t{5}".format(
@@ -1299,8 +1321,8 @@ def _write_pair_information(
         else:
             data.write("\nPair Coeffs # lj\n")
 
-        if unit_style == "real":
-            data.write("#\tepsilon (kcal/mol)\t\tsigma (Angstrom)\n")
+        if unit_style in ["real", "metal"]:
+            data.write("#\tepsilon (%s)\t\tsigma (Angstrom)\n" % eng_unit_str)
         elif unit_style == "lj":
             data.write("#\treduced_epsilon \t\treduced_sigma \n")
         for idx, epsilon in sorted(epsilon_dict.items()):
@@ -1311,11 +1333,13 @@ def _write_pair_information(
             )
 
 
-def _write_bond_information(structure, data, unique_bond_types, unit_style):
+def _write_bond_information(
+    structure, data, unique_bond_types, unit_style, eng_unit_str
+):
     """Write Bond Coeffs section of lammps data file."""
     data.write("\nBond Coeffs # harmonic\n")
-    if unit_style == "real":
-        data.write("#\tk(kcal/mol/angstrom^2)\t\treq(angstrom)\n")
+    if unit_style == "real" or unit_style == "metal":
+        data.write("#\tk(%s/angstrom^2)\t\treq(angstrom)\n" % eng_unit_str)
     elif unit_style == "lj":
         data.write("#\treduced_k\t\treduced_req\n")
     sorted_bond_types = {
@@ -1335,7 +1359,12 @@ def _write_bond_information(structure, data, unique_bond_types, unit_style):
 
 
 def _write_angle_information(
-    structure, data, unique_angle_types, use_urey_bradleys, unit_style
+    structure,
+    data,
+    unique_angle_types,
+    use_urey_bradleys,
+    unit_style,
+    eng_unit_str,
 ):
     """Write Angle Coeffs section of lammps data file."""
     sorted_angle_types = {
@@ -1345,7 +1374,8 @@ def _write_angle_information(
     if use_urey_bradleys:
         data.write("\nAngle Coeffs # charmm\n")
         data.write(
-            "#\tk(kcal/mol/rad^2)\t\ttheteq(deg)\tk(kcal/mol/angstrom^2)\treq(angstrom)\n"
+            "#\tk(%s/rad^2)\t\ttheteq(deg)\tk(%s/angstrom^2)\treq(angstrom)\n"
+            % (eng_unit_str, eng_unit_str)
         )
         for params, idx in sorted_angle_types.items():
             data.write("{}\t{}\t{:.5f}\t{:.5f}\t{:.5f}\n".format(idx, *params))
@@ -1356,7 +1386,7 @@ def _write_angle_information(
         if unit_style == "lj":
             data.write("#\treduced_k\t\ttheteq(deg)\n")
         else:
-            data.write("#\tk(kcal/mol/rad^2)\t\ttheteq(deg)\n")
+            data.write("#\tk(%s/rad^2)\t\ttheteq(deg)\n" % eng_unit_str)
 
         for params, idx in sorted_angle_types.items():
             data.write(
@@ -1378,6 +1408,7 @@ def _write_dihedral_information(
     unit_style,
     use_rb_torsions,
     use_dihedrals,
+    eng_unit_str,
 ):
     """Write Dihedral Coeffs section of lammps data file."""
     sorted_dihedral_types = {
@@ -1388,9 +1419,10 @@ def _write_dihedral_information(
     }
     if use_rb_torsions:
         data.write("\nDihedral Coeffs # opls\n")
-        if unit_style == "real":
+        if unit_style == "real" or unit_style == "metal":
             data.write(
-                "#\tf1(kcal/mol)\tf2(kcal/mol)\tf3(kcal/mol)\tf4(kcal/mol)\n"
+                "#\tf1(%s)\tf2(%s)\tf3(%s)\tf4(%s)\n"
+                % (eng_unit_str, eng_unit_str, eng_unit_str, eng_unit_str)
             )
         elif unit_style == "lj":
             data.write("#\tf1\tf2\tf3\tf4 (all lj reduced units)\n")
@@ -1422,11 +1454,11 @@ def _write_dihedral_information(
         data.write("#k, n, phi, weight\n")
         for params, idx in sorted_dihedral_types.items():
             data.write(
-                "{}\t{:.5f}\t{:d}\t{:.2f}\t{:.5f}\t# {}\t{}\t{}\t{}\n".format(
+                "{}\t{:.5f}\t{:d}\t{:d}\t{:.5f}\t# {}\t{}\t{}\t{}\n".format(
                     idx,
                     params[0],
                     params[1],
-                    params[2],
+                    int(params[2]),
                     params[3],
                     params[6],
                     params[7],
