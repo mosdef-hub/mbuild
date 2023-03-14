@@ -15,6 +15,7 @@ dependencies:
   - ele
   - sphinx_rtd_theme
   - widgetsnbextension
+  - treelib
   - pip:
     - sphinxcontrib-svg2pdfconverter[CairoSVG]
     - cairosvg
