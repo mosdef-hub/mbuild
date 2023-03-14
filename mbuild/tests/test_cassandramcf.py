@@ -220,7 +220,7 @@ class TestCassandraMCF(BaseTest):
         assert isclose(float(mcf_data[atom_section_start + 2][3]), 12.011)
         assert isclose(float(mcf_data[atom_section_start + 2][4]), -0.18)
         assert mcf_data[atom_section_start + 2][5] == "LJ"
-        assert isclose(float(mcf_data[atom_section_start + 2][6]), 33.212)
+        assert isclose(float(mcf_data[atom_section_start + 2][6]), 33.21249)
         assert isclose(float(mcf_data[atom_section_start + 2][7]), 3.500)
 
         # Bond info
@@ -317,7 +317,7 @@ class TestCassandraMCF(BaseTest):
         assert isclose(float(mcf_data[atom_section_start + 2][3]), 12.011)
         assert isclose(float(mcf_data[atom_section_start + 2][4]), -0.115)
         assert mcf_data[atom_section_start + 2][5] == "LJ"
-        assert isclose(float(mcf_data[atom_section_start + 2][6]), 35.225)
+        assert isclose(float(mcf_data[atom_section_start + 2][6]), 35.22537)
         assert isclose(float(mcf_data[atom_section_start + 2][7]), 3.550)
         assert mcf_data[atom_section_start + 2][8] == "ring"
 

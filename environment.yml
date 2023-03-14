@@ -10,3 +10,4 @@ dependencies:
   - python<3.10
   - rdkit>=2021
   - scipy
+  - treelib
