@@ -870,7 +870,7 @@ class Compound(object):
             # compose children bond_graphs; make sure we actually have graphs to compose
             if len(temp_bond_graphs) != 0:
                 children_bond_graph = nx.compose_all(temp_bond_graphs)
-            
+
             if len(temp_bond_graphs) != 0 and not isinstance(self, Port) and children_bond_graph is not None:
                 # If anything is added at self level, it is no longer a particle
                 # search for self in self.root.bond_graph and remove self
