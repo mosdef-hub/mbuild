@@ -871,7 +871,7 @@ class Compound(object):
             if len(temp_bond_graphs) != 0:
                 children_bond_graph = nx.compose_all(temp_bond_graphs)
 <<<<<<< HEAD
-            
+
             if len(temp_bond_graphs) != 0 and not isinstance(self, Port) and children_bond_graph is not None:
 =======
 
