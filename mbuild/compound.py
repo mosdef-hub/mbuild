@@ -789,11 +789,19 @@ class Compound(object):
             if self.rigid_id:
                 if self.rigid_id > missing_rigid_id:
                     self.rigid_id -= 1
-
+    # helper function to flattening a list that may be nested, in particular used for a list of labels
     def _flatten_list(self, c_list):
         if isinstance(c_list, list):
             for c in c_list:
                 if isinstance(c, list):
+                    yield from self._flatten_list(c)
+                else:
+                    yield c
+    # helper function to flatten a list of Compounds that may be nested
+    def _flatten_compound_list(self, c_list):
+        if isinstance(c_list, Iterable):
+            for c in c_list:
+                if isinstance(c, Iterable):
                     yield from self._flatten_list(c)
                 else:
                     yield c
@@ -841,8 +849,8 @@ class Compound(object):
         from mbuild.port import Port
 
         if isinstance(new_child, Iterable) and not isinstance(new_child, str):
-            compound_list = [c for c in self._flatten_list(new_child)]
-            if label is not None and isinstance(label, Iterable):
+            compound_list = [c for c in self._flatten_compound_list(new_child)]
+            if label is not None and isinstance(label, list):
                 label_list = [c for c in self._flatten_list(label)]
                 if len(label_list) !=  len(compound_list):
                     raise ValueError(
@@ -860,7 +868,7 @@ class Compound(object):
             if len(temp_bond_graphs) != 0:
                 children_bond_graph = nx.compose_all(temp_bond_graphs)
             
-            if len(temp_bond_graphs) != 0 and not isinstance(self, Port):
+            if len(temp_bond_graphs) != 0 and not isinstance(self, Port) and children_bond_graph is not None:
                 # If anything is added at self level, it is no longer a particle
                 # search for self in self.root.bond_graph and remove self
                 if self.root.bond_graph.has_node(self):
