@@ -790,6 +790,13 @@ class Compound(object):
                 if self.rigid_id > missing_rigid_id:
                     self.rigid_id -= 1
 
+    def _flatten_list(self, c_list):
+        if isinstance(c_list, list):
+            for c in c_list:
+                if isinstance(c, list):
+                    yield from self._flatten_list(c)
+                else:
+                    yield c
     def add(
         self,
         new_child,
@@ -811,8 +818,8 @@ class Compound(object):
         ----------
         new_child : mb.Compound or list-like of mb.Compound
             The object(s) to be added to this Compound.
-        label : str, optional, default None
-            A descriptive string for the part.
+        label : str, or list-like of str, optional, default None
+            A descriptive string for the part; if a list, must be the same length/shape as new_child.
         containment : bool, optional, default=True
             Add the part to self.children.
         replace : bool, optional, default=True
@@ -829,13 +836,48 @@ class Compound(object):
             to add Compounds to an existing rigid body.
         """
         # Support batch add via lists, tuples and sets.
+        # If iterable, we will first compose all the bondgraphs of individual
+        # Compounds in the list for efficiency
         from mbuild.port import Port
 
         if isinstance(new_child, Iterable) and not isinstance(new_child, str):
-            for child in new_child:
-                self.add(child, reset_rigid_ids=reset_rigid_ids)
-            return
+            compound_list = [c for c in self._flatten_list(new_child)]
+            if label is not None and isinstance(label, Iterable):
+                label_list = [c for c in self._flatten_list(label)]
+                if len(label_list) !=  len(compound_list):
+                    raise ValueError(
+                    "The list-like object for label must be the same length as"
+                    "the list-like object of child Compounds. "
+                    f"label total length {len(label_list)}, new_child '{len(new_child)}'."
+                    )
+            temp_bond_graphs = []
+            for child in compound_list:
+                # create a list of bond graphs of the children to add
+                if containment:
+                    if child.bond_graph is not None and not isinstance(self, Port):
+                        temp_bond_graphs.append(child.bond_graph)
+            # compose children bond_graphs; make sure we actually have graphs to compose
+            if len(temp_bond_graphs) != 0:
+                children_bond_graph = nx.compose_all(temp_bond_graphs)
+            
+            if len(temp_bond_graphs) != 0 and not isinstance(self, Port):
+                # If anything is added at self level, it is no longer a particle
+                # search for self in self.root.bond_graph and remove self
+                if self.root.bond_graph.has_node(self):
+                    self.root.bond_graph.remove_node(self)
+                # compose the bond graph of all the children with the root
+                self.root.bond_graph =  nx.compose(
+                            self.root.bond_graph,children_bond_graph
+                            )
+            for i, child in enumerate(compound_list):
+                child.bond_graph = None
+                if label is not None:
+                    self.add(child, label=label_list[i], reset_rigid_ids=reset_rigid_ids)
+                else:
+                    self.add(child, reset_rigid_ids=reset_rigid_ids)
 
+            return
+                    
         if not isinstance(new_child, Compound):
             raise ValueError(
                 "Only objects that inherit from mbuild.Compound can be added "
@@ -861,7 +903,8 @@ class Compound(object):
             self.children = OrderedSet()
         if self.labels is None:
             self.labels = OrderedDict()
-
+            
+        
         if containment:
             if new_child.parent is not None:
                 raise MBuildError(
@@ -871,7 +914,7 @@ class Compound(object):
                 )
             self.children.add(new_child)
             new_child.parent = self
-
+        
             if new_child.bond_graph is not None and not isinstance(self, Port):
                 # If anything is added at self level, it is no longer a particle
                 # search for self in self.root.bond_graph and remove self
@@ -883,7 +926,7 @@ class Compound(object):
                 )
 
                 new_child.bond_graph = None
-
+        
         # Add new_part to labels. Does not currently support batch add.
         if label is None:
             label = "{0}[$]".format(new_child.__class__.__name__)
