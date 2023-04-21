@@ -650,19 +650,29 @@ def from_trajectory(
         compound = mb.Compound()
 
     atom_mapping = dict()
+    # temporary lists to speed up add to the compound
+    chains_list = []
+    chains_list_label = []
+    
     for chain in traj.topology.chains:
         if traj.topology.n_chains > 1:
             chain_compound = mb.Compound()
-            compound.add(chain_compound, "chain[$]")
+            chains_list.append(chain_compound)
+            chains_list_label.append("chain[$]")
         else:
             chain_compound = compound
+        
+        res_list = []
         for res in chain.residues:
             if infer_hierarchy:
                 res_compound = mb.Compound(name=res.name)
-                chain_compound.add(res_compound)
                 parent_cmpd = res_compound
+                res_list.append(res_compound)
             else:
                 parent_cmpd = chain_compound
+                
+            atom_list = []
+            atom_label_list = []
             for atom in res.atoms:
                 try:
                     element = element_from_atomic_number(
@@ -675,9 +685,17 @@ def from_trajectory(
                     pos=traj.xyz[frame, atom.index],
                     element=element,
                 )
-                parent_cmpd.add(new_atom, label="{0}[$]".format(atom.name))
+                atom_list.append(new_atom)
+                atom_label_list.append("{0}[$]".format(atom.name))
                 atom_mapping[atom] = new_atom
-
+            
+            parent_cmpd.add(atom_list, label=atom_label_list)
+        
+        if infer_hierarchy:
+             chain_compound.add(res_list)
+    if traj.topology.n_chains > 1:
+        compound.add(chains_list, label=chains_list_label)
+        
     for mdtraj_atom1, mdtraj_atom2 in traj.topology.bonds:
         atom1 = atom_mapping[mdtraj_atom1]
         atom2 = atom_mapping[mdtraj_atom2]
