@@ -625,23 +625,29 @@ class TestCompound(BaseTest):
         temp_comp = mb.Compound()
         comp_list = []
         label_list = []
-        for j in range(0,5):
+        for j in range(0, 5):
             comp_list.append(mb.clone(h2o))
             label_list.append("water[$]")
         temp_comp.add(comp_list, label=label_list)
-        a = [k for k,v in temp_comp.labels.items()]
-        assert a == ['water', 'water[0]', 'water[1]', 'water[2]', 'water[3]', 'water[4]']
+        a = [k for k, v in temp_comp.labels.items()]
+        assert a == [
+            "water",
+            "water[0]",
+            "water[1]",
+            "water[2]",
+            "water[3]",
+            "water[4]",
+        ]
 
         temp_comp = mb.Compound()
         comp_list = []
-        label_list = ['water']
-        for j in range(0,5):
+        label_list = ["water"]
+        for j in range(0, 5):
             comp_list.append(mb.clone(h2o))
-            
+
         with pytest.raises(ValueError):
             temp_comp.add(comp_list, label=label_list)
-        
-            
+
     def test_set_pos(self, ethane):
         with pytest.raises(MBuildError):
             ethane.pos = [0, 0, 0]
