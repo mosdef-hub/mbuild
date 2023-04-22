@@ -558,7 +558,7 @@ def from_parmed(
     for chain, residues in chains.items():
         if len(chain) > 1:
             chain_compound = mb.Compound()
-            #compound.add(chain_compound, chain_id)
+            # compound.add(chain_compound, chain_id)
             chain_list.append(chain_compound)
         else:
             chain_compound = compound
@@ -566,7 +566,7 @@ def from_parmed(
         for residue in residues:
             if infer_hierarchy:
                 residue_compound = mb.Compound(name=residue.name)
-                #chain_compound.add(residue_compound)
+                # chain_compound.add(residue_compound)
                 parent_compound = residue_compound
                 res_list.append(residue_compound)
             else:
@@ -585,14 +585,14 @@ def from_parmed(
                 )
                 atom_list.append(new_atom)
                 atom_label_list.append("{0}[$]".format(atom.name))
-                #parent_compound.add(new_atom, label="{0}[$]".format(atom.name))
+                # parent_compound.add(new_atom, label="{0}[$]".format(atom.name))
                 atom_mapping[atom] = new_atom
             parent_compound.add(atom_list, label=atom_label_list)
         if infer_hierarchy:
             chain_compound.add(res_list)
     if len(chain) > 1:
         compound.add(chain_list)
-        
+
     # Infer bonds information
     for bond in structure.bonds:
         atom1 = atom_mapping[bond.atom1]
@@ -885,7 +885,7 @@ def from_rdkit(rdkit_mol, compound=None, coords_only=False, smiles_seed=0):
             pos=xyz[i],
         )
         part_list.append(part)
-    
+
     comp.add(part_list)
 
     for bond in mymol.GetBonds():
