@@ -554,19 +554,25 @@ def from_parmed(
         chains[residue.chain].append(residue)
 
     # Build up compound
+    chain_list = []
     for chain, residues in chains.items():
         if len(chain) > 1:
             chain_compound = mb.Compound()
-            compound.add(chain_compound, chain_id)
+            #compound.add(chain_compound, chain_id)
+            chain_list.append(chain_compound)
         else:
             chain_compound = compound
+        res_list = []
         for residue in residues:
             if infer_hierarchy:
                 residue_compound = mb.Compound(name=residue.name)
-                chain_compound.add(residue_compound)
+                #chain_compound.add(residue_compound)
                 parent_compound = residue_compound
+                res_list.append(residue_compound)
             else:
                 parent_compound = chain_compound
+            atom_list = []
+            atom_label_list = []
             for atom in residue.atoms:
                 # Angstrom to nm
                 pos = np.array([atom.xx, atom.xy, atom.xz]) / 10
@@ -577,9 +583,16 @@ def from_parmed(
                 new_atom = mb.Particle(
                     name=str(atom.name), pos=pos, element=element
                 )
-                parent_compound.add(new_atom, label="{0}[$]".format(atom.name))
+                atom_list.append(new_atom)
+                atom_label_list.append("{0}[$]".format(atom.name))
+                #parent_compound.add(new_atom, label="{0}[$]".format(atom.name))
                 atom_mapping[atom] = new_atom
-
+            parent_compound.add(atom_list, label=atom_label_list)
+        if infer_hierarchy:
+            chain_compound.add(res_list)
+    if len(chain) > 1:
+        compound.add(chain_list)
+        
     # Infer bonds information
     for bond in structure.bonds:
         atom1 = atom_mapping[bond.atom1]
@@ -864,13 +877,16 @@ def from_rdkit(rdkit_mol, compound=None, coords_only=False, smiles_seed=0):
     else:
         comp = compound
 
+    part_list = []
     for i, atom in enumerate(mymol.GetAtoms()):
         part = mb.Particle(
             name=atom.GetSymbol(),
             element=element_from_atomic_number(atom.GetAtomicNum()),
             pos=xyz[i],
         )
-        comp.add(part)
+        part_list.append(part)
+    
+    comp.add(part_list)
 
     for bond in mymol.GetBonds():
         comp.add_bond(
