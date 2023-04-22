@@ -622,21 +622,24 @@ class TestCompound(BaseTest):
             ethane.add(mb.clone(h2o), label="water")
 
     def test_list_flatten(self, h2o):
-        out = [a for a in h2o._flatten_list(['one', 'two',  ['three', 'four']])]
-        assert out == ['one', 'two', 'three', 'four']
-        
+        out = [a for a in h2o._flatten_list(["one", "two", ["three", "four"]])]
+        assert out == ["one", "two", "three", "four"]
+
         one = mb.clone(h2o)
-        one.name = 'one'
+        one.name = "one"
         two = mb.clone(h2o)
-        two.name = 'two'
+        two.name = "two"
         three = mb.clone(h2o)
-        three.name = 'three'
+        three.name = "three"
         four = mb.clone(h2o)
-        four.name = 'four'
-        out = [a.name for a in h2o._flatten_compound_list([one, two, [three, four]] )]
-        
-        assert out == ['one', 'two', 'three', 'four']
-    
+        four.name = "four"
+        out = [
+            a.name
+            for a in h2o._flatten_compound_list([one, two, [three, four]])
+        ]
+
+        assert out == ["one", "two", "three", "four"]
+
     def test_add_by_list(self, h2o):
         temp_comp = mb.Compound()
         comp_list = []
