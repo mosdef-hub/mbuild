@@ -28,6 +28,8 @@ from mbuild.utils.exceptions import RemovedFuncError
 from mbuild.utils.io import import_, run_from_ipython
 from mbuild.utils.jsutils import overwrite_nglview_default
 from mbuild.utils.orderedset import OrderedSet
+from boltons.setutils import IndexedSet
+
 
 
 def clone(existing_compound, clone_of=None, root_container=None):
@@ -1962,6 +1964,59 @@ class Compound(object):
         overwrite_nglview_default(widget)
         return widget
 
+    def condense(self, inplace=True):
+        """Condense the hierarchical structure of the Compound to the level of molecules.
+
+        Modify the mBuild Compound to become a Compound with 3 distinct levels in the hierarchy.
+        The top level container (self), contains molecules (i.e., connected Compounds) and the
+        third level represents Particles (i.e., Compounds with no children).
+        If the system contains a Particle(s) without any connections to other Compounds, it will
+        appear in the 2nd level (with the top level self as a parent).
+
+        Parameter
+        ---------
+        inplace : bool, optional, default=True
+            Option to perform the condense operation inplace or return a copy
+
+        Return
+        ------
+        self : mb.Compound or None
+            return a condensed Compound if inplace is False.
+        """
+        # temporary list of components
+        comp_list = []
+        connected_subgraph = self.root.bond_graph.connected_components()
+
+        for molecule in connected_subgraph:
+            if len(molecule) == 1:
+                ancestors = [molecule[0]]
+            else:
+                ancestors = IndexedSet(molecule[0].ancestors())
+                for particle in molecule[1:]:
+                    # This works because the way in which particle.ancestors is
+                    # traversed, the lower level will be in the front.
+                    # The intersection will be left at the end,
+                    # ancestor of the first particle is used as reference.
+                    # Hence, this called will return the lowest-level Compound
+                    # that is a molecule
+                    ancestors = ancestors.intersection(
+                        IndexedSet(particle.ancestors())
+                    )
+
+
+            """Parse molecule information"""
+            molecule_tag = ancestors[0]
+            comp_list.append(clone(molecule_tag))
+        if inplace:
+            for child in [self.children]:
+                # Need to handle the case when child is a port
+                self.remove(child)
+                self.add(comp_list)
+        else:
+            new_compound = Compound()
+            new_compound.add(comp_list)
+            return new_compound
+
     def flatten(self, inplace=True):
         """Flatten the hierarchical structure of the Compound.
 
@@ -1976,7 +2031,7 @@ class Compound(object):
         Return
         ------
         self : mb.Compound or None
-            return a flatten Compound if inplace is False.
+            return a flattened Compound if inplace is False.
         """
         ports_list = list(self.all_ports())
         children_list = list(self.children)
