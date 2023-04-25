@@ -923,6 +923,65 @@ class TestCompound(BaseTest):
         assert len(list(parent.ancestors())) == 0
         assert next(parent.particles_by_name("A")) == part
 
+    def test_condense(self, ethane):
+        ethanes = mb.Compound()
+        ethanes.add(mb.clone(ethane))
+        ethanes.add(mb.clone(ethane))
+        system = mb.Compound()
+        system.add(ethanes)
+        system_hierarchy = system.print_hierarchy(show_tree=False)
+
+        # Before we condese
+        assert len(system.children) == 1
+        assert len(ethanes.children) == 2
+        assert system.n_bonds == 14
+        assert system.n_particles == 16
+        assert system_hierarchy.depth() == 4
+
+        # Condense the Compound, returning a copy
+        condensed = system.condense(inplace=False)
+        condensed_hierarchy = condensed.print_hierarchy(show_tree=False)
+
+        assert len(condensed.children) == 2
+        assert condensed.n_bonds == 14
+        assert condensed.n_particles == 16
+        
+        assert condensed_hierarchy.depth() == 3
+        assert condensed_hierarchy.to_json(with_data=False) == '{"Compound, 16 particles, 14 bonds, 2 children": {"children": [{"[Ethane x 2], 8 particles, 7 bonds, 2 children": {"children": [{"[CH3 x 2], 4 particles, 3 bonds, 4 children": {"children": ["[C x 1], 1 particles, 4 bonds, 0 children", "[H x 3], 1 particles, 1 bonds, 0 children"]}}]}}]}}'
+        
+        # Condense the Compound in place
+        system_copy = mb.clone(system)
+        system_copy.condense(inplace=True)
+        condensed_hierarchy2 = system_copy.print_hierarchy(show_tree=False)
+
+        assert len(system_copy.children) == 2
+        assert system_copy.n_bonds == 14
+        assert system_copy.n_particles == 16
+        assert condensed_hierarchy2.depth() == 3
+        assert condensed_hierarchy2.to_json(with_data=False) == '{"Compound, 16 particles, 14 bonds, 2 children": {"children": [{"[Ethane x 2], 8 particles, 7 bonds, 2 children": {"children": [{"[CH3 x 2], 4 particles, 3 bonds, 4 children": {"children": ["[C x 1], 1 particles, 4 bonds, 0 children", "[H x 3], 1 particles, 1 bonds, 0 children"]}}]}}]}}'
+        
+        # add two particles that aren't bonded
+        system.add(mb.Compound(name='C'))
+        system.add(mb.Compound(name='C'))
+        system_hierarchy = system.print_hierarchy(show_tree=False)
+
+        assert len(system.children) == 3
+        assert len(ethanes.children) == 2
+        assert system.n_bonds == 14
+        assert system.n_particles == 18
+        assert system_hierarchy.depth() == 4
+        
+        # condense the system
+        condensed = system.condense(inplace=False)
+        condensed_hierarchy = condensed.print_hierarchy(show_tree=False)
+
+        assert len(condensed.children) == 4
+        assert condensed.n_bonds == 14
+        assert condensed.n_particles == 18
+
+        assert condensed_hierarchy.depth() == 3
+        assert condensed_hierarchy.to_json(with_data=False) == '{"Compound, 18 particles, 14 bonds, 4 children": {"children": ["[C x 2], 1 particles, 0 bonds, 0 children", {"[Ethane x 2], 8 particles, 7 bonds, 2 children": {"children": [{"[CH3 x 2], 4 particles, 3 bonds, 4 children": {"children": ["[C x 1], 1 particles, 4 bonds, 0 children", "[H x 3], 1 particles, 1 bonds, 0 children"]}}]}}]}}'
+
     def test_flatten_eth(self, ethane):
         # Before flattening
         assert len(ethane.children) == 2
