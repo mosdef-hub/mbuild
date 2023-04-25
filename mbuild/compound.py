@@ -13,6 +13,7 @@ from warnings import warn
 import ele
 import networkx as nx
 import numpy as np
+from boltons.setutils import IndexedSet
 from ele.element import Element, element_from_name, element_from_symbol
 from ele.exceptions import ElementError
 from treelib import Tree
@@ -28,8 +29,6 @@ from mbuild.utils.exceptions import RemovedFuncError
 from mbuild.utils.io import import_, run_from_ipython
 from mbuild.utils.jsutils import overwrite_nglview_default
 from mbuild.utils.orderedset import OrderedSet
-from boltons.setutils import IndexedSet
-
 
 
 def clone(existing_compound, clone_of=None, root_container=None):
@@ -2002,7 +2001,6 @@ class Compound(object):
                     ancestors = ancestors.intersection(
                         IndexedSet(particle.ancestors())
                     )
-
 
             """Parse molecule information"""
             molecule_tag = ancestors[0]
