@@ -556,6 +556,7 @@ class Compound(object):
                 "They will not be accounted for during this calculation."
             )
         filtered_charges = [charge for charge in charges if charge is not None]
+        return sum(filtered_charges) if filtered_charges else None
 
     @staticmethod
     def _particle_charge(particle):
@@ -563,7 +564,6 @@ class Compound(object):
             return particle._charge
         else:
             return None
-        return sum(filtered_charges) if filtered_charges else None
 
     @charge.setter
     def charge(self, value):
