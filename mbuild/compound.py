@@ -547,6 +547,8 @@ class Compound(object):
     @property
     def charge(self):
         """Get the charge of the Compound."""
+        if self._contains_only_ports():
+            return self._particle_charge(self)
         charges = [p._charge for p in self.particles()]
         if None in charges:
             warn(
@@ -554,6 +556,13 @@ class Compound(object):
                 "They will not be accounted for during this calculation."
             )
         filtered_charges = [charge for charge in charges if charge is not None]
+
+    @staticmethod
+    def _particle_charge(particle):
+        if particle._charge is not None:
+            return particle._charge
+        else:
+            return None
         return sum(filtered_charges) if filtered_charges else None
 
     @charge.setter
