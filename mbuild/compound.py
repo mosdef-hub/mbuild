@@ -11,9 +11,11 @@ from typing import Sequence
 from warnings import warn
 
 import ele
+import networkx as nx
 import numpy as np
 from ele.element import Element, element_from_name, element_from_symbol
 from ele.exceptions import ElementError
+from treelib import Tree
 
 from mbuild import conversion
 from mbuild.bond_graph import BondGraph
@@ -276,6 +278,156 @@ class Compound(object):
             if not part.port_particle:
                 return False
         return True
+
+    def print_hierarchy(self, print_full=False, index=None, show_tree=True):
+        """Print the hierarchy of the Compound.
+
+        Parameters
+        ----------
+        print_full: bool, optional, default=False
+            The full hierarchy will be printed, rather than condensing
+            compounds with identical topologies.
+            Topologies are considered identical if they have the same name,
+            contain the number and names of children,
+            contain the same number and names of particles,
+            and the same number of bonds.
+        index: int, optional, default=None
+            Print the branch of the first level of the hiearchy
+            corresponding to the value specified by index.
+            This only applies when print_full is True.
+        show_tree: bool, optional, default=True
+            If False, do not print the tree to the screen.
+
+        Returns
+        -------
+        tree, treelib.tree.Tree, hierarchy of the compound as a tree
+
+        """
+        tree = Tree()
+
+        # loop through the hierarchy saving the data to an array hh
+        if print_full:
+            hh = [h for h in self._get_hierarchy()]
+        else:
+            hh = [h for h in self._get_hierarchy_nodup()]
+
+        # if our compound does not have any children we need to call n_direct_bonds instead of n_bonds
+        if len(self.children) == 0:
+            n_bonds = self.n_direct_bonds
+        else:
+            n_bonds = self.n_bonds
+
+        # add the top level compound to create the top level of the tree
+        # note that node identifiers passed as the second argument
+        # correspond to the compound id
+        tree.create_node(
+            f"{self.name}, {self.n_particles} particles, {n_bonds} bonds, {len(self.children)} children",
+            f"{id(self)}",
+        )
+
+        # if index is specified, ensure we are not selecting an index out of range
+        if not index is None:
+            if index >= len(self.children):
+                raise MBuildError(
+                    f"Index {index} out of range. The number of first level nodes in the tree is {len(self.children)}."
+                )
+
+        count = -1
+
+        for h in hh:
+            if len(h["comp"].children) == 0:
+                n_bonds = h["comp"].n_direct_bonds
+            else:
+                n_bonds = h["comp"].n_bonds
+            if h["level"] == 0:
+                count = count + 1
+            if print_full:
+                if index is None:
+                    tree.create_node(
+                        f"[{h['comp'].name}]: {h['comp'].n_particles} particles, {n_bonds} bonds, {len(h['comp'].children)} children",
+                        f"{h['comp_id']}",
+                        f"{h['parent_id']}",
+                    )
+                elif count == index:
+                    tree.create_node(
+                        f"[{h['comp'].name}]: {h['comp'].n_particles} particles, {n_bonds} bonds, {len(h['comp'].children)} children",
+                        f"{h['comp_id']}",
+                        f"{h['parent_id']}",
+                    )
+            else:
+                tree.create_node(
+                    f"[{h['comp'].name} x {h['n_dup']}], {h['comp'].n_particles} particles, {n_bonds} bonds, {len(h['comp'].children)} children",
+                    f"{h['comp_id']}",
+                    f"{h['parent_id']}",
+                )
+        if show_tree:
+            tree.show()
+        return tree
+
+    def _get_hierarchy(self, level=0):
+        """Return an array of dictionaries corresponding to hierarchy of the compound, recursively."""
+        if not self.children:
+            return
+        for child in self.children:
+            yield {
+                "level": level,
+                "parent_id": id(self),
+                "comp_id": id(child),
+                "comp": child,
+            }
+            for subchild in child._get_hierarchy(level + 1):
+                yield subchild
+
+    def _get_hierarchy_nodup(self, level=0):
+        """Return an array of dictionaries corresponding to hierarchy of the compound, recursively.
+
+        This routine will identify any duplicate compounds at a given level, including the number of
+        duplicates for each compound. Compounds are considered to be identical if the name,
+        number of children, and number of particles are the same at the same level.
+        """
+        if not self.children:
+            return
+
+        duplicates = {}
+        for child in self.children:
+            part_string = "".join([part.name for part in child.particles()])
+            child_string = "".join([child.name for child in child.children])
+
+            if len(child.children) == 0:
+                n_bonds = child.n_direct_bonds
+            else:
+                n_bonds = child.n_bonds
+
+            identifier = f"{child.name}_{len(child.children)}_{child_string}_{child.n_particles}_{part_string}_{n_bonds}"
+
+            if not identifier in duplicates:
+                duplicates[identifier] = [1, True]
+            else:
+                duplicates[identifier][0] += 1
+
+        for child in self.children:
+            part_string = "".join([part.name for part in child.particles()])
+            child_string = "".join([child.name for child in child.children])
+
+            if len(child.children) == 0:
+                n_bonds = child.n_direct_bonds
+            else:
+                n_bonds = child.n_bonds
+
+            identifier = f"{child.name}_{len(child.children)}_{child_string}_{child.n_particles}_{part_string}_{n_bonds}"
+
+            if duplicates[identifier][1]:
+                yield {
+                    "level": level,
+                    "parent_id": id(self),
+                    "comp_id": id(child),
+                    "comp": child,
+                    "n_dup": duplicates[identifier][0],
+                }
+
+                for subchild in child._get_hierarchy_nodup(level + 1):
+                    yield subchild
+                duplicates[identifier][1] = False
 
     def ancestors(self):
         """Generate all ancestors of the Compound recursively.
@@ -726,7 +878,9 @@ class Compound(object):
                 if self.root.bond_graph.has_node(self):
                     self.root.bond_graph.remove_node(self)
                 # Compose bond_graph of new child
-                self.root.bond_graph.compose(new_child.bond_graph)
+                self.root.bond_graph = nx.compose(
+                    self.root.bond_graph, new_child.bond_graph
+                )
 
                 new_child.bond_graph = None
 
@@ -877,7 +1031,9 @@ class Compound(object):
             for ancestor in removed_part.ancestors():
                 ancestor._check_if_contains_rigid_bodies = True
         if self.root.bond_graph.has_node(removed_part):
-            for neighbor in self.root.bond_graph.neighbors(removed_part):
+            for neighbor in nx.neighbors(
+                self.root.bond_graph.copy(), removed_part
+            ):
                 self.root.remove_bond((removed_part, neighbor))
             self.root.bond_graph.remove_node(removed_part)
 
@@ -969,8 +1125,8 @@ class Compound(object):
                 "The direct_bonds method can only "
                 "be used on compounds at the bottom of their hierarchy."
             )
-        for i in self.root.bond_graph._adj[self]:
-            yield i
+        for b1, b2 in self.root.bond_graph.edges(self):
+            yield b2
 
     def bonds(self):
         """Return all bonds in the Compound and sub-Compounds.
@@ -987,11 +1143,9 @@ class Compound(object):
         """
         if self.root.bond_graph:
             if self.root == self:
-                return self.root.bond_graph.edges_iter()
+                return self.root.bond_graph.edges()
             else:
-                return self.root.bond_graph.subgraph(
-                    self.particles()
-                ).edges_iter()
+                return self.root.bond_graph.subgraph(self.particles()).edges()
         else:
             return iter(())
 
@@ -1402,9 +1556,8 @@ class Compound(object):
             return True
         else:
             # Cover the other cases
-            bond_graph_dict = self.root.bond_graph._adj
             for particle in self.particles():
-                for neigh in bond_graph_dict[particle]:
+                for neigh in nx.neighbors(self.root.bond_graph, particle):
                     if neigh not in self.particles():
                         return False
             return True
@@ -1772,7 +1925,7 @@ class Compound(object):
         # component of the system
         new_bonds = list()
         for particle in particle_list:
-            for neighbor in bond_graph._adj.get(particle, []):
+            for neighbor in nx.neighbors(bond_graph, particle):
                 new_bonds.append((particle, neighbor))
 
         # Remove all the children

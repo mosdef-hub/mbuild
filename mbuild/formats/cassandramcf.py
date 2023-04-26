@@ -377,7 +377,7 @@ def _write_atom_information(mcf_file, structure, in_ring, IG_CONSTANT_KCAL):
     for i in range(len(structure.atoms)):
         mcf_file.write(
             "{:<4d}  {:<6s}  {:<2s}  {:7.3f}  {:12.8f}  "
-            "{:3s}  {:8.3f}  {:8.3f}".format(
+            "{:3s}  {:8.5f}  {:8.5f}".format(
                 i + 1,
                 types[i],
                 elements[i],
