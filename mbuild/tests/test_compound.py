@@ -635,7 +635,7 @@ class TestCompound(BaseTest):
         four.name = "four"
         out = [
             a.name
-            for a in h2o._flatten_compound_list([one, two, [three, four]])
+            for a in h2o._flatten_list([one, two, [three, four]])
         ]
 
         assert out == ["one", "two", "three", "four"]

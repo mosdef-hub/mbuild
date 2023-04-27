@@ -791,23 +791,19 @@ class Compound(object):
                 if self.rigid_id > missing_rigid_id:
                     self.rigid_id -= 1
 
-    # helper function to flattening a list that may be nested, in particular used for a list of labels
     def _flatten_list(self, c_list):
-        if isinstance(c_list, list):
+        """Flatten a list
+
+        Helper function to flatten a list that may be nested, e.g. [comp1, [comp2, comp3]].
+        """
+        if isinstance(c_list, Iterable) and not isinstance(c_list, str):
             for c in c_list:
-                if isinstance(c, list):
+                if isinstance(c, Iterable) and not isinstance(c, str):
                     yield from self._flatten_list(c)
                 else:
                     yield c
 
-    # helper function to flatten a list of Compounds that may be nested
-    def _flatten_compound_list(self, c_list):
-        if isinstance(c_list, Iterable):
-            for c in c_list:
-                if isinstance(c, Iterable):
-                    yield from self._flatten_list(c)
-                else:
-                    yield c
+
 
     def add(
         self,
@@ -853,7 +849,7 @@ class Compound(object):
         from mbuild.port import Port
 
         if isinstance(new_child, Iterable) and not isinstance(new_child, str):
-            compound_list = [c for c in self._flatten_compound_list(new_child)]
+            compound_list = [c for c in self._flatten_list(new_child)]
             if label is not None and isinstance(label, list):
                 label_list = [c for c in self._flatten_list(label)]
                 if len(label_list) != len(compound_list):
