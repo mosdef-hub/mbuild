@@ -633,10 +633,7 @@ class TestCompound(BaseTest):
         three.name = "three"
         four = mb.clone(h2o)
         four.name = "four"
-        out = [
-            a.name
-            for a in h2o._flatten_list([one, two, [three, four]])
-        ]
+        out = [a.name for a in h2o._flatten_list([one, two, [three, four]])]
 
         assert out == ["one", "two", "three", "four"]
 

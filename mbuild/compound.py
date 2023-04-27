@@ -803,8 +803,6 @@ class Compound(object):
                 else:
                     yield c
 
-
-
     def add(
         self,
         new_child,
