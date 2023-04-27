@@ -1589,13 +1589,13 @@ class TestCompound(BaseTest):
 
     def test_none_charge(self):
         A = mb.Compound()
-        assert A.charge == None
+        assert A.charge is None
 
         A.charge = 1
         B = mb.Compound()
         container = mb.Compound(subcompounds=[A, B])
         assert A.charge == 1
-        assert B.charge == None
+        assert B.charge is None
         with pytest.warns(UserWarning):
             container_charge = container.charge
             assert container_charge == 1
