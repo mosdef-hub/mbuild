@@ -274,9 +274,10 @@ class Compound(object):
         return sum(1 for _ in self._particles(include_ports))
 
     def _contains_only_ports(self):
-        for part in self.children:
-            if not part.port_particle:
-                return False
+        if self.children:
+            for part in self.children:
+                if not part.port_particle:
+                    return False
         return True
 
     def print_hierarchy(self, print_full=False, index=None, show_tree=True):
@@ -546,7 +547,15 @@ class Compound(object):
 
     @property
     def charge(self):
-        """Get the charge of the Compound."""
+        """Return the total charge of a compound.
+
+        If the compound contains children compouds, the total charge of all
+        children compounds is returned.
+
+        If the charge of a particle has not been explicitly set
+        then the particle's charge is None, and are not used when
+        calculating the total charge.
+        """
         if self._contains_only_ports():
             return self._particle_charge(self)
         charges = [p._charge for p in self.particles()]
@@ -560,10 +569,8 @@ class Compound(object):
 
     @staticmethod
     def _particle_charge(particle):
-        if particle._charge is not None:
-            return particle._charge
-        else:
-            return None
+        """Returns charge of a Compound with no children"""
+        return particle._charge
 
     @charge.setter
     def charge(self, value):
