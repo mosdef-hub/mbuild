@@ -511,8 +511,7 @@ class Compound(object):
         if self._contains_only_ports():
             return self._particle_mass(self)
         else:
-            particle_masses = [self._particle_mass(
-                p) for p in self.particles()]
+            particle_masses = [self._particle_mass(p) for p in self.particles()]
             if None in particle_masses:
                 warn(
                     f"Some particle of {self} does not have mass."
@@ -1876,9 +1875,9 @@ class Compound(object):
         mdtraj = import_("mdtraj")
         from mdtraj.geometry.sasa import _ATOMIC_RADII
 
-        def remove_digits(x): return "".join(
-            i for i in x if not i.isdigit() or i == "_"
-        )
+        def remove_digits(x):
+            return "".join(i for i in x if not i.isdigit() or i == "_")
+
         for particle in self.particles():
             particle.name = remove_digits(particle.name).upper()
             if not particle.name:
@@ -2425,8 +2424,7 @@ class Compound(object):
             if not isinstance(part, Compound):
                 raise MBuildError(f"{part} is not a Compound.")
             if id(part) != id(self) and id(part) not in successors_list:
-                raise MBuildError(
-                    f"{part} is not a member of Compound {self}.")
+                raise MBuildError(f"{part} is not a member of Compound {self}.")
 
             if check_if_particle:
                 if len(part.children) != 0:
@@ -2673,8 +2671,7 @@ class Compound(object):
 
             # Since the ignore_compounds can only be passed as a list
             # we can check the whole list at once before looping over it
-            self._check_openbabel_constraints(
-                ignore_compounds, successors_list)
+            self._check_openbabel_constraints(ignore_compounds, successors_list)
 
             for ignore in ignore_compounds:
                 p1 = ignore
@@ -3324,8 +3321,7 @@ class Compound(object):
             return list(self.particles())[selection]
         if isinstance(selection, str):
             if selection not in self.labels:
-                raise MBuildError(
-                    f"{self.name}['{selection}'] does not exist.")
+                raise MBuildError(f"{self.name}['{selection}'] does not exist.")
             return self.labels.get(selection)
 
     def __repr__(self):
