@@ -1702,16 +1702,15 @@ class TestCompound(BaseTest):
 
     def test_none_charge(self):
         A = mb.Compound()
-        with pytest.warns(UserWarning):
-            A.charge
+        assert A.charge is None
 
         A.charge = 1
         B = mb.Compound()
         container = mb.Compound(subcompounds=[A, B])
+        assert A.charge == 1
+        assert B.charge is None
         with pytest.warns(UserWarning):
             container_charge = container.charge
-            assert A.charge == 1
-            assert B.charge == None
             assert container_charge == 1
 
     @pytest.mark.skipif(not has_openbabel, reason="Open Babel not installed")
