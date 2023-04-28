@@ -13,6 +13,7 @@ from warnings import warn
 import ele
 import networkx as nx
 import numpy as np
+from boltons.setutils import IndexedSet
 from ele.element import Element, element_from_name, element_from_symbol
 from ele.exceptions import ElementError
 from treelib import Tree
@@ -274,9 +275,10 @@ class Compound(object):
         return sum(1 for _ in self._particles(include_ports))
 
     def _contains_only_ports(self):
-        for part in self.children:
-            if not part.port_particle:
-                return False
+        if self.children:
+            for part in self.children:
+                if not part.port_particle:
+                    return False
         return True
 
     def print_hierarchy(self, print_full=False, index=None, show_tree=True):
@@ -546,7 +548,17 @@ class Compound(object):
 
     @property
     def charge(self):
-        """Get the charge of the Compound."""
+        """Return the total charge of a compound.
+
+        If the compound contains children compouds, the total charge of all
+        children compounds is returned.
+
+        If the charge of a particle has not been explicitly set
+        then the particle's charge is None, and are not used when
+        calculating the total charge.
+        """
+        if self._contains_only_ports():
+            return self._particle_charge(self)
         charges = [p._charge for p in self.particles()]
         if None in charges:
             warn(
@@ -555,6 +567,11 @@ class Compound(object):
             )
         filtered_charges = [charge for charge in charges if charge is not None]
         return sum(filtered_charges) if filtered_charges else None
+
+    @staticmethod
+    def _particle_charge(particle):
+        """Return charge of a Compound with no children."""
+        return particle._charge
 
     @charge.setter
     def charge(self, value):
@@ -811,8 +828,8 @@ class Compound(object):
         ----------
         new_child : mb.Compound or list-like of mb.Compound
             The object(s) to be added to this Compound.
-        label : str, optional, default None
-            A descriptive string for the part.
+        label : str, or list-like of str, optional, default None
+            A descriptive string for the part; if a list, must be the same length/shape as new_child.
         containment : bool, optional, default=True
             Add the part to self.children.
         replace : bool, optional, default=True
@@ -829,11 +846,56 @@ class Compound(object):
             to add Compounds to an existing rigid body.
         """
         # Support batch add via lists, tuples and sets.
+        # If iterable, we will first compose all the bondgraphs of individual
+        # Compounds in the list for efficiency
         from mbuild.port import Port
 
         if isinstance(new_child, Iterable) and not isinstance(new_child, str):
-            for child in new_child:
-                self.add(child, reset_rigid_ids=reset_rigid_ids)
+            compound_list = [c for c in _flatten_list(new_child)]
+            if label is not None and isinstance(label, (list, tuple)):
+                label_list = [c for c in _flatten_list(label)]
+                if len(label_list) != len(compound_list):
+                    raise ValueError(
+                        "The list-like object for label must be the same length as"
+                        "the list-like object of child Compounds. "
+                        f"total length of labels: {len(label_list)}, new_child: {len(new_child)}."
+                    )
+            temp_bond_graphs = []
+            for child in compound_list:
+                # create a list of bond graphs of the children to add
+                if containment:
+                    if child.bond_graph and not isinstance(self, Port):
+                        temp_bond_graphs.append(child.bond_graph)
+
+            # compose children bond_graphs; make sure we actually have graphs to compose
+            children_bond_graph = None
+            if len(temp_bond_graphs) != 0:
+                children_bond_graph = nx.compose_all(temp_bond_graphs)
+
+            if (
+                temp_bond_graphs
+                and not isinstance(self, Port)
+                and children_bond_graph is not None
+            ):
+                # If anything is added at self level, it is no longer a particle
+                # search for self in self.root.bond_graph and remove self
+                if self.root.bond_graph.has_node(self):
+                    self.root.bond_graph.remove_node(self)
+                # compose the bond graph of all the children with the root
+                self.root.bond_graph = nx.compose(
+                    self.root.bond_graph, children_bond_graph
+                )
+            for i, child in enumerate(compound_list):
+                child.bond_graph = None
+                if label is not None:
+                    self.add(
+                        child,
+                        label=label_list[i],
+                        reset_rigid_ids=reset_rigid_ids,
+                    )
+                else:
+                    self.add(child, reset_rigid_ids=reset_rigid_ids)
+
             return
 
         if not isinstance(new_child, Compound):
@@ -1859,9 +1921,9 @@ class Compound(object):
         mdtraj = import_("mdtraj")
         from mdtraj.geometry.sasa import _ATOMIC_RADII
 
-        remove_digits = lambda x: "".join(
-            i for i in x if not i.isdigit() or i == "_"
-        )
+        def remove_digits(x):
+            return "".join(i for i in x if not i.isdigit() or i == "_")
+
         for particle in self.particles():
             particle.name = remove_digits(particle.name).upper()
             if not particle.name:
@@ -1899,6 +1961,58 @@ class Compound(object):
         overwrite_nglview_default(widget)
         return widget
 
+    def condense(self, inplace=True):
+        """Condense the hierarchical structure of the Compound to the level of molecules.
+
+        Modify the mBuild Compound to become a Compound with 3 distinct levels in the hierarchy.
+        The top level container (self), contains molecules (i.e., connected Compounds) and the
+        third level represents Particles (i.e., Compounds with no children).
+        If the system contains a Particle(s) without any connections to other Compounds, it will
+        appear in the 2nd level (with the top level self as a parent).
+
+        Parameter
+        ---------
+        inplace : bool, optional, default=True
+            Option to perform the condense operation inplace or return a copy
+
+        Return
+        ------
+        self : mb.Compound or None
+            return a condensed Compound if inplace is False.
+        """
+        # temporary list of components
+        comp_list = []
+        connected_subgraph = self.root.bond_graph.connected_components()
+
+        for molecule in connected_subgraph:
+            if len(molecule) == 1:
+                ancestors = [molecule[0]]
+            else:
+                ancestors = IndexedSet(molecule[0].ancestors())
+                for particle in molecule[1:]:
+                    # This works because the way in which particle.ancestors is
+                    # traversed, the lower level will be in the front.
+                    # The intersection will be left at the end,
+                    # ancestor of the first particle is used as reference.
+                    # Hence, this called will return the lowest-level Compound
+                    # that is a molecule
+                    ancestors = ancestors.intersection(
+                        IndexedSet(particle.ancestors())
+                    )
+
+            """Parse molecule information"""
+            molecule_tag = ancestors[0]
+            comp_list.append(clone(molecule_tag))
+        if inplace:
+            for child in [self.children]:
+                # Need to handle the case when child is a port
+                self.remove(child)
+            self.add(comp_list)
+        else:
+            new_compound = Compound(name=self.name)
+            new_compound.add(comp_list)
+            return new_compound
+
     def flatten(self, inplace=True):
         """Flatten the hierarchical structure of the Compound.
 
@@ -1913,7 +2027,7 @@ class Compound(object):
         Return
         ------
         self : mb.Compound or None
-            return a flatten Compound if inplace is False.
+            return a flattened Compound if inplace is False.
         """
         ports_list = list(self.all_ports())
         children_list = list(self.children)
@@ -2554,8 +2668,10 @@ class Compound(object):
                         f"Cannot create a constraint between a Particle and itself: {p1} {p2} ."
                     )
 
-                pid_1 = particle_idx[id(p1)] + 1  # openbabel indices start at 1
-                pid_2 = particle_idx[id(p2)] + 1  # openbabel indices start at 1
+                # openbabel indices start at 1
+                pid_1 = particle_idx[id(p1)] + 1
+                # openbabel indices start at 1
+                pid_2 = particle_idx[id(p2)] + 1
                 dist = (
                     con_temp[1] * 10.0
                 )  # obenbabel uses angstroms, not nm, convert to angstroms
@@ -3421,3 +3537,16 @@ class Compound(object):
 
 
 Particle = Compound
+
+
+def _flatten_list(c_list):
+    """Flatten a list.
+
+    Helper function to flatten a list that may be nested, e.g. [comp1, [comp2, comp3]].
+    """
+    if isinstance(c_list, Iterable) and not isinstance(c_list, str):
+        for c in c_list:
+            if isinstance(c, Iterable) and not isinstance(c, str):
+                yield from _flatten_list(c)
+            else:
+                yield c

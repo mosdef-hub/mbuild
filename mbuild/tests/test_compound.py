@@ -621,6 +621,51 @@ class TestCompound(BaseTest):
         with pytest.raises(MBuildError):
             ethane.add(mb.clone(h2o), label="water")
 
+    def test_list_flatten(self, h2o):
+        from mbuild.compound import _flatten_list
+
+        out = [a for a in _flatten_list(["one", "two", ["three", "four"]])]
+        assert out == ["one", "two", "three", "four"]
+
+        one = mb.clone(h2o)
+        one.name = "one"
+        two = mb.clone(h2o)
+        two.name = "two"
+        three = mb.clone(h2o)
+        three.name = "three"
+        four = mb.clone(h2o)
+        four.name = "four"
+        out = [a.name for a in _flatten_list([one, two, [three, four]])]
+
+        assert out == ["one", "two", "three", "four"]
+
+    def test_add_by_list(self, h2o):
+        temp_comp = mb.Compound()
+        comp_list = []
+        label_list = []
+        for j in range(0, 5):
+            comp_list.append(mb.clone(h2o))
+            label_list.append("water[$]")
+        temp_comp.add(comp_list, label=label_list)
+        a = [k for k, v in temp_comp.labels.items()]
+        assert a == [
+            "water",
+            "water[0]",
+            "water[1]",
+            "water[2]",
+            "water[3]",
+            "water[4]",
+        ]
+
+        temp_comp = mb.Compound()
+        comp_list = []
+        label_list = ["water"]
+        for j in range(0, 5):
+            comp_list.append(mb.clone(h2o))
+
+        with pytest.raises(ValueError):
+            temp_comp.add(comp_list, label=label_list)
+
     def test_set_pos(self, ethane):
         with pytest.raises(MBuildError):
             ethane.pos = [0, 0, 0]
@@ -876,6 +921,74 @@ class TestCompound(BaseTest):
         assert parent.root == parent
         assert len(list(parent.ancestors())) == 0
         assert next(parent.particles_by_name("A")) == part
+
+    def test_condense(self, ethane):
+        ethanes = mb.Compound()
+        ethanes.add(mb.clone(ethane))
+        ethanes.add(mb.clone(ethane))
+        system = mb.Compound()
+        system.add(ethanes)
+        system_hierarchy = system.print_hierarchy(show_tree=False)
+
+        # Before we condese
+        assert len(system.children) == 1
+        assert len(ethanes.children) == 2
+        assert system.n_bonds == 14
+        assert system.n_particles == 16
+        assert system_hierarchy.depth() == 4
+
+        # Condense the Compound, returning a copy
+        condensed = system.condense(inplace=False)
+        condensed_hierarchy = condensed.print_hierarchy(show_tree=False)
+
+        assert len(condensed.children) == 2
+        assert condensed.n_bonds == 14
+        assert condensed.n_particles == 16
+
+        assert condensed_hierarchy.depth() == 3
+        assert (
+            condensed_hierarchy.to_json(with_data=False)
+            == '{"Compound, 16 particles, 14 bonds, 2 children": {"children": [{"[Ethane x 2], 8 particles, 7 bonds, 2 children": {"children": [{"[CH3 x 2], 4 particles, 3 bonds, 4 children": {"children": ["[C x 1], 1 particles, 4 bonds, 0 children", "[H x 3], 1 particles, 1 bonds, 0 children"]}}]}}]}}'
+        )
+
+        # Condense the Compound in place
+        system_copy = mb.clone(system)
+        system_copy.condense(inplace=True)
+        condensed_hierarchy2 = system_copy.print_hierarchy(show_tree=False)
+
+        assert len(system_copy.children) == 2
+        assert system_copy.n_bonds == 14
+        assert system_copy.n_particles == 16
+        assert condensed_hierarchy2.depth() == 3
+        assert (
+            condensed_hierarchy2.to_json(with_data=False)
+            == '{"Compound, 16 particles, 14 bonds, 2 children": {"children": [{"[Ethane x 2], 8 particles, 7 bonds, 2 children": {"children": [{"[CH3 x 2], 4 particles, 3 bonds, 4 children": {"children": ["[C x 1], 1 particles, 4 bonds, 0 children", "[H x 3], 1 particles, 1 bonds, 0 children"]}}]}}]}}'
+        )
+
+        # add two particles that aren't bonded
+        system.add(mb.Compound(name="C"))
+        system.add(mb.Compound(name="C"))
+        system_hierarchy = system.print_hierarchy(show_tree=False)
+
+        assert len(system.children) == 3
+        assert len(ethanes.children) == 2
+        assert system.n_bonds == 14
+        assert system.n_particles == 18
+        assert system_hierarchy.depth() == 4
+
+        # condense the system
+        condensed = system.condense(inplace=False)
+        condensed_hierarchy = condensed.print_hierarchy(show_tree=False)
+
+        assert len(condensed.children) == 4
+        assert condensed.n_bonds == 14
+        assert condensed.n_particles == 18
+
+        assert condensed_hierarchy.depth() == 3
+        assert (
+            condensed_hierarchy.to_json(with_data=False)
+            == '{"Compound, 18 particles, 14 bonds, 4 children": {"children": ["[C x 2], 1 particles, 0 bonds, 0 children", {"[Ethane x 2], 8 particles, 7 bonds, 2 children": {"children": [{"[CH3 x 2], 4 particles, 3 bonds, 4 children": {"children": ["[C x 1], 1 particles, 4 bonds, 0 children", "[H x 3], 1 particles, 1 bonds, 0 children"]}}]}}]}}'
+        )
 
     def test_flatten_eth(self, ethane):
         # Before flattening
@@ -1589,16 +1702,15 @@ class TestCompound(BaseTest):
 
     def test_none_charge(self):
         A = mb.Compound()
-        with pytest.warns(UserWarning):
-            A.charge
+        assert A.charge is None
 
         A.charge = 1
         B = mb.Compound()
         container = mb.Compound(subcompounds=[A, B])
+        assert A.charge == 1
+        assert B.charge is None
         with pytest.warns(UserWarning):
             container_charge = container.charge
-            assert A.charge == 1
-            assert B.charge == None
             assert container_charge == 1
 
     @pytest.mark.skipif(not has_openbabel, reason="Open Babel not installed")
