@@ -511,7 +511,8 @@ class Compound(object):
         if self._contains_only_ports():
             return self._particle_mass(self)
         else:
-            particle_masses = [self._particle_mass(p) for p in self.particles()]
+            particle_masses = [self._particle_mass(
+                p) for p in self.particles()]
             if None in particle_masses:
                 warn(
                     f"Some particle of {self} does not have mass."
@@ -791,18 +792,6 @@ class Compound(object):
                 if self.rigid_id > missing_rigid_id:
                     self.rigid_id -= 1
 
-    def _flatten_list(self, c_list):
-        """Flatten a list
-
-        Helper function to flatten a list that may be nested, e.g. [comp1, [comp2, comp3]].
-        """
-        if isinstance(c_list, Iterable) and not isinstance(c_list, str):
-            for c in c_list:
-                if isinstance(c, Iterable) and not isinstance(c, str):
-                    yield from self._flatten_list(c)
-                else:
-                    yield c
-
     def add(
         self,
         new_child,
@@ -847,29 +836,29 @@ class Compound(object):
         from mbuild.port import Port
 
         if isinstance(new_child, Iterable) and not isinstance(new_child, str):
-            compound_list = [c for c in self._flatten_list(new_child)]
-            if label is not None and isinstance(label, list):
-                label_list = [c for c in self._flatten_list(label)]
+            compound_list = [c for c in _flatten_list(new_child)]
+            if label is not None and isinstance(label, (list, tuple)):
+                label_list = [c for c in _flatten_list(label)]
                 if len(label_list) != len(compound_list):
                     raise ValueError(
                         "The list-like object for label must be the same length as"
                         "the list-like object of child Compounds. "
-                        f"label total length {len(label_list)}, new_child '{len(new_child)}'."
+                        f"total length of labels: {len(label_list)}, new_child: {len(new_child)}."
                     )
             temp_bond_graphs = []
             for child in compound_list:
                 # create a list of bond graphs of the children to add
                 if containment:
-                    if child.bond_graph is not None and not isinstance(
-                        self, Port
-                    ):
+                    if child.bond_graph and not isinstance(self, Port):
                         temp_bond_graphs.append(child.bond_graph)
+
             # compose children bond_graphs; make sure we actually have graphs to compose
+            children_bond_graph = None
             if len(temp_bond_graphs) != 0:
                 children_bond_graph = nx.compose_all(temp_bond_graphs)
 
             if (
-                len(temp_bond_graphs) != 0
+                temp_bond_graphs
                 and not isinstance(self, Port)
                 and children_bond_graph is not None
             ):
@@ -1917,7 +1906,7 @@ class Compound(object):
         mdtraj = import_("mdtraj")
         from mdtraj.geometry.sasa import _ATOMIC_RADII
 
-        remove_digits = lambda x: "".join(
+        def remove_digits(x): return "".join(
             i for i in x if not i.isdigit() or i == "_"
         )
         for particle in self.particles():
@@ -2003,9 +1992,9 @@ class Compound(object):
             for child in [self.children]:
                 # Need to handle the case when child is a port
                 self.remove(child)
-                self.add(comp_list)
+            self.add(comp_list)
         else:
-            new_compound = Compound()
+            new_compound = Compound(name=self.name)
             new_compound.add(comp_list)
             return new_compound
 
@@ -2518,7 +2507,8 @@ class Compound(object):
             if not isinstance(part, Compound):
                 raise MBuildError(f"{part} is not a Compound.")
             if id(part) != id(self) and id(part) not in successors_list:
-                raise MBuildError(f"{part} is not a member of Compound {self}.")
+                raise MBuildError(
+                    f"{part} is not a member of Compound {self}.")
 
             if check_if_particle:
                 if len(part.children) != 0:
@@ -2664,8 +2654,10 @@ class Compound(object):
                         f"Cannot create a constraint between a Particle and itself: {p1} {p2} ."
                     )
 
-                pid_1 = particle_idx[id(p1)] + 1  # openbabel indices start at 1
-                pid_2 = particle_idx[id(p2)] + 1  # openbabel indices start at 1
+                # openbabel indices start at 1
+                pid_1 = particle_idx[id(p1)] + 1
+                # openbabel indices start at 1
+                pid_2 = particle_idx[id(p2)] + 1
                 dist = (
                     con_temp[1] * 10.0
                 )  # obenbabel uses angstroms, not nm, convert to angstroms
@@ -2763,7 +2755,8 @@ class Compound(object):
 
             # Since the ignore_compounds can only be passed as a list
             # we can check the whole list at once before looping over it
-            self._check_openbabel_constraints(ignore_compounds, successors_list)
+            self._check_openbabel_constraints(
+                ignore_compounds, successors_list)
 
             for ignore in ignore_compounds:
                 p1 = ignore
@@ -3413,7 +3406,8 @@ class Compound(object):
             return list(self.particles())[selection]
         if isinstance(selection, str):
             if selection not in self.labels:
-                raise MBuildError(f"{self.name}['{selection}'] does not exist.")
+                raise MBuildError(
+                    f"{self.name}['{selection}'] does not exist.")
             return self.labels.get(selection)
 
     def __repr__(self):
@@ -3531,3 +3525,16 @@ class Compound(object):
 
 
 Particle = Compound
+
+
+def _flatten_list(c_list):
+    """Flatten a list
+
+    Helper function to flatten a list that may be nested, e.g. [comp1, [comp2, comp3]].
+    """
+    if isinstance(c_list, Iterable) and not isinstance(c_list, str):
+        for c in c_list:
+            if isinstance(c, Iterable) and not isinstance(c, str):
+                yield from _flatten_list(c)
+            else:
+                yield c
