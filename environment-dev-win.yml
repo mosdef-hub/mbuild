@@ -25,7 +25,7 @@ dependencies:
   - pycifrw
   - pytest
   - pytest-cov
-  - python<3.10
+  - python>=3.8
   - rdkit>=2021
   - scipy
   - treelib
