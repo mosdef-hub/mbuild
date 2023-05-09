@@ -10,7 +10,7 @@ dependencies:
   - freud>=2.0.0
   - garnett>=0.7.1
   - gsd>=2
-  - hoomd=2.9.6
+  - hoomd>3
   - intermol
   - mdtraj
   - networkx
