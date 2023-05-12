@@ -10,7 +10,7 @@ dependencies:
   - freud>=2.0.0
   - garnett>=0.7.1
   - gsd>=2
-  - hoomd=2.9.6
+  - hoomd>=3
   - intermol
   - mdtraj
   - networkx
@@ -27,7 +27,7 @@ dependencies:
   - pytest
   - pytest-azurepipelines
   - pytest-cov
-  - python<3.10
+  - python>=3.8
   - rdkit>=2021
   - scipy
   - treelib
