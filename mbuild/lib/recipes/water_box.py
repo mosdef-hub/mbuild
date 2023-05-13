@@ -1,14 +1,15 @@
-from warnings import warn
 import numpy as np
-
-import mbuild as mb
 import math as math
+from warnings import warn
+
+from mbuild import Box, Compound, clone, force_overlap, load
+from mbuild.exceptions import MBuildError
 
 import mbuild.lib.molecules.water as water_models
 
 __all__ = ["WaterBox"]
 
-class WaterBox(mb.Compound):
+class WaterBox(Compound):
     """Generate a box of 3-site water molecules.
     
     Efficiently create an mbuild Compound containing water at density ~1000 kg/m^3
@@ -22,7 +23,7 @@ class WaterBox(mb.Compound):
     ----------
     box : mb.Box
         The desired box to fill with water
-    edge: float or list of floats, default=0.0
+    edge: float or list of floats, default=0.1
         Specifies the gutter around the system to avoid overlaps at boundaries
     model: mb.Compound, optional, default=None
         The specified water model to be used in the resulting configuraiton.
@@ -31,7 +32,7 @@ class WaterBox(mb.Compound):
         See mbuild/lib/molecules/water.py for available water models.
         
     """
-    def __init__(self, box, edge = 0.0, model = None):
+    def __init__(self, box, edge = 0.1, model = None):
 
         super(WaterBox, self).__init__()
         
@@ -46,15 +47,14 @@ class WaterBox(mb.Compound):
         # the first particle in the compound corresponds to Oxygen.
         
         if model is not None:
-            assert isinstance(model, mb.Compound)
+            assert isinstance(model, Compound)
             particles = [p for p in model.particles()]
             if 'O' not in particles[0].name:
                 raise MBuildError('The first particle in model needs to correspond to oxygen')
                 
         # read in our propotype, a 4.0x4.0x4.0 nm box
         # our prototype was relaxed in GROMACs at 305 K, density 1000 kg/m^3 using tip3p
-        aa_waters = mb.load('water_proto.gro')
-        aa_waters.periodicity = (True, True, True)
+        aa_waters = load('water_proto.gro')
 
         # loop over each water in our configuration
         # add in the necessary bonds missing from the .gro file
@@ -66,8 +66,8 @@ class WaterBox(mb.Compound):
             if model is None:
                 model = water_models.WaterTIP3P()
                 
-            temp = mb.clone(model)
-            mb.force_overlap(temp, temp, water, add_bond=False)
+            temp = clone(model)
+            force_overlap(temp, temp, water, add_bond=False)
             water.name=model.name
             water.children[0].name = model.children[0].name
             water.children[1].name = model.children[1].name
@@ -91,7 +91,7 @@ class WaterBox(mb.Compound):
                         shift = np.array([i*aa_waters.box.Lx, j*aa_waters.box.Ly, k*aa_waters.box.Lz])
 
                         if all(water.pos+shift < (box.lengths-edges)):
-                            temp = mb.clone(water)
+                            temp = clone(water)
                             temp.translate(shift)
                                 
                             water_system_list.append(temp)
