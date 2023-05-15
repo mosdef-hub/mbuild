@@ -63,15 +63,15 @@ class WaterBox(Compound):
                 raise MBuildError('The first particle in model needs to correspond to oxygen')
  
         # check if mask is set
-         if mask is not None:
+        if mask is not None:
             if not isinstance(mask, list):
-                assert isinstance(mask, mb.Compound)
+                assert isinstance(mask, Compound)
             elif isinstance(mask, list):
                 # in case we are specified a list of Compounds,
                 # we will make sure it is a 1d list.
                 mask = [e for e in self._flatten_list(mask)]
                 for entry in mask:
-                    assert isinstance(entry, mb.Compound)
+                    assert isinstance(entry, Compound)
                     
         # read in our propotype, a 4.0x4.0x4.0 nm box
         # our prototype was relaxed in GROMACs at 305 K, density 1000 kg/m^3 using tip3p
@@ -103,7 +103,7 @@ class WaterBox(Compound):
         # we will create a list of particles for the mask
         # if specified now to save time later
         if mask is not None:
-            if isinstance(mask, mb.Compound):
+            if isinstance(mask, Compound):
                 p_mask = [ p for p in mask.particles()]
             else:
                 p_mask = []
@@ -118,36 +118,37 @@ class WaterBox(Compound):
                 for j in range(0,scale_Ly):
                     for k in range(0,scale_Lz):
                         shift = np.array([i*aa_waters.box.Lx, j*aa_waters.box.Ly, k*aa_waters.box.Lz])
-                        if mask is not None:
-                            particles = [p for p in water.particles()]
-                            status = True
-                            
-                            # note this could be sped up using a cell list
-                            # will have to wait until that PR is merged
-                            for p1 in particles:
-                                for p2 in p_mask:
-                                    dist= np.linalg.norm(p1.pos-p2.pos)
-                                     
-                                    if p1.element is None:
-                                        c1 = cut/2.0
-                                    else:
-                                        c1 = p1.element.radius_alvarez/10.0+radii_padding
-                                    if p2.element is None:
-                                        c2 = cut/2.0
-                                    else:
-                                        c2 = p2.element.radius_alvarez/10.0+radii_padding
-                                    cut_value = c1+c2
-                                    if dist <= cut_value:
-                                        status = False
-                            if status:
-                                temp = mb.clone(water)
+                        if all(water.pos+shift < (box.lengths-edges)):
+                            if mask is not None:
+                                particles = [p for p in water.particles()]
+                                status = True
+                                
+                                # note this could be sped up using a cell list
+                                # will have to wait until that PR is merged
+                                for p1 in particles:
+                                    for p2 in p_mask:
+                                        dist= np.linalg.norm(p1.pos-p2.pos)
+                                         
+                                        if p1.element is None:
+                                            c1 = cut/2.0
+                                        else:
+                                            c1 = p1.element.radius_alvarez/10.0+radii_padding
+                                        if p2.element is None:
+                                            c2 = cut/2.0
+                                        else:
+                                            c2 = p2.element.radius_alvarez/10.0+radii_padding
+                                        cut_value = c1+c2
+                                        if dist <= cut_value:
+                                            status = False
+                                if status:
+                                    temp = clone(water)
+                                    temp.translate(shift)
+                                    water_system_list.append(temp)
+                            else:
+
+                                temp = clone(water)
                                 temp.translate(shift)
                                 water_system_list.append(temp)
-                        else:
-
-                            temp = mb.clone(water)
-                            temp.translate(shift)
-                            water_system_list.append(temp)
         
             
         # add to the Compound and set box size
