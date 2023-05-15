@@ -499,7 +499,6 @@ def write_lammpsdata(
                 )
 
         # Write Atom data
-        # _write_atom_data(atom_style, unit_style)
         data.write("\nAtoms # {}\n\n".format(atom_style))
         if atom_style == "atomic":
             atom_line = "{index:d}\t{type_index:d}\t{x:.6f}\t{y:.6f}\t{z:.6f}\n"
@@ -564,10 +563,12 @@ def write_lammpsdata(
                             dihedral[3],
                         )
                     )
-            # Dihedral data
+            # Improper data for harmonic impropers
             if impropers:
                 data.write("\nImpropers\n\n")
                 for i, improper in enumerate(impropers):
+                    # The atoms are written central-atom third in LAMMPS data file.
+                    # The first atom in structure.impropers is the central atom
                     data.write(
                         "{:d}\t{:d}\t{:d}\t{:d}\t{:d}\t{:d}\n".format(
                             i + 1,
@@ -578,10 +579,12 @@ def write_lammpsdata(
                             improper[3],
                         )
                     )
-            elif imp_dihedrals:
+            elif imp_dihedrals:  # impropers in structure.dihedrals are cvff
                 data.write("\nImpropers\n\n")
                 for i, improper in enumerate(imp_dihedrals):
                     # The atoms are written central-atom third in LAMMPS data file.
+                    # The third atom in structure.dihedral is the central atom
+                    # if dihedral.improper is True
                     # This is correct for AMBER impropers even though
                     # LAMMPS documentation implies central-atom-first.
                     data.write(
@@ -831,6 +834,19 @@ def _get_angle_types(
     return angle_types, unique_angle_types
 
 
+typeLister = lambda x: (x.atom1.type, x.atom2.type, x.atom3.type, x.atom4.type)
+
+
+def _dihedral_sorter(dihedral):
+    if dihedral.atom2.type < dihedral.atom3.type or (
+        dihedral.atom2.type == dihedral.atom3.type
+        and dihedral.atom1.type < dihedral.atom4.type
+    ):
+        return typeLister(dihedral)
+    else:
+        return tuple(reversed(typeLister(dihedral)))
+
+
 def _get_dihedral_types(
     structure,
     atom_types,
@@ -847,102 +863,8 @@ def _get_dihedral_types(
     """
     lj_unit = 1.0 / epsilon_conversion_factor
     if use_rb_torsions:
-        unique_dihedral_types = OrderedDict(
-            enumerate(
-                OrderedSet(
-                    *[
-                        (
-                            round(
-                                dihedral.type.c0 * lj_unit, dihedral_precision
-                            ),
-                            round(
-                                dihedral.type.c1 * lj_unit, dihedral_precision
-                            ),
-                            round(
-                                dihedral.type.c2 * lj_unit, dihedral_precision
-                            ),
-                            round(
-                                dihedral.type.c3 * lj_unit, dihedral_precision
-                            ),
-                            round(
-                                dihedral.type.c4 * lj_unit, dihedral_precision
-                            ),
-                            round(
-                                dihedral.type.c5 * lj_unit, dihedral_precision
-                            ),
-                            round(dihedral.type.scee, 1),
-                            round(dihedral.type.scnb, 1),
-                            dihedral.atom1.type,
-                            dihedral.atom2.type,
-                            dihedral.atom3.type,
-                            dihedral.atom4.type,
-                        )
-                        for dihedral in structure.rb_torsions
-                    ]
-                )
-            )
-        )
-        magnitude = np.ceil(np.log10(len(atom_types)))
-        dihedral_tuples = [x[8:] for x in unique_dihedral_types.values()]
-        ordered_dihedral_tuples = dihedral_tuples.copy()
-        ordered_dihedral_tuples.sort(
-            key=lambda x: atom_types.index(x[0]) * 10 ** (3 * magnitude)
-            + atom_types.index(x[1]) * 10 ** (2 * magnitude)
-            + atom_types.index(x[2]) * 10**magnitude
-            + atom_types.index(x[3])
-        )
-
-    elif use_dihedrals:
-        charmm_dihedrals = []
-        structure.join_dihedrals()
-        for dihedral in structure.dihedrals:
-            if not dihedral.improper:
-                if zero_dihedral_weighting_factor:
-                    weight = 0.0
-                else:
-                    weight = 1.0 / len(dihedral.type)
-                for dih_type in dihedral.type:
-                    charmm_dihedrals.append(
-                        (
-                            dih_type.phi_k * lj_unit,
-                            int(round(dih_type.per, 0)),
-                            round(dih_type.phase, 3),
-                            round(weight, 4),
-                            round(dih_type.scee, 1),
-                            round(dih_type.scnb, 1),
-                            dihedral.atom1.type,
-                            dihedral.atom2.type,
-                            dihedral.atom3.type,
-                            dihedral.atom4.type,
-                        )
-                    )
-
-        unique_dihedral_types = OrderedDict(
-            enumerate(OrderedSet(*charmm_dihedrals))
-        )
-        magnitude = np.ceil(np.log10(len(atom_types)))
-        dihedral_tuples = [
-            (x[1], x[6:]) for x in unique_dihedral_types.values()
-        ]
-        ordered_dihedral_tuples = dihedral_tuples.copy()
-        ordered_dihedral_tuples.sort(
-            key=lambda x: atom_types.index(x[1][0]) * 10 ** (4 * magnitude)
-            + atom_types.index(x[1][1]) * 10 ** (3 * magnitude)
-            + atom_types.index(x[1][2]) * 10 ** (2 * magnitude)
-            + atom_types.index(x[1][3]) * 10**magnitude
-            + x[0]
-        )
-
-    unique_dihedral_types = OrderedDict(
-        [
-            (unique_dihedral_types[dihedral_tuples.index(x)], i + 1)
-            for i, x in enumerate(ordered_dihedral_tuples)
-        ]
-    )
-
-    if use_rb_torsions:
-        dihedral_types = [
-            unique_dihedral_types[
+        unique_dihedral_types = set(
+            [
                 (
                     round(dihedral.type.c0 * lj_unit, dihedral_precision),
                     round(dihedral.type.c1 * lj_unit, dihedral_precision),
@@ -952,21 +874,88 @@ def _get_dihedral_types(
                     round(dihedral.type.c5 * lj_unit, dihedral_precision),
                     round(dihedral.type.scee, 1),
                     round(dihedral.type.scnb, 1),
-                    dihedral.atom1.type,
-                    dihedral.atom2.type,
-                    dihedral.atom3.type,
-                    dihedral.atom4.type,
+                    *_dihedral_sorter(dihedral),
+                )
+                for dihedral in structure.rb_torsions
+            ]
+        )
+        unique_dihedral_typesDict = {
+            v: k + 1
+            for k, v in enumerate(
+                sorted(
+                    unique_dihedral_types,
+                    key=lambda item: tuple(item[i] for i in [-3, -2, -4, -1]),
+                )
+            )
+        }
+
+    elif use_dihedrals:
+        structure.join_dihedrals()  # creates a list of dihedrals for dihedral.type
+        weight = 0.0
+        if not zero_dihedral_weighting_factor:
+            weight = 1.0
+        charmm_dihedralsList = []
+        for dihedral in structure.dihedrals:
+            if not dihedral.improper:
+                for dih_type in dihedral.type:
+                    charmm_dihedralsList.append(
+                        (
+                            dih_type.phi_k * lj_unit,
+                            int(round(dih_type.per, 0)),
+                            round(dih_type.phase, 3),
+                            round(weight / len(dihedral.type), 4),
+                            round(dih_type.scee, 1),
+                            round(dih_type.scnb, 1),
+                            *_dihedral_sorter(dihedral),
+                        )
+                    )
+        unique_dihedral_typesDict = {
+            v: k + 1
+            for k, v in enumerate(
+                sorted(
+                    charmm_dihedralsList,
+                    key=lambda item: tuple(item[i] for i in [-3, -2, -4, -1]),
+                )
+            )
+        }
+
+    if use_rb_torsions:
+        dihedral_types = [
+            unique_dihedral_typesDict[
+                (
+                    round(dihedral.type.c0 * lj_unit, dihedral_precision),
+                    round(dihedral.type.c1 * lj_unit, dihedral_precision),
+                    round(dihedral.type.c2 * lj_unit, dihedral_precision),
+                    round(dihedral.type.c3 * lj_unit, dihedral_precision),
+                    round(dihedral.type.c4 * lj_unit, dihedral_precision),
+                    round(dihedral.type.c5 * lj_unit, dihedral_precision),
+                    round(dihedral.type.scee, 1),
+                    round(dihedral.type.scnb, 1),
+                    *_dihedral_sorter(dihedral),
                 )
             ]
             for dihedral in structure.rb_torsions
         ]
     elif use_dihedrals:
-        dihedral_types = [
-            unique_dihedral_types[dihedral_info]
-            for dihedral_info in charmm_dihedrals
-        ]
+        dihedral_types = []
+        for dihedral in structure.dihedrals:
+            if not dihedral.improper:
+                for dih_type in dihedral.type:
+                    dihedral_types.append(
+                        unique_dihedral_typesDict[
+                            (
+                                dih_type.phi_k * lj_unit,
+                                int(round(dih_type.per, 0)),
+                                round(dih_type.phase, 3),
+                                round(weight / len(dihedral.type), 4),
+                                round(dih_type.scee, 1),
+                                round(dih_type.scnb, 1),
+                                *_dihedral_sorter(dihedral),
+                            )
+                        ]
+                    )
 
-    return dihedral_types, unique_dihedral_types
+    return dihedral_types, unique_dihedral_typesDict
 
 
 def _get_improper_dihedral_types(
@@ -1150,7 +1139,7 @@ def _write_mass_information(
         for atom in structure.atoms:
             # handle case where atomtype does not contain a mass
             try:
-                tmp_masses.append(atom.atom_type.mass)
+                tmp_masses.append(atom.atom_type.mass.in_units("g/mol").value)
             except AttributeError:
                 warn(
                     f"No mass or defined atomtype for atom: {atom}. Using atom mass of {atom.mass / mass_conversion_factor}"
@@ -1414,7 +1403,8 @@ def _write_dihedral_information(
     sorted_dihedral_types = {
         k: v
         for k, v in sorted(
-            unique_dihedral_types.items(), key=lambda item: item[1]
+            unique_dihedral_types.items(),
+            key=lambda item: tuple(item[0][i] for i in [-3, -2, -4, -1]),
         )
     }
     if use_rb_torsions:
@@ -1426,7 +1416,7 @@ def _write_dihedral_information(
             )
         elif unit_style == "lj":
             data.write("#\tf1\tf2\tf3\tf4 (all lj reduced units)\n")
-        for params, idx in sorted_dihedral_types.items():
+        for idx, (params, _) in enumerate(sorted_dihedral_types.items()):
             opls_coeffs = RB_to_OPLS(
                 params[0],
                 params[1],
@@ -1438,7 +1428,7 @@ def _write_dihedral_information(
             )
             data.write(
                 "{}\t{:.5f}\t{:.5f}\t\t{:.5f}\t\t{:.5f}\t# {}\t{}\t{}\t{}\n".format(
-                    idx,
+                    idx + 1,
                     opls_coeffs[1],
                     opls_coeffs[2],
                     opls_coeffs[3],
@@ -1452,10 +1442,10 @@ def _write_dihedral_information(
     elif use_dihedrals:
         data.write("\nDihedral Coeffs # charmm\n")
         data.write("#k, n, phi, weight\n")
-        for params, idx in sorted_dihedral_types.items():
+        for idx, (params, _) in enumerate(sorted_dihedral_types.items()):
             data.write(
                 "{}\t{:.5f}\t{:d}\t{:d}\t{:.5f}\t# {}\t{}\t{}\t{}\n".format(
-                    idx,
+                    idx + 1,
                     params[0],
                     params[1],
                     int(params[2]),

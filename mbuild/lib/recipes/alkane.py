@@ -23,6 +23,7 @@ class Alkane(mb.Compound):
         if n < 1:
             raise ValueError("n must be 1 or more")
         super(Alkane, self).__init__()
+        from mbuild.lib.recipes import Polymer
 
         # Handle the case of Methane and Ethane separately
         if n < 3:
@@ -64,7 +65,7 @@ class Alkane(mb.Compound):
                         )
                         self.add(chain["up"], "up", containment=False)
                 else:
-                    chain = mb.recipes.Polymer(monomers=[CH2()])
+                    chain = Polymer(monomers=[CH2()])
                     chain.build(2, add_hydrogens=False)
                     self.add(chain, "chain")
                     self.add(chain["down"], "down", containment=False)
@@ -81,7 +82,7 @@ class Alkane(mb.Compound):
                 n -= 1
                 end_groups[1] = CH3()
 
-            chain = mb.recipes.Polymer(monomers=[CH2()], end_groups=end_groups)
+            chain = Polymer(monomers=[CH2()], end_groups=end_groups)
             chain.build(n, add_hydrogens=False)
             self.add(chain, "chain")
             if not cap_front:
