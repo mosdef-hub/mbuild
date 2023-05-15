@@ -24,9 +24,8 @@ import os
 import sys
 import textwrap
 import warnings
+from importlib import resource_filename
 from unittest import SkipTest
-
-from pkg_resources import resource_filename
 
 
 class DelayImportError(ImportError, SkipTest):
