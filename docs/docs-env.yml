@@ -14,3 +14,5 @@ dependencies:
     - lark-parser
     - requests
     - lxml
+    - numpydoc
+    - widgetsnbextension
