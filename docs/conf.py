@@ -25,6 +25,7 @@ MOCK_MODULES = [
     "ele",
     "ele.element",
     "ele.exceptions",
+    "boltons",
     "hoomd",
     "hoomd.data",
     "hoomd.md",
