@@ -139,12 +139,6 @@ intersphinx_mapping = {
     "scipy": ("https://docs.scipy.org/doc/scipy/reference", None),
     "scikit-learn": ("https://scikit-learn.org/stable", None),
 }
-# intersphinx_mapping = {
-#     _python_doc_base: None,
-#     "https://numpy.org/doc/stable": None,
-#     "https://docs.scipy.org/doc/scipy/reference": None,
-#     "https://scikit-learn.org/stable": None,
-# }
 
 # Add any paths that contain templates here, relative to this directory.
 templates_path = ["_templates"]
