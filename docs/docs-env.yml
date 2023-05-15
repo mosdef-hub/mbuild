@@ -5,6 +5,8 @@ channels:
 dependencies:
   - python>=3.8
   - pip:
+    - boltons
+    - networkx
     - sphinx
     - sphinx_rtd_theme
     - sphinxcontrib-svg2pdfconverter[CairoSVG]
