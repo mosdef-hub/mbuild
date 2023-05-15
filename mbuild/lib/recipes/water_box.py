@@ -23,16 +23,26 @@ class WaterBox(Compound):
     ----------
     box : mb.Box
         The desired box to fill with water
-    edge: float or list of floats, default=0.1
+    edge: float or list of floats, default=0.1 nm
         Specifies the gutter around the system to avoid overlaps at boundaries
-    model: mb.Compound, optional, default=None
-        The specified water model to be used in the resulting configuraiton.
-        Uses the force overlap command to translate and orient the water model
-        to the coordinates; if not specified, distances and angles correspond to tip3p.
-        See mbuild/lib/molecules/water.py for available water models.
+    model: mb.Compound, optional, default=water_models.WaterTIP3P()
+        The specified 3-site water model to be used. This uses the force overlap
+        command to translate and orient the specified water model to the given coordinates.
+        See mbuild/lib/molecules/water.py for available water models or extend the base model.
+    mask: mb.Compound, optional, default=None
+        Remove water molecules from the final configuration that overlap with the Compound
+        specified by the mask. If the element field is set, the sum of the particle radii
+        will be used.
+    r_cut: float, optional, default=0.15 nm
+        If the element is not set for a Compound (in either the water model or the mask),
+        the r_cut value will be used for the radii.
+    radii_padding: float, optional, default=0.0 nm
+        A padding value added to the radii for the masking. This can be used to allow more (or less if negative)
+        space between the mask and the water.
+        
         
     """
-    def __init__(self, box, edge = 0.1, model = None):
+    def __init__(self, box, edge = 0.1, model = water_models.WaterTIP3P(), mask=None, r_cut = 0.15, radii_padding=0.0):
 
         super(WaterBox, self).__init__()
         
@@ -51,7 +61,18 @@ class WaterBox(Compound):
             particles = [p for p in model.particles()]
             if 'O' not in particles[0].name:
                 raise MBuildError('The first particle in model needs to correspond to oxygen')
-                
+ 
+        # check if mask is set
+         if mask is not None:
+            if not isinstance(mask, list):
+                assert isinstance(mask, mb.Compound)
+            elif isinstance(mask, list):
+                # in case we are specified a list of Compounds,
+                # we will make sure it is a 1d list.
+                mask = [e for e in self._flatten_list(mask)]
+                for entry in mask:
+                    assert isinstance(entry, mb.Compound)
+                    
         # read in our propotype, a 4.0x4.0x4.0 nm box
         # our prototype was relaxed in GROMACs at 305 K, density 1000 kg/m^3 using tip3p
         aa_waters = load('water_proto.gro')
@@ -63,8 +84,6 @@ class WaterBox(Compound):
            
             water.add_bond((water.children[0], water.children[1]))
             water.add_bond((water.children[0], water.children[2]))
-            if model is None:
-                model = water_models.WaterTIP3P()
                 
             temp = clone(model)
             force_overlap(temp, temp, water, add_bond=False)
@@ -80,7 +99,17 @@ class WaterBox(Compound):
         scale_Lz = math.ceil(box.Lz/aa_waters.box.Lz)
         
         water_system_list = []
-
+        
+        # we will create a list of particles for the mask
+        # if specified now to save time later
+        if mask is not None:
+            if isinstance(mask, mb.Compound):
+                p_mask = [ p for p in mask.particles()]
+            else:
+                p_mask = []
+                for entry in mask:
+                    p_mask =  p_mask + [ p for p in mask.particles()]
+                    
         # add water molecules to a list
         # note we add to a list first, as this is more efficient than calling
         # the Compound.add function repeatedly as the Compound size grows.
@@ -89,11 +118,35 @@ class WaterBox(Compound):
                 for j in range(0,scale_Ly):
                     for k in range(0,scale_Lz):
                         shift = np.array([i*aa_waters.box.Lx, j*aa_waters.box.Ly, k*aa_waters.box.Lz])
+                        if mask is not None:
+                            particles = [p for p in water.particles()]
+                            status = True
+                            
+                            # note this could be sped up using a cell list
+                            # will have to wait until that PR is merged
+                            for p1 in particles:
+                                for p2 in p_mask:
+                                    dist= np.linalg.norm(p1.pos-p2.pos)
+                                     
+                                    if p1.element is None:
+                                        c1 = cut/2.0
+                                    else:
+                                        c1 = p1.element.radius_alvarez/10.0+radii_padding
+                                    if p2.element is None:
+                                        c2 = cut/2.0
+                                    else:
+                                        c2 = p2.element.radius_alvarez/10.0+radii_padding
+                                    cut_value = c1+c2
+                                    if dist <= cut_value:
+                                        status = False
+                            if status:
+                                temp = mb.clone(water)
+                                temp.translate(shift)
+                                water_system_list.append(temp)
+                        else:
 
-                        if all(water.pos+shift < (box.lengths-edges)):
-                            temp = clone(water)
+                            temp = mb.clone(water)
                             temp.translate(shift)
-                                
                             water_system_list.append(temp)
         
             
