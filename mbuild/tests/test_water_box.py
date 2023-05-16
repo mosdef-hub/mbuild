@@ -123,22 +123,22 @@ class TestWaterBox(BaseTest):
     def test_incorrect_edge(self):
        
         with pytest.raises(ValueError):
-            wb = Water3SiteBox(box=mb.Box([2.0, 2.0, 2.0]), edge=[1,2,3,4])
+            Water3SiteBox(box=mb.Box([2.0, 2.0, 2.0]), edge=[1,2,3,4])
             
     def test_incorrect_edge2(self):
 
         with pytest.raises(ValueError):
-            wb = Water3SiteBox(box=mb.Box([2.0, 2.0, 2.0]), edge=[1,2])
+            Water3SiteBox(box=mb.Box([2.0, 2.0, 2.0]), edge=[1,2])
 
     def test_incorrect_mask(self):
 
         with pytest.raises(MBuildError):
-            wb = Water3SiteBox(box=mb.Box([2.0, 2.0, 2.0]), mask=[1,2,3,4])
+            Water3SiteBox(box=mb.Box([2.0, 2.0, 2.0]), mask=[1,2,3,4])
     
     def test_incorrect_mask2(self):
 
         with pytest.raises(MBuildError):
-            wb = Water3SiteBox(box=mb.Box([2.0, 2.0, 2.0]), mask=1)
+            Water3SiteBox(box=mb.Box([2.0, 2.0, 2.0]), mask=1)
 
     def test_bad_model(self):
         bad_model = mb.Compound()
@@ -147,7 +147,7 @@ class TestWaterBox(BaseTest):
         bad_model.add([mb.clone(hydrogen), mb.clone(oxygen), mb.clone(hydrogen)])
         
         with pytest.raises(MBuildError):
-            wb = Water3SiteBox(box=mb.Box([2.0, 2.0, 2.0]), model=bad_model)
+            Water3SiteBox(box=mb.Box([2.0, 2.0, 2.0]), model=bad_model)
  
     def test_bad_model2(self):
         bad_model = mb.Compound()
@@ -156,7 +156,7 @@ class TestWaterBox(BaseTest):
         bad_model.add([mb.clone(hydrogen), mb.clone(oxygen), mb.clone(hydrogen)])
         
         with pytest.raises(MBuildError):
-            wb = Water3SiteBox(box=mb.Box([2.0, 2.0, 2.0]), model=[bad_model])
+            Water3SiteBox(box=mb.Box([2.0, 2.0, 2.0]), model=[bad_model])
 
     def test_bad_dict(self):
         bad_model = mb.Compound()
@@ -165,4 +165,4 @@ class TestWaterBox(BaseTest):
         bad_model.add([mb.clone(hydrogen), mb.clone(oxygen), mb.clone(hydrogen)])
         
         with pytest.raises(ValueError):
-            wb = Water3SiteBox(box=mb.Box([2.0, 2.0, 2.0]), mask=oxygen, radii_dict=[1.0,2.0])
+            Water3SiteBox(box=mb.Box([2.0, 2.0, 2.0]), mask=oxygen, radii_dict=[1.0,2.0])

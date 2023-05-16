@@ -1,8 +1,7 @@
 import numpy as np
 import math as math
-from warnings import warn
 
-from mbuild import Box, Compound, clone, force_overlap, load
+from mbuild import Compound, clone, force_overlap, load
 from mbuild.exceptions import MBuildError
 from collections.abc import Iterable
 
