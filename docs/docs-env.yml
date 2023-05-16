@@ -1,0 +1,21 @@
+name: mbuild-docs
+channels:
+  - jaimergp/label/unsupported-cudatoolkit-shim
+  - conda-forge
+dependencies:
+  - python>=3.8
+  - pip
+  - pip:
+    - boltons
+    - networkx
+    - sphinx
+    - sphinx_rtd_theme
+    - sphinxcontrib-svg2pdfconverter[CairoSVG]
+    - cairosvg
+    - nbsphinx
+    - networkx >=2.0
+    - lark-parser
+    - requests
+    - lxml
+    - numpydoc
+    - widgetsnbextension
