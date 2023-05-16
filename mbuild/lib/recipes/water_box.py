@@ -4,12 +4,25 @@ from warnings import warn
 
 from mbuild import Box, Compound, clone, force_overlap, load
 from mbuild.exceptions import MBuildError
+from collections.abc import Iterable
 
 import mbuild.lib.molecules.water as water_models
 
-__all__ = ["WaterBox"]
+__all__ = ["Water3SiteBox"]
 
-class WaterBox(Compound):
+def _flatten_list(c_list):
+    """Flatten a list.
+
+    Helper function to flatten a list that may be nested, e.g. [comp1, [comp2, comp3]].
+    """
+    if isinstance(c_list, Iterable) and not isinstance(c_list, str):
+        for c in c_list:
+            if isinstance(c, Iterable) and not isinstance(c, str):
+                yield from _flatten_list(c)
+            else:
+                yield c
+                
+class Water3SiteBox(Compound):
     """Generate a box of 3-site water molecules.
     
     Efficiently create an mbuild Compound containing water at density ~1000 kg/m^3
@@ -44,11 +57,12 @@ class WaterBox(Compound):
     """
     def __init__(self, box, edge = 0.1, model = water_models.WaterTIP3P(), mask=None, r_cut = 0.15, radii_padding=0.0):
 
-        super(WaterBox, self).__init__()
+        super(Water3SiteBox, self).__init__()
         
         # check if we are given a list or single value
         if isinstance(edge, list):
-            assert(len(edge) == 3)
+            if len(edge) != 3:
+                raise ValueError(f'edge should either be a single float or a list of length 3, not a list of {len(edge)}')
             edges = np.array(edge)
         else:
             edges = np.array([edge,edge,edge])
@@ -57,25 +71,31 @@ class WaterBox(Compound):
         # the first particle in the compound corresponds to Oxygen.
         
         if model is not None:
-            assert isinstance(model, Compound)
+            if isinstance(model, Compound) == False:
+                raise MBuildError(f'Model must be a compound.')
+
             particles = [p for p in model.particles()]
-            if 'O' not in particles[0].name:
+            if particles[0].element.symbol != 'O':
                 raise MBuildError('The first particle in model needs to correspond to oxygen')
  
         # check if mask is set
         if mask is not None:
             if not isinstance(mask, list):
-                assert isinstance(mask, Compound)
+                if not isinstance(mask, Compound):
+                    raise MBuildError(f'Mask must be a Compound or a list of Compounds.')
+
             elif isinstance(mask, list):
                 # in case we are specified a list of Compounds,
                 # we will make sure it is a 1d list.
-                mask = [e for e in self._flatten_list(mask)]
+                mask = [e for e in _flatten_list(mask)]
                 for entry in mask:
-                    assert isinstance(entry, Compound)
+                    if not isinstance(entry, Compound):
+                        raise MBuildError(f'Mask must be a Compound or a list of Compounds.')
+
                     
         # read in our propotype, a 4.0x4.0x4.0 nm box
         # our prototype was relaxed in GROMACs at 305 K, density 1000 kg/m^3 using tip3p
-        aa_waters = load('water_proto.gro')
+        aa_waters = load('water_proto.gro', relative_to_module=self.__module__,)
 
         # loop over each water in our configuration
         # add in the necessary bonds missing from the .gro file
@@ -108,7 +128,7 @@ class WaterBox(Compound):
             else:
                 p_mask = []
                 for entry in mask:
-                    p_mask =  p_mask + [ p for p in mask.particles()]
+                    p_mask =  p_mask + [ p for p in entry.particles()]
                     
         # add water molecules to a list
         # note we add to a list first, as this is more efficient than calling
@@ -130,11 +150,11 @@ class WaterBox(Compound):
                                         dist= np.linalg.norm(p1.pos-p2.pos)
                                          
                                         if p1.element is None:
-                                            c1 = cut/2.0
+                                            c1 = r_cut/2.0
                                         else:
                                             c1 = p1.element.radius_alvarez/10.0+radii_padding
                                         if p2.element is None:
-                                            c2 = cut/2.0
+                                            c2 = r_cut/2.0
                                         else:
                                             c2 = p2.element.radius_alvarez/10.0+radii_padding
                                         cut_value = c1+c2
