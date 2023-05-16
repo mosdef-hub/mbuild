@@ -46,23 +46,32 @@ class Water3SiteBox(Compound):
         Remove water molecules from the final configuration that overlap with the Compound
         specified by the mask. If the element field is set, the sum of the particle radii
         will be used.
-    r_cut: float, optional, default=0.15 nm
-        If the element is not set for a Compound (in either the water model or the mask),
-        the r_cut value will be used for the radii.
-    radii_padding: float, optional, default=0.0 nm
-        A padding value added to the radii for the masking. This can be used to allow more (or less if negative)
-        space between the mask and the water.
+    radii_dict = dict, optional, None
+        User defined radii values based on the name field of a Compound.  This will supercede
+    radii_overlap: float, optional, default=0.15 nm
+        Default value if the radii_dict or element field are not defined for a particle.
+    radii_scaling: float, optional, default=1.0
+        Radii are multiplied by this factor during the masking routine. This allows the
+        space between the masking particles and the water to be adjusted. This will apply to
+        values in radii_dict, radii based on element, and radii_overlap.
         
         
     """
-    def __init__(self, box, edge = 0.1, model = water_models.WaterTIP3P(), mask=None, r_cut = 0.15, radii_padding=0.0):
+    def __init__(self, box, edge = 0.1, model = water_models.WaterTIP3P(), mask=None, radii_dict=None, radii_overlap = 0.15,  radii_scaling=1.0):
 
         super(Water3SiteBox, self).__init__()
         
+        # if we do not define a dictionary, create an empty one
+        if radii_dict is None:
+            radii_dict = {}
+        else:
+            if not isinstance(radii_dict, dict):
+                raise ValueError(f'radii_dict should be dictionary.')
+
         # check if we are given a list or single value
         if isinstance(edge, list):
             if len(edge) != 3:
-                raise ValueError(f'edge should either be a single float or a list of length 3, not a list of {len(edge)}')
+                raise ValueError(f'edge should either be a single float or a list of length 3, not a list of {len(edge)}.')
             edges = np.array(edge)
         else:
             edges = np.array([edge,edge,edge])
@@ -76,7 +85,10 @@ class Water3SiteBox(Compound):
 
             particles = [p for p in model.particles()]
             if particles[0].element.symbol != 'O':
-                raise MBuildError('The first particle in model needs to correspond to oxygen')
+                raise MBuildError('The first particle in model needs to correspond to oxygen.')
+            if len(particles) !=3:
+                raise MBuildError('The only works with 3-site models of water.')
+
  
         # check if mask is set
         if mask is not None:
@@ -148,15 +160,22 @@ class Water3SiteBox(Compound):
                                 for p1 in particles:
                                     for p2 in p_mask:
                                         dist= np.linalg.norm(p1.pos-p2.pos)
-                                         
-                                        if p1.element is None:
-                                            c1 = r_cut/2.0
+                                        
+                                        if p1.name in radii_dict:
+                                            c1 = radii_scaling*radii_dict[p1.name]
+                                        elif p1.element is not None:
+                                            c1 = radii_scaling*p1.element.radius_alvarez/10.0
                                         else:
-                                            c1 = p1.element.radius_alvarez/10.0+radii_padding
-                                        if p2.element is None:
-                                            c2 = r_cut/2.0
+                                            c1 = radii_scaling*radii_overlap
+                                        
+                                        if p2.name in radii_dict:
+                                            c2 = radii_scaling*radii_dict[p2.name]
+                                        elif p2.element is not None:
+                                            c2 = radii_scaling*p2.element.radius_alvarez/10.0
                                         else:
-                                            c2 = p2.element.radius_alvarez/10.0+radii_padding
+                                            c2 = radii_scaling*radii_overlap
+                                            
+                                            
                                         cut_value = c1+c2
                                         if dist <= cut_value:
                                             status = False

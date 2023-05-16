@@ -66,14 +66,17 @@ class TestWaterBox(BaseTest):
 
         assert wb.n_particles == 285
         
-        wb = Water3SiteBox(box=mb.Box([2.0, 2.0, 2.0]), mask=ethane_system, radii_padding=0.05)
+        wb = Water3SiteBox(box=mb.Box([2.0, 2.0, 2.0]), mask=ethane_system, radii_scaling=0.9)
 
-        assert wb.n_particles == 240
+        assert wb.n_particles == 294
         
-        wb = Water3SiteBox(box=mb.Box([2.0, 2.0, 2.0]), mask=[ethane_system], radii_padding=0.05)
+        wb = Water3SiteBox(box=mb.Box([2.0, 2.0, 2.0]), mask=[ethane_system], radii_scaling=0.9)
 
-        assert wb.n_particles == 240
+        assert wb.n_particles == 294
 
+        wb = Water3SiteBox(box=mb.Box([2.0, 2.0, 2.0]), mask=[ethane_system], radii_scaling=1.1)
+
+        assert wb.n_particles == 282
         
         # test using the default cutoff for ethane
         for part in ethane.particles(): part.element = None
@@ -81,9 +84,22 @@ class TestWaterBox(BaseTest):
         ethane_system = mb.fill_box(ethane, n_compounds=50, overlap=0.22,
                edge=0.10, sidemax=box_temp.Lz+1, box=box_temp, seed=1234)
 
-        wb = Water3SiteBox(box=mb.Box([2.0, 2.0, 2.0]), mask=ethane_system, radii_padding=0.05)
+        wb = Water3SiteBox(box=mb.Box([2.0, 2.0, 2.0]), mask=ethane_system, radii_overlap=0.1)
+
+        assert wb.n_particles == 294
+        
+        wb = Water3SiteBox(box=mb.Box([2.0, 2.0, 2.0]), mask=ethane_system, radii_overlap=0.2)
+
+        assert wb.n_particles == 249
+        
+        wb = Water3SiteBox(box=mb.Box([2.0, 2.0, 2.0]), mask=ethane_system, radii_dict={'C' : 0.1, 'H' : 0.05})
+
+        assert wb.n_particles == 321
+        
+        wb = Water3SiteBox(box=mb.Box([2.0, 2.0, 2.0]), mask=ethane_system, radii_dict={'C' : 0.15, 'H' : 0.125})
 
         assert wb.n_particles == 285
+        
         
     def test_model(self):
         wb = Water3SiteBox(box=mb.Box([2.0, 2.0, 2.0]), model=water_models.WaterSPC())
@@ -141,3 +157,12 @@ class TestWaterBox(BaseTest):
         
         with pytest.raises(MBuildError):
             wb = Water3SiteBox(box=mb.Box([2.0, 2.0, 2.0]), model=[bad_model])
+
+    def test_bad_dict(self):
+        bad_model = mb.Compound()
+        oxygen = mb.Compound(name='O', element='O')
+        hydrogen = mb.Compound(name='H', element='H')
+        bad_model.add([mb.clone(hydrogen), mb.clone(oxygen), mb.clone(hydrogen)])
+        
+        with pytest.raises(ValueError):
+            wb = Water3SiteBox(box=mb.Box([2.0, 2.0, 2.0]), mask=oxygen, radii_dict=[1.0,2.0])
