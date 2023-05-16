@@ -8,8 +8,10 @@ class Recipes(object):
 
 
 recipes = Recipes()
-from pkg_resources import iter_entry_points
+from importlib import metadata
+
+entry_points = metadata.entry_points()["mbuild.plugins"]
 
 available_methods = []
-for entry_point in iter_entry_points(group="mbuild.plugins", name=None):
+for entry_point in entry_points:
     setattr(recipes, entry_point.name, entry_point.load())
