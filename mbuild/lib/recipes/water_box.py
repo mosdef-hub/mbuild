@@ -1,13 +1,11 @@
 import math as math
-import numpy as np
-
-from mbuild import Compound, clone, force_overlap, load
-from mbuild.exceptions import MBuildError
 from collections.abc import Iterable
 
+import numpy as np
 
 import mbuild.lib.molecules.water as water_models
-
+from mbuild import Compound, clone, force_overlap, load
+from mbuild.exceptions import MBuildError
 
 __all__ = ["Water3SiteBox"]
 
