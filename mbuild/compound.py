@@ -1982,11 +1982,13 @@ class Compound(object):
         """
         # temporary list of components
         comp_list = []
+        comp_list_id = []
         connected_subgraph = self.root.bond_graph.connected_components()
-
+        unbound_particles = []
         for molecule in connected_subgraph:
             if len(molecule) == 1:
                 ancestors = [molecule[0]]
+                unbound_particles.append(molecule[0])
             else:
                 ancestors = IndexedSet(molecule[0].ancestors())
                 for particle in molecule[1:]:
@@ -2000,9 +2002,22 @@ class Compound(object):
                         IndexedSet(particle.ancestors())
                     )
 
-            """Parse molecule information"""
-            molecule_tag = ancestors[0]
-            comp_list.append(clone(molecule_tag))
+                """Parse molecule information"""
+                molecule_tag = ancestors[0]
+                comp_list.append(clone(molecule_tag))
+                # generate a list of particle ids within the compound
+                # this will also include any particles that are part of the
+                # Compound but are not bonded
+                
+                pids = [id(p) for p in molecule_tag.particles()]
+                comp_list_id += pids
+        # loop over particles without bonds
+        # if any of the particles exist in a compound
+        # don't add them, as they already will exist
+        for ubp in unbound_particles:
+            if id(ubp) not in comp_list_id:
+                comp_list.append(clone(ubp))
+
         if inplace:
             for child in [self.children]:
                 # Need to handle the case when child is a port
