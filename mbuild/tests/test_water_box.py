@@ -176,7 +176,7 @@ class TestWaterBox(BaseTest):
         with pytest.raises(MBuildError):
             Water3SiteBox(box=mb.Box([2.0, 2.0, 2.0]), model=bad_model)
 
-     def test_bad_model2(self):
+    def test_bad_model2(self):
         bad_model = mb.Compound()
         oxygen = mb.Compound(name="O", element="O")
         hydrogen = mb.Compound(name="H", element="H")
