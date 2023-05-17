@@ -2008,7 +2008,7 @@ class Compound(object):
                 # generate a list of particle ids within the compound
                 # this will also include any particles that are part of the
                 # Compound but are not bonded
-                
+
                 pids = [id(p) for p in molecule_tag.particles()]
                 comp_list_id += pids
         # loop over particles without bonds
