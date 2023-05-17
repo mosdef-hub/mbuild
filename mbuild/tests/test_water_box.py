@@ -52,9 +52,8 @@ class TestWaterBox(BaseTest):
     def test_mask(self, ethane):
         box_temp = mb.Box([2.0, 2.0, 1.0])
 
-        
-        grid_pattern  = mb.Grid3DPattern(6,6,4)
-        grid_pattern.scale([2,2,1])
+        grid_pattern = mb.Grid3DPattern(6, 6, 4)
+        grid_pattern.scale([2, 2, 1])
         ethane_system_list = grid_pattern.apply(ethane)
         ethane_system = mb.Compound(ethane_system_list)
 
@@ -84,9 +83,8 @@ class TestWaterBox(BaseTest):
         for part in ethane.particles():
             part.element = None
 
-
-        grid_pattern  = mb.Grid3DPattern(6,6,4)
-        grid_pattern.scale([2,2,1])
+        grid_pattern = mb.Grid3DPattern(6, 6, 4)
+        grid_pattern.scale([2, 2, 1])
         ethane_system_list = grid_pattern.apply(ethane)
         ethane_system = mb.Compound(ethane_system_list)
 
