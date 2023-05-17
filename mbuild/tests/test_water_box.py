@@ -151,7 +151,7 @@ class TestWaterBox(BaseTest):
 
     def test_incorrect_edge(self):
         with pytest.raises(ValueError):
-            Water3SiteBox(box=mb.Box([2.0, 2.0, 2.0]), edge=[1,2,3,4])
+            Water3SiteBox(box=mb.Box([2.0, 2.0, 2.0]), edge=[1, 2, 3, 4])
 
     def test_incorrect_edge2(self):
         with pytest.raises(ValueError):
@@ -159,7 +159,7 @@ class TestWaterBox(BaseTest):
 
     def test_incorrect_mask(self):
         with pytest.raises(MBuildError):
-            Water3SiteBox(box=mb.Box([2.0, 2.0, 2.0]), mask=[1,2,3,4])
+            Water3SiteBox(box=mb.Box([2.0, 2.0, 2.0]), mask=[1, 2, 3, 4])
 
     def test_incorrect_mask2(self):
         with pytest.raises(MBuildError):
@@ -196,4 +196,6 @@ class TestWaterBox(BaseTest):
         )
 
         with pytest.raises(ValueError):
-            Water3SiteBox(box=mb.Box([2.0, 2.0, 2.0]), mask=oxygen, radii_dict=[1.0,2.0])
+            Water3SiteBox(
+                box=mb.Box([2.0, 2.0, 2.0]), mask=oxygen, radii_dict=[1.0, 2.0]
+            )
