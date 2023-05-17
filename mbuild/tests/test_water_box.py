@@ -52,63 +52,55 @@ class TestWaterBox(BaseTest):
     def test_mask(self, ethane):
         box_temp = mb.Box([2.0, 2.0, 1.0])
 
-        ethane_system = mb.fill_box(
-            ethane,
-            n_compounds=50,
-            overlap=0.22,
-            edge=0.10,
-            sidemax=box_temp.Lz + 1,
-            box=box_temp,
-            seed=1234,
-        )
+        
+        grid_pattern  = mb.Grid3DPattern(6,6,4)
+        grid_pattern.scale([2,2,1])
+        ethane_system_list = grid_pattern.apply(ethane)
+        ethane_system = mb.Compound(ethane_system_list)
 
         wb = Water3SiteBox(box=mb.Box([2.0, 2.0, 2.0]), mask=ethane_system)
 
-        assert wb.n_particles == 285
+        assert wb.n_particles == 294
 
         wb = Water3SiteBox(
             box=mb.Box([2.0, 2.0, 2.0]), mask=ethane_system, radii_scaling=0.9
         )
 
-        assert wb.n_particles == 294
+        assert wb.n_particles == 300
 
         wb = Water3SiteBox(
             box=mb.Box([2.0, 2.0, 2.0]), mask=[ethane_system], radii_scaling=0.9
         )
 
-        assert wb.n_particles == 294
+        assert wb.n_particles == 300
 
         wb = Water3SiteBox(
             box=mb.Box([2.0, 2.0, 2.0]), mask=[ethane_system], radii_scaling=1.1
         )
 
-        assert wb.n_particles == 282
+        assert wb.n_particles == 288
 
         # test using the default cutoff for ethane
         for part in ethane.particles():
             part.element = None
 
-        ethane_system = mb.fill_box(
-            ethane,
-            n_compounds=50,
-            overlap=0.22,
-            edge=0.10,
-            sidemax=box_temp.Lz + 1,
-            box=box_temp,
-            seed=1234,
-        )
+
+        grid_pattern  = mb.Grid3DPattern(6,6,4)
+        grid_pattern.scale([2,2,1])
+        ethane_system_list = grid_pattern.apply(ethane)
+        ethane_system = mb.Compound(ethane_system_list)
 
         wb = Water3SiteBox(
             box=mb.Box([2.0, 2.0, 2.0]), mask=ethane_system, radii_overlap=0.1
         )
 
-        assert wb.n_particles == 294
+        assert wb.n_particles == 297
 
         wb = Water3SiteBox(
             box=mb.Box([2.0, 2.0, 2.0]), mask=ethane_system, radii_overlap=0.2
         )
 
-        assert wb.n_particles == 249
+        assert wb.n_particles == 264
 
         wb = Water3SiteBox(
             box=mb.Box([2.0, 2.0, 2.0]),
@@ -116,7 +108,7 @@ class TestWaterBox(BaseTest):
             radii_dict={"C": 0.1, "H": 0.05},
         )
 
-        assert wb.n_particles == 321
+        assert wb.n_particles == 327
 
         wb = Water3SiteBox(
             box=mb.Box([2.0, 2.0, 2.0]),
@@ -124,7 +116,7 @@ class TestWaterBox(BaseTest):
             radii_dict={"C": 0.15, "H": 0.125},
         )
 
-        assert wb.n_particles == 285
+        assert wb.n_particles == 291
 
     def test_model(self):
         wb = Water3SiteBox(
