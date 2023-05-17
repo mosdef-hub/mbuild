@@ -989,24 +989,29 @@ class TestCompound(BaseTest):
             condensed_hierarchy.to_json(with_data=False)
             == '{"Compound, 18 particles, 14 bonds, 4 children": {"children": ["[C x 2], 1 particles, 0 bonds, 0 children", {"[Ethane x 2], 8 particles, 7 bonds, 2 children": {"children": [{"[CH3 x 2], 4 particles, 3 bonds, 4 children": {"children": ["[C x 1], 1 particles, 4 bonds, 0 children", "[H x 3], 1 particles, 1 bonds, 0 children"]}}]}}]}}'
         )
+
     def test_condense_tip4p(self):
         # tip4p has a virtual site that doesn't have an explicit bond with other particles
         # this test is to ensure that this site doesn't get added twice when condense is called
         import mbuild.lib.molecules.water as water_models
+
         water = water_models.WaterTIP4P()
         water_list = []
         waters = mb.Compound()
         system = mb.Compound()
-        for i in range(0,3):
+        for i in range(0, 3):
             water_list.append(mb.clone(water))
-            
+
         waters.add(water_list)
         system.add(waters)
-        
+
         condensed = waters.condense(inplace=False)
-        
-        assert condensed.print_hierarchy().to_json(with_data=False) == '{"Compound, 12 particles, 6 bonds, 3 children": {"children": [{"[WaterTIP4P x 3], 4 particles, 2 bonds, 4 children": {"children": ["[HW1 x 1], 1 particles, 1 bonds, 0 children", "[HW2 x 1], 1 particles, 1 bonds, 0 children", "[MW x 1], 1 particles, 0 bonds, 0 children", "[OW x 1], 1 particles, 2 bonds, 0 children"]}}]}}'
-        
+
+        assert (
+            condensed.print_hierarchy().to_json(with_data=False)
+            == '{"Compound, 12 particles, 6 bonds, 3 children": {"children": [{"[WaterTIP4P x 3], 4 particles, 2 bonds, 4 children": {"children": ["[HW1 x 1], 1 particles, 1 bonds, 0 children", "[HW2 x 1], 1 particles, 1 bonds, 0 children", "[MW x 1], 1 particles, 0 bonds, 0 children", "[OW x 1], 1 particles, 2 bonds, 0 children"]}}]}}'
+        )
+
     def test_flatten_eth(self, ethane):
         # Before flattening
         assert len(ethane.children) == 2
