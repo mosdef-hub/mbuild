@@ -2013,7 +2013,7 @@ class Compound(object):
                 comp_list_id += pids
         # loop over particles without bonds
         # if any of the particles exist in a compound
-        # don't add them, as they already will exist
+        # don't add them, as they already exist
         for ubp in unbound_particles:
             if id(ubp) not in comp_list_id:
                 comp_list.append(clone(ubp))
