@@ -712,7 +712,7 @@ class Compound(object):
 
         >>> import mbuild as mb
         >>> from mbuild.utils.io import get_fn
-        >>> benzene = mb.get_fn(get_fn('benzene.mol2'))
+        >>> benzene = mb.load(get_fn('benzene.mol2'))
         >>> benzene.label_rigid_bodies(rigid_particles='C')
 
         Create a box of rigid benzenes, where each benzene has a unique rigid
