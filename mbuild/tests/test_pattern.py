@@ -56,6 +56,10 @@ class TestPattern(BaseTest):
         pattern = mb.Grid3DPattern(10, 5, 2)
         assert len(pattern) == 100
 
+    def test_checkered_2d(self):
+        pattern = mb.Checkered2DPattern(10, 5)
+        assert len(pattern) == 50
+
     def test_sphere(self):
         pattern = mb.SpherePattern(100)
         assert len(pattern) == 100
