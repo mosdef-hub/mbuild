@@ -274,6 +274,33 @@ class Grid3DPattern(Pattern):
         super(Grid3DPattern, self).__init__(points=points, **kwargs)
 
 
+class Checkered2DPattern(Pattern):
+    """Generate a 2D grid (n x m) of points along z = 0.
+
+    Notes
+    -----
+    Points span [0,1) along x and y axes
+
+    Attributes
+    ----------
+    n : int
+        Number of grid rows
+    m : int
+        Number of grid columns
+    """
+
+    def __init__(self, n, m, **kwargs):
+        points = np.zeros(shape=(n * m, 3), dtype=float)
+        for i, j in product(range(n), range(m)):
+            if i % 2 == 0:
+                points[i * m + j, 0] = i / n
+                points[i * m + j, 1] = j / m
+            else:
+                points[i * m + j, 0] = i / n
+                points[i * m + j, 1] = j / m + (1 / (2 * m))
+        super(Checkered2DPattern, self).__init__(points=points, **kwargs)
+
+
 class SpherePattern(Pattern):
     """Generate N evenly distributed points on the unit sphere.
 
