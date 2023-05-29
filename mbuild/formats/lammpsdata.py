@@ -964,7 +964,7 @@ def _get_improper_dihedral_types(
     """
     Will get the improper types from a parmed structure and convert them to lammps real units.
 
-    Type harmonic https://docs.lammps.org/improper_harmonic.html.
+    Type cvff https://docs.lammps.org/improper_cvff.html
     """
     lj_unit = 1 / epsilon_conversion_factor
     improper_dihedrals = []
@@ -1025,7 +1025,7 @@ def _get_impropers(
     """
     Will get the improper types from a parmed structure and convert them to lammps real units.
 
-    Type cvff https://docs.lammps.org/improper_cvff.html
+    Type harmonic https://docs.lammps.org/improper_harmonic.html.
     """
     lj_unit = 1 / epsilon_conversion_factor
     unique_improper_types = dict(
