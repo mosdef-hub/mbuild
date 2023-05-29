@@ -288,17 +288,32 @@ class Checkered2DPattern(Pattern):
         Number of grid rows
     m : int
         Number of grid columns
+    shift : str, optional, default="column"
+        Allow user to choose the pattern to be shifted by "column" or "row"
     """
 
-    def __init__(self, n, m, **kwargs):
+    def __init__(self, n, m, shift="column", **kwargs):
         points = np.zeros(shape=(n * m, 3), dtype=float)
-        for i, j in product(range(n), range(m)):
-            if i % 2 == 0:
-                points[i * m + j, 0] = i / n
-                points[i * m + j, 1] = j / m
-            else:
-                points[i * m + j, 0] = i / n
-                points[i * m + j, 1] = j / m + (1 / (2 * m))
+        if shift == "row":
+            for i, j in product(range(n), range(m)):
+                if i % 2 == 0:
+                    points[i * m + j, 0] = i / n
+                    points[i * m + j, 1] = j / m
+                else:
+                    points[i * m + j, 0] = i / n
+                    points[i * m + j, 1] = j / m + (1 / (2 * m))
+        elif shift == "column":
+            for i, j in product(range(n), range(m)):
+                if j % 2 == 0:
+                    points[i * m + j, 0] = i / n
+                    points[i * m + j, 1] = j / m
+                else:
+                    points[i * m + j, 0] = i / n + (1 / (2 * n))
+                    points[i * m + j, 1] = j / m
+        else:
+            raise ValueError(
+                f"shift can only take value of 'column' or 'row', given {shift}"
+            )
         super(Checkered2DPattern, self).__init__(points=points, **kwargs)
 
 
