@@ -60,6 +60,12 @@ class TestPattern(BaseTest):
         pattern = mb.Checkered2DPattern(10, 5)
         assert len(pattern) == 50
 
+        pattern = mb.Checkered2DPattern(5, 5, "row")
+        assert len(pattern) == 25
+
+        with pytest.raises(ValueError):
+            pattern = mb.Checkered2DPattern(5, 5, "bogus")
+
     def test_sphere(self):
         pattern = mb.SpherePattern(100)
         assert len(pattern) == 100
