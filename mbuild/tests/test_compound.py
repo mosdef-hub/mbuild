@@ -433,17 +433,17 @@ class TestCompound(BaseTest):
         assert struct.residues[0].number == 1
         assert struct.residues[1].number == 2
 
-    def test_save_residue_map(self, methane):
-        filled = mb.fill_box(methane, n_compounds=20, box=[0, 0, 0, 4, 4, 4])
+    def test_save_residue_map(self, ethane):
+        filled = mb.fill_box(ethane, n_compounds=100, box=[0, 0, 0, 4, 4, 4])
         t0 = time.time()
-        filled.save("filled.mol2", forcefield_name="oplsaa", residues="Methane")
+        filled.save("filled.mol2", forcefield_name="oplsaa", residues="Ethane")
         t1 = time.time()
         foyer_kwargs = {"use_residue_map": False}
         filled.save(
             "filled.mol2",
             forcefield_name="oplsaa",
             overwrite=True,
-            residues="Methane",
+            residues="Ethane",
             foyer_kwargs=foyer_kwargs,
         )
         t2 = time.time()
