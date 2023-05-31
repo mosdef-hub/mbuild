@@ -29,11 +29,11 @@ jobs:
         shell: bash -l {0}
 
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
         name: Checkout Branch / Pull Request
 
       - name: Install Mamba (Linux)
-        uses: mamba-org/provision-with-micromamba@main
+        uses: mamba-org/setup-micromamba
         with:
           environment-file: environment-dev.yml
           extra-specs: |
@@ -41,7 +41,7 @@ jobs:
         if: runner.os != 'Windows'
 
       - name: Install Mamba (Windows)
-        uses: mamba-org/provision-with-micromamba@main
+        uses: mamba-org/setup-micromamba
         with:
           environment-file: environment-dev-win.yml
           extra-specs: |
@@ -76,11 +76,11 @@ jobs:
         shell: bash -l {0}
 
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
         name: Checkout Branch / Pull Request
 
       - name: Install Mamba
-        uses: mamba-org/provision-with-micromamba@main
+        uses: mamba-org/setup-micromamba
         with:
           environment-file: environment-dev.yml
           extra-specs: |
