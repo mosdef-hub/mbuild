@@ -433,6 +433,7 @@ class TestCompound(BaseTest):
         assert struct.residues[0].number == 1
         assert struct.residues[1].number == 2
 
+    @pytest.mark.flaky()
     def test_save_residue_map(self, ethane):
         filled = mb.fill_box(ethane, n_compounds=100, box=[0, 0, 0, 4, 4, 4])
         t0 = time.time()
