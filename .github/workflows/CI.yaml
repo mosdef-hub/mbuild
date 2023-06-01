@@ -36,16 +36,14 @@ jobs:
         uses: mamba-org/setup-micromamba@v1
         with:
           environment-file: environment-dev.yml
-          extra-specs: |
-            python=${{ matrix.python-version }}
+          python-version: ${{ matrix.python-version }}
         if: runner.os != 'Windows'
 
       - name: Install Mamba (Windows)
         uses: mamba-org/setup-micromamba@v1
         with:
           environment-file: environment-dev-win.yml
-          extra-specs: |
-            python=${{ matrix.python-version }}
+          python-version: ${{ matrix.python-version }}
         if: runner.os == 'Windows'
 
       - name: Install Package
@@ -83,8 +81,7 @@ jobs:
         uses: mamba-org/setup-micromamba@v1
         with:
           environment-file: environment-dev.yml
-          extra-specs: |
-            python=3.8
+          python-version: "3.10"
 
       - name: Clone Foyer and GMSO
         run: |
