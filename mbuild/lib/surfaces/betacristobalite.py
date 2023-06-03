@@ -32,9 +32,20 @@ class Betacristobalite(mb.Compound):
             relative_to_module=self.__module__,
             backend="gmso",
         )
+
+        # Shift it back to origin
+        xs, ys, zs = list(), list(), list()
+        for particle in betacristabolite.particles():
+            xs.append(particle.pos[0])
+            ys.append(particle.pos[1])
+            zs.append(particle.pos[2])
+        betacristabolite.translate((-min(xs), -min(ys), -min(zs)))
+
         self.periodicity = (True, True, False)
         # 1.3200 taken from boundingbox length rounded to 4 decimal places
-        ref_dims = [5.3888, 4.6669, 1.3200]
+        ref_dims = (
+            betacristabolite.get_boundingbox().lengths
+        )  # [5.3888, 4.6669, 1.3200]
         if not dimensions:
             box = mb.Box(ref_dims)
         elif isinstance(dimensions, (list, tuple)) and len(dimensions) == 2:
@@ -69,7 +80,7 @@ class Betacristobalite(mb.Compound):
                         k * ref_dims[2],
                     ]
                 )
-                if all(particle.pos + shift < box.lengths):
+                if all(particle.pos + shift <= box.lengths):
                     temp = mb.clone(particle)
                     temp.translate(shift)
                     silica_list.append(temp)
@@ -78,15 +89,19 @@ class Betacristobalite(mb.Compound):
 
         count = 0
         for particle in list(self.particles()):
-            if particle.name.startswith("O") and particle.pos[2] > 1.0:
+            if particle.name.startswith("O") and particle.pos[2] >= box.Lz:
                 count += 1
                 port = mb.Port(
                     anchor=particle, orientation=[0, 0, 1], separation=0.1
                 )
                 self.add(port, "port_{}".format(count))
                 particle.name = "O"  # Strip numbers required in .mol2 files.
+            elif particle.name.startswith("O"):
+                particle.name = "O"
             elif particle.name.startswith("Si"):
                 particle.name = "Si"
+
+        self.generate_bonds(name_a="Si", name_b="O", dmin=0, dmax=0.236)
 
 
 if __name__ == "__main__":
