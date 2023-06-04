@@ -25,7 +25,7 @@ class Betacristobalite(mb.Compound):
     """
 
     def __init__(self, dimensions=None):
-        super(Betacristobalite, self).__init__(dimensions)
+        super(Betacristobalite, self).__init__()
 
         betacristabolite = mb.load(
             "beta-cristobalite-expanded.mol2",
