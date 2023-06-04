@@ -4,7 +4,6 @@ from copy import deepcopy
 
 from mbuild.compound import Compound, clone
 from mbuild.exceptions import MBuildError
-from mbuild.utils.orderedset import OrderedSet
 
 __all__ = ["coarse_grain"]
 
@@ -95,7 +94,7 @@ class Proxy(Compound):
         if self.children is None:
             newone.children = None
         else:
-            newone.children = OrderedSet()
+            newone.children = list()
         # Parent should be None initially.
         newone.parent = None
         newone.labels = OrderedDict()
@@ -106,7 +105,7 @@ class Proxy(Compound):
         if self.children:
             for child in self.children:
                 newchild = child._clone(clone_of, root_container)
-                newone.children.add(newchild)
+                newone.children.append(newchild)
                 newchild.parent = newone
 
         # Copy labels, except bonds with atoms outside the hierarchy.
