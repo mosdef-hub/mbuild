@@ -15,7 +15,7 @@ __all__ = [
     "Random3DPattern",
     "Grid2DPattern",
     "Grid3DPattern",
-    "Checkered2DPattern",
+    "Triangle2DPattern",
 ]
 
 
