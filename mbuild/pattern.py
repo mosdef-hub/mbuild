@@ -275,8 +275,8 @@ class Grid3DPattern(Pattern):
         super(Grid3DPattern, self).__init__(points=points, **kwargs)
 
 
-class Checkered2DPattern(Pattern):
-    """Generate a 2D grid (n x m) of points along z = 0.
+class Triangle2DPattern(Pattern):
+    """Generate a 2D triangle (n x m) of points along z = 0.
 
     Notes
     -----
@@ -285,16 +285,24 @@ class Checkered2DPattern(Pattern):
     Attributes
     ----------
     n : int
-        Number of grid rows
+        Number of points along x axis
     m : int
-        Number of grid columns
-    shift : str, optional, default="column"
-        Allow user to choose the pattern to be shifted by "column" or "row"
+        Number of points along y axis
+    shift : str, optional, default="n"
+        Allow user to choose the pattern to be shifted by "n" or "m"
+    shift_by : 0 <= float <= 1, optional, default=0.5
+        Normalized distance to be shift the n or m rows, with value between 0 and 1.
+        The value should be the relative distance between two consecutive points defined in shift.
+        shift_by value of 0 will return grid pattern.
     """
 
-    def __init__(self, n, m, shift="column", **kwargs):
+    def __init__(self, n, m, shift="n", shift_by=0.5, **kwargs):
+        assert isinstance(shift_by, (float, int))
+        err_msg = "shift_by value must be between 0 and 1."
+        assert shift_by >= 0 and shift_by <= 1, err_msg
+
         points = np.zeros(shape=(n * m, 3), dtype=float)
-        if shift == "row":
+        if shift == "m":
             for i, j in product(range(n), range(m)):
                 if i % 2 == 0:
                     points[i * m + j, 0] = i / n
@@ -302,7 +310,8 @@ class Checkered2DPattern(Pattern):
                 else:
                     points[i * m + j, 0] = i / n
                     points[i * m + j, 1] = j / m + (1 / (2 * m))
-        elif shift == "column":
+
+        elif shift == "n":
             for i, j in product(range(n), range(m)):
                 if j % 2 == 0:
                     points[i * m + j, 0] = i / n
@@ -314,7 +323,12 @@ class Checkered2DPattern(Pattern):
             raise ValueError(
                 f"shift can only take value of 'column' or 'row', given {shift}"
             )
-        super(Checkered2DPattern, self).__init__(points=points, **kwargs)
+
+        for i in range(len(points)):
+            if points[i][0] > 1:
+                points[i][0] -= 1
+
+        super(Triangle2DPattern, self).__init__(points=points, **kwargs)
 
 
 class SpherePattern(Pattern):
