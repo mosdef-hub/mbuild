@@ -60,7 +60,7 @@ class TestPattern(BaseTest):
         pattern = mb.Triangle2DPattern(10, 5)
         assert len(pattern) == 50
 
-        pattern = mb.Triangle2DPattern(5, 5, "n")
+        pattern = mb.Triangle2DPattern(5, 5, "m")
         assert len(pattern) == 25
 
         with pytest.raises(ValueError):

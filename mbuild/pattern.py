@@ -296,7 +296,7 @@ class Triangle2DPattern(Pattern):
         shift_by value of 0 will return grid pattern.
     """
 
-    def __init__(self, n, m, shift="m", shift_by=0.5, **kwargs):
+    def __init__(self, n, m, shift="n", shift_by=0.5, **kwargs):
         assert isinstance(shift_by, (float, int))
         err_msg = "shift_by value must be between 0 and 1."
         assert shift_by >= 0 and shift_by <= 1, err_msg
