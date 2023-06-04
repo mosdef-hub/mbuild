@@ -60,7 +60,7 @@ class TestPattern(BaseTest):
         pattern = mb.Checkered2DPattern(10, 5)
         assert len(pattern) == 50
 
-        pattern = mb.Checkered2DPattern(5, 5, "row")
+        pattern = mb.Checkered2DPattern(5, 5, "n")
         assert len(pattern) == 25
 
         with pytest.raises(ValueError):
