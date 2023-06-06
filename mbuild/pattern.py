@@ -15,6 +15,7 @@ __all__ = [
     "Random3DPattern",
     "Grid2DPattern",
     "Grid3DPattern",
+    "Triangle2DPattern",
 ]
 
 
@@ -272,6 +273,70 @@ class Grid3DPattern(Pattern):
             points[i * m * l + j * l + k, 1] = j / m
             points[i * m * l + j * l + k, 2] = k / l
         super(Grid3DPattern, self).__init__(points=points, **kwargs)
+
+
+class Triangle2DPattern(Pattern):
+    """Generate a 2D triangle (n x m) of points along z = 0.
+
+    Generate a square grid of dimensions n by m, then shifts points accordingly to generate
+    a triangular arrangement. shift='n' means shifting occurs in the x direction, where the
+    code shift every other row in the range specified by 'm', and vice versa for shift='m'.
+    By default, shifting will be half the distance betwen neighboring points in the direction
+    of shifting.
+
+    Notes
+    -----
+    Points span [0,1) along x and y axes. This code will allow patterns to be generated that
+    are only periodic in one direction. To generate a periodic pattern, 'm' should be even
+    when shift='n' and vice versa.
+
+    Attributes
+    ----------
+    n : int
+        Number of points along x axis
+    m : int
+        Number of points along y axis
+    shift : str, optional, default="n"
+        Allow user to choose the pattern to be shifted by "n" or "m"
+    shift_by : 0 <= float <= 1, optional, default=0.5
+        Normalized distance to be shift the n or m rows, with value between 0 and 1.
+        The value should be the relative distance between two consecutive points defined in shift.
+        shift_by value of 0 will return grid pattern.
+    """
+
+    def __init__(self, n, m, shift="n", shift_by=0.5, **kwargs):
+        assert isinstance(shift_by, (float, int))
+        err_msg = "shift_by value must be between 0 and 1."
+        assert shift_by >= 0 and shift_by <= 1, err_msg
+
+        points = np.zeros(shape=(n * m, 3), dtype=float)
+        if shift == "m":
+            for i, j in product(range(n), range(m)):
+                if i % 2 == 0:
+                    points[i * m + j, 0] = i / n
+                    points[i * m + j, 1] = j / m
+                else:
+                    points[i * m + j, 0] = i / n
+                    points[i * m + j, 1] = j / m + (1 / (2 * m))
+
+        elif shift == "n":
+            for i, j in product(range(n), range(m)):
+                if j % 2 == 0:
+                    points[i * m + j, 0] = i / n
+                    points[i * m + j, 1] = j / m
+                else:
+                    points[i * m + j, 0] = i / n + (1 / (2 * n))
+                    points[i * m + j, 1] = j / m
+        else:
+            raise ValueError(
+                f"shift can only take value of 'column' or 'row', given {shift}"
+            )
+
+        for i in range(len(points)):
+            if points[i][0] > 1:
+                points[i][0] -= 1
+
+        super(Triangle2DPattern, self).__init__(points=points, **kwargs)
 
 
 class SpherePattern(Pattern):
