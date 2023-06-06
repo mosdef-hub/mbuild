@@ -278,9 +278,17 @@ class Grid3DPattern(Pattern):
 class Triangle2DPattern(Pattern):
     """Generate a 2D triangle (n x m) of points along z = 0.
 
+    Generate a square grid of dimensions n by m, then shifts points accordingly to generate
+    a triangular arrangement. shift='n' means shifting occurs in the x direction, where the
+    code shift every other row in the range specified by 'm', and vice versa for shift='m'.
+    By default, shifting will be half the distance betwen neighboring points in the direction
+    of shifting.
+
     Notes
     -----
-    Points span [0,1) along x and y axes
+    Points span [0,1) along x and y axes. This code will allow patterns to be generated that
+    are only periodic in one direction. To generate a periodic pattern, 'm' should be even
+    when shift='n' and vice versa.
 
     Attributes
     ----------
