@@ -55,6 +55,7 @@ MOCK_MODULES = [
     "gsd.fl",
     "freud",
     "freud.box",
+    "treelib",
 ]
 for mod_name in MOCK_MODULES:
     sys.modules[mod_name] = mock.Mock()
@@ -133,10 +134,10 @@ numpydoc_show_inherited_class_members = False
 _python_doc_base = "https://docs.python.org/3.9"
 
 intersphinx_mapping = {
-    _python_doc_base: None,
-    "https://numpy.org/doc/stable": None,
-    "https://docs.scipy.org/doc/scipy/reference": None,
-    "https://scikit-learn.org/stable": None,
+    "python": ("https://docs.python.org/3.9", None),
+    "numpy": ("https://numpy.org/doc/stable", None),
+    "scipy": ("https://docs.scipy.org/doc/scipy/reference", None),
+    "scikit-learn": ("https://scikit-learn.org/stable", None),
 }
 
 # Add any paths that contain templates here, relative to this directory.

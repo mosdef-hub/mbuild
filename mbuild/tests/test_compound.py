@@ -433,17 +433,24 @@ class TestCompound(BaseTest):
         assert struct.residues[0].number == 1
         assert struct.residues[1].number == 2
 
-    def test_save_residue_map(self, methane):
-        filled = mb.fill_box(methane, n_compounds=20, box=[0, 0, 0, 4, 4, 4])
+    def test_save_residue_map(self, ethane):
+        filled = mb.fill_box(ethane, n_compounds=100, box=[0, 0, 0, 4, 4, 4])
         t0 = time.time()
-        filled.save("filled.mol2", forcefield_name="oplsaa", residues="Methane")
+        foyer_kwargs = {"use_residue_map": True}
+        filled.save(
+            "filled.mol2",
+            forcefield_name="oplsaa",
+            residues="Ethane",
+            foyer_kwargs=foyer_kwargs,
+        )
         t1 = time.time()
+
         foyer_kwargs = {"use_residue_map": False}
         filled.save(
             "filled.mol2",
             forcefield_name="oplsaa",
             overwrite=True,
-            residues="Methane",
+            residues="Ethane",
             foyer_kwargs=foyer_kwargs,
         )
         t2 = time.time()
@@ -988,6 +995,28 @@ class TestCompound(BaseTest):
         assert (
             condensed_hierarchy.to_json(with_data=False)
             == '{"Compound, 18 particles, 14 bonds, 4 children": {"children": ["[C x 2], 1 particles, 0 bonds, 0 children", {"[Ethane x 2], 8 particles, 7 bonds, 2 children": {"children": [{"[CH3 x 2], 4 particles, 3 bonds, 4 children": {"children": ["[C x 1], 1 particles, 4 bonds, 0 children", "[H x 3], 1 particles, 1 bonds, 0 children"]}}]}}]}}'
+        )
+
+    def test_condense_tip4p(self):
+        # tip4p has a virtual site that doesn't have an explicit bond with other particles
+        # this test is to ensure that this site doesn't get added twice when condense is called
+        import mbuild.lib.molecules.water as water_models
+
+        water = water_models.WaterTIP4P()
+        water_list = []
+        waters = mb.Compound()
+        system = mb.Compound()
+        for i in range(0, 3):
+            water_list.append(mb.clone(water))
+
+        waters.add(water_list)
+        system.add(waters)
+
+        condensed = waters.condense(inplace=False)
+
+        assert (
+            condensed.print_hierarchy().to_json(with_data=False)
+            == '{"Compound, 12 particles, 6 bonds, 3 children": {"children": [{"[WaterTIP4P x 3], 4 particles, 2 bonds, 4 children": {"children": ["[HW1 x 1], 1 particles, 1 bonds, 0 children", "[HW2 x 1], 1 particles, 1 bonds, 0 children", "[MW x 1], 1 particles, 0 bonds, 0 children", "[OW x 1], 1 particles, 2 bonds, 0 children"]}}]}}'
         )
 
     def test_flatten_eth(self, ethane):

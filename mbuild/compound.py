@@ -28,7 +28,6 @@ from mbuild.utils.decorators import experimental_feature
 from mbuild.utils.exceptions import RemovedFuncError
 from mbuild.utils.io import import_, run_from_ipython
 from mbuild.utils.jsutils import overwrite_nglview_default
-from mbuild.utils.orderedset import OrderedSet
 
 
 def clone(existing_compound, clone_of=None, root_container=None):
@@ -117,7 +116,7 @@ class Compound(object):
     ----------
     bond_graph : mb.BondGraph
         Graph-like object that stores bond information for this Compound
-    children : OrderedSet
+    children : list
         Contains all children (other Compounds).
     labels : OrderedDict
         Labels to Compound/Atom mappings. These do not necessarily need not be
@@ -174,7 +173,7 @@ class Compound(object):
             self._pos = np.zeros(3)
 
         self.parent = None
-        self.children = OrderedSet()
+        self.children = list()
         self.labels = OrderedDict()
         self.referrers = set()
 
@@ -920,7 +919,7 @@ class Compound(object):
 
         # Create children and labels on the first add operation
         if self.children is None:
-            self.children = OrderedSet()
+            self.children = list()
         if self.labels is None:
             self.labels = OrderedDict()
 
@@ -931,7 +930,7 @@ class Compound(object):
                         new_child, new_child.parent
                     )
                 )
-            self.children.add(new_child)
+            self.children.append(new_child)
             new_child.parent = self
 
             if new_child.bond_graph is not None and not isinstance(self, Port):
@@ -1982,11 +1981,13 @@ class Compound(object):
         """
         # temporary list of components
         comp_list = []
+        comp_list_id = []
         connected_subgraph = self.root.bond_graph.connected_components()
-
+        unbound_particles = []
         for molecule in connected_subgraph:
             if len(molecule) == 1:
                 ancestors = [molecule[0]]
+                unbound_particles.append(molecule[0])
             else:
                 ancestors = IndexedSet(molecule[0].ancestors())
                 for particle in molecule[1:]:
@@ -2000,9 +2001,22 @@ class Compound(object):
                         IndexedSet(particle.ancestors())
                     )
 
-            """Parse molecule information"""
-            molecule_tag = ancestors[0]
-            comp_list.append(clone(molecule_tag))
+                """Parse molecule information"""
+                molecule_tag = ancestors[0]
+                comp_list.append(clone(molecule_tag))
+                # generate a list of particle ids within the compound
+                # this will also include any particles that are part of the
+                # Compound but are not bonded
+
+                pids = [id(p) for p in molecule_tag.particles()]
+                comp_list_id += pids
+        # loop over particles without bonds
+        # if any of the particles exist in a compound
+        # don't add them, as they already exist
+        for ubp in unbound_particles:
+            if id(ubp) not in comp_list_id:
+                comp_list.append(clone(ubp))
+
         if inplace:
             for child in [self.children]:
                 # Need to handle the case when child is a port
@@ -3485,7 +3499,7 @@ class Compound(object):
         if self.children is None:
             newone.children = None
         else:
-            newone.children = OrderedSet()
+            newone.children = list()
         # Parent should be None initially.
         newone.parent = None
         newone.labels = OrderedDict()
@@ -3496,7 +3510,7 @@ class Compound(object):
         if self.children:
             for child in self.children:
                 newchild = child._clone(clone_of, root_container)
-                newone.children.add(newchild)
+                newone.children.append(newchild)
                 newchild.parent = newone
 
         # Copy labels, except bonds with atoms outside the hierarchy.

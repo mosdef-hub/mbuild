@@ -56,6 +56,16 @@ class TestPattern(BaseTest):
         pattern = mb.Grid3DPattern(10, 5, 2)
         assert len(pattern) == 100
 
+    def test_triangle_2d(self):
+        pattern = mb.Triangle2DPattern(10, 5)
+        assert len(pattern) == 50
+
+        pattern = mb.Triangle2DPattern(5, 5, "m")
+        assert len(pattern) == 25
+
+        with pytest.raises(ValueError):
+            pattern = mb.Triangle2DPattern(5, 5, "bogus")
+
     def test_sphere(self):
         pattern = mb.SpherePattern(100)
         assert len(pattern) == 100
