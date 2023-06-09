@@ -1376,9 +1376,9 @@ class Compound(object):
         # they represent different actually particles.  Thus, toget the right behavior we
         # must not exclude particles with the same index, and thus exclude_ii = False.
         if name_a == name_b:
-            exclude_ii=True
+            exclude_ii = True
         else:
-            exclude_ii=False
+            exclude_ii = False
         aq = freud.locality.AABBQuery(freud_box, moved_positions[b_indices])
 
         nlist = aq.query(
