@@ -1306,7 +1306,6 @@ class Compound(object):
         name_b,
         dmin,
         dmax,
-        exclude_ii=True,
     ):
         """Add Bonds between all pairs of types a/b within [dmin, dmax].
 
@@ -1320,8 +1319,6 @@ class Compound(object):
             The minimum distance (in nm) between Particles for considering a bond
         dmax : float
             The maximum distance (in nm) between Particles for considering a bond
-        exclude_ii : bool, optional, default=True
-            Whether or not to include neighbors with the same index.
 
         Notes
         -----
@@ -1367,7 +1364,21 @@ class Compound(object):
                 a_indices.append(i)
             if part.name == name_b:
                 b_indices.append(i)
-
+        # If we are looking to create bonds between the same species
+        # then the indices added to a_indices and b_indices will be identical.
+        # In this case we need to make sure that we don't try to bond a particle
+        # to itself  (i.e., excluded_ii = True).
+        # If we are looking for bonds between two different species,
+        # the indices we find for a and b will be distinct, with no overlap.
+        # However, the way the code is structured, we don't actually pass
+        # freud the indices, but rather a list of particle positions associated with each set of indices.
+        # As such, the indices that freud sees will be (0, len(a_indices)) and (0, len(b_indices)), even though
+        # they represent different actually particles.  Thus, toget the right behavior we
+        # must not exclude particles with the same index, and thus exclude_ii = False.
+        if name_a == name_b:
+            exclude_ii=True
+        else:
+            exclude_ii=False
         aq = freud.locality.AABBQuery(freud_box, moved_positions[b_indices])
 
         nlist = aq.query(
