@@ -404,7 +404,13 @@ def _init_hoomd_dihedrals(structure, ref_energy=1.0):
 
     # Set the hoomd parameters
     # These are periodic torsions
-    periodic_torsion = hoomd.md.dihedral.Harmonic()
+    hoomd_version = _get_hoomd_version()
+    if (
+        hoomd_version.major == 3 and hoomd_version.minor >= 7
+    ) or hoomd_version.major == 4:
+        periodic_torsion = hoomd.md.dihedral.Periodic()
+    else:
+        periodic_torsion = hoomd.md.dihedral.Harmonic()
     for name, dihedral_type in dihedral_type_params.items():
         periodic_torsion.params[name] = dict(
             k=2 * dihedral_type.phi_k / ref_energy,
