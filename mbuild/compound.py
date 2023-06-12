@@ -1373,7 +1373,7 @@ class Compound(object):
         # However, the way the code is structured, we don't actually pass
         # freud the indices, but rather a list of particle positions associated with each set of indices.
         # As such, the indices that freud sees will be (0, len(a_indices)) and (0, len(b_indices)), even though
-        # they represent different actually particles.  Thus, toget the right behavior we
+        # they represent different actually particles. Thus, to get the right behavior we
         # must not exclude particles with the same index, and thus exclude_ii = False.
         if name_a == name_b:
             exclude_ii = True
