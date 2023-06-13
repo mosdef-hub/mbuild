@@ -720,32 +720,48 @@ class TestCompound(BaseTest):
         ch3_clone = mb.clone(ch3)
         ch3_clone.box = mb.Box(lengths=[max(bounding_box.lengths) + 1] * 3)
         ch3_clone.periodicity = (True, True, True)
-        ch3_clone.freud_generate_bonds(
-            "H", "H", dmin=0.01, dmax=0.2, exclude_ii=True
-        )
+        ch3_clone.freud_generate_bonds("H", "H", dmin=0.01, dmax=0.2)
         assert ch3_clone.n_bonds == 3 + 3
 
         ch3_clone2 = mb.clone(ch3)
         ch3_clone2.box = mb.Box(lengths=[max(bounding_box.lengths) + 1] * 3)
         ch3_clone2.periodicity = (True, True, False)
-        ch3_clone2.freud_generate_bonds(
-            "H", "H", dmin=0.01, dmax=0.2, exclude_ii=True
-        )
+        ch3_clone2.freud_generate_bonds("H", "H", dmin=0.01, dmax=0.2)
         assert ch3_clone2.n_bonds == 3 + 3
 
     @pytest.mark.skipif(not has_freud, reason="Freud not installed.")
     def test_freud_generate_bonds(self, ch3):
         bounding_box = ch3.get_boundingbox()
         ch3.box = mb.Box(lengths=[max(bounding_box.lengths) + 1] * 3)
-        ch3.freud_generate_bonds("H", "H", dmin=0.01, dmax=0.2, exclude_ii=True)
+        ch3.freud_generate_bonds("H", "H", dmin=0.01, dmax=0.2)
         assert ch3.n_bonds == 3 + 3
 
     @pytest.mark.skipif(not has_freud, reason="Freud not installed.")
     def test_freud_generate_bonds_expected(self, ch3):
         bounding_box = ch3.get_boundingbox()
         ch3.box = mb.Box(lengths=[max(bounding_box.lengths) + 1] * 3)
-        ch3.freud_generate_bonds("H", "H", dmin=0.01, dmax=0.1, exclude_ii=True)
+        ch3.freud_generate_bonds("H", "H", dmin=0.01, dmax=0.1)
         assert ch3.n_bonds == 3
+
+    @pytest.mark.skipif(not has_freud, reason="Freud not installed.")
+    def test_freud_generate_bonds_mixed(self):
+        carbon_atom = mb.Compound(name="C", element="C")
+
+        grid_pattern = mb.Grid3DPattern(2, 2, 2)
+
+        grid_pattern.scale([0.25, 0.25, 0.25])
+        carbon_list = grid_pattern.apply(carbon_atom)
+        co_system = mb.Compound(carbon_list)
+        co_system.box = mb.Box([1, 1, 1])
+        for i, child in enumerate(co_system.children):
+            if i % 2 == 0:
+                child.name = "O"
+                child.element = "O"
+
+        co_system.freud_generate_bonds(
+            name_a="C", name_b="O", dmin=0.0, dmax=0.16
+        )
+        assert co_system.n_bonds == 4
 
     def test_remove_from_box(self, ethane):
         n_ethanes = 5
