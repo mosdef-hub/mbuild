@@ -1,12 +1,11 @@
-ARG PY_VERSION=3.8
-FROM continuumio/miniconda3:4.10.3-alpine AS builder
+FROM mambaorg/micromamba:1.4.3
 
 EXPOSE 8888
 
 LABEL maintainer.name="mosdef-hub"\
   maintainer.url="https://mosdef.org"
 
-ENV PATH /opt/conda/bin:$PATH
+ENV PATH /opt/micromamba/bin:$PATH
 
 USER root
 
@@ -14,34 +13,17 @@ ADD . /mbuild
 
 WORKDIR /mbuild
 
-# Create a group and user
-RUN addgroup -S anaconda && adduser -S anaconda -G anaconda
+RUN apt-get update && apt-get install -y git
 
-RUN conda update conda -yq && \
-  conda config --set always_yes yes --set changeps1 no && \
-  . /opt/conda/etc/profile.d/conda.sh && \
-  sed -i -E "s/python.*$/python="$(PY_VERSION)"/" environment-dev.yml && \
-  conda install -c conda-forge mamba && \
-  mamba env create nomkl --file environment-dev.yml && \
-  conda activate mbuild-dev && \
-  mamba install -c conda-forge nomkl jupyter python="$PY_VERSION" && \
-  python setup.py install && \
-  echo "source activate mbuild-dev" >> \
-  /home/anaconda/.profile && \
-  conda clean -afy && \
-  mkdir -p /home/anaconda/data && \
-  chown -R anaconda:anaconda /mbuild && \
-  chown -R anaconda:anaconda /opt && \
-  chown -R anaconda:anaconda /home/anaconda
+RUN micromamba create --file environment-dev.yml
+ARG MAMBA_DOCKERFILE_ACTIVATE=1  # (otherwise python will not be found)
 
+RUN  micromamba install -c conda-forge nomkl jupyter python="3.10"
+RUN  python setup.py install
+RUN  echo "source activate gmso-dev" >> /home/.bashrc
+RUN  micromamba clean -afy
+RUN  mkdir -p /home/data
 
-WORKDIR /home/anaconda
-
-COPY devtools/docker-entrypoint.sh /entrypoint.sh
-
-RUN chmod a+x /entrypoint.sh
-
-USER anaconda
 
 ENTRYPOINT ["/entrypoint.sh"]
 CMD ["jupyter"]
