@@ -101,7 +101,7 @@ class Betacristobalite(mb.Compound):
             elif particle.name.startswith("Si"):
                 particle.name = "Si"
 
-        self.generate_bonds(name_a="Si", name_b="O", dmin=0, dmax=0.236)
+        self.freud_generate_bonds(name_a="Si", name_b="O", dmin=0, dmax=0.236)
 
 
 if __name__ == "__main__":
