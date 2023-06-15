@@ -121,12 +121,12 @@ jobs:
 
       - name: Get Tagged Version
         run: |
-          echo "DOCKER_TAGS=mosdef/mbuild:${GITHUB_REF_NAME}, mosdef/mbuild:stable" >> $GITHUB_ENV
+          echo "DOCKER_TAGS=mosdef-mbuild:${CI_COMMIT_REF_SLUG}, mosdef-mbuild:stable" >> $GITHUB_ENV
         if: github.ref_type == 'tag'
 
       - name: Get Push Version
         run: |
-          echo "DOCKER_TAGS=mosdef/mbuild:${GITHUB_REF_NAME}, mosdef/mbuild:latest" >> $GITHUB_ENV
+          echo "DOCKER_TAGS=mosdef-mbuild:${CI_COMMIT_REF_SLUG}, mosdef-mbuild:latest" >> $GITHUB_ENV
         if: github.ref_type == 'branch'
 
       - name: Docker Image Info
