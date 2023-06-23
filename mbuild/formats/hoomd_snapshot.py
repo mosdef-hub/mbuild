@@ -301,7 +301,7 @@ def to_hoomdsnapshot(
 
             # save the box for later use when wrapping coordinates
             box = hoomd_snapshot.box
-        elif hoomd_version.major == 3:
+        elif hoomd_version.major == 3 or hoomd_version.major == 4:
             hoomd_snapshot.configuration.box = [lx, ly, lz, xy, xz, yz]
         else:
             raise RuntimeError("Unsupported HOOMD version:", str(hoomd_version))
@@ -355,7 +355,7 @@ def to_hoomdsnapshot(
                 pair_types=pair_types,
             )
             box = hoomd.data.boxdim(Lx=lx, Ly=ly, Lz=lz, xy=xy, xz=xz, yz=yz)
-        elif hoomd_version.major == 3:
+        elif hoomd_version.major == 3 or hoomd_version.major == 4:
             hoomd_snapshot = hoomd.Snapshot()
             hoomd_snapshot.configuration.box = [lx, ly, lz, xy, xz, yz]
             hoomd_snapshot.particles.types = unique_types
@@ -377,7 +377,7 @@ def to_hoomdsnapshot(
     def set_size(obj, n):
         if hoomd_version.major == 2:
             obj.resize(n)
-        elif hoomd_version.major == 3:
+        elif hoomd_version.major == 3 or hoomd_version.major == 4:
             obj.N = n
         else:
             raise RuntimeError("Unsupported HOOMD version:", str(hoomd_version))
@@ -390,7 +390,7 @@ def to_hoomdsnapshot(
     hoomd_snapshot.particles.body[n_init:] = rigid_bodies
 
     # wrap the particles into the box using the v3 API
-    if hoomd_version.major == 3:
+    if hoomd_version.major == 3 or hoomd_version.major == 4:
         hoomd_snapshot.wrap()
 
     if n_bonds > 0:
