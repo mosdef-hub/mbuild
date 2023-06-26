@@ -14,7 +14,7 @@ dependencies:
   - mdtraj
   - networkx
   - nglview>=2.7
-  - numpy
+  - numpy=1.24.2
   - openbabel>=3.0.0
   - packmol=1!18.013
   - parmed>=3.4.3
