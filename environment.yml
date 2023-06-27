@@ -3,7 +3,7 @@ channels:
   - conda-forge
 dependencies:
   - ele
-  - numpy
+  - numpy=1.24.2
   - packmol>=18
   - gmso>=0.9.0
   - parmed>=3.4.3
