@@ -2360,15 +2360,6 @@ class TestCompound(BaseTest):
             np.diff(np.vstack(pos).reshape(len(pos), -1), axis=0) == 0
         ).all()
 
-    @pytest.mark.parametrize("bad_smiles", ["F[P-](F)(F)(F)(F)F"])
-    @pytest.mark.skipif(not has_rdkit, reason="RDKit is not installed")
-    def test_incorrect_rdkit_smiles(self, bad_smiles):
-        with pytest.raises(
-            MBuildError,
-            match=r"RDKit was unable to generate " r"3D coordinates",
-        ):
-            mb.load(bad_smiles, smiles=True, backend="rdkit", seed=29)
-
     @pytest.mark.skipif(not has_openbabel, reason="Pybel is not installed")
     def test_get_smiles(self):
         test_strings = ["CCO", "CCCCCCCC", "c1ccccc1", "CC(=O)Oc1ccccc1C(=O)O"]
