@@ -60,7 +60,7 @@ def write_gsd(
     if shift_coords:
         xyz = coord_shift(xyz, structure.box[:3])
 
-    gsd_snapshot = gsd.hoomd.Snapshot()
+    gsd_snapshot = gsd.hoomd.Frame()
 
     gsd_snapshot.configuration.step = 0
     gsd_snapshot.configuration.dimensions = 3
@@ -101,7 +101,7 @@ def write_gsd(
     if structure.rb_torsions:
         _write_dihedral_information(gsd_snapshot, structure)
 
-    with gsd.hoomd.open(filename, mode="wb") as gsd_file:
+    with gsd.hoomd.open(filename, mode="w") as gsd_file:
         gsd_file.append(gsd_snapshot)
 
 
