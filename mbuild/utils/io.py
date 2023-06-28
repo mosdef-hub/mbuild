@@ -19,13 +19,14 @@ following license.
 ##############################################################################
 """
 import importlib
-import importlib.resources as resources
 import inspect
 import os
 import sys
 import textwrap
 import warnings
 from unittest import SkipTest
+
+import importlib_resources as resources
 
 
 class DelayImportError(ImportError, SkipTest):
