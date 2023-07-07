@@ -29,3 +29,4 @@ dependencies:
   - rdkit>=2021
   - scipy
   - treelib
+  - importlib_resources
