@@ -1459,7 +1459,7 @@ class TestCompound(BaseTest):
 
         # test multiple cg molecules
         system = mb.Compound([mb.clone(cg), mb.clone(cg)])
-        struct = system.to_parmed()
+        struct = system.to_parmed(infer_residues=True)
         assert len(struct.residues) == 2
 
         # test hierarchical cg molecules to depth 1
@@ -1543,7 +1543,6 @@ class TestCompound(BaseTest):
                 "include_base_level": True,
             },
         )
-        print(struct.residues)
         # two_bonded beads should generate 8 residues (gets down to particle level) (16 total)
         # benzene gets down to particle levels (24 total)
         # hexane is goes from polymer down to monomer level. Made from two propyl groups which gives two monomers (4 total)
