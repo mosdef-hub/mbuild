@@ -1373,6 +1373,7 @@ class TestCompound(BaseTest):
         system = Compound([h2o, mb.clone(h2o), ethane])
         struct = system.to_parmed(
             residues=["Ethane", "H2O"],
+            infer_residues=True,
         )
         assert len(struct.residues) == 3
         assert struct.residues[0].name == "H2O"
@@ -1382,7 +1383,7 @@ class TestCompound(BaseTest):
             struct.atoms
         )
 
-        struct = system.to_parmed(residues="Ethane")
+        struct = system.to_parmed(residues="Ethane", infer_residues=True)
         assert len(struct.residues) == 2
         assert struct.residues[0].name == "RES"
         assert struct.residues[1].name == "Ethane"
