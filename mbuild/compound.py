@@ -3234,7 +3234,7 @@ class Compound(object):
         title="",
         residues=None,
         show_ports=False,
-        infer_residues=True,
+        infer_residues=False,
         infer_residues_kwargs={},
     ):
         """Create a ParmEd Structure from a Compound.
