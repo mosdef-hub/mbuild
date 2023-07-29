@@ -1246,7 +1246,7 @@ class Compound(object):
             )
         return sum(1 for _ in self.bonds())
 
-    def add_bond(self, particle_pair):
+    def add_bond(self, particle_pair, bond_order=None):
         """Add a bond between two Particles.
 
         Parameters
@@ -1256,8 +1256,9 @@ class Compound(object):
         """
         if self.root.bond_graph is None:
             self.root.bond_graph = BondGraph()
-
-        self.root.bond_graph.add_edge(particle_pair[0], particle_pair[1])
+        if bond_order is None:
+            bond_order = 'default'
+        self.root.bond_graph.add_edge(particle_pair[0], particle_pair[1], bo=bond_order)
 
     def generate_bonds(self, name_a, name_b, dmin, dmax):
         """Add Bonds between all pairs of types a/b within [dmin, dmax].
@@ -3226,7 +3227,38 @@ class Compound(object):
             coords_only=coords_only,
             infer_hierarchy=infer_hierarchy,
         )
+        
+    def to_rdkit(self):
+        rdkit = import_("rdkit")
+        from rdkit import Chem
+        from rdkit.Chem import AllChem
+        
+        temp_mol = Chem.RWMol()
+        p_dict = {particle: i for i, particle in enumerate(self.particles())}
 
+        bo_dict={
+            1.0: Chem.BondType.SINGLE,
+            2.0: Chem.BondType.DOUBLE,
+            3.0: Chem.BondType.TRIPLE,
+            1.5: Chem.BondType.AROMATIC,
+            0.0: Chem.BondType.UNSPECIFIED,
+            'default': Chem.BondType.SINGLE}
+
+    
+    
+        for particle in self.particles():
+            temp_atom = Chem.Atom(particle.element.atomic_number)
+            temp_atom.SetAtomMapNum(p_dict[particle])
+            temp_mol.AddAtom(temp_atom)
+            
+        for bond in self.bond_graph.edges(data=True):
+            bond_indices = (p_dict[bond[0]], p_dict[bond[1]])
+            temp_mol.AddBond(*bond_indices)
+            rdkit_bond = temp_mol.GetBondBetweenAtoms(*bond_indices)
+            rdkit_bond.SetBondType(bo_dict[bond[2]['bo']])
+        
+        return temp_mol
+        
     def to_parmed(
         self,
         box=None,
