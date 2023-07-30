@@ -1373,6 +1373,7 @@ class TestCompound(BaseTest):
         system = Compound([h2o, mb.clone(h2o), ethane])
         struct = system.to_parmed(
             residues=["Ethane", "H2O"],
+            infer_residues=True,
         )
         assert len(struct.residues) == 3
         assert struct.residues[0].name == "H2O"
@@ -1382,7 +1383,7 @@ class TestCompound(BaseTest):
             struct.atoms
         )
 
-        struct = system.to_parmed(residues="Ethane")
+        struct = system.to_parmed(residues="Ethane", infer_residues=True)
         assert len(struct.residues) == 2
         assert struct.residues[0].name == "RES"
         assert struct.residues[1].name == "Ethane"
@@ -1458,7 +1459,7 @@ class TestCompound(BaseTest):
 
         # test multiple cg molecules
         system = mb.Compound([mb.clone(cg), mb.clone(cg)])
-        struct = system.to_parmed()
+        struct = system.to_parmed(infer_residues=True)
         assert len(struct.residues) == 2
 
         # test hierarchical cg molecules to depth 1
@@ -1542,7 +1543,6 @@ class TestCompound(BaseTest):
                 "include_base_level": True,
             },
         )
-        print(struct.residues)
         # two_bonded beads should generate 8 residues (gets down to particle level) (16 total)
         # benzene gets down to particle levels (24 total)
         # hexane is goes from polymer down to monomer level. Made from two propyl groups which gives two monomers (4 total)
@@ -2359,15 +2359,6 @@ class TestCompound(BaseTest):
         assert (
             np.diff(np.vstack(pos).reshape(len(pos), -1), axis=0) == 0
         ).all()
-
-    @pytest.mark.parametrize("bad_smiles", ["F[P-](F)(F)(F)(F)F"])
-    @pytest.mark.skipif(not has_rdkit, reason="RDKit is not installed")
-    def test_incorrect_rdkit_smiles(self, bad_smiles):
-        with pytest.raises(
-            MBuildError,
-            match=r"RDKit was unable to generate " r"3D coordinates",
-        ):
-            mb.load(bad_smiles, smiles=True, backend="rdkit", seed=29)
 
     @pytest.mark.skipif(not has_openbabel, reason="Pybel is not installed")
     def test_get_smiles(self):

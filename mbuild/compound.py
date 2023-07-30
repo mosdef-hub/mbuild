@@ -1902,6 +1902,7 @@ class Compound(object):
             os.path.join(tmp_dir, "tmp.mol2"),
             show_ports=show_ports,
             overwrite=True,
+            parmed_kwargs={"infer_residues": False},
         )
 
         view = py3Dmol.view()
@@ -3265,7 +3266,7 @@ class Compound(object):
         title="",
         residues=None,
         show_ports=False,
-        infer_residues=True,
+        infer_residues=False,
         infer_residues_kwargs={},
     ):
         """Create a ParmEd Structure from a Compound.

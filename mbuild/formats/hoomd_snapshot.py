@@ -27,11 +27,11 @@ def _get_hoomd_version():
 def from_snapshot(snapshot, scale=1.0):
     """Convert a Snapshot to a Compound.
 
-    Snapshot can be a hoomd.Snapshot or a gsd.hoomd.Snapshot.
+    Snapshot can be a hoomd.Snapshot or a gsd.hoomd.Frame.
 
     Parameters
     ----------
-    snapshot : hoomd.Snapshot or gsd.hoomd.Snapshot
+    snapshot : hoomd.Snapshot or gsd.hoomd.Frame
         Snapshot from which to build the mbuild Compound.
     scale : float, optional, default 1.0
         Value by which to scale the length values

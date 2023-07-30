@@ -43,7 +43,7 @@ class TestGSD(BaseTest):
         from mbuild.utils.sorting import natural_sort
 
         ethane.save(filename="ethane.gsd", forcefield_name="oplsaa")
-        with gsd.hoomd.open("ethane.gsd", mode="rb") as f:
+        with gsd.hoomd.open("ethane.gsd", mode="r") as f:
             frame = f[0]
 
         assert frame.configuration.step == 0
@@ -88,7 +88,7 @@ class TestGSD(BaseTest):
         ethane.box = Box(lengths=[2.0, 3.0, 4.0])
 
         ethane.save(filename="ethane.gsd", forcefield_name="oplsaa")
-        with gsd.hoomd.open("ethane.gsd", mode="rb") as f:
+        with gsd.hoomd.open("ethane.gsd", mode="r") as f:
             frame = f[0]
 
         box_from_gsd = frame.configuration.box.astype(float)
@@ -101,7 +101,7 @@ class TestGSD(BaseTest):
 
         ethane.periodicity = (True, True, True)
         ethane.save(filename="ethane-periodicity.gsd", forcefield_name="oplsaa")
-        with gsd.hoomd.open("ethane-periodicity.gsd", mode="rb") as f:
+        with gsd.hoomd.open("ethane-periodicity.gsd", mode="r") as f:
             frame = f[0]
         box_from_gsd_periodic = frame.configuration.box.astype(float)
         assert np.array_equal(box_from_gsd, box_from_gsd_periodic)
@@ -111,7 +111,7 @@ class TestGSD(BaseTest):
         ethane.save(
             filename="triclinic-box.gsd", forcefield_name="oplsaa", box=box
         )
-        with gsd.hoomd.open("triclinic-box.gsd", mode="rb") as f:
+        with gsd.hoomd.open("triclinic-box.gsd", mode="r") as f:
             frame = f[0]
         lx, ly, lz, xy, xz, yz = frame.configuration.box
 
@@ -131,7 +131,7 @@ class TestGSD(BaseTest):
 
         benzene.label_rigid_bodies(rigid_particles="C")
         benzene.save(filename="benzene.gsd", forcefield_name="oplsaa")
-        with gsd.hoomd.open("benzene.gsd", mode="rb") as f:
+        with gsd.hoomd.open("benzene.gsd", mode="r") as f:
             frame = f[0]
 
         rigid_bodies = frame.particles.body
@@ -150,7 +150,7 @@ class TestGSD(BaseTest):
         from foyer import Forcefield
 
         ethane.save(filename="ethane.gsd", forcefield_name="oplsaa")
-        with gsd.hoomd.open("ethane.gsd", mode="rb") as f:
+        with gsd.hoomd.open("ethane.gsd", mode="r") as f:
             frame = f[0]
 
         structure = ethane.to_parmed()
@@ -244,7 +244,7 @@ class TestGSD(BaseTest):
         from foyer import Forcefield
 
         benzene.save(filename="benzene.gsd", forcefield_name="oplsaa")
-        with gsd.hoomd.open("benzene.gsd", mode="rb") as f:
+        with gsd.hoomd.open("benzene.gsd", mode="r") as f:
             frame = f[0]
 
         structure = benzene.to_parmed()
@@ -273,7 +273,7 @@ class TestGSD(BaseTest):
             ref_mass=ref_mass,
             box=box,
         )
-        with gsd.hoomd.open("ethane.gsd", mode="rb") as f:
+        with gsd.hoomd.open("ethane.gsd", mode="r") as f:
             frame = f[0]
 
         box_from_gsd = frame.configuration.box.astype(float)
@@ -312,7 +312,7 @@ class TestGSD(BaseTest):
             benzene, n_compounds=n_benzenes, box=[0, 0, 0, 4, 4, 4]
         )
         filled.save(filename="benzene.gsd")
-        with gsd.hoomd.open("benzene.gsd", mode="rb") as f:
+        with gsd.hoomd.open("benzene.gsd", mode="r") as f:
             frame = f[0]
         positions = frame.particles.position.astype(float)
         for coords in positions:

@@ -1291,7 +1291,7 @@ def to_parmed(
     title="",
     residues=None,
     show_ports=False,
-    infer_residues=True,
+    infer_residues=False,
     infer_residues_kwargs={},
 ):
     """Create a Parmed Structure from a Compound.
@@ -1312,7 +1312,7 @@ def to_parmed(
         against Compound.name.
     show_ports : boolean, optional, default=False
         Include all port atoms when converting to a `Structure`.
-    infer_residues : bool, optional, default=True
+    infer_residues : bool, optional, default=False
         Attempt to assign residues based on the number of bonds and particles in
         an object. This option is not used if `residues == None`
     infer_residues_kwargs : dict, optional, default={}
