@@ -1189,9 +1189,16 @@ class Compound(object):
         for b1, b2 in self.root.bond_graph.edges(self):
             yield b2
 
-    def bonds(self):
+    def bonds(self, return_bond_order=False):
         """Return all bonds in the Compound and sub-Compounds.
-
+        
+        Parameters
+        ----------
+        return_bond_order : bool, optional, default=False
+            Return the bond order of the bond as the 3rd argument in the tuple.
+            bond order is returned as a dictionary with 'bo' as the key.
+            If bond order is not set, the value will be set to 'default'.
+            
         Yields
         ------
         tuple of mb.Compound
@@ -1204,9 +1211,9 @@ class Compound(object):
         """
         if self.root.bond_graph:
             if self.root == self:
-                return self.root.bond_graph.edges()
+                return self.root.bond_graph.edges(data=return_bond_order)
             else:
-                return self.root.bond_graph.subgraph(self.particles()).edges()
+                return self.root.bond_graph.subgraph(self.particles()).edges(data=return_bond_order)
         else:
             return iter(())
 
@@ -1253,6 +1260,8 @@ class Compound(object):
         ----------
         particle_pair : indexable object, length=2, dtype=mb.Compound
             The pair of Particles to add a bond between
+        bond_order : float, optional, default=None
+            Bond order of the bond.
         """
         if self.root.bond_graph is None:
             self.root.bond_graph = BondGraph()
@@ -2655,7 +2664,7 @@ class Compound(object):
                     particle._element = element_from_symbol(particle.name)
                 except ElementError:
                     try:
-                        element_from_name(particle.name)
+                        particle._element = element_from_name(particle.name)
                     except ElementError:
                         raise MBuildError(
                             "No element assigned to {}; element could not be"
@@ -3234,6 +3243,23 @@ class Compound(object):
         from rdkit import Chem
         from rdkit.Chem import AllChem
         
+        
+        for particle in self.particles():
+            if particle.element is None:
+                try:
+                    particle._element = element_from_symbol(particle.name)
+                except ElementError:
+                    try:
+                        particle._element = element_from_name(particle.name)
+                    except ElementError:
+                        raise MBuildError(
+                            "No element assigned to {}; element could not be"
+                            "inferred from particle name {}. Cannot perform"
+                            "an energy minimization.".format(
+                                particle, particle.name
+                            )
+                        )
+                        
         temp_mol = Chem.RWMol()
         p_dict = {particle: i for i, particle in enumerate(self.particles())}
 
@@ -3249,10 +3275,14 @@ class Compound(object):
     
         for particle in self.particles():
             temp_atom = Chem.Atom(particle.element.atomic_number)
-            temp_atom.SetAtomMapNum(p_dict[particle])
+
+            # this next line is necessary to prevent rdkit from adding hydrogens
+            # this will also set the label to be the lement with particle index
+            temp_atom.SetProp("atomLabel",f'{temp_atom.GetSymbol()}:{p_dict[particle]}')
+
             temp_mol.AddAtom(temp_atom)
             
-        for bond in self.bond_graph.edges(data=True):
+        for bond in self.bonds(return_bond_order=True):
             bond_indices = (p_dict[bond[0]], p_dict[bond[1]])
             temp_mol.AddBond(*bond_indices)
             rdkit_bond = temp_mol.GetBondBetweenAtoms(*bond_indices)
@@ -3584,9 +3614,10 @@ class Compound(object):
         newone.bond_graph = BondGraph()
         for particle in self.particles():
             newone.bond_graph.add_node(clone_of[particle])
-        for c1, c2 in self.bonds():
+        for c1, c2, data in self.bonds(return_bond_order=True):
             try:
-                newone.add_bond((clone_of[c1], clone_of[c2]))
+                #bond order is added to the data dictionary as 'bo'
+                newone.add_bond((clone_of[c1], clone_of[c2]), bond_order=data['bo'])
             except KeyError:
                 raise MBuildError(
                     "Cloning failed. Compound contains bonds to "
