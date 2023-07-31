@@ -884,16 +884,18 @@ def from_rdkit(rdkit_mol, compound=None, coords_only=False, smiles_seed=0):
         part_list.append(part)
 
     comp.add(part_list)
-    bo_dict={
-            Chem.BondType.SINGLE:1.0,
-            Chem.BondType.DOUBLE:2.0,
-            Chem.BondType.TRIPLE:3.0,
-            Chem.BondType.AROMATIC:1.5,
-            Chem.BondType.UNSPECIFIED:0.0}
-    
+    bo_dict = {
+        Chem.BondType.SINGLE: 1.0,
+        Chem.BondType.DOUBLE: 2.0,
+        Chem.BondType.TRIPLE: 3.0,
+        Chem.BondType.AROMATIC: 1.5,
+        Chem.BondType.UNSPECIFIED: 0.0,
+    }
+
     for bond in mymol.GetBonds():
         comp.add_bond(
-            [comp[bond.GetBeginAtomIdx()], comp[bond.GetEndAtomIdx()]], bond_order=bo_dict[bond.GetBondType()]
+            [comp[bond.GetBeginAtomIdx()], comp[bond.GetEndAtomIdx()]],
+            bond_order=bo_dict[bond.GetBondType()],
         )
 
     return comp
