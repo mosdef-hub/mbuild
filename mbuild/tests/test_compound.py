@@ -139,12 +139,10 @@ class TestCompound(BaseTest):
     def test_convert_to_rdkit(self, methane):
         # check basic conversion
         rdkit = import_("rdkit")
-        rdmol = Methane().to_rdkit()
+        rdmol = methane.to_rdkit()
         assert isinstance(rdmol, rdkit.Chem.rdchem.RWMol)
         
         from rdkit import Chem
-
-        rdmol = Methane().to_rdkit()
 
         atoms = [atom for atom in rdmol.GetAtoms()]
         bonds = [bond for bond in rdmol.GetBonds()]
