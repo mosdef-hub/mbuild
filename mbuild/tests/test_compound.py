@@ -117,7 +117,7 @@ class TestCompound(BaseTest):
 
     def test_bond_order(self, methane):
         # test the default behavior
-        bonds = [bond for bond in Methane().bonds(return_bond_order=True)]
+        bonds = [bond for bond in methane.bonds(return_bond_order=True)]
         assert bonds[0][2]["bo"] == "default"
 
         # test setting bond order when adding a bond
