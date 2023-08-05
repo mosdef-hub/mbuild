@@ -55,7 +55,6 @@ constrain_rotation y 0. 0.
 constrain_rotation z 0. 0.
 """
 
-
 def fill_box(
     compound,
     n_compounds=None,
@@ -870,7 +869,6 @@ def _new_xyz_file():
     """
     return tempfile.NamedTemporaryFile(suffix=".xyz", delete=False)
 
-
 def _create_topology(container, comp_to_add, n_compounds):
     """Return updated mBuild compound with new coordinates.
 
@@ -888,9 +886,12 @@ def _create_topology(container, comp_to_add, n_compounds):
     container : mb.Compound
         Compound with added compounds from PACKMOL.
     """
+    container_list = []
     for comp, m_compound in zip(comp_to_add, n_compounds):
         for _ in range(m_compound):
-            container.add(clone(comp))
+            container_list.append(clone(comp))
+            
+    container.add(container_list)
     return container
 
 
