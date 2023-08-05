@@ -86,7 +86,7 @@ def read_xyz(filename, compound=None):
                 "were expected, but at least one more was found."
             )
             raise MBuildError(msg.format(n_atoms))
-    
+
     compound.add(compound_list)
 
     return compound
