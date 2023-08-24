@@ -888,9 +888,12 @@ def _create_topology(container, comp_to_add, n_compounds):
     container : mb.Compound
         Compound with added compounds from PACKMOL.
     """
+    container_list = []
     for comp, m_compound in zip(comp_to_add, n_compounds):
         for _ in range(m_compound):
-            container.add(clone(comp))
+            container_list.append(clone(comp))
+
+    container.add(container_list)
     return container
 
 
