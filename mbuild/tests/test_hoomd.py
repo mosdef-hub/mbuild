@@ -74,7 +74,7 @@ class TestHoomdAny(BaseTest):
         snap, _ = to_hoomdsnapshot(filled)
 
         # copy attributes from the snapshot to a gsd snapshot
-        gsd_snap = gsd.hoomd.Snapshot()
+        gsd_snap = gsd.hoomd.Frame()
         gsd_snap.particles.N = snap.particles.N
         gsd_snap.particles.types = snap.particles.types
         gsd_snap.particles.typeid = snap.particles.typeid
