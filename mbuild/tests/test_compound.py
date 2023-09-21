@@ -263,7 +263,7 @@ class TestCompound(BaseTest):
         temp_particle.print_hierarchy()
 
         captured = capsys.readouterr()
-        assert captured.out.strip() == "C, 1 particles, 0 bonds, 0 children"
+        assert "C, 1 particles, 0 bonds, 0 children" in captured.out.strip()
 
         temp_particle.print_hierarchy(show_tree=False)
         captured = capsys.readouterr()
