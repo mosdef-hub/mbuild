@@ -2892,7 +2892,7 @@ class Compound(object):
             prefix will be parsed and control the format. Supported extensions:
             'hoomdxml', 'gsd', 'gro', 'top', 'lammps', 'lmp', 'mcf', 'pdb', 'xyz',
             'json', 'mol2', 'sdf', 'psf'. See parmed/structure.py for more
-            information savers.
+            information on savers.
         show_ports : bool, optional, default=False
             Save ports contained within the compound.
         forcefield_files : str, optional, default=None
