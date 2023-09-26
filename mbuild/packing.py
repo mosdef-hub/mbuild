@@ -703,7 +703,7 @@ def solvate(
         After packing, port locations can be updated, but since compounds can be
         rotated, port orientation may be incorrect.
     center_solute : bool, optional, default=True
-        Make solute center of the solvated box.
+        Move solute center of mass to the center of the `mb.Box` used.
 
     Returns
     -------
