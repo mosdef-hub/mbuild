@@ -1,3 +1,5 @@
+import pytest
+
 import mbuild as mb
 from mbuild.lib.atoms import H
 from mbuild.lib.recipes import Monolayer, Polymer
@@ -6,6 +8,28 @@ from mbuild.tests.base_test import BaseTest
 
 
 class TestMonolayer(BaseTest):
+    def test_betacristobalite(self):
+        # Normal case
+        surface = Betacristobalite()
+        assert surface.n_particles == 1900
+        assert surface.n_bonds == 2400
+
+        # 2D dimension provided
+        surface = Betacristobalite(dimensions=(5.3888 * 1.2, 4.589110 * 1.25))
+        assert surface.n_particles == 2850
+        assert surface.n_bonds == 3600
+
+        # 3D dimension provided
+        surface = Betacristobalite(
+            dimensions=(5.3888 * 1.2, 4.589110 * 1.25, 1.32 * 2)
+        )
+        assert surface.n_particles == 5700
+        assert surface.n_bonds == 7200
+
+        # Bogus values provided
+        with pytest.raises(ValueError):
+            surface = Betacristobalite(dimensions="bogus")
+
     def test_monolayer(self, ch2):
         n = 8
         m = 8

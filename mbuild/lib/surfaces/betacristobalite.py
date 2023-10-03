@@ -1,4 +1,9 @@
 """Beta-cristobalite surface."""
+import itertools
+import math
+
+import numpy as np
+
 import mbuild as mb
 
 
@@ -19,30 +24,84 @@ class Betacristobalite(mb.Compound):
     modify the file or the method of determining port locations.
     """
 
-    def __init__(self):
+    def __init__(self, dimensions=None):
         super(Betacristobalite, self).__init__()
 
-        mb.load(
+        betacristabolite = mb.load(
             "beta-cristobalite-expanded.mol2",
-            compound=self,
             relative_to_module=self.__module__,
             backend="gmso",
         )
+
+        # Shift it back to origin
+        xs, ys, zs = list(), list(), list()
+        for particle in betacristabolite.particles():
+            xs.append(particle.pos[0])
+            ys.append(particle.pos[1])
+            zs.append(particle.pos[2])
+        betacristabolite.translate((-min(xs), -min(ys), -min(zs)))
+
         self.periodicity = (True, True, False)
         # 1.3200 taken from boundingbox length rounded to 4 decimal places
-        self.box = mb.Box([5.3888, 4.6669, 1.3200])
+        ref_dims = (
+            betacristabolite.get_boundingbox().lengths
+        )  # [5.3888, 4.6669, 1.3200]
+        if not dimensions:
+            box = mb.Box(ref_dims)
+        elif isinstance(dimensions, (list, tuple)) and len(dimensions) == 2:
+            box = mb.Box([dimensions[0], dimensions[1], ref_dims[2]])
+        elif isinstance(dimensions, (list, tuple)) and len(dimensions) == 3:
+            box = mb.Box(dimensions)
+        else:
+            raise ValueError(
+                "Unsupported value for dimension provided. "
+                "Only accept `None` (default), list/tuple of 2 (x and y dimension) "
+                "or list/tuple of 3(x, y, and z dimensions)"
+            )
+
+        self.box = box
+
+        # Borrowed code from water_box recipe
+        scale_Lx = math.ceil(box.Lx / ref_dims[0])
+        scale_Ly = math.ceil(box.Ly / ref_dims[1])
+        scale_Lz = math.ceil(box.Lz / ref_dims[2])
+
+        silica_list = list()
+        for particle in list(betacristabolite.particles()):
+            for i, j, k in itertools.product(
+                range(scale_Lx),
+                range(scale_Ly),
+                range(scale_Lz),
+            ):
+                shift = np.array(
+                    [
+                        i * ref_dims[0],
+                        j * ref_dims[1],
+                        k * ref_dims[2],
+                    ]
+                )
+                if all(particle.pos + shift <= box.lengths):
+                    temp = mb.clone(particle)
+                    temp.translate(shift)
+                    silica_list.append(temp)
+
+        self.add(silica_list)
 
         count = 0
         for particle in list(self.particles()):
-            if particle.name.startswith("O") and particle.pos[2] > 1.0:
+            if particle.name.startswith("O") and particle.pos[2] >= box.Lz:
                 count += 1
                 port = mb.Port(
                     anchor=particle, orientation=[0, 0, 1], separation=0.1
                 )
                 self.add(port, "port_{}".format(count))
                 particle.name = "O"  # Strip numbers required in .mol2 files.
+            elif particle.name.startswith("O"):
+                particle.name = "O"
             elif particle.name.startswith("Si"):
                 particle.name = "Si"
+
+        self.freud_generate_bonds(name_a="Si", name_b="O", dmin=0, dmax=0.236)
 
 
 if __name__ == "__main__":
