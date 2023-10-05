@@ -1,4 +1,4 @@
-ARG PY_VERSION=3.8
+ARG PY_VERSION=3.10
 FROM continuumio/miniconda3:4.10.3-alpine AS builder
 
 EXPOSE 8888
@@ -16,6 +16,9 @@ WORKDIR /mbuild
 
 # Create a group and user
 RUN addgroup -S anaconda && adduser -S anaconda -G anaconda
+
+# install the libarchive package needed by mamba
+RUN apk update && apk add libarchive
 
 RUN conda update conda -yq && \
   conda config --set always_yes yes --set changeps1 no && \
