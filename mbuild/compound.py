@@ -815,6 +815,7 @@ class Compound(object):
         inherit_periodicity=None,
         inherit_box=False,
         reset_rigid_ids=True,
+        verbose=True,
     ):
         """Add a part to the Compound.
 
@@ -843,6 +844,8 @@ class Compound(object):
             rigid_ids such that values remain distinct from rigid_ids
             already present in `self`. Can be set to False if attempting
             to add Compounds to an existing rigid body.
+        verbose : bool, optional, default=True
+            Warns if compound box is smaller than its bounding box after adding new_child.
         """
         # Support batch add via lists, tuples and sets.
         # If iterable, we will first compose all the bondgraphs of individual
@@ -891,9 +894,12 @@ class Compound(object):
                         child,
                         label=label_list[i],
                         reset_rigid_ids=reset_rigid_ids,
+                        verbose=False,
                     )
                 else:
-                    self.add(child, reset_rigid_ids=reset_rigid_ids)
+                    self.add(
+                        child, reset_rigid_ids=reset_rigid_ids, verbose=False
+                    )
 
             return
 
@@ -995,7 +1001,7 @@ class Compound(object):
                     )
 
         # Check that bounding box is within box after adding compound
-        if self.box:
+        if self.box and verbose:
             if (
                 np.array(self.box.lengths)
                 < np.array(self.get_boundingbox().lengths)
