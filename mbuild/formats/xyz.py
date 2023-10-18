@@ -44,6 +44,7 @@ def read_xyz(filename, compound=None):
 
     guessed_elements = set()
 
+    compound_list = []
     with open(filename, "r") as xyz_file:
         n_atoms = int(xyz_file.readline())
         xyz_file.readline()
@@ -74,7 +75,7 @@ def read_xyz(filename, compound=None):
                 element = None
 
             particle = mb.Compound(pos=coords[row], name=name, element=element)
-            compound.add(particle)
+            compound_list.append(particle)
 
         # Verify we have read the last line by ensuring the next line in blank
         line = xyz_file.readline().split()
@@ -85,6 +86,8 @@ def read_xyz(filename, compound=None):
                 "were expected, but at least one more was found."
             )
             raise MBuildError(msg.format(n_atoms))
+
+    compound.add(compound_list)
 
     return compound
 

@@ -2904,7 +2904,9 @@ class Compound(object):
         filename : str
             Filesystem path in which to save the trajectory. The extension or
             prefix will be parsed and control the format. Supported extensions:
-            'hoomdxml', 'gsd', 'gro', 'top', 'lammps', 'lmp', 'mcf'
+            'hoomdxml', 'gsd', 'gro', 'top', 'lammps', 'lmp', 'mcf', 'pdb', 'xyz',
+            'json', 'mol2', 'sdf', 'psf'. See parmed/structure.py for more
+            information on savers.
         show_ports : bool, optional, default=False
             Save ports contained within the compound.
         forcefield_files : str, optional, default=None

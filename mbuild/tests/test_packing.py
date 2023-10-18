@@ -214,9 +214,24 @@ class TestPacking(BaseTest):
 
     def test_solvate(self, ethane, h2o):
         n_solvent = 100
-        solvated = mb.solvate(ethane, h2o, n_solvent=n_solvent, box=[4, 4, 4])
-        assert solvated.n_particles == 8 + n_solvent * 3
-        assert solvated.n_bonds == 7 + n_solvent * 2
+        ethane_pos = ethane.pos
+        solvated1 = mb.solvate(
+            ethane, h2o, n_solvent=n_solvent, box=[4, 4, 4], center_solute=True
+        )
+        solvated2 = mb.solvate(
+            ethane, h2o, n_solvent=n_solvent, box=[4, 4, 4], center_solute=False
+        )
+
+        print(ethane.xyz)
+        print(solvated2.children[0].xyz)
+
+        assert (
+            solvated1.n_particles == solvated2.n_particles == 8 + n_solvent * 3
+        )
+        assert solvated1.n_bonds == solvated2.n_bonds == 7 + n_solvent * 2
+        assert not np.isclose(solvated1.children[0].pos, ethane_pos).all()
+        assert np.isclose(solvated2.children[0].pos, ethane_pos).all()
+
         assert ethane.parent == None
 
     def test_solvate_multiple(self, methane, ethane, h2o):
