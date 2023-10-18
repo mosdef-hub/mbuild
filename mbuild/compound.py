@@ -1264,11 +1264,29 @@ class Compound(object):
             The pair of Particles to add a bond between
         bond_order : float, optional, default=None
             Bond order of the bond.
+            Available options include "default", "single", "double",
+            "triple", "aromatic" or "unspecified"
         """
         if self.root.bond_graph is None:
             self.root.bond_graph = BondGraph()
         if bond_order is None:
             bond_order = "default"
+        else:
+            if bond_order.lower() not in [
+                "single",
+                "double",
+                "triple",
+                "aromatic",
+                "unspecified",
+            ]:
+                raise ValueError(
+                    "Invalid bond_order given. Available bond orders are: "
+                    "single",
+                    "double",
+                    "triple",
+                    "aromatic",
+                    "unspecified",
+                )
         self.root.bond_graph.add_edge(
             particle_pair[0], particle_pair[1], bo=bond_order
         )
@@ -3245,6 +3263,7 @@ class Compound(object):
         )
 
     def to_rdkit(self):
+        """Create an RDKit RWMol from an mBuild Compound."""
         rdkit = import_("rdkit")
         from rdkit import Chem
         from rdkit.Chem import AllChem
@@ -3258,11 +3277,10 @@ class Compound(object):
                         particle._element = element_from_name(particle.name)
                     except ElementError:
                         raise MBuildError(
-                            "No element assigned to {}; element could not be"
-                            "inferred from particle name {}. Cannot perform"
-                            "an energy minimization.".format(
-                                particle, particle.name
-                            )
+                            f"No element assigned to {particle};"
+                            "element could not be"
+                            f"inferred from particle name {particle.name}."
+                            " Cannot perform an energy minimization."
                         )
 
         temp_mol = Chem.RWMol()
@@ -3281,7 +3299,7 @@ class Compound(object):
             temp_atom = Chem.Atom(particle.element.atomic_number)
 
             # this next line is necessary to prevent rdkit from adding hydrogens
-            # this will also set the label to be the lement with particle index
+            # this will also set the label to be the element with particle index
             temp_atom.SetProp(
                 "atomLabel", f"{temp_atom.GetSymbol()}:{p_dict[particle]}"
             )
