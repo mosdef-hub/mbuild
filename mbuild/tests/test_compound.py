@@ -157,7 +157,7 @@ class TestCompound(BaseTest):
             comp.add_bond([A_bead, B_bead], bond_order="quadruple")
 
     @pytest.mark.skipif(not has_rdkit, reason="RDKit is not installed")
-    def test_convert_to_rdkit(self, methane):
+    def test_to_rdkit(self, methane):
         # check basic conversion
         rdkit = import_("rdkit")
         rdmol = methane.to_rdkit()
@@ -182,6 +182,12 @@ class TestCompound(BaseTest):
         assert bond_order_dict[bonds[1].GetBondType()] == 1.0
         assert bond_order_dict[bonds[2].GetBondType()] == 1.0
         assert bond_order_dict[bonds[3].GetBondType()] == 1.0
+
+    @pytest.mark.skipif(not has_rdkit, reason="RDKit is not installed")
+    def test_to_rdkit_no_elements(self):
+        comp = mb.Compound(name="_A")
+        with pytest.raises(MBuildError):
+            comp.to_rdkit()
 
     def test_n_direct_bonds_parent(self, ethane):
         with pytest.raises(MBuildError):

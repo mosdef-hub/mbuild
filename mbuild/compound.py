@@ -3273,6 +3273,10 @@ class Compound(object):
         Notes
         -----
         Use this method to utilzie rdkit funcitonality.
+        This method only works when the mBuild compound
+        contains accurate element information. As a result,
+        this method is not compatible with compounds containing
+        abstract particles (e.g. coarse-grained systems)
 
         Example
         -------
