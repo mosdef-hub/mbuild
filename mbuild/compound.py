@@ -894,7 +894,7 @@ class Compound(object):
                         child,
                         label=label_list[i],
                         reset_rigid_ids=reset_rigid_ids,
-                        verbose=False,
+                        check_box_size=False,
                     )
                 else:
                     self.add(
@@ -1003,7 +1003,7 @@ class Compound(object):
                     )
 
         # Check that bounding box is within box after adding compound
-        if self.box and verbose:
+        if self.box and check_box_size:
             if (
                 np.array(self.box.lengths)
                 < np.array(self.get_boundingbox().lengths)
