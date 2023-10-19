@@ -1757,13 +1757,13 @@ def to_pybel(
     return pybelmol
 
 
-def to_rdkit(self):
+def to_rdkit(compound):
     """Create an RDKit RWMol from an mBuild Compound."""
     rdkit = import_("rdkit")
     from rdkit import Chem
     from rdkit.Chem import AllChem
 
-    for particle in self.particles():
+    for particle in compound.particles():
         if particle.element is None:
             try:
                 particle._element = element_from_symbol(particle.name)
@@ -1779,7 +1779,7 @@ def to_rdkit(self):
                     )
 
     temp_mol = Chem.RWMol()
-    p_dict = {particle: i for i, particle in enumerate(self.particles())}
+    p_dict = {particle: i for i, particle in enumerate(compound.particles())}
 
     bo_dict = {
         1.0: Chem.BondType.SINGLE,
@@ -1790,7 +1790,7 @@ def to_rdkit(self):
         "default": Chem.BondType.SINGLE,
     }
 
-    for particle in self.particles():
+    for particle in compound.particles():
         temp_atom = Chem.Atom(particle.element.atomic_number)
 
         # this next line is necessary to prevent rdkit from adding hydrogens
@@ -1801,7 +1801,7 @@ def to_rdkit(self):
 
         temp_mol.AddAtom(temp_atom)
 
-    for bond in self.bonds(return_bond_order=True):
+    for bond in compound.bonds(return_bond_order=True):
         bond_indices = (p_dict[bond[0]], p_dict[bond[1]])
         temp_mol.AddBond(*bond_indices)
         rdkit_bond = temp_mol.GetBondBetweenAtoms(*bond_indices)
