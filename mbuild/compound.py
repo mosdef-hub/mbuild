@@ -3264,55 +3264,7 @@ class Compound(object):
 
     def to_rdkit(self):
         """Create an RDKit RWMol from an mBuild Compound."""
-        rdkit = import_("rdkit")
-        from rdkit import Chem
-        from rdkit.Chem import AllChem
-
-        for particle in self.particles():
-            if particle.element is None:
-                try:
-                    particle._element = element_from_symbol(particle.name)
-                except ElementError:
-                    try:
-                        particle._element = element_from_name(particle.name)
-                    except ElementError:
-                        raise MBuildError(
-                            f"No element assigned to {particle};"
-                            "element could not be"
-                            f"inferred from particle name {particle.name}."
-                            " Cannot perform an energy minimization."
-                        )
-
-        temp_mol = Chem.RWMol()
-        p_dict = {particle: i for i, particle in enumerate(self.particles())}
-
-        bo_dict = {
-            1.0: Chem.BondType.SINGLE,
-            2.0: Chem.BondType.DOUBLE,
-            3.0: Chem.BondType.TRIPLE,
-            1.5: Chem.BondType.AROMATIC,
-            0.0: Chem.BondType.UNSPECIFIED,
-            "default": Chem.BondType.SINGLE,
-        }
-
-        for particle in self.particles():
-            temp_atom = Chem.Atom(particle.element.atomic_number)
-
-            # this next line is necessary to prevent rdkit from adding hydrogens
-            # this will also set the label to be the element with particle index
-            temp_atom.SetProp(
-                "atomLabel", f"{temp_atom.GetSymbol()}:{p_dict[particle]}"
-            )
-
-            temp_mol.AddAtom(temp_atom)
-
-        for bond in self.bonds(return_bond_order=True):
-            bond_indices = (p_dict[bond[0]], p_dict[bond[1]])
-            temp_mol.AddBond(*bond_indices)
-            rdkit_bond = temp_mol.GetBondBetweenAtoms(*bond_indices)
-            rdkit_bond.SetBondType(bo_dict[bond[2]["bo"]])
-
-        return temp_mol
+        return conversion.to_rdkit(self)
 
     def to_parmed(
         self,
