@@ -127,13 +127,13 @@ class TestCompound(BaseTest):
         C2.add_bond([carbon, carbon_clone], bond_order="double")
         bonds = [bond for bond in C2.bonds(return_bond_order=True)]
 
-        assert bonds[0][2]["bond_order"] == "double" 
+        assert bonds[0][2]["bond_order"] == "double"
 
         # ensure we propagate bond order information when we clone a compound
         C2_clone = mb.clone(C2)
         bonds = [bond for bond in C2_clone.bonds(return_bond_order=True)]
 
-        assert bonds[0][2]["bond_order"] == "double" 
+        assert bonds[0][2]["bond_order"] == "double"
 
     @pytest.mark.skipif(not has_rdkit, reason="RDKit is not installed")
     def test_convert_to_rdkit(self, methane):
