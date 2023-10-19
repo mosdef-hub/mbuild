@@ -3264,7 +3264,26 @@ class Compound(object):
         )
 
     def to_rdkit(self):
-        """Create an RDKit RWMol from an mBuild Compound."""
+        """Create an RDKit RWMol from an mBuild Compound.
+
+        Returns
+        -------
+        rdkit.Chem.RWmol
+
+        Notes
+        -----
+        Use this method to utilzie rdkit funcitonality.
+
+        Example
+        -------
+        >>> import mbuild
+        >>> from rdkit.Chem import Draw
+
+        >>> benzene = mb.load("c1cccc1", smiles=True)
+        >>> benzene_rdkmol = benzene.to_rdkit()
+        >>> img = Draw.MolToImage(benzene_rdkmol)
+
+        """
         return conversion.to_rdkit(self)
 
     def to_parmed(

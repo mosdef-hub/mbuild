@@ -1758,7 +1758,17 @@ def to_pybel(
 
 
 def to_rdkit(compound):
-    """Create an RDKit RWMol from an mBuild Compound."""
+    """Create an RDKit RWMol from an mBuild Compound.
+
+    Parameters
+    ----------
+    compound : mbuild.Compound; required
+        The compound to convert to a Chem.RWmol
+
+    Returns
+    -------
+    rdkit.Chem.RWmol
+    """
     rdkit = import_("rdkit")
     from rdkit import Chem
     from rdkit.Chem import AllChem
