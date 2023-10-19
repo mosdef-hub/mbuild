@@ -3283,6 +3283,8 @@ class Compound(object):
         >>> benzene_rdkmol = benzene.to_rdkit()
         >>> img = Draw.MolToImage(benzene_rdkmol)
 
+        See https://www.rdkit.org/docs/GettingStartedInPython.html
+
         """
         return conversion.to_rdkit(self)
 
