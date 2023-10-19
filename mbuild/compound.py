@@ -1273,6 +1273,7 @@ class Compound(object):
             bond_order = "default"
         else:
             if bond_order.lower() not in [
+                "default",
                 "single",
                 "double",
                 "triple",
@@ -1288,7 +1289,7 @@ class Compound(object):
                     "unspecified",
                 )
         self.root.bond_graph.add_edge(
-            particle_pair[0], particle_pair[1], bo=bond_order
+            particle_pair[0], particle_pair[1], bond_order=bond_order
         )
 
     def generate_bonds(self, name_a, name_b, dmin, dmax):
@@ -3594,7 +3595,7 @@ class Compound(object):
             try:
                 # bond order is added to the data dictionary as 'bo'
                 newone.add_bond(
-                    (clone_of[c1], clone_of[c2]), bond_order=data["bo"]
+                    (clone_of[c1], clone_of[c2]), bond_order=data["bond_order"]
                 )
             except KeyError:
                 raise MBuildError(

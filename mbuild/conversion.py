@@ -884,18 +884,18 @@ def from_rdkit(rdkit_mol, compound=None, coords_only=False, smiles_seed=0):
         part_list.append(part)
 
     comp.add(part_list)
-    bo_dict = {
-        Chem.BondType.SINGLE: 1.0,
-        Chem.BondType.DOUBLE: 2.0,
-        Chem.BondType.TRIPLE: 3.0,
-        Chem.BondType.AROMATIC: 1.5,
-        Chem.BondType.UNSPECIFIED: 0.0,
+    bond_order_dict = {
+        Chem.BondType.SINGLE: "single",
+        Chem.BondType.DOUBLE: "double",
+        Chem.BondType.TRIPLE: "triple",
+        Chem.BondType.AROMATIC: "aromatic",
+        Chem.BondType.UNSPECIFIED: "unspecified",
     }
 
     for bond in mymol.GetBonds():
         comp.add_bond(
             [comp[bond.GetBeginAtomIdx()], comp[bond.GetEndAtomIdx()]],
-            bond_order=bo_dict[bond.GetBondType()],
+            bond_order=bond_order_dict[bond.GetBondType()],
         )
 
     return comp
@@ -1781,7 +1781,7 @@ def to_rdkit(compound):
     temp_mol = Chem.RWMol()
     p_dict = {particle: i for i, particle in enumerate(compound.particles())}
 
-    bo_dict = {
+    bond_order_dict = {
         "single": Chem.BondType.SINGLE,
         "double": Chem.BondType.DOUBLE,
         "triple": Chem.BondType.TRIPLE,
@@ -1805,7 +1805,7 @@ def to_rdkit(compound):
         bond_indices = (p_dict[bond[0]], p_dict[bond[1]])
         temp_mol.AddBond(*bond_indices)
         rdkit_bond = temp_mol.GetBondBetweenAtoms(*bond_indices)
-        rdkit_bond.SetBondType(bo_dict[bond[2]["bo"]])
+        rdkit_bond.SetBondType(bond_order_dict[bond[2]["bond_order"]])
 
     return temp_mol
 

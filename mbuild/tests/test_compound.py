@@ -118,22 +118,22 @@ class TestCompound(BaseTest):
     def test_bond_order(self, methane):
         # test the default behavior
         bonds = [bond for bond in methane.bonds(return_bond_order=True)]
-        assert bonds[0][2]["bo"] == "default"
+        assert bonds[0][2]["bond_order"] == "default"
 
         # test setting bond order when adding a bond
         carbon = mb.Compound(pos=[0, 0, 0], name="C")
         carbon_clone = mb.clone(carbon)
         C2 = mb.Compound([carbon, carbon_clone])
-        C2.add_bond([carbon, carbon_clone], bond_order=2.0)
+        C2.add_bond([carbon, carbon_clone], bond_order="double")
         bonds = [bond for bond in C2.bonds(return_bond_order=True)]
 
-        assert bonds[0][2]["bo"] == 2.0
+        assert bonds[0][2]["bond_order"] == "double" 
 
         # ensure we propagate bond order information when we clone a compound
         C2_clone = mb.clone(C2)
         bonds = [bond for bond in C2_clone.bonds(return_bond_order=True)]
 
-        assert bonds[0][2]["bo"] == 2.0
+        assert bonds[0][2]["bond_order"] == "double" 
 
     @pytest.mark.skipif(not has_rdkit, reason="RDKit is not installed")
     def test_convert_to_rdkit(self, methane):
@@ -147,7 +147,7 @@ class TestCompound(BaseTest):
         atoms = [atom for atom in rdmol.GetAtoms()]
         bonds = [bond for bond in rdmol.GetBonds()]
 
-        bo_dict = {
+        bond_order_dict = {
             Chem.BondType.SINGLE: 1.0,
             Chem.BondType.DOUBLE: 2.0,
             Chem.BondType.TRIPLE: 3.0,
@@ -157,10 +157,10 @@ class TestCompound(BaseTest):
         assert len(atoms) == 5
         assert len(bonds) == 4
 
-        assert bo_dict[bonds[0].GetBondType()] == 1.0
-        assert bo_dict[bonds[1].GetBondType()] == 1.0
-        assert bo_dict[bonds[2].GetBondType()] == 1.0
-        assert bo_dict[bonds[3].GetBondType()] == 1.0
+        assert bond_order_dict[bonds[0].GetBondType()] == 1.0
+        assert bond_order_dict[bonds[1].GetBondType()] == 1.0
+        assert bond_order_dict[bonds[2].GetBondType()] == 1.0
+        assert bond_order_dict[bonds[3].GetBondType()] == 1.0
 
     def test_n_direct_bonds_parent(self, ethane):
         with pytest.raises(MBuildError):
