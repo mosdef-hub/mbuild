@@ -135,6 +135,27 @@ class TestCompound(BaseTest):
 
         assert bonds[0][2]["bond_order"] == "double"
 
+    @pytest.mark.parametrize(
+        "bond_order",
+        ["single", "double", "triple", "aromatic"],
+    )
+    def test_add_bond_order(self, bond_order):
+        A_bead = mb.Compound(name="A", pos=[0, 0, 0])
+        B_bead = mb.Compound(name="B", pos=[0.5, 0.5, 0])
+        comp = mb.Compound([A_bead, B_bead])
+        comp.add_bond([A_bead, B_bead], bond_order=bond_order)
+        for bond in comp.bonds(return_bond_order=True):
+            assert bond[2]["bond_order"] == bond_order
+
+    def test_add_bad_bond_order(self):
+        A_bead = mb.Compound(name="A", pos=[0, 0, 0])
+        B_bead = mb.Compound(name="B", pos=[0.5, 0.5, 0])
+        comp = mb.Compound([A_bead, B_bead])
+        with pytest.raises(ValueError):
+            comp.add_bond([A_bead, B_bead], bond_order=1.0)
+        with pytest.raises(ValueError):
+            comp.add_bond([A_bead, B_bead], bond_order="quadruple")
+
     @pytest.mark.skipif(not has_rdkit, reason="RDKit is not installed")
     def test_convert_to_rdkit(self, methane):
         # check basic conversion

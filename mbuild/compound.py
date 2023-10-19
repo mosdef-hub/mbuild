@@ -1272,7 +1272,7 @@ class Compound(object):
         if bond_order is None:
             bond_order = "default"
         else:
-            if bond_order.lower() not in [
+            if not isinstance(bond_order, str) or bond_order.lower() not in [
                 "default",
                 "single",
                 "double",
