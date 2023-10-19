@@ -1782,11 +1782,11 @@ def to_rdkit(compound):
     p_dict = {particle: i for i, particle in enumerate(compound.particles())}
 
     bo_dict = {
-        1.0: Chem.BondType.SINGLE,
-        2.0: Chem.BondType.DOUBLE,
-        3.0: Chem.BondType.TRIPLE,
-        1.5: Chem.BondType.AROMATIC,
-        0.0: Chem.BondType.UNSPECIFIED,
+        "single": Chem.BondType.SINGLE,
+        "double": Chem.BondType.DOUBLE,
+        "triple": Chem.BondType.TRIPLE,
+        "aromatic": Chem.BondType.AROMATIC,
+        "unspecified": Chem.BondType.UNSPECIFIED,
         "default": Chem.BondType.SINGLE,
     }
 
