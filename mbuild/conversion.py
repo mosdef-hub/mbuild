@@ -884,10 +884,18 @@ def from_rdkit(rdkit_mol, compound=None, coords_only=False, smiles_seed=0):
         part_list.append(part)
 
     comp.add(part_list)
+    bond_order_dict = {
+        Chem.BondType.SINGLE: "single",
+        Chem.BondType.DOUBLE: "double",
+        Chem.BondType.TRIPLE: "triple",
+        Chem.BondType.AROMATIC: "aromatic",
+        Chem.BondType.UNSPECIFIED: "unspecified",
+    }
 
     for bond in mymol.GetBonds():
         comp.add_bond(
-            [comp[bond.GetBeginAtomIdx()], comp[bond.GetEndAtomIdx()]]
+            [comp[bond.GetBeginAtomIdx()], comp[bond.GetEndAtomIdx()]],
+            bond_order=bond_order_dict[bond.GetBondType()],
         )
 
     return comp
@@ -1747,6 +1755,69 @@ def to_pybel(
     pybelmol.title = title if title else compound.name
 
     return pybelmol
+
+
+def to_rdkit(compound):
+    """Create an RDKit RWMol from an mBuild Compound.
+
+    Parameters
+    ----------
+    compound : mbuild.Compound; required
+        The compound to convert to a Chem.RWmol
+
+    Returns
+    -------
+    rdkit.Chem.RWmol
+    """
+    rdkit = import_("rdkit")
+    from rdkit import Chem
+    from rdkit.Chem import AllChem
+
+    for particle in compound.particles():
+        if particle.element is None:
+            try:
+                particle._element = element_from_symbol(particle.name)
+            except ElementError:
+                try:
+                    particle._element = element_from_name(particle.name)
+                except ElementError:
+                    raise MBuildError(
+                        f"No element assigned to {particle};"
+                        "element could not be"
+                        f"inferred from particle name {particle.name}."
+                        " Cannot perform an energy minimization."
+                    )
+
+    temp_mol = Chem.RWMol()
+    p_dict = {particle: i for i, particle in enumerate(compound.particles())}
+
+    bond_order_dict = {
+        "single": Chem.BondType.SINGLE,
+        "double": Chem.BondType.DOUBLE,
+        "triple": Chem.BondType.TRIPLE,
+        "aromatic": Chem.BondType.AROMATIC,
+        "unspecified": Chem.BondType.UNSPECIFIED,
+        "default": Chem.BondType.SINGLE,
+    }
+
+    for particle in compound.particles():
+        temp_atom = Chem.Atom(particle.element.atomic_number)
+
+        # this next line is necessary to prevent rdkit from adding hydrogens
+        # this will also set the label to be the element with particle index
+        temp_atom.SetProp(
+            "atomLabel", f"{temp_atom.GetSymbol()}:{p_dict[particle]}"
+        )
+
+        temp_mol.AddAtom(temp_atom)
+
+    for bond in compound.bonds(return_bond_order=True):
+        bond_indices = (p_dict[bond[0]], p_dict[bond[1]])
+        temp_mol.AddBond(*bond_indices)
+        rdkit_bond = temp_mol.GetBondBetweenAtoms(*bond_indices)
+        rdkit_bond.SetBondType(bond_order_dict[bond[2]["bond_order"]])
+
+    return temp_mol
 
 
 def to_smiles(compound, backend="pybel"):
