@@ -668,6 +668,7 @@ def solvate(
     fix_orientation=False,
     temp_file=None,
     update_port_locations=False,
+    center_solute=True,
 ):
     """Solvate a compound in a box of solvent using PACKMOL.
 
@@ -701,6 +702,8 @@ def solvate(
     update_port_locations : bool, default=False
         After packing, port locations can be updated, but since compounds can be
         rotated, port orientation may be incorrect.
+    center_solute : bool, optional, default=True
+        Move solute center of mass to the center of the `mb.Box` used.
 
     Returns
     -------
@@ -724,8 +727,10 @@ def solvate(
     box_mins = np.asarray(min_tmp) * 10
     box_maxs = np.asarray(max_tmp) * 10
     overlap *= 10
-    center_solute = (box_maxs + box_mins) / 2
-
+    if center_solute:
+        center_solute = (box_maxs + box_mins) / 2
+    else:
+        center_solute = solute.pos * 10
     # Apply edge buffer
     box_maxs = np.subtract(box_maxs, edge * 10)
     box_mins = np.add(box_mins, edge * 10)

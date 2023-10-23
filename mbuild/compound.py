@@ -815,6 +815,7 @@ class Compound(object):
         inherit_periodicity=None,
         inherit_box=False,
         reset_rigid_ids=True,
+        check_box_size=True,
     ):
         """Add a part to the Compound.
 
@@ -843,6 +844,8 @@ class Compound(object):
             rigid_ids such that values remain distinct from rigid_ids
             already present in `self`. Can be set to False if attempting
             to add Compounds to an existing rigid body.
+        check_box_size : bool, optional, default=True
+            Checks and warns if compound box is smaller than its bounding box after adding new_child.
         """
         # Support batch add via lists, tuples and sets.
         # If iterable, we will first compose all the bondgraphs of individual
@@ -891,9 +894,14 @@ class Compound(object):
                         child,
                         label=label_list[i],
                         reset_rigid_ids=reset_rigid_ids,
+                        check_box_size=False,
                     )
                 else:
-                    self.add(child, reset_rigid_ids=reset_rigid_ids)
+                    self.add(
+                        child,
+                        reset_rigid_ids=reset_rigid_ids,
+                        check_box_size=False,
+                    )
 
             return
 
@@ -995,7 +1003,7 @@ class Compound(object):
                     )
 
         # Check that bounding box is within box after adding compound
-        if self.box:
+        if self.box and check_box_size:
             if (
                 np.array(self.box.lengths)
                 < np.array(self.get_boundingbox().lengths)
@@ -1189,8 +1197,15 @@ class Compound(object):
         for b1, b2 in self.root.bond_graph.edges(self):
             yield b2
 
-    def bonds(self):
+    def bonds(self, return_bond_order=False):
         """Return all bonds in the Compound and sub-Compounds.
+
+        Parameters
+        ----------
+        return_bond_order : bool, optional, default=False
+            Return the bond order of the bond as the 3rd argument in the tuple.
+            bond order is returned as a dictionary with 'bo' as the key.
+            If bond order is not set, the value will be set to 'default'.
 
         Yields
         ------
@@ -1204,9 +1219,11 @@ class Compound(object):
         """
         if self.root.bond_graph:
             if self.root == self:
-                return self.root.bond_graph.edges()
+                return self.root.bond_graph.edges(data=return_bond_order)
             else:
-                return self.root.bond_graph.subgraph(self.particles()).edges()
+                return self.root.bond_graph.subgraph(self.particles()).edges(
+                    data=return_bond_order
+                )
         else:
             return iter(())
 
@@ -1246,18 +1263,42 @@ class Compound(object):
             )
         return sum(1 for _ in self.bonds())
 
-    def add_bond(self, particle_pair):
+    def add_bond(self, particle_pair, bond_order=None):
         """Add a bond between two Particles.
 
         Parameters
         ----------
         particle_pair : indexable object, length=2, dtype=mb.Compound
             The pair of Particles to add a bond between
+        bond_order : float, optional, default=None
+            Bond order of the bond.
+            Available options include "default", "single", "double",
+            "triple", "aromatic" or "unspecified"
         """
         if self.root.bond_graph is None:
             self.root.bond_graph = BondGraph()
-
-        self.root.bond_graph.add_edge(particle_pair[0], particle_pair[1])
+        if bond_order is None:
+            bond_order = "default"
+        else:
+            if not isinstance(bond_order, str) or bond_order.lower() not in [
+                "default",
+                "single",
+                "double",
+                "triple",
+                "aromatic",
+                "unspecified",
+            ]:
+                raise ValueError(
+                    "Invalid bond_order given. Available bond orders are: "
+                    "single",
+                    "double",
+                    "triple",
+                    "aromatic",
+                    "unspecified",
+                )
+        self.root.bond_graph.add_edge(
+            particle_pair[0], particle_pair[1], bond_order=bond_order
+        )
 
     def generate_bonds(self, name_a, name_b, dmin, dmax):
         """Add Bonds between all pairs of types a/b within [dmin, dmax].
@@ -2654,7 +2695,7 @@ class Compound(object):
                     particle._element = element_from_symbol(particle.name)
                 except ElementError:
                     try:
-                        element_from_name(particle.name)
+                        particle._element = element_from_name(particle.name)
                     except ElementError:
                         raise MBuildError(
                             "No element assigned to {}; element could not be"
@@ -2890,7 +2931,9 @@ class Compound(object):
         filename : str
             Filesystem path in which to save the trajectory. The extension or
             prefix will be parsed and control the format. Supported extensions:
-            'hoomdxml', 'gsd', 'gro', 'top', 'lammps', 'lmp', 'mcf'
+            'hoomdxml', 'gsd', 'gro', 'top', 'lammps', 'lmp', 'mcf', 'pdb', 'xyz',
+            'json', 'mol2', 'sdf', 'psf'. See parmed/structure.py for more
+            information on savers.
         show_ports : bool, optional, default=False
             Save ports contained within the compound.
         forcefield_files : str, optional, default=None
@@ -3228,6 +3271,35 @@ class Compound(object):
             infer_hierarchy=infer_hierarchy,
         )
 
+    def to_rdkit(self):
+        """Create an RDKit RWMol from an mBuild Compound.
+
+        Returns
+        -------
+        rdkit.Chem.RWmol
+
+        Notes
+        -----
+        Use this method to utilzie rdkit funcitonality.
+        This method only works when the mBuild compound
+        contains accurate element information. As a result,
+        this method is not compatible with compounds containing
+        abstract particles (e.g. coarse-grained systems)
+
+        Example
+        -------
+        >>> import mbuild
+        >>> from rdkit.Chem import Draw
+
+        >>> benzene = mb.load("c1cccc1", smiles=True)
+        >>> benzene_rdkmol = benzene.to_rdkit()
+        >>> img = Draw.MolToImage(benzene_rdkmol)
+
+        See https://www.rdkit.org/docs/GettingStartedInPython.html
+
+        """
+        return conversion.to_rdkit(self)
+
     def to_parmed(
         self,
         box=None,
@@ -3552,9 +3624,12 @@ class Compound(object):
         newone.bond_graph = BondGraph()
         for particle in self.particles():
             newone.bond_graph.add_node(clone_of[particle])
-        for c1, c2 in self.bonds():
+        for c1, c2, data in self.bonds(return_bond_order=True):
             try:
-                newone.add_bond((clone_of[c1], clone_of[c2]))
+                # bond order is added to the data dictionary as 'bo'
+                newone.add_bond(
+                    (clone_of[c1], clone_of[c2]), bond_order=data["bond_order"]
+                )
             except KeyError:
                 raise MBuildError(
                     "Cloning failed. Compound contains bonds to "
