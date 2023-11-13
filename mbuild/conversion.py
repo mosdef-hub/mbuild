@@ -972,7 +972,7 @@ def save(
     box=None,
     overwrite=False,
     residues=None,
-    combining_rule="lorentz",
+    combining_rule=None,
     foyer_kwargs=None,
     parmed_kwargs=None,
     **kwargs,
@@ -1010,11 +1010,12 @@ def save(
     residues : str of list of str
         Labels of residues in the Compound. Residues are assigned by checking
         against Compound.name.
-    combining_rule : str, optional, default='lorentz'
+    combining_rule : str or None, optional, default=None
         Specify the combining rule for nonbonded interactions. Only relevant
         when the `foyer` package is used to apply a forcefield. Valid options
-        are 'lorentz' and 'geometric', specifying Lorentz-Berthelot and
-        geometric combining rules respectively.
+        are 'lorentz' and 'geometric' and None, specifying Lorentz-Berthelot and
+        geometric combining rules respectively. If None is provided, the combining_rule
+        specified from the forcefield will be used.
     foyer_kwargs : dict, optional, default=None
         Keyword arguments to provide to `foyer.Forcefield.apply`.
     parmed_kwargs : dict, optional, default=None
@@ -1111,6 +1112,10 @@ def save(
         if not foyer_kwargs:
             foyer_kwargs = {}
         structure = ff.apply(structure, **foyer_kwargs)
+
+        if combining_rule is None:
+            combining_rule = structure.combining_rule
+
         if structure.combining_rule != combining_rule:
             warn(
                 f"Overwriting forcefield-specified combining rule ({combining_rule})"
@@ -1119,6 +1124,7 @@ def save(
                 "calculated in foyer, and the new combining rule."
                 "Consider directly changing the metadata of the Forcefield."
             )
+
         structure.combining_rule = combining_rule
         if structure.__dict__.get("defaults"):
             structure.defaults.comb_rule = (
