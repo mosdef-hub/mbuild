@@ -362,7 +362,7 @@ class Compound(object):
                     f"{h['parent_id']}",
                 )
         if show_tree:
-            tree.show()
+            print(tree)
         return tree
 
     def _get_hierarchy(self, level=0):
