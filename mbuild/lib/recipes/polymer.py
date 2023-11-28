@@ -107,7 +107,7 @@ class Polymer(Compound):
         """
         return self._end_groups
 
-    def build(self, n, sequence="A", add_hydrogens=True):
+    def build(self, n, sequence="A", add_hydrogens=True, make_periodic=False):
         """Connect one or more components in a specified sequence.
 
         Uses the compounds that are stored in Polymer.monomers and
@@ -126,11 +126,18 @@ class Polymer(Compound):
             For example, 'AB' where 'A'corresponds to the first compound
             added to Polymer.monomers and 'B' to the second compound.
         add_hydrogens : bool, default True
-            If True and an end group compound is None, then the head or tail
+            If True and an ``end_groups`` compound is None, then the head or tail
             of the polymer will be capped off with hydrogen atoms. If end group
             compounds exist, then they will be used.
             If False and an end group compound is None, then the head or tail
             port will be exposed in the polymer.
+        make_periodic : bool, default False
+            If True and an ``end_groups`` compound is None, then the head and tail
+            will be forced into an overlap with a periodicity along the z-axis.
+            If end group compounds exist, then there will be a warning. However
+            ``add_hydrogens`` will simply be overwritten.
+            If False, ``end_groups`` compound is None, and ``add_hydrogens`` is
+            False then the head or tail port will be exposed in the polymer.
         """
         if n < 1:
             raise ValueError("n must be 1 or more")
@@ -182,25 +189,35 @@ class Polymer(Compound):
 
         head_tail = [head_port, tail_port]
 
-        for i, compound in enumerate(self._end_groups):
-            if compound is not None:
-                if self._headtail[i] is not None:
-                    head_tail[i].update_separation(self._headtail[i])
-                self.add(compound)
-                force_overlap(compound, compound.labels["up"], head_tail[i])
-            else:
-                if add_hydrogens:
-                    hydrogen = H()
-                    # Defaut to 1/2 H-C bond len
-                    head_tail[i].update_separation(0.0547)
-                    hydrogen["up"].update_separation(0.0547)
-                    self.add(hydrogen)
-                    force_overlap(hydrogen, hydrogen["up"], head_tail[i])
+        if make_periodic:
+            if all(self._end_groups == None):
+                raise ValueError(
+                    "Keyword 'make_periodic' cannot be defined if 'end_groups' are provided."
+                )
+            self.periodic = [False, False, True]
+            force_overlap(self, head_tail[0], head_tail[1])
+        else:
+            for i, compound in enumerate(self._end_groups):
+                if compound is not None:
+                    if self._headtail[i] is not None:
+                        head_tail[i].update_separation(self._headtail[i])
+                    self.add(compound)
+                    force_overlap(compound, compound.labels["up"], head_tail[i])
                 else:
-                    # if None, hoist port to polymer level
-                    self.add(
-                        head_tail[i], self._port_labels[i], containment=False
-                    )
+                    if add_hydrogens:
+                        hydrogen = H()
+                        # Defaut to 1/2 H-C bond len
+                        head_tail[i].update_separation(0.0547)
+                        hydrogen["up"].update_separation(0.0547)
+                        self.add(hydrogen)
+                        force_overlap(hydrogen, hydrogen["up"], head_tail[i])
+                    else:
+                        # if None, hoist port to polymer level
+                        self.add(
+                            head_tail[i],
+                            self._port_labels[i],
+                            containment=False,
+                        )
 
         for port in self.all_ports():
             if port not in self.available_ports():
