@@ -190,12 +190,34 @@ class Polymer(Compound):
         head_tail = [head_port, tail_port]
 
         if make_periodic:
-            if all(self._end_groups == None):
+            if np.any([x is not None for x in self._end_groups]):
                 raise ValueError(
                     "Keyword 'make_periodic' cannot be defined if 'end_groups' are provided."
                 )
-            self.periodic = [False, False, True]
+            self.translate(-head_port.pos)
+            vector0 = np.array([0, 0, 1])
+            vector = tail_port.pos - head_port.pos
+            vector /= np.linalg.norm(vector)
+            dot = np.dot(vector0, vector)
+            if dot > 0:
+                theta = np.arccos(dot)
+            else:
+                theta = -(np.pi - np.arccos(dot))
+            self.spin(theta, np.cross(vector0, vector), anchor=head_port)
+            self.periodic = list(
+                ~np.isclose(
+                    head_port.pos - tail_port.pos, 0.0, np.finfo(float).eps
+                )
+            )
             force_overlap(self, head_tail[0], head_tail[1])
+            if not np.all(
+                np.isclose(self.periodic, [0, 0, 1], np.finfo(float).eps)
+            ):
+                raise ValueError(
+                    "Periodic polymer could not be aligned: {} {}".format(
+                        head_port.pos, tail_port.pos
+                    )
+                )
         else:
             for i, compound in enumerate(self._end_groups):
                 if compound is not None:
