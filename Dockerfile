@@ -17,17 +17,15 @@ WORKDIR /mbuild
 # Create a group and user
 RUN addgroup -S anaconda && adduser -S anaconda -G anaconda
 
-# install the libarchive package needed by mamba
-RUN apk update && apk add libarchive
-
-RUN conda update conda -yq && \
+RUN apk update && apk add libarchive &&\
+  conda update conda -yq && \
   conda config --set always_yes yes --set changeps1 no && \
   . /opt/conda/etc/profile.d/conda.sh && \
-  sed -i -E "s/python.*$/python="$(PY_VERSION)"/" environment-dev.yml && \
+  sed -i -E "s/python.*$/python="$(PY_VERSION)"/" environment.yml && \
   conda install -c conda-forge mamba && \
-  mamba env create nomkl --file environment-dev.yml && \
+  mamba env create --file environment-dev.yml && \
   conda activate mbuild-dev && \
-  mamba install -c conda-forge nomkl jupyter python="$PY_VERSION" && \
+  mamba install -c conda-forge jupyter python="$PY_VERSION" && \
   python setup.py install && \
   echo "source activate mbuild-dev" >> \
   /home/anaconda/.profile && \
@@ -36,7 +34,6 @@ RUN conda update conda -yq && \
   chown -R anaconda:anaconda /mbuild && \
   chown -R anaconda:anaconda /opt && \
   chown -R anaconda:anaconda /home/anaconda
-
 
 WORKDIR /home/anaconda
 
