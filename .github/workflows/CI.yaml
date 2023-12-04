@@ -20,11 +20,9 @@ jobs:
       matrix:
         os: [macOS-latest, ubuntu-latest, windows-latest]
         python-version: ["3.9", "3.10", "3.11"]
-        exclude:
+        include:
           - os: windows-latest
-            python-version: "3.9"
-          - os: windows-latest
-            python-version: "3.10"
+            python-version: "3.11"
 
     defaults:
       run:
