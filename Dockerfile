@@ -21,7 +21,7 @@ RUN apk update && apk add libarchive &&\
   conda update conda -yq && \
   conda config --set always_yes yes --set changeps1 no && \
   . /opt/conda/etc/profile.d/conda.sh && \
-  sed -i -E "s/python.*$/python="$(PY_VERSION)"/" environment.yml && \
+  sed -i -E "s/python.*$/python="$(PY_VERSION)"/" environment-dev.yml && \
   conda install -c conda-forge mamba && \
   mamba env create --file environment-dev.yml && \
   conda activate mbuild-dev && \
