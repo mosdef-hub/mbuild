@@ -5,6 +5,7 @@ from collections import OrderedDict
 import ele
 
 import mbuild as mb
+from mbuild.bond_graph import BondGraph
 from mbuild.exceptions import MBuildError
 
 
@@ -55,6 +56,7 @@ def compound_from_json(json_file):
                 sub_cmpd = _dict_to_mb(sub_compound)
                 converted_dict[sub_compound["id"]] = sub_cmpd
             sub_cmpd = converted_dict[sub_compound["id"]]
+            sub_cmpd.bond_graph = None
 
             label_str = sub_compound["label"]
             label_list = compound.get("label_list", {})
@@ -63,7 +65,12 @@ def compound_from_json(json_file):
                     parent_compound.labels[key] = list()
                 if sub_compound["id"] in vals:
                     parent_compound.labels[key].append(sub_cmpd)
-            parent_compound.add(sub_cmpd, label=label_str)
+            parent_compound.add(sub_cmpd, check_box_size=False, label=label_str)
+
+        parent.bond_graph = BondGraph()
+        parent.bond_graph.add_nodes_from(
+            [particle for particle in parent.particles()]
+        )
 
         _add_ports(compound_dict, converted_dict)
         _add_bonds(compound_dict, parent, converted_dict)
@@ -235,7 +242,9 @@ def _add_ports(compound_dict, converted_dict):
             for port in ports:
                 label_str = port["label"]
                 port_to_add = mb.Port(anchor=converted_dict[port["anchor"]])
-                converted_dict[compound["id"]].add(port_to_add, label_str)
+                converted_dict[compound["id"]].add(
+                    port_to_add, label_str, check_box_size=False
+                )
             # Not necessary to add same port twice
             compound["ports"] = None
         ports = subcompound.get("ports", None)
@@ -243,7 +252,9 @@ def _add_ports(compound_dict, converted_dict):
             for port in ports:
                 label_str = port["label"]
                 port_to_add = mb.Port(anchor=converted_dict[port["anchor"]])
-                converted_dict[subcompound["id"]].add(port_to_add, label_str)
+                converted_dict[subcompound["id"]].add(
+                    port_to_add, label_str, check_box_size=False
+                )
             subcompound["ports"] = None
 
 
