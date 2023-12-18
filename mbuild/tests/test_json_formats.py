@@ -121,3 +121,12 @@ class TestJSONFormats(BaseTest):
         compound_to_json(ethane, "ethane.json", include_ports=True)
         ethane_copy = compound_from_json("ethane.json")
         assert np.allclose(ethane.xyz, ethane_copy.xyz, atol=10**-6)
+
+    def test_compound_with_port(self):
+        ch2 = mb.lib.moieties.CH2()
+        ch2.save("ch2.json", show_ports=True, overwrite=True)
+
+        loaded_ch2 = mb.load("ch2.json")
+        assert len(loaded_ch2.all_ports()) == 2
+        for port in loaded_ch2.all_ports():
+            assert port.separation == 0.07

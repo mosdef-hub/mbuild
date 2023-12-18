@@ -158,6 +158,7 @@ def _particle_info(cmpd, include_ports=False):
             else:
                 port_info["anchor"] = None
             port_info["label"] = None
+            port_info["pos"] = port.pos.tolist()
             # Is this the most efficient way?
             for key, val in cmpd.labels.items():
                 if (val == port) and val.port_particle:
@@ -242,6 +243,8 @@ def _add_ports(compound_dict, converted_dict):
             for port in ports:
                 label_str = port["label"]
                 port_to_add = mb.Port(anchor=converted_dict[port["anchor"]])
+                if port.get("pos", None) is not None:
+                    port_to_add.translate_to(port.get("pos"))
                 converted_dict[compound["id"]].add(
                     port_to_add, label_str, check_box_size=False
                 )
