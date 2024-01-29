@@ -1,4 +1,5 @@
 """A Silane (Si(OH)2) moiety."""
+
 import numpy as np
 
 import mbuild as mb

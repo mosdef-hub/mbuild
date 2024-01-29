@@ -1,4 +1,5 @@
 """A tri-valent, planar carbon atom."""
+
 import numpy as np
 
 import mbuild as mb

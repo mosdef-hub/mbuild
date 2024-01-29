@@ -1,4 +1,5 @@
 """Module for creating TiledCompounds."""
+
 __all__ = ["TiledCompound"]
 
 import itertools as it

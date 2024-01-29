@@ -1,4 +1,5 @@
 """An ethane molecule."""
+
 import mbuild as mb
 from mbuild.lib.moieties import CH3
 
