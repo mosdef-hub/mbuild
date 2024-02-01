@@ -1,4 +1,5 @@
 """mBuild recipe for a silica interface."""
+
 import math
 import random
 

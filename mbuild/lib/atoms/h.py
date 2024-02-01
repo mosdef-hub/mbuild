@@ -1,4 +1,5 @@
 """An H atom."""
+
 import numpy as np
 
 import mbuild as mb

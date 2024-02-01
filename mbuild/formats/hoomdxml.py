@@ -1,4 +1,5 @@
 """HOOMD xml format."""
+
 import operator
 from collections import namedtuple
 from math import radians

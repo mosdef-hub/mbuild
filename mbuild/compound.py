@@ -1,4 +1,5 @@
 """Module for working with mBuild Compounds."""
+
 __all__ = ["clone", "Compound", "Particle"]
 
 import itertools

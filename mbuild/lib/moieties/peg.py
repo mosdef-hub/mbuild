@@ -1,4 +1,5 @@
 """mBuild polyethylene glycol (PEG) monomer moiety."""
+
 __author__ = "jonestj1"
 
 import mbuild as mb

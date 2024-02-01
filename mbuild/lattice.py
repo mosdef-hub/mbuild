@@ -1,4 +1,5 @@
 """mBuild lattice module for working with crystalline systems."""
+
 import itertools as it
 import pathlib
 import warnings
@@ -679,8 +680,8 @@ class Lattice(object):
 
         # if coordinates are below a certain threshold, set to 0
         tolerance = 1e-12
-        ret_lattice.xyz_with_ports[
-            ret_lattice.xyz_with_ports <= tolerance
-        ] = 0.0
+        ret_lattice.xyz_with_ports[ret_lattice.xyz_with_ports <= tolerance] = (
+            0.0
+        )
 
         return ret_lattice
