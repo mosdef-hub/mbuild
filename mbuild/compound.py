@@ -1865,7 +1865,11 @@ class Compound(object):
         return particle_array[idxs]
 
     def visualize(
-        self, show_ports=False, backend="py3dmol", color_scheme={}
+        self,
+        show_ports=False,
+        backend="py3dmol",
+        color_scheme={},
+        bead_size=0.3,
     ):  # pragma: no cover
         """Visualize the Compound using py3dmol (default) or nglview.
 
@@ -1883,6 +1887,8 @@ class Compound(object):
             keys are strings of the particle names
             values are strings of the colors
             i.e. {'_CGBEAD': 'blue'}
+        bead_size : float, Optional, default=0.3
+            Size of beads in visualization
         """
         viz_pkg = {
             "nglview": self._visualize_nglview,
@@ -1891,7 +1897,9 @@ class Compound(object):
         if run_from_ipython():
             if backend.lower() in viz_pkg:
                 return viz_pkg[backend.lower()](
-                    show_ports=show_ports, color_scheme=color_scheme
+                    show_ports=show_ports,
+                    color_scheme=color_scheme,
+                    bead_size=bead_size,
                 )
             else:
                 raise RuntimeError(
@@ -1904,7 +1912,9 @@ class Compound(object):
                 "Visualization is only supported in Jupyter Notebooks."
             )
 
-    def _visualize_py3dmol(self, show_ports=False, color_scheme={}):
+    def _visualize_py3dmol(
+        self, show_ports=False, color_scheme={}, bead_size=0.3
+    ):
         """Visualize the Compound using py3Dmol.
 
         Allows for visualization of a Compound within a Jupyter Notebook.
@@ -1918,6 +1928,8 @@ class Compound(object):
             keys are strings of the particle names
             values are strings of the colors
             i.e. {'_CGBEAD': 'blue'}
+        bead_size : float, Optional, default=0.3
+            Size of beads in visualization
 
         Returns
         -------
@@ -1952,15 +1964,20 @@ class Compound(object):
 
         view.setStyle(
             {
-                "stick": {"radius": 0.2, "color": "grey"},
-                "sphere": {"scale": 0.3, "colorscheme": modified_color_scheme},
+                "stick": {"radius": bead_size * 0.6, "color": "grey"},
+                "sphere": {
+                    "scale": bead_size,
+                    "colorscheme": modified_color_scheme,
+                },
             }
         )
         view.zoomTo()
 
         return view
 
-    def _visualize_nglview(self, show_ports=False, color_scheme={}):
+    def _visualize_nglview(
+        self, show_ports=False, color_scheme={}, bead_size=0.3
+    ):
         """Visualize the Compound using nglview.
 
         Allows for visualization of a Compound within a Jupyter Notebook.
