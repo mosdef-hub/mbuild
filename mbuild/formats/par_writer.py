@@ -1,4 +1,5 @@
 """CHARMM Par format."""
+
 import warnings
 
 __all__ = ["write_par"]

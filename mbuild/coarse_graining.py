@@ -1,4 +1,5 @@
 """Tools for coarse-grained systems."""
+
 from collections import OrderedDict
 from copy import deepcopy
 

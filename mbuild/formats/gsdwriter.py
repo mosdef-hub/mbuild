@@ -2,6 +2,7 @@
 
 https://gsd.readthedocs.io/en/stable/
 """
+
 import numpy as np
 
 from mbuild.utils.geometry import coord_shift

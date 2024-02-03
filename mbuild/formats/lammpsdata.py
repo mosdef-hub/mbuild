@@ -1,4 +1,5 @@
 """LAMMPS data format."""
+
 import itertools as it
 from collections import OrderedDict
 from warnings import warn
@@ -708,9 +709,7 @@ def _get_bond_types(
             (
                 round(
                     bond.type.k
-                    * (
-                        sigma_conversion_factor**2 / epsilon_conversion_factor
-                    ),
+                    * (sigma_conversion_factor**2 / epsilon_conversion_factor),
                     bond_precision,
                 ),
                 round(bond.type.req / sigma_conversion_factor, bond_precision),

@@ -1,4 +1,5 @@
 """mBuild pattern module."""
+
 from itertools import product
 
 import numpy as np

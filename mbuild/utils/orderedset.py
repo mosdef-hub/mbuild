@@ -1,4 +1,5 @@
 """Ordered set module."""
+
 from collections.abc import MutableSet
 
 

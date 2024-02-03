@@ -1,4 +1,5 @@
 """VASP POSCAR format."""
+
 import warnings
 from itertools import chain
 

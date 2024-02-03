@@ -2,6 +2,7 @@
 
 http://leandro.iqm.unicamp.br/m3g/packmol/home.shtml
 """
+
 import os
 import sys
 import tempfile

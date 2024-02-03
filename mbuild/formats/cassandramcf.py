@@ -2,6 +2,7 @@
 
 https://cassandra-mc.readthedocs.io/en/latest/guides/input_files.html#molecular-connectivity-file
 """
+
 from __future__ import division
 
 import warnings

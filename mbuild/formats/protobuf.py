@@ -3,6 +3,7 @@
 A language-agnostic data serialization format developed by Google
 https://developers.google.com/protocol-buffers
 """
+
 import ele
 import numpy as np
 from google.protobuf.text_format import Merge, PrintMessage

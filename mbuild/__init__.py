@@ -1,4 +1,5 @@
 """mBuild: a hierarchical, component based molecule builder."""
+
 from mbuild.box import Box
 from mbuild.coarse_graining import coarse_grain
 from mbuild.compound import *

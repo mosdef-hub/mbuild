@@ -1,4 +1,5 @@
 """HOOMD simulation format."""
+
 import itertools
 import operator
 import warnings

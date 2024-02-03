@@ -1,4 +1,5 @@
 """JSON format."""
+
 import json
 from collections import OrderedDict
 

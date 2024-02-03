@@ -1,4 +1,5 @@
 """Ports used to facilitate bond formation."""
+
 import itertools
 from warnings import warn
 
