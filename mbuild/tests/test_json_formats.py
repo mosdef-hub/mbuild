@@ -124,7 +124,7 @@ class TestJSONFormats(BaseTest):
 
     def test_compound_with_port(self):
         ch2 = mb.lib.moieties.CH2()
-        ch2.save("ch2.json", show_ports=True, overwrite=True)
+        ch2.save("ch2.json", include_ports=True, overwrite=True)
 
         loaded_ch2 = mb.load("ch2.json")
         assert len(loaded_ch2.all_ports()) == 2
