@@ -1953,7 +1953,7 @@ class Compound(object):
         tmp_dir = tempfile.mkdtemp()
         cloned.save(
             os.path.join(tmp_dir, "tmp.mol2"),
-            show_ports=show_ports,
+            include_ports=show_ports,
             overwrite=True,
             parmed_kwargs={"infer_residues": False},
         )
@@ -1984,7 +1984,7 @@ class Compound(object):
 
         Parameters
         ----------
-        show_ports : bool, optional, default=False
+        include_ports : bool, optional, default=False
             Visualize Ports in addition to Particles
         """
         nglview = import_("nglview")
@@ -2001,7 +2001,7 @@ class Compound(object):
         tmp_dir = tempfile.mkdtemp()
         self.save(
             os.path.join(tmp_dir, "tmp.mol2"),
-            show_ports=show_ports,
+            include_ports=show_ports,
             overwrite=True,
         )
         widget = nglview.show_file(os.path.join(tmp_dir, "tmp.mol2"))
@@ -2930,7 +2930,7 @@ class Compound(object):
     def save(
         self,
         filename,
-        show_ports=False,
+        include_ports=False,
         forcefield_name=None,
         forcefield_files=None,
         forcefield_debug=False,
@@ -2952,7 +2952,7 @@ class Compound(object):
             'hoomdxml', 'gsd', 'gro', 'top', 'lammps', 'lmp', 'mcf', 'pdb', 'xyz',
             'json', 'mol2', 'sdf', 'psf'. See parmed/structure.py for more
             information on savers.
-        show_ports : bool, optional, default=False
+        include_ports : bool, optional, default=False
             Save ports contained within the compound.
         forcefield_files : str, optional, default=None
             Apply a forcefield to the output file using a forcefield provided
@@ -3024,7 +3024,7 @@ class Compound(object):
         When saving the compound as a json, only the following arguments are
         used:
         * filename
-        * show_ports
+        * include_ports
 
         See Also
         --------
@@ -3039,7 +3039,7 @@ class Compound(object):
         conversion.save(
             self,
             filename,
-            show_ports,
+            include_ports,
             forcefield_name,
             forcefield_files,
             forcefield_debug,
@@ -3232,13 +3232,13 @@ class Compound(object):
         )
 
     def to_trajectory(
-        self, show_ports=False, chains=None, residues=None, box=None
+        self, include_ports=False, chains=None, residues=None, box=None
     ):
         """Convert to an md.Trajectory and flatten the compound.
 
         Parameters
         ----------
-        show_ports : bool, optional, default=False
+        include_ports : bool, optional, default=False
             Include all port atoms when converting to trajectory.
         chains : mb.Compound or list of mb.Compound
             Chain types to add to the topology
@@ -3261,7 +3261,7 @@ class Compound(object):
         """
         return conversion.to_trajectory(
             compound=self,
-            show_ports=show_ports,
+            include_ports=include_ports,
             chains=chains,
             residues=residues,
             box=box,
@@ -3323,7 +3323,7 @@ class Compound(object):
         box=None,
         title="",
         residues=None,
-        show_ports=False,
+        include_ports=False,
         infer_residues=False,
         infer_residues_kwargs={},
     ):
@@ -3341,7 +3341,7 @@ class Compound(object):
         residues : str of list of str, optional, default=None
             Labels of residues in the Compound. Residues are assigned by checking
             against Compound.name.
-        show_ports : boolean, optional, default=False
+        include_ports : boolean, optional, default=False
             Include all port atoms when converting to a `Structure`.
         infer_residues : bool, optional, default=True
             Attempt to assign residues based on the number of bonds and particles in
@@ -3364,7 +3364,7 @@ class Compound(object):
             box=box,
             title=title,
             residues=residues,
-            show_ports=show_ports,
+            include_ports=include_ports,
             infer_residues=infer_residues,
             infer_residues_kwargs=infer_residues_kwargs,
         )
@@ -3400,7 +3400,7 @@ class Compound(object):
         box=None,
         title="",
         residues=None,
-        show_ports=False,
+        include_ports=False,
         infer_residues=False,
     ):
         """Create a pybel.Molecule from a Compound.
@@ -3413,7 +3413,7 @@ class Compound(object):
         residues : str of list of str
             Labels of residues in the Compound. Residues are assigned by
             checking against Compound.name.
-        show_ports : boolean, optional, default=False
+        include_ports : boolean, optional, default=False
             Include all port atoms when converting to a `Structure`.
         infer_residues : bool, optional, default=False
             Attempt to assign residues based on names of children
@@ -3438,7 +3438,7 @@ class Compound(object):
             box=box,
             title=title,
             residues=residues,
-            show_ports=show_ports,
+            include_ports=include_ports,
         )
 
     def to_smiles(self, backend="pybel"):
