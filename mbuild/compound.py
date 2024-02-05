@@ -2930,7 +2930,7 @@ class Compound(object):
     def save(
         self,
         filename,
-        include_ports=True,
+        include_ports=False,
         forcefield_name=None,
         forcefield_files=None,
         forcefield_debug=False,
@@ -2952,7 +2952,7 @@ class Compound(object):
             'hoomdxml', 'gsd', 'gro', 'top', 'lammps', 'lmp', 'mcf', 'pdb', 'xyz',
             'json', 'mol2', 'sdf', 'psf'. See parmed/structure.py for more
             information on savers.
-        include_ports : bool, optional, default=True
+        include_ports : bool, optional, default=False
             Save ports contained within the compound.
         forcefield_files : str, optional, default=None
             Apply a forcefield to the output file using a forcefield provided
