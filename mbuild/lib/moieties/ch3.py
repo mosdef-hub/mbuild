@@ -1,4 +1,5 @@
 """mBuild CH3 moiety."""
+
 import mbuild as mb
 
 

@@ -1,4 +1,5 @@
 """A bulk structure of amorphous silica."""
+
 import mbuild as mb
 
 

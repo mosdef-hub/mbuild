@@ -1,4 +1,5 @@
 """mBuild recipe for building a water box."""
+
 import itertools
 import math as math
 from collections.abc import Iterable

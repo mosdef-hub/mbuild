@@ -1,4 +1,5 @@
 """HOOMD snapshot format."""
+
 import operator
 from collections import namedtuple
 

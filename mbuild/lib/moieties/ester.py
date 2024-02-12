@@ -1,4 +1,5 @@
 """Ester moiety."""
+
 import numpy as np
 
 import mbuild as mb

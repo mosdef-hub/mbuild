@@ -1,4 +1,5 @@
 """Some helpful decorators."""
+
 from functools import wraps
 from warnings import warn
 

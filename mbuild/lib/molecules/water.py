@@ -1,4 +1,5 @@
 """Water molecules with geometries from different models."""
+
 import numpy as np
 
 import mbuild as mb

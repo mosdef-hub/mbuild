@@ -1,4 +1,5 @@
 """Module for handling conversions in mBuild."""
+
 import os
 import sys
 from collections import defaultdict
@@ -965,7 +966,7 @@ def from_gmso(
 def save(
     compound,
     filename,
-    show_ports=False,
+    include_ports=False,
     forcefield_name=None,
     forcefield_files=None,
     forcefield_debug=False,
@@ -989,7 +990,7 @@ def save(
         'hoomdxml', 'gsd', 'gro', 'top', 'lammps', 'lmp', 'mcf', 'xyz', 'pdb',
         'sdf', 'mol2', 'psf'. See parmed/structure.py for more information on
         savers.
-    show_ports : bool, optional, default=False
+    include_ports : bool, optional, default=False
         Save ports contained within the compound.
     forcefield_files : str, optional, default=None
         Apply a forcefield to the output file using a forcefield provided by the
@@ -1053,7 +1054,7 @@ def save(
     -----
     When saving the compound as a json, only the following arguments are used:
         - filename
-        - show_ports
+        - include_ports
 
     See Also
     --------
@@ -1067,7 +1068,9 @@ def save(
     extension = os.path.splitext(filename)[-1]
 
     if extension == ".json":
-        compound_to_json(compound, file_path=filename, include_ports=show_ports)
+        compound_to_json(
+            compound, file_path=filename, include_ports=include_ports
+        )
         return
 
     # Savers supported by mbuild.formats
@@ -1097,7 +1100,7 @@ def save(
     structure = compound.to_parmed(
         box=box,
         residues=residues,
-        show_ports=show_ports,
+        include_ports=include_ports,
         **parmed_kwargs,
     )
     # Apply a force field with foyer if specified
@@ -1300,7 +1303,7 @@ def to_parmed(
     box=None,
     title="",
     residues=None,
-    show_ports=False,
+    include_ports=False,
     infer_residues=False,
     infer_residues_kwargs={},
 ):
@@ -1320,7 +1323,7 @@ def to_parmed(
     residues : str of list of str, optional, default=None
         Labels of residues in the Compound. Residues are assigned by checking
         against Compound.name.
-    show_ports : boolean, optional, default=False
+    include_ports : boolean, optional, default=False
         Include all port atoms when converting to a `Structure`.
     infer_residues : bool, optional, default=False
         Attempt to assign residues based on the number of bonds and particles in
@@ -1360,7 +1363,7 @@ def to_parmed(
     atom_residue_map = dict()
 
     # Loop through particles and add initialize ParmEd atoms
-    for atom in compound.particles(include_ports=show_ports):
+    for atom in compound.particles(include_ports=include_ports):
         if atom.port_particle:
             current_residue = port_residue
             atom_residue_map[atom] = current_residue
@@ -1457,13 +1460,13 @@ def to_parmed(
 
 
 def to_trajectory(
-    compound, show_ports=False, chains=None, residues=None, box=None
+    compound, include_ports=False, chains=None, residues=None, box=None
 ):
     """Convert to an md.Trajectory and flatten the compound.
 
     Parameters
     ----------
-    show_ports : bool, optional, default=False
+    include_ports : bool, optional, default=False
         Include all port atoms when converting to trajectory.
     chains : mb.Compound or list of mb.Compound
         Chain types to add to the topology
@@ -1484,7 +1487,7 @@ def to_trajectory(
     _to_topology
     """
     md = import_("mdtraj")
-    atom_list = [particle for particle in compound.particles(show_ports)]
+    atom_list = [particle for particle in compound.particles(include_ports)]
 
     top = _to_topology(compound, atom_list, chains, residues)
 
@@ -1649,7 +1652,7 @@ def to_pybel(
     box=None,
     title="",
     residues=None,
-    show_ports=False,
+    include_ports=False,
     infer_residues=False,
 ):
     """Create a pybel.Molecule from a Compound.
@@ -1664,7 +1667,7 @@ def to_pybel(
     residues : str of list of str
         Labels of residues in the Compound. Residues are assigned by checking
         against Compound.name.
-    show_ports : boolean, optional, default=False
+    include_ports : boolean, optional, default=False
         Include all port atoms when converting to a `Structure`.
     infer_residues : bool, optional, default=False
         Attempt to assign residues based on names of children
@@ -1696,7 +1699,7 @@ def to_pybel(
     compound_residue_map = dict()
     atom_residue_map = dict()
 
-    for i, part in enumerate(compound.particles(include_ports=show_ports)):
+    for i, part in enumerate(compound.particles(include_ports=include_ports)):
         if residues and part.name in residues:
             current_residue = mol.NewResidue()
             current_residue.SetName(part.name)

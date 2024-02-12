@@ -1,4 +1,5 @@
 """Recipe for an mBuild polymer."""
+
 import itertools as it
 
 import numpy as np

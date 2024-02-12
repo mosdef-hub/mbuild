@@ -1,4 +1,5 @@
 """mBuild atom library for tetravalent nitrogen."""
+
 import numpy as np
 
 import mbuild as mb
