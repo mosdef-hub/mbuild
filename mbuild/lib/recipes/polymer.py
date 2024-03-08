@@ -83,7 +83,12 @@ class Polymer(Compound):
         super(Polymer, self).__init__()
         self._monomers = monomers or []
         self._end_groups = end_groups or [None, None]
-        if len(self._end_groups) != 2:
+        if not isinstance(self._end_groups, list):
+            raise ValueError(
+                "Please provide two end groups in a list; "
+                f"you provided {self._end_groups}"
+            )
+        elif len(self._end_groups) != 2:
             raise ValueError(
                 "Please provide two end groups; "
                 f"you provided {len(self._end_groups)}"

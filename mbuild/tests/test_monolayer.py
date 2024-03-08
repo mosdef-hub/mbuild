@@ -1,3 +1,5 @@
+import pytest
+
 import mbuild as mb
 from mbuild.lib.atoms import H
 from mbuild.lib.recipes import Monolayer, Polymer
@@ -44,6 +46,33 @@ class TestMonolayer(BaseTest):
 
         assert monolayer.n_particles == 2000 + chains * 29
         assert monolayer.n_bonds == 2500 + chains * 29
+
+    def test_periodic_pattern(self, ch2):
+        # Make Periodic without Hydrogen Conflict
+        chain = mb.recipes.Polymer(monomers=[ch2])
+        chain.build(n=10, add_hydrogens=False, make_periodic=True)
+        assert not chain.all_ports()
+
+        bonded_atoms = [
+            x.name for x in list(chain["monomer[0]"][0].direct_bonds())
+        ]
+        assert bonded_atoms.count("H") == 2
+        assert bonded_atoms.count("C") == 2
+
+        # Make Periodic with Hydrogen Conflict
+        chain2 = mb.recipes.Polymer(monomers=[ch2])
+        chain2.build(n=10, add_hydrogens=True, make_periodic=True)
+        assert not chain2.all_ports()
+
+        bonded_atoms = [
+            x.name for x in list(chain2["monomer[0]"][0].direct_bonds())
+        ]
+        assert bonded_atoms.count("H") == 2
+        assert bonded_atoms.count("C") == 2
+
+        with pytest.raises(ValueError):
+            chain3 = mb.recipes.Polymer(monomers=[ch2], end_groups=ch2)
+            chain3.build(n=10, add_hydrogens=True, make_periodic=True)
 
     def test_mixed_monolayer(self, ch2):
         n = 8
