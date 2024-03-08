@@ -10,7 +10,7 @@ class Recipes(object):
 recipes = Recipes()
 from importlib import metadata
 
-entry_points = metadata.entry_points()["mbuild.plugins"]
+entry_points = metadata.entry_points().select(group="mbuild.plugins")
 
 available_methods = []
 for entry_point in entry_points:
