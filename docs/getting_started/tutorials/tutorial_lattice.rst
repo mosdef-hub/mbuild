@@ -58,7 +58,7 @@ desired crystal structures.
 To begin, we will call the python ``help()`` method to observe the
 parameters and attributes of the ``Lattice`` class.
 
-.. code:: ipython3
+.. code:: ipython
 
     import mbuild
     help(mbuild.Lattice)
@@ -79,7 +79,7 @@ ever get stuck, remember to use the python built-in ``help()`` method!
 
    For Example:
 
-   .. code:: ipython3
+   .. code:: ipython
 
        lattice_spacing = [0.5, 0.5, 0.5]
 
@@ -100,7 +100,7 @@ ever get stuck, remember to use the python built-in ``help()`` method!
 
    For example: Cubic Cell
 
-   .. code:: ipython3
+   .. code:: ipython
 
        lattice_vectors = [[1, 0, 0], [0, 1, 0], [0, 0, 1]]
 
@@ -112,7 +112,7 @@ ever get stuck, remember to use the python built-in ``help()`` method!
 
    For example: Cubic Cell
 
-   .. code:: ipython3
+   .. code:: ipython
 
        angles = [90, 90, 90]
 
@@ -140,7 +140,7 @@ ever get stuck, remember to use the python built-in ``help()`` method!
 
    For Example: FCC All Unique
 
-   .. code:: ipython3
+   .. code:: ipython
 
        lattice_points = {'A' : [[0, 0, 0]],
                          'B' : [[0.5, 0.5, 0]],
@@ -150,7 +150,7 @@ ever get stuck, remember to use the python built-in ``help()`` method!
 
    For Example: FCC All Same
 
-   .. code:: ipython3
+   .. code:: ipython
 
        lattice_points = {'A' : [[0, 0, 0], [0.5, 0.5, 0], [0.5, 0, 0.5], [0, 0.5, 0.5]] }
 
@@ -179,7 +179,7 @@ replications in the x, y, and z directions.
 
       For Example: FCC All Unique
 
-          .. code:: ipython3
+          .. code:: ipython
 
             lattice_points = {'A' : [[0, 0, 0]],
                               'B' : [[0.5, 0.5, 0]],
@@ -197,7 +197,7 @@ replications in the x, y, and z directions.
 
       For Example: FCC All Same
 
-          .. code:: ipython3
+          .. code:: ipython
 
             lattice_points = {'A' : [[0, 0, 0], [0.5, 0.5, 0], [0.5, 0, 0.5], [0, 0.5, 0.5]] }
 
@@ -217,7 +217,7 @@ Simple Cubic (SC)
 
 -  Polonium
 
-.. code:: ipython3
+.. code:: ipython
 
     import mbuild as mb
     import numpy as np
@@ -250,7 +250,7 @@ Body-centered Cubic (BCC)
 
 -  CsCl
 
-.. code:: ipython3
+.. code:: ipython
 
     import mbuild as mb
     import numpy as np
@@ -285,7 +285,7 @@ Face-centered Cubic (FCC)
 
 -  Cu
 
-.. code:: ipython3
+.. code:: ipython
 
     import mbuild as mb
     import numpy as np
@@ -318,7 +318,7 @@ Diamond (Cubic)
 
 -  Si
 
-.. code:: ipython3
+.. code:: ipython
 
     import mbuild as mb
     import numpy as np
@@ -352,7 +352,7 @@ Graphene (2D)
 
 -  C
 
-.. code:: ipython3
+.. code:: ipython
 
     import mbuild as mb
     import numpy as np

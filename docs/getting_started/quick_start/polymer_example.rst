@@ -6,7 +6,7 @@ Use two (2) different monomer units, A and B, to construct a polymer, capping it
 
 Import the required mbuild packages.
 
-.. code:: ipython3
+.. code:: ipython
 
     import mbuild as mb
     from mbuild.lib.recipes.polymer import Polymer
@@ -20,7 +20,7 @@ Set the `chain` as a ``Polymer`` class, adding `comp_1` and `comp_2` as the mono
     Setting the indices identifies which atoms will be removed and have ports created in their place.
 
 
-.. code:: ipython3
+.. code:: ipython
 
     comp_1 = mb.load('CC', smiles=True) # mBuild compound of the monomer unit
     comp_2 = mb.load('COC', smiles=True) # mBuild compound of the monomer unit
@@ -40,7 +40,7 @@ Select the carboxylic acid and amine end groups that we want to use for the head
 Then, build the polymer with three (3) iterations of the AB sequence, and the selected head and tail end groups.
 
 
-.. code:: ipython3
+.. code:: ipython
 
     chain.add_end_groups(mb.load('C(=O)O',smiles=True),
                          index=3,

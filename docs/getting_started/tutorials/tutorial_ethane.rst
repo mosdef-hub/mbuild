@@ -9,7 +9,7 @@ transforms.
 
 First, we need to import the mbuild package:
 
-.. code:: ipython3
+.. code:: ipython
 
     import mbuild as mb
 
@@ -23,7 +23,7 @@ connectivity information).
 
 Let’s start by reading a methyl group from a ``.pdb`` file:
 
-.. code:: ipython3
+.. code:: ipython
 
     import mbuild as mb
 
@@ -34,7 +34,7 @@ Let’s start by reading a methyl group from a ``.pdb`` file:
 Now let’s use our first coordinate transform to center the methyl at its
 carbon atom:
 
-.. code:: ipython3
+.. code:: ipython
 
     import mbuild as mb
 
@@ -49,7 +49,7 @@ typically points to a particle that the ``Port`` should be associated
 with. In our methyl group, the ``Port`` should be anchored to the carbon
 atom so that we can now form bonds to this carbon:
 
-.. code:: ipython3
+.. code:: ipython
 
     import mbuild as mb
 
@@ -66,14 +66,14 @@ By default, ``Ports`` are never output from the mBuild structure.
 However, it can be useful to look at a molecule with the ``Ports`` to
 check your work as you go:
 
-.. code:: ipython3
+.. code:: ipython
 
     ch3.visualize(show_ports=True)
 
 Now we wrap the methyl group into a python class, so that we can reuse
 it as a component to build more complex molecules later.
 
-.. code:: ipython3
+.. code:: ipython
 
     import mbuild as mb
 
@@ -111,7 +111,7 @@ automatically chosen.
 
 Now the fun part: stick ’em together to create an ethane:
 
-.. code:: ipython3
+.. code:: ipython
 
     ethane = mb.Compound()
 
@@ -126,18 +126,18 @@ rotates and translates it such that two other ``Compounds`` overlap.
 Typically, as in this case, those two other ``Compounds`` are ``Ports``
 - in our case, ``methyl1['up']`` and ``methyl2['up']``.
 
-.. code:: ipython3
+.. code:: ipython
 
     ethane.visualize()
 
-.. code:: ipython3
+.. code:: ipython
 
     ethane.visualize(show_ports=True)
 
 Similarly, if we want to make ethane a reusable component, we need to
 wrap it into a python class.
 
-.. code:: ipython3
+.. code:: ipython
 
     import mbuild as mb
 
@@ -151,12 +151,12 @@ wrap it into a python class.
                              from_positions=self['methyl_1']['up'],
                              to_positions=self['methyl_2']['up'])
 
-.. code:: ipython3
+.. code:: ipython
 
     ethane = Ethane()
     ethane.visualize()
 
-.. code:: ipython3
+.. code:: ipython
 
     # Save to .mol2
     ethane.save('ethane.mol2', overwrite=True)
