@@ -5,6 +5,7 @@ channels:
 dependencies:
   - importlib_resources
   - python=3.11
+  - ipython
   - pip
   - pip:
     - boltons
