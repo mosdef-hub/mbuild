@@ -7,7 +7,7 @@ The primary building block in mBuild is a ``Compound``. Anything you
 construct will inherit from this class. Let’s start with some basic
 imports and initialization:
 
-.. code:: ipython
+.. code:: ipython3
 
     import mbuild as mb
 
@@ -21,7 +21,7 @@ hierarchy are referred to as ``Particles``. Note however, that this is
 purely semantic in mBuild to help clearly designate the bottom of a
 hierarchy.
 
-.. code:: ipython
+.. code:: ipython3
 
     import mbuild as mb
 
@@ -56,7 +56,7 @@ hydrogen. Note that for typical use cases, you will almost never have to
 explicitly define a bond when using mBuild - this is just to show you
 what’s going on under the hood:
 
-.. code:: ipython
+.. code:: ipython3
 
     import mbuild as mb
 
@@ -78,7 +78,7 @@ fancy label, it’s also referenceable via ``self['HC'][0]``.
 Alright now that we’ve got the basics, let’s finish building our
 ``Methane`` and take a look at it:
 
-.. code:: ipython
+.. code:: ipython3
 
     import mbuild as mb
 
@@ -101,12 +101,12 @@ Alright now that we’ve got the basics, let’s finish building our
             self.add_bond((self[0], self['HC'][2]))
             self.add_bond((self[0], self['HC'][3]))
 
-.. code:: ipython
+.. code:: ipython3
 
     methane = Methane()
     methane.visualize()
 
-.. code:: ipython
+.. code:: ipython3
 
     # Save to .mol2
     methane.save('methane.mol2',overwrite=True)

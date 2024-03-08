@@ -28,7 +28,7 @@ consistent! The more components we collect in our library with the same
 labeling conventions, the easier it becomes to build ever more complex
 structures.
 
-.. code:: ipython
+.. code:: ipython3
 
     import mbuild as mb
 
@@ -50,13 +50,13 @@ structures.
             # Hoist silane port to AlkylSilane level.
             self.add(silane['down'], 'down', containment=False)
 
-.. code:: ipython
+.. code:: ipython3
 
     AlkylSilane(5).visualize()
 
 Now let’s create a substrate to which we can later attach our monomers:
 
-.. code:: ipython
+.. code:: ipython3
 
     import mbuild as mb
     from mbuild.lib.surfaces import Betacristobalite
@@ -72,7 +72,7 @@ library. The ``TiledCompound`` tool allows you replicate any
 Next, let’s create our monomer and a hydrogen atom that we’ll place on
 unoccupied surface sites:
 
-.. code:: ipython
+.. code:: ipython3
 
     from mbuild.lib.atoms import H
     alkylsilane = AlkylSilane(chain_length=10)
@@ -87,7 +87,7 @@ figures out what the closest ports are to the pattern points and then
 attaches copies of the guest onto the binding sites identified by the
 pattern:
 
-.. code:: ipython
+.. code:: ipython3
 
     pattern = mb.Grid2DPattern(8, 8)  # Evenly spaced, 2D grid of points.
 
@@ -98,12 +98,12 @@ Also note the ``backfill`` optional argument which allows you to place a
 different compound on any unused ports. In this case we want to backfill
 with hydrogen atoms on every port without a chain.
 
-.. code:: ipython
+.. code:: ipython3
 
     monolayer = mb.Compound([tiled_surface, chains, hydrogens])
     monolayer.visualize() # Warning: may be slow in IPython notebooks
 
-.. code:: ipython
+.. code:: ipython3
 
     # Save as .mol2 file
     monolayer.save('monolayer.mol2', overwrite=True)
@@ -111,7 +111,7 @@ with hydrogen atoms on every port without a chain.
 ``lib.recipes.monolayer.py`` wraps many these functions into a simple,
 general class for generating the monolayers, as shown below:
 
-.. code:: ipython
+.. code:: ipython3
 
     from mbuild.lib.recipes import Monolayer
 

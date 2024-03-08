@@ -17,7 +17,7 @@ importing the coordinates from a pdb file, as in the previous example,
 we will instead explicitly define them in the class. Recall that
 distance units are nm in mBuild.
 
-.. code:: ipython
+.. code:: ipython3
 
     import mbuild as mb
 
@@ -60,7 +60,7 @@ given in radians. Similarly, the ports should be rotated around the
 x-axis by the same amount so that atoms can be added in a realistic
 orientation.
 
-.. code:: ipython
+.. code:: ipython3
 
     import numpy as np
     import mbuild as mb
@@ -108,7 +108,7 @@ make a copy. The ``force_overlap()`` function is used to connect the
 ``'up'`` port from ``current_monomer`` to the ``'down'`` port of
 ``last_mononer``.
 
-.. code:: ipython
+.. code:: ipython3
 
     class AlkanePolymer(mb.Compound):
         def __init__(self):
@@ -135,7 +135,7 @@ We can also add a variable ``chain_length`` both to the for loop and
 ``init`` that will allow the length of the polymer to be adjusted when
 the class is instantiated.
 
-.. code:: ipython
+.. code:: ipython3
 
     import numpy as np
     import mbuild as mb
@@ -182,7 +182,7 @@ the class is instantiated.
                 self.add(current_monomer)
                 last_monomer=current_monomer
 
-.. code:: ipython
+.. code:: ipython3
 
     polymer = AlkanePolymer(chain_length=10)
     polymer.visualize(show_ports=True)
@@ -211,7 +211,7 @@ A simple hexane molecule is built using ``mBuild``'s packaged polymer builder.
 This is done by loading a methane molecule via a SMILES string.
 The indices are explicitly selected, so the molecule builds out in the proper directions and does not overlap.
 
-.. code:: ipython
+.. code:: ipython3
 
     import mbuild as mb
     from mbuild.lib.recipes.polymer import Polymer
@@ -235,7 +235,7 @@ The end groups are added via the ``add_end_groups`` attribute, specifying the at
 the location of each end group (``label``), and if the tail end group is duplicated to the head of the polymer (``duplicate``).
 The indices are explicitly selected, so the molecule builds out in the proper directions and does not overlap.
 
-.. code:: ipython
+.. code:: ipython3
 
     from mbuild.lib.recipes.polymer import Polymer
     import mbuild as mb
@@ -275,7 +275,7 @@ constructed above and translating and/or rotating the alkanes in space.
 ``mBuild`` provides many routines that can be used to create different
 patterns, to which the polymers can be shifted.
 
-.. code:: ipython
+.. code:: ipython3
 
     comp = mb.load('C', smiles=True) # mBuild compound of the monomer unit
     polymer = Polymer()
@@ -311,7 +311,7 @@ patterns, to which the polymers can be shifted.
 Other patterns can be used, e.g., the ``Grid3DPattern``. We can also use
 the rotation commands to randomize the orientation.
 
-.. code:: ipython
+.. code:: ipython3
 
     import random
 
@@ -344,7 +344,7 @@ the rotation commands to randomize the orientation.
 ``mBuild`` also provides an interface to ``PACKMOL``, allowing the
 creation of a randomized configuration.
 
-.. code:: ipython
+.. code:: ipython3
 
     comp = mb.load('C', smiles=True) # mBuild compound of the monomer unit
     polymer = Polymer()
@@ -373,7 +373,7 @@ amount of perturbation. Note that large values of ``delta`` may result
 in the chain overlapping itself, as ``mBuild`` does not currently
 include routines to exclude such overlaps.
 
-.. code:: ipython
+.. code:: ipython3
 
     import mbuild as mb
 

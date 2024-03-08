@@ -12,7 +12,7 @@ All-Atom (AA) Hexane and Ethanol System
 
 Import the required mbuild package.
 
-.. code:: ipython
+.. code:: ipython3
 
     import mbuild as mb
 
@@ -26,7 +26,7 @@ Lastly, the hexane and ethanol molecule's configuration will be energy minimized
 .. note::
     The energy minimize step requires the `foyer <https://foyer.mosdef.org/en/stable/>`_ package.
 
-.. code:: ipython
+.. code:: ipython3
 
     hexane = mb.load('CCCCCC', smiles=True)
     hexane.name = 'HEX'
@@ -39,7 +39,7 @@ Lastly, the hexane and ethanol molecule's configuration will be energy minimized
 
 The liquid box is built to a density of 680 kg/m\ :sup:`3`, with a 50/50 mol ratio of hexane and ethanol, and will be in an orthogonal box measuring 5.0 nm in the x, y, and z-dimensions.
 
-.. code:: ipython
+.. code:: ipython3
 
     box_liq = mb.fill_box(compound= [hexane, ethanol],
                           density=680,
@@ -58,7 +58,7 @@ United Atom (UA) Methane System
 
 Import the required mbuild package.
 
-.. code:: ipython
+.. code:: ipython3
 
     import mbuild as mb
 
@@ -67,7 +67,7 @@ Construct a pseudo-monatomic molecule (united atom (UA) methane), for use with t
 `TraPPE <http://trappe.oit.umn.edu>`_ FF.  The UA methane, bead type `"_CH4"`, will be built as a child (``mbuild.Compound.children``), so the parent (``mbuild.Compound``) will
 allow a user-selected residue name (``mbuild.Compound.name``). If the methane is built using ``methane = mb.Compound(name="_CH4")``, then the user must keep the residue name `"_CH4"` or `foyer <https://foyer.mosdef.org/en/stable/>`_ will not recognize the bead type when using the standard TraPPE force field XML file.
 
-.. code:: ipython
+.. code:: ipython3
 
     methane = mb.Compound(name="MET")
     methane_child_bead = mb.Compound(name="_CH4")
@@ -79,7 +79,7 @@ allow a user-selected residue name (``mbuild.Compound.name``). If the methane is
 
 The orthogonal liquid box contains 1230 methane molecules and measures 4.5 nm in all the x, y, and z-dimensions.
 
-.. code:: ipython
+.. code:: ipython3
 
     box_liq = mb.fill_box(compound=methane,
                           n_compounds=1230,
