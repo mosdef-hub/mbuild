@@ -20,4 +20,3 @@ else:
 available_methods = []
 for entry_point in entry_points:
     setattr(recipes, entry_point.name, entry_point.load())
-e
