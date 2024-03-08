@@ -131,10 +131,10 @@ numpydoc_class_members_toctree = False
 numpydoc_show_class_members = False
 numpydoc_show_inherited_class_members = False
 
-_python_doc_base = "https://docs.python.org/3.9"
+_python_doc_base = "https://docs.python.org/3.11"
 
 intersphinx_mapping = {
-    "python": ("https://docs.python.org/3.9", None),
+    "python": ("https://docs.python.org/3.11", None),
     "numpy": ("https://numpy.org/doc/stable", None),
     "scipy": ("https://docs.scipy.org/doc/scipy/reference", None),
     "scikit-learn": ("https://scikit-learn.org/stable", None),
