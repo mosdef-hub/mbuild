@@ -332,7 +332,7 @@ latex_elements = {
 """,
 }
 
-latex_master_doc = "indexlatex"
+latex_master_doc = "index"
 
 # Grouping the document tree into LaTeX files. List of tuples
 # (source start file, target name, title,
