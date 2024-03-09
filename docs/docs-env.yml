@@ -3,7 +3,9 @@ channels:
   - jaimergp/label/unsupported-cudatoolkit-shim
   - conda-forge
 dependencies:
-  - python>=3.8
+  - importlib_resources
+  - python=3.11
+  - ipython
   - pip
   - pip:
     - boltons
