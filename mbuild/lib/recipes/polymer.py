@@ -6,7 +6,7 @@ import numpy as np
 
 from mbuild import clone
 from mbuild.compound import Compound
-from mbuild.coordinate_transform import force_overlap
+from mbuild.coordinate_transform import force_overlap, z_axis_transform
 from mbuild.lib.atoms import H
 from mbuild.port import Port
 from mbuild.utils.validation import assert_port_exists
@@ -199,28 +199,31 @@ class Polymer(Compound):
                 raise ValueError(
                     "Keyword 'make_periodic' cannot be defined if 'end_groups' are provided."
                 )
-            self.translate(-head_port.pos)
-            vector0 = np.array([0, 0, 1])
-            vector = tail_port.pos - head_port.pos
-            vector /= np.linalg.norm(vector)
-            dot = np.dot(vector0, vector)
-            if dot > 0:
-                theta = np.arccos(dot)
-            else:
-                theta = -(np.pi - np.arccos(dot))
-            self.spin(theta, np.cross(vector0, vector), anchor=head_port)
-            self.periodic = list(
-                ~np.isclose(
-                    head_port.pos - tail_port.pos, 0.0, np.finfo(float).eps
-                )
+            z_axis_transform(
+                compound=self,
+                point_on_z_axis=head_port.pos,
+                point_on_zx_plane=tail_port.pos,
             )
-            force_overlap(self, head_tail[0], head_tail[1])
+            bond_length = 2 * np.max(
+                [
+                    np.sqrt(np.sum(np.square(atm1.pos - atm2.pos)))
+                    for (atm1, atm2) in self.root.bond_graph.edges(
+                        self["monomer[0]"]
+                    )
+                ]
+            )
+            self.periodic = [
+                x > bond_length for x in head_port.pos - tail_port.pos
+            ]
+            force_overlap(self, head_port, tail_port)
             if not np.all(
                 np.isclose(self.periodic, [0, 0, 1], np.finfo(float).eps)
             ):
                 raise ValueError(
-                    "Periodic polymer could not be aligned: {} {}".format(
-                        head_port.pos, tail_port.pos
+                    "Periodic polymer could not be aligned:\n    Head Coord {}\n    Tail Coord {}\n    Difference {}".format(
+                        head_port.pos,
+                        tail_port.pos,
+                        tail_port.pos - head_port.pos,
                     )
                 )
         else:
