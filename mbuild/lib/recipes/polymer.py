@@ -6,7 +6,12 @@ import numpy as np
 
 from mbuild import clone
 from mbuild.compound import Compound
-from mbuild.coordinate_transform import force_overlap, z_axis_transform
+from mbuild.coordinate_transform import (
+    force_overlap,
+    x_axis_transform,
+    y_axis_transform,
+    z_axis_transform,
+)
 from mbuild.lib.atoms import H
 from mbuild.port import Port
 from mbuild.utils.validation import assert_port_exists
@@ -112,7 +117,7 @@ class Polymer(Compound):
         """
         return self._end_groups
 
-    def build(self, n, sequence="A", add_hydrogens=True, make_periodic=False):
+    def build(self, n, sequence="A", add_hydrogens=True, periodic_axis=None):
         """Connect one or more components in a specified sequence.
 
         Uses the compounds that are stored in Polymer.monomers and
@@ -136,12 +141,14 @@ class Polymer(Compound):
             compounds exist, then they will be used.
             If False and an end group compound is None, then the head or tail
             port will be exposed in the polymer.
-        make_periodic : bool, default False
-            If True and an ``end_groups`` compound is None, then the head and tail
-            will be forced into an overlap with a periodicity along the z-axis.
-            If end group compounds exist, then there will be a warning. However
-            ``add_hydrogens`` will simply be overwritten.
-            If False, ``end_groups`` compound is None, and ``add_hydrogens`` is
+        periodic_axis : str, default None
+            If not ``None`` and an ``end_groups`` compound is None, then the head
+            and tail will be forced into an overlap with a periodicity along the
+            ``axis`` (default="z") specified. See
+            :meth:`mbuild.lib.recipes.polymer.Polymer.create_periodic_bond` for
+            more details. If end group compounds exist, then there will be a
+            warning. However ``add_hydrogens`` will simply be overwritten.
+            If ``None``, ``end_groups`` compound is None, and ``add_hydrogens`` is
             False then the head or tail port will be exposed in the polymer.
         """
         if n < 1:
@@ -194,38 +201,8 @@ class Polymer(Compound):
 
         head_tail = [head_port, tail_port]
 
-        if make_periodic:
-            if np.any([x is not None for x in self._end_groups]):
-                raise ValueError(
-                    "Keyword 'make_periodic' cannot be defined if 'end_groups' are provided."
-                )
-            z_axis_transform(
-                compound=self,
-                point_on_z_axis=head_port.pos,
-                point_on_zx_plane=tail_port.pos,
-            )
-            bond_length = 2 * np.max(
-                [
-                    np.sqrt(np.sum(np.square(atm1.pos - atm2.pos)))
-                    for (atm1, atm2) in self.root.bond_graph.edges(
-                        self["monomer[0]"]
-                    )
-                ]
-            )
-            self.periodic = [
-                x > bond_length for x in head_port.pos - tail_port.pos
-            ]
-            force_overlap(self, head_port, tail_port)
-            if not np.all(
-                np.isclose(self.periodic, [0, 0, 1], np.finfo(float).eps)
-            ):
-                raise ValueError(
-                    "Periodic polymer could not be aligned:\n    Head Coord {}\n    Tail Coord {}\n    Difference {}".format(
-                        head_port.pos,
-                        tail_port.pos,
-                        tail_port.pos - head_port.pos,
-                    )
-                )
+        if periodic_axis is not None:
+            self.create_periodic_bond(axis=periodic_axis)
         else:
             for i, compound in enumerate(self._end_groups):
                 if compound is not None:
@@ -410,6 +387,54 @@ class Polymer(Compound):
                 self._headtail[1] = separation / 2
             else:
                 raise ValueError("Label must be 'head' or 'tail'")
+
+    def create_periodic_bond(self, axis="z"):
+        """Align the polymer along a specific axis and connect its end groups.
+
+        If ``end_groups`` is ``None``, then the head and tail will be forced
+        into an overlap with a periodicity along the ``axis`` specified. If
+        end group compounds exist, then there will be a warning. However
+        ``add_hydrogens`` will simply be overwritten. If ``None``,
+        ``end_groups`` compound is None, and ``add_hydrogens`` is
+        False then the head or tail port will be exposed in the polymer.
+
+        Parameters
+        ----------
+        axis : str, default="z"
+            Axis along which to orient the polymer taken as the line connected the
+            free ports of the end group. May be "x", "y", or "z".
+        """
+        if np.any([x is not None for x in self._end_groups]):
+            raise ValueError(
+                "Keyword 'make_periodic' cannot be defined if 'end_groups' are provided."
+            )
+        head_port = self.monomers[0]["up"]  # First monomer
+        tail_port = self.monomers[-1]["down"]  # Last monomer
+        if axis == "x":
+            x_axis_transform(
+                compound=self,
+                point_on_x_axis=head_port.pos,
+                point_on_xy_plane=tail_port.pos,
+            )
+            self.periodicity = (True, self.periodicity[1], self.periodicity[2])
+        elif axis == "y":
+            y_axis_transform(
+                compound=self,
+                point_on_y_axis=head_port.pos,
+                point_on_yx_plane=tail_port.pos,
+            )
+            self.periodicity = (self.periodicity[0], True, self.periodicity[2])
+        elif axis == "z":
+            z_axis_transform(
+                compound=self,
+                point_on_z_axis=head_port.pos,
+                point_on_zx_plane=tail_port.pos,
+            )
+            self.periodicity = (self.periodicity[0], self.periodicity[1], True)
+        else:
+            raise ValueError("axis must be either: 'x', 'y', or 'z'")
+
+        force_overlap(self, head_port, tail_port)
 
 
 def _add_port(compound, label, idx, separation, orientation=None, replace=True):
