@@ -206,7 +206,7 @@ class Polymer(Compound):
             )
             bond_length = 2 * np.max(
                 [
-                    np.sqrt(np.sum(np.square(atm1.pos - atm2.pos)))
+                    np.linalg.norm(atm1.pos - atm2.pos)
                     for (atm1, atm2) in self.root.bond_graph.edges(
                         self["monomer[0]"]
                     )
