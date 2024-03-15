@@ -190,6 +190,7 @@ class Polymer(Compound):
         # Add the end groups
         head = self["monomer[0]"]  # First monomer
         tail = self["monomer[{}]".format(n_monomers - 1)]  # Last monomer
+
         if not head["up"].used:
             head_port = head["up"]
         else:
@@ -202,7 +203,7 @@ class Polymer(Compound):
         head_tail = [head_port, tail_port]
 
         if periodic_axis is not None:
-            self.create_periodic_bond(axis=periodic_axis)
+            self.create_periodic_bond(head_port, tail_port, axis=periodic_axis)
         else:
             for i, compound in enumerate(self._end_groups):
                 if compound is not None:
@@ -388,7 +389,7 @@ class Polymer(Compound):
             else:
                 raise ValueError("Label must be 'head' or 'tail'")
 
-    def create_periodic_bond(self, axis="z"):
+    def create_periodic_bond(self, port1, port2, axis="z"):
         """Align the polymer along a specific axis and connect its end groups.
 
         If ``end_groups`` is ``None``, then the head and tail will be forced
@@ -400,6 +401,10 @@ class Polymer(Compound):
 
         Parameters
         ----------
+        port1 : np.array
+            First port to align the polymer
+        port2 : np.array
+            Second port to align the polymer
         axis : str, default="z"
             Axis along which to orient the polymer taken as the line connected the
             free ports of the end group. May be "x", "y", or "z".
@@ -408,33 +413,29 @@ class Polymer(Compound):
             raise ValueError(
                 "Keyword 'make_periodic' cannot be defined if 'end_groups' are provided."
             )
-        head_port = self.monomers[0]["up"]  # First monomer
-        tail_port = self.monomers[-1]["down"]  # Last monomer
+
         if axis == "x":
             x_axis_transform(
                 compound=self,
-                point_on_x_axis=head_port.pos,
-                point_on_xy_plane=tail_port.pos,
+                new_origin=port1.pos,
+                point_on_x_axis=port2.pos,
             )
-            self.periodicity = (True, self.periodicity[1], self.periodicity[2])
         elif axis == "y":
             y_axis_transform(
                 compound=self,
-                point_on_y_axis=head_port.pos,
-                point_on_yx_plane=tail_port.pos,
+                new_origin=port1.pos,
+                point_on_y_axis=port2.pos,
             )
-            self.periodicity = (self.periodicity[0], True, self.periodicity[2])
         elif axis == "z":
             z_axis_transform(
                 compound=self,
-                point_on_z_axis=head_port.pos,
-                point_on_zx_plane=tail_port.pos,
+                new_origin=port1.pos,
+                point_on_z_axis=port2.pos,
             )
-            self.periodicity = (self.periodicity[0], self.periodicity[1], True)
         else:
             raise ValueError("axis must be either: 'x', 'y', or 'z'")
 
-        force_overlap(self, head_port, tail_port)
+        force_overlap(self, port1, port2)
 
 
 def _add_port(compound, label, idx, separation, orientation=None, replace=True):
