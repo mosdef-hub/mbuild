@@ -30,6 +30,10 @@ class Polymer(Compound):
     end_groups : list of mbuild.Compounds
         The compound to cap the end of the polymer. Add to this list using the
         add_end_groups method.
+    head_port : mBuild.port.Port
+        The remaining monomer-monomer bonding port of the head monomer.
+    tail_port : mBuild.port.Port
+        The remaining monomer-monomer bonding port of the tail monomer.
 
     Methods
     -------
@@ -39,7 +43,7 @@ class Polymer(Compound):
     add_end_groups(compound, index, separation, orientation, replace)
         Use to add an end group compound to Polymer.end_groups
 
-    build(n, sequence)
+    build(n, sequence, add_hydrogens)
         Use to create a single polymer compound. This method uses the compounds
         created by calling the add_monomer and add_end_group methods.
 
@@ -100,6 +104,8 @@ class Polymer(Compound):
             )
         self._port_labels = ["up", "down"]
         self._headtail = [None, None]
+        self._head_port = None
+        self._tail_port = None
 
     @property
     def monomers(self):
@@ -116,6 +122,16 @@ class Polymer(Compound):
         end_groups cannot be set. Use add_end_group method instead.
         """
         return self._end_groups
+
+    @property
+    def head_port(self):
+        """The remaining port at the head monomer."""
+        return self._head_port
+
+    @property
+    def tail_port(self):
+        """The remaining port at the tail monomer."""
+        return self._tail_port
 
     def build(self, n, sequence="A", add_hydrogens=True, periodic_axis=None):
         """Connect one or more components in a specified sequence.
@@ -200,10 +216,12 @@ class Polymer(Compound):
         else:
             tail_port = None
 
+        self._head_port = head_port
+        self._tail_port = tail_port
         head_tail = [head_port, tail_port]
 
         if periodic_axis is not None:
-            self.create_periodic_bond(head_port, tail_port, axis=periodic_axis)
+            self.create_periodic_bond(axis=periodic_axis)
         else:
             for i, compound in enumerate(self._end_groups):
                 if compound is not None:
@@ -228,7 +246,7 @@ class Polymer(Compound):
                         )
 
         for port in self.all_ports():
-            if port not in self.available_ports():
+            if port not in self.available_ports() and port not in head_tail:
                 self.remove(port)
 
     def add_monomer(
@@ -389,7 +407,7 @@ class Polymer(Compound):
             else:
                 raise ValueError("Label must be 'head' or 'tail'")
 
-    def create_periodic_bond(self, port1, port2, axis="z"):
+    def create_periodic_bond(self, axis="z"):
         """Align the polymer along a specific axis and connect its end groups.
 
         If ``end_groups`` is ``None``, then the head and tail will be forced
@@ -414,28 +432,28 @@ class Polymer(Compound):
                 "Keyword 'make_periodic' cannot be defined if 'end_groups' are provided."
             )
 
-        if axis == "x":
+        if axis.lower() == "x":
             x_axis_transform(
                 compound=self,
-                new_origin=port1.pos,
-                point_on_x_axis=port2.pos,
+                new_origin=self.head_port.pos,
+                point_on_x_axis=self.tail_port.pos,
             )
-        elif axis == "y":
+        elif axis.lower() == "y":
             y_axis_transform(
                 compound=self,
-                new_origin=port1.pos,
-                point_on_y_axis=port2.pos,
+                new_origin=self.head_port.pos,
+                point_on_y_axis=self.tail_port.pos,
             )
-        elif axis == "z":
+        elif axis.lower() == "z":
             z_axis_transform(
                 compound=self,
-                new_origin=port1.pos,
-                point_on_z_axis=port2.pos,
+                new_origin=self.head_port.pos,
+                point_on_z_axis=self.tail_port.pos,
             )
         else:
             raise ValueError("axis must be either: 'x', 'y', or 'z'")
 
-        force_overlap(self, port1, port2)
+        force_overlap(self, self.head_port, self.tail_port)
 
 
 def _add_port(compound, label, idx, separation, orientation=None, replace=True):
