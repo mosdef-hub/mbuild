@@ -1098,7 +1098,7 @@ class Compound(object):
                         if id(x) == id(child)
                     ][0]
                     if "port" in label:
-                        label = "{0}[$]".format("port")
+                        label = "port[$]"
                 else:
                     label = "{0}[$]".format(child.name)
 
