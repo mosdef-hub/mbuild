@@ -936,7 +936,6 @@ class TestCompound(BaseTest):
         hydrogens = ethane7.particles_by_name("H")
         ethane7.remove(hydrogens, reset_labels=True)
 
-        print(list(ethane7.labels.keys()))
         assert list(ethane7.labels.keys()) == [
             "C",
             "C[0]",

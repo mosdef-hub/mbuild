@@ -1015,7 +1015,7 @@ class Compound(object):
                     "outside of the defined simulation box"
                 )
 
-    def remove(self, objs_to_remove, reset_labels=False):
+    def remove(self, objs_to_remove, reset_labels=True):
         """Remove children from the Compound cleanly.
 
         Parameters
