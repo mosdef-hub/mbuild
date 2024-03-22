@@ -61,9 +61,9 @@ And (optional) all files can be checked by running::
 Supported Python Versions
 -------------------------
 
-Python 3.6, 3.7 and 3.8 are officially supported, including testing during
+Python 3.9, 3.10 and 3.11 are officially supported, including testing during
 development and packaging. Support for Python 2.7 has been dropped as of
-August 6, 2019. Other Python versions, such as 3.9 and 3.5 and older, may
+August 6, 2019. Other Python versions, such as 3.12 and 3.8 and older, may
 successfully build and function but no guarantee is made.
 
 Testing your installation

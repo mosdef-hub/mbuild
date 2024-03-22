@@ -22,9 +22,6 @@ import mock
 # documentation root, use os.path.abspath to make it absolute, like shown here.
 
 MOCK_MODULES = [
-    "ele",
-    "ele.element",
-    "ele.exceptions",
     "hoomd",
     "hoomd.data",
     "hoomd.md",
@@ -35,8 +32,6 @@ MOCK_MODULES = [
     "hoomd.md.charge",
     "hoomd.md.pair",
     "hoomd.md.special_pair",
-    "numpy",
-    "numpy.linalg",
     "mdtraj",
     "mdtraj.core.element",
     "networkx",
