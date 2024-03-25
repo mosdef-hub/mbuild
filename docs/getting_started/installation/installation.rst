@@ -80,6 +80,6 @@ Building the documentation
 mBuild uses `sphinx <https://www.sphinx-doc.org/en/master/index.html>`_ to build its documentation. To build the docs locally, run the following while in the ``docs`` directory::
 
     $ cd docs
-    $ conda create -f docs-env.yml
+    $ conda env create -f docs-env.yml
     $ conda activate mbuild-docs
     $ make html
