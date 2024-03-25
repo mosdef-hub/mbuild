@@ -909,6 +909,44 @@ class TestCompound(BaseTest):
         assert len(ethane5.children[0].children) == 6  # 3 hydrogens + 3 ports
         assert len(ethane5.children) == 1
 
+        # Test to reset labels after hydrogens
+        ethane6 = mb.clone(ethane)
+        ethane6.flatten()
+        hydrogens = ethane6.particles_by_name("H")
+        ethane6.remove(hydrogens, reset_labels=False)
+
+        assert list(ethane6.labels.keys()) == [
+            "C",
+            "C[0]",
+            "H",
+            "C[1]",
+            "port",
+            "port[1]",
+            "port[3]",
+            "port[5]",
+            "port[7]",
+            "port[9]",
+            "port[11]",
+        ]
+
+        ethane7 = mb.clone(ethane)
+        ethane7.flatten()
+        hydrogens = ethane7.particles_by_name("H")
+        ethane7.remove(hydrogens)
+
+        assert list(ethane7.labels.keys()) == [
+            "C",
+            "C[0]",
+            "C[1]",
+            "port",
+            "port[0]",
+            "port[1]",
+            "port[2]",
+            "port[3]",
+            "port[4]",
+            "port[5]",
+        ]
+
     def test_remove_many(self, ethane):
         ethane.remove([ethane.children[0], ethane.children[1]])
 
