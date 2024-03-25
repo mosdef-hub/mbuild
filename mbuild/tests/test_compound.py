@@ -913,11 +913,9 @@ class TestCompound(BaseTest):
         ethane6 = mb.clone(ethane)
         ethane6.flatten()
         hydrogens = ethane6.particles_by_name("H")
-        ethane6.remove(hydrogens)
+        ethane6.remove(hydrogens, reset_labels=False)
 
         assert list(ethane6.labels.keys()) == [
-            "methyl1",
-            "methyl2",
             "C",
             "C[0]",
             "H",
@@ -934,7 +932,7 @@ class TestCompound(BaseTest):
         ethane7 = mb.clone(ethane)
         ethane7.flatten()
         hydrogens = ethane7.particles_by_name("H")
-        ethane7.remove(hydrogens, reset_labels=True)
+        ethane7.remove(hydrogens)
 
         assert list(ethane7.labels.keys()) == [
             "C",
