@@ -17,22 +17,21 @@ field XML files (used by the `Foyer package <https://github.com/mosdef-hub/foyer
 to the ``Compound.save`` function if Foyer is installed. If a force field is applied to a
 Compound, the mBuild internal writers will also write angle and dihedral information
 to the file in addition to labelling atoms by the atom types specified by the force
-field.  The CHARMM-style GOMC writers are the exception to this default rule since
+field.  The CHARMM-style GOMC writers (supported through the `MoSDeF-GOMC extension <https://github.com/GOMC-WSU/MoSDeF-GOMC>`_) are the exception to this default rule since
 they need a force field to build the files, as these files depend on the force field parameters (Example: charge and MW in the PSF files).
 
 The simulation engine writers that use mBuild or are currently contained in the mBuild library:
 
 
 * `Cassandra <https://cassandra.nd.edu/>`_
-* `GPU Optimized Monte Carlo (GOMC) <http://gomc.eng.wayne.edu/>`_
 * `GROMACS <https://www.gromacs.org/>`_
 * `HOOMD-blue <http://glotzerlab.engin.umich.edu/hoomd-blue//>`_
 * `Large-scale Atomic/Molecular Massively Parallel Simulator (LAMMPS) <https://lammps.sandia.gov/>`_
 
+Support for `GPU Optimized Monte Carlo (GOMC) <http://gomc.eng.wayne.edu/>`_  is also available through the `MoSDeF-GOMC library <https://github.com/GOMC-WSU/MoSDeF-GOMC>`_
 
 .. toctree::
 
 	cassandra_file_writers
-   	GOMC_file_writers
    	HOOMD_blue_file_writers
 	LAMMPS_file_writers
