@@ -122,6 +122,7 @@ Some users have graciously contributed recipes for particular systems, including
 * [Nanodroplets on graphene](https://github.com/ftiet/droplet-builder)
 * [Coarse-grained DNA](https://github.com/zijiewu3/mbuild_ONA)
 * [Lipid bilayers](https://github.com/uppittu11/mbuild_bilayer)
+* [Surface Coatings](https://github.com/daico007/surface_coatings)
 
 ### Citing mBuild
 
