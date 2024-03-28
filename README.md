@@ -19,7 +19,7 @@ To learn more, get started or contribute, check out our [website](http://mbuild.
 
 ### mBuild within the MoSDeF Ecosystem
 <p align="center">
-  <img src="docs/images/mosdef.svg?raw=true" alt="mBuild within the MoSDeF Ecosystem" width="500" height="500"/>
+  <img src="docs/images/mosdef_mbuild.svg?raw=true" alt="mBuild within the MoSDeF Ecosystem" width="500" height="500"/>
 </p>
 
 
