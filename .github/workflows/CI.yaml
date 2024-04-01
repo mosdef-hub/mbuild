@@ -19,10 +19,10 @@ jobs:
       fail-fast: false
       matrix:
         os: [macOS-latest, ubuntu-latest]
-        python-version: ["3.9", "3.10", "3.11"]
+        python-version: ["3.9", "3.10", "3.11", "3.12"]
         include:
           - os: windows-latest
-            python-version: "3.11"
+            python-version: "3.12"
 
     defaults:
       run:
