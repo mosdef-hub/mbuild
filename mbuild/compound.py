@@ -1090,6 +1090,16 @@ class Compound(object):
         # Reorder labels
         if reset_labels:
             new_labels = OrderedDict()
+            hoisted_children = {
+                key: val
+                for key, val in self.labels.items()
+                if (
+                    not isinstance(val, list)
+                    and val.parent is not None
+                    and id(self) != id(val.parent)
+                )
+            }
+            new_labels.update(hoisted_children)
             for child in self.children:
                 if "Port" in child.name:
                     label = [
