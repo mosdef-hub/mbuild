@@ -19,7 +19,7 @@ To learn more, get started or contribute, check out our [website](http://mbuild.
 
 ### mBuild within the MoSDeF Ecosystem
 <p align="center">
-  <img src="docs/images/mosdef.svg?raw=true" alt="mBuild within the MoSDeF Ecosystem" width="500" height="500"/>
+  <img src="docs/images/mosdef_mbuild.svg?raw=true" alt="mBuild within the MoSDeF Ecosystem" width="500" height="500"/>
 </p>
 
 
@@ -122,6 +122,7 @@ Some users have graciously contributed recipes for particular systems, including
 * [Nanodroplets on graphene](https://github.com/ftiet/droplet-builder)
 * [Coarse-grained DNA](https://github.com/zijiewu3/mbuild_ONA)
 * [Lipid bilayers](https://github.com/uppittu11/mbuild_bilayer)
+* [Surface Coatings](https://github.com/daico007/surface_coatings)
 
 ### Citing mBuild
 

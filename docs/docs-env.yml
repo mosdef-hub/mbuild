@@ -3,6 +3,8 @@ channels:
   - jaimergp/label/unsupported-cudatoolkit-shim
   - conda-forge
 dependencies:
+  - ele
+  - numpy
   - importlib_resources
   - python=3.11
   - ipython
