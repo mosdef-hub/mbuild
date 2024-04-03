@@ -395,7 +395,7 @@ class Polymer(Compound):
         """
         if self.head_port is None or self.tail_port is None:
             raise ValueError(
-                "Polymer head_port and/or tail_port could not be found. Be sure to initialize"
+                "Polymer head_port and/or tail_port could not be found. Be sure to initialize "
                 "this object without end_groups and build with add_hydrogens=False."
             )
 
