@@ -1100,17 +1100,28 @@ class Compound(object):
                 )
             }
             new_labels.update(hoisted_children)
+            children_list = {
+                id(val): [key, val]
+                for key, val in self.labels.items()
+                if (not isinstance(val, list))
+            }
             for child in self.children:
-                if "Port" in child.name:
-                    label = [
-                        key
-                        for key, x in self.labels.items()
-                        if id(x) == id(child)
-                    ][0]
-                    if "port" in label:
-                        label = "port[$]"
-                else:
-                    label = "{0}[$]".format(child.name)
+                label = (
+                    children_list[id(child)][0]
+                    if "[" not in children_list[id(child)][0]
+                    else None
+                )
+                if label is None:
+                    if "Port" in child.name:
+                        label = [
+                            key
+                            for key, x in self.labels.items()
+                            if id(x) == id(child)
+                        ][0]
+                        if "port" in label:
+                            label = "port[$]"
+                    else:
+                        label = "{0}[$]".format(child.name)
 
                 if label.endswith("[$]"):
                     label = label[:-3]
