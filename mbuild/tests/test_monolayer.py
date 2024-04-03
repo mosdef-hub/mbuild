@@ -49,10 +49,11 @@ class TestMonolayer(BaseTest):
 
     def test_periodic_pattern(self, ch2):
         # Make Periodic without Hydrogen Conflict
-        chain = mb.recipes.Polymer(monomers=[ch2])
-        chain.build(n=10, add_hydrogens=False)
-        chain.create_periodic_bond(axis="x")
-        assert not chain.all_ports()
+        for axis in ["x", "y", "z"]:
+            chain = mb.recipes.Polymer(monomers=[ch2])
+            chain.build(n=10, add_hydrogens=False)
+            chain.create_periodic_bond(axis=axis)
+            assert not chain.all_ports()
 
         bonded_atoms = [
             x.name for x in list(chain["monomer[0]"][0].direct_bonds())
@@ -73,6 +74,12 @@ class TestMonolayer(BaseTest):
         chain3.build(n=10)
         with pytest.raises(ValueError):
             chain3.create_periodic_bond(axis="z")
+
+        # Make Periodic with Unsupported Axis
+        chain2 = mb.recipes.Polymer(monomers=[ch2])
+        chain2.build(n=10, add_hydrogens=True)
+        with pytest.raises(ValueError):
+            chain2.create_periodic_bond(axis="a")
 
     def test_mixed_monolayer(self, ch2):
         n = 8
