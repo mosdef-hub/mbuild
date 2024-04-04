@@ -956,7 +956,7 @@ class Compound(object):
 
         # Add new_part to labels. Does not currently support batch add.
         if label is None:
-            label = "{0}[$]".format(new_child.__class__.__name__)
+            label = "{0}[$]".format(new_child.name)
 
         if label.endswith("[$]"):
             label = label[:-3]
@@ -1015,13 +1015,15 @@ class Compound(object):
                     "outside of the defined simulation box"
                 )
 
-    def remove(self, objs_to_remove):
+    def remove(self, objs_to_remove, reset_labels=True):
         """Remove children from the Compound cleanly.
 
         Parameters
         ----------
         objs_to_remove : mb.Compound or list of mb.Compound
             The Compound(s) to be removed from self
+        reset_labels : bool
+            If True, the Compound labels will be reset
         """
         # Preprocessing and validating input type
         from mbuild.port import Port
@@ -1082,8 +1084,56 @@ class Compound(object):
             if self.contains_rigid:
                 self.root._reorder_rigid_ids()
 
-        # Remove ghsot ports
+        # Remove ghost ports
         self._prune_ghost_ports()
+
+        # Reorder labels
+        if reset_labels:
+            new_labels = OrderedDict()
+            hoisted_children = {
+                key: val
+                for key, val in self.labels.items()
+                if (
+                    not isinstance(val, list)
+                    and val.parent is not None
+                    and id(self) != id(val.parent)
+                )
+            }
+            new_labels.update(hoisted_children)
+            children_list = {
+                id(val): [key, val]
+                for key, val in self.labels.items()
+                if (not isinstance(val, list))
+            }
+            for child in self.children:
+                label = (
+                    children_list[id(child)][0]
+                    if "[" not in children_list[id(child)][0]
+                    else None
+                )
+                if label is None:
+                    if "Port" in child.name:
+                        label = [
+                            key
+                            for key, x in self.labels.items()
+                            if id(x) == id(child)
+                        ][0]
+                        if "port" in label:
+                            label = "port[$]"
+                    else:
+                        label = "{0}[$]".format(child.name)
+
+                if label.endswith("[$]"):
+                    label = label[:-3]
+                    if label not in new_labels:
+                        new_labels[label] = []
+                    label_pattern = label + "[{}]"
+
+                    count = len(new_labels[label])
+                    new_labels[label].append(child)
+                    label = label_pattern.format(count)
+                new_labels[label] = child
+            self.labels = new_labels
 
     def _prune_ghost_ports(self):
         """Worker for remove(). Remove all ports whose anchor has been deleted."""
