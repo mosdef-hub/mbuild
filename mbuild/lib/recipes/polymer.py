@@ -178,7 +178,9 @@ class Polymer(Compound):
         for n_added, seq_item in enumerate(it.cycle(sequence)):
             this_part = clone(seq_map[seq_item])
             self.add(this_part, "monomer[$]")
-            if last_part is not None:
+            if last_part is None:
+                first_part = this_part
+            else:
                 # Transform this part, such that its bottom port is rotated
                 # and translated to the last parts top port.
                 force_overlap(
@@ -219,7 +221,7 @@ class Polymer(Compound):
                         self._port_labels[i],
                         containment=False,
                     )
-                    
+
             if head_tail[i] is None and i == 0:
                 self.head_port = None
             elif head_tail[i] is None and i == 1:
