@@ -21,7 +21,7 @@ dependencies:
   - parmed>=3.4.3
   - pip
   - pre-commit
-  - protobuf<4
+  - protobuf
   - py3Dmol
   - pycifrw
   - pytest
