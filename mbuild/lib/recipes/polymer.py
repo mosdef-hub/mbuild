@@ -6,7 +6,12 @@ import numpy as np
 
 from mbuild import clone
 from mbuild.compound import Compound
-from mbuild.coordinate_transform import force_overlap
+from mbuild.coordinate_transform import (
+    force_overlap,
+    x_axis_transform,
+    y_axis_transform,
+    z_axis_transform,
+)
 from mbuild.lib.atoms import H
 from mbuild.port import Port
 from mbuild.utils.validation import assert_port_exists
@@ -83,13 +88,20 @@ class Polymer(Compound):
         super(Polymer, self).__init__()
         self._monomers = monomers or []
         self._end_groups = end_groups or [None, None]
-        if len(self._end_groups) != 2:
+        if not isinstance(self._end_groups, list):
+            raise ValueError(
+                "Please provide two end groups in a list; "
+                f"you provided {self._end_groups}"
+            )
+        elif len(self._end_groups) != 2:
             raise ValueError(
                 "Please provide two end groups; "
                 f"you provided {len(self._end_groups)}"
             )
         self._port_labels = ["up", "down"]
         self._headtail = [None, None]
+        self.head_port = None
+        self.tail_port = None
 
     @property
     def monomers(self):
@@ -113,6 +125,10 @@ class Polymer(Compound):
         Uses the compounds that are stored in Polymer.monomers and
         Polymer.end_groups.
 
+        If no capping method is used, i.e., if ``add_hydrogens == False``
+        and ``Polymer.end_groups is None``, then the ports are exposed as,
+        ``Polymer.head_port`` and ``Polymer.tail_port``.
+
         Parameters
         ----------
         n : int
@@ -126,15 +142,23 @@ class Polymer(Compound):
             For example, 'AB' where 'A'corresponds to the first compound
             added to Polymer.monomers and 'B' to the second compound.
         add_hydrogens : bool, default True
-            If True and an end group compound is None, then the head or tail
+            If True and an ``end_groups`` compound is None, then the head or tail
             of the polymer will be capped off with hydrogen atoms. If end group
             compounds exist, then they will be used.
             If False and an end group compound is None, then the head or tail
             port will be exposed in the polymer.
+        periodic_axis : str, default None
+            If not ``None`` and an ``end_groups`` compound is None, then the head
+            and tail will be forced into an overlap with a periodicity along the
+            ``axis`` (default="z") specified. See
+            :meth:`mbuild.lib.recipes.polymer.Polymer.create_periodic_bond` for
+            more details. If end group compounds exist, then there will be a
+            warning. However ``add_hydrogens`` will simply be overwritten.
+            If ``None``, ``end_groups`` compound is None, and ``add_hydrogens`` is
+            False then the head or tail port will be exposed in the polymer.
         """
         if n < 1:
             raise ValueError("n must be 1 or more")
-        n_monomers = n * len(sequence)
 
         for monomer in self._monomers:
             for label in self._port_labels:
@@ -154,7 +178,9 @@ class Polymer(Compound):
         for n_added, seq_item in enumerate(it.cycle(sequence)):
             this_part = clone(seq_map[seq_item])
             self.add(this_part, "monomer[$]")
-            if last_part is not None:
+            if last_part is None:
+                first_part = this_part
+            else:
                 # Transform this part, such that its bottom port is rotated
                 # and translated to the last parts top port.
                 force_overlap(
@@ -166,26 +192,19 @@ class Polymer(Compound):
             if n_added == n * len(sequence) - 1:
                 break
 
-        # Add the end groups
-        head = self["monomer[0]"]  # First monomer
-        tail = self["monomer[{}]".format(n_monomers - 1)]  # Last monomer
-        if not head["up"].used:
-            head_port = head["up"]
-        else:
-            head_port = None
-        if not tail["down"].used:
-            tail_port = tail["down"]
-        else:
-            tail_port = None
+        self.head_port = first_part["up"] if not first_part["up"].used else None
+        self.tail_port = (
+            last_part["down"] if not last_part["down"].used else None
+        )
 
-        head_tail = [head_port, tail_port]
-
+        head_tail = [self.head_port, self.tail_port]
         for i, compound in enumerate(self._end_groups):
             if compound is not None:
                 if self._headtail[i] is not None:
                     head_tail[i].update_separation(self._headtail[i])
                 self.add(compound)
                 force_overlap(compound, compound.labels["up"], head_tail[i])
+                head_tail[i] = None
             else:
                 if add_hydrogens:
                     hydrogen = H()
@@ -194,11 +213,19 @@ class Polymer(Compound):
                     hydrogen["up"].update_separation(0.0547)
                     self.add(hydrogen)
                     force_overlap(hydrogen, hydrogen["up"], head_tail[i])
+                    head_tail[i] = None
                 else:
                     # if None, hoist port to polymer level
                     self.add(
-                        head_tail[i], self._port_labels[i], containment=False
+                        head_tail[i],
+                        self._port_labels[i],
+                        containment=False,
                     )
+
+            if head_tail[i] is None and i == 0:
+                self.head_port = None
+            elif head_tail[i] is None and i == 1:
+                self.tail_port = None
 
         port_ids = [
             id(x) for x in self.available_ports()
@@ -234,7 +261,7 @@ class Polymer(Compound):
                      |      |
                     H(2)   H(5)
 
-        If replace=True, then this fucntion removes the hydrogen atoms that are
+        If replace=True, then this function removes the hydrogen atoms that are
         occupying where the C-C bond should occur between monomers.
         It is required that you specify which atoms should be removed which is
         achieved by the `indices` parameter.
@@ -249,7 +276,7 @@ class Polymer(Compound):
         compound : mbuild.Compound
             A compound of the individual monomer
         indices : list of int of length 2
-            The particle indicies of compound that represent the polymer
+            The particle indices of compound that represent the polymer
             bonding sites. You can specify the indices of particles that will
             be replaced by the polymer bond, or indices of particles that act
             as the bonding sites. See the 'replace' parameter notes.
@@ -364,6 +391,44 @@ class Polymer(Compound):
                 self._headtail[1] = separation / 2
             else:
                 raise ValueError("Label must be 'head' or 'tail'")
+
+    def create_periodic_bond(self, axis="z"):
+        """Align and bond the end points of a polymer along an axis.
+
+        Parameters
+        ----------
+        axis : str, default="z"
+            Axis along which to orient the polymer taken as the line connected the
+            free ports of the end group. May be "x", "y", or "z".
+        """
+        if self.head_port is None or self.tail_port is None:
+            raise ValueError(
+                "Polymer head_port and/or tail_port could not be found. Be sure to initialize "
+                "this object without end_groups and build with add_hydrogens=False."
+            )
+
+        if axis.lower() == "x":
+            x_axis_transform(
+                compound=self,
+                new_origin=self.head_port.pos,
+                point_on_x_axis=self.tail_port.pos,
+            )
+        elif axis.lower() == "y":
+            y_axis_transform(
+                compound=self,
+                new_origin=self.head_port.pos,
+                point_on_y_axis=self.tail_port.pos,
+            )
+        elif axis.lower() == "z":
+            z_axis_transform(
+                compound=self,
+                new_origin=self.head_port.pos,
+                point_on_z_axis=self.tail_port.pos,
+            )
+        else:
+            raise ValueError("axis must be either: 'x', 'y', or 'z'")
+
+        force_overlap(self, self.head_port, self.tail_port)
 
 
 def _add_port(compound, label, idx, separation, orientation=None, replace=True):
