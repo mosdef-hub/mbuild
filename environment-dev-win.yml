@@ -14,13 +14,13 @@ dependencies:
   - mdtraj
   - networkx
   - nglview>=2.7
-  - numpy=1.24.2
+  - numpy=1.26.4
   - openbabel>=3.0.0
   - packmol=1!18.013
   - parmed>=3.4.3
   - pip
   - pre-commit
-  - protobuf<4
+  - protobuf
   - py3Dmol
   - pycifrw
   - pytest

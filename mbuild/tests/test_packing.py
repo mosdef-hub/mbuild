@@ -397,7 +397,7 @@ class TestPacking(BaseTest):
         edge = 0.2
         bounds = [2, 2, 2, 1]
         sphere = mb.fill_sphere(
-            compound=h2o, n_compounds=100, sphere=bounds, edge=edge
+            compound=h2o, n_compounds=120, sphere=bounds, edge=edge
         )
         target_diameter = (bounds[3] - edge) * 2
         assert np.allclose(
