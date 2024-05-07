@@ -692,7 +692,7 @@ def fill_sphere(
     compound_xyz_list = list()
     try:
         input_text = PACKMOL_HEADER.format(
-            overlap, filled_xyz.name, seed, sidemax * 10, packmold_commands
+            overlap, filled_xyz.name, seed, sidemax * 10, packmol_commands
         )
         for comp, m_compounds, rotate in zip(
             compound, n_compounds, fix_orientation
