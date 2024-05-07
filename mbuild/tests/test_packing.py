@@ -307,7 +307,7 @@ class TestPacking(BaseTest):
 
     def test_packmol_args(self, h2o):
         try:
-            filled = mb.fill_box(
+            mb.fill_box(
                 h2o,
                 n_compounds=2,
                 box=[0.1, 0.1, 0.1],
@@ -340,7 +340,7 @@ class TestPacking(BaseTest):
                 )
 
         try:
-            filled = mb.fill_sphere(
+            mb.fill_sphere(
                 h2o,
                 n_compounds=2,
                 sphere=[3, 3, 3, 1.5],
