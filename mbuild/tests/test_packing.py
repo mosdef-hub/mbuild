@@ -307,17 +307,25 @@ class TestPacking(BaseTest):
 
     def test_packmol_args(self, h2o):
         try:
-            filled = mb.fill_box(h2o, n_compounds=2, box=[.1, .1, .1],
-                        packmol_args={"maxit": 10,
-                                      "movebadrandom":"",
-                                      "nloop": 100})
-        except(RuntimeError):
-            with open('log.txt', 'r') as logfile:
-                assert "The maximum number of cycles (         100 ) was achieved" in logfile.read()
+            filled = mb.fill_box(
+                h2o,
+                n_compounds=2,
+                box=[0.1, 0.1, 0.1],
+                packmol_args={"maxit": 10, "movebadrandom": "", "nloop": 100},
+            )
+        except RuntimeError:
+            with open("log.txt", "r") as logfile:
+                assert (
+                    "The maximum number of cycles (         100 ) was achieved"
+                    in logfile.read()
+                )
                 logfile.seek(0)
                 assert "(movebadrandom)" in logfile.read()
                 logfile.seek(0)
-                assert "User defined GENCAN number of iterations:           10" in logfile.read()
+                assert (
+                    "User defined GENCAN number of iterations:           10"
+                    in logfile.read()
+                )
 
     def test_rotate(self, h2o):
         filled = mb.fill_box(h2o, 2, box=[1, 1, 1], fix_orientation=True)

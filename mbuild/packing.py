@@ -20,7 +20,7 @@ from mbuild.exceptions import MBuildError
 
 __all__ = ["fill_box", "fill_region", "fill_sphere", "solvate"]
 
-PACKMOL = find_executable('packmol')
+PACKMOL = find_executable("packmol")
 PACKMOL_HEADER = """
 tolerance {0:.16f}
 filetype xyz
@@ -60,18 +60,20 @@ constrain_rotation y 0. 0.
 constrain_rotation z 0. 0.
 """
 
-packmol_default_args = {'tolerance': 0.2, 'seed': 12345}
+packmol_default_args = {"tolerance": 0.2, "seed": 12345}
+
 
 def combine_packmol_args(default_args, custom_args):
-    
+
     # List of all available packmol_inputs
-    packmol_inputs = [] 
-    
+    packmol_inputs = []
+
     #
 
-    #Parse through custom args first
-    
-    #Combine into single dict
+    # Parse through custom args first
+
+    # Combine into single dict
+
 
 def fill_box(
     compound,
@@ -87,7 +89,7 @@ def fill_box(
     fix_orientation=False,
     temp_file=None,
     update_port_locations=False,
-    packmol_args=None
+    packmol_args=None,
 ):
     """Fill a box with an `mbuild.compound` or `Compound` s using PACKMOL.
 
@@ -158,7 +160,7 @@ def fill_box(
         and therefore applied to all structures. NOTE: The PACKMOL options
         for seed and tolerance are specified by the function parameters
         seed and overlap.
-        Other command options can be found in the PACKMOL userguide:    
+        Other command options can be found in the PACKMOL userguide:
         http://www.ime.unicamp.br/~martinez/packmol/userguide.shtml
 
     Returns
@@ -264,7 +266,7 @@ def fill_box(
     if packmol_args:
         for arg in packmol_args:
             packmol_commands += "{} {} \n".format(arg, packmol_args[arg])
-    
+
     # Build the input file for each compound and call packmol.
     filled_xyz = _new_xyz_file()
 
@@ -325,7 +327,7 @@ def fill_region(
     fix_orientation=False,
     temp_file=None,
     update_port_locations=False,
-    packmol_args=None
+    packmol_args=None,
 ):
     """Fill a region of a box with `mbuild.Compound` (s) using PACKMOL.
 
@@ -373,7 +375,7 @@ def fill_region(
         and therefore applied to all structures. NOTE: The PACKMOL options
         for seed and tolerance are specified by the function parameters
         seed and overlap.
-        Other command options can be found in the PACKMOL userguide:    
+        Other command options can be found in the PACKMOL userguide:
         http://www.ime.unicamp.br/~martinez/packmol/userguide.shtml
 
     Returns
@@ -458,7 +460,7 @@ def fill_region(
     if packmol_args:
         for arg in packmol_args:
             packmol_commands += "{} {} \n".format(arg, packmol_args[arg])
-    
+
     # Build the input file and call packmol.
     filled_xyz = _new_xyz_file()
 
@@ -527,7 +529,7 @@ def fill_sphere(
     fix_orientation=False,
     temp_file=None,
     update_port_locations=False,
-    packmol_args=None
+    packmol_args=None,
 ):
     """Fill a sphere with a compound using PACKMOL.
 
@@ -582,7 +584,7 @@ def fill_sphere(
         and therefore applied to all structures. NOTE: The PACKMOL options
         for seed and tolerance are specified by the function parameters
         seed and overlap.
-        Other command options can be found in the PACKMOL userguide:    
+        Other command options can be found in the PACKMOL userguide:
         http://www.ime.unicamp.br/~martinez/packmol/userguide.shtml
 
     Returns
@@ -740,7 +742,7 @@ def solvate(
     temp_file=None,
     update_port_locations=False,
     center_solute=True,
-    packmol_args=None
+    packmol_args=None,
 ):
     """Solvate a compound in a box of solvent using PACKMOL.
 
@@ -782,10 +784,10 @@ def solvate(
         do not require a specified keyword. In this case, the value in
         the dictionary should be an empty string e.g. {'movebadrandom':""}
         These commands are placed at the header of the PACKMOL input file
-        and therefore applied to all structures. NOTE: The PACKMOL options 
+        and therefore applied to all structures. NOTE: The PACKMOL options
         for seed and tolerance are specified by the function parameters
         seed and overlap.
-        Other command options can be found in the PACKMOL userguide:    
+        Other command options can be found in the PACKMOL userguide:
         http://www.ime.unicamp.br/~martinez/packmol/userguide.shtml
 
     Returns
