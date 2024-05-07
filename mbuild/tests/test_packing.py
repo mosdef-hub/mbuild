@@ -322,6 +322,55 @@ class TestPacking(BaseTest):
                     in logfile.read()
                 )
 
+        try:
+            mb.fill_region(
+                h2o,
+                10,
+                [[2, 2, 2, 4, 4, 4]],
+                bounds=[[2, 2, 2, 4, 4, 4]],
+                packmol_args={"maxit": 10, "movebadrandom": "", "nloop": 100},
+            )
+        except RuntimeError:
+            with open("log.txt", "r") as logfile:
+                assert "(movebadrandom)" in logfile.read()
+                logfile.seek(0)
+                assert (
+                    "User defined GENCAN number of iterations:           10"
+                    in logfile.read()
+                )
+
+        try:
+            filled = mb.fill_sphere(
+                h2o,
+                n_compounds=2,
+                sphere=[3, 3, 3, 1.5],
+                packmol_args={"maxit": 10, "movebadrandom": "", "nloop": 100},
+            )
+        except RuntimeError:
+            with open("log.txt", "r") as logfile:
+                assert "(movebadrandom)" in logfile.read()
+                logfile.seek(0)
+                assert (
+                    "User defined GENCAN number of iterations:           10"
+                    in logfile.read()
+                )
+        try:
+            mb.solvate(
+                solute=h2o,
+                solvent=[h2o],
+                n_solvent=[10],
+                box=[2, 2, 2],
+                packmol_args={"maxit": 15, "movebadrandom": "", "nloop": 100},
+            )
+        except RuntimeError:
+            with open("log.txt", "r") as logfile:
+                assert "(movebadrandom)" in logfile.read()
+                logfile.seek(0)
+                assert (
+                    "User defined GENCAN number of iterations:           15"
+                    in logfile.read()
+                )
+
     def test_rotate(self, h2o):
         filled = mb.fill_box(h2o, 2, box=[1, 1, 1], fix_orientation=True)
         w0 = filled.xyz[:3]
