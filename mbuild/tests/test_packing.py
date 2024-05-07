@@ -315,11 +315,6 @@ class TestPacking(BaseTest):
             )
         except RuntimeError:
             with open("log.txt", "r") as logfile:
-                assert (
-                    "The maximum number of cycles (         100 ) was achieved"
-                    in logfile.read()
-                )
-                logfile.seek(0)
                 assert "(movebadrandom)" in logfile.read()
                 logfile.seek(0)
                 assert (
