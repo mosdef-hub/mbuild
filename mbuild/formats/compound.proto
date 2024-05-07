@@ -13,6 +13,13 @@ message Vec2 {
     int64 id2 = 2;
 }
 
+message Element {
+    string name = 1;
+    string symbol = 2;
+    int64 atomic_number = 3;
+    float mass = 4;
+}
+
 message Compound {
     string name = 1;
     repeated Compound children = 2;
@@ -21,8 +28,5 @@ message Compound {
     float charge = 5;
     int64 id = 6; // this is simply a unique number for this compound
     repeated Vec2 bonds = 7;  // a list of 2-tuples
-
-    // Todo: Maybe need something for port particles
+    Element element = 8;
 }
-
-

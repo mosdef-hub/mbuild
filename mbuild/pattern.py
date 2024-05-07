@@ -1,13 +1,23 @@
+"""mBuild pattern module."""
+
 from itertools import product
 
 import numpy as np
 
+from mbuild import clone
 from mbuild.coordinate_transform import force_overlap
 from mbuild.utils.validation import assert_port_exists
-from mbuild import clone
 
-__all__ = ['Pattern', 'DiskPattern', 'SpherePattern', 'Random2DPattern',
-           'Random3DPattern', 'Grid2DPattern', 'Grid3DPattern']
+__all__ = [
+    "Pattern",
+    "DiskPattern",
+    "SpherePattern",
+    "Random2DPattern",
+    "Random3DPattern",
+    "Grid2DPattern",
+    "Grid3DPattern",
+    "Triangle2DPattern",
+]
 
 
 class Pattern(object):
@@ -25,21 +35,22 @@ class Pattern(object):
          Orientations of ports
     scale : float, optional, default=None
          Scaling factor for the original pattern
-
     """
 
     def __init__(self, points, orientations=None, scale=None, **kwargs):
         self.points = points
         if orientations is None:
             orientations = dict()
-        self.orientations = orientations  # TODO: implement for more patterns
+        self.orientations = orientations
         if scale is not None:
             self.scale(scale)
 
     def __len__(self):
+        """Get the length of the pattern as the number of points."""
         return len(self.points)
 
     def __getitem__(self, item):
+        """Get an item from the pattern from its points."""
         return self.points[item]
 
     def scale(self, by):
@@ -48,22 +59,19 @@ class Pattern(object):
         Parameters
         ----------
         by : float or np.ndarray, shape=(3,)
-            The factor to scale by. If a scalar, scale all directions isotropically.
-            If np.ndarray, scale each direction independently
-
+            The factor to scale by. If a scalar, scale all directions
+            isotropically. If np.ndarray, scale each direction independently
         """
-
         self.points *= np.asarray([by])
         self._adjust_ports()
 
     def _adjust_ports(self):
-        """Adjust ports according to the provided orientations"""
-
+        """Adjust ports according to the provided orientations."""
         for orientation, ports in self.orientations.items():
             for port, point in zip(ports, self.points):
                 port.translate(point)
 
-    def apply(self, compound, orientation='', compound_port=''):
+    def apply(self, compound, orientation="", compound_port=""):
         """Arrange copies of a Compound as specified by the Pattern.
 
         Parameters
@@ -79,15 +87,13 @@ class Pattern(object):
         -------
         compound : mb.Compound
             mb.Compound with applied pattern
-
         """
-
         compounds = list()
         if self.orientations.get(orientation):
             for port in self.orientations[orientation]:
                 new_compound = clone(compound)
                 new_port = new_compound.labels[compound_port]
-                (new_compound, new_port['up'], port['up'])
+                (new_compound, new_port["up"], port["up"])
 
                 compounds.append(new_compound)
         else:
@@ -98,8 +104,15 @@ class Pattern(object):
                 compounds.append(new_compound)
         return compounds
 
-    def apply_to_compound(self, guest, guest_port_name='down', host=None,
-                          backfill=None, backfill_port_name='up', scale=True):
+    def apply_to_compound(
+        self,
+        guest,
+        guest_port_name="down",
+        host=None,
+        backfill=None,
+        backfill_port_name="up",
+        scale=True,
+    ):
         """Attach copies of a guest Compound to Ports on a host Compound.
 
         Parameters
@@ -111,14 +124,13 @@ class Pattern(object):
         host : mb.Compound, optional, default=None
             A Compound with available ports to add copies of `guest` to
         backfill : mb.Compound, optional, default=None
-            A Compound to add to the remaining available ports on `host`
-            after clones of `guest` have been added for each point in the
-            pattern
+            A Compound to add to the remaining available ports on `host` after
+            clones of `guest` have been added for each point in the pattern
         backfill_port_name : str, optional, default='up'
             The name of the port located on `backfill` to attach to the host
         scale : bool, optional, default=True
             Scale the points in the pattern to the lengths of the `host`'s
-            `boundingbox` and shift them by the `boundingbox`'s mins
+            `boundingbox` and shift them by the hosts mins
 
         Returns
         -------
@@ -126,37 +138,41 @@ class Pattern(object):
             List of inserted guest compounds on host compound
         backfills : list of mb.Compound
             List of inserted backfill compounds on host compound
-
         """
-
         n_ports = len(host.available_ports())
         assert n_ports >= self.points.shape[0], "Not enough ports for pattern."
         assert_port_exists(guest_port_name, guest)
-        box = host.boundingbox
+        box = host.get_boundingbox()
         if scale:
             self.scale(box.lengths)
-            self.points += box.mins
+            self.points += host.mins
         pattern = self.points
         port_positions = np.empty(shape=(n_ports, 3))
         port_list = list()
         for port_idx, port in enumerate(host.available_ports()):
-            port_positions[port_idx, :] = port['up']['middle'].pos
+            port_positions[port_idx, :] = port["up"]["middle"].pos
             port_list.append(port)
         used_ports = set()  # Keep track of used ports for backfilling.
         guests = []
         for point in pattern:
-            closest_point_idx = np.argmin(host.min_periodic_distance(point, port_positions))
+            closest_point_idx = np.argmin(
+                host.min_periodic_distance(point, port_positions)
+            )
             closest_port = port_list[closest_point_idx]
             used_ports.add(closest_port)
 
             # Attach the guest to the closest port.
             new_guest = clone(guest)
-            force_overlap(new_guest, new_guest.labels[guest_port_name], closest_port)
+            force_overlap(
+                new_guest, new_guest.labels[guest_port_name], closest_port
+            )
             guests.append(new_guest)
 
             # Move the port as far away as possible (simpler than removing it).
             # There may well be a more elegant/efficient way of doing this.
-            port_positions[closest_point_idx, :] = np.array([np.inf, np.inf, np.inf])
+            port_positions[closest_point_idx, :] = np.array(
+                [np.inf, np.inf, np.inf]
+            )
         backfills = []
         if backfill:
             assert_port_exists(backfill_port_name, backfill)
@@ -165,26 +181,27 @@ class Pattern(object):
                 if port not in used_ports:
                     new_backfill = clone(backfill)
                     # Might make sense to have a backfill_port_name option...
-                    force_overlap(new_backfill,
-                                  new_backfill.labels[backfill_port_name],
-                                  port)
+                    force_overlap(
+                        new_backfill,
+                        new_backfill.labels[backfill_port_name],
+                        port,
+                    )
                     backfills.append(new_backfill)
         return guests, backfills
 
 
 class Random2DPattern(Pattern):
+    """Generate n random points on a 2D grid along z = 0.
+
+    Attributes
+    ----------
+    n : int
+        Number of points to generate
+    seed : int
+        Seed for random number generation
+    """
+
     def __init__(self, n, seed=None, **kwargs):
-        """ Generate n random points on a 2D grid along z = 0
-
-        Attributes
-        ----------
-        n : int
-            Number of points to generate
-        seed : int
-            Seed for random number generation
-
-        """
-
         if seed:
             np.random.seed(seed)
         points = np.random.random((n, 3))
@@ -193,16 +210,15 @@ class Random2DPattern(Pattern):
 
 
 class Random3DPattern(Pattern):
-    """ Generate n random points on a 3D grid
+    """Generate n random points on a 3D grid.
 
-        Attributes
-        ----------
-        n : int
-            Number of points to generate
-        seed : int
-            Seed for random number generation
-
-        """
+    Attributes
+    ----------
+    n : int
+        Number of points to generate
+    seed : int
+        Seed for random number generation
+    """
 
     def __init__(self, n, seed=None, **kwargs):
         if seed:
@@ -212,55 +228,116 @@ class Random3DPattern(Pattern):
 
 
 class Grid2DPattern(Pattern):
-    """ Generate a 2D grid (n x m) of points along z = 0
+    """Generate a 2D grid (n x m) of points along z = 0.
 
-        Notes
-        -----
-        Points span [0,1) along x and y axes
+    Notes
+    -----
+    Points span [0,1) along x and y axes
 
-        Attributes
-        ---------
-        n : int
-            Number of grid rows
-        m : int
-            Number of grid columns
-
-        """
+    Attributes
+    ----------
+    n : int
+        Number of grid rows
+    m : int
+        Number of grid columns
+    """
 
     def __init__(self, n, m, **kwargs):
-
-        points = np.zeros(shape=(n*m, 3), dtype=float)
+        points = np.zeros(shape=(n * m, 3), dtype=float)
         for i, j in product(range(n), range(m)):
-            points[i*m + j, 0] = i / n
-            points[i*m + j, 1] = j / m
+            points[i * m + j, 0] = i / n
+            points[i * m + j, 1] = j / m
         super(Grid2DPattern, self).__init__(points=points, **kwargs)
 
 
 class Grid3DPattern(Pattern):
-    """ Generate a 3D grid (n x m x l) of points
+    """Generate a 3D grid (n x m x l) of points.
 
-        Notes
-        -----
-        Points span [0,1) along x, y, and z axes
+    Notes
+    -----
+    Points span [0,1) along x, y, and z axes
 
-        Attributes
-        ---------
-        n : int
-            Number of grid rows
-        m : int
-            Number of grid columns
-        l : int
-            Number of grid aisles
-
-        """
+    Attributes
+    ----------
+    n : int
+        Number of grid rows
+    m : int
+        Number of grid columns
+    l : int
+        Number of grid aisles
+    """
 
     def __init__(self, n, m, l, **kwargs):
-        points = np.zeros(shape=(n*m*l, 3), dtype=float)
+        points = np.zeros(shape=(n * m * l, 3), dtype=float)
         for i, j, k in product(range(n), range(m), range(l)):
-            points[i*m*l + j*l + k, 0] = i / n
-            points[i*m*l + j*l + k, 1] = j / m
-            points[i*m*l + j*l + k, 2] = k / l
+            points[i * m * l + j * l + k, 0] = i / n
+            points[i * m * l + j * l + k, 1] = j / m
+            points[i * m * l + j * l + k, 2] = k / l
         super(Grid3DPattern, self).__init__(points=points, **kwargs)
+
+
+class Triangle2DPattern(Pattern):
+    """Generate a 2D triangle (n x m) of points along z = 0.
+
+    Generate a square grid of dimensions n by m, then shifts points accordingly to generate
+    a triangular arrangement. shift='n' means shifting occurs in the x direction, where the
+    code shift every other row in the range specified by 'm', and vice versa for shift='m'.
+    By default, shifting will be half the distance betwen neighboring points in the direction
+    of shifting.
+
+    Notes
+    -----
+    Points span [0,1) along x and y axes. This code will allow patterns to be generated that
+    are only periodic in one direction. To generate a periodic pattern, 'm' should be even
+    when shift='n' and vice versa.
+
+    Attributes
+    ----------
+    n : int
+        Number of points along x axis
+    m : int
+        Number of points along y axis
+    shift : str, optional, default="n"
+        Allow user to choose the pattern to be shifted by "n" or "m"
+    shift_by : 0 <= float <= 1, optional, default=0.5
+        Normalized distance to be shift the n or m rows, with value between 0 and 1.
+        The value should be the relative distance between two consecutive points defined in shift.
+        shift_by value of 0 will return grid pattern.
+    """
+
+    def __init__(self, n, m, shift="n", shift_by=0.5, **kwargs):
+        assert isinstance(shift_by, (float, int))
+        err_msg = "shift_by value must be between 0 and 1."
+        assert shift_by >= 0 and shift_by <= 1, err_msg
+
+        points = np.zeros(shape=(n * m, 3), dtype=float)
+        if shift == "m":
+            for i, j in product(range(n), range(m)):
+                if i % 2 == 0:
+                    points[i * m + j, 0] = i / n
+                    points[i * m + j, 1] = j / m
+                else:
+                    points[i * m + j, 0] = i / n
+                    points[i * m + j, 1] = j / m + (1 / (2 * m))
+
+        elif shift == "n":
+            for i, j in product(range(n), range(m)):
+                if j % 2 == 0:
+                    points[i * m + j, 0] = i / n
+                    points[i * m + j, 1] = j / m
+                else:
+                    points[i * m + j, 0] = i / n + (1 / (2 * n))
+                    points[i * m + j, 1] = j / m
+        else:
+            raise ValueError(
+                f"shift can only take value of 'column' or 'row', given {shift}"
+            )
+
+        for i in range(len(points)):
+            if points[i][0] > 1:
+                points[i][0] -= 1
+
+        super(Triangle2DPattern, self).__init__(points=points, **kwargs)
 
 
 class SpherePattern(Pattern):
@@ -270,39 +347,40 @@ class SpherePattern(Pattern):
 
     Code by Chris Colbert from the numpy-discussion list:
     http://mail.scipy.org/pipermail/numpy-discussion/2009-July/043811.html
-
     """
 
     def __init__(self, n, **kwargs):
-        phi = (1 + np.sqrt(5)) / 2   # the golden ratio
-        long_incr = 2*np.pi / phi    # how much to increment the longitude
-        dz = 2.0 / float(n)          # a unit sphere has diameter 2
-        bands = np.arange(int(n))         # each band will have one point placed on it
-        z = bands * dz - 1.0 + (dz/2.0)  # the height z of each band/point
-        r = np.sqrt(1.0 - z*z)         # project onto xy-plane
-        az = bands * long_incr       # azimuthal angle of point modulo 2 pi
+        phi = (1 + np.sqrt(5)) / 2  # the golden ratio
+        long_incr = 2 * np.pi / phi  # how much to increment the longitude
+        dz = 2.0 / float(n)  # a unit sphere has diameter 2
+        bands = np.arange(int(n))  # each band will have one point placed on it
+        z = bands * dz - 1.0 + (dz / 2.0)  # the height z of each band/point
+        r = np.sqrt(1.0 - z * z)  # project onto xy-plane
+        az = bands * long_incr  # azimuthal angle of point modulo 2 pi
         x = r * np.cos(az)
         y = r * np.sin(az)
         points = np.column_stack((x, y, z))
 
         from mbuild.port import Port
-        if kwargs.get('orientations') is None:
+
+        if kwargs.get("orientations") is None:
             ports = list()
             for point in points:
                 port = Port()
                 ports.append(port)
                 # Make the top of the port point toward the positive x axis.
-                port.spin(-np.pi/2, [0, 0, 1])
+                port.spin(-np.pi / 2, [0, 0, 1])
                 # Raise up (or down) the top of the port in the z direction.
                 port.spin(-np.arcsin(point[2]), [0, 1, 0])
                 # Rotate the Port along the z axis.
                 port.spin(np.arctan2(point[1], point[0]), [0, 0, 1])
                 # Move the Port a bit away from the surface of the Sphere.
                 # translate(port, point + 0.07)
-            kwargs['orientations'] = {'normal': ports}
+            kwargs["orientations"] = {"normal": ports}
         else:
-            raise NotImplementedError('Custom orientation support is not yet '
-                                      'implemented.')
+            raise NotImplementedError(
+                "Custom orientation support is not yet implemented."
+            )
         super(SpherePattern, self).__init__(points=points, **kwargs)
 
 
@@ -313,7 +391,6 @@ class DiskPattern(Pattern):
 
     Code by Alexandre Devert:
     http://blog.marmakoide.org/?p=1
-
     """
 
     def __init__(self, n, **kwargs):

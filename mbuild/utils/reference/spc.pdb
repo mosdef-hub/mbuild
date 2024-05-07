@@ -1,8 +1,7 @@
 CRYST1   22.288   22.288   22.288  90.00  90.00  90.00 P 1           1
-ATOM      1 _HW  SPC S   1       4.828  12.617  12.371  0.00  0.00      SPC   
-ATOM      2 _OW  SPC S   1       4.341  13.484  12.270  0.00  0.00      SPC   
-ATOM      3 _HW  SPC S   1       4.505  14.054  13.077  0.00  0.00      SPC   
+ATOM      1 _HW  SPC S   1       4.828  12.617  12.371  0.00  0.00      SPC
+ATOM      2 _OW  SPC S   1       4.341  13.484  12.270  0.00  0.00      SPC
+ATOM      3 _HW  SPC S   1       4.505  14.054  13.077  0.00  0.00      SPC
 END
 CONECT  1    2
 CONECT  2    3
-

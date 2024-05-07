@@ -5,7 +5,7 @@ _publ_author_name
 'Speer J A'
 'Gibbs G V'
 _journal_name_full 'American Mineralogist'
-_journal_volume 61 
+_journal_volume 61
 _journal_year 1976
 _journal_page_first 238
 _journal_page_last 247
@@ -61,4 +61,3 @@ O2 0.01196 0.00856 0.00495 0.00071 0.00035 0.00019
 O3 0.00938 0.01064 0.00510 0.00120 0.00210 0.00125
 O4 0.01211 0.00863 0.00356 0.00157 0.00112 0.00103
 O5 0.00828 0.00663 0.00590 0.00166 0.00153 0.00175
-

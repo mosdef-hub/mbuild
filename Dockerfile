@@ -1,10 +1,10 @@
-ARG PY_VERSION=3.7
-FROM continuumio/miniconda3:4.8.2-alpine AS builder
+ARG PY_VERSION=3.10
+FROM continuumio/miniconda3:4.10.3-alpine AS builder
 
 EXPOSE 8888
 
 LABEL maintainer.name="mosdef-hub"\
-      maintainer.url="https://mosdef.org"
+  maintainer.url="https://mosdef.org"
 
 ENV PATH /opt/conda/bin:$PATH
 
@@ -14,24 +14,34 @@ ADD . /mbuild
 
 WORKDIR /mbuild
 
-RUN conda update conda -yq && \
-	conda config --set always_yes yes --set changeps1 no && \
-	conda config --add channels omnia && \
-	conda config --add channels conda-forge && \
-	conda config --add channels mosdef && \
-	. /opt/conda/etc/profile.d/conda.sh && \
-	conda create -n mbuild-docker python=$PY_VERSION nomkl --file requirements-dev.txt && \
-	conda activate mbuild-docker && \
-        python setup.py install && \
-	echo "source activate mbuild-docker" >> \
-	/home/anaconda/.profile && \
-	conda clean -afy && \
-	mkdir /home/anaconda/mbuild-notebooks && \
-	chown -R anaconda:anaconda /mbuild && \
-	chown -R anaconda:anaconda /opt && \
-	chown -R anaconda:anaconda /home/anaconda
+# Create a group and user
+RUN addgroup -S anaconda && adduser -S anaconda -G anaconda
 
+RUN apk update && apk add libarchive &&\
+  conda update conda -yq && \
+  conda config --set always_yes yes --set changeps1 no && \
+  . /opt/conda/etc/profile.d/conda.sh && \
+  sed -i -E "s/python.*$/python="$(PY_VERSION)"/" environment-dev.yml && \
+  conda install -c conda-forge mamba && \
+  mamba env create --file environment-dev.yml && \
+  conda activate mbuild-dev && \
+  mamba install -c conda-forge jupyter python="$PY_VERSION" && \
+  python setup.py install && \
+  echo "source activate mbuild-dev" >> \
+  /home/anaconda/.profile && \
+  conda clean -afy && \
+  mkdir -p /home/anaconda/data && \
+  chown -R anaconda:anaconda /mbuild && \
+  chown -R anaconda:anaconda /opt && \
+  chown -R anaconda:anaconda /home/anaconda
 
 WORKDIR /home/anaconda
 
-CMD /bin/su anaconda -s /bin/sh -l
+COPY devtools/docker-entrypoint.sh /entrypoint.sh
+
+RUN chmod a+x /entrypoint.sh
+
+USER anaconda
+
+ENTRYPOINT ["/entrypoint.sh"]
+CMD ["jupyter"]

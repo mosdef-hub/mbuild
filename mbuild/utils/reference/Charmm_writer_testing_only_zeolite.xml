@@ -1,0 +1,10 @@
+<ForceField>
+ <AtomTypes>
+  <Type name="Si" class="Si" element="Si" mass="12.011"   def="Si" desc="Si, faked for testing" doi="Physic are wrong, for testing only"/>
+  <Type name="O" class="O" element="O" mass="16.04300" def="O" desc="O, faked for testing" doi="Physic are wrong, for testing only"/>
+ </AtomTypes>
+ <NonbondedForce coulomb14scale="0" lj14scale="0">
+  <Atom type="Si"    charge="0.80"    sigma="0.34"   epsilon="0.232805"/>
+  <Atom type="O" charge="-0.4" sigma="0.373" epsilon="1.23054"/>
+  </NonbondedForce>
+</ForceField>

@@ -1,0 +1,34 @@
+name: mbuild-dev
+channels:
+  - conda-forge
+dependencies:
+  - bump2version
+  - codecov
+  - ele
+  - gmso>=0.9.0
+  - foyer>=0.11.0
+  - freud>=2.0.0
+  - garnett>=0.7.1
+  - gsd>=2.9
+  - hoomd>=3
+  - intermol
+  - mdtraj
+  - networkx
+  - nglview>=3
+  - numpy=1.26.4
+  - openbabel>=3
+  - packmol>=20
+  - parmed>=3.4.3
+  - pip
+  - pre-commit
+  - protobuf
+  - py3Dmol
+  - pycifrw
+  - pytest
+  - pytest-azurepipelines
+  - pytest-cov
+  - python>=3.8
+  - rdkit>=2021
+  - scipy
+  - treelib
+  - importlib_resources

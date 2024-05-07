@@ -1,0 +1,35 @@
+ci:
+    autofix_commit_msg: |
+        [pre-commit.ci] auto fixes from pre-commit.com hooks
+
+        for more information, see https://pre-commit.ci
+    autofix_prs: true
+    autoupdate_commit_msg: '[pre-commit.ci] pre-commit autoupdate'
+    autoupdate_schedule: weekly
+    skip: []
+    submodules: false
+repos:
+- repo: https://github.com/pre-commit/pre-commit-hooks
+  rev: v4.6.0
+  hooks:
+    - id: check-yaml
+    - id: end-of-file-fixer
+    - id: trailing-whitespace
+      exclude: setup.cfg
+- repo: https://github.com/psf/black
+  rev: 24.4.2
+  hooks:
+    - id: black
+      args: [--line-length=80]
+- repo: https://github.com/pycqa/isort
+  rev: 5.13.2
+  hooks:
+    - id: isort
+      name: isort (python)
+      args: [--profile=black, --line-length=80]
+- repo: https://github.com/pycqa/pydocstyle
+  rev: '6.3.0'
+  hooks:
+    - id: pydocstyle
+      exclude: ^(mbuild/tests/|docs/|devtools/|setup.py|setup.cfg|mbuild/formats/charmm_writer.py|mbuild/formats/gomc_conf_writer.py|mbuild/utils/specific_ff_to_residue.py)
+      args: [--convention=numpy]

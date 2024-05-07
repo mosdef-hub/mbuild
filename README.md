@@ -1,9 +1,7 @@
 ## mBuild: a hierarchical, component based molecule builder
 
 [![Gitter chat](https://badges.gitter.im/mosdef-hub/gitter.svg)](https://gitter.im/mosdef-hub/Lobby)
-[![Travis Build Status](https://travis-ci.org/mosdef-hub/mbuild.svg?branch=master)](https://travis-ci.org/mosdef-hub/mbuild)
-[![AZP Build Status](https://dev.azure.com/mosdef/mbuild/_apis/build/status/mosdef-hub.mbuild?branchName=master)](https://dev.azure.com/mosdef/mbuild/_build/latest?definitionId=1&branchName=master)
-[![PyPI Version](https://badge.fury.io/py/mbuild.svg)](https://pypi.python.org/pypi/mbuild)
+[![CI](https://github.com/mosdef-hub/mbuild/actions/workflows/CI.yaml/badge.svg)](https://github.com/mosdef-hub/mbuild/actions/workflows/CI.yaml)
 [![Anaconda Badge](https://anaconda.org/conda-forge/mbuild/badges/version.svg)](https://anaconda.org/conda-forge/mbuild)
 [![codecov](https://codecov.io/gh/mosdef-hub/mbuild/branch/master/graph/badge.svg)](https://codecov.io/gh/mosdef-hub/mbuild)
 
@@ -19,19 +17,59 @@ complex molecular systems for molecular dynamics simulations.
 
 To learn more, get started or contribute, check out our [website](http://mbuild.mosdef.org).
 
-If you use this package, please cite [our paper](http://dx.doi.org/10.1007/978-981-10-1128-3_5
-). The BibTeX reference is
-```
-@article{Klein2016mBuild,
-      author = "Klein, Christoph and Sallai, János and Jones, Trevor J. and Iacovella, Christopher R. and McCabe, Clare and Cummings, Peter T.",
-      title = "A Hierarchical, Component Based Approach to Screening Properties of Soft Matter",
-      booktitle = "Foundations of Molecular Modeling and Simulation",
-      series = "Molecular Modeling and Simulation: Applications and Perspectives",
-      year = "2016",
-      doi = "http://dx.doi.org/10.1007/978-981-10-1128-3_5" 
-}
+### mBuild within the MoSDeF Ecosystem
+<p align="center">
+  <img src="docs/images/mosdef_mbuild.svg?raw=true" alt="mBuild within the MoSDeF Ecosystem" width="500" height="500"/>
+</p>
+
+
+The `mBuild` package is part of the [Molecular Simulation Design Framework (MoSDeF) project](http://mosdef.org/).
+Libraries in the MoSDeF ecosystem are designed to provide utilities neccessary to streamline
+a researcher's simulation workflow. When setting up simulation studies,
+we also recommend users to follow the [TRUE](https://www.tandfonline.com/doi/full/10.1080/00268976.2020.1742938)
+(Transparent, Reproducible, Usable-by-others, and Extensible) standard, which is a set of common
+practices meant to improve the reproducibility of computational simulation research.
+
+Installation
+------------
+For full, detailed instructions, refer to the [documentation for installation](https://mbuild.mosdef.org/en/stable/getting_started/installation/installation_toc.html)
+
+#### `conda` installation quickstart
+`mBuild` is available on `conda` and can be installed as:
+```bash
+conda install -c conda-forge mbuild
 ```
 
+#### Installing from source
+
+Dependencies of mBuild are listed in the files ``environment.yml`` (lightweight environment specification containing minimal dependencies) and ``environment-dev.yml`` (comprehensive environment specification including optional and testing packages for developers).
+The ``mbuild`` or ``mbuild-dev`` conda environments can be created with
+
+
+```.. code-block:: bash
+git clone https://github.com/mosdef-hub/mbuild.git
+cd mbuild
+# for mbuild conda environment
+conda env create -f environment.yml
+conda activate mbuild
+
+# for mbuild-dev
+conda env create -f environment-dev.yml
+conda activate mbuild-dev
+
+# install a non-editable version of mbuild
+pip install .
+```
+
+#### Install an editable version from source
+
+Once all dependencies have been installed and the ``conda`` environment has been created, the ``mBuild`` itself can be installed.
+
+``` code-block:: bash
+cd mbuild
+conda activate mbuild-dev # or mbuild depending on your installation
+pip install -e .
+```
 #### Quick Start with Docker
 To use `mbuild` in a jupyter-notebook that runs from a docker container with all the dependencies installed use the following command:
 
@@ -49,9 +87,9 @@ $ docker run -it --name mbuild mosdef/mbuild:latest
 
 To learn more about using `mBuild` with docker, please refer to the documentation [here](https://mbuild.mosdef.org/en/latest/docker.html).
 
-#### Tutorials
+### Tutorials
 
-*Interactive tutorials can be found here:* 
+*Interactive tutorials can be found here:*
 
 [![Binder](https://mybinder.org/badge.svg)](https://mybinder.org/v2/gh/mosdef-hub/mbuild_tutorials/master)
 
@@ -76,7 +114,7 @@ pmpc_layer = PMPCLayer(chain_length=20, pattern=pattern, tile_x=3, tile_y=2)
 ```
 
 ![Zwitterionic brushes on beta-cristobalite substrate](docs/images/pmpc.png)
-#### Community Recipes
+### Community Recipes
 Use case-specific systems can be generated via mBuild recipes.
 Some users have graciously contributed recipes for particular systems, including:
 
@@ -84,8 +122,24 @@ Some users have graciously contributed recipes for particular systems, including
 * [Nanodroplets on graphene](https://github.com/ftiet/droplet-builder)
 * [Coarse-grained DNA](https://github.com/zijiewu3/mbuild_ONA)
 * [Lipid bilayers](https://github.com/uppittu11/mbuild_bilayer)
+* [Surface Coatings](https://github.com/daico007/surface_coatings)
 
-#### [![License](https://img.shields.io/badge/license-MIT-blue.svg)](http://opensource.org/licenses/MIT)
+### Citing mBuild
+
+If you use this package, please cite [our paper](http://dx.doi.org/10.1007/978-981-10-1128-3_5
+). The BibTeX reference is
+```
+@article{Klein2016mBuild,
+      author = "Klein, Christoph and Sallai, János and Jones, Trevor J. and Iacovella, Christopher R. and McCabe, Clare and Cummings, Peter T.",
+      title = "A Hierarchical, Component Based Approach to Screening Properties of Soft Matter",
+      booktitle = "Foundations of Molecular Modeling and Simulation",
+      series = "Molecular Modeling and Simulation: Applications and Perspectives",
+      year = "2016",
+      doi = "http://dx.doi.org/10.1007/978-981-10-1128-3_5"
+}
+```
+
+### [![License](https://img.shields.io/badge/license-MIT-blue.svg)](http://opensource.org/licenses/MIT)
 
 Various sub-portions of this library may be independently distributed under
 different licenses. See those files for their specific terms.

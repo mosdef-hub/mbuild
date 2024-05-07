@@ -5,9 +5,9 @@ from __future__ import print_function
 import os
 import shutil
 
+import nbformat
 from docutils import nodes
 from docutils.parsers.rst import Directive, directives
-import nbformat
 from nbconvert import HTMLExporter, PythonExporter
 
 
@@ -21,12 +21,14 @@ def export_html(wd, name):
     nb = _read(wd, name)
 
     config = {
-        'Exporter': {'template_file': 'embed',
-                     'template_path': ['./sphinxext/']},
-#        'ExecutePreprocessor': {'enabled': True},
-        'ExecutePreprocessor': {'enabled': False},
-        'ExtractOutputPreprocessor': {'enabled': True},
-        'CSSHTMLHeaderPreprocessor': {'enabled': True}
+        "Exporter": {
+            "template_file": "embed",
+            "template_path": ["./sphinxext/"],
+        },
+        #        'ExecutePreprocessor': {'enabled': True},
+        "ExecutePreprocessor": {"enabled": False},
+        "ExtractOutputPreprocessor": {"enabled": True},
+        "CSSHTMLHeaderPreprocessor": {"enabled": True},
     }
 
     exporter = HTMLExporter(config)
@@ -34,8 +36,8 @@ def export_html(wd, name):
     try:
         body, resources = exporter.from_notebook_node(nb)
 
-        for fn, data in resources['outputs'].items():
-            with open("{}/{}".format(wd, fn), 'wb') as f:
+        for fn, data in resources["outputs"].items():
+            with open("{}/{}".format(wd, fn), "wb") as f:
                 f.write(data)
         return body
     except Exception as e:
@@ -46,20 +48,19 @@ def export_python(wd, name):
     nb = _read(wd, name)
     exporter = PythonExporter()
     body, resources = exporter.from_notebook_node(nb)
-    with open("{}/{}.py".format(wd, name), 'w') as f:
+    with open("{}/{}.py".format(wd, name), "w") as f:
         f.write(body)
 
 
 class NotebookDirective(Directive):
-    """Insert an evaluated notebook into a document
-    """
+    """Insert an evaluated notebook into a document"""
+
     required_arguments = 1
     optional_arguments = 1
-    option_spec = {'skip_exceptions': directives.flag}
+    option_spec = {"skip_exceptions": directives.flag}
     final_argument_whitespace = True
 
     def run(self):
-
         # check if raw html is supported
         if not self.state.document.settings.raw_enabled:
             raise self.warning('"%s" directive disabled.' % self.name)
@@ -70,10 +71,9 @@ class NotebookDirective(Directive):
         nb_abs_path = os.path.abspath(nb_abs_path)
         nb_name = os.path.basename(nb_rel_path).split(".")[0]
         dest_dir = "{}/{}/{}".format(
-            setup.app.builder.outdir,
-            os.path.dirname(nb_rel_path),
-            nb_name)
-        fmt = {'wd': dest_dir, 'name': nb_name}
+            setup.app.builder.outdir, os.path.dirname(nb_rel_path), nb_name
+        )
+        fmt = {"wd": dest_dir, "name": nb_name}
 
         if not os.path.exists(dest_dir):
             os.makedirs(dest_dir)
@@ -93,14 +93,15 @@ class NotebookDirective(Directive):
             py=formatted_link("{wd}/{name}.py".format(**fmt)),
         )
 
-        rst_file = self.state_machine.document.attributes['source']
+        rst_file = self.state_machine.document.attributes["source"]
         self.state_machine.insert_input([link_rst], rst_file)
 
         # create notebook node
-        attributes = {'format': 'html', 'source': 'nb_path'}
-        nb_node = notebook_node('', html, **attributes)
-        nb_node.source, nb_node.line = self.state_machine \
-            .get_source_and_line(self.lineno)
+        attributes = {"format": "html", "source": "nb_path"}
+        nb_node = notebook_node("", html, **attributes)
+        nb_node.source, nb_node.line = self.state_machine.get_source_and_line(
+            self.lineno
+        )
 
         # add dependency
         self.state.document.settings.record_dependencies.add(nb_abs_path)
@@ -129,8 +130,8 @@ def setup(app):
     setup.config = app.config
     setup.confdir = app.confdir
 
-    app.add_node(notebook_node,
-                 html=(visit_notebook_node, depart_notebook_node))
+    app.add_node(
+        notebook_node, html=(visit_notebook_node, depart_notebook_node)
+    )
 
-    app.add_directive('notebook', NotebookDirective)
-    
+    app.add_directive("notebook", NotebookDirective)

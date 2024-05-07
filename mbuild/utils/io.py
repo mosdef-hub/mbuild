@@ -1,5 +1,7 @@
-# Portions of this code are adapted from MDTraj and are released under the
-# following license.
+"""Module for working with external libraries.
+
+Portions of this code are adapted from MDTraj and are released under the
+following license.
 
 ##############################################################################
 # MDTraj is free software: you can redistribute it and/or modify
@@ -15,30 +17,39 @@
 # You should have received a copy of the GNU Lesser General Public
 # License along with MDTraj. If not, see <http://www.gnu.org/licenses/>.
 ##############################################################################
-import inspect
+"""
+
 import importlib
+import inspect
 import os
-from pkg_resources import resource_filename
 import sys
 import textwrap
 import warnings
 from unittest import SkipTest
 
+import importlib_resources as resources
+
 
 class DelayImportError(ImportError, SkipTest):
+    """Error to allow better import handling."""
+
     pass
 
 
 MESSAGES = dict()
-MESSAGES['gsd'] = '''
+MESSAGES[
+    "gsd"
+] = """
 The code at {filename}:{line_number} requires the "gsd" package
 
 gsd can be installed with conda using:
 
 # conda install -c conda-forge gsd
-'''
+"""
 
-MESSAGES['nglview'] = '''
+MESSAGES[
+    "nglview"
+] = """
 The code at {filename}:{line_number} requires the "nglview" package
 
 nglview can be installed using:
@@ -48,9 +59,11 @@ nglview can be installed using:
 or
 
 # pip install nglview
-'''
+"""
 
-MESSAGES['py3Dmol'] = '''
+MESSAGES[
+    "py3Dmol"
+] = """
 The code at {filename}:{line_number} requires the "py3Dmol" package
 
 py3Dmol can be installed using:
@@ -60,9 +73,25 @@ py3Dmol can be installed using:
 or
 
 # pip install py3Dmol
-'''
+"""
 
-MESSAGES['openbabel'] = '''
+MESSAGES[
+    "rdkit"
+] = """
+The code at {filename}:{line_number} requires the "rdkit" package
+
+rdkit can be installed with conda using:
+
+# conda install -c conda-forge rdkit
+
+or from source following instructions at:
+
+https://www.rdkit.org/docs/Install.html#installation-from-source
+"""
+
+MESSAGES[
+    "openbabel"
+] = """
 The code at {filename}:{line_number} requires the "openbabel" package
 
 openbabel can be installed with conda using:
@@ -72,47 +101,67 @@ openbabel can be installed with conda using:
 or from source following instructions at:
 
 # http://openbabel.org/docs/current/UseTheLibrary/PythonInstall.html
-'''
+"""
 
-MESSAGES['pybel'] = MESSAGES['openbabel']
+MESSAGES["pybel"] = MESSAGES["openbabel"]
 
-MESSAGES['mdtraj'] = '''
+MESSAGES[
+    "mdtraj"
+] = """
 The code at {filename}:{line_number} requires the "mdtraj" package
 mdtraj can be installed using:
 # conda install -c conda-forge mdtraj
 or
 # pip install mdtraj
-'''
+"""
 
-MESSAGES['foyer'] = '''
+MESSAGES[
+    "foyer"
+] = """
 The code at {filename}:{line_number} requires the "foyer" package
 
 foyer can be installed using:
 
-# conda install -c mosdef foyer
+# conda install -c conda-forge foyer
 
 or
 
 # pip install foyer
-'''
+"""
 
-MESSAGES['garnett'] = '''
+MESSAGES[
+    "garnett"
+] = """
 The code at {filename}:{line_number} requires the "garnett" package
 
 garnett can be installed with conda using:
 
 # conda install -c conda-forge garnett
-'''
+"""
 
-MESSAGES['pycifrw'] = '''
+MESSAGES[
+    "pycifrw"
+] = """
 The code at {filename}:{line_number} requires the "pycifrw" package
 
 pycifrw can be installed with conda using:
 
 # conda install -c conda-forge pycifrw
-'''
+"""
 
-MESSAGES['protobuf'] = '''
+MESSAGES[
+    "freud"
+] = """
+The code at {filename}:{line_number} requires the "freud" package
+
+freud can be installed with conda using:
+
+# conda install -c conda-forge freud
+"""
+
+MESSAGES[
+    "protobuf"
+] = """
 The code at {filename}:{line_number} requires the "protobuf" package
 
 protobuf can be installed using:
@@ -122,10 +171,11 @@ protobuf can be installed using:
 or
 
 # pip install protobuf
-'''
+"""
+
 
 def import_(module):
-    """Import a module, and issue a nice message to stderr if the module isn't installed.
+    """Import a module and issue a nice message to stderr if it isn't installed.
 
     Parameters
     ----------
@@ -151,32 +201,37 @@ def import_(module):
     The pybel/openbabel block is meant to resolve compatibility between
     openbabel 2.x and 3.0.  There may be other breaking changes but the change
     in importing them is the major one we are aware of. For details, see
-    https://open-babel.readthedocs.io/en/latest/UseTheLibrary/migration.html#python-module
+    https://open-babel.readthedocs.io/en/latest/UseTheLibrary/migration.
+    html#python-module
     """
-    if module == 'pybel':
+    if module == "pybel":
         try:
-            return importlib.import_module('openbabel.pybel')
+            return importlib.import_module("openbabel.pybel")
         except ModuleNotFoundError:
             pass
         try:
-            pybel = importlib.import_module('pybel')
-            msg = ('openbabel 2.0 detected and will be dropped in a future '
-                   'release. Consider upgrading to 3.x.')
+            pybel = importlib.import_module("pybel")
+            msg = (
+                "openbabel 2.0 detected and will be dropped in a future "
+                "release. Consider upgrading to 3.x."
+            )
             warnings.warn(msg, DeprecationWarning)
             return pybel
         except ModuleNotFoundError:
             pass
-    if module == 'openbabel':
+    if module == "openbabel":
         try:
-            return importlib.import_module('openbabel.openbabel')
+            return importlib.import_module("openbabel.openbabel")
         except ModuleNotFoundError:
             pass
         try:
-            openbabel = importlib.import_module('openbabel')
-            msg = ('openbabel 2.0 detected and will be dropped in a future '
-                   'release. Consider upgrading to 3.x.')
+            openbabel = importlib.import_module("openbabel")
+            msg = (
+                "openbabel 2.0 detected and will be dropped in a future "
+                "release. Consider upgrading to 3.x."
+            )
             warnings.warn(msg, DeprecationWarning)
-            return pybel
+            return openbabel
         except ModuleNotFoundError:
             pass
     try:
@@ -185,18 +240,33 @@ def import_(module):
         try:
             message = MESSAGES[module]
         except KeyError:
-            message = 'The code at {filename}:{line_number} requires the ' + module + ' package'
-            e = ImportError('No module named %s' % module)
+            message = (
+                "The code at {filename}:{line_number} requires the "
+                f"{module} package"
+            )
+            e = ImportError(f"No module named {module}")
 
-        frame, filename, line_number, function_name, lines, index = \
-            inspect.getouterframes(inspect.currentframe())[1]
+        (
+            frame,
+            filename,
+            line_number,
+            function_name,
+            lines,
+            index,
+        ) = inspect.getouterframes(inspect.currentframe())[1]
 
-        m = message.format(filename=os.path.basename(filename), line_number=line_number)
+        m = message.format(
+            filename=os.path.basename(filename), line_number=line_number
+        )
         m = textwrap.dedent(m)
 
-        bar = '\033[91m' + '#' * max(len(line) for line in m.split(os.linesep)) + '\033[0m'
+        bar = (
+            "\033[91m"
+            + "#" * max(len(line) for line in m.split(os.linesep))
+            + "\033[0m"
+        )
 
-        print('', file=sys.stderr)
+        print("", file=sys.stderr)
         print(bar, file=sys.stderr)
         print(m, file=sys.stderr)
         print(bar, file=sys.stderr)
@@ -205,6 +275,7 @@ def import_(module):
 
 try:
     import intermol
+
     has_intermol = True
     del intermol
 except ImportError:
@@ -212,6 +283,7 @@ except ImportError:
 
 try:
     import gsd
+
     has_gsd = True
     del gsd
 except ImportError:
@@ -219,6 +291,7 @@ except ImportError:
 
 try:
     from openbabel import openbabel
+
     has_openbabel = True
     del openbabel
 except ImportError:
@@ -226,19 +299,30 @@ except ImportError:
 
 try:
     import mdtraj
+
     has_mdtraj = True
     del mdtraj
 except ImportError:
     has_mdtraj = False
+
 try:
     import foyer
+
     has_foyer = True
     del foyer
 except ImportError:
     has_foyer = False
 
 try:
+    import gmso
+
+    has_gmso = True
+except ImportError:
+    has_gmso = False
+
+try:
     import networkx
+
     has_networkx = True
     del networkx
 except ImportError:
@@ -246,20 +330,15 @@ except ImportError:
 
 try:
     import hoomd
+
     has_hoomd = True
     del hoomd
 except ImportError:
     has_hoomd = False
 
 try:
-    import nglview
-    has_nglview = True
-    del nglview
-except ImportError:
-    has_nglview = False
-
-try:
     import py3Dmol
+
     has_py3Dmol = True
     del py3Dmol
 except ImportError:
@@ -267,14 +346,15 @@ except ImportError:
 
 try:
     from google import protobuf
+
     has_protobuf = True
     del protobuf
 except ImportError:
     has_protobuf = False
 
-
 try:
     import garnett
+
     has_garnett = True
     del garnett
 except ImportError:
@@ -282,10 +362,28 @@ except ImportError:
 
 try:
     import CifFile
+
     has_pycifrw = True
     del CifFile
 except ImportError:
     has_pycifrw = False
+
+try:
+    import rdkit
+
+    has_rdkit = True
+    del rdkit
+except ImportError:
+    has_rdkit = False
+
+try:
+    import freud
+
+    has_freud = True
+    del freud
+except ImportError:
+    has_freud = False
+
 
 def get_fn(name):
     """Get the full path to one of the reference files shipped for utils.
@@ -298,15 +396,16 @@ def get_fn(name):
     ----------
     name : str
         Name of the file to load (with respect to the reference/ folder).
-
     """
-    fn = resource_filename('mbuild', os.path.join('utils', 'reference', name))
+    fn = resources.files("mbuild").joinpath("utils", "reference", name)
+    # fn = resource_filename("mbuild", os.path.join("utils", "reference", name))
     if not os.path.exists(fn):
-        raise IOError('Sorry! {} does not exists.'.format(fn))
-    return fn
+        raise IOError("Sorry! {} does not exists.".format(fn))
+    return str(fn)
 
 
 def run_from_ipython():
+    """Get whether python is being run interactively."""
     try:
         __IPYTHON__
         return True
