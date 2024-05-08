@@ -60,19 +60,39 @@ constrain_rotation y 0. 0.
 constrain_rotation z 0. 0.
 """
 
-packmol_default_args = {"tolerance": 0.2, "seed": 12345}
 
-
-def combine_packmol_args(default_args, custom_args):
-
-    # List of all available packmol_inputs
-    packmol_inputs = []
-
-    #
-
-    # Parse through custom args first
-
-    # Combine into single dict
+def check_packmol_args(custom_args):
+    # List of all available packmol_inputs.
+    # Only file-level arguments can be passed.
+    allowed_args = [
+            "maxit", # int
+            "nloop", # int
+            "fbins", # float
+            "discale", # float
+            "movefrac", # float
+            "avoid_overlap", # On/Off (empty string "" is on)
+            "precision", # float
+            "movebadrandom", # On/off (empty string "" is on)
+            "use_short_tol", # On/off (empty string "" is on)
+            "short_tol_dist", # float
+            "short_tol_scale", # float
+    ]
+    default_args = ["tolerance", "seed", "sidemax"]
+    for key in custom_args:
+        if key not in allowed_args:
+            raise ValueError(
+                   f"PACKMOL argument {key} is not usable in `packmol_args`. "
+                   f"Availble arguments that can be set are {allowed_args}."
+                   "Only file-level arguments can be set with `packmol_args`."
+                   "See https://m3g.github.io/packmol/userguide.shtml#run"
+            )
+        if key in default_args:
+            warnings.warn(
+                    f"The PACKMOL argument {key} was passed to `packmol_args`, "
+                    "but should be set using the corresponding function parameters. "
+                    "The value passed to the function will be used. "
+                    "See the function's parameters for more information."
+            )
 
 
 def fill_box(
@@ -262,6 +282,7 @@ def fill_box(
     box_mins = [a_min + (edge * 10) for a_min in box_mins]
 
     # generate string of addl. packmol inputs given in packmol_args
+    check_packmol_args(packmol_args)
     packmol_commands = ""
     if packmol_args:
         for arg in packmol_args:
@@ -456,6 +477,7 @@ def fill_region(
     overlap *= 10
 
     # generate string of addl. packmol inputs given in packmol_args
+    check_packmol_args(packmol_args)
     packmol_commands = ""
     if packmol_args:
         for arg in packmol_args:
@@ -680,6 +702,7 @@ def fill_sphere(
     overlap *= 10
 
     # generate string of addl. packmol inputs given in packmol_args
+    check_packmol_args(packmol_args)
     packmol_commands = ""
     if packmol_args:
         for arg in packmol_args:
@@ -821,6 +844,7 @@ def solvate(
     box_mins = np.add(box_mins, edge * 10)
 
     # generate string of addl. packmol inputs given in packmol_args
+    check_packmol_args(packmol_args)
     packmol_commands = ""
     if packmol_args:
         for arg in packmol_args:

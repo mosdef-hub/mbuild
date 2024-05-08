@@ -371,6 +371,39 @@ class TestPacking(BaseTest):
                     in logfile.read()
                 )
 
+    def test_packmol_args_bad(self, h2o):
+        with pytest.raises(ValueError):
+            mb.fill_box(
+                h2o,
+                n_compounds=2,
+                box=[10, 10, 10],
+                packmol_args={"bad_arg": 10},
+            )
+
+    @pytest.mark.parametrize(
+            "args",
+            [
+                dict(maxit=500),
+                dict(nloop=1000),
+                dict(movebadrandom=""),
+                dict(fbins=1.2),
+                dict(discale=1.5),
+                dict(movefrac=0.05),
+                dict(avoid_overlap=""),
+                dict(precision=0.02),
+                dict(use_short_tol="", short_tol_dist=0.5),
+                dict(use_short_tol="", short_tol_scale=1.2)
+            ]
+    )
+    def test_packmol_args_allowed(self, args):
+            mb.fill_box(
+                mb.load("C", smiles=True),
+                n_compounds=10,
+                box=[10, 10, 10],
+                packmol_args=args,
+            )
+
+
     def test_rotate(self, h2o):
         filled = mb.fill_box(h2o, 2, box=[1, 1, 1], fix_orientation=True)
         w0 = filled.xyz[:3]
