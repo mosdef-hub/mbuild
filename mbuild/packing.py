@@ -285,9 +285,9 @@ def fill_box(
     box_mins = [a_min + (edge * 10) for a_min in box_mins]
 
     # generate string of addl. packmol inputs given in packmol_args
-    check_packmol_args(packmol_args)
     packmol_commands = ""
     if packmol_args:
+        check_packmol_args(packmol_args)
         for arg in packmol_args:
             packmol_commands += "{} {} \n".format(arg, packmol_args[arg])
 
@@ -480,9 +480,9 @@ def fill_region(
     overlap *= 10
 
     # generate string of addl. packmol inputs given in packmol_args
-    check_packmol_args(packmol_args)
     packmol_commands = ""
     if packmol_args:
+        check_packmol_args(packmol_args)
         for arg in packmol_args:
             packmol_commands += "{} {} \n".format(arg, packmol_args[arg])
 
@@ -705,9 +705,9 @@ def fill_sphere(
     overlap *= 10
 
     # generate string of addl. packmol inputs given in packmol_args
-    check_packmol_args(packmol_args)
     packmol_commands = ""
     if packmol_args:
+        check_packmol_args(packmol_args)
         for arg in packmol_args:
             packmol_commands += "{} {} \n".format(arg, packmol_args[arg])
 
@@ -847,9 +847,9 @@ def solvate(
     box_mins = np.add(box_mins, edge * 10)
 
     # generate string of addl. packmol inputs given in packmol_args
-    check_packmol_args(packmol_args)
     packmol_commands = ""
     if packmol_args:
+        check_packmol_args(packmol_args)
         for arg in packmol_args:
             packmol_commands += "{} {} \n".format(arg, packmol_args[arg])
 

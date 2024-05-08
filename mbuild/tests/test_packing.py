@@ -396,21 +396,20 @@ class TestPacking(BaseTest):
         ],
     )
     def test_packmol_args_allowed(self, args):
-<<<<<<< HEAD
-            mb.fill_box(
-                mb.load("C", smiles=True),
-                n_compounds=10,
-                box=[10, 10, 10],
-                packmol_args=args,
-            )
+        mb.fill_box(
+            mb.load("C", smiles=True),
+            n_compounds=10,
+            box=[10, 10, 10],
+            packmol_args=args,
+        )
 
     @pytest.mark.parametrize(
-            "args",
-            [
-                dict(tolerance=0.2),
-                dict(seed=42),
-                dict(sidemax=2.0),
-            ]
+        "args",
+        [
+            dict(tolerance=0.2),
+            dict(seed=42),
+            dict(sidemax=2.0),
+        ],
     )
     def test_packmol_args_default(self, args):
         with pytest.warns():
@@ -420,23 +419,6 @@ class TestPacking(BaseTest):
                 box=[10, 10, 10],
                 packmol_args=args,
             )
-
-||||||| 6170db35
-            mb.fill_box(
-                mb.load("C", smiles=True),
-                n_compounds=10,
-                box=[10, 10, 10],
-                packmol_args=args,
-            )
-
-=======
-        mb.fill_box(
-            mb.load("C", smiles=True),
-            n_compounds=10,
-            box=[10, 10, 10],
-            packmol_args=args,
-        )
->>>>>>> 880e6265ed03bdcfd8be585e5791a6f8812872a0
 
     def test_rotate(self, h2o):
         filled = mb.fill_box(h2o, 2, box=[1, 1, 1], fix_orientation=True)
