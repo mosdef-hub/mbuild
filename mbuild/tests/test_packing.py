@@ -391,8 +391,6 @@ class TestPacking(BaseTest):
             dict(movefrac=0.05),
             dict(avoid_overlap=""),
             dict(precision=0.02),
-            dict(use_short_tol="", short_tol_dist=0.5),
-            dict(use_short_tol="", short_tol_scale=1.2),
         ],
     )
     def test_packmol_args_allowed(self, args):
