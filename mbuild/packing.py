@@ -65,30 +65,29 @@ def check_packmol_args(custom_args):
     # List of all available packmol_inputs.
     # Only file-level arguments can be passed.
     allowed_args = [
-<<<<<<< HEAD
-            "maxit", # int
-            "nloop", # int
-            "fbins", # float
-            "discale", # float
-            "movefrac", # float
-            "avoid_overlap", # On/Off (empty string "" is on)
-            "precision", # float
-            "movebadrandom", # On/off (empty string "" is on)
-            "use_short_tol", # On/off (empty string "" is on)
-            "short_tol_dist", # float
-            "short_tol_scale", # float
-            "tolerance",
-            "seed",
-            "sidemax",
+        "maxit",  # int
+        "nloop",  # int
+        "fbins",  # float
+        "discale",  # float
+        "movefrac",  # float
+        "avoid_overlap",  # On/Off (empty string "" is on)
+        "precision",  # float
+        "movebadrandom",  # On/off (empty string "" is on)
+        "use_short_tol",  # On/off (empty string "" is on)
+        "short_tol_dist",  # float
+        "short_tol_scale",  # float
+        "tolerance",
+        "seed",
+        "sidemax",
     ]
     default_args = ["tolerance", "seed", "sidemax"]
     for key in custom_args:
         if key not in allowed_args:
             raise ValueError(
-                   f"PACKMOL argument {key} is not usable in `packmol_args`. "
-                   f"Availble arguments that can be set are {allowed_args}."
-                   "Only file-level arguments can be set with `packmol_args`."
-                   "See https://m3g.github.io/packmol/userguide.shtml#run"
+                f"PACKMOL argument {key} is not usable in `packmol_args`. "
+                f"Availble arguments that can be set are {allowed_args}."
+                "Only file-level arguments can be set with `packmol_args`."
+                "See https://m3g.github.io/packmol/userguide.shtml#run"
             )
         if key in default_args:
             warnings.warn(
