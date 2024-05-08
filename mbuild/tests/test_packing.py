@@ -403,6 +403,23 @@ class TestPacking(BaseTest):
                 packmol_args=args,
             )
 
+    @pytest.mark.parametrize(
+            "args",
+            [
+                dict(tolerance=0.2),
+                dict(seed=42),
+                dict(sidemax=2.0),
+            ]
+    )
+    def test_packmol_args_default(self, args):
+        with pytest.warns():
+            mb.fill_box(
+                mb.load("C", smiles=True),
+                n_compounds=10,
+                box=[10, 10, 10],
+                packmol_args=args,
+            )
+
 
     def test_rotate(self, h2o):
         filled = mb.fill_box(h2o, 2, box=[1, 1, 1], fix_orientation=True)
