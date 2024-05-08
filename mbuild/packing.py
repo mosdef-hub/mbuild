@@ -288,8 +288,8 @@ def fill_box(
     packmol_commands = ""
     if packmol_args:
         check_packmol_args(packmol_args)
-        for arg in packmol_args:
-            packmol_commands += "{} {} \n".format(arg, packmol_args[arg])
+        for arg, val in packmol_args.items():
+            packmol_commands += f"{arg} {val} \n"
 
     # Build the input file for each compound and call packmol.
     filled_xyz = _new_xyz_file()
@@ -483,8 +483,8 @@ def fill_region(
     packmol_commands = ""
     if packmol_args:
         check_packmol_args(packmol_args)
-        for arg in packmol_args:
-            packmol_commands += "{} {} \n".format(arg, packmol_args[arg])
+        for arg, val in packmol_args.items():
+            packmol_commands += f"{arg} {val} \n"
 
     # Build the input file and call packmol.
     filled_xyz = _new_xyz_file()
@@ -708,8 +708,8 @@ def fill_sphere(
     packmol_commands = ""
     if packmol_args:
         check_packmol_args(packmol_args)
-        for arg in packmol_args:
-            packmol_commands += "{} {} \n".format(arg, packmol_args[arg])
+        for arg, val in packmol_args.items():
+            packmol_commands += f"{arg} {val} \n"
 
     # Build the input file for each compound and call packmol.
     filled_xyz = _new_xyz_file()
@@ -850,8 +850,8 @@ def solvate(
     packmol_commands = ""
     if packmol_args:
         check_packmol_args(packmol_args)
-        for arg in packmol_args:
-            packmol_commands += "{} {} \n".format(arg, packmol_args[arg])
+        for arg, val in packmol_args.items():
+            packmol_commands += f"{arg} {val} \n"
 
     # Build the input file for each compound and call packmol.
     solvated_xyz = _new_xyz_file()
