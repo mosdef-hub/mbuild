@@ -381,21 +381,22 @@ class TestPacking(BaseTest):
             )
 
     @pytest.mark.parametrize(
-            "args",
-            [
-                dict(maxit=500),
-                dict(nloop=1000),
-                dict(movebadrandom=""),
-                dict(fbins=1.2),
-                dict(discale=1.5),
-                dict(movefrac=0.05),
-                dict(avoid_overlap=""),
-                dict(precision=0.02),
-                dict(use_short_tol="", short_tol_dist=0.5),
-                dict(use_short_tol="", short_tol_scale=1.2)
-            ]
+        "args",
+        [
+            dict(maxit=500),
+            dict(nloop=1000),
+            dict(movebadrandom=""),
+            dict(fbins=1.2),
+            dict(discale=1.5),
+            dict(movefrac=0.05),
+            dict(avoid_overlap=""),
+            dict(precision=0.02),
+            dict(use_short_tol="", short_tol_dist=0.5),
+            dict(use_short_tol="", short_tol_scale=1.2),
+        ],
     )
     def test_packmol_args_allowed(self, args):
+<<<<<<< HEAD
             mb.fill_box(
                 mb.load("C", smiles=True),
                 n_compounds=10,
@@ -420,6 +421,22 @@ class TestPacking(BaseTest):
                 packmol_args=args,
             )
 
+||||||| 6170db35
+            mb.fill_box(
+                mb.load("C", smiles=True),
+                n_compounds=10,
+                box=[10, 10, 10],
+                packmol_args=args,
+            )
+
+=======
+        mb.fill_box(
+            mb.load("C", smiles=True),
+            n_compounds=10,
+            box=[10, 10, 10],
+            packmol_args=args,
+        )
+>>>>>>> 880e6265ed03bdcfd8be585e5791a6f8812872a0
 
     def test_rotate(self, h2o):
         filled = mb.fill_box(h2o, 2, box=[1, 1, 1], fix_orientation=True)

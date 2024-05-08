@@ -65,6 +65,7 @@ def check_packmol_args(custom_args):
     # List of all available packmol_inputs.
     # Only file-level arguments can be passed.
     allowed_args = [
+<<<<<<< HEAD
             "maxit", # int
             "nloop", # int
             "fbins", # float
@@ -82,19 +83,19 @@ def check_packmol_args(custom_args):
     ]
     default_args = ["tolerance", "seed", "sidemax"]
     for key in custom_args:
-        if key in default_args:
-            warnings.warn(
-                    f"The PACKMOL argument {key} was passed to `packmol_args`, "
-                    "but should be set using the corresponding function parameters. "
-                    "The value passed to the function will be used. "
-                    "See the function's parameters for more information."
-            )
         if key not in allowed_args:
             raise ValueError(
                    f"PACKMOL argument {key} is not usable in `packmol_args`. "
                    f"Availble arguments that can be set are {allowed_args}."
                    "Only file-level arguments can be set with `packmol_args`."
                    "See https://m3g.github.io/packmol/userguide.shtml#run"
+            )
+        if key in default_args:
+            warnings.warn(
+                f"The PACKMOL argument {key} was passed to `packmol_args`, "
+                "but should be set using the corresponding function parameters. "
+                "The value passed to the function will be used. "
+                "See the function's parameters for more information."
             )
 
 
