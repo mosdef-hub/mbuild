@@ -306,14 +306,13 @@ class TestPacking(BaseTest):
             mb.fill_box(h2o, n_compounds=10, box=[1, 1, 1], overlap=10)
 
     def test_packmol_args(self, h2o):
-        try:
+        with pytest.raises(RuntimeError):
             mb.fill_box(
                 h2o,
-                n_compounds=2,
+                n_compounds=10,
                 box=[0.1, 0.1, 0.1],
                 packmol_args={"maxit": 10, "movebadrandom": "", "nloop": 100},
             )
-        except RuntimeError:
             with open("log.txt", "r") as logfile:
                 assert "(movebadrandom)" in logfile.read()
                 logfile.seek(0)
@@ -322,15 +321,14 @@ class TestPacking(BaseTest):
                     in logfile.read()
                 )
 
-        try:
+        with pytest.raises(RuntimeError):
             mb.fill_region(
                 h2o,
                 10,
-                [[2, 2, 2, 4, 4, 4]],
-                bounds=[[2, 2, 2, 4, 4, 4]],
+                [[0.2, 0.2, 0.2, 0.4, 0.4, 0.4]],
+                bounds=[[0.2, 0.2, 0.2, 0.4, 0.4, 0.4]],
                 packmol_args={"maxit": 10, "movebadrandom": "", "nloop": 100},
             )
-        except RuntimeError:
             with open("log.txt", "r") as logfile:
                 assert "(movebadrandom)" in logfile.read()
                 logfile.seek(0)
@@ -339,30 +337,28 @@ class TestPacking(BaseTest):
                     in logfile.read()
                 )
 
-        try:
+        with pytest.raises(RuntimeError):
             mb.fill_sphere(
                 h2o,
-                n_compounds=2,
-                sphere=[3, 3, 3, 1.5],
-                packmol_args={"maxit": 10, "movebadrandom": "", "nloop": 100},
+                n_compounds=10,
+                sphere=[1, 1, 1, 0.5],
+                packmol_args={"maxit": 1, "movebadrandom": "", "nloop": 1},
             )
-        except RuntimeError:
             with open("log.txt", "r") as logfile:
                 assert "(movebadrandom)" in logfile.read()
                 logfile.seek(0)
                 assert (
-                    "User defined GENCAN number of iterations:           10"
+                    "User defined GENCAN number of iterations:           1"
                     in logfile.read()
                 )
-        try:
+        with pytest.raises(RuntimeError):
             mb.solvate(
                 solute=h2o,
                 solvent=[h2o],
                 n_solvent=[10],
-                box=[2, 2, 2],
+                box=[0.2, 0.2, 0.2],
                 packmol_args={"maxit": 15, "movebadrandom": "", "nloop": 100},
             )
-        except RuntimeError:
             with open("log.txt", "r") as logfile:
                 assert "(movebadrandom)" in logfile.read()
                 logfile.seek(0)
