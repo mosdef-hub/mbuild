@@ -94,7 +94,7 @@ def check_packmol_args(custom_args):
                 f"The PACKMOL argument {key} was passed to `packmol_args`, "
                 "but should be set using the corresponding function parameters. "
                 "The value passed to the function will be used. "
-                "See the function's parameters for more information."
+                "See the function's doc strings for more information."
             )
 
 
@@ -184,6 +184,33 @@ def fill_box(
         for seed and tolerance are specified by the function parameters
         seed and overlap.
         Other command options can be found in the PACKMOL userguide:
+        http://www.ime.unicamp.br/~martinez/packmol/userguide.shtml
+
+    Notes
+    -----
+    The packmol_args parameter is designed to only accept file-level
+    PACKMOL arguments, as opposed to molecule level arguments.
+
+    The allowed arguments include the following:
+
+        "maxit",  # int
+        "nloop",  # int
+        "fbins",  # float
+        "discale",  # float
+        "movefrac",  # float
+        "avoid_overlap",  # On/Off (empty string "" is on)
+        "precision",  # float
+        "movebadrandom",  # On/off (empty string "" is on)
+        "use_short_tol",  # On/off (empty string "" is on)
+        "short_tol_dist",  # float
+        "short_tol_scale",  # float
+
+    The following PACKMOL arguments should be specified
+    by the mbuild.packing method's parameters:
+
+    "tolerance", "seed", "sidemax"
+
+    See the PACKMOL documentation for detailed explanations of these arguments:
         http://www.ime.unicamp.br/~martinez/packmol/userguide.shtml
 
     Returns
@@ -402,6 +429,33 @@ def fill_region(
         Other command options can be found in the PACKMOL userguide:
         http://www.ime.unicamp.br/~martinez/packmol/userguide.shtml
 
+    Notes
+    -----
+    The packmol_args parameter is designed to only accept file-level
+    PACKMOL arguments, as opposed to molecule level arguments.
+
+    The allowed arguments include the following:
+
+        "maxit",  # int
+        "nloop",  # int
+        "fbins",  # float
+        "discale",  # float
+        "movefrac",  # float
+        "avoid_overlap",  # On/Off (empty string "" is on)
+        "precision",  # float
+        "movebadrandom",  # On/off (empty string "" is on)
+        "use_short_tol",  # On/off (empty string "" is on)
+        "short_tol_dist",  # float
+        "short_tol_scale",  # float
+
+    The following PACKMOL arguments should be specified
+    by the mbuild.packing method's parameters:
+
+    "tolerance", "seed", "sidemax"
+
+    See the PACKMOL documentation for detailed explanations of these arguments:
+        http://www.ime.unicamp.br/~martinez/packmol/userguide.shtml
+
     Returns
     -------
     filled : mb.Compound
@@ -612,6 +666,33 @@ def fill_sphere(
         Other command options can be found in the PACKMOL userguide:
         http://www.ime.unicamp.br/~martinez/packmol/userguide.shtml
 
+    Notes
+    -----
+    The packmol_args parameter is designed to only accept file-level
+    PACKMOL arguments, as opposed to molecule level arguments.
+
+    The allowed arguments include the following:
+
+        "maxit",  # int
+        "nloop",  # int
+        "fbins",  # float
+        "discale",  # float
+        "movefrac",  # float
+        "avoid_overlap",  # On/Off (empty string "" is on)
+        "precision",  # float
+        "movebadrandom",  # On/off (empty string "" is on)
+        "use_short_tol",  # On/off (empty string "" is on)
+        "short_tol_dist",  # float
+        "short_tol_scale",  # float
+
+    The following PACKMOL arguments should be specified
+    by the mbuild.packing method's parameters:
+
+    "tolerance", "seed", "sidemax"
+
+    See the PACKMOL documentation for detailed explanations of these arguments:
+        http://www.ime.unicamp.br/~martinez/packmol/userguide.shtml
+
     Returns
     -------
     filled : mb.Compound
@@ -814,6 +895,33 @@ def solvate(
         for seed and tolerance are specified by the function parameters
         seed and overlap.
         Other command options can be found in the PACKMOL userguide:
+        http://www.ime.unicamp.br/~martinez/packmol/userguide.shtml
+
+    Notes
+    -----
+    The packmol_args parameter is designed to only accept file-level
+    PACKMOL arguments, as opposed to molecule level arguments.
+
+    The allowed arguments include the following:
+
+        "maxit",  # int
+        "nloop",  # int
+        "fbins",  # float
+        "discale",  # float
+        "movefrac",  # float
+        "avoid_overlap",  # On/Off (empty string "" is on)
+        "precision",  # float
+        "movebadrandom",  # On/off (empty string "" is on)
+        "use_short_tol",  # On/off (empty string "" is on)
+        "short_tol_dist",  # float
+        "short_tol_scale",  # float
+
+    The following PACKMOL arguments should be specified
+    by the mbuild.packing method's parameters:
+
+    "tolerance", "seed", "sidemax"
+
+    See the PACKMOL documentation for detailed explanations of these arguments:
         http://www.ime.unicamp.br/~martinez/packmol/userguide.shtml
 
     Returns
