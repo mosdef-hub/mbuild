@@ -13,9 +13,7 @@ from mbuild.utils.geometry import coord_shift
 __all__ = ["write_hoomdxml"]
 
 
-@deprecated(
-        "The .hoomdxml file format will be removed in mBuild 1.0."
-)
+@deprecated("The .hoomdxml file format will be removed in mBuild 1.0.")
 def write_hoomdxml(
     structure,
     filename,

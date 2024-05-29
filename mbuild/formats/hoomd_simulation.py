@@ -10,9 +10,9 @@ import parmed as pmd
 
 import mbuild as mb
 from mbuild.utils.conversion import RB_to_OPLS
+from mbuild.utils.decorators import deprecated
 from mbuild.utils.io import import_
 from mbuild.utils.sorting import natural_sort
-from mbuild.utils.decorators import deprecated
 
 from .hoomd_snapshot import to_hoomdsnapshot
 
@@ -24,7 +24,7 @@ hoomd.md = import_("hoomd.md")
 
 dep_msg = """
 Support for Hoomd-Blue 2.x will be removed in mBuild 1.0.
-See GMSO (https://github.com/mosdef-hub/gmso) for 
+See GMSO (https://github.com/mosdef-hub/gmso) for
 continued Hoomd-Blue 3.x and 4.x support.
 """
 print(dep_msg)

@@ -11,9 +11,9 @@ from scipy.constants import epsilon_0
 
 from mbuild import Box
 from mbuild.utils.conversion import RB_to_OPLS
+from mbuild.utils.decorators import deprecated
 from mbuild.utils.orderedset import OrderedSet
 from mbuild.utils.sorting import natural_sort
-from mbuild.utils.decorators import deprecated
 
 __all__ = ["write_lammpsdata"]
 # Define constants for conversions
