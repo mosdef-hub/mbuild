@@ -27,6 +27,8 @@ Support for Hoomd-Blue 2.x will be removed in mBuild 1.0.
 See GMSO (https://github.com/mosdef-hub/gmso) for 
 Hoomd-Blue 3.x and 4.x support.
 """
+print(dep_msg)
+
 
 @deprecated(dep_msg)
 def create_hoomd_simulation(
