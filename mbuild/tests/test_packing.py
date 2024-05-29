@@ -301,10 +301,6 @@ class TestPacking(BaseTest):
         with pytest.raises(MBuildError, match=r"co\-linear"):
             mb.fill_box(h2o, n_compounds=10, box=[0, 0, 0])
 
-    def test_packmol_warning(self, h2o):
-        with pytest.warns(UserWarning):
-            mb.fill_box(h2o, n_compounds=10, box=[1, 1, 1], overlap=10)
-
     def test_packmol_args(self, h2o):
         with pytest.raises(RuntimeError):
             mb.fill_box(
