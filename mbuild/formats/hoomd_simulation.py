@@ -25,7 +25,7 @@ hoomd.md = import_("hoomd.md")
 dep_msg = """
 Support for Hoomd-Blue 2.x will be removed in mBuild 1.0.
 See GMSO (https://github.com/mosdef-hub/gmso) for 
-Hoomd-Blue 3.x and 4.x support.
+continued Hoomd-Blue 3.x and 4.x support.
 """
 print(dep_msg)
 

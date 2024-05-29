@@ -10,10 +10,18 @@ from google.protobuf.text_format import Merge, PrintMessage
 
 from mbuild import Box, Compound
 from mbuild.formats import compound_pb2
+from mbuild.utils.decorators import deprecated
 
 __all__ = ["write_pb2", "read_pb2"]
 
 
+dep_msg = """
+Support for the Protobuf file format will be removed in mBuild 1.0.
+"""
+print(dep_msg)
+
+
+@deprecated(dep_msg)
 def write_pb2(cmpd, filename, binary=True):
     """Convert mb.Compound to Protobuf Message file.
 
@@ -47,6 +55,7 @@ def write_pb2(cmpd, filename, binary=True):
             PrintMessage(root_proto, f)
 
 
+@deprecated(dep_msg)
 def read_pb2(filename, binary=True):
     """Convert a Protobuf Message file into mb.Compound.
 
