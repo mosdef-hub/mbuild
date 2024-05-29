@@ -634,7 +634,7 @@ class TestCompound(BaseTest):
 
         assert np.allclose(h2o.mass, 18.015, atol=1e-5)
 
-        system = mb.fill_box(compound=h2o, n_compounds=5, box=[0.5, 0.5, 0.5])
+        system = mb.fill_box(compound=h2o, n_compounds=5, box=[2, 2, 2], seed=32)
         assert np.allclose(system.mass, 5 * h2o.mass, atol=1e-5)
 
     def test_mass_setter(self, ethane):
@@ -1471,11 +1471,11 @@ class TestCompound(BaseTest):
         box = Box.from_mins_maxs_angles(
             mins=(2, 2, 2), maxs=(3, 3, 3), angles=(90.0, 90.0, 90.0)
         )
-        bead_box = mb.fill_box(bead, 100, box=[2, 2, 2, 3, 3, 3])
+        bead_box = mb.fill_box(bead, 50, box=[2, 2, 2, 3, 3, 3], seed=32)
         bead_box_in_pmd = bead_box.to_parmed(box=box)
 
         assert isinstance(bead_box_in_pmd, pmd.Structure)
-        assert len(bead_box_in_pmd.atoms) == 100
+        assert len(bead_box_in_pmd.atoms) == 50 
         assert (
             bead_box_in_pmd.box
             == np.array([10.0, 10.0, 10.0, 90.0, 90.0, 90.0])
