@@ -10,9 +10,9 @@ import parmed as pmd
 
 import mbuild as mb
 from mbuild.utils.conversion import RB_to_OPLS
+from mbuild.utils.decorators import deprecated
 from mbuild.utils.io import import_
 from mbuild.utils.sorting import natural_sort
-from mbuild.utils.decorators import deprecated
 
 from .hoomd_snapshot import _get_hoomd_version, to_hoomdsnapshot
 
