@@ -7,7 +7,7 @@ from math import radians
 import numpy as np
 
 from mbuild.utils.conversion import RB_to_OPLS
-from mbuild.utils.decorators import deprecated 
+from mbuild.utils.decorators import deprecated
 from mbuild.utils.geometry import coord_shift
 
 __all__ = ["write_hoomdxml"]
