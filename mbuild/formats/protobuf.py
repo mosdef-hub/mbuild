@@ -10,6 +10,7 @@ from google.protobuf.text_format import Merge, PrintMessage
 
 from mbuild import Box, Compound
 from mbuild.formats import compound_pb2
+from mbuild.utils.decorators import deprecated
 
 __all__ = ["write_pb2", "read_pb2"]
 
