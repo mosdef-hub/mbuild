@@ -30,7 +30,7 @@ def deprecated(warning_string=""):  # pragma: no cover
                 fcn.__name__, warning_string
             )
             warn(printed_message, DeprecationWarning)
-            fcn(*args, **kwargs)
+            return fcn(*args, **kwargs)
 
         return wrapper
 

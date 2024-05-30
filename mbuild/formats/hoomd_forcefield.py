@@ -18,6 +18,15 @@ from .hoomd_snapshot import _get_hoomd_version, to_hoomdsnapshot
 hoomd = import_("hoomd")
 
 
+dep_msg = """
+Support for Hoomd-Blue writers will be removed in mBuild 1.0.
+See GMSO (https://github.com/mosdef-hub/gmso) for
+Hoomd-Blue 3.x and 4.x format support.
+"""
+print(dep_msg)
+
+
+@deprecated(dep_msg)
 def create_hoomd_forcefield(
     structure,
     r_cut,
