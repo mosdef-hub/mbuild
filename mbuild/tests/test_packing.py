@@ -301,6 +301,115 @@ class TestPacking(BaseTest):
         with pytest.raises(MBuildError, match=r"co\-linear"):
             mb.fill_box(h2o, n_compounds=10, box=[0, 0, 0])
 
+    def test_packmol_args(self, h2o):
+        with pytest.raises(RuntimeError):
+            mb.fill_box(
+                h2o,
+                n_compounds=10,
+                box=[0.1, 0.1, 0.1],
+                packmol_args={"maxit": 10, "movebadrandom": "", "nloop": 100},
+            )
+            with open("log.txt", "r") as logfile:
+                assert "(movebadrandom)" in logfile.read()
+                logfile.seek(0)
+                assert (
+                    "User defined GENCAN number of iterations:           10"
+                    in logfile.read()
+                )
+
+        with pytest.raises(RuntimeError):
+            mb.fill_region(
+                h2o,
+                10,
+                [[0.2, 0.2, 0.2, 0.4, 0.4, 0.4]],
+                bounds=[[0.2, 0.2, 0.2, 0.4, 0.4, 0.4]],
+                packmol_args={"maxit": 10, "movebadrandom": "", "nloop": 100},
+            )
+            with open("log.txt", "r") as logfile:
+                assert "(movebadrandom)" in logfile.read()
+                logfile.seek(0)
+                assert (
+                    "User defined GENCAN number of iterations:           10"
+                    in logfile.read()
+                )
+
+        with pytest.raises(RuntimeError):
+            mb.fill_sphere(
+                h2o,
+                n_compounds=10,
+                sphere=[1, 1, 1, 0.5],
+                packmol_args={"maxit": 1, "movebadrandom": "", "nloop": 1},
+            )
+            with open("log.txt", "r") as logfile:
+                assert "(movebadrandom)" in logfile.read()
+                logfile.seek(0)
+                assert (
+                    "User defined GENCAN number of iterations:           1"
+                    in logfile.read()
+                )
+        with pytest.raises(RuntimeError):
+            mb.solvate(
+                solute=h2o,
+                solvent=[h2o],
+                n_solvent=[10],
+                box=[0.2, 0.2, 0.2],
+                packmol_args={"maxit": 15, "movebadrandom": "", "nloop": 100},
+            )
+            with open("log.txt", "r") as logfile:
+                assert "(movebadrandom)" in logfile.read()
+                logfile.seek(0)
+                assert (
+                    "User defined GENCAN number of iterations:           15"
+                    in logfile.read()
+                )
+
+    def test_packmol_args_bad(self, h2o):
+        with pytest.raises(ValueError):
+            mb.fill_box(
+                h2o,
+                n_compounds=2,
+                box=[10, 10, 10],
+                packmol_args={"bad_arg": 10},
+            )
+
+    @pytest.mark.parametrize(
+        "args",
+        [
+            dict(maxit=500),
+            dict(nloop=1000),
+            dict(movebadrandom=""),
+            dict(fbins=1.2),
+            dict(discale=1.5),
+            dict(movefrac=0.05),
+            dict(avoid_overlap=""),
+            dict(precision=0.02),
+        ],
+    )
+    def test_packmol_args_allowed(self, args):
+        mb.fill_box(
+            mb.load("C", smiles=True),
+            n_compounds=10,
+            box=[10, 10, 10],
+            packmol_args=args,
+        )
+
+    @pytest.mark.parametrize(
+        "args",
+        [
+            dict(tolerance=0.2),
+            dict(seed=42),
+            dict(sidemax=2.0),
+        ],
+    )
+    def test_packmol_args_default(self, args):
+        with pytest.warns():
+            mb.fill_box(
+                mb.load("C", smiles=True),
+                n_compounds=10,
+                box=[10, 10, 10],
+                packmol_args=args,
+            )
+
     def test_packmol_warning(self, h2o):
         import sys
 

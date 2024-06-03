@@ -27,7 +27,9 @@ filetype xyz
 output {1}
 seed {2}
 sidemax {3}
+{4}
 """
+
 PACKMOL_SOLUTE = """
 structure {0}
     number 1
@@ -35,6 +37,7 @@ structure {0}
     fixed {1:.3f} {2:.3f} {3:.3f} 0. 0. 0.
 end structure
 """
+
 PACKMOL_BOX = """
 structure {0}
     number {1:d}
@@ -42,6 +45,7 @@ structure {0}
     {8}
 end structure
 """
+
 PACKMOL_SPHERE = """
 structure {0}
     number {1:d}
@@ -55,6 +59,43 @@ constrain_rotation x 0. 0.
 constrain_rotation y 0. 0.
 constrain_rotation z 0. 0.
 """
+
+
+def check_packmol_args(custom_args):
+    # List of all available packmol_inputs.
+    # Only file-level arguments can be passed.
+    allowed_args = [
+        "maxit",  # int
+        "nloop",  # int
+        "fbins",  # float
+        "discale",  # float
+        "movefrac",  # float
+        "avoid_overlap",  # On/Off (empty string "" is on)
+        "precision",  # float
+        "movebadrandom",  # On/off (empty string "" is on)
+        "use_short_tol",  # On/off (empty string "" is on)
+        "short_tol_dist",  # float
+        "short_tol_scale",  # float
+        "tolerance",
+        "seed",
+        "sidemax",
+    ]
+    default_args = ["tolerance", "seed", "sidemax"]
+    for key in custom_args:
+        if key not in allowed_args:
+            raise ValueError(
+                f"PACKMOL argument {key} is not usable in `packmol_args`. "
+                f"Availble arguments that can be set are {allowed_args}."
+                "Only file-level arguments can be set with `packmol_args`."
+                "See https://m3g.github.io/packmol/userguide.shtml#run"
+            )
+        if key in default_args:
+            warnings.warn(
+                f"The PACKMOL argument {key} was passed to `packmol_args`, "
+                "but should be set using the corresponding function parameters. "
+                "The value passed to the function will be used. "
+                "See the function's doc strings for more information."
+            )
 
 
 def fill_box(
@@ -71,6 +112,7 @@ def fill_box(
     fix_orientation=False,
     temp_file=None,
     update_port_locations=False,
+    packmol_args=None,
 ):
     """Fill a box with an `mbuild.compound` or `Compound` s using PACKMOL.
 
@@ -130,8 +172,46 @@ def fill_box(
     temp_file : str, default=None
         File name to write PACKMOL raw output to.
     update_port_locations : bool, default=False
-        After packing, port locations can be updated, but since compounds can be
-        rotated, port orientation may be incorrect.
+        After packing, port locations can be updated, but since compounds
+        can be rotated, port orientation may be incorrect.
+    packmol_args : dict
+        Dictionary where the key, value pairs are options and their
+        corresponding keyword arguments for PACKMOL. Some PACKMOL options
+        do not require a specified keyword. In this case, the value in
+        the dictionary should be an empty string e.g. {'movebadrandom':""}
+        These commands are placed at the header of the PACKMOL input file
+        and therefore applied to all structures. NOTE: The PACKMOL options
+        for seed and tolerance are specified by the function parameters
+        seed and overlap.
+        Other command options can be found in the PACKMOL userguide:
+        http://www.ime.unicamp.br/~martinez/packmol/userguide.shtml
+
+    Notes
+    -----
+    The packmol_args parameter is designed to only accept file-level
+    PACKMOL arguments, as opposed to molecule level arguments.
+
+    The allowed arguments include the following:
+
+        "maxit",  # int
+        "nloop",  # int
+        "fbins",  # float
+        "discale",  # float
+        "movefrac",  # float
+        "avoid_overlap",  # On/Off (empty string "" is on)
+        "precision",  # float
+        "movebadrandom",  # On/off (empty string "" is on)
+        "use_short_tol",  # On/off (empty string "" is on)
+        "short_tol_dist",  # float
+        "short_tol_scale",  # float
+
+    The following PACKMOL arguments should be specified
+    by the mbuild.packing method's parameters:
+
+    "tolerance", "seed", "sidemax"
+
+    See the PACKMOL documentation for detailed explanations of these arguments:
+        http://www.ime.unicamp.br/~martinez/packmol/userguide.shtml
 
     Returns
     -------
@@ -231,6 +311,13 @@ def fill_box(
     box_maxs = [a_max - (edge * 10) for a_max in box_maxs]
     box_mins = [a_min + (edge * 10) for a_min in box_mins]
 
+    # generate string of addl. packmol inputs given in packmol_args
+    packmol_commands = ""
+    if packmol_args:
+        check_packmol_args(packmol_args)
+        for arg, val in packmol_args.items():
+            packmol_commands += f"{arg} {val} \n"
+
     # Build the input file for each compound and call packmol.
     filled_xyz = _new_xyz_file()
 
@@ -238,7 +325,7 @@ def fill_box(
     compound_xyz_list = list()
     try:
         input_text = PACKMOL_HEADER.format(
-            overlap, filled_xyz.name, seed, sidemax * 10
+            overlap, filled_xyz.name, seed, sidemax * 10, packmol_commands
         )
         for comp, m_compounds, rotate in zip(
             compound, n_compounds, fix_orientation
@@ -291,6 +378,7 @@ def fill_region(
     fix_orientation=False,
     temp_file=None,
     update_port_locations=False,
+    packmol_args=None,
 ):
     """Fill a region of a box with `mbuild.Compound` (s) using PACKMOL.
 
@@ -327,8 +415,46 @@ def fill_region(
     temp_file : str, default=None
         File name to write PACKMOL raw output to.
     update_port_locations : bool, default=False
-        After packing, port locations can be updated, but since compounds can be
-        rotated, port orientation may be incorrect.
+        After packing, port locations can be updated, but since compounds
+        can be rotated, port orientation may be incorrect.
+    packmol_args : dict
+        Dictionary where the key, value pairs are options and their
+        corresponding keyword arguments for PACKMOL. Some PACKMOL options
+        do not require a specified keyword. In this case, the value in
+        the dictionary should be an empty string e.g. {'movebadrandom':""}
+        These commands are placed at the header of the PACKMOL input file
+        and therefore applied to all structures. NOTE: The PACKMOL options
+        for seed and tolerance are specified by the function parameters
+        seed and overlap.
+        Other command options can be found in the PACKMOL userguide:
+        http://www.ime.unicamp.br/~martinez/packmol/userguide.shtml
+
+    Notes
+    -----
+    The packmol_args parameter is designed to only accept file-level
+    PACKMOL arguments, as opposed to molecule level arguments.
+
+    The allowed arguments include the following:
+
+        "maxit",  # int
+        "nloop",  # int
+        "fbins",  # float
+        "discale",  # float
+        "movefrac",  # float
+        "avoid_overlap",  # On/Off (empty string "" is on)
+        "precision",  # float
+        "movebadrandom",  # On/off (empty string "" is on)
+        "use_short_tol",  # On/off (empty string "" is on)
+        "short_tol_dist",  # float
+        "short_tol_scale",  # float
+
+    The following PACKMOL arguments should be specified
+    by the mbuild.packing method's parameters:
+
+    "tolerance", "seed", "sidemax"
+
+    See the PACKMOL documentation for detailed explanations of these arguments:
+        http://www.ime.unicamp.br/~martinez/packmol/userguide.shtml
 
     Returns
     -------
@@ -407,6 +533,13 @@ def fill_region(
     # In angstroms for packmol.
     overlap *= 10
 
+    # generate string of addl. packmol inputs given in packmol_args
+    packmol_commands = ""
+    if packmol_args:
+        check_packmol_args(packmol_args)
+        for arg, val in packmol_args.items():
+            packmol_commands += f"{arg} {val} \n"
+
     # Build the input file and call packmol.
     filled_xyz = _new_xyz_file()
 
@@ -414,7 +547,7 @@ def fill_region(
     compound_xyz_list = list()
     try:
         input_text = PACKMOL_HEADER.format(
-            overlap, filled_xyz.name, seed, sidemax * 10
+            overlap, filled_xyz.name, seed, sidemax * 10, packmol_commands
         )
         for comp, m_compounds, rotate, items_n in zip(
             compound, n_compounds, fix_orientation, container
@@ -475,6 +608,7 @@ def fill_sphere(
     fix_orientation=False,
     temp_file=None,
     update_port_locations=False,
+    packmol_args=None,
 ):
     """Fill a sphere with a compound using PACKMOL.
 
@@ -518,8 +652,46 @@ def fill_sphere(
     temp_file : str, default=None
         File name to write PACKMOL raw output to.
     update_port_locations : bool, default=False
-        After packing, port locations can be updated, but since compounds can be
-        rotated, port orientation may be incorrect.
+        After packing, port locations can be updated, but since compounds
+        can be rotated, port orientation may be incorrect.
+    packmol_args : dict
+        Dictionary where the key, value pairs are options and their
+        corresponding keyword arguments for PACKMOL. Some PACKMOL options
+        do not require a specified keyword. In this case, the value in
+        the dictionary should be an empty string e.g. {'movebadrandom':""}
+        These commands are placed at the header of the PACKMOL input file
+        and therefore applied to all structures. NOTE: The PACKMOL options
+        for seed and tolerance are specified by the function parameters
+        seed and overlap.
+        Other command options can be found in the PACKMOL userguide:
+        http://www.ime.unicamp.br/~martinez/packmol/userguide.shtml
+
+    Notes
+    -----
+    The packmol_args parameter is designed to only accept file-level
+    PACKMOL arguments, as opposed to molecule level arguments.
+
+    The allowed arguments include the following:
+
+        "maxit",  # int
+        "nloop",  # int
+        "fbins",  # float
+        "discale",  # float
+        "movefrac",  # float
+        "avoid_overlap",  # On/Off (empty string "" is on)
+        "precision",  # float
+        "movebadrandom",  # On/off (empty string "" is on)
+        "use_short_tol",  # On/off (empty string "" is on)
+        "short_tol_dist",  # float
+        "short_tol_scale",  # float
+
+    The following PACKMOL arguments should be specified
+    by the mbuild.packing method's parameters:
+
+    "tolerance", "seed", "sidemax"
+
+    See the PACKMOL documentation for detailed explanations of these arguments:
+        http://www.ime.unicamp.br/~martinez/packmol/userguide.shtml
 
     Returns
     -------
@@ -613,6 +785,13 @@ def fill_sphere(
     radius *= 10
     overlap *= 10
 
+    # generate string of addl. packmol inputs given in packmol_args
+    packmol_commands = ""
+    if packmol_args:
+        check_packmol_args(packmol_args)
+        for arg, val in packmol_args.items():
+            packmol_commands += f"{arg} {val} \n"
+
     # Build the input file for each compound and call packmol.
     filled_xyz = _new_xyz_file()
 
@@ -620,7 +799,7 @@ def fill_sphere(
     compound_xyz_list = list()
     try:
         input_text = PACKMOL_HEADER.format(
-            overlap, filled_xyz.name, seed, sidemax * 10
+            overlap, filled_xyz.name, seed, sidemax * 10, packmol_commands
         )
         for comp, m_compounds, rotate in zip(
             compound, n_compounds, fix_orientation
@@ -670,6 +849,7 @@ def solvate(
     temp_file=None,
     update_port_locations=False,
     center_solute=True,
+    packmol_args=None,
 ):
     """Solvate a compound in a box of solvent using PACKMOL.
 
@@ -701,10 +881,48 @@ def solvate(
     temp_file : str, default=None
         File name to write PACKMOL raw output to.
     update_port_locations : bool, default=False
-        After packing, port locations can be updated, but since compounds can be
-        rotated, port orientation may be incorrect.
+        After packing, port locations can be updated, but since compounds
+        can be rotated, port orientation may be incorrect.
     center_solute : bool, optional, default=True
         Move solute center of mass to the center of the `mb.Box` used.
+    packmol_args : dict
+        Dictionary where the key, value pairs are options and their
+        corresponding keyword arguments for PACKMOL. Some PACKMOL options
+        do not require a specified keyword. In this case, the value in
+        the dictionary should be an empty string e.g. {'movebadrandom':""}
+        These commands are placed at the header of the PACKMOL input file
+        and therefore applied to all structures. NOTE: The PACKMOL options
+        for seed and tolerance are specified by the function parameters
+        seed and overlap.
+        Other command options can be found in the PACKMOL userguide:
+        http://www.ime.unicamp.br/~martinez/packmol/userguide.shtml
+
+    Notes
+    -----
+    The packmol_args parameter is designed to only accept file-level
+    PACKMOL arguments, as opposed to molecule level arguments.
+
+    The allowed arguments include the following:
+
+        "maxit",  # int
+        "nloop",  # int
+        "fbins",  # float
+        "discale",  # float
+        "movefrac",  # float
+        "avoid_overlap",  # On/Off (empty string "" is on)
+        "precision",  # float
+        "movebadrandom",  # On/off (empty string "" is on)
+        "use_short_tol",  # On/off (empty string "" is on)
+        "short_tol_dist",  # float
+        "short_tol_scale",  # float
+
+    The following PACKMOL arguments should be specified
+    by the mbuild.packing method's parameters:
+
+    "tolerance", "seed", "sidemax"
+
+    See the PACKMOL documentation for detailed explanations of these arguments:
+        http://www.ime.unicamp.br/~martinez/packmol/userguide.shtml
 
     Returns
     -------
@@ -735,6 +953,14 @@ def solvate(
     # Apply edge buffer
     box_maxs = np.subtract(box_maxs, edge * 10)
     box_mins = np.add(box_mins, edge * 10)
+
+    # generate string of addl. packmol inputs given in packmol_args
+    packmol_commands = ""
+    if packmol_args:
+        check_packmol_args(packmol_args)
+        for arg, val in packmol_args.items():
+            packmol_commands += f"{arg} {val} \n"
+
     # Build the input file for each compound and call packmol.
     solvated_xyz = _new_xyz_file()
     solute_xyz = _new_xyz_file()
@@ -744,7 +970,7 @@ def solvate(
     try:
         solute.save(solute_xyz.name, overwrite=True)
         input_text = PACKMOL_HEADER.format(
-            overlap, solvated_xyz.name, seed, sidemax * 10
+            overlap, solvated_xyz.name, seed, sidemax * 10, packmol_commands
         ) + PACKMOL_SOLUTE.format(solute_xyz.name, *center_solute.tolist())
 
         for solv, m_solvent, rotate in zip(solvent, n_solvent, fix_orientation):
