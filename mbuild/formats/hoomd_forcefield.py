@@ -21,8 +21,9 @@ hoomd = import_("hoomd")
 
 dep_msg = """
 Support for Hoomd-Blue writers will be removed in mBuild 1.0.
-See GMSO (https://github.com/mosdef-hub/gmso) for
+See GMSO (https://github.com/mosdef-hub/gmso/tree/main/gmso/external/convert_hoomd) for
 Hoomd-Blue 3.x and 4.x format support.
+To convert to GMSO, use the method `Compound.to_gmso()`.
 """
 print(dep_msg)
 

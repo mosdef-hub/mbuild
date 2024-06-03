@@ -26,7 +26,7 @@ ELEM_TO_COUL = 1.602176634e-19
 dep_msg = """
 Support for writing out LAMMPS data files will be removed
 in mbuild 1.0.
-See GMSO (https://github.com/mosdef-hub/gmso) for
+See GMSO (https://github.com/mosdef-hub/gmso/tree/main/gmso/formats/lammpsdata) for
 continued support for LAMMPS.
 """
 print(dep_msg)
