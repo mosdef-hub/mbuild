@@ -302,8 +302,16 @@ class TestPacking(BaseTest):
             mb.fill_box(h2o, n_compounds=10, box=[0, 0, 0])
 
     def test_packmol_warning(self, h2o):
-        with pytest.raises(RuntimeError):
-            mb.fill_box(h2o, n_compounds=10, box=[1, 1, 1], overlap=10)
+        import sys
+
+        if (
+            "win" in sys.platform and not sys.platform == "darwin"
+        ):  # windows uses old 20.0.4 of packmol, which raises a warning
+            with pytest.warns(UserWarning):
+                mb.fill_box(h2o, n_compounds=10, box=[1, 1, 1], overlap=10)
+        else:
+            with pytest.raises(RuntimeError):
+                mb.fill_box(h2o, n_compounds=10, box=[1, 1, 1], overlap=10)
 
     def test_rotate(self, h2o):
         filled = mb.fill_box(h2o, 2, box=[1, 1, 1], fix_orientation=True)
