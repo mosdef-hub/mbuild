@@ -409,6 +409,7 @@ class TestPacking(BaseTest):
                 box=[10, 10, 10],
                 packmol_args=args,
             )
+
     def test_packmol_warning(self, h2o):
         import sys
 

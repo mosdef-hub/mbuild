@@ -1477,7 +1477,7 @@ class TestCompound(BaseTest):
         bead_box_in_pmd = bead_box.to_parmed(box=box)
 
         assert isinstance(bead_box_in_pmd, pmd.Structure)
-        assert len(bead_box_in_pmd.atoms) == 100 
+        assert len(bead_box_in_pmd.atoms) == 100
         assert (
             bead_box_in_pmd.box
             == np.array([10.0, 10.0, 10.0, 90.0, 90.0, 90.0])
