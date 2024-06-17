@@ -7,13 +7,13 @@ from math import radians
 import numpy as np
 
 from mbuild.utils.conversion import RB_to_OPLS
-from mbuild.utils.decorators import breaking_change
+from mbuild.utils.decorators import deprecated
 from mbuild.utils.geometry import coord_shift
 
 __all__ = ["write_hoomdxml"]
 
 
-@breaking_change("See PR#463 on github")
+@deprecated("The .hoomdxml file format will be removed in mBuild 1.0.")
 def write_hoomdxml(
     structure,
     filename,
