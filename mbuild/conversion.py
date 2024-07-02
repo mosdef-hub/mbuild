@@ -20,7 +20,6 @@ import mbuild as mb
 from mbuild.box import Box
 from mbuild.exceptions import MBuildError
 from mbuild.formats.gsdwriter import write_gsd
-from mbuild.formats.hoomdxml import write_hoomdxml
 from mbuild.formats.json_formats import compound_from_json, compound_to_json
 from mbuild.formats.lammpsdata import write_lammpsdata
 from mbuild.formats.par_writer import write_par
@@ -376,7 +375,6 @@ def load_file(
         ".json": "internal",
         ".xyz": "internal",
         ".sdf": "pybel",
-        ".hoomdxml": "mdtraj",
         ".mol2": "mdtraj",
         ".pdb": "mdtraj",
     }
@@ -987,7 +985,7 @@ def save(
     filename : str
         Filesystem path in which to save the trajectory. The extension or prefix
         will be parsed and control the format. Supported extensions are:
-        'hoomdxml', 'gsd', 'gro', 'top', 'lammps', 'lmp', 'mcf', 'xyz', 'pdb',
+        'gsd', 'gro', 'top', 'lammps', 'lmp', 'mcf', 'xyz', 'pdb',
         'sdf', 'mol2', 'psf'. See parmed/structure.py for more information on
         savers.
     include_ports : bool, optional, default=False
@@ -1023,7 +1021,7 @@ def save(
         Keyword arguments to provide to :meth:`mbuild.Compound.to_parmed`
     **kwargs
         Depending on the file extension these will be passed to either
-        `write_gsd`, `write_hoomdxml`, `write_lammpsdata`, `write_mcf`, or
+        `write_gsd`, `write_lammpsdata`, `write_mcf`, or
         `parmed.Structure.save`.
         See https://parmed.github.io/ParmEd/html/structobj/parmed.structure.
         Structure.html#parmed.structure.Structure.save
@@ -1031,13 +1029,13 @@ def save(
     Other Parameters
     ----------------
     ref_distance : float, optional, default=1.0
-        Normalization factor used when saving to .gsd and .hoomdxml formats for
+        Normalization factor used when saving to .gsd formats for
         converting distance values to reduced units.
     ref_energy : float, optional, default=1.0
-        Normalization factor used when saving to .gsd and .hoomdxml formats for
+        Normalization factor used when saving to .gsd formats for
         converting energy values to reduced units.
     ref_mass : float, optional, default=1.0
-        Normalization factor used when saving to .gsd and .hoomdxml formats for
+        Normalization factor used when saving to .gsd formats for
         converting mass values to reduced units.
     atom_style: str, default='full'
         Defines the style of atoms to be saved in a LAMMPS data file. The
@@ -1059,7 +1057,6 @@ def save(
     See Also
     --------
     formats.gsdwriter.write_gsd : Write to GSD format
-    formats.hoomdxml.write_hoomdxml : Write to Hoomd XML format
     formats.xyzwriter.write_xyz : Write to XYZ format
     formats.lammpsdata.write_lammpsdata : Write to LAMMPS data format
     formats.cassandramcf.write_mcf : Write to Cassandra MCF format
@@ -1075,7 +1072,6 @@ def save(
 
     # Savers supported by mbuild.formats
     savers = {
-        ".hoomdxml": write_hoomdxml,
         ".gsd": write_gsd,
         ".xyz": write_xyz,
         ".lammps": write_lammpsdata,
@@ -1147,7 +1143,7 @@ def save(
             warn("Unique rigid body IDs are not sequential starting from zero.")
 
     if saver:  # mBuild supported saver.
-        if extension in [".gsd", ".hoomdxml"]:
+        if extension == ".gsd":
             kwargs["rigid_bodies"] = [p.rigid_id for p in compound.particles()]
         saver(filename=filename, structure=structure, **kwargs)
 
