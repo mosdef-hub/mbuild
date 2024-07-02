@@ -58,9 +58,9 @@ def load(
     Parameters
     ----------
     filename_or_object : str, mdtraj.Trajectory, parmed.Structure,
-        mbuild.Compound, pybel.Molecule,
+        mbuild.Compound, pybel.Molecule.
         Name of the file or topology from which to load atom and bond
-        information.
+        information, or a valid SMILES string.
     relative_to_module : str, optional, default=None
         Instead of looking in the current working directory, look for the file
         where this module is defined. This is typically used in Compound
@@ -79,7 +79,7 @@ def load(
     smiles: bool, optional, default=False
         Use RDKit or OpenBabel to parse filename as a SMILES string or file
         containing a SMILES string. If this is set to True, `rdkit` is the
-        default backend.
+        default backend and `filename_or_object` should be the SMILES string.
     infer_hierarchy : bool, optional, default=True
         If True, infer hierarchy from chains and residues
     ignore_box_warn : bool, optional, default=False
@@ -373,9 +373,9 @@ def load_file(
     # Need to come up with a different dict structure
     default_backends = {
         ".json": "internal",
-        ".xyz": "internal",
+        ".xyz": "gmso",
         ".sdf": "pybel",
-        ".mol2": "mdtraj",
+        ".mol2": "gmso",
         ".pdb": "mdtraj",
     }
 
