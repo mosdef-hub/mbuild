@@ -86,6 +86,7 @@ def from_snapshot(snapshot, scale=1.0):
     return comp
 
 
+# TODO: Use GMSO here
 def to_hoomdsnapshot(
     structure,
     ref_distance=1.0,
