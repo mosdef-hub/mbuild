@@ -4,10 +4,10 @@ http://leandro.iqm.unicamp.br/m3g/packmol/home.shtml
 """
 
 import os
+import shutil
 import sys
 import tempfile
 import warnings
-from distutils.spawn import find_executable
 from itertools import zip_longest
 from subprocess import PIPE, Popen
 
@@ -20,7 +20,7 @@ from mbuild.exceptions import MBuildError
 
 __all__ = ["fill_box", "fill_region", "fill_sphere", "solvate"]
 
-PACKMOL = find_executable("packmol")
+PACKMOL = shutil.which("packmol")
 PACKMOL_HEADER = """
 tolerance {0:.16f}
 filetype xyz
