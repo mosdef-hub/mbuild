@@ -273,25 +273,25 @@ class Lattice(object):
             lattice_spacing = lattice_spacing.reshape((3,))
             if np.shape(lattice_spacing) != (self.dimension,):
                 raise ValueError(
-                    "Lattice spacing should be a vector of size:({},). Please "
+                    f"Lattice spacing should be a vector of size:({self.dimension},). Please "
                     "include lattice spacing of size >= 0 depending on desired "
-                    "dimensionality.".format(self.dimension)
+                    "dimensionality."
                 )
         else:
             raise ValueError(
                 "No lattice_spacing provided. Please provide lattice spacing's "
-                "that are >= 0. with size ({},)".format((self.dimension))
+                f"that are >= 0. with size ({self.dimension},)"
             )
 
         if np.any(np.isnan(lattice_spacing)):
             raise ValueError(
                 "None type or NaN type values present in lattice_spacing: "
-                "{}.".format(lattice_spacing)
+                f"{lattice_spacing}."
             )
         elif np.any(lattice_spacing < 0.0):
             raise ValueError(
-                "Negative lattice spacing value. One of the spacing: {} is "
-                "negative.".format(lattice_spacing)
+                f"Negative lattice spacing value. One of the spacing: {lattice_spacing} is "
+                "negative."
             )
 
         self.lattice_spacing = lattice_spacing
@@ -320,20 +320,20 @@ class Lattice(object):
                     raise ValueError("Angles cannot be 180.0 or 0.0")
             else:
                 raise ValueError(
-                    "Angles sum: {} is either greater than 360.0 or less than "
-                    "-360.0".format(np.sum(tempAngles))
+                    f"Angles sum: {np.sum(tempAngles)} is either greater than 360.0 or less than "
+                    "-360.0"
                 )
 
             for subset in it.permutations(tempAngles, r=self.dimension):
                 if not subset[0] < np.sum(tempAngles) - subset[0]:
                     raise ValueError(
                         "Each angle provided must be less than the sum of the "
-                        "other angles. {} is greater.".format(subset[0])
+                        f"other angles. {subset[0]} is greater."
                     )
         else:
             raise ValueError(
                 "Incorrect array size. When converted to a Numpy array, the "
-                "shape is: {}, expected {}.".format(np.shape(tempAngles), (3,))
+                "shape is: {np.shape(tempAngles)}, expected {(3,)}."
             )
         self.angles = tempAngles
 
@@ -358,24 +358,21 @@ class Lattice(object):
 
             if (self.dimension, self.dimension) != np.shape(lattice_vectors):
                 raise ValueError(
-                    "Dimensionality of lattice_vectors is of shape {} not "
-                    "{}.".format(
-                        np.shape(lattice_vectors),
-                        (self.dimension, self.dimension),
-                    )
+                    f"Dimensionality of lattice_vectors is of shape {np.shape(lattice_vectors)} not "
+                    f"{(self.dimension, self.dimension)}."
                 )
 
             det = np.linalg.det(lattice_vectors)
             if abs(det) == 0.0:
                 raise ValueError(
-                    "Co-linear vectors: {} have a determinant of 0.0. Does not "
-                    "define a unit cell.".format(lattice_vectors)
+                    f"Co-linear vectors: {lattice_vectors} have a determinant of 0.0. Does not "
+                    "define a unit cell."
                 )
 
             if det <= 0.0:
                 raise ValueError(
-                    "Negative Determinant: the determinant of {} is negative, "
-                    "indicating a left-handed system.".format(det)
+                    f"Negative Determinant: the determinant of {det} is negative, "
+                    "indicating a left-handed system."
                 )
         self.lattice_vectors = lattice_vectors
 
@@ -398,8 +395,8 @@ class Lattice(object):
             pass
         else:
             raise TypeError(
-                "Incorrect type, lattice_points is of type {}, Expected "
-                "dict.".format(type(lattice_points))
+                f"Incorrect type, lattice_points is of type {type(lattice_points)}, Expected "
+                "dict."
             )
 
         for name, positions in lattice_points.items():
@@ -407,20 +404,20 @@ class Lattice(object):
                 if len(pos) != self.dimension:
                     raise ValueError(
                         "Incorrect lattice point position size. lattice point "
-                        "{} has location {}, which is inconsistent with the "
-                        "dimension {}.".format(name, pos, self.dimension)
+                        f"{name} has location {pos}, which is inconsistent with the "
+                        "dimension {self.dimension}."
                     )
                 if pos is None:
                     raise ValueError(
                         "NoneType passed, expected float. None was passed in "
-                        "as position for {}.".format(name)
+                        f"as position for {name}."
                     )
                 for coord in pos:
                     if (coord is None) or (0 > coord) or (coord >= 1):
                         raise ValueError(
                             "Incorrect lattice point fractional coordinates. "
                             "Coordinates cannot be None, greater than or equal "
-                            "to one, or negative. You passed {}.".format(coord)
+                            f"to one, or negative. You passed {coord}."
                         )
 
         self.lattice_points = self._check_for_overlap(lattice_points)
@@ -451,10 +448,8 @@ class Lattice(object):
             if len(val) > 1:
                 raise ValueError(
                     "Overlapping lattice points: Lattice points overlap when "
-                    "the unit cell is expanded to {}. This is an incorrect "
-                    "perfect lattice. The offending points are: {}".format(
-                        key, val
-                    )
+                    f"the unit cell is expanded to {key}. This is an incorrect "
+                    f"perfect lattice. The offending points are: {value}"
                 )
         return lattice_points
 
@@ -540,16 +535,14 @@ class Lattice(object):
             z = int(z)
         except (ValueError, TypeError):
             raise ValueError(
-                "Cannot convert replication amounts into integers. x= {}, "
-                "y= {}, z= {} needs to be an int.".format(x, y, z)
+                f"Cannot convert replication amounts into integers. x= {x}, "
+                f"y= {y}, z= {z} needs to be an int."
             )
 
         for replication_amount, index in zip([x, y, z], range(3)):
             if replication_amount < 1:
                 raise ValueError(
-                    "Incorrect populate value: {} : {} is < 1. ".format(
-                        error_dict[index], replication_amount
-                    )
+                    f"Incorrect populate value: {error_dict[index]} : {replication_amount} is < 1. "
                 )
 
         return x, y, z
@@ -592,9 +585,7 @@ class Lattice(object):
             pass
         else:
             raise TypeError(
-                "Compound dictionary is not a dict. {} was passed.".format(
-                    type(compound_dict)
-                )
+                "Compound dictionary is not a dict. {type(compound_dict)} was passed."
             )
 
         cell = defaultdict(list)
@@ -663,9 +654,7 @@ class Lattice(object):
                     err_type = type(compound_dict.get(key_id))
                     raise TypeError(
                         "Invalid type in provided Compound dictionary. For key "
-                        "{}, type: {} was provided, not Compound.".format(
-                            key_id, err_type
-                        )
+                        f"{key_id}, type: {err_type} was provided, not Compound."
                     )
         # Raise warnings about assumed elements
         for element in elementsSet:
