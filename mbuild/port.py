@@ -172,9 +172,9 @@ class Port(Compound):
             ]
             if referrer is self.root:
                 for label in port_labels:
-                    access_labels.add("['{}']".format(label))
+                    access_labels.add(f"['{label}']")
             for label in itertools.product(referrer_labels, port_labels):
-                access_labels.add("['{}']".format("']['".join(label)))
+                access_labels.add(f"['{"']['".join(label)}']")
 
         for key, val in self.root.labels.items():
             if self is val:
@@ -188,11 +188,11 @@ class Port(Compound):
         descr.append(self.name + ", ")
 
         if self.anchor:
-            descr.append("anchor: '{}', ".format(self.anchor.name))
+            descr.append(f"anchor: '{self.anchor.name}', ")
         else:
             descr.append("anchor: None, ")
 
-        descr.append("labels: {}, ".format(", ".join(self.access_labels)))
+        descr.append(f"labels: {", ".join(self.access_labels)}, ")
 
-        descr.append("id: {}>".format(id(self)))
+        descr.append(f"id: {id(self)}>")
         return "".join(descr)
