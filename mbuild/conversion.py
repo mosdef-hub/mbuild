@@ -411,8 +411,8 @@ def load_file(
                 tmp = read_xyz(filename)
                 if tmp.n_particles != compound.n_particles:
                     raise ValueError(
-                        "Number of atoms in {filename}"
-                        "does not match {compound}".format(**locals())
+                        f"Number of atoms in {filename}"
+                        f"does not match {compound}"
                     )
                 ref_and_compound = zip(
                     tmp._particles(include_ports=False),
@@ -583,7 +583,7 @@ def from_parmed(
                     name=str(atom.name), pos=pos, element=element
                 )
                 atom_list.append(new_atom)
-                atom_label_list.append("{0}[$]".format(atom.name))
+                atom_label_list.append(f"{atom.name}[$]")
                 atom_mapping[atom] = new_atom
             parent_compound.add(atom_list, label=atom_label_list)
         if infer_hierarchy:
@@ -697,7 +697,7 @@ def from_trajectory(
                     element=element,
                 )
                 atom_list.append(new_atom)
-                atom_label_list.append("{0}[$]".format(atom.name))
+                atom_label_list.append(f"{atom.name}[$]")
                 atom_mapping[atom] = new_atom
 
             parent_cmpd.add(atom_list, label=atom_label_list)
@@ -1093,7 +1093,7 @@ def save(
         saver = None
 
     if os.path.exists(filename) and not overwrite:
-        raise IOError("{0} exists; not overwriting".format(filename))
+        raise IOError(f"{filename} exists; not overwriting")
 
     if not parmed_kwargs:
         parmed_kwargs = {}
