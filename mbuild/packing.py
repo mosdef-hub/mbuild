@@ -224,7 +224,7 @@ def fill_box(
     if arg_count != 2:
         raise ValueError(
             "Exactly 2 of `n_compounds`, `box`, and `density` must be "
-            "specified. {} were given.".format(arg_count)
+            f"specified. {arg_count} were given."
         )
 
     if box is not None:
@@ -703,7 +703,7 @@ def fill_sphere(
     if arg_count != 1:
         raise ValueError(
             "Exactly 1 of `n_compounds` and `density` must be specified. "
-            "{} were given.".format(arg_count)
+            f"{arg_count} were given."
         )
 
     if isinstance(sphere, (list, set, tuple)):
@@ -1156,7 +1156,7 @@ def _run_packmol(input_text, filled_xyz, temp_file):
     packmol_inp.close()
 
     proc = Popen(
-        "{} < {}".format(PACKMOL, packmol_inp.name),
+        f"{PACKMOL} < {packmol_inp.name}",
         stdin=PIPE,
         stdout=PIPE,
         stderr=PIPE,
@@ -1170,7 +1170,7 @@ def _run_packmol(input_text, filled_xyz, temp_file):
             "Packmol finished with imperfect packing. Using the .xyz_FORCED "
             "file instead. This may not be a sufficient packing result."
         )
-        os.system("cp {0}_FORCED {0}".format(filled_xyz.name))
+        os.system(f"cp {filled_xyz.name}_FORCED {filled_xyz.name}")
 
     if "ERROR" in out or proc.returncode != 0:
         _packmol_error(out, err)
@@ -1179,7 +1179,7 @@ def _run_packmol(input_text, filled_xyz, temp_file):
         os.remove(packmol_inp.name)
 
     if temp_file is not None:
-        os.system("cp {0} {1}".format(filled_xyz.name, os.path.join(temp_file)))
+        os.system(f"cp {filled_xyz.name} {os.path.join(temp_file)}")
 
 
 def _check_packmol(PACKMOL):  # pragma: no cover
