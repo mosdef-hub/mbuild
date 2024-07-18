@@ -449,7 +449,7 @@ class Lattice(object):
                 raise ValueError(
                     "Overlapping lattice points: Lattice points overlap when "
                     f"the unit cell is expanded to {key}. This is an incorrect "
-                    f"perfect lattice. The offending points are: {value}"
+                    f"perfect lattice. The offending points are: {val}"
                 )
         return lattice_points
 

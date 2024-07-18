@@ -1179,7 +1179,8 @@ def _run_packmol(input_text, filled_xyz, temp_file):
         os.remove(packmol_inp.name)
 
     if temp_file is not None:
-        os.system(f"cp {filled_xyz.name} {os.path.join(temp_file)}")
+        command = f"cp {filled_xyz.name} {os.path.join(temp_file)}"
+        os.system(command)
 
 
 def _check_packmol(PACKMOL):  # pragma: no cover
