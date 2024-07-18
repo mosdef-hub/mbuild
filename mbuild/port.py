@@ -192,7 +192,7 @@ class Port(Compound):
         else:
             descr.append("anchor: None, ")
 
-        descr.append(f"labels: {", ".join(self.access_labels)}, ")
+        descr.append("labels: {}, ".format(", ".join(self.access_labels)))
 
         descr.append(f"id: {id(self)}>")
         return "".join(descr)
