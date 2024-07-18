@@ -174,7 +174,7 @@ class Port(Compound):
                 for label in port_labels:
                     access_labels.add(f"['{label}']")
             for label in itertools.product(referrer_labels, port_labels):
-                access_labels.add(f"['{"']['".join(label)}']")
+                access_labels.add("['{}']".format("']['".join(label)))
 
         for key, val in self.root.labels.items():
             if self is val:
