@@ -29,7 +29,7 @@ jobs:
         shell: bash -l {0}
 
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
         name: Checkout Branch / Pull Request
 
       - name: Install Mamba (Linux)
@@ -61,7 +61,7 @@ jobs:
         if: runner.os == 'Linux'
 
       - name: Upload Coverage Report
-        uses: codecov/codecov-action@v2
+        uses: codecov/codecov-action@v4
         with:
           name: mBuild-Coverage
           verbose: true
@@ -76,7 +76,7 @@ jobs:
         shell: bash -l {0}
 
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
         name: Checkout Branch / Pull Request
 
       - name: Install Mamba
@@ -136,7 +136,7 @@ jobs:
           echo Docker Image tags: ${DOCKER_TAGS}
 
       - name: Build and Push
-        uses: docker/build-push-action@v5
+        uses: docker/build-push-action@v6
         with:
           push: true
           tags: ${{ env.DOCKER_TAGS }}
