@@ -12,6 +12,7 @@ from mbuild.utils.sorting import natural_sort
 __all__ = ["write_gsd"]
 
 
+# TODO: Use GMSO here
 def write_gsd(
     structure,
     filename,

@@ -122,7 +122,7 @@ class TestRigid(BaseTest):
         filled.label_rigid_bodies(discrete_bodies="Benzene")
         filled.children[0]._increment_rigid_ids(increment=3)
         with pytest.warns(UserWarning):
-            filled.save("benzene-box.hoomdxml")
+            filled.save("benzene-box.gsd")
 
     def test_increment_rigid_id(self, rigid_benzene):
         compound = mb.Compound()

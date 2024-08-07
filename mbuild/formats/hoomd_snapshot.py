@@ -86,6 +86,7 @@ def from_snapshot(snapshot, scale=1.0):
     return comp
 
 
+# TODO: Use GMSO here
 def to_hoomdsnapshot(
     structure,
     ref_distance=1.0,
@@ -138,7 +139,8 @@ def to_hoomdsnapshot(
     -----
     This method does not create hoomd forcefield objects and
     the snapshot returned does not store the forcefield parameters.
-    See mbuild.formats.hoomd_forcefield.create_hoomd_forcefield()
+    see gmso.external.convert_hoomd for information on creating
+    a hoomd forcefield from an mBuild compound and a forcefield.
 
     About units: This method operates on a Parmed.Structure object
         where the units used differ from those used in mBuild and Foyer

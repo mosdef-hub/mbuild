@@ -388,7 +388,7 @@ class TestCompound(BaseTest):
         assert len(ethane.children) == len(ethane_copy.children)
 
     def test_save_box(self, ch3):
-        extensions = [".mol2", ".pdb", ".hoomdxml", ".gro", ".sdf"]
+        extensions = [".mol2", ".pdb", ".gro", ".sdf"]
         box_attributes = ["lengths"]
         custom_box = Box(lengths=[0.8, 0.8, 0.8], angles=[90, 90, 90])
         for ext in extensions:
@@ -404,7 +404,7 @@ class TestCompound(BaseTest):
                 assert np.array_equal(pad_attr, custom_attr)
 
     def test_save_overwrite(self, ch3):
-        extensions = [".gsd", ".hoomdxml", ".lammps", ".lmp", ".top", ".gro"]
+        extensions = [".gsd", ".lammps", ".lmp", ".top", ".gro"]
         for ext in extensions:
             outfile = "lyhtem" + ext
             ch3.save(filename=outfile)
@@ -416,7 +416,6 @@ class TestCompound(BaseTest):
     def test_save_forcefield(self, methane):
         exts = [
             ".gsd",
-            ".hoomdxml",
             ".lammps",
             ".lmp",
             ".top",
@@ -435,7 +434,6 @@ class TestCompound(BaseTest):
     def test_save_forcefield_with_file(self, methane):
         exts = [
             ".gsd",
-            ".hoomdxml",
             ".lammps",
             ".lmp",
             ".top",
@@ -474,23 +472,6 @@ class TestCompound(BaseTest):
                 overwrite=True,
                 foyer_kwargs=foyer_kwargs,
             )
-
-    @pytest.mark.skipif(not has_foyer, reason="Foyer is not installed")
-    def test_save_forcefield_with_file_foyer_kwargs(self, methane):
-        foyer_kwargs = {"assert_improper_params": True}
-        with pytest.raises(Exception):
-            methane.save(
-                "lythem.hoomdxml",
-                forcefield_files=get_fn("methane_oplssaa.xml"),
-                overwrite=True,
-                foyer_kwargs=foyer_kwargs,
-            )
-        methane.save(
-            "lythem.hoomdxml",
-            forcefield_files=get_fn("methane_oplssaa.xml"),
-            overwrite=True,
-            foyer_kwargs={},
-        )
 
     def test_save_resnames(self, ch3, h2o):
         system = Compound([ch3, h2o])

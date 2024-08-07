@@ -2999,7 +2999,7 @@ class Compound(object):
         filename : str
             Filesystem path in which to save the trajectory. The extension or
             prefix will be parsed and control the format. Supported extensions:
-            'hoomdxml', 'gsd', 'gro', 'top', 'lammps', 'lmp', 'mcf', 'pdb', 'xyz',
+            'gsd', 'gro', 'top', 'lammps', 'lmp', 'mcf', 'pdb', 'xyz',
             'json', 'mol2', 'sdf', 'psf'. See parmed/structure.py for more
             information on savers.
         include_ports : bool, optional, default=False
@@ -3032,7 +3032,7 @@ class Compound(object):
         foyer_kwargs : dict, optional, default=None
             Keyword arguments to provide to `foyer.Forcefield.apply`.
             Depending on the file extension these will be passed to either
-            `write_gsd`, `write_hoomdxml`, `write_lammpsdata`,
+            `write_gsd`, `write_lammpsdata`,
             `write_mcf`, or `parmed.Structure.save`.
             See `parmed structure documentation
             <https://parmed.github.io/ParmEd/html/structobj/parmed.structure.Structure.html#parmed.structure.Structure.save>`_
@@ -3040,7 +3040,7 @@ class Compound(object):
             Keyword arguments to provide to :meth:`mbuild.Compound.to_parmed`
         **kwargs
             Depending on the file extension these will be passed to either
-            `write_gsd`, `write_hoomdxml`, `write_lammpsdata`, `write_mcf`, or
+            `write_gsd`, `write_lammpsdata`, `write_mcf`, or
             `parmed.Structure.save`.
             See https://parmed.github.io/ParmEd/html/structobj/parmed.structure.
             Structure.html#parmed.structure.Structure.save
@@ -3048,13 +3048,13 @@ class Compound(object):
         Other Parameters
         ----------------
         ref_distance : float, optional, default=1.0
-            Normalization factor used when saving to .gsd and .hoomdxml formats
+            Normalization factor used when saving to the .gsd format
             for converting distance values to reduced units.
         ref_energy : float, optional, default=1.0
-            Normalization factor used when saving to .gsd and .hoomdxml formats
+            Normalization factor used when saving to the .gsd format
             for converting energy values to reduced units.
         ref_mass : float, optional, default=1.0
-            Normalization factor used when saving to .gsd and .hoomdxml formats
+            Normalization factor used when saving to the .gsd format
             for converting mass values to reduced units.
         atom_style: str, default='full'
             Defines the style of atoms to be saved in a LAMMPS data file. The
@@ -3080,7 +3080,6 @@ class Compound(object):
         --------
         conversion.save : Main saver logic
         formats.gsdwrite.write_gsd : Write to GSD format
-        formats.hoomdxml.write_hoomdxml : Write to Hoomd XML format
         formats.xyzwriter.write_xyz : Write to XYZ format
         formats.lammpsdata.write_lammpsdata : Write to LAMMPS data format
         formats.cassandramcf.write_mcf : Write to Cassandra MCF format
