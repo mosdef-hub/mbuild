@@ -26,9 +26,7 @@ def deprecated(warning_string=""):  # pragma: no cover
 
     def old_function(fcn):
         def wrapper(*args, **kwargs):
-            printed_message = "{0} is deprecated. {1}".format(
-                fcn.__name__, warning_string
-            )
+            printed_message = f"{fcn.__name__} is deprecated. {warning_string}"
             warn(printed_message, DeprecationWarning)
             return fcn(*args, **kwargs)
 
