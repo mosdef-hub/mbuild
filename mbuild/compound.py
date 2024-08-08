@@ -1089,51 +1089,55 @@ class Compound(object):
 
         # Reorder labels
         if reset_labels:
-            new_labels = OrderedDict()
-            hoisted_children = {
-                key: val
-                for key, val in self.labels.items()
-                if (
-                    not isinstance(val, list)
-                    and val.parent is not None
-                    and id(self) != id(val.parent)
-                )
-            }
-            new_labels.update(hoisted_children)
-            children_list = {
-                id(val): [key, val]
-                for key, val in self.labels.items()
-                if (not isinstance(val, list))
-            }
-            for child in self.children:
-                label = (
-                    children_list[id(child)][0]
-                    if "[" not in children_list[id(child)][0]
-                    else None
-                )
-                if label is None:
-                    if "Port" in child.name:
-                        label = [
-                            key
-                            for key, x in self.labels.items()
-                            if id(x) == id(child)
-                        ][0]
-                        if "port" in label:
-                            label = "port[$]"
-                    else:
-                        label = "{0}[$]".format(child.name)
+            self.reset_labels()
 
-                if label.endswith("[$]"):
-                    label = label[:-3]
-                    if label not in new_labels:
-                        new_labels[label] = []
-                    label_pattern = label + "[{}]"
+    def reset_labels(self):
+        """Reset Compound labels so that substituents and ports are renumbered."""
+        new_labels = OrderedDict()
+        hoisted_children = {
+            key: val
+            for key, val in self.labels.items()
+            if (
+                not isinstance(val, list)
+                and val.parent is not None
+                and id(self) != id(val.parent)
+            )
+        }
+        new_labels.update(hoisted_children)
+        children_list = {
+            id(val): [key, val]
+            for key, val in self.labels.items()
+            if (not isinstance(val, list))
+        }
+        for child in self.children:
+            label = (
+                children_list[id(child)][0]
+                if "[" not in children_list[id(child)][0]
+                else None
+            )
+            if label is None:
+                if "Port" in child.name:
+                    label = [
+                        key
+                        for key, x in self.labels.items()
+                        if id(x) == id(child)
+                    ][0]
+                    if "port" in label:
+                        label = "port[$]"
+                else:
+                    label = "{0}[$]".format(child.name)
 
-                    count = len(new_labels[label])
-                    new_labels[label].append(child)
-                    label = label_pattern.format(count)
-                new_labels[label] = child
-            self.labels = new_labels
+            if label.endswith("[$]"):
+                label = label[:-3]
+                if label not in new_labels:
+                    new_labels[label] = []
+                label_pattern = label + "[{}]"
+
+                count = len(new_labels[label])
+                new_labels[label].append(child)
+                label = label_pattern.format(count)
+            new_labels[label] = child
+        self.labels = new_labels
 
     def _prune_ghost_ports(self):
         """Worker for remove(). Remove all ports whose anchor has been deleted."""
