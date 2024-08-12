@@ -2483,7 +2483,10 @@ class TestCompound(BaseTest):
                 try:
                     assert my_cmp.get_smiles() == test_string
                 except AssertionError:
-                    assert my_cmp.get_smiles() == "CC(=O)OC1=C([CH][CH][CH][CH]1)C(=O)O"
+                    assert (
+                        my_cmp.get_smiles()
+                        == "CC(=O)OC1=C([CH][CH][CH][CH]1)C(=O)O"
+                    )
             else:
                 assert my_cmp.get_smiles() == test_string
 
