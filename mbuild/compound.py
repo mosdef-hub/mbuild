@@ -1092,7 +1092,7 @@ class Compound(object):
             self.reset_labels()
 
     def reset_labels(self):
-        """Reset Compound labels so that substituents and ports are renumbered."""
+        """Reset Compound labels so that substituents and ports are renumbered, indexed from port[0] to port[N], where N-1 is the number of ports."""
         new_labels = OrderedDict()
         hoisted_children = {
             key: val
