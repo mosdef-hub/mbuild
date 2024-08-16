@@ -585,7 +585,7 @@ class Lattice(object):
             pass
         else:
             raise TypeError(
-                "Compound dictionary is not a dict. {type(compound_dict)} was passed."
+                f"Compound dictionary is not a dict. {type(compound_dict)} was passed."
             )
 
         cell = defaultdict(list)
