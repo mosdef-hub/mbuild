@@ -35,8 +35,8 @@ def force_overlap(
     add_bond : bool, optional, default=True
         If `from_positions` and `to_positions` are `Ports`, create a bond
         between the two anchor atoms.
-    reset_labels : bool
-        If True, the Compound labels will be reset, renumbered
+    reset_labels : bool, optional, default=True
+        If True, the Compound labels will be reset, renumbered using the Compound.reset_labels methods
     """
     from mbuild.port import Port
 
