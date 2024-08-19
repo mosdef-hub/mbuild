@@ -18,6 +18,7 @@ class TestPolymer(BaseTest):
         assert len([p for p in chain.particles() if p.name == "C"]) == 10
         assert len([p for p in chain.particles() if p.name == "H"]) == 22
         assert len(chain.available_ports()) == 0
+        assert len(chain.children) == 5
 
     def test_add_end_groups(self, ch2, ester):
         n = 6
