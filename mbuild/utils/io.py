@@ -378,7 +378,7 @@ def get_fn(name):
     fn = resources.files("mbuild").joinpath("utils", "reference", name)
     # fn = resource_filename("mbuild", os.path.join("utils", "reference", name))
     if not os.path.exists(fn):
-        raise IOError("Sorry! {} does not exists.".format(fn))
+        raise IOError(f"Sorry! {fn} does not exists.")
     return str(fn)
 
 
