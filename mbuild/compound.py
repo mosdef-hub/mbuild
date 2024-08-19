@@ -1015,14 +1015,14 @@ class Compound(object):
                     "outside of the defined simulation box"
                 )
 
-    def remove(self, objs_to_remove, reset_labels=True):
+    def remove(self, objs_to_remove, reset_labels=False):
         """Remove children from the Compound cleanly.
 
         Parameters
         ----------
         objs_to_remove : mb.Compound or list of mb.Compound
             The Compound(s) to be removed from self
-        reset_labels : bool
+        reset_labels : bool, optional, default=False
             If True, the Compound labels will be reset
         """
         # Preprocessing and validating input type
