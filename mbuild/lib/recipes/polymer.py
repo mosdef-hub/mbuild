@@ -211,7 +211,7 @@ class Polymer(Compound):
                     # Defaut to 1/2 H-C bond len
                     head_tail[i].update_separation(0.0547)
                     hydrogen["up"].update_separation(0.0547)
-                    self.add(hydrogen)
+                    head_tail[i].parent.add(hydrogen)
                     force_overlap(hydrogen, hydrogen["up"], head_tail[i])
                     head_tail[i] = None
                 else:
