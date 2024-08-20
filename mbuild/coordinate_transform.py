@@ -329,8 +329,8 @@ def _create_equivalence_transform(equiv):
             isinstance(pair[0], Compound) and isinstance(pair[1], Compound)
         ):
             raise ValueError(
-                "Equivalence pair type mismatch: pair[0] is a {0} "
-                "and pair[1] is a {1}".format(type(pair[0]), type(pair[1]))
+                f"Equivalence pair type mismatch: pair[0] is a {pair[0]} "
+                f"and pair[1] is a {pair[1]}"
             )
 
         if not pair[0].children:
@@ -554,7 +554,7 @@ def x_axis_transform(
             "x_axis_transform, y_axis_transform, and z_axis_transform only "
             "accept mb.Compounds, list-like of size 3, or None for the "
             "point_on_x_axis parameter. User passed type: "
-            "{}.".format(type(point_on_x_axis))
+            f"{point_on_x_axis}."
         )
     if point_on_xy_plane is None:
         point_on_xy_plane = np.array([1.0, 1.0, 0.0])
@@ -567,7 +567,7 @@ def x_axis_transform(
             "x_axis_transform, y_axis_transform, and z_axis_transform only "
             "accept mb.Compounds, list-like of size 3, or None for the "
             "point_on_xy_plane parameter. User passed type: "
-            "{}.".format(type(point_on_xy_plane))
+            f"{point_on_xy_plane}."
         )
 
     atom_positions = compound.xyz_with_ports

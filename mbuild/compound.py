@@ -750,8 +750,8 @@ class Compound(object):
         if self.root.max_rigid_id is not None:
             rigid_id = self.root.max_rigid_id + 1
             warn(
-                "{} rigid bodies already exist.  Incrementing 'rigid_id'"
-                "starting from {}.".format(rigid_id, rigid_id)
+                f"{rigid_id} rigid bodies already exist.  Incrementing 'rigid_id'"
+                f"starting from {rigid_id}."
             )
         else:
             rigid_id = 0
@@ -935,9 +935,7 @@ class Compound(object):
         if containment:
             if new_child.parent is not None:
                 raise MBuildError(
-                    "Part {} already has a parent: {}".format(
-                        new_child, new_child.parent
-                    )
+                    f"Part {new_child} already has a parent: {new_child.parent}"
                 )
             self.children.append(new_child)
             new_child.parent = self
@@ -956,7 +954,7 @@ class Compound(object):
 
         # Add new_part to labels. Does not currently support batch add.
         if label is None:
-            label = "{0}[$]".format(new_child.name)
+            label = f"{new_child.name}[$]"
 
         if label.endswith("[$]"):
             label = label[:-3]
@@ -1660,8 +1658,8 @@ class Compound(object):
         if not self.children:
             if not arrnx3.shape[0] == 1:
                 raise ValueError(
-                    "Trying to set position of {} with more than one"
-                    "coordinate: {}".format(self, arrnx3)
+                    f"Trying to set position of {self} with more than one"
+                    f"coordinate: {arrnx3}"
                 )
             self.pos = np.squeeze(arrnx3)
         else:
@@ -1682,8 +1680,8 @@ class Compound(object):
         if not self.children:
             if not arrnx3.shape[0] == 1:
                 raise ValueError(
-                    "Trying to set position of {} with more than one"
-                    "coordinate: {}".format(self, arrnx3)
+                    f"Trying to set position of {self} with more than one"
+                    f"coordinate: {arrnx3}"
                 )
             self.pos = np.squeeze(arrnx3)
         else:
@@ -2635,11 +2633,9 @@ class Compound(object):
 
             else:
                 warn(
-                    "OpenMM Force {} is "
+                    f"OpenMM Force {type(force).__name__} is "
                     "not currently supported in _energy_minimize_openmm. "
-                    "This Force will not be updated!".format(
-                        type(force).__name__
-                    )
+                    "This Force will not be updated!"
                 )
 
         simulation.context.setPositions(to_parmed.positions)
@@ -2770,11 +2766,9 @@ class Compound(object):
                         particle._element = element_from_name(particle.name)
                     except ElementError:
                         raise MBuildError(
-                            "No element assigned to {}; element could not be"
-                            "inferred from particle name {}. Cannot perform"
-                            "an energy minimization.".format(
-                                particle, particle.name
-                            )
+                            f"No element assigned to {particle}; element could not be"
+                            f"inferred from particle name {particle.name}. Cannot perform"
+                            "an energy minimization."
                         )
         # Create a dict containing particle id and associated index to speed up looping
         particle_idx = {
@@ -2934,10 +2928,10 @@ class Compound(object):
         ff = openbabel.OBForceField.FindForceField(forcefield)
         if ff is None:
             raise MBuildError(
-                "Force field '{}' not supported for energy "
+                f"Force field '{forcefield}' not supported for energy "
                 "minimization. Valid force fields are 'MMFF94', "
                 "'MMFF94s', 'UFF', 'GAFF', and 'Ghemical'."
-                "".format(forcefield)
+                ""
             )
         warn(
             "Performing energy minimization using the Open Babel package. "
@@ -3598,19 +3592,17 @@ class Compound(object):
         descr.append(self.name + " ")
 
         if self.children:
-            descr.append("{:d} particles, ".format(self.n_particles))
-            descr.append("{:d} bonds, ".format(self.n_bonds))
+            descr.append(f"{self.n_particles} particles, ")
+            descr.append(f"{self.n_bonds} bonds, ")
             if self.box is not None:
-                descr.append("System box: {}, ".format(self.box))
+                descr.append(f"System box: {self.box}, ")
             else:
                 descr.append("non-periodic, ")
         else:
-            descr.append(
-                "pos=({}), ".format(np.array2string(self.pos, precision=4))
-            )
-            descr.append("{:d} bonds, ".format(self.n_direct_bonds))
+            descr.append(f"pos=({np.array2string(self.pos, precision=4)}), ")
+            descr.append(f"{self.n_direct_bonds} bonds, ")
 
-        descr.append("id: {}>".format(id(self)))
+        descr.append(f"id: {id(self)}>")
         return "".join(descr)
 
     def _clone(self, clone_of=None, root_container=None):

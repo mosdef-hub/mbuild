@@ -30,7 +30,7 @@ def overwrite_nglview_default(widget):
     if not isinstance(widget, nglview.NGLWidget):
         raise TypeError(
             "The argument widget can only be of type nglview.NGLWidget not "
-            "{}".format(type(widget))
+            f"{type(widget)}."
         )
     tooltip_js = """
                     this.stage.mouseControls.add('hoverPick', (stage, pickingProxy) => {
