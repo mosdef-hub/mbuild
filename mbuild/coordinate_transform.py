@@ -16,7 +16,9 @@ __all__ = [
 ]
 
 
-def force_overlap(move_this, from_positions, to_positions, add_bond=True):
+def force_overlap(
+    move_this, from_positions, to_positions, add_bond=True, reset_labels=False
+):
     """Move a Compound such that a position overlaps with another.
 
     Computes an affine transformation that maps the from_positions to the
@@ -33,6 +35,8 @@ def force_overlap(move_this, from_positions, to_positions, add_bond=True):
     add_bond : bool, optional, default=True
         If `from_positions` and `to_positions` are `Ports`, create a bond
         between the two anchor atoms.
+    reset_labels : bool, optional, default=False
+        If True, the Compound labels will be reset, renumbered using the Compound.reset_labels methods
     """
     from mbuild.port import Port
 
@@ -67,8 +71,12 @@ def force_overlap(move_this, from_positions, to_positions, add_bond=True):
                 to_positions.anchor.parent.add_bond(
                     (from_positions.anchor, to_positions.anchor)
                 )
-                from_positions.anchor.parent.remove(from_positions)
-                to_positions.anchor.parent.remove(to_positions)
+                from_positions.anchor.parent.remove(
+                    from_positions, reset_labels=reset_labels
+                )
+                to_positions.anchor.parent.remove(
+                    to_positions, reset_labels=reset_labels
+                )
 
 
 class CoordinateTransform(object):
