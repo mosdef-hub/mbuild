@@ -13,10 +13,10 @@ class TestXYZ(BaseTest):
     def test_load_no_top(self, ethane):
         ethane.save(filename="ethane.xyz")
         ethane_in = mb.load("ethane.xyz")
-        assert len(ethane_in.children) == 8
+        assert len(ethane_in.children) == 1
         assert ethane_in.n_bonds == 0
-        assert set([child.name for child in ethane_in.children]) == {"C", "H"}
-        assert set([child.element for child in ethane_in.children]) == {
+        assert set([p.name for p in ethane_in.particles()]) == {"C", "H"}
+        assert set([p.element for p in ethane_in.particles()]) == {
             ele.Elements.C,
             ele.Elements.H,
         }
