@@ -404,7 +404,7 @@ class TestCompound(BaseTest):
                 assert np.array_equal(pad_attr, custom_attr)
 
     def test_save_overwrite(self, ch3):
-        extensions = [".gsd", ".lammps", ".lmp", ".top", ".gro"]
+        extensions = [".gsd", ".mol2", ".top", ".gro"]
         for ext in extensions:
             outfile = "lyhtem" + ext
             ch3.save(filename=outfile)
@@ -416,8 +416,6 @@ class TestCompound(BaseTest):
     def test_save_forcefield(self, methane):
         exts = [
             ".gsd",
-            ".lammps",
-            ".lmp",
             ".top",
             ".gro",
             ".mol2",
@@ -434,8 +432,6 @@ class TestCompound(BaseTest):
     def test_save_forcefield_with_file(self, methane):
         exts = [
             ".gsd",
-            ".lammps",
-            ".lmp",
             ".top",
             ".gro",
             ".mol2",

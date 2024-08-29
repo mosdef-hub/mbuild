@@ -21,7 +21,6 @@ from mbuild.box import Box
 from mbuild.exceptions import MBuildError
 from mbuild.formats.gsdwriter import write_gsd
 from mbuild.formats.json_formats import compound_from_json, compound_to_json
-from mbuild.formats.lammpsdata import write_lammpsdata
 from mbuild.formats.par_writer import write_par
 from mbuild.formats.xyz import read_xyz, write_xyz
 from mbuild.utils.io import (
@@ -985,9 +984,8 @@ def save(
     filename : str
         Filesystem path in which to save the trajectory. The extension or prefix
         will be parsed and control the format. Supported extensions are:
-        'gsd', 'gro', 'top', 'lammps', 'lmp', 'mcf', 'xyz', 'pdb',
-        'sdf', 'mol2', 'psf'. See parmed/structure.py for more information on
-        savers.
+        'gsd', 'gro', 'top', 'mcf', 'xyz', 'pdb', 'sdf', 'mol2', 'psf'.
+        See parmed/structure.py for more information on savers.
     include_ports : bool, optional, default=False
         Save ports contained within the compound.
     forcefield_files : str, optional, default=None
@@ -1021,8 +1019,7 @@ def save(
         Keyword arguments to provide to :meth:`mbuild.Compound.to_parmed`
     **kwargs
         Depending on the file extension these will be passed to either
-        `write_gsd`, `write_lammpsdata`, `write_mcf`, or
-        `parmed.Structure.save`.
+        `write_gsd`, , `write_mcf`, or `parmed.Structure.save`.
         See https://parmed.github.io/ParmEd/html/structobj/parmed.structure.
         Structure.html#parmed.structure.Structure.save
 
@@ -1037,16 +1034,6 @@ def save(
     ref_mass : float, optional, default=1.0
         Normalization factor used when saving to .gsd formats for
         converting mass values to reduced units.
-    atom_style: str, default='full'
-        Defines the style of atoms to be saved in a LAMMPS data file. The
-        following atom styles are currently supported: 'full', 'atomic',
-        'charge', 'molecular'. See http://lammps.sandia.gov/doc/atom_style.html
-        for more information on atom styles.
-    unit_style: str, default='real'
-        Defines to unit style to be save in a LAMMPS data file.  Defaults to
-        'real' units. Current styles are supported: 'real', 'lj'. See
-        https://lammps.sandia.gov/doc/99/units.html for more information on
-        unit styles
 
     Notes
     -----
@@ -1058,7 +1045,6 @@ def save(
     --------
     formats.gsdwriter.write_gsd : Write to GSD format
     formats.xyzwriter.write_xyz : Write to XYZ format
-    formats.lammpsdata.write_lammpsdata : Write to LAMMPS data format
     formats.cassandramcf.write_mcf : Write to Cassandra MCF format
     formats.json_formats.compound_to_json : Write to a json file
     """
@@ -1074,8 +1060,6 @@ def save(
     savers = {
         ".gsd": write_gsd,
         ".xyz": write_xyz,
-        ".lammps": write_lammpsdata,
-        ".lmp": write_lammpsdata,
         ".par": write_par,
     }
     if has_networkx:
