@@ -2649,9 +2649,9 @@ class TestCompound(BaseTest):
         for particle in mol.particles():
             assert particle.element is not None
 
-    def test_mins_maxs(self, benzene):
-        assert np.allclose(benzene.mins, [-0.2267, -0.15422, 0.0])
-        assert np.allclose(benzene.maxs, [0.20318, 0.34207, 0.0])
+    def test_mins_maxs(self, rigid_benzene):
+        assert np.allclose(rigid_benzene.mins, [-0.2267, -0.15422, 0.0])
+        assert np.allclose(rigid_benzene.maxs, [0.20318, 0.34207, 0.0])
 
     def test_periodicity_raises(self):
         with pytest.raises(ValueError):

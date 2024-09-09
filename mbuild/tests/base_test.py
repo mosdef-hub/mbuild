@@ -122,12 +122,6 @@ class BaseTest:
         return molecule
 
     @pytest.fixture
-    def benzene(self):
-        compound = mb.load(get_fn("benzene.mol2"))
-        compound.name = "Benzene"
-        return compound
-
-    @pytest.fixture
     def rigid_benzene(self):
         compound = mb.load(get_fn("benzene.mol2"))
         compound.name = "Benzene"
