@@ -19,7 +19,7 @@ from ele.exceptions import ElementError
 import mbuild as mb
 from mbuild.box import Box
 from mbuild.exceptions import MBuildError
-from mbuild.formats.gsdwriter import write_gsd
+from mbuild.formats.hoomd_writer import write_gsd
 from mbuild.formats.json_formats import compound_from_json, compound_to_json
 from mbuild.formats.par_writer import write_par
 from mbuild.formats.xyz import read_xyz, write_xyz
@@ -1129,7 +1129,7 @@ def save(
     if saver:  # mBuild supported saver.
         if extension == ".gsd":
             kwargs["rigid_bodies"] = [p.rigid_id for p in compound.particles()]
-        saver(filename=filename, structure=structure, **kwargs)
+        saver(filename=filename, compound=structure, **kwargs)
 
     elif extension == ".sdf":
         pybel = import_("pybel")
