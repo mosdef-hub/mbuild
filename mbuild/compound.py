@@ -3245,6 +3245,21 @@ class Compound(object):
         """
         return conversion.to_gmso(self, **kwargs)
 
+    def to_hoomdsnapshot(self, **kwargs):
+        """Create a HOOMD-Blue snapshot from an mBuild Compound.
+
+        Parameters
+        ----------
+        compound : mb.Compound
+            The mb.Compound to be converted.
+
+        Returns
+        -------
+        snapshot : gsd.hoomd.Frame
+            HOOMD-Blue compatible topology.
+        """
+        return conversion.to_hoomdsnapshot(self, **kwargs)
+
     # Interface to Trajectory for reading/writing .pdb and .mol2 files.
     # -----------------------------------------------------------------
     def from_trajectory(
