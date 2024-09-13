@@ -4,7 +4,6 @@ https://gsd.readthedocs.io/en/stable/
 """
 
 import gsd.hoomd
-import numpy as np
 import parmed as pmd
 import unyt as u
 from gmso.external import from_mbuild, from_parmed, to_gsd_snapshot
@@ -56,6 +55,10 @@ def to_hoomdsnapshot(
         gmso_top = from_mbuild(compound=compound)
     elif isinstance(compound, pmd.Structure):
         gmso_top = from_parmed(structure=compound)
+    else:
+        raise ValueError(
+            "You must pass in an mBuild Compound or Parmed Structure."
+        )
 
     if identify_connections:
         gmso_top.identify_connections()
