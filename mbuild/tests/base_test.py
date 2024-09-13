@@ -26,6 +26,7 @@ class BaseTest:
     @pytest.fixture
     def benzene(self):
         benzene = mb.load("C1=CC=CC=C1", smiles=True)
+        benzene.name = "Benzene"
 
         return benzene
 
