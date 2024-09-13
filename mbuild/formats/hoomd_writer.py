@@ -6,7 +6,6 @@ https://gsd.readthedocs.io/en/stable/
 import gsd.hoomd
 
 import mbuild as mb
-from mbuild.conversion import to_hoomdsnapshot
 
 __all__ = ["write_gsd"]
 
@@ -53,7 +52,7 @@ def write_gsd(
     forcefield information (e.g. atom types, angle types, etc.).
 
     """
-    snapshot = to_hoomdsnapshot(
+    snapshot = compound.to_hoomdsnapshot(
         compound=compound,
         identify_connections=identify_connections,
         ref_distance=ref_distance,
