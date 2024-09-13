@@ -7,6 +7,7 @@ from copy import deepcopy
 from pathlib import Path
 from warnings import warn
 
+import gmso
 import numpy as np
 import parmed as pmd
 from ele import (
@@ -171,20 +172,20 @@ def load_object(
     """
     # Create type_dict type -> loading method
     # Will need to add a gmso method soon
-    type_dict = {pmd.Structure: from_parmed}
-    if has_gmso:
-        gmso = import_("gmso")
-        type_dict.update({gmso.Topology: from_gmso})
+    type_dict = {
+        pmd.Structure: from_parmed,
+        gmso.Topology: from_gmso,
+    }
 
     if has_openbabel:
         pybel = import_("pybel")
         type_dict.update({pybel.Molecule: from_pybel})
-
     if has_mdtraj:
         md = import_("mdtraj")
         type_dict.update({md.Trajectory: from_trajectory})
 
     # Check if the given object is an mb.Compound
+    # TODO 1.0: What is the use case for this?
     if isinstance(obj, mb.Compound):
         if not compound:
             warn("Given object is already an mb.Compound, doing nothing.")
@@ -208,7 +209,7 @@ def load_object(
             return compound
 
     # If nothing is return raise an error
-    raise ValueError(f"Object of type {type(obj).__name__} is not supported")
+    raise ValueError(f"Object of type {type(obj).__name__} is not supported.")
 
 
 def load_smiles(
@@ -370,6 +371,7 @@ def load_file(
         compound = mb.Compound()
 
     # Need to come up with a different dict structure
+    # TODO 1.0: Address this comment above? vals in dict are methods like we do in save()?
     default_backends = {
         ".json": "internal",
         ".xyz": "gmso",
@@ -377,7 +379,6 @@ def load_file(
         ".mol2": "gmso",
         ".pdb": "mdtraj",
     }
-
     # Handle mbuild *.py files containing a class that wraps a structure file
     # in its own folder. E.g., you build a system from ~/foo.py and it imports
     # from ~/bar/baz.py where baz.py loads ~/bar/baz.pdb.
@@ -388,11 +389,9 @@ def load_file(
     extension = Path(filename).suffix
 
     if not backend:
-        try:
-            # Try matching backend based on extension
+        try:  # Try matching backend based on extension
             backend = default_backends[extension]
-        except KeyError:
-            # Else use default backend
+        except KeyError:  # Else use default backend
             backend = "mdtraj" if has_mdtraj else "parmed"
 
     # First check internal readers
@@ -403,6 +402,7 @@ def load_file(
             compound = compound_from_json(filename)
             return compound
         # Handle xyz file
+        # TODO 1.0: Get rid of this conditional and everything under it? xyz will be GMSO backend now
         if extension == ".xyz" and not "top" in kwargs:
             if coords_only:
                 tmp = read_xyz(filename)
@@ -424,8 +424,6 @@ def load_file(
 
     # Then gmso reader
     if backend == "gmso":
-        gmso = import_("gmso")
-
         top = gmso.Topology.load(filename=filename, **kwargs)
         compound = from_gmso(
             topology=top,
@@ -440,8 +438,7 @@ def load_file(
         if extension == ".sdf":
             pybel_mol = pybel.readfile("sdf", filename)
             # pybel returns a generator, so we grab the first molecule of a
-            # list of len 1.
-            # Raise ValueError if there are more molecules
+            # list of len 1. Raise ValueError if there are more molecules
             pybel_mol = [i for i in pybel_mol]
             if len(pybel_mol) == 1:
                 compound = from_pybel(
@@ -492,7 +489,6 @@ def load_file(
     # by the corresponding backend
     if rigid:
         compound.label_rigid_bodies()
-
     return compound
 
 
@@ -963,16 +959,10 @@ def from_gmso(
 def save(
     compound,
     filename,
-    include_ports=False,
-    forcefield_name=None,
-    forcefield_files=None,
-    forcefield_debug=False,
+    include_ports=False,  # TODO 1.0: What to do with this?
     box=None,
     overwrite=False,
     residues=None,
-    combining_rule=None,
-    foyer_kwargs=None,
-    parmed_kwargs=None,
     **kwargs,
 ):
     """Save the Compound to a file.
@@ -988,17 +978,6 @@ def save(
         See parmed/structure.py for more information on savers.
     include_ports : bool, optional, default=False
         Save ports contained within the compound.
-    forcefield_files : str, optional, default=None
-        Apply a forcefield to the output file using a forcefield provided by the
-        `foyer` package.
-    forcefield_name : str, optional, default=None
-        Apply a named forcefield to the output file using the `foyer` package,
-        e.g. 'oplsaa'. Forcefields listed here:
-        https://github.com/mosdef-hub/foyer/tree/master/foyer/forcefields
-    forcefield_debug : bool, optional, default=False
-        Choose level of verbosity when applying a forcefield through `foyer`.
-        Specifically, when missing atom types in the forcefield xml file,
-        determine if the warning is condensed or verbose.
     box : mb.Box, optional, default=compound.boundingbox (with buffer)
         Box information to be written to the output file. If 'None', a bounding
         box is used with 0.25nm buffers at each face to avoid overlapping atoms.
@@ -1007,17 +986,7 @@ def save(
     residues : str of list of str
         Labels of residues in the Compound. Residues are assigned by checking
         against Compound.name.
-    combining_rule : str or None, optional, default=None
-        Specify the combining rule for nonbonded interactions. Only relevant
-        when the `foyer` package is used to apply a forcefield. Valid options
-        are 'lorentz' and 'geometric' and None, specifying Lorentz-Berthelot and
-        geometric combining rules respectively. If None is provided, the combining_rule
-        specified from the forcefield will be used.
-    foyer_kwargs : dict, optional, default=None
-        Keyword arguments to provide to `foyer.Forcefield.apply`.
-    parmed_kwargs : dict, optional, default=None
-        Keyword arguments to provide to :meth:`mbuild.Compound.to_parmed`
-    **kwargs
+    **kwargs #TODO 1.0: Update description here and the link to GMSO
         Depending on the file extension these will be passed to either
         `write_gsd`, , `write_mcf`, or `parmed.Structure.save`.
         See https://parmed.github.io/ParmEd/html/structobj/parmed.structure.
@@ -1043,13 +1012,11 @@ def save(
 
     See Also
     --------
-    formats.gsdwriter.write_gsd : Write to GSD format
-    formats.xyzwriter.write_xyz : Write to XYZ format
     formats.cassandramcf.write_mcf : Write to Cassandra MCF format
     formats.json_formats.compound_to_json : Write to a json file
     """
     extension = os.path.splitext(filename)[-1]
-
+    # Keep json stuff with internal mbuild method
     if extension == ".json":
         compound_to_json(
             compound, file_path=filename, include_ports=include_ports
@@ -1057,15 +1024,20 @@ def save(
         return
 
     # Savers supported by mbuild.formats
+    # TODO 1.0: Will the CHARMM par writer work with non-typed systems? Do we support writing it from mbuild?
+    # TODO 1.0: Do we update the par writer to skip angles, dihedrals, Parameters, etc.. and just write xyz and bonds?
     savers = {
-        ".gsd": write_gsd,
-        ".xyz": write_xyz,
+        ".gro": save_in_gmso,
+        ".gsd": save_in_gmso,
+        ".lammps": save_in_gmso,
+        ".lammpsdata": save_in_gmso,
+        ".data": save_in_gmso,
+        ".xyz": save_in_gmso,
+        ".mol2": save_in_gmso,
+        ".mcf": save_in_gmso,
+        ".top": save_in_gmso,
         ".par": write_par,
     }
-    if has_networkx:
-        from mbuild.formats.cassandramcf import write_mcf
-
-        savers.update({".mcf": write_mcf})
 
     try:
         saver = savers[extension]
@@ -1074,49 +1046,6 @@ def save(
 
     if os.path.exists(filename) and not overwrite:
         raise IOError(f"{filename} exists; not overwriting")
-
-    if not parmed_kwargs:
-        parmed_kwargs = {}
-    structure = compound.to_parmed(
-        box=box,
-        residues=residues,
-        include_ports=include_ports,
-        **parmed_kwargs,
-    )
-    # Apply a force field with foyer if specified
-    if forcefield_name or forcefield_files:
-        foyer = import_("foyer")
-        ff = foyer.Forcefield(
-            forcefield_files=forcefield_files,
-            name=forcefield_name,
-            debug=forcefield_debug,
-        )
-
-        if not foyer_kwargs:
-            foyer_kwargs = {}
-        structure = ff.apply(structure, **foyer_kwargs)
-
-        if combining_rule is None:
-            combining_rule = structure.combining_rule
-
-        if structure.combining_rule != combining_rule:
-            warn(
-                f"Overwriting forcefield-specified combining rule ({combining_rule})"
-                f"to new combining rule ({combining_rule})."
-                "This can cause inconsistent between the 1-4 pair interactions,"
-                "calculated in foyer, and the new combining rule."
-                "Consider directly changing the metadata of the Forcefield."
-            )
-
-        structure.combining_rule = combining_rule
-        if structure.__dict__.get("defaults"):
-            structure.defaults.comb_rule = (
-                2 if combining_rule == "lorentz" else 3
-            )
-
-    total_charge = sum([atom.charge for atom in structure])
-    if round(total_charge, 4) != 0.0:
-        warn(f"System is not charge neutral. Total charge is {total_charge}.")
 
     # Provide a warning if rigid_ids are not sequential from 0
     if compound.contains_rigid:
@@ -1129,7 +1058,8 @@ def save(
     if saver:  # mBuild supported saver.
         if extension == ".gsd":
             kwargs["rigid_bodies"] = [p.rigid_id for p in compound.particles()]
-        saver(filename=filename, compound=structure, **kwargs)
+        # Calling save_in_gmso
+        saver(filename=filename, compound=structure, box=box, **kwargs)
 
     elif extension == ".sdf":
         pybel = import_("pybel")
@@ -1142,9 +1072,16 @@ def save(
         output_sdf = pybel.Outputfile("sdf", filename, overwrite=overwrite)
         output_sdf.write(pybel_molecule)
         output_sdf.close()
-
+    # TODO 1.0: Keep this to catch any file types not supported by GMSO?
     else:  # ParmEd supported saver.
         structure.save(filename, overwrite=overwrite, **kwargs)
+
+
+# TODO 1.0: Add doc strings, links, etc..
+def save_in_gmso(compound, filename, box, **kwargs):
+    """Convert to GMSO, call gmso writers."""
+    gmso_top = to_gmso(compound=compound, box=box, **kwargs)
+    gmso_top.save(filename, **kwargs)
 
 
 def catalog_bondgraph_type(compound, bond_graph=None):
