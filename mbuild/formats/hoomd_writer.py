@@ -53,7 +53,7 @@ def to_hoomdsnapshot(
     forcefield information (e.g. atom types, angle types, etc.).
     """
     if isinstance(compound, mb.Compound):
-        gmso_top = form_mbuild(compound=compound)
+        gmso_top = from_mbuild(compound=compound)
     elif isinstance(compound, pmd.Structure):
         gmso_top = from_parmed(structure=compound)
 
