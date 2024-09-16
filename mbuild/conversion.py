@@ -1016,11 +1016,11 @@ def save(
     """
     if os.path.exists(filename) and not overwrite:
         raise IOError(f"{filename} exists; not overwriting")
-
-    if round(compound.charge, 4) != 0.0:
-        warn(
-            f"System is not charge neutral. Total charge is {compound.charge}."
-        )
+    if compound.charge:
+        if round(compound.charge, 4) != 0.0:
+            warn(
+                f"System is not charge neutral. Total charge is {compound.charge}."
+            )
 
     extension = os.path.splitext(filename)[-1]
     # Keep json stuff with internal mbuild method
