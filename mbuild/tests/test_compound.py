@@ -89,14 +89,11 @@ class TestCompound(BaseTest):
         assert np.allclose(test_converted1.xyz, test_converted2.xyz)
 
     def test_load_xyz(self):
-        class MyCompound(Compound):
-            def __init__(self):
-                super(MyCompound, self).__init__()
-
-                mb.load(get_fn("ethane.xyz"), compound=self)
-
-        myethane = MyCompound()
+        myethane = mb.load(get_fn("ethane.xyz")) 
         assert myethane.n_particles == 8
+        assert myethane.n_bonds == 0
+        assert len(myethane.children) == 1
+        assert set([p.name for p in myethane.particles()]) == {"C", "H"}
 
     def test_update_from_file(self, ch3):
         ch3.update_coordinates(get_fn("methyl.pdb"))
@@ -379,12 +376,10 @@ class TestCompound(BaseTest):
             ".xyz",
             ".pdb",
             ".mol2",
-            # ".gro",
+            ".gro",
             ".gsd",
             ".json",
-            # ".top",
-            ".mcf",
-            # ".lammps",
+            ".lammps",
             ".sdf",
         ],
     )
@@ -392,6 +387,20 @@ class TestCompound(BaseTest):
         outfile = "methyl_out" + extension
         ch3.save(filename=outfile)
         assert os.path.exists(outfile)
+
+    @pytest.mark.parametrize(
+        "extension",
+        [".xyz", ".pdb", ".mol2", ".json"],
+    )
+    def test_save_load_simple(self, ch3, extension):
+        outfile = "methyl_out" + extension
+        ch3.save(filename=outfile)
+        ch3_new = mb.load(outfile)
+        assert ch3_new.n_particles == ch3.n_particles
+        assert np.allclose(ch3_new.xyz, ch3.xyz)
+        ch3_names = [p.name for p in ch3.particles()]
+        ch3_new_names = [p.name for p in ch3_new.particles()]
+        assert set(ch3_names) == set(ch3_new_names)
 
     def test_save_json_loop(self, ethane):
         ethane.save("ethane.json", show_ports=True)
