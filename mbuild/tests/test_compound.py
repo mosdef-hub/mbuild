@@ -89,7 +89,7 @@ class TestCompound(BaseTest):
         assert np.allclose(test_converted1.xyz, test_converted2.xyz)
 
     def test_load_xyz(self):
-        myethane = mb.load(get_fn("ethane.xyz")) 
+        myethane = mb.load(get_fn("ethane.xyz"))
         assert myethane.n_particles == 8
         assert myethane.n_bonds == 0
         assert len(myethane.children) == 1
