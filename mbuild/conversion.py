@@ -20,7 +20,6 @@ from ele.exceptions import ElementError
 import mbuild as mb
 from mbuild.box import Box
 from mbuild.exceptions import MBuildError
-from mbuild.formats.hoomd_writer import write_gsd
 from mbuild.formats.json_formats import compound_from_json, compound_to_json
 from mbuild.formats.par_writer import write_par
 from mbuild.formats.xyz import read_xyz, write_xyz
@@ -1015,6 +1014,9 @@ def save(
     formats.cassandramcf.write_mcf : Write to Cassandra MCF format
     formats.json_formats.compound_to_json : Write to a json file
     """
+    if os.path.exists(filename) and not overwrite:
+        raise IOError(f"{filename} exists; not overwriting")
+
     extension = os.path.splitext(filename)[-1]
     # Keep json stuff with internal mbuild method
     if extension == ".json":
@@ -1026,6 +1028,9 @@ def save(
     # Savers supported by mbuild.formats
     # TODO 1.0: Will the CHARMM par writer work with non-typed systems? Do we support writing it from mbuild?
     # TODO 1.0: Do we update the par writer to skip angles, dihedrals, Parameters, etc.. and just write xyz and bonds?
+    # TODO 1.0: Do we have a pdb writer anywhere? Right now, we use parmed
+    # TODO 1.0: GMSO can't save mol2 files, do we prioritize a mol2 writer, or continue using parmed backend here?
+    # TODO 1.0: Is there ever a need to save .lammps, .lammpsdata files that don't have a FF applied?
     savers = {
         ".gro": save_in_gmso,
         ".gsd": save_in_gmso,
@@ -1033,7 +1038,7 @@ def save(
         ".lammpsdata": save_in_gmso,
         ".data": save_in_gmso,
         ".xyz": save_in_gmso,
-        ".mol2": save_in_gmso,
+        # ".mol2": save_in_gmso,
         ".mcf": save_in_gmso,
         ".top": save_in_gmso,
         ".par": write_par,
@@ -1043,10 +1048,6 @@ def save(
         saver = savers[extension]
     except KeyError:
         saver = None
-
-    if os.path.exists(filename) and not overwrite:
-        raise IOError(f"{filename} exists; not overwriting")
-
     # Provide a warning if rigid_ids are not sequential from 0
     if compound.contains_rigid:
         unique_rigid_ids = sorted(
@@ -1059,29 +1060,33 @@ def save(
         if extension == ".gsd":
             kwargs["rigid_bodies"] = [p.rigid_id for p in compound.particles()]
         # Calling save_in_gmso
-        saver(filename=filename, compound=structure, box=box, **kwargs)
+        saver(
+            filename=filename,
+            compound=compound,
+            box=box,
+            overwrite=overwrite,
+            **kwargs,
+        )
 
     elif extension == ".sdf":
         pybel = import_("pybel")
-        new_compound = mb.Compound()
-        # Convert pmd.Structure to mb.Compound
-        new_compound.from_parmed(structure)
-        # Convert mb.Compound to pybel molecule
-        pybel_molecule = new_compound.to_pybel()
+        pybel_molecule = compound.to_pybel()
         # Write out pybel molecule to SDF file
         output_sdf = pybel.Outputfile("sdf", filename, overwrite=overwrite)
         output_sdf.write(pybel_molecule)
         output_sdf.close()
     # TODO 1.0: Keep this to catch any file types not supported by GMSO?
     else:  # ParmEd supported saver.
+        structure = compound.to_parmed()
         structure.save(filename, overwrite=overwrite, **kwargs)
 
 
 # TODO 1.0: Add doc strings, links, etc..
-def save_in_gmso(compound, filename, box, **kwargs):
+def save_in_gmso(compound, filename, box, overwrite, **kwargs):
     """Convert to GMSO, call gmso writers."""
-    gmso_top = to_gmso(compound=compound, box=box, **kwargs)
-    gmso_top.save(filename, **kwargs)
+    # TODO: Pass in rigid body tags here when added to GMSO
+    gmso_top = to_gmso(compound=compound, box=box)
+    gmso_top.save(filename=filename, overwrite=overwrite, **kwargs)
 
 
 def catalog_bondgraph_type(compound, bond_graph=None):
@@ -1904,7 +1909,14 @@ def _iterate_children(compound, nodes, edges, names_only=False):
     return nodes, edges
 
 
-def to_gmso(compound, box=None, **kwargs):
+def to_gmso(
+    compound,
+    box=None,
+    parse_label=True,
+    custom_groups=None,
+    infer_elements=False,
+    **kwargs,
+):
     """Create a GMSO Topology from a mBuild Compound.
 
     Parameters
@@ -1921,7 +1933,14 @@ def to_gmso(compound, box=None, **kwargs):
     """
     from gmso.external.convert_mbuild import from_mbuild
 
-    return from_mbuild(compound, box=None, **kwargs)
+    # TODO: Pass in rigid body IDs here once added to GMSO
+    return from_mbuild(
+        compound=compound,
+        box=box,
+        parse_label=parse_label,
+        custom_groups=custom_groups,
+        infer_elements=infer_elements,
+    )
 
 
 def to_intermol(compound, molecule_types=None):  # pragma: no cover

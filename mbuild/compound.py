@@ -2979,15 +2979,9 @@ class Compound(object):
         self,
         filename,
         include_ports=False,
-        forcefield_name=None,
-        forcefield_files=None,
-        forcefield_debug=False,
         box=None,
         overwrite=False,
         residues=None,
-        combining_rule="lorentz",
-        foyer_kwargs=None,
-        parmed_kwargs=None,
         **kwargs,
     ):
         """Save the Compound to a file.
@@ -3002,17 +2996,6 @@ class Compound(object):
             information on savers.
         include_ports : bool, optional, default=False
             Save ports contained within the compound.
-        forcefield_files : str, optional, default=None
-            Apply a forcefield to the output file using a forcefield provided
-            by the `foyer` package.
-        forcefield_name : str, optional, default=None
-            Apply a named forcefield to the output file using the `foyer`
-            package, e.g. 'oplsaa'. `Foyer forcefields
-            <https://github.com/mosdef-hub/foyer/tree/master/foyer/forcefields>`_
-        forcefield_debug : bool, optional, default=False
-            Choose verbosity level when applying a forcefield through `foyer`.
-            Specifically, when missing atom types in the forcefield xml file,
-            determine if the warning is condensed or verbose.
         box : mb.Box, optional, default=self.boundingbox (with buffer)
             Box information to be written to the output file. If 'None', a
             bounding box is used with 0.25nm buffers at each face to avoid
@@ -3022,20 +3005,7 @@ class Compound(object):
         residues : str of list of str
             Labels of residues in the Compound. Residues are assigned by
             checking against Compound.name.
-        combining_rule : str, optional, default='lorentz'
-            Specify the combining rule for nonbonded interactions. Only relevant
-            when the `foyer` package is used to apply a forcefield. Valid
-            options are 'lorentz' and 'geometric', specifying Lorentz-Berthelot
-            and geometric combining rules respectively.
-        foyer_kwargs : dict, optional, default=None
-            Keyword arguments to provide to `foyer.Forcefield.apply`.
-            Depending on the file extension these will be passed to either
-            `write_gsd`, `write_lammpsdata`,
-            `write_mcf`, or `parmed.Structure.save`.
-            See `parmed structure documentation
-            <https://parmed.github.io/ParmEd/html/structobj/parmed.structure.Structure.html#parmed.structure.Structure.save>`_
-        parmed_kwargs : dict, optional, default=None
-            Keyword arguments to provide to :meth:`mbuild.Compound.to_parmed`
+            #TODO 1.0: Update this kwargs, pass link to GMSO
         **kwargs
             Depending on the file extension these will be passed to either
             `write_gsd`, `write_lammpsdata`, `write_mcf`, or
@@ -3084,18 +3054,12 @@ class Compound(object):
         formats.json_formats.compound_to_json : Write to a json file
         """
         conversion.save(
-            self,
-            filename,
-            include_ports,
-            forcefield_name,
-            forcefield_files,
-            forcefield_debug,
-            box,
-            overwrite,
-            residues,
-            combining_rule,
-            foyer_kwargs,
-            parmed_kwargs,
+            compound=self,
+            filename=filename,
+            include_ports=include_ports,
+            box=box,
+            overwrite=overwrite,
+            residues=residues,
             **kwargs,
         )
 
