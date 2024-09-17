@@ -426,7 +426,7 @@ class TestCompound(BaseTest):
                 assert np.array_equal(pad_attr, custom_attr)
 
     def test_save_overwrite(self, ch3):
-        extensions = [".gsd", ".mol2", ".top", ".gro"]
+        extensions = [".gsd", ".mol2", ".xyz", ".gro"]
         for ext in extensions:
             outfile = "lyhtem" + ext
             ch3.save(filename=outfile)

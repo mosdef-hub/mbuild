@@ -958,7 +958,7 @@ def from_gmso(
 def save(
     compound,
     filename,
-    include_ports=False,  # TODO 1.0: What to do with this?
+    include_ports=False,
     box=None,
     overwrite=False,
     residues=None,
@@ -1031,11 +1031,8 @@ def save(
         return
 
     # Savers supported by mbuild.formats
-    # TODO 1.0: Will the CHARMM par writer work with non-typed systems? Do we support writing it from mbuild?
-    # TODO 1.0: Do we update the par writer to skip angles, dihedrals, Parameters, etc.. and just write xyz and bonds?
     # TODO 1.0: Do we have a pdb writer anywhere? Right now, we use parmed
     # TODO 1.0: GMSO can't save mol2 files, do we prioritize a mol2 writer, or continue using parmed backend here?
-    # TODO 1.0: Is there ever a need to save .lammps, .lammpsdata files that don't have a FF applied?
     savers = {
         ".gro": save_in_gmso,
         ".gsd": save_in_gmso,
@@ -1046,7 +1043,6 @@ def save(
         # ".mol2": save_in_gmso,
         ".mcf": save_in_gmso,
         ".top": save_in_gmso,
-        ".par": write_par,
     }
 
     try:
