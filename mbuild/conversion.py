@@ -375,7 +375,6 @@ def load_file(
         ".json": "internal",
         ".xyz": "gmso",
         ".sdf": "pybel",
-        ".mol2": "gmso",
         ".pdb": "mdtraj",
     }
     # Handle mbuild *.py files containing a class that wraps a structure file
@@ -1036,11 +1035,9 @@ def save(
     savers = {
         ".gro": save_in_gmso,
         ".gsd": save_in_gmso,
-        ".lammps": save_in_gmso,
-        ".lammpsdata": save_in_gmso,
         ".data": save_in_gmso,
         ".xyz": save_in_gmso,
-        # ".mol2": save_in_gmso,
+        ".mol2": save_in_gmso,
         ".mcf": save_in_gmso,
         ".top": save_in_gmso,
     }
@@ -1076,7 +1073,6 @@ def save(
         output_sdf = pybel.Outputfile("sdf", filename, overwrite=overwrite)
         output_sdf.write(pybel_molecule)
         output_sdf.close()
-    # TODO 1.0: Keep this to catch any file types not supported by GMSO?
     else:  # ParmEd supported saver.
         structure = compound.to_parmed()
         structure.save(filename, overwrite=overwrite, **kwargs)
@@ -1085,7 +1081,6 @@ def save(
 # TODO 1.0: Add doc strings, links, etc..
 def save_in_gmso(compound, filename, box, overwrite, **kwargs):
     """Convert to GMSO, call gmso writers."""
-    # TODO: Pass in rigid body tags here when added to GMSO
     gmso_top = to_gmso(compound=compound, box=box)
     gmso_top.save(filename=filename, overwrite=overwrite, **kwargs)
 
