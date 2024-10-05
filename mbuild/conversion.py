@@ -375,7 +375,7 @@ def load_file(
         ".json": "internal",
         ".xyz": "gmso",
         ".sdf": "pybel",
-        ".mol2": "gmso",
+        # ".mol2": "gmso",
         ".pdb": "mdtraj",
     }
     # Handle mbuild *.py files containing a class that wraps a structure file
