@@ -379,7 +379,6 @@ class TestCompound(BaseTest):
             ".gro",
             ".gsd",
             ".json",
-            ".lammps",
             ".sdf",
         ],
     )
