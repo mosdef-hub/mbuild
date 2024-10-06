@@ -159,20 +159,6 @@ freud can be installed with conda using:
 # conda install -c conda-forge freud
 """
 
-MESSAGES[
-    "protobuf"
-] = """
-The code at {filename}:{line_number} requires the "protobuf" package
-
-protobuf can be installed using:
-
-# conda install -c conda-forge protobuf
-
-or
-
-# pip install protobuf
-"""
-
 
 def import_(module):
     """Import a module and issue a nice message to stderr if it isn't installed.
@@ -343,14 +329,6 @@ try:
     del py3Dmol
 except ImportError:
     has_py3Dmol = False
-
-try:
-    from google import protobuf
-
-    has_protobuf = True
-    del protobuf
-except ImportError:
-    has_protobuf = False
 
 try:
     import garnett

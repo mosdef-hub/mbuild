@@ -54,12 +54,6 @@ jobs:
       - name: Test (OS -> ${{ matrix.os }} / Python -> ${{ matrix.python-version }})
         run: python -m pytest -v --cov=mbuild --cov-report=xml --cov-append --cov-config=setup.cfg --color yes --pyargs mbuild
 
-      - name: Tests for HOOMD-blue (V3)
-        run: |
-          micromamba install -c conda-forge "hoomd>3"
-          python -m pytest -v --cov=mbuild --cov-report=xml --cov-append --cov-config=setup.cfg --color yes mbuild/tests/test_hoomd.py
-        if: runner.os == 'Linux'
-
       - name: Upload Coverage Report
         uses: codecov/codecov-action@v4
         with:

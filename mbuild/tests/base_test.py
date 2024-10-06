@@ -26,6 +26,7 @@ class BaseTest:
     @pytest.fixture
     def benzene(self):
         benzene = mb.load("C1=CC=CC=C1", smiles=True)
+        benzene.name = "Benzene"
 
         return benzene
 
@@ -120,12 +121,6 @@ class BaseTest:
         molecule.add(mb.Particle(name="C", pos=[5, 5, 4]), label="back")
         molecule.generate_bonds("C", "C", 0.9, 1.1)
         return molecule
-
-    @pytest.fixture
-    def benzene(self):
-        compound = mb.load(get_fn("benzene.mol2"))
-        compound.name = "Benzene"
-        return compound
 
     @pytest.fixture
     def rigid_benzene(self):

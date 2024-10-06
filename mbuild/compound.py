@@ -2007,7 +2007,6 @@ class Compound(object):
             os.path.join(tmp_dir, "tmp.mol2"),
             include_ports=show_ports,
             overwrite=True,
-            parmed_kwargs={"infer_residues": False},
         )
 
         view = py3Dmol.view()
@@ -2979,15 +2978,9 @@ class Compound(object):
         self,
         filename,
         include_ports=False,
-        forcefield_name=None,
-        forcefield_files=None,
-        forcefield_debug=False,
         box=None,
         overwrite=False,
         residues=None,
-        combining_rule="lorentz",
-        foyer_kwargs=None,
-        parmed_kwargs=None,
         **kwargs,
     ):
         """Save the Compound to a file.
@@ -2997,22 +2990,11 @@ class Compound(object):
         filename : str
             Filesystem path in which to save the trajectory. The extension or
             prefix will be parsed and control the format. Supported extensions:
-            'hoomdxml', 'gsd', 'gro', 'top', 'lammps', 'lmp', 'mcf', 'pdb', 'xyz',
+            'gsd', 'gro', 'top', 'lammps', 'lmp', 'mcf', 'pdb', 'xyz',
             'json', 'mol2', 'sdf', 'psf'. See parmed/structure.py for more
             information on savers.
         include_ports : bool, optional, default=False
             Save ports contained within the compound.
-        forcefield_files : str, optional, default=None
-            Apply a forcefield to the output file using a forcefield provided
-            by the `foyer` package.
-        forcefield_name : str, optional, default=None
-            Apply a named forcefield to the output file using the `foyer`
-            package, e.g. 'oplsaa'. `Foyer forcefields
-            <https://github.com/mosdef-hub/foyer/tree/master/foyer/forcefields>`_
-        forcefield_debug : bool, optional, default=False
-            Choose verbosity level when applying a forcefield through `foyer`.
-            Specifically, when missing atom types in the forcefield xml file,
-            determine if the warning is condensed or verbose.
         box : mb.Box, optional, default=self.boundingbox (with buffer)
             Box information to be written to the output file. If 'None', a
             bounding box is used with 0.25nm buffers at each face to avoid
@@ -3022,23 +3004,10 @@ class Compound(object):
         residues : str of list of str
             Labels of residues in the Compound. Residues are assigned by
             checking against Compound.name.
-        combining_rule : str, optional, default='lorentz'
-            Specify the combining rule for nonbonded interactions. Only relevant
-            when the `foyer` package is used to apply a forcefield. Valid
-            options are 'lorentz' and 'geometric', specifying Lorentz-Berthelot
-            and geometric combining rules respectively.
-        foyer_kwargs : dict, optional, default=None
-            Keyword arguments to provide to `foyer.Forcefield.apply`.
-            Depending on the file extension these will be passed to either
-            `write_gsd`, `write_hoomdxml`, `write_lammpsdata`,
-            `write_mcf`, or `parmed.Structure.save`.
-            See `parmed structure documentation
-            <https://parmed.github.io/ParmEd/html/structobj/parmed.structure.Structure.html#parmed.structure.Structure.save>`_
-        parmed_kwargs : dict, optional, default=None
-            Keyword arguments to provide to :meth:`mbuild.Compound.to_parmed`
+            #TODO 1.0: Update this kwargs, pass link to GMSO
         **kwargs
             Depending on the file extension these will be passed to either
-            `write_gsd`, `write_hoomdxml`, `write_lammpsdata`, `write_mcf`, or
+            `write_gsd`, `write_lammpsdata`, `write_mcf`, or
             `parmed.Structure.save`.
             See https://parmed.github.io/ParmEd/html/structobj/parmed.structure.
             Structure.html#parmed.structure.Structure.save
@@ -3046,13 +3015,13 @@ class Compound(object):
         Other Parameters
         ----------------
         ref_distance : float, optional, default=1.0
-            Normalization factor used when saving to .gsd and .hoomdxml formats
+            Normalization factor used when saving to the .gsd format
             for converting distance values to reduced units.
         ref_energy : float, optional, default=1.0
-            Normalization factor used when saving to .gsd and .hoomdxml formats
+            Normalization factor used when saving to the .gsd format
             for converting energy values to reduced units.
         ref_mass : float, optional, default=1.0
-            Normalization factor used when saving to .gsd and .hoomdxml formats
+            Normalization factor used when saving to the .gsd format
             for converting mass values to reduced units.
         atom_style: str, default='full'
             Defines the style of atoms to be saved in a LAMMPS data file. The
@@ -3078,25 +3047,18 @@ class Compound(object):
         --------
         conversion.save : Main saver logic
         formats.gsdwrite.write_gsd : Write to GSD format
-        formats.hoomdxml.write_hoomdxml : Write to Hoomd XML format
         formats.xyzwriter.write_xyz : Write to XYZ format
         formats.lammpsdata.write_lammpsdata : Write to LAMMPS data format
         formats.cassandramcf.write_mcf : Write to Cassandra MCF format
         formats.json_formats.compound_to_json : Write to a json file
         """
         conversion.save(
-            self,
-            filename,
-            include_ports,
-            forcefield_name,
-            forcefield_files,
-            forcefield_debug,
-            box,
-            overwrite,
-            residues,
-            combining_rule,
-            foyer_kwargs,
-            parmed_kwargs,
+            compound=self,
+            filename=filename,
+            include_ports=include_ports,
+            box=box,
+            overwrite=overwrite,
+            residues=residues,
             **kwargs,
         )
 
@@ -3245,6 +3207,21 @@ class Compound(object):
             The converted gmso Topology
         """
         return conversion.to_gmso(self, **kwargs)
+
+    def to_hoomdsnapshot(self, **kwargs):
+        """Create a HOOMD-Blue snapshot from an mBuild Compound.
+
+        Parameters
+        ----------
+        compound : mb.Compound
+            The mb.Compound to be converted.
+
+        Returns
+        -------
+        snapshot : gsd.hoomd.Frame
+            HOOMD-Blue compatible topology.
+        """
+        return conversion.to_hoomdsnapshot(self, **kwargs)
 
     # Interface to Trajectory for reading/writing .pdb and .mol2 files.
     # -----------------------------------------------------------------
