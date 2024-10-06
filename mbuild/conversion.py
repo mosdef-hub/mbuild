@@ -375,7 +375,7 @@ def load_file(
         ".json": "internal",
         ".xyz": "gmso",
         ".sdf": "pybel",
-        # ".mol2": "gmso",
+        ".mol2": "gmso",
         ".pdb": "mdtraj",
     }
     # Handle mbuild *.py files containing a class that wraps a structure file
@@ -1038,7 +1038,7 @@ def save(
         ".gsd": save_in_gmso,
         ".data": save_in_gmso,
         ".xyz": save_in_gmso,
-        ".mol2": save_in_gmso,
+        # ".mol2": save_in_gmso,
         ".mcf": save_in_gmso,
         ".top": save_in_gmso,
     }
