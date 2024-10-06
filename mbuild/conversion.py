@@ -21,8 +21,6 @@ import mbuild as mb
 from mbuild.box import Box
 from mbuild.exceptions import MBuildError
 from mbuild.formats.json_formats import compound_from_json, compound_to_json
-from mbuild.formats.par_writer import write_par
-from mbuild.formats.xyz import read_xyz, write_xyz
 from mbuild.utils.io import (
     has_gmso,
     has_mdtraj,
@@ -401,26 +399,6 @@ def load_file(
             compound = compound_from_json(filename)
             return compound
         # Handle xyz file
-        # TODO 1.0: Get rid of this conditional and everything under it? xyz will be GMSO backend now
-        if extension == ".xyz" and not "top" in kwargs:
-            if coords_only:
-                tmp = read_xyz(filename)
-                if tmp.n_particles != compound.n_particles:
-                    raise ValueError(
-                        f"Number of atoms in {filename}"
-                        f"does not match {compound}"
-                    )
-                ref_and_compound = zip(
-                    tmp._particles(include_ports=False),
-                    compound.particles(include_ports=False),
-                )
-                for ref_particle, particle in ref_and_compound:
-                    particle.pos = ref_particle.pos
-            else:
-                compound = read_xyz(filename, compound=compound)
-        elif extension == ".xyz" and "top" in kwargs:
-            backend = "mdtraj"
-
     # Then gmso reader
     if backend == "gmso":
         top = gmso.Topology.load(filename=filename, **kwargs)
@@ -985,9 +963,10 @@ def save(
     residues : str of list of str
         Labels of residues in the Compound. Residues are assigned by checking
         against Compound.name.
-    **kwargs #TODO 1.0: Update description here and the link to GMSO
+    **kwargs : dict, optional
         Depending on the file extension these will be passed to either
-        `write_gsd`, , `write_mcf`, or `parmed.Structure.save`.
+        GMSO's intenral writers or `parmed.Structure.save`.
+        See https://github.com/mosdef-hub/gmso/tree/main/gmso/formats
         See https://parmed.github.io/ParmEd/html/structobj/parmed.structure.
         Structure.html#parmed.structure.Structure.save
 
@@ -1031,8 +1010,6 @@ def save(
         return
 
     # Savers supported by mbuild.formats
-    # TODO 1.0: Do we have a pdb writer anywhere? Right now, we use parmed
-    # TODO 1.0: GMSO can't save mol2 files, do we prioritize a mol2 writer, or continue using parmed backend here?
     savers = {
         ".gro": save_in_gmso,
         ".gsd": save_in_gmso,
@@ -1047,17 +1024,7 @@ def save(
         saver = savers[extension]
     except KeyError:
         saver = None
-    # Provide a warning if rigid_ids are not sequential from 0
-    if compound.contains_rigid:
-        unique_rigid_ids = sorted(
-            set([p.rigid_id for p in compound.rigid_particles()])
-        )
-        if max(unique_rigid_ids) != len(unique_rigid_ids) - 1:
-            warn("Unique rigid body IDs are not sequential starting from zero.")
-
     if saver:  # mBuild supported saver.
-        if extension == ".gsd":
-            kwargs["rigid_bodies"] = [p.rigid_id for p in compound.particles()]
         # Calling save_in_gmso
         saver(
             filename=filename,
@@ -1079,9 +1046,21 @@ def save(
         structure.save(filename, overwrite=overwrite, **kwargs)
 
 
-# TODO 1.0: Add doc strings, links, etc..
 def save_in_gmso(compound, filename, box, overwrite, **kwargs):
-    """Convert to GMSO, call gmso writers."""
+    """Convert to GMSO, call GMSO internal writers.
+
+    Parameters
+    ----------
+    compound : mbuild.compound.Compound, required.
+        The mBuild compound to convert to a GSMO topology.
+    box : mbuild.box.Box, required
+        The mBuild box to be converted to a gmso box, if different that compound.box
+    overwrite : bool, required
+        If `True` overwrite the file if it already exists.
+    **kwargs
+        Keyword arguments used in GMSO's savers.
+        See https://github.com/mosdef-hub/gmso/tree/main/gmso/formats
+    """
     gmso_top = to_gmso(compound=compound, box=box)
     gmso_top.save(filename=filename, overwrite=overwrite, **kwargs)
 
@@ -1930,7 +1909,6 @@ def to_gmso(
     """
     from gmso.external.convert_mbuild import from_mbuild
 
-    # TODO: Pass in rigid body IDs here once added to GMSO
     return from_mbuild(
         compound=compound,
         box=box,
