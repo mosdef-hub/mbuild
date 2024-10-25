@@ -3,7 +3,7 @@ import pytest
 
 import mbuild as mb
 from mbuild.tests.base_test import BaseTest
-from mbuild.utils.io import get_fn, has_hoomd
+from mbuild.utils.io import has_hoomd
 
 
 class TestRigid(BaseTest):
