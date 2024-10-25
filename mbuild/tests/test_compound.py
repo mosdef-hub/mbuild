@@ -16,6 +16,7 @@ from mbuild.utils.io import (
     get_fn,
     has_foyer,
     has_freud,
+    has_hoomd,
     has_intermol,
     has_mdtraj,
     has_networkx,
@@ -383,6 +384,9 @@ class TestCompound(BaseTest):
         ],
     )
     def test_save_simple(self, ch3, extension):
+        # Can't save gsd files with Windows
+        if extension == ".gsd" as not has_hoomd:
+            return True
         outfile = "methyl_out" + extension
         ch3.save(filename=outfile)
         assert os.path.exists(outfile)
@@ -425,7 +429,7 @@ class TestCompound(BaseTest):
                 assert np.array_equal(pad_attr, custom_attr)
 
     def test_save_overwrite(self, ch3):
-        extensions = [".gsd", ".mol2", ".xyz", ".gro"]
+        extensions = [".mol2", ".xyz", ".gro"]
         for ext in extensions:
             outfile = "lyhtem" + ext
             ch3.save(filename=outfile)

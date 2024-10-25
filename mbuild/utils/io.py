@@ -260,6 +260,14 @@ def import_(module):
 
 
 try:
+    import hoomd
+
+    has_hoomd = True
+    del hoomd
+except ImportError:
+    has_hoomd = False
+
+try:
     import intermol
 
     has_intermol = True

@@ -3,7 +3,7 @@ import pytest
 
 import mbuild as mb
 from mbuild.tests.base_test import BaseTest
-from mbuild.utils.io import get_fn
+from mbuild.utils.io import get_fn, has_hoomd
 
 
 class TestRigid(BaseTest):
@@ -114,6 +114,7 @@ class TestRigid(BaseTest):
         assert len(list(benzene.rigid_particles())) == 6
         assert len(list(benzene.rigid_particles(rigid_id=0))) == 6
 
+    @pytest.mark.skipif(not has_hoomd, reason="HOOMD not installed.")
     def test_save_non_sequential_rigid_ids(self, benzene):
         n_benzenes = 10
         filled = mb.fill_box(
