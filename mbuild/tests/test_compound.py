@@ -385,7 +385,7 @@ class TestCompound(BaseTest):
     )
     def test_save_simple(self, ch3, extension):
         # Can't save gsd files with Windows
-        if extension == ".gsd" as not has_hoomd:
+        if extension == ".gsd" and not has_hoomd:
             return True
         outfile = "methyl_out" + extension
         ch3.save(filename=outfile)
