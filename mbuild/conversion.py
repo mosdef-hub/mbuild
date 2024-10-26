@@ -168,7 +168,6 @@ def load_object(
     mb.Compound
     """
     # Create type_dict type -> loading method
-    # Will need to add a gmso method soon
     type_dict = {
         pmd.Structure: from_parmed,
         gmso.Topology: from_gmso,
@@ -368,7 +367,6 @@ def load_file(
         compound = mb.Compound()
 
     # Need to come up with a different dict structure
-    # TODO 1.0: Address this comment above? vals in dict are methods like we do in save()?
     default_backends = {
         ".json": "internal",
         ".xyz": "gmso",
@@ -1772,7 +1770,6 @@ def to_rdkit(compound):
 
     for particle in compound.particles():
         temp_atom = Chem.Atom(particle.element.atomic_number)
-
         # this next line is necessary to prevent rdkit from adding hydrogens
         # this will also set the label to be the element with particle index
         temp_atom.SetProp(

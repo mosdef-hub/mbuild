@@ -2990,9 +2990,9 @@ class Compound(object):
         filename : str
             Filesystem path in which to save the trajectory. The extension or
             prefix will be parsed and control the format. Supported extensions:
-            'gsd', 'gro', 'top', 'lammps', 'lmp', 'mcf', 'pdb', 'xyz',
-            'json', 'mol2', 'sdf', 'psf'. See parmed/structure.py for more
-            information on savers.
+            'gsd', 'gro', 'top', 'mcf', 'pdb', 'xyz',
+            'json', 'mol2', 'sdf', 'psf'. See `mbuild.conversion.save()`
+            for more information about writer methods.
         include_ports : bool, optional, default=False
             Save ports contained within the compound.
         box : mb.Box, optional, default=self.boundingbox (with buffer)
@@ -3004,13 +3004,13 @@ class Compound(object):
         residues : str of list of str
             Labels of residues in the Compound. Residues are assigned by
             checking against Compound.name.
-            #TODO 1.0: Update this kwargs, pass link to GMSO
         **kwargs
+            See `mbuild.conversion.save()`.
             Depending on the file extension these will be passed to either
-            `write_gsd`, `write_lammpsdata`, `write_mcf`, or
-            `parmed.Structure.save`.
+            Parmed or GMSO backend writers
             See https://parmed.github.io/ParmEd/html/structobj/parmed.structure.
-            Structure.html#parmed.structure.Structure.save
+            Structure.html#parmed.structure.Structure.save and
+            https://github.com/mosdef-hub/gmso/tree/main/gmso/formats
 
         Other Parameters
         ----------------
@@ -3023,18 +3023,6 @@ class Compound(object):
         ref_mass : float, optional, default=1.0
             Normalization factor used when saving to the .gsd format
             for converting mass values to reduced units.
-        atom_style: str, default='full'
-            Defines the style of atoms to be saved in a LAMMPS data file. The
-            following atom styles are currently supported:
-            'full', 'atomic', 'charge', 'molecular'
-            See `LAMMPS atom style documentation
-            <https://lammps.sandia.gov/doc/atom_style.html>`_ for more
-            information.
-        unit_style: str, default='real'
-            Defines to unit style to be save in a LAMMPS data file.  Defaults
-            to 'real' units. Current styles are supported: 'real', 'lj'. See
-            `LAMMPS unit style documentation_
-            <https://lammps.sandia.gov/doc/units.html>`_ for more information.
 
         Notes
         -----
@@ -3048,7 +3036,6 @@ class Compound(object):
         conversion.save : Main saver logic
         formats.gsdwrite.write_gsd : Write to GSD format
         formats.xyzwriter.write_xyz : Write to XYZ format
-        formats.lammpsdata.write_lammpsdata : Write to LAMMPS data format
         formats.cassandramcf.write_mcf : Write to Cassandra MCF format
         formats.json_formats.compound_to_json : Write to a json file
         """
