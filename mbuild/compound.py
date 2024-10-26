@@ -3031,13 +3031,16 @@ class Compound(object):
         * filename
         * include_ports
 
+        The savers used for each supported file type are:
+        GMSO: .gro, .gsd, .data, .xyz, .mcf, .top
+        Parmed: .mol2, .pdb, .prmtop, .cif, .crd
+        PyBel: .sdf
+
         See Also
         --------
-        conversion.save : Main saver logic
-        formats.gsdwrite.write_gsd : Write to GSD format
-        formats.xyzwriter.write_xyz : Write to XYZ format
-        formats.cassandramcf.write_mcf : Write to Cassandra MCF format
-        formats.json_formats.compound_to_json : Write to a json file
+        mbuild.conversion.save : Main saver logic
+        mbuild.formats.cassandramcf.write_mcf : Write to Cassandra MCF format
+        mbuild.formats.json_formats.compound_to_json : Write to a json file
         """
         conversion.save(
             compound=self,
