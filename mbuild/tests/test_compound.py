@@ -1452,7 +1452,7 @@ class TestCompound(BaseTest):
             struct.atoms
         )
 
-    def test_resnames_parmed_cg(self, benzene, hexane, propyl):
+    def test_resnames_parmed_cg(self, benzene_from_SMILES, hexane, propyl):
         particles = [propyl.__class__]
         cg = mb.coarse_grain(hexane, particle_classes=particles)
 
@@ -1507,7 +1507,11 @@ class TestCompound(BaseTest):
 
         # test mixed cg atomistic systems
         mixed_molecules_box = mb.Compound(
-            [mb.clone(bonded_beads), mb.clone(bonded_beads), benzene]
+            [
+                mb.clone(bonded_beads),
+                mb.clone(bonded_beads),
+                benzene_from_SMILES,
+            ]
         )
         struct = mixed_molecules_box.to_parmed(
             infer_residues=True,
@@ -1520,8 +1524,8 @@ class TestCompound(BaseTest):
             [
                 mb.clone(two_bonded_beads),
                 mb.clone(two_bonded_beads),
-                mb.clone(benzene),
-                mb.clone(benzene),
+                mb.clone(benzene_from_SMILES),
+                mb.clone(benzene_from_SMILES),
                 mb.fill_box(hexane, 2, box=mb.Box([5, 5, 5])),
             ]
         )
@@ -1551,7 +1555,7 @@ class TestCompound(BaseTest):
         # hexane is goes from polymer down to monomer level. Made from two propyl groups which gives two monomers (4 total)
         assert len(
             struct.residues
-        ) == 2 * two_bonded_beads.n_particles + 2 * benzene.n_particles + 2 * len(
+        ) == 2 * two_bonded_beads.n_particles + 2 * benzene_from_SMILES.n_particles + 2 * len(
             hexane.children
         )
 

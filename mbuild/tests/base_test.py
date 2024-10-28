@@ -122,6 +122,12 @@ class BaseTest:
         return compound
 
     @pytest.fixture
+    def benzene_from_SMILES(self):
+        compound = mb.load("c1ccccc1", smiles=True)
+        compound.name = "Benzene"
+        return compound
+
+    @pytest.fixture
     def benzene_from_parts(self):
         ch = mb.load(get_fn("ch.mol2"))
         ch.name = "CH"
