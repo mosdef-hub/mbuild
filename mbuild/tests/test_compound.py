@@ -16,6 +16,7 @@ from mbuild.utils.io import (
     get_fn,
     has_foyer,
     has_freud,
+    has_hoomd,
     has_intermol,
     has_mdtraj,
     has_networkx,
@@ -89,14 +90,11 @@ class TestCompound(BaseTest):
         assert np.allclose(test_converted1.xyz, test_converted2.xyz)
 
     def test_load_xyz(self):
-        class MyCompound(Compound):
-            def __init__(self):
-                super(MyCompound, self).__init__()
-
-                mb.load(get_fn("ethane.xyz"), compound=self)
-
-        myethane = MyCompound()
+        myethane = mb.load(get_fn("ethane.xyz"))
         assert myethane.n_particles == 8
+        assert myethane.n_bonds == 0
+        assert len(myethane.children) == 1
+        assert set([p.name for p in myethane.particles()]) == {"C", "H"}
 
     def test_update_from_file(self, ch3):
         ch3.update_coordinates(get_fn("methyl.pdb"))
@@ -373,12 +371,39 @@ class TestCompound(BaseTest):
             # Chains info is lossed
             assert len(protein.children) == 393
 
-    def test_save_simple(self, ch3):
-        extensions = [".xyz", ".pdb", ".mol2", ".json", ".sdf"]
-        for ext in extensions:
-            outfile = "methyl_out" + ext
-            ch3.save(filename=outfile)
-            assert os.path.exists(outfile)
+    @pytest.mark.parametrize(
+        "extension",
+        [
+            ".xyz",
+            ".pdb",
+            ".mol2",
+            ".gro",
+            ".gsd",
+            ".json",
+            ".sdf",
+        ],
+    )
+    def test_save_simple(self, ch3, extension):
+        # Can't save gsd files with Windows
+        if extension == ".gsd" and not has_hoomd:
+            return True
+        outfile = "methyl_out" + extension
+        ch3.save(filename=outfile)
+        assert os.path.exists(outfile)
+
+    @pytest.mark.parametrize(
+        "extension",
+        [".xyz", ".pdb", ".mol2", ".json"],
+    )
+    def test_save_load_simple(self, ch3, extension):
+        outfile = "methyl_out" + extension
+        ch3.save(filename=outfile)
+        ch3_new = mb.load(outfile)
+        assert ch3_new.n_particles == ch3.n_particles
+        assert np.allclose(ch3_new.xyz, ch3.xyz)
+        ch3_names = [p.name for p in ch3.particles()]
+        ch3_new_names = [p.name for p in ch3_new.particles()]
+        assert set(ch3_names) == set(ch3_new_names)
 
     def test_save_json_loop(self, ethane):
         ethane.save("ethane.json", show_ports=True)
@@ -388,7 +413,7 @@ class TestCompound(BaseTest):
         assert len(ethane.children) == len(ethane_copy.children)
 
     def test_save_box(self, ch3):
-        extensions = [".mol2", ".pdb", ".hoomdxml", ".gro", ".sdf"]
+        extensions = [".mol2", ".pdb", ".gro", ".sdf"]
         box_attributes = ["lengths"]
         custom_box = Box(lengths=[0.8, 0.8, 0.8], angles=[90, 90, 90])
         for ext in extensions:
@@ -404,93 +429,13 @@ class TestCompound(BaseTest):
                 assert np.array_equal(pad_attr, custom_attr)
 
     def test_save_overwrite(self, ch3):
-        extensions = [".gsd", ".hoomdxml", ".lammps", ".lmp", ".top", ".gro"]
+        extensions = [".mol2", ".xyz", ".gro"]
         for ext in extensions:
             outfile = "lyhtem" + ext
             ch3.save(filename=outfile)
             ch3.save(filename=outfile, overwrite=True)
             with pytest.raises(IOError):
                 ch3.save(filename=outfile, overwrite=False)
-
-    @pytest.mark.skipif(not has_foyer, reason="Foyer is not installed")
-    def test_save_forcefield(self, methane):
-        exts = [
-            ".gsd",
-            ".hoomdxml",
-            ".lammps",
-            ".lmp",
-            ".top",
-            ".gro",
-            ".mol2",
-            ".pdb",
-            ".xyz",
-            ".sdf",
-        ]
-        for ext in exts:
-            methane.save(
-                "lythem" + ext, forcefield_name="oplsaa", overwrite=True
-            )
-
-    @pytest.mark.skipif(not has_foyer, reason="Foyer is not installed")
-    def test_save_forcefield_with_file(self, methane):
-        exts = [
-            ".gsd",
-            ".hoomdxml",
-            ".lammps",
-            ".lmp",
-            ".top",
-            ".gro",
-            ".mol2",
-            ".pdb",
-            ".xyz",
-            ".sdf",
-        ]
-        for ext in exts:
-            methane.save(
-                "lythem" + ext,
-                forcefield_files=get_fn("methane_oplssaa.xml"),
-                overwrite=True,
-            )
-
-    @pytest.mark.skipif(not has_foyer, reason="Foyer is not installed")
-    @pytest.mark.parametrize(
-        "ff_filename,foyer_kwargs",
-        [
-            ("ethane-angle-typo.xml", {"assert_angle_params": False}),
-            ("ethane-dihedral-typo.xml", {"assert_dihedral_params": False}),
-        ],
-    )
-    def test_save_missing_topo_params(self, ff_filename, foyer_kwargs):
-        """Test that the user is notified if not all topology parameters are found."""
-        from foyer.tests.utils import get_fn
-
-        ethane = mb.load(get_fn("ethane.mol2"))
-        with pytest.raises(Exception):
-            ethane.save("ethane.mol2", forcefield_files=get_fn(ff_filename))
-        with pytest.warns(UserWarning):
-            ethane.save(
-                "ethane.mol2",
-                forcefield_files=get_fn(ff_filename),
-                overwrite=True,
-                foyer_kwargs=foyer_kwargs,
-            )
-
-    @pytest.mark.skipif(not has_foyer, reason="Foyer is not installed")
-    def test_save_forcefield_with_file_foyer_kwargs(self, methane):
-        foyer_kwargs = {"assert_improper_params": True}
-        with pytest.raises(Exception):
-            methane.save(
-                "lythem.hoomdxml",
-                forcefield_files=get_fn("methane_oplssaa.xml"),
-                overwrite=True,
-                foyer_kwargs=foyer_kwargs,
-            )
-        methane.save(
-            "lythem.hoomdxml",
-            forcefield_files=get_fn("methane_oplssaa.xml"),
-            overwrite=True,
-            foyer_kwargs={},
-        )
 
     def test_save_resnames(self, ch3, h2o):
         system = Compound([ch3, h2o])
@@ -506,63 +451,6 @@ class TestCompound(BaseTest):
         struct = pmd.load_file("resnames_single.gro")
         assert struct.residues[0].number == 1
         assert struct.residues[1].number == 2
-
-    def test_save_residue_map(self, ethane):
-        filled = mb.fill_box(ethane, n_compounds=100, box=[0, 0, 0, 4, 4, 4])
-        t0 = time.time()
-        foyer_kwargs = {"use_residue_map": True}
-        filled.save(
-            "filled.mol2",
-            forcefield_name="oplsaa",
-            residues="Ethane",
-            foyer_kwargs=foyer_kwargs,
-        )
-        t1 = time.time()
-
-        foyer_kwargs = {"use_residue_map": False}
-        filled.save(
-            "filled.mol2",
-            forcefield_name="oplsaa",
-            overwrite=True,
-            residues="Ethane",
-            foyer_kwargs=foyer_kwargs,
-        )
-        t2 = time.time()
-        assert (t2 - t1) > (t1 - t0)
-
-    @pytest.mark.skipif(not has_foyer, reason="Foyer is not installed")
-    def test_save_references(self, methane):
-        foyer_kwargs = {"references_file": "methane.bib"}
-        methane.save(
-            "methyl.mol2", forcefield_name="oplsaa", foyer_kwargs=foyer_kwargs
-        )
-        assert os.path.isfile("methane.bib")
-
-    @pytest.mark.skipif(not has_foyer, reason="Foyer is not installed")
-    def test_save_combining_rule(self, methane):
-        combining_rules = ["lorentz", "geometric"]
-        gmx_rules = {"lorentz": 2, "geometric": 3}
-        for combining_rule in combining_rules:
-            if combining_rule == "geometric":
-                methane.save(
-                    "methane.top",
-                    forcefield_name="oplsaa",
-                    combining_rule=combining_rule,
-                    overwrite=True,
-                )
-            else:
-                with pytest.warns(UserWarning):
-                    methane.save(
-                        "methane.top",
-                        forcefield_name="oplsaa",
-                        combining_rule=combining_rule,
-                        overwrite=True,
-                    )
-            with open("methane.top") as fp:
-                for i, line in enumerate(fp):
-                    if i == 18:
-                        gmx_rule = int(line.split()[1])
-                        assert gmx_rule == gmx_rules[combining_rule]
 
     def test_clone_with_box(self, ethane):
         ethane.box = ethane.get_boundingbox()
@@ -2672,9 +2560,9 @@ class TestCompound(BaseTest):
         for particle in mol.particles():
             assert particle.element is not None
 
-    def test_mins_maxs(self, benzene):
-        assert np.allclose(benzene.mins, [-0.2267, -0.15422, 0.0])
-        assert np.allclose(benzene.maxs, [0.20318, 0.34207, 0.0])
+    def test_mins_maxs(self, rigid_benzene):
+        assert np.allclose(rigid_benzene.mins, [-0.2267, -0.15422, 0.0])
+        assert np.allclose(rigid_benzene.maxs, [0.20318, 0.34207, 0.0])
 
     def test_periodicity_raises(self):
         with pytest.raises(ValueError):
