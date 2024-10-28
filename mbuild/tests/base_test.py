@@ -24,13 +24,6 @@ class BaseTest:
         return Methane()
 
     @pytest.fixture
-    def benzene(self):
-        benzene = mb.load("C1=CC=CC=C1", smiles=True)
-        benzene.name = "Benzene"
-
-        return benzene
-
-    @pytest.fixture
     def h2o(self):
         from mbuild.lib.moieties import H2O
 
