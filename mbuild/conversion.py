@@ -36,7 +36,6 @@ def load(
     relative_to_module=None,
     compound=None,
     coords_only=False,
-    rigid=False,
     smiles=False,
     infer_hierarchy=True,
     backend=None,
@@ -68,8 +67,6 @@ def load(
         will be added to the existing compound as a sub compound.
     coords_only : bool, optional, default=False
         Only load the coordinates into an existing compound.
-    rigid : bool, optional, default=False
-        Treat the compound as a rigid body
     backend : str, optional, default=None
         Backend used to load structure from file or string. If not specified, a
         default backend (extension specific) will be used.
@@ -103,7 +100,6 @@ def load(
             obj=filename_or_object,
             compound=compound,
             coords_only=coords_only,
-            rigid=rigid,
             infer_hierarchy=infer_hierarchy,
             **kwargs,
         )
@@ -126,7 +122,6 @@ def load(
             relative_to_module=relative_to_module,
             compound=compound,
             coords_only=coords_only,
-            rigid=rigid,
             backend=backend,
             infer_hierarchy=infer_hierarchy,
             **kwargs,
@@ -137,7 +132,6 @@ def load_object(
     obj,
     compound=None,
     coords_only=False,
-    rigid=False,
     infer_hierarchy=True,
     **kwargs,
 ):
@@ -156,8 +150,6 @@ def load_object(
         The host mbuild Compound
     coords_only : bool, optional, default=False
         Only load the coordinates into existing compound.
-    rigid : bool, optional, default=False
-        Treat the compound as a rigid body
     infer_hierarchy : bool, optional, default=True
         If True, infer hiereachy from chains and residues
     **kwargs : keyword arguments
@@ -200,8 +192,6 @@ def load_object(
                 infer_hierarchy=infer_hierarchy,
                 **kwargs,
             )
-            if rigid:
-                compound.label_rigid_bodies()
             return compound
 
     # If nothing is return raise an error
@@ -323,7 +313,6 @@ def load_file(
     relative_to_module=None,
     compound=None,
     coords_only=False,
-    rigid=False,
     backend=None,
     infer_hierarchy=True,
     **kwargs,
@@ -348,8 +337,6 @@ def load_file(
         will be added to the existing compound as a sub compound.
     coords_only : bool, optional, default=False
         Only load the coordinates into an existing compound.
-    rigid : bool, optional, default=False
-        Treat the compound as a rigid body
     backend : str, optional, default=None
         Backend used to load structure from file. If not specified, a default
         backend (extension specific) will be used.
@@ -462,8 +449,6 @@ def load_file(
         )
     # Note: 'Input not supported' error will be handled
     # by the corresponding backend
-    if rigid:
-        compound.label_rigid_bodies()
     return compound
 
 
@@ -1199,7 +1184,6 @@ def to_hoomdsnapshot(
     identify_connections=True,
     ref_distance=1.0,
     ref_mass=1.0,
-    rigid_bodies=None,
     shift_coords=True,
     write_special_pairs=True,
     **kwargs,
@@ -1216,11 +1200,6 @@ def to_hoomdsnapshot(
         Reference distance for conversion to reduced units
     ref_mass : float, optional, default=1.0
         Reference mass for conversion to reduced units
-    rigid_bodies : list of int, optional, default=None
-        List of rigid body information. An integer value is required for each
-        atom corresponding to the index of the rigid body the particle is to be
-        associated with. A value of None indicates the atom is not part of a
-        rigid body.
     shift_coords : bool, optional, default=True
         Shift coordinates from (0, L) to (-L/2, L/2) if necessary.
     write_special_pairs : bool, optional, default=True
@@ -1249,7 +1228,6 @@ def to_hoomdsnapshot(
     snapshot, refs = to_gsd_snapshot(
         top=gmso_top,
         base_units=base_units,
-        rigid_bodies=rigid_bodies,
         shift_coords=shift_coords,
         parse_special_pairs=write_special_pairs,
         auto_scale=False,
