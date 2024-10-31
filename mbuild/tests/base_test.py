@@ -24,13 +24,6 @@ class BaseTest:
         return Methane()
 
     @pytest.fixture
-    def benzene(self):
-        benzene = mb.load("C1=CC=CC=C1", smiles=True)
-        benzene.name = "Benzene"
-
-        return benzene
-
-    @pytest.fixture
     def h2o(self):
         from mbuild.lib.moieties import H2O
 
@@ -123,10 +116,15 @@ class BaseTest:
         return molecule
 
     @pytest.fixture
-    def rigid_benzene(self):
+    def benzene(self):
         compound = mb.load(get_fn("benzene.mol2"))
         compound.name = "Benzene"
-        compound.label_rigid_bodies()
+        return compound
+
+    @pytest.fixture
+    def benzene_from_SMILES(self):
+        compound = mb.load("c1ccccc1", smiles=True)
+        compound.name = "Benzene"
         return compound
 
     @pytest.fixture
@@ -166,26 +164,7 @@ class BaseTest:
         filled = mb.fill_box(
             benzene, n_compounds=n_benzenes, box=[0, 0, 0, 4, 4, 4]
         )
-        filled.label_rigid_bodies(
-            discrete_bodies="Benzene", rigid_particles="C"
-        )
         return filled
-
-    @pytest.fixture
-    def rigid_ch(self):
-        ch = mb.load(get_fn("ch.mol2"))
-        ch.name = "CH"
-        ch.label_rigid_bodies()
-        ch.translate(-ch[0].pos)
-        ch.add(mb.Port(anchor=ch[0]), "a")
-        ch["a"].translate([0, 0.07, 0])
-        ch["a"].rotate(120.0 * (np.pi / 180.0), around=np.asarray([0, 0, 1]))
-
-        ch.add(mb.Port(anchor=ch[0]), "b")
-        ch["b"].translate([0, 0.07, 0])
-        ch["b"].rotate(-120.0 * (np.pi / 180.0), around=np.asarray([0, 0, 1]))
-
-        return ch
 
     @pytest.fixture
     def silane(self):
