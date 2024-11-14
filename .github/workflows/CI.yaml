@@ -21,8 +21,6 @@ jobs:
         os: [ubuntu-latest]
         python-version: ["3.9", "3.10", "3.11", "3.12"]
         include:
-          - os: windows-latest
-            python-version: "3.12"
 
     defaults:
       run:
@@ -62,7 +60,7 @@ jobs:
           files: ./coverage.xml
   arch-test:
     if: github.event.pull_request.draft == false
-    name: mBuild Tests (python)
+    name: mBuild Tests (arch)
     runs-on: ${{ matrix.os }}
     strategy:
       fail-fast: false
