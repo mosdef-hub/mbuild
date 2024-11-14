@@ -193,9 +193,7 @@ class Polymer(Compound):
                 break
 
         self.head_port = first_part["up"] if not first_part["up"].used else None
-        self.tail_port = (
-            last_part["down"] if not last_part["down"].used else None
-        )
+        self.tail_port = last_part["down"] if not last_part["down"].used else None
 
         head_tail = [self.head_port, self.tail_port]
         for i, compound in enumerate(self._end_groups):
@@ -374,9 +372,7 @@ class Polymer(Compound):
             `add_end_groups()` a second time to add another end group.
         """
         comp = clone(compound)
-        separation = _add_port(
-            comp, "up", index, separation, orientation, replace
-        )
+        separation = _add_port(comp, "up", index, separation, orientation, replace)
         if replace:
             comp.remove(comp[index])
         if duplicate:

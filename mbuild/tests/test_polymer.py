@@ -11,9 +11,7 @@ class TestPolymer(BaseTest):
     def test_polymer_from_smiles(self):
         chain = mb.recipes.Polymer()
         ethane = mb.load("CC", smiles=True)
-        chain.add_monomer(
-            ethane, indices=[2, -2], separation=0.15, replace=True
-        )
+        chain.add_monomer(ethane, indices=[2, -2], separation=0.15, replace=True)
         chain.build(n=5, add_hydrogens=True)
         assert len([p for p in chain.particles() if p.name == "C"]) == 10
         assert len([p for p in chain.particles() if p.name == "H"]) == 22
@@ -57,9 +55,7 @@ class TestPolymer(BaseTest):
     def test_no_end_groups(self):
         chain = mb.recipes.Polymer()
         ethane = mb.load("CC", smiles=True)
-        chain.add_monomer(
-            ethane, indices=[2, -2], separation=0.15, replace=True
-        )
+        chain.add_monomer(ethane, indices=[2, -2], separation=0.15, replace=True)
         chain.build(n=5, add_hydrogens=False)
         assert len([p for p in chain.particles() if p.name == "H"]) == 20
         assert len(chain.available_ports()) == 2

@@ -1,3 +1,4 @@
+# ruff: noqa: F401
 """Module for working with external libraries.
 
 Portions of this code are adapted from MDTraj and are released under the
@@ -37,9 +38,7 @@ class DelayImportError(ImportError, SkipTest):
 
 
 MESSAGES = dict()
-MESSAGES[
-    "gsd"
-] = """
+MESSAGES["gsd"] = """
 The code at {filename}:{line_number} requires the "gsd" package
 
 gsd can be installed with conda using:
@@ -47,9 +46,7 @@ gsd can be installed with conda using:
 # conda install -c conda-forge gsd
 """
 
-MESSAGES[
-    "nglview"
-] = """
+MESSAGES["nglview"] = """
 The code at {filename}:{line_number} requires the "nglview" package
 
 nglview can be installed using:
@@ -61,9 +58,7 @@ or
 # pip install nglview
 """
 
-MESSAGES[
-    "py3Dmol"
-] = """
+MESSAGES["py3Dmol"] = """
 The code at {filename}:{line_number} requires the "py3Dmol" package
 
 py3Dmol can be installed using:
@@ -75,9 +70,7 @@ or
 # pip install py3Dmol
 """
 
-MESSAGES[
-    "rdkit"
-] = """
+MESSAGES["rdkit"] = """
 The code at {filename}:{line_number} requires the "rdkit" package
 
 rdkit can be installed with conda using:
@@ -89,9 +82,7 @@ or from source following instructions at:
 https://www.rdkit.org/docs/Install.html#installation-from-source
 """
 
-MESSAGES[
-    "openbabel"
-] = """
+MESSAGES["openbabel"] = """
 The code at {filename}:{line_number} requires the "openbabel" package
 
 openbabel can be installed with conda using:
@@ -105,9 +96,7 @@ or from source following instructions at:
 
 MESSAGES["pybel"] = MESSAGES["openbabel"]
 
-MESSAGES[
-    "mdtraj"
-] = """
+MESSAGES["mdtraj"] = """
 The code at {filename}:{line_number} requires the "mdtraj" package
 mdtraj can be installed using:
 # conda install -c conda-forge mdtraj
@@ -115,9 +104,7 @@ or
 # pip install mdtraj
 """
 
-MESSAGES[
-    "foyer"
-] = """
+MESSAGES["foyer"] = """
 The code at {filename}:{line_number} requires the "foyer" package
 
 foyer can be installed using:
@@ -129,9 +116,7 @@ or
 # pip install foyer
 """
 
-MESSAGES[
-    "garnett"
-] = """
+MESSAGES["garnett"] = """
 The code at {filename}:{line_number} requires the "garnett" package
 
 garnett can be installed with conda using:
@@ -139,9 +124,7 @@ garnett can be installed with conda using:
 # conda install -c conda-forge garnett
 """
 
-MESSAGES[
-    "pycifrw"
-] = """
+MESSAGES["pycifrw"] = """
 The code at {filename}:{line_number} requires the "pycifrw" package
 
 pycifrw can be installed with conda using:
@@ -149,9 +132,7 @@ pycifrw can be installed with conda using:
 # conda install -c conda-forge pycifrw
 """
 
-MESSAGES[
-    "freud"
-] = """
+MESSAGES["freud"] = """
 The code at {filename}:{line_number} requires the "freud" package
 
 freud can be installed with conda using:
@@ -222,15 +203,14 @@ def import_(module):
             pass
     try:
         return importlib.import_module(module)
-    except ImportError as e:
+    except ImportError:
         try:
             message = MESSAGES[module]
         except KeyError:
             message = (
-                "The code at {filename}:{line_number} requires the "
-                f"{module} package"
+                "The code at {filename}:{line_number} requires the " f"{module} package"
             )
-            e = ImportError(f"No module named {module}")
+            ImportError(f"No module named {module}")
 
         (
             frame,
@@ -241,9 +221,7 @@ def import_(module):
             index,
         ) = inspect.getouterframes(inspect.currentframe())[1]
 
-        m = message.format(
-            filename=os.path.basename(filename), line_number=line_number
-        )
+        m = message.format(filename=os.path.basename(filename), line_number=line_number)
         m = textwrap.dedent(m)
 
         bar = (

@@ -130,8 +130,6 @@ def setup(app):
     setup.config = app.config
     setup.confdir = app.confdir
 
-    app.add_node(
-        notebook_node, html=(visit_notebook_node, depart_notebook_node)
-    )
+    app.add_node(notebook_node, html=(visit_notebook_node, depart_notebook_node))
 
     app.add_directive("notebook", NotebookDirective)

@@ -42,13 +42,7 @@ class TestBox(BaseTest):
         ],
     )
     def test_left_handed_matrix(self, lh_matrix):
-        msg = (
-            "Box vectors provided for a left-handed basis, these will "
-            "be transformed into a right-handed basis automatically."
-        )
-        with pytest.warns(
-            UserWarning, match=r"provided for a left\-handed basis"
-        ):
+        with pytest.warns(UserWarning, match=r"provided for a left\-handed basis"):
             mb.Box.from_vectors(vectors=lh_matrix)
 
     @pytest.mark.parametrize(
@@ -136,9 +130,7 @@ class TestBox(BaseTest):
         (xy, xz, yz) = tilt_factors
 
         lengths = [xhi - (xlo + xy), yhi - ylo, zhi - zlo]
-        box = mb.Box.from_lo_hi_tilt_factors(
-            lo=lo, hi=hi, tilt_factors=tilt_factors
-        )
+        box = mb.Box.from_lo_hi_tilt_factors(lo=lo, hi=hi, tilt_factors=tilt_factors)
         assert np.all(np.isclose(box.lengths, lengths))
         assert np.all(np.isclose(box.tilt_factors, tilt_factors))
         assert np.all(np.isclose(box.angles, angles))
@@ -150,7 +142,5 @@ class TestBox(BaseTest):
     def test_bravais_parameters(self, a, b, c, alpha, beta, gamma):
         box = mb.Box(lengths=[a, b, c], angles=[alpha, beta, gamma])
         assert np.all(
-            np.isclose(
-                list(box.bravais_parameters), [a, b, c, alpha, beta, gamma]
-            )
+            np.isclose(list(box.bravais_parameters), [a, b, c, alpha, beta, gamma])
         )

@@ -21,14 +21,7 @@ import mbuild as mb
 from mbuild.box import Box
 from mbuild.exceptions import MBuildError
 from mbuild.formats.json_formats import compound_from_json, compound_to_json
-from mbuild.utils.io import (
-    has_gmso,
-    has_mdtraj,
-    has_networkx,
-    has_openbabel,
-    has_rdkit,
-    import_,
-)
+from mbuild.utils.io import has_mdtraj, has_openbabel, import_
 
 
 def load(
@@ -241,9 +234,8 @@ def load_smiles(
         backend = "rdkit"
 
     if backend == "rdkit":
-        rdkit = import_("rdkit")
+        rdkit = import_("rdkit")  # noqa: F841
         from rdkit import Chem
-        from rdkit.Chem import AllChem
 
         if test_path.exists():
             # assuming this is a smi file now
@@ -365,9 +357,7 @@ def load_file(
     # in its own folder. E.g., you build a system from ~/foo.py and it imports
     # from ~/bar/baz.py where baz.py loads ~/bar/baz.pdb.
     if relative_to_module:
-        filename = str(
-            Path(sys.modules[relative_to_module].__file__).parent / filename
-        )
+        filename = str(Path(sys.modules[relative_to_module].__file__).parent / filename)
     extension = Path(filename).suffix
 
     if not backend:
@@ -486,9 +476,7 @@ def from_parmed(
         for pmd_atom, particle in zip(
             structure.atoms, compound.particles(include_ports=False)
         ):
-            particle.pos = (
-                np.array([pmd_atom.xx, pmd_atom.xy, pmd_atom.xz]) / 10
-            )
+            particle.pos = np.array([pmd_atom.xx, pmd_atom.xy, pmd_atom.xz]) / 10
         return compound
     elif not compound and coords_only:
         raise MBuildError("coords_only=True but host compound is not provided")
@@ -499,7 +487,6 @@ def from_parmed(
 
     # Convert parmed structure to mbuild compound
     atom_mapping = dict()
-    chain_id = None
     chains = defaultdict(list)
 
     # Build up chains dict
@@ -532,9 +519,7 @@ def from_parmed(
                     element = element_from_atomic_number(atom.atomic_number)
                 except ElementError:
                     element = None
-                new_atom = mb.Particle(
-                    name=str(atom.name), pos=pos, element=element
-                )
+                new_atom = mb.Particle(name=str(atom.name), pos=pos, element=element)
                 atom_list.append(new_atom)
                 atom_label_list.append(f"{atom.name}[$]")
                 atom_mapping[atom] = new_atom
@@ -593,9 +578,7 @@ def from_trajectory(
     if compound and coords_only:
         if traj.n_atoms != compound.n_particles:
             raise ValueError(
-                "Number of atoms in {traj} does not match {compound}".format(
-                    **locals()
-                )
+                "Number of atoms in {traj} does not match {compound}".format(**locals())
             )
         if None in compound._particles(include_ports=False):
             raise ValueError("Some particles are None")
@@ -639,9 +622,7 @@ def from_trajectory(
             atom_label_list = []
             for atom in res.atoms:
                 try:
-                    element = element_from_atomic_number(
-                        atom.element.atomic_number
-                    )
+                    element = element_from_atomic_number(atom.element.atomic_number)
                 except ElementError:
                     element = None
                 new_atom = mb.Particle(
@@ -980,16 +961,12 @@ def save(
         raise IOError(f"{filename} exists; not overwriting")
     if compound.charge:
         if round(compound.charge, 4) != 0.0:
-            warn(
-                f"System is not charge neutral. Total charge is {compound.charge}."
-            )
+            warn(f"System is not charge neutral. Total charge is {compound.charge}.")
 
     extension = os.path.splitext(filename)[-1]
     # Keep json stuff with internal mbuild method
     if extension == ".json":
-        compound_to_json(
-            compound, file_path=filename, include_ports=include_ports
-        )
+        compound_to_json(compound, file_path=filename, include_ports=include_ports)
         return
 
     # Savers supported by mbuild.formats
@@ -1089,9 +1066,7 @@ def catalog_bondgraph_type(compound, bond_graph=None):
         return "multiple_graphs"
 
 
-def pull_residues(
-    compound, segment_level=0, include_base_level=False, bond_graph=None
-):
+def pull_residues(compound, segment_level=0, include_base_level=False, bond_graph=None):
     """Pull residues from a Compound object.
 
     Search class instance for completed compounds based on the number of
@@ -1140,9 +1115,7 @@ def pull_residues(
     elif segment_level == 0 and compound_graphtype == "one_graph":
         # At top level and a single molecule is here
         residuesList.append(id(compound))
-    elif (
-        compound_graphtype == "particle_graph"
-    ):  # Currently at the particle level
+    elif compound_graphtype == "particle_graph":  # Currently at the particle level
         if include_base_level:
             # only consider adding particles if specified
             residuesList.append(id(compound))
@@ -1323,9 +1296,7 @@ def to_parmed(
                     if residues and tmp_check in residues:
                         if parent not in compound_residue_map:
                             current_residue = pmd.Residue(
-                                parent.name
-                                if parent.name
-                                else default_residue.name
+                                parent.name if parent.name else default_residue.name
                             )
                             compound_residue_map[parent] = current_residue
                         atom_residue_map[atom] = current_residue
@@ -1396,9 +1367,7 @@ def to_parmed(
     return structure
 
 
-def to_trajectory(
-    compound, include_ports=False, chains=None, residues=None, box=None
-):
+def to_trajectory(compound, include_ports=False, chains=None, residues=None, box=None):
     """Convert to an md.Trajectory and flatten the compound.
 
     Parameters
@@ -1475,7 +1444,7 @@ def _to_topology(compound, atom_list, chains=None, residues=None):
     --------
     mdtraj.Topology : Details on the mdtraj Topology object
     """
-    md = import_("mdtraj")
+    md = import_("mdtraj")  # noqa: F841
     from mdtraj.core.element import get_by_symbol
     from mdtraj.core.topology import Topology
 
@@ -1511,9 +1480,7 @@ def _to_topology(compound, atom_list, chains=None, residues=None):
                         if parent not in compound_chain_map:
                             current_chain = top.add_chain()
                             compound_chain_map[parent] = current_chain
-                            current_residue = top.add_residue(
-                                "RES", current_chain
-                            )
+                            current_residue = top.add_residue("RES", current_chain)
                         break
                 else:
                     current_chain = default_chain
@@ -1715,9 +1682,8 @@ def to_rdkit(compound):
     -------
     rdkit.Chem.RWmol
     """
-    rdkit = import_("rdkit")
+    rdkit = import_("rdkit")  # noqa: F841
     from rdkit import Chem
-    from rdkit.Chem import AllChem
 
     for particle in compound.particles():
         if particle.element is None:
@@ -1750,9 +1716,7 @@ def to_rdkit(compound):
         temp_atom = Chem.Atom(particle.element.atomic_number)
         # this next line is necessary to prevent rdkit from adding hydrogens
         # this will also set the label to be the element with particle index
-        temp_atom.SetProp(
-            "atomLabel", f"{temp_atom.GetSymbol()}:{p_dict[particle]}"
-        )
+        temp_atom.SetProp("atomLabel", f"{temp_atom.GetSymbol()}:{p_dict[particle]}")
 
         temp_mol.AddAtom(temp_atom)
 
@@ -1783,8 +1747,7 @@ def to_smiles(compound, backend="pybel"):
         mol = to_pybel(compound)
 
         warn(
-            "The bond orders will be guessed using pybel"
-            "OBMol.PerceviedBondOrders()"
+            "The bond orders will be guessed using pybel" "OBMol.PerceviedBondOrders()"
         )
         mol.OBMol.PerceiveBondOrders()
         smiles_string = mol.write("smi").replace("\t", " ").split(" ")[0]
@@ -1826,9 +1789,7 @@ def to_networkx(compound, names_only=False):
         nodes.append(compound.name + "_" + str(id(compound)))
     else:
         nodes.append(compound)
-    nodes, edges = _iterate_children(
-        compound, nodes, edges, names_only=names_only
-    )
+    nodes, edges = _iterate_children(compound, nodes, edges, names_only=names_only)
 
     graph = nx.DiGraph()
     graph.add_nodes_from(nodes)
@@ -1846,17 +1807,13 @@ def _iterate_children(compound, nodes, edges, names_only=False):
     for child in compound.children:
         if names_only:
             unique_name = child.name + "_" + str(id(child))
-            unique_name_parent = (
-                child.parent.name + "_" + str((id(child.parent)))
-            )
+            unique_name_parent = child.parent.name + "_" + str((id(child.parent)))
             nodes.append(unique_name)
             edges.append([unique_name_parent, unique_name])
         else:
             nodes.append(child)
             edges.append([child.parent, child])
-        nodes, edges = _iterate_children(
-            child, nodes, edges, names_only=names_only
-        )
+        nodes, edges = _iterate_children(child, nodes, edges, names_only=names_only)
     return nodes, edges
 
 

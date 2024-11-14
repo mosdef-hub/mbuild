@@ -2,7 +2,7 @@ import pytest
 
 import mbuild as mb
 from mbuild.lib.atoms import H
-from mbuild.lib.recipes import Monolayer, Polymer
+from mbuild.lib.recipes import Monolayer
 from mbuild.lib.surfaces import Betacristobalite
 from mbuild.tests.base_test import BaseTest
 
@@ -55,9 +55,7 @@ class TestMonolayer(BaseTest):
             chain.create_periodic_bond(axis=axis)
             assert not chain.all_ports()
 
-        bonded_atoms = [
-            x.name for x in list(chain["monomer[0]"][0].direct_bonds())
-        ]
+        bonded_atoms = [x.name for x in list(chain["monomer[0]"][0].direct_bonds())]
         assert bonded_atoms.count("H") == 2
         assert bonded_atoms.count("C") == 2
 

@@ -58,9 +58,7 @@ def _gen_relevant_images(x, bounds, distance_upper_bound):
             disp[i] = bounds[i]
 
             if distance_upper_bound == np.inf:
-                xs = list(
-                    chain.from_iterable((_ + disp, _, _ - disp) for _ in xs)
-                )
+                xs = list(chain.from_iterable((_ + disp, _, _ - disp) for _ in xs))
             else:
                 extra_xs = []
 
@@ -209,9 +207,7 @@ class PeriodicKDTree(KDTree):
 
         # Run queries over all relevant images of x
         hits_list = []
-        for real_x in _gen_relevant_images(
-            x, self.bounds, distance_upper_bound
-        ):
+        for real_x in _gen_relevant_images(x, self.bounds, distance_upper_bound):
             d, i = super(PeriodicKDTree, self).query(
                 real_x, k, eps, p, distance_upper_bound
             )

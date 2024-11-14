@@ -98,9 +98,7 @@ class Box(object):
         scaled_vec = (uvec.T * lengths).T
         (alpha, beta, gamma) = _calc_angles(scaled_vec)
 
-        return cls(
-            lengths=lengths, angles=(alpha, beta, gamma), precision=precision
-        )
+        return cls(lengths=lengths, angles=(alpha, beta, gamma), precision=precision)
 
     @classmethod
     def from_mins_maxs_angles(cls, mins, maxs, angles, precision=None):
@@ -123,14 +121,10 @@ class Box(object):
         Ly = np.linalg.norm(v2)
         Lz = np.linalg.norm(v3)
         lengths = (Lx, Ly, Lz)
-        return cls(
-            lengths=lengths, angles=(alpha, beta, gamma), precision=precision
-        )
+        return cls(lengths=lengths, angles=(alpha, beta, gamma), precision=precision)
 
     @classmethod
-    def from_lengths_tilt_factors(
-        cls, lengths, tilt_factors=None, precision=None
-    ):
+    def from_lengths_tilt_factors(cls, lengths, tilt_factors=None, precision=None):
         """Generate a box from box lengths and tilt factors."""
         (Lx, Ly, Lz) = lengths
         if tilt_factors is None:
@@ -138,13 +132,9 @@ class Box(object):
         else:
             (xy, xz, yz) = tilt_factors
 
-        vecs = np.asarray(
-            [[Lx, 0.0, 0.0], [Ly * xy, Ly, 0.0], [Lz * xz, Lz * yz, Lz]]
-        )
+        vecs = np.asarray([[Lx, 0.0, 0.0], [Ly * xy, Ly, 0.0], [Lz * xz, Lz * yz, Lz]])
         (alpha, beta, gamma) = _calc_angles(vecs)
-        return cls(
-            lengths=lengths, angles=[alpha, beta, gamma], precision=precision
-        )
+        return cls(lengths=lengths, angles=[alpha, beta, gamma], precision=precision)
 
     @classmethod
     def from_lo_hi_tilt_factors(cls, lo, hi, tilt_factors, precision=None):
@@ -159,9 +149,7 @@ class Box(object):
         yhi_bound = yhi + max([0.0, yz])
 
         lengths = [xhi_bound - xlo_bound, yhi_bound - ylo_bound, zhi - zlo]
-        return cls.from_lengths_tilt_factors(
-            lengths=lengths, tilt_factors=tilt_factors
-        )
+        return cls.from_lengths_tilt_factors(lengths=lengths, tilt_factors=tilt_factors)
 
     @property
     def vectors(self):
@@ -327,8 +315,6 @@ def _lengths_angles_to_vectors(lengths, angles, precision):
     cos_b = np.clip(np.cos(beta), -1.0, 1.0)
     cos_g = np.clip(np.cos(gamma), -1.0, 1.0)
 
-    sin_a = np.clip(np.sin(alpha), -1.0, 1.0)
-    sin_b = np.clip(np.sin(beta), -1.0, 1.0)
     sin_g = np.clip(np.sin(gamma), -1.0, 1.0)
     a_vec = np.asarray([a, 0.0, 0.0])
 
@@ -376,9 +362,7 @@ def _normalize_box(vectors):
     sign = np.linalg.det(Q)
     R = R * sign
 
-    signs = np.diag(
-        np.diag(np.where(R < 0, -np.ones(R.shape), np.ones(R.shape)))
-    )
+    signs = np.diag(np.diag(np.where(R < 0, -np.ones(R.shape), np.ones(R.shape))))
     transformed_vecs = R.dot(signs)
     return _reduced_form_vectors(transformed_vecs.T)
 

@@ -2,7 +2,7 @@ import numpy as np
 import pytest
 
 import mbuild as mb
-from mbuild.conversion import from_gmso, to_gmso
+from mbuild.conversion import from_gmso
 from mbuild.tests.base_test import BaseTest
 from mbuild.utils.io import has_gmso, import_
 
@@ -19,9 +19,7 @@ class TestGMSO(BaseTest):
         assert len(gmso_eth.bonds) == ethane.n_bonds
         for i in range(ethane.n_particles):
             assert ethane[i].name == gmso_eth.sites[i].name
-            assert np.isclose(
-                ethane[i].xyz, gmso_eth.sites[i].position.value
-            ).all()
+            assert np.isclose(ethane[i].xyz, gmso_eth.sites[i].position.value).all()
 
     def test_full_conversion(self, ethane):
         # Note: at this point, the full conversion may lose some information regarding the hierarchical,

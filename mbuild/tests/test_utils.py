@@ -1,5 +1,4 @@
 import difflib
-from warnings import warn
 
 import numpy as np
 import pytest
@@ -76,7 +75,9 @@ class TestUtils(BaseTest):
         with open(get_fn("decane.xyz")) as file1:
             with open(filename) as file2:
                 diff = difflib.ndiff(file1.readlines(), file2.readlines())
-        changes = [l for l in diff if l.startswith("+ ") or l.startswith("- ")]
+        changes = [
+            line for line in diff if line.startswith("+ ") or line.startswith("- ")
+        ]
         assert not changes
 
     def test_fn(self):
@@ -183,7 +184,7 @@ class TestUtils(BaseTest):
         assert (new_xyz[1, :] == xyz[1, :]).all()
 
     def test_has_ipython(self):
-        __IPYTHON__ = None
+        __IPYTHON__ = None  # noqa: F841
         assert run_from_ipython() is False
 
     def test_removed_func_error(self):
@@ -248,7 +249,7 @@ class TestUtilsConversion(BaseTest):
             c5 = 0
             RB_to_OPLS(c0, c1, c2, c3, c4, c5)
 
-    def test_RB_to_OPLS_f0_not_0_within_tolerance_error(self):
+    def test_RB_to_OPLS_f0_not_0_within_tolerance_error_s(self):
         with pytest.raises(
             TypeError,
             match=f"The error_tolerance variable must be a float, is type {type('s')}.",
@@ -319,34 +320,22 @@ class TestUtilsConversion(BaseTest):
         )
 
         assert np.all(
-            np.isclose(
-                c0, reversed_RB_coeffs[0], atol=test_error_tolerance, rtol=0
-            )
+            np.isclose(c0, reversed_RB_coeffs[0], atol=test_error_tolerance, rtol=0)
         )
         assert np.all(
-            np.isclose(
-                c1, reversed_RB_coeffs[1], atol=test_error_tolerance, rtol=0
-            )
+            np.isclose(c1, reversed_RB_coeffs[1], atol=test_error_tolerance, rtol=0)
         )
         assert np.all(
-            np.isclose(
-                c2, reversed_RB_coeffs[2], atol=test_error_tolerance, rtol=0
-            )
+            np.isclose(c2, reversed_RB_coeffs[2], atol=test_error_tolerance, rtol=0)
         )
         assert np.all(
-            np.isclose(
-                c3, reversed_RB_coeffs[3], atol=test_error_tolerance, rtol=0
-            )
+            np.isclose(c3, reversed_RB_coeffs[3], atol=test_error_tolerance, rtol=0)
         )
         assert np.all(
-            np.isclose(
-                c4, reversed_RB_coeffs[4], atol=test_error_tolerance, rtol=0
-            )
+            np.isclose(c4, reversed_RB_coeffs[4], atol=test_error_tolerance, rtol=0)
         )
         assert np.all(
-            np.isclose(
-                c5, reversed_RB_coeffs[5], atol=test_error_tolerance, rtol=0
-            )
+            np.isclose(c5, reversed_RB_coeffs[5], atol=test_error_tolerance, rtol=0)
         )
 
     def test_OPLS_to_RB_error_tolerance_not_float(self):
