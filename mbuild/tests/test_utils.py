@@ -238,7 +238,7 @@ class TestUtilsConversion(BaseTest):
         )
 
         with pytest.raises(
-            TypeError,
+            ValueError,
             match=f"{text_for_error_tolerance}",
         ):
             c0 = 0.4
