@@ -23,7 +23,6 @@ repos:
     - id: check-yaml
     - id: end-of-file-fixer
     - id: trailing-whitespace
-      exclude: 'setup.cfg|gmso/tests/files/.*'
 
 - repo: https://github.com/pycqa/isort
   rev: 5.13.2
@@ -31,4 +30,3 @@ repos:
     - id: isort
       name: isort (python)
       args: [--profile=black, --line-length=80]
-      exclude: "gmso/tests/files/.*"
