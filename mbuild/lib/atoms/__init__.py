@@ -1,3 +1,4 @@
+# ruff: noqa: F401
 """mBuild library of atoms."""
 
 from mbuild.lib.atoms.c3 import C3

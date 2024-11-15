@@ -1,3 +1,4 @@
+# ruff: noqa: F401
 """Library of recipes for mBuild."""
 
 from mbuild.lib.recipes.alkane import Alkane
