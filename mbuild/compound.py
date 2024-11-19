@@ -1917,6 +1917,9 @@ class Compound(object):
             for neighbor in nx.neighbors(bond_graph, particle):
                 new_bonds.append((particle, neighbor))
 
+        # Remove all labels which refer to children in the hierarchy
+        self.labels.clear()
+
         # Remove all the children
         if inplace:
             for child in children_list:
