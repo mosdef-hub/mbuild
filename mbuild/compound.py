@@ -705,12 +705,13 @@ class Compound(object):
 
         if label.endswith("[$]"):
             label = label[:-3]
-            if label not in self.labels:
-                self.labels[label] = []
+            all_label = "all-" + label + "s"
+            if all_label not in self.labels:
+                self.labels[all_label] = []
             label_pattern = label + "[{}]"
 
-            count = len(self.labels[label])
-            self.labels[label].append(new_child)
+            count = len(self.labels[all_label])
+            self.labels[all_label].append(new_child)
             label = label_pattern.format(count)
 
         if not replace and label in self.labels:
@@ -832,7 +833,21 @@ class Compound(object):
             self.reset_labels()
 
     def reset_labels(self):
-        """Reset Compound labels so that substituents and ports are renumbered, indexed from port[0] to port[N], where N-1 is the number of ports."""
+        """Reset Compound labels so that substituents and ports are renumbered, indexed from port[0] to port[N], where N-1 is the number of ports.
+
+        Notes
+        -----
+        Will renumber the labels in a given Compound. Duplicated labels are named in the format "{name}[$]", where the $ stands in for the 0-indexed
+        number in the Compound hierarchy with given "name".
+
+        i.e. self.labels.keys() = ["CH2", "CH2", "CH2"] would transform into self.labels.keys() = ["CH2[0]", "CH2[1]", "CH2[2]"]
+        and
+        i.e. self.labels.keys() = ["CH2[1]", "CH2[3]", "CH2[5]"] would transform into self.labels.keys() = ["CH2[0]", "CH2[1]", "CH2[2]"]
+
+        Additonally, if it doesn't exist, duplicated labels that are numbered as above with the "[$]" will also be put into a list index.
+        self.labels.keys() = ["CH2", "CH2", "CH2"] would transform into self.labels.keys() = ["CH2[0]", "CH2[1]", "CH2[2]"] as shown above, but also
+        have a label of self.labels["all-CH2s"], which is a list of all CH2 children in the Compound.
+        """
         new_labels = OrderedDict()
         hoisted_children = {
             key: val
@@ -865,16 +880,16 @@ class Compound(object):
                     if "port" in label:
                         label = "port[$]"
                 else:
-                    label = "{0}[$]".format(child.name)
-
+                    label = f"{child.name}[$]"
             if label.endswith("[$]"):
                 label = label[:-3]
-                if label not in new_labels:
-                    new_labels[label] = []
+                all_label = "all-" + label + "s"
+                if all_label not in new_labels:
+                    new_labels[all_label] = []
                 label_pattern = label + "[{}]"
 
-                count = len(new_labels[label])
-                new_labels[label].append(child)
+                count = len(new_labels[all_label])
+                new_labels[all_label].append(child)
                 label = label_pattern.format(count)
             new_labels[label] = child
         self.labels = new_labels
@@ -1936,6 +1951,7 @@ class Compound(object):
             comp = clone(self)
             comp.flatten(inplace=True)
             return comp
+        self.reset_labels()
 
     def update_coordinates(self, filename, update_port_locations=True):
         """Update the coordinates of this Compound from a file.

@@ -107,7 +107,7 @@ class TestJSONFormats(BaseTest):
             parent.add(CH3())
         compound_to_json(parent, "parent.json", include_ports=True)
         parent_copy = compound_from_json("parent.json")
-        assert len(parent_copy["CH2"]) == len(parent["CH2"])
+        assert len(parent_copy["all-CH2s"]) == len(parent["all-CH2s"])
         assert parent_copy.labels.keys() == parent.labels.keys()
         for child, child_copy in zip(
             parent.successors(), parent_copy.successors()

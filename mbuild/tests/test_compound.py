@@ -620,7 +620,7 @@ class TestCompound(BaseTest):
         temp_comp.add(comp_list, label=label_list)
         a = [k for k, v in temp_comp.labels.items()]
         assert a == [
-            "water",
+            "all-waters",
             "water[0]",
             "water[1]",
             "water[2]",
@@ -1038,9 +1038,9 @@ class TestCompound(BaseTest):
         assert len(box_of_eth.children) == box_of_eth.n_particles == 8 * 2
         assert box_of_eth.n_bonds == 7 * 2
         assert list(box_of_eth.labels.keys()) == [
-            "C",
+            "all-Cs",
             "C[0]",
-            "H",
+            "all-Hs",
             "H[0]",
             "H[1]",
             "H[2]",
@@ -2644,3 +2644,10 @@ class TestCompound(BaseTest):
             catalog_bondgraph_type(compound.children[1][0], compound.bond_graph)
             == "particle_graph"
         )
+
+    def test_reset_labels(self):
+        ethane = mb.load("CC", smiles=True)
+        Hs = ethane.particles_by_name("H")
+        ethane.remove(Hs, reset_labels=True)
+        ports = set(f"port[{i}]" for i in range(6))
+        assert ports.issubset(set(ethane.labels.keys()))
