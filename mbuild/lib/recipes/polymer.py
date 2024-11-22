@@ -14,6 +14,7 @@ from mbuild.coordinate_transform import (
 )
 from mbuild.lib.atoms import H
 from mbuild.port import Port
+from mbuild.utils.random_walk import random_walk
 from mbuild.utils.validation import assert_port_exists
 
 __all__ = ["Polymer"]
@@ -118,6 +119,68 @@ class Polymer(Compound):
         end_groups cannot be set. Use add_end_group method instead.
         """
         return self._end_groups
+
+    def backbone_vectors(self):
+        """Yield the consecutive monomer-monomer vectors."""
+        for i, mon in enumerate(self.children):
+            try:
+                yield self.children[i + 1].center - mon.center
+            except IndexError:
+                pass
+
+    def backbone_bond_lengths(self):
+        """Yield lengths of consecutive monomer-monomer vectors."""
+        for vec in self.backbone_vectors():
+            yield np.linalg.norm(vec)
+
+    def set_monomer_positions(self, coordinates):
+        """Shift monomers so that their center of mass matches a set of pre-defined coordinates.
+
+        Parameters
+        ----------
+        coordinates : np.ndarray, shape=(N,3)
+            Set of x,y,z coordinatess
+        """
+        for i, xyz in enumerate(coordinates):
+            self.children[i].translate_to(xyz)
+
+    def generate_configuration(
+        self,
+        radius=None,
+        min_angle=np.pi / 2,
+        max_angle=np.pi,
+        max_attemps=5000,
+        energy_minimize=True,
+    ):
+        """Update monomer positions to a random configuration.
+
+        Parameters
+        ----------
+        radius : float, default None
+            Set the minimum distance between monomer centers.
+        min_angle : float, default pi/2
+            Set the minimum angle between 3 sites.
+        max_angle : float, default pi
+            Set the maximum angle between 3 sites.
+        max_attempts : int, default 5000
+            The maximum random walk attempts before exiting random walk.
+        energy_minimize : bool, default True
+            If True, run energy minimization on resulting structure.
+            See `mbuild.Compound.energy_minimize()`
+        """
+        avg_bond_L = np.mean([L for L in self.backbone_bond_lengths()])
+        if not radius:
+            radius = avg_bond_L * 1.2
+        coords = random_walk(
+            N=len(self.children),
+            min_angle=min_angle,
+            max_angle=max_angle,
+            bond_L=avg_bond_L,
+            radius=radius,
+        )
+        self.set_monomer_positions(coords)
+        if energy_minimize:
+            self.energy_minimize()
 
     def build(self, n, sequence="A", add_hydrogens=True):
         """Connect one or more components in a specified sequence.
