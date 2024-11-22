@@ -27,11 +27,7 @@ class TestJSONFormats(BaseTest):
         meth.box = mb.Box(lengths=(3, 3, 3), angles=(45, 45, 45))
         meth.save("meth_with_box.json")
         meth_with_box = mb.load("meth_with_box.json")
-        assert (
-            meth.n_particles
-            == meth_with_box.n_particles
-            == meth_no_box.n_particles
-        )
+        assert meth.n_particles == meth_with_box.n_particles == meth_no_box.n_particles
         assert meth.n_bonds == meth_with_box.n_bonds == meth_no_box.n_bonds
         assert meth.box.lengths == meth_with_box.box.lengths == (3, 3, 3)
         assert meth.box.angles == meth_with_box.box.angles
@@ -53,9 +49,7 @@ class TestJSONFormats(BaseTest):
         assert ethane_copy.n_particles == ethane_without_overlap.n_particles
         assert ethane_copy.n_bonds == ethane_without_overlap.n_bonds
         assert len(ethane_copy.children) == len(ethane_without_overlap.children)
-        assert len(ethane_copy.all_ports()) == len(
-            ethane_without_overlap.all_ports()
-        )
+        assert len(ethane_copy.all_ports()) == len(ethane_without_overlap.all_ports())
         assert ethane_copy.labels.keys() == ethane_without_overlap.labels.keys()
         assert (
             ethane_without_overlap["methyl2"].labels.keys()
@@ -83,9 +77,7 @@ class TestJSONFormats(BaseTest):
                 port1 = mb.Port(anchor=this_child)
                 this_child.add(port1, label="port{}".format(j + 1))
             for k in range(num_grand_children):
-                this_grand_child = mb.Compound(
-                    name="GrandChild{}".format(k + 1)
-                )
+                this_grand_child = mb.Compound(name="GrandChild{}".format(k + 1))
                 this_child.add(
                     this_grand_child,
                     label="Child{0}GrandChild{1}".format(i + 1, k + 1),
@@ -109,9 +101,7 @@ class TestJSONFormats(BaseTest):
         parent_copy = compound_from_json("parent.json")
         assert len(parent_copy["CH2"]) == len(parent["CH2"])
         assert parent_copy.labels.keys() == parent.labels.keys()
-        for child, child_copy in zip(
-            parent.successors(), parent_copy.successors()
-        ):
+        for child, child_copy in zip(parent.successors(), parent_copy.successors()):
             assert child.labels.keys() == child_copy.labels.keys()
         assert parent_copy.available_ports() == parent.available_ports()
 

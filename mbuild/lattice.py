@@ -41,15 +41,12 @@ def load_cif(file_or_path=None, wrap_coords=False):
 
         # convert angstroms to nanometers
         lattice_spacing = (
-            np.linalg.norm(np.asarray(frame.box.get_box_matrix()).T, axis=1)
-            / 10
+            np.linalg.norm(np.asarray(frame.box.get_box_matrix()).T, axis=1) / 10
         )
 
         # create lattice_points dictionary
         position_dict = defaultdict(list)
-        for elem_id, coords in zip(
-            frame.typeid, frame.cif_coordinates.tolist()
-        ):
+        for elem_id, coords in zip(frame.typeid, frame.cif_coordinates.tolist()):
             if wrap_coords:
                 for i, pos in enumerate(coords):
                     if 0 > pos > -1:
@@ -636,9 +633,7 @@ class Lattice(object):
                         break
                     except ElementError:
                         element = None
-                particle = mb.Compound(
-                    name=key_id, pos=[0, 0, 0], element=element
-                )
+                particle = mb.Compound(name=key_id, pos=[0, 0, 0], element=element)
                 for pos in all_pos:
                     particle_to_add = mb.clone(particle)
                     particle_to_add.translate_to(list(pos))
@@ -664,14 +659,10 @@ class Lattice(object):
             )
         ret_lattice.add(compoundsList)
         # Create mbuild.box
-        ret_lattice.box = mb.Box(
-            lengths=[a * x, b * y, c * z], angles=self.angles
-        )
+        ret_lattice.box = mb.Box(lengths=[a * x, b * y, c * z], angles=self.angles)
 
         # if coordinates are below a certain threshold, set to 0
         tolerance = 1e-12
-        ret_lattice.xyz_with_ports[ret_lattice.xyz_with_ports <= tolerance] = (
-            0.0
-        )
+        ret_lattice.xyz_with_ports[ret_lattice.xyz_with_ports <= tolerance] = 0.0
 
         return ret_lattice

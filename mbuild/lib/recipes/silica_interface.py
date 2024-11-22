@@ -39,9 +39,7 @@ class SilicaInterface(Compound):
            Zhuravlev model." (2000) Colloids Surf., A. 10, 1-38
     """
 
-    def __init__(
-        self, bulk_silica, tile_x=1, tile_y=1, thickness=1.0, seed=12345
-    ):
+    def __init__(self, bulk_silica, tile_x=1, tile_y=1, thickness=1.0, seed=12345):
         super(SilicaInterface, self).__init__()
 
         random.seed(seed)
@@ -74,15 +72,10 @@ class SilicaInterface(Compound):
                 particle.name == "Si"
                 and O_buffer < particle.pos[2] < (thickness + O_buffer)
             ) or (
-                particle.name == "O"
-                and particle.pos[2] < (thickness + 2 * O_buffer)
+                particle.name == "O" and particle.pos[2] < (thickness + 2 * O_buffer)
             ):
-                interface_particle = Compound(
-                    name=particle.name, pos=particle.pos
-                )
-                interface.add(
-                    interface_particle, particle.name + "_{}".format(i)
-                )
+                interface_particle = Compound(name=particle.name, pos=particle.pos)
+                interface.add(interface_particle, particle.name + "_{}".format(i))
         self.add(interface, inherit_box=True, inherit_periodicity=True)
 
     def _strip_stray_atoms(self):
@@ -175,7 +168,5 @@ class SilicaInterface(Compound):
 if __name__ == "__main__":
     from mbuild.lib.bulk_materials import AmorphousSilicaBulk
 
-    silica_interface = SilicaInterface(
-        bulk_silica=AmorphousSilicaBulk(), thickness=1.2
-    )
+    silica_interface = SilicaInterface(bulk_silica=AmorphousSilicaBulk(), thickness=1.2)
     silica_interface.save("silica_interface.mol2", show_ports=True)

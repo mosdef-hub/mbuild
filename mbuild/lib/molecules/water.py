@@ -12,9 +12,7 @@ class Water3Site(mb.Compound):
         super().__init__()
 
         o1 = mb.Compound(name="OW", element="O", pos=[0.0, 0.0, 0.0])
-        h1 = mb.Compound(
-            name="HW1", element="H", pos=[oh_bond_length, 0.0, 0.0]
-        )
+        h1 = mb.Compound(name="HW1", element="H", pos=[oh_bond_length, 0.0, 0.0])
         h2 = mb.Compound(
             name="HW2",
             element="H",
@@ -63,9 +61,7 @@ class Water4Site(mb.Compound):
         super().__init__()
 
         o1 = mb.Compound(name="OW", element="O", pos=[0.0, 0.0, 0.0])
-        h1 = mb.Compound(
-            name="HW1", element="H", pos=[oh_bond_length, 0.0, 0.0]
-        )
+        h1 = mb.Compound(name="HW1", element="H", pos=[oh_bond_length, 0.0, 0.0])
         h2 = mb.Compound(
             name="HW2",
             element="H",

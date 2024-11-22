@@ -162,16 +162,8 @@ class TestPattern(BaseTest):
 
     def test_scaling_error_string(self):
         with pytest.raises(TypeError):
-            pattern = mb.Random3DPattern(10, scale="tim")
+            mb.Random3DPattern(10, scale="tim")
 
     def test_scaling_error_dict(self):
         with pytest.raises(TypeError):
-            pattern = mb.Random3DPattern(10, scale={"name": "tim"})
-
-    def test_scaling_error_dict(self):
-        with pytest.raises(TypeError):
-            pattern = mb.Random3DPattern(10, scale={"name": "tim"})
-
-    def test_scaling_error_dict(self):
-        with pytest.raises(TypeError):
-            pattern = mb.Random3DPattern(10, scale={"name": "tim"})
+            mb.Random3DPattern(10, scale={"name": "tim"})

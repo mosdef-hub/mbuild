@@ -2,10 +2,10 @@
 
 from warnings import simplefilter, warn
 
-simplefilter("always", DeprecationWarning)
-
 import numpy as np
 from numpy.linalg import inv, norm, svd
+
+simplefilter("always", DeprecationWarning)
 
 __all__ = [
     "force_overlap",
@@ -46,9 +46,7 @@ def force_overlap(
     ):
         equivalence_pairs = zip(from_positions, to_positions)
     elif isinstance(from_positions, Port) and isinstance(to_positions, Port):
-        equivalence_pairs, T = _choose_correct_port(
-            from_positions, to_positions
-        )
+        equivalence_pairs, T = _choose_correct_port(from_positions, to_positions)
         from_positions.used = True
         to_positions.used = True
     else:
@@ -195,9 +193,7 @@ class ChangeOfBasis(CoordinateTransform):
 class AxisTransform(CoordinateTransform):
     """Axis transform."""
 
-    def __init__(
-        self, new_origin=None, point_on_x_axis=None, point_on_xy_plane=None
-    ):
+    def __init__(self, new_origin=None, point_on_x_axis=None, point_on_xy_plane=None):
         if new_origin is None:
             new_origin = np.array([0.0, 0.0, 0.0])
         if point_on_x_axis is None:
@@ -255,9 +251,7 @@ class RigidTransform(CoordinateTransform):
         H = np.zeros((3, 3), dtype=float)
 
         for i in range(rows):
-            H = H + np.transpose(A[i, :] - centroid_A).dot(
-                (B[i, :] - centroid_B)
-            )
+            H = H + np.transpose(A[i, :] - centroid_A).dot((B[i, :] - centroid_B))
 
         U, _, V = svd(H)
         V = np.transpose(V)
@@ -325,9 +319,7 @@ def _create_equivalence_transform(equiv):
     for pair in equiv:
         if not isinstance(pair, tuple) or len(pair) != 2:
             raise ValueError("Equivalence pair not a 2-tuple")
-        if not (
-            isinstance(pair[0], Compound) and isinstance(pair[1], Compound)
-        ):
+        if not (isinstance(pair[0], Compound) and isinstance(pair[1], Compound)):
             raise ValueError(
                 f"Equivalence pair type mismatch: pair[0] is a {pair[0]} "
                 f"and pair[1] is a {pair[1]}"
@@ -345,9 +337,7 @@ def _create_equivalence_transform(equiv):
     return T
 
 
-def equivalence_transform(
-    compound, from_positions, to_positions, add_bond=True
-):
+def equivalence_transform(compound, from_positions, to_positions, add_bond=True):
     """Compute an affine transformation.
 
     Maps the from_positions to the respective to_positions, and applies this
@@ -375,9 +365,7 @@ def equivalence_transform(
     ):
         equivalence_pairs = zip(from_positions, to_positions)
     elif isinstance(from_positions, Port) and isinstance(to_positions, Port):
-        equivalence_pairs, T = _choose_correct_port(
-            from_positions, to_positions
-        )
+        equivalence_pairs, T = _choose_correct_port(from_positions, to_positions)
         from_positions.used = True
         to_positions.used = True
     else:

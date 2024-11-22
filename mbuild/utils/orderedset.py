@@ -21,13 +21,6 @@ class OrderedSet(MutableSet):
     def __init__(self, *args):
         self._data = {value: None for value in args}
 
-    def __contains__(self, key):
-        """Determine whether the set contains a key."""
-        return key in self._data
-
-    def __getitem__(self, value):
-        """Get an item."""
-
     def __repr__(self):
         """Return the OrderedSet representation."""
         data = ", ".join(str(i) for i in self._data)

@@ -47,9 +47,7 @@ class TiledCompound(Compound):
             name = tile.name + "-".join(str(d) for d in n_tiles)
         self.name = name
         self.periodicity = tile.periodicity
-        self.box = Box(
-            np.array(tile.box.lengths) * n_tiles, angles=tile.box.angles
-        )
+        self.box = Box(np.array(tile.box.lengths) * n_tiles, angles=tile.box.angles)
 
         if all(n_tiles == 1):
             self._add_tile(tile, (0, 0, 0))

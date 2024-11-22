@@ -50,8 +50,6 @@ class TestWaterBox(BaseTest):
         assert wb.n_particles == 13227
 
     def test_mask(self, ethane):
-        box_temp = mb.Box([2.0, 2.0, 1.0])
-
         grid_pattern = mb.Grid3DPattern(6, 6, 4)
         grid_pattern.scale([2, 2, 1])
         ethane_system_list = grid_pattern.apply(ethane)
@@ -117,9 +115,7 @@ class TestWaterBox(BaseTest):
         assert wb.n_particles == 291
 
     def test_model(self):
-        wb = Water3SiteBox(
-            box=mb.Box([2.0, 2.0, 2.0]), model=water_models.WaterSPC()
-        )
+        wb = Water3SiteBox(box=mb.Box([2.0, 2.0, 2.0]), model=water_models.WaterSPC())
         assert wb.children[0].name == "WaterSPC"
 
         parts = [p for p in wb.children[0].particles()]
@@ -133,9 +129,7 @@ class TestWaterBox(BaseTest):
         v1_u = v1 / np.linalg.norm(v1)
 
         v2_u = v2 / np.linalg.norm(v2)
-        angle = (
-            np.arccos(np.clip(np.dot(v1_u, v2_u), -1.0, 1.0)) * 180.0 / np.pi
-        )
+        angle = np.arccos(np.clip(np.dot(v1_u, v2_u), -1.0, 1.0)) * 180.0 / np.pi
 
         assert np.isclose(angle, 109.47)
 
@@ -159,9 +153,7 @@ class TestWaterBox(BaseTest):
         bad_model = mb.Compound()
         oxygen = mb.Compound(name="O", element="O")
         hydrogen = mb.Compound(name="H", element="H")
-        bad_model.add(
-            [mb.clone(hydrogen), mb.clone(oxygen), mb.clone(hydrogen)]
-        )
+        bad_model.add([mb.clone(hydrogen), mb.clone(oxygen), mb.clone(hydrogen)])
 
         with pytest.raises(MBuildError):
             Water3SiteBox(box=mb.Box([2.0, 2.0, 2.0]), model=bad_model)
@@ -170,9 +162,7 @@ class TestWaterBox(BaseTest):
         bad_model = mb.Compound()
         oxygen = mb.Compound(name="O", element="O")
         hydrogen = mb.Compound(name="H", element="H")
-        bad_model.add(
-            [mb.clone(hydrogen), mb.clone(oxygen), mb.clone(hydrogen)]
-        )
+        bad_model.add([mb.clone(hydrogen), mb.clone(oxygen), mb.clone(hydrogen)])
 
         with pytest.raises(MBuildError):
             Water3SiteBox(box=mb.Box([2.0, 2.0, 2.0]), model=[bad_model])
@@ -181,9 +171,7 @@ class TestWaterBox(BaseTest):
         bad_model = mb.Compound()
         oxygen = mb.Compound(name="O", element="O")
         hydrogen = mb.Compound(name="H", element="H")
-        bad_model.add(
-            [mb.clone(hydrogen), mb.clone(oxygen), mb.clone(hydrogen)]
-        )
+        bad_model.add([mb.clone(hydrogen), mb.clone(oxygen), mb.clone(hydrogen)])
 
         with pytest.raises(ValueError):
             Water3SiteBox(

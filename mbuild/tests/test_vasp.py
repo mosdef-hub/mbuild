@@ -1,7 +1,6 @@
 import numpy as np
 import pytest
 
-import mbuild as mb
 from mbuild.formats.vasp import read_poscar, write_poscar
 from mbuild.tests.base_test import BaseTest
 
@@ -42,9 +41,7 @@ class TestVasp(BaseTest):
         with open("test.poscar", "r") as f:
             lines = f.readlines()
 
-        bravais = np.stack(
-            [np.fromstring(line, sep=" ") for line in lines[2:5]]
-        )
+        bravais = np.stack([np.fromstring(line, sep=" ") for line in lines[2:5]])
 
         # zero the diagonal
         for i in range(3):

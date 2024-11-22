@@ -114,9 +114,7 @@ def breaking_change(warning_string=""):
 
     def old_function(fcn):
         def wrapper(*args, **kwargs):
-            warn(
-                f"{fcn.__name__} has breaking change. {warning_string}", Warning
-            )
+            warn(f"{fcn.__name__} has breaking change. {warning_string}", Warning)
             fcn(*args, **kwargs)
 
         return wrapper

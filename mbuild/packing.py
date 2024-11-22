@@ -238,9 +238,7 @@ def fill_box(
 
     if compound is not None and n_compounds is not None:
         if len(compound) != len(n_compounds):
-            raise ValueError(
-                "`compound` and `n_compounds` must be of equal length."
-            )
+            raise ValueError("`compound` and `n_compounds` must be of equal length.")
 
     if compound is not None:
         if len(compound) != len(fix_orientation):
@@ -283,8 +281,7 @@ def fill_box(
                     )
                 if len(compound) != len(compound_ratio):
                     raise ValueError(
-                        "Length of `compound_ratio` must equal length of "
-                        "`compound`"
+                        "Length of `compound_ratio` must equal length of " "`compound`"
                     )
                 prototype_mass = 0
                 for c, r in zip(compound, compound_ratio):
@@ -327,9 +324,7 @@ def fill_box(
         input_text = PACKMOL_HEADER.format(
             overlap, filled_xyz.name, seed, sidemax * 10, packmol_commands
         )
-        for comp, m_compounds, rotate in zip(
-            compound, n_compounds, fix_orientation
-        ):
+        for comp, m_compounds, rotate in zip(compound, n_compounds, fix_orientation):
             m_compounds = int(m_compounds)
 
             compound_xyz = _new_xyz_file()
@@ -476,9 +471,7 @@ def fill_region(
 
     if compound is not None and n_compounds is not None:
         if len(compound) != len(n_compounds):
-            raise ValueError(
-                "`compound` and `n_compounds` must be of equal length."
-            )
+            raise ValueError("`compound` and `n_compounds` must be of equal length.")
     if compound is not None:
         if len(compound) != len(fix_orientation):
             raise ValueError(
@@ -721,9 +714,7 @@ def fill_sphere(
 
     if compound is not None and n_compounds is not None:
         if len(compound) != len(n_compounds):
-            raise ValueError(
-                "`compound` and `n_compounds` must be of equal length."
-            )
+            raise ValueError("`compound` and `n_compounds` must be of equal length.")
 
     if compound is not None:
         if len(compound) != len(fix_orientation):
@@ -734,9 +725,7 @@ def fill_sphere(
 
     for coord in sphere[:3]:
         if coord < sphere[3]:
-            raise ValueError(
-                "`sphere` center coordinates must be greater than radius."
-            )
+            raise ValueError("`sphere` center coordinates must be greater than radius.")
 
     # Apply edge buffer
     radius = sphere[3] - edge
@@ -747,12 +736,7 @@ def fill_sphere(
             if len(compound) == 1:
                 # Conversion from kg/m^3 / amu * nm^3 to dimensionless units
                 n_compounds = [
-                    int(
-                        density
-                        / total_mass
-                        * (4 / 3 * np.pi * radius**3)
-                        * 0.60224
-                    )
+                    int(density / total_mass * (4 / 3 * np.pi * radius**3) * 0.60224)
                 ]
             else:
                 if compound_ratio is None:
@@ -763,18 +747,14 @@ def fill_sphere(
                     )
                 if len(compound) != len(compound_ratio):
                     raise ValueError(
-                        "Length of `compound_ratio` must equal length of "
-                        "`compound`"
+                        "Length of `compound_ratio` must equal length of " "`compound`"
                     )
                 prototype_mass = 0
                 for c, r in zip(compound, compound_ratio):
                     prototype_mass += r * c.mass
                 # Conversion from kg/m^3 / amu * nm^3 to dimensionless units
                 n_prototypes = int(
-                    density
-                    / prototype_mass
-                    * (4 / 3 * np.pi * radius**3)
-                    * 0.60224
+                    density / prototype_mass * (4 / 3 * np.pi * radius**3) * 0.60224
                 )
                 n_compounds = list()
                 for c in compound_ratio:
@@ -801,9 +781,7 @@ def fill_sphere(
         input_text = PACKMOL_HEADER.format(
             overlap, filled_xyz.name, seed, sidemax * 10, packmol_commands
         )
-        for comp, m_compounds, rotate in zip(
-            compound, n_compounds, fix_orientation
-        ):
+        for comp, m_compounds, rotate in zip(compound, n_compounds, fix_orientation):
             m_compounds = int(m_compounds)
 
             compound_xyz = _new_xyz_file()
@@ -1026,7 +1004,7 @@ def _validate_mass(compound, n_compounds):
         comp_masses = np.array([c._particle_mass(p) for p in c.particles()])
         if 0.0 in comp_masses or None in comp_masses:
             found_zero_mass = True
-        comp_masses[comp_masses == None] = 0.0
+        comp_masses[comp_masses is None] = 0.0
         total_mass += np.sum(comp_masses) * n
 
     if total_mass == 0:
