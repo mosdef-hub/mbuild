@@ -144,6 +144,29 @@ class Polymer(Compound):
         for i, xyz in enumerate(coordinates):
             self.children[i].translate_to(xyz)
 
+    def straighten(self, axis=(1, 0, 0), energy_minimize=True):
+        """Shift monomer positions so that the backbone is straight.
+
+        Parameters
+        ----------
+        axis : np.ndarray, shape=(1,3), default (1, 0, 0)
+            Direction to align the polymer backbone.
+        energy_minimize : bool, default True
+            If True, run energy minimization on resulting structure.
+            See `mbuild.Compound.energy_minimize()`
+        """
+        axis = np.asarray(axis)
+        avg_bond_L = np.mean([L for L in self.backbone_bond_lengths()])
+        coords = np.array(
+            [
+                np.zeros(3) + i * avg_bond_L * axis
+                for i in range(len(self.children))
+            ]
+        )
+        self.set_monomer_positions(coords)
+        if energy_minimize:
+            self.energy_minimize()
+
     def generate_configuration(
         self,
         radius=None,
