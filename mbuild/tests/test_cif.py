@@ -1,5 +1,4 @@
 from collections import OrderedDict
-from operator import itemgetter
 
 import numpy as np
 import pytest
@@ -61,9 +60,7 @@ class TestCif(BaseTest):
         lattice_cif = load_cif(file_or_path=get_fn("LaCl3.cif"))
 
         assert np.all(
-            np.isclose(
-                lattice_manual.lattice_spacing, lattice_cif.lattice_spacing
-            )
+            np.isclose(lattice_manual.lattice_spacing, lattice_cif.lattice_spacing)
         )
         assert np.all(np.isclose(lattice_manual.angles, lattice_cif.angles))
 
@@ -117,9 +114,7 @@ class TestCif(BaseTest):
         lattice_cif = load_cif(file_or_path=get_fn("ReS2.cif"))
 
         assert np.all(
-            np.isclose(
-                lattice_manual.lattice_spacing, lattice_cif.lattice_spacing
-            )
+            np.isclose(lattice_manual.lattice_spacing, lattice_cif.lattice_spacing)
         )
         assert np.all(np.isclose(lattice_manual.angles, lattice_cif.angles))
 
@@ -180,4 +175,4 @@ class TestCif(BaseTest):
             match=r"Element assumed from cif file to be Element: silicon, symbol: Si, atomic number: 14, mass: 28.085.",
         ):
             lattice_cif = load_cif(file_or_path=get_fn("ETV_triclinic.cif"))
-            periodic_boxed_molecule = lattice_cif.populate(x=1, y=1, z=1)
+            lattice_cif.populate(x=1, y=1, z=1)

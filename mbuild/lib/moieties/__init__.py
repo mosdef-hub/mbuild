@@ -1,3 +1,4 @@
+# ruff: noqa: F401
 """mBuild library of common chemical moieties."""
 
 from mbuild.lib.moieties.ch2 import CH2

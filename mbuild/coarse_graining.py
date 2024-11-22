@@ -113,9 +113,7 @@ class Proxy(Compound):
         if self.labels:
             for label, compound in self.labels.items():
                 if not isinstance(compound, list):
-                    newone.labels[label] = compound._clone(
-                        clone_of, root_container
-                    )
+                    newone.labels[label] = compound._clone(clone_of, root_container)
                     compound.referrers.add(clone_of[compound])
                 else:
                     # compound is a list of compounds, so we create an empty
@@ -150,13 +148,11 @@ def _create_proxy_compounds(real_thing, memo, particle_classes):
     proxy = Proxy(real_thing)
     memo[real_thing] = proxy
 
-    if not type(real_thing) in particle_classes:
+    if type(real_thing) not in particle_classes:
         if not is_leaf(real_thing):  # Recurse only if it has parts.
             # Recursively create proxies for parts.
             for part in real_thing.children:
-                part_proxy = _create_proxy_compounds(
-                    part, memo, particle_classes
-                )
+                part_proxy = _create_proxy_compounds(part, memo, particle_classes)
                 proxy.add(part_proxy)
 
     return proxy

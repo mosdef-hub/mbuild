@@ -163,16 +163,12 @@ class Pattern(object):
 
             # Attach the guest to the closest port.
             new_guest = clone(guest)
-            force_overlap(
-                new_guest, new_guest.labels[guest_port_name], closest_port
-            )
+            force_overlap(new_guest, new_guest.labels[guest_port_name], closest_port)
             guests.append(new_guest)
 
             # Move the port as far away as possible (simpler than removing it).
             # There may well be a more elegant/efficient way of doing this.
-            port_positions[closest_point_idx, :] = np.array(
-                [np.inf, np.inf, np.inf]
-            )
+            port_positions[closest_point_idx, :] = np.array([np.inf, np.inf, np.inf])
         backfills = []
         if backfill:
             assert_port_exists(backfill_port_name, backfill)
@@ -267,7 +263,7 @@ class Grid3DPattern(Pattern):
         Number of grid aisles
     """
 
-    def __init__(self, n, m, l, **kwargs):
+    def __init__(self, n, m, l, **kwargs):  # noqa: E741
         points = np.zeros(shape=(n * m * l, 3), dtype=float)
         for i, j, k in product(range(n), range(m), range(l)):
             points[i * m * l + j * l + k, 0] = i / n

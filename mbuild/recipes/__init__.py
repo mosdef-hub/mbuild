@@ -1,6 +1,7 @@
 """Entrypoints for mBuild recipe plugins."""
 
 import sys
+from importlib import metadata
 
 
 class Recipes(object):
@@ -10,7 +11,6 @@ class Recipes(object):
 
 
 recipes = Recipes()
-from importlib import metadata
 
 if sys.version_info.minor >= 10:
     entry_points = metadata.entry_points().select(group="mbuild.plugins")

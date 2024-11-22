@@ -10,9 +10,7 @@ class N4(mb.Compound):
 
     def __init__(self):
         super(N4, self).__init__()
-        self.add(
-            mb.Particle(name="N", pos=[0, 0, 0], element="N"), label="N[$]"
-        )
+        self.add(mb.Particle(name="N", pos=[0, 0, 0], element="N"), label="N[$]")
         self.add(mb.Port(anchor=self[0]), label="port_0")
         self.add(mb.Port(anchor=self[0]), label="port_1")
         self.add(mb.Port(anchor=self[0]), label="port_2")

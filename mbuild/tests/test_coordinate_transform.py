@@ -29,15 +29,13 @@ class TestCoordinateTransform(BaseTest):
         double = CoordinateTransform(T=np.eye(4) * 2)
         A = np.array([[1, 2, 3], [4, 5, 6], [7, 8, 9]])
         assert (
-            double.apply_to(A)
-            == np.array([[2, 4, 6], [8, 10, 12], [14, 16, 18]])
+            double.apply_to(A) == np.array([[2, 4, 6], [8, 10, 12], [14, 16, 18]])
         ).all()
 
     def test_translation(self):
         translation = Translation((10, 10, 10))
         assert (
-            translation.apply_to(np.array([[1, 1, 1]]))
-            == np.array([11, 11, 11])
+            translation.apply_to(np.array([[1, 1, 1]])) == np.array([11, 11, 11])
         ).all()
 
     def test_rotation_around_z(self):
@@ -65,9 +63,7 @@ class TestCoordinateTransform(BaseTest):
         assert np.allclose(a, b, atol=1.0e-16)
 
     def test_change_of_basis(self):
-        change_basis = ChangeOfBasis(
-            np.array([[-2, 0, 0], [0, -2, 0], [0, 0, -2]])
-        )
+        change_basis = ChangeOfBasis(np.array([[-2, 0, 0], [0, -2, 0], [0, 0, -2]]))
         assert (
             change_basis.apply_to(np.array([[2, 3, 4]]))
             == np.array([[-1.0, -1.5, -2.0]])
@@ -76,8 +72,7 @@ class TestCoordinateTransform(BaseTest):
     def test_axis_transform(self):
         origin_transform = AxisTransform(new_origin=np.array([1, 1, 1]))
         assert (
-            origin_transform.apply_to(np.array([[1, 1, 1]]))
-            == np.array([[0, 0, 0]])
+            origin_transform.apply_to(np.array([[1, 1, 1]])) == np.array([[0, 0, 0]])
         ).all()
         orientation_transform = AxisTransform(
             point_on_x_axis=np.array([0, 0, 1]),
@@ -91,8 +86,7 @@ class TestCoordinateTransform(BaseTest):
             np.array([1, 1, 1]), np.array([1, 1, 2]), np.array([1, 2, 1])
         )
         assert (
-            axis_transform.apply_to(np.array([[2, 3, 4]]))
-            == np.array([3, 2, -1])
+            axis_transform.apply_to(np.array([[2, 3, 4]])) == np.array([3, 2, -1])
         ).all()
 
     def test_rigid_transform(self):
@@ -204,18 +198,14 @@ class TestCoordinateTransform(BaseTest):
         sixpoints.spin(np.pi, np.asarray([1, 0, 0]))
         assert np.allclose(
             sixpoints["up"].xyz, before["down"].xyz, atol=1e-16
-        ) and np.allclose(
-            sixpoints["front"].xyz, before["back"].xyz, atol=1e-16
-        )
+        ) and np.allclose(sixpoints["front"].xyz, before["back"].xyz, atol=1e-16)
 
     def test_spin_y(self, sixpoints):
         before = mb.clone(sixpoints)
         sixpoints.spin(np.pi, np.asarray([0, 1, 0]))
         assert np.allclose(
             sixpoints["left"].xyz, before["right"].xyz, atol=1e-16
-        ) and np.allclose(
-            sixpoints["front"].xyz, before["back"].xyz, atol=1e-16
-        )
+        ) and np.allclose(sixpoints["front"].xyz, before["back"].xyz, atol=1e-16)
 
     def test_spin_z(self, sixpoints):
         before = mb.clone(sixpoints)
@@ -275,49 +265,49 @@ class TestCoordinateTransform(BaseTest):
         before = methane.xyz_with_ports
         methane.rotate(np.pi, around=np.asarray([1, 0, 0]))
         after = methane.xyz_with_ports
-        assert np.allclose(
-            before[:, 1], -1 * after[:, 1], atol=1e-16
-        ) and np.allclose(before[:, 2], -1 * after[:, 2], atol=1e-16)
+        assert np.allclose(before[:, 1], -1 * after[:, 1], atol=1e-16) and np.allclose(
+            before[:, 2], -1 * after[:, 2], atol=1e-16
+        )
 
     def test_rotate_around_y(self, ch2):
         before = ch2.xyz_with_ports
         ch2.rotate(np.pi, around=np.asarray([0, 1, 0]))
         after = ch2.xyz_with_ports
-        assert np.allclose(
-            before[:, 0], -1 * after[:, 0], atol=1e-16
-        ) and np.allclose(before[:, 2], -1 * after[:, 2], atol=1e-16)
+        assert np.allclose(before[:, 0], -1 * after[:, 0], atol=1e-16) and np.allclose(
+            before[:, 2], -1 * after[:, 2], atol=1e-16
+        )
 
     def test_rotate_around_z(self, ch2):
         before = ch2.xyz_with_ports
         ch2.rotate(np.pi, around=np.asarray([0, 0, 1]))
         after = ch2.xyz_with_ports
-        assert np.allclose(
-            before[:, 0], -1 * after[:, 0], atol=1e-16
-        ) and np.allclose(before[:, 1], -1 * after[:, 1], atol=1e-16)
+        assert np.allclose(before[:, 0], -1 * after[:, 0], atol=1e-16) and np.allclose(
+            before[:, 1], -1 * after[:, 1], atol=1e-16
+        )
 
     def test_rotate_around_x_away_from_origin(self, sixpoints):
         before = sixpoints.xyz_with_ports
         sixpoints.rotate(np.pi, around=np.asarray([1, 0, 0]))
         after = sixpoints.xyz_with_ports
-        assert np.allclose(
-            before[:, 1], -1 * after[:, 1], atol=1e-16
-        ) and np.allclose(before[:, 2], -1 * after[:, 2], atol=1e-16)
+        assert np.allclose(before[:, 1], -1 * after[:, 1], atol=1e-16) and np.allclose(
+            before[:, 2], -1 * after[:, 2], atol=1e-16
+        )
 
     def test_rotate_around_y_away_from_origin(self, sixpoints):
         before = sixpoints.xyz_with_ports
         sixpoints.rotate(np.pi, around=np.asarray([0, 1, 0]))
         after = sixpoints.xyz_with_ports
-        assert np.allclose(
-            before[:, 0], -1 * after[:, 0], atol=1e-16
-        ) and np.allclose(before[:, 2], -1 * after[:, 2], atol=1e-16)
+        assert np.allclose(before[:, 0], -1 * after[:, 0], atol=1e-16) and np.allclose(
+            before[:, 2], -1 * after[:, 2], atol=1e-16
+        )
 
     def test_rotate_around_z_away_from_origin(self, sixpoints):
         before = sixpoints.xyz_with_ports
         sixpoints.rotate(np.pi, around=np.asarray([0, 0, 1]))
         after = sixpoints.xyz_with_ports
-        assert np.allclose(
-            before[:, 1], -1 * after[:, 1], atol=1e-16
-        ) and np.allclose(before[:, 0], -1 * after[:, 0], atol=1e-16)
+        assert np.allclose(before[:, 1], -1 * after[:, 1], atol=1e-16) and np.allclose(
+            before[:, 0], -1 * after[:, 0], atol=1e-16
+        )
 
     def test_rotate_dihedral(self, ethane):
         bond = (ethane[0], ethane[4])

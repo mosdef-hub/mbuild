@@ -18,4 +18,4 @@ class TestAmorphousSilicaSurface(BaseTest):
 
     def test_amorphous_silica_surface_error(self):
         with pytest.raises(ValueError):
-            surface = AmorphousSilicaSurface(surface_roughness=2)
+            AmorphousSilicaSurface(surface_roughness=2)

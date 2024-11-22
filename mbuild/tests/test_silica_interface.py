@@ -1,10 +1,3 @@
-import numpy as np
-
-import mbuild as mb
-from mbuild.lib.bulk_materials import AmorphousSilicaBulk
-from mbuild.lib.recipes import SilicaInterface
-from mbuild.tests.base_test import BaseTest
-
 """
 class TestSilicaInterface(BaseTest):
     def test_silica_interface(self):

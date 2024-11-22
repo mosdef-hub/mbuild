@@ -12,9 +12,7 @@ import mbuild as mb
 __all__ = ["write_poscar", "read_poscar"]
 
 
-def write_poscar(
-    compound, filename, lattice_constant=1.0, coord_style="cartesian"
-):
+def write_poscar(compound, filename, lattice_constant=1.0, coord_style="cartesian"):
     """Write a VASP POSCAR file from a Compound.
 
     See //https://www.vasp.at formore information.
@@ -36,9 +34,7 @@ def write_poscar(
     try:
         atoms = [p.element.symbol for p in compound.particles()]
     except AttributeError:
-        atoms = [
-            element_from_symbol(p.name).symbol for p in compound.particles()
-        ]
+        atoms = [element_from_symbol(p.name).symbol for p in compound.particles()]
 
     # This automatically sorts element names alphabetically
     unique_atoms = np.unique(atoms)
@@ -147,10 +143,7 @@ def read_poscar(filename, conversion=0.1):
 
     # Slice is necessary to handle files using selective dynamics
     coords = np.stack(
-        [
-            np.fromiter(line.split()[:3], dtype="float64")
-            for line in data[:total_atoms]
-        ]
+        [np.fromiter(line.split()[:3], dtype="float64") for line in data[:total_atoms]]
     )
 
     if cartesian:

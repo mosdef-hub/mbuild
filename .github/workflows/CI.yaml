@@ -13,16 +13,13 @@ on:
 jobs:
   test:
     if: github.event.pull_request.draft == false
-    name: mBuild Tests
+    name: mBuild Tests (python)
     runs-on: ${{ matrix.os }}
     strategy:
       fail-fast: false
       matrix:
-        os: [macOS-latest, macOS-13, ubuntu-latest]
+        os: [ubuntu-latest]
         python-version: ["3.9", "3.10", "3.11", "3.12"]
-        include:
-          - os: windows-latest
-            python-version: "3.12"
 
     defaults:
       run:
@@ -60,6 +57,45 @@ jobs:
           name: mBuild-Coverage
           verbose: true
           files: ./coverage.xml
+  arch-test:
+    if: github.event.pull_request.draft == false
+    name: mBuild Tests (arch)
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [macOS-latest, macOS-13, ubuntu-latest, windows-latest]
+        python-version: ["3.12"]
+
+    defaults:
+      run:
+        shell: bash -l {0}
+
+    steps:
+      - uses: actions/checkout@v4
+        name: Checkout Branch / Pull Request
+
+      - name: Install Mamba (Linux)
+        uses: mamba-org/setup-micromamba@v1
+        with:
+          environment-file: environment-dev.yml
+          create-args: >-
+            python=${{ matrix.python-version }}
+        if: runner.os != 'Windows'
+
+      - name: Install Mamba (Windows)
+        uses: mamba-org/setup-micromamba@v1
+        with:
+          environment-file: environment-dev-win.yml
+          create-args: >-
+            python=${{ matrix.python-version }}
+        if: runner.os == 'Windows'
+
+      - name: Install Package
+        run: python -m pip install -e .
+
+      - name: Test (OS -> ${{ matrix.os }} / Python -> ${{ matrix.python-version }})
+        run: python -m pytest -v --cov=mbuild --cov-report=xml --cov-append --cov-config=setup.cfg --color yes --pyargs mbuild
 
   bleeding-edge-test:
     if: github.event.pull_request.draft == false
@@ -77,7 +113,7 @@ jobs:
         uses: mamba-org/setup-micromamba@v1
         with:
           environment-file: environment-dev.yml
-          create-args: python=3.11
+          create-args: python=3.12
 
       - name: Clone Foyer and GMSO
         run: |

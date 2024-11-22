@@ -69,9 +69,7 @@ def compound_from_json(json_file):
             parent_compound.add(sub_cmpd, check_box_size=False, label=label_str)
 
         parent.bond_graph = BondGraph()
-        parent.bond_graph.add_nodes_from(
-            [particle for particle in parent.particles()]
-        )
+        parent.bond_graph.add_nodes_from([particle for particle in parent.particles()])
 
         _add_ports(compound_dict, converted_dict)
         _add_bonds(compound_dict, parent, converted_dict)
@@ -114,12 +112,8 @@ def compound_to_json(cmpd, file_path, include_ports=False):
                 if val == sub_compound:
                     sub_compound_dict["label"] = key
                 if isinstance(val, list):
-                    if not cmpd_info[sub_compound.parent].get(
-                        "label_list", None
-                    ):
-                        cmpd_info[sub_compound.parent][
-                            "label_list"
-                        ] = OrderedDict()
+                    if not cmpd_info[sub_compound.parent].get("label_list", None):
+                        cmpd_info[sub_compound.parent]["label_list"] = OrderedDict()
                     cmpd_info[sub_compound.parent]["label_list"][key] = [
                         id(x) for x in val
                     ]
@@ -230,9 +224,7 @@ def _dict_successors(compound_dict):
     else:
         for sub_compund in compound_dict["children"]:
             yield sub_compund, compound_dict
-            for sub_sub_compound, parent_compound in _dict_successors(
-                sub_compund
-            ):
+            for sub_sub_compound, parent_compound in _dict_successors(sub_compund):
                 yield (sub_sub_compound, parent_compound)
 
 
@@ -274,22 +266,16 @@ def _perform_sanity_check(json_dict):
     """Perform Sanity Check on the JSON File."""
     from warnings import warn
 
-    warning_msg = (
-        "This Json was written using {0}, current mbuild version is {1}."
-    )
+    warning_msg = "This Json was written using {0}, current mbuild version is {1}."
     this_version = mb.__version__
     json_mbuild_version = json_dict.get("mbuild-version", None)
 
     if not json_mbuild_version:
-        raise MBuildError(
-            "The uploaded JSON file doesn't isn't correctly formatted"
-        )
+        raise MBuildError("The uploaded JSON file doesn't isn't correctly formatted")
     json_mb_type = json_dict.get("type", None)
 
     if (not json_mb_type) or (json_mb_type != "Compound"):
-        raise MBuildError(
-            "Error. Cannot convert JSON of type: {}".format(json_mb_type)
-        )
+        raise MBuildError("Error. Cannot convert JSON of type: {}".format(json_mb_type))
 
     [major, minor, patch] = json_mbuild_version.split(".")
     [this_major, this_minor, this_patch] = this_version.split(".")
@@ -299,7 +285,4 @@ def _perform_sanity_check(json_dict):
             + " Cannot Convert JSON to compound"
         )
     if minor != this_minor:
-        warn(
-            warning_msg.format(json_mbuild_version, this_version)
-            + " Will Proceed."
-        )
+        warn(warning_msg.format(json_mbuild_version, this_version) + " Will Proceed.")

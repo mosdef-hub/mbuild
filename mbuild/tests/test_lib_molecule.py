@@ -33,9 +33,7 @@ class TestWater(BaseTest):
         assert np.allclose(np.linalg.norm(v2), bond_length)
         assert np.allclose(
             np.degrees(
-                np.arccos(
-                    np.dot(v1, v2) / (np.linalg.norm(v1) * np.linalg.norm(v2))
-                )
+                np.arccos(np.dot(v1, v2) / (np.linalg.norm(v1) * np.linalg.norm(v2)))
             ),
             angle,
         )
@@ -70,9 +68,7 @@ class TestWater(BaseTest):
         assert np.allclose(np.linalg.norm(v3), vsite_length)
         assert np.allclose(
             np.degrees(
-                np.arccos(
-                    np.dot(v1, v2) / (np.linalg.norm(v1) * np.linalg.norm(v2))
-                )
+                np.arccos(np.dot(v1, v2) / (np.linalg.norm(v1) * np.linalg.norm(v2)))
             ),
             angle,
         )

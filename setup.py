@@ -74,9 +74,7 @@ if __name__ == "__main__":
             __version__
         ),
         packages=find_packages(),
-        package_data={
-            "mbuild": ["utils/reference/*.{pdb,mol2}", "lib/*.{pdb,mol2}"]
-        },
+        package_data={"mbuild": ["utils/reference/*.{pdb,mol2}", "lib/*.{pdb,mol2}"]},
         entry_points={
             "mbuild.plugins": [
                 "Alkane = mbuild.lib.recipes.alkane:Alkane",

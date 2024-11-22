@@ -92,10 +92,7 @@ def wrap_coords(xyz, box, mins=None):
         xyz = xyz - mins
         wrap_xyz = (
             xyz
-            - (
-                np.floor_divide(xyz, np.asarray(box.lengths))
-                * np.asarray(box.lengths)
-            )
+            - (np.floor_divide(xyz, np.asarray(box.lengths)) * np.asarray(box.lengths))
             + mins
         )
 

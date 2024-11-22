@@ -98,12 +98,10 @@ class TestLattice(BaseTest):
         vectors = [[1, 0, 0], [0, 1, 0], [0, 0, 1]]
         angles = [90, 90, 90]
         with pytest.raises(ValueError):
-            mb.Lattice(
-                lattice_spacing=space, lattice_vectors=vectors, angles=angles
-            )
+            mb.Lattice(lattice_spacing=space, lattice_vectors=vectors, angles=angles)
 
     @pytest.mark.parametrize("the_type", [(list()), (tuple()), (str()), ([])])
-    def test_lattice_points_input_type(self, the_type):
+    def test_lattice_points_input_empty_type(self, the_type):
         with pytest.raises(TypeError):
             mb.Lattice(lattice_spacing=[1, 1, 1], lattice_points=the_type)
 
@@ -156,9 +154,7 @@ class TestLattice(BaseTest):
         ],
     )
     def test_proper_angles(self, vectors, angles):
-        testlattice = mb.Lattice(
-            lattice_spacing=[1, 1, 1], lattice_vectors=vectors
-        )
+        testlattice = mb.Lattice(lattice_spacing=[1, 1, 1], lattice_vectors=vectors)
         np.testing.assert_allclose(
             testlattice.angles,
             np.asarray(angles, dtype=np.float64),
@@ -182,9 +178,7 @@ class TestLattice(BaseTest):
     def test_incorrect_populate_inputs(self, x, y, z):
         with pytest.raises(ValueError):
             test_lattice = mb.Lattice(lattice_spacing=[1, 1, 1])
-            test_lattice.populate(
-                compound_dict={"id": mb.Compound()}, x=x, y=y, z=z
-            )
+            test_lattice.populate(compound_dict={"id": mb.Compound()}, x=x, y=y, z=z)
 
     @pytest.mark.parametrize("my_type", [([]), (()), (np.array), (np.ndarray)])
     def test_populate_basis_type_incorrect(self, my_type):
@@ -217,9 +211,7 @@ class TestLattice(BaseTest):
             [1, 0, 1],
             [1, 1, 1],
         ]
-        test_lattice = mb.Lattice(
-            lattice_spacing=[1, 1, 1], angles=[90, 90, 90]
-        )
+        test_lattice = mb.Lattice(lattice_spacing=[1, 1, 1], angles=[90, 90, 90])
 
         new_compound = test_lattice.populate(x=2, y=2, z=2)
 
@@ -247,9 +239,7 @@ class TestLattice(BaseTest):
         replication = [2, 5, 9]
         np.testing.assert_allclose(
             compound_test.box.lengths,
-            np.asarray(
-                [x * y for x, y in zip(replication, lattice.lattice_spacing)]
-            ),
+            np.asarray([x * y for x, y in zip(replication, lattice.lattice_spacing)]),
         )
         np.testing.assert_allclose(
             compound_test.box.angles, np.asarray([90.0, 90.0, 90.0])
@@ -267,9 +257,7 @@ class TestLattice(BaseTest):
         replication = [2, 2, 1]
         np.testing.assert_allclose(
             compound_test.box.lengths,
-            np.asarray(
-                [x * y for x, y in zip(replication, lattice.lattice_spacing)]
-            ),
+            np.asarray([x * y for x, y in zip(replication, lattice.lattice_spacing)]),
         )
         np.testing.assert_allclose(
             compound_test.box.angles, np.asarray([90.0, 90.0, 120.0])
@@ -283,9 +271,7 @@ class TestLattice(BaseTest):
         )
         replication = [5, 4, 3]
 
-        expected_lengths = [
-            x * y for x, y in zip(replication, lattice.lattice_spacing)
-        ]
+        expected_lengths = [x * y for x, y in zip(replication, lattice.lattice_spacing)]
 
         mylat = lattice.populate(x=5, y=4, z=3)
 
@@ -301,9 +287,7 @@ class TestLattice(BaseTest):
         )
         replication = [2, 2, 1]
 
-        expected_lengths = [
-            x * y for x, y in zip(replication, lattice.lattice_spacing)
-        ]
+        expected_lengths = [x * y for x, y in zip(replication, lattice.lattice_spacing)]
 
         mylat = lattice.populate(x=2, y=2, z=1)
 
