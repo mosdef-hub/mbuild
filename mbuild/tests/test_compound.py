@@ -1036,9 +1036,7 @@ class TestCompound(BaseTest):
 
     def test_flatten_then_fill_box(self, benzene):
         benzene.flatten(inplace=True)
-        benzene_box = mb.packing.fill_box(
-            compound=benzene, n_compounds=2, density=0.3
-        )
+        benzene_box = mb.packing.fill_box(compound=benzene, n_compounds=2, density=0.3)
         assert next(iter(benzene_box.particles())).root.bond_graph
 
     def test_flatten_with_port(self, ethane):
