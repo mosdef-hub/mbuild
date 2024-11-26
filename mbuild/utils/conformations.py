@@ -20,42 +20,39 @@ def lamellae(num_layers, layer_separation, layer_length, bond_L):
         The monomer-monomer bond length of the backbone.
     """
     layer_spacing = np.arange(0, layer_length, bond_L)
+    # Info for generating coords of the curves between layers
     r = layer_separation / 2
     arc_length = r * np.pi
     arc_num_points = math.floor(arc_length / bond_L)
-    arc_angle = np.pi / (arc_num_points + 1)
+    arc_angle = np.pi / (arc_num_points + 1)  # incremental angle
     arc_angles = np.linspace(arc_angle, np.pi, arc_num_points, endpoint=False)
     coordinates = []
     for i in range(num_layers):
-        if i % 2 == 0:
-            layer = np.array(
-                [np.array([layer_separation * i, y, 0]) for y in layer_spacing]
-            )
+        if i % 2 == 0:  # Even layer; build from left to right
+            layer = [
+                np.array([layer_separation * i, y, 0]) for y in layer_spacing
+            ]
+            # Mid-point between this and next layer; use to get curve coords.
             origin = layer[-1] + np.array([r, 0, 0])
-            arc = []
-            for theta in arc_angles:
-                arc.append(
-                    origin + np.array([-np.cos(theta), np.sin(theta), 0]) * r
-                )
-        else:  # Go backwards in spacing along x-axis
-            layer = list(
-                np.array(
-                    [
-                        np.array([layer_separation * i, y, 0])
-                        for y in layer_spacing[::-1]
-                    ]
-                )
-            )
+            arc = [
+                origin + np.array([-np.cos(theta), np.sin(theta), 0]) * r
+                for theta in arc_angles
+            ]
+        else:  # Odd layer; build from right to left
+            layer = [
+                np.array([layer_separation * i, y, 0])
+                for y in layer_spacing[::-1]
+            ]
+            # Mid-point between this and next layer; use to get curve coords.
             origin = layer[-1] + np.array([r, 0, 0])
-            arc = []
-            for theta in arc_angles:
-                arc.append(
-                    origin + np.array([-np.cos(theta), -np.sin(theta), 0]) * r
-                )
+            arc = [
+                origin + np.array([-np.cos(theta), -np.sin(theta), 0]) * r
+                for theta in arc_angles
+            ]
         if i != num_layers - 1:
-            coordinates.extend(list(layer) + list(arc))
+            coordinates.extend(layer + arc)
         else:
-            coordinates.extend(list(layer))
+            coordinates.extend(layer)
     return coordinates
 
 
@@ -85,11 +82,10 @@ def random_walk(
     """
     np.random.seed(seed)
     coordinates = np.zeros((N, 3))
-    tries = 1
+    tries = 0
     count = 0
     while count < N - 1:
         current_xyz = coordinates[count]
-        test_coordinates = np.copy(coordinates)
         if count == 0:
             new_xyz = _next_coordinate(pos1=current_xyz, bond_L=bond_L)
         else:
@@ -131,8 +127,7 @@ def _next_coordinate(bond_L, pos1, pos2=None, min_angle=None, max_angle=None):
                 bond_L * np.cos(theta),
             ]
         )
-    else:
-        # Get the last bond vector
+    else:  # Get the last bond vector
         v1 = pos2 - pos1
         v1_norm = v1 / np.linalg.norm(v1)
         theta = np.random.uniform(min_angle, max_angle)
@@ -155,6 +150,4 @@ def _check_system(system_coordinates, radius, count):
         d = np.linalg.norm(xyz - current_xyz)
         if d < radius:
             return False
-    # Check bonds
-    bond_vectors = system_coordinates[1:] - system_coordinates[:-1]
     return True
