@@ -3,20 +3,74 @@
 import numpy as np
 
 
+def lamellae(num_layers, layer_separation, layer_length, bond_L):
+    """Generate monomer coordinates of a lamellar structure.
+
+    Parameters
+    ----------
+    num_layers : int, required
+        The number of parallel layers in the structure.
+    layer_separation : float, (nm), required.
+        The distance, in nanometers, between parallel layers.
+    layer_length : float, (nm), required.
+        The length, in nanometers, of each layer.
+    bond_L : float, (nm), required.
+        The monomer-monomer bond length of the backbone.
+    """
+    layer_spacing = np.arange(0, layer_length, bond_L)
+    r = layer_separation / 2
+    arc_length = r * np.pi
+    arc_num_points = math.floor(arc_length / bond_L)
+    arc_angle = np.pi / (arc_num_points + 1)
+    arc_angles = np.linspace(arc_angle, np.pi, arc_num_points, endpoint=False)
+    coordinates = []
+    for i in range(num_layers):
+        if i % 2 == 0:
+            layer = np.array(
+                [np.array([layer_separation * i, y, 0]) for y in layer_spacing]
+            )
+            origin = layer[-1] + np.array([r, 0, 0])
+            arc = []
+            for theta in arc_angles:
+                arc.append(
+                    origin + np.array([-np.cos(theta), np.sin(theta), 0]) * r
+                )
+        else:  # Go backwards in spacing along x-axis
+            layer = list(
+                np.array(
+                    [
+                        np.array([layer_separation * i, y, 0])
+                        for y in layer_spacing[::-1]
+                    ]
+                )
+            )
+            origin = layer[-1] + np.array([r, 0, 0])
+            arc = []
+            for theta in arc_angles:
+                arc.append(
+                    origin + np.array([-np.cos(theta), -np.sin(theta), 0]) * r
+                )
+        if i != num_layers - 1:
+            coordinates.extend(list(layer) + list(arc))
+        else:
+            coordinates.extend(list(layer))
+    return coordinates
+
+
 def random_walk(
     N, bond_L, radius, min_angle, max_angle, max_tries=1000, seed=24
 ):
-    """Perform a simple self-avoiding random walk.
+    """Generate monomer coordinates resulting from a simple self-avoiding random walk.
 
     Parameters
     ----------
     N : int, required
         The number of particles in the random walk.
-    bond_L : float, required
+    bond_L : float, nm, required
         The fixed bond distance between consecutive sites.
-    min_angle : float, required
+    min_angle : float, radians, required
         The minimum allowed angle between 3 consecutive sites.
-    max_angle : float, required
+    max_angle : float, radians, required
         The maximum allowed angle between 3 consecutive sites.
     seed : int, default 24
         Random seed used during random walk.
@@ -27,6 +81,7 @@ def random_walk(
         Final set of coordinates from random walk.
 
     """
+    np.random.seed(seed)
     coordinates = np.zeros((N, 3))
     tries = 1
     count = 0

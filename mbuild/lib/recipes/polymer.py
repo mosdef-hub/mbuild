@@ -14,7 +14,7 @@ from mbuild.coordinate_transform import (
 )
 from mbuild.lib.atoms import H
 from mbuild.port import Port
-from mbuild.utils.random_walk import random_walk
+from mbuild.utils.conformations import random_walk
 from mbuild.utils.validation import assert_port_exists
 
 __all__ = ["Polymer"]
@@ -133,7 +133,7 @@ class Polymer(Compound):
         for vec in self.backbone_vectors():
             yield np.linalg.norm(vec)
 
-    def set_monomer_positions(self, coordinates):
+    def set_monomer_positions(self, coordinates, energy_minimize=True):
         """Shift monomers so that their center of mass matches a set of pre-defined coordinates.
 
         Parameters
@@ -143,6 +143,8 @@ class Polymer(Compound):
         """
         for i, xyz in enumerate(coordinates):
             self.children[i].translate_to(xyz)
+        if energy_minimize:
+            self.energy_minimize()
 
     def straighten(self, axis=(1, 0, 0), energy_minimize=True):
         """Shift monomer positions so that the backbone is straight.
@@ -163,9 +165,9 @@ class Polymer(Compound):
                 for i in range(len(self.children))
             ]
         )
-        self.set_monomer_positions(coords)
-        if energy_minimize:
-            self.energy_minimize()
+        self.set_monomer_positions(
+            coordinates=coords, energy_minimize=energy_minimize
+        )
 
     def generate_configuration(
         self,
@@ -201,9 +203,9 @@ class Polymer(Compound):
             bond_L=avg_bond_L,
             radius=radius,
         )
-        self.set_monomer_positions(coords)
-        if energy_minimize:
-            self.energy_minimize()
+        self.set_monomer_positions(
+            coordinates=coords, energy_minimize=energy_minimize
+        )
 
     def build(self, n, sequence="A", add_hydrogens=True):
         """Connect one or more components in a specified sequence.
