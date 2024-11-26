@@ -175,6 +175,7 @@ class Polymer(Compound):
         min_angle=np.pi / 2,
         max_angle=np.pi,
         max_attemps=5000,
+        seed=42,
         energy_minimize=True,
     ):
         """Update monomer positions to a random configuration.
@@ -189,6 +190,8 @@ class Polymer(Compound):
             Set the maximum angle between 3 sites.
         max_attempts : int, default 5000
             The maximum random walk attempts before exiting random walk.
+        seed : int, default 42
+            The seed used in the random walk algorithm.
         energy_minimize : bool, default True
             If True, run energy minimization on resulting structure.
             See `mbuild.Compound.energy_minimize()`
@@ -202,6 +205,7 @@ class Polymer(Compound):
             max_angle=max_angle,
             bond_L=avg_bond_L,
             radius=radius,
+            seed=seed,
         )
         self.set_monomer_positions(
             coordinates=coords, energy_minimize=energy_minimize

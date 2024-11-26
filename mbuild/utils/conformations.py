@@ -1,5 +1,7 @@
 """Simple random walk algorithm for generating polymer chains."""
 
+import math
+
 import numpy as np
 
 
