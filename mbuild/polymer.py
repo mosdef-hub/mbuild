@@ -120,6 +120,16 @@ class Polymer(Compound):
         """
         return self._end_groups
 
+    @property
+    def contour_length(self):
+        """The contour length (nm) of the polymer chain."""
+        return sum([length for length in self.backbone_bond_lengths()])
+
+    @property
+    def radius_of_gyration(self):
+        """The radius of gyration of the polymer."""
+        return self._radius_of_gyration
+
     def backbone_vectors(self):
         """Yield the consecutive monomer-monomer vectors."""
         for i, mon in enumerate(self.children):
@@ -129,7 +139,7 @@ class Polymer(Compound):
                 pass
 
     def backbone_bond_lengths(self):
-        """Yield lengths of consecutive monomer-monomer vectors."""
+        """Yield lengths (nm) of consecutive monomer-monomer vectors."""
         for vec in self.backbone_vectors():
             yield np.linalg.norm(vec)
 
