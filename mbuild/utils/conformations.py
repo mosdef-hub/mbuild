@@ -59,7 +59,7 @@ def lamellae(num_layers, layer_separation, layer_length, bond_L):
 def random_walk(
     N, bond_L, radius, min_angle, max_angle, max_tries=1000, seed=24
 ):
-    """Generate monomer coordinates resulting from a simple self-avoiding random walk.
+    """Generate chain coordinates resulting from a simple self-avoiding random walk.
 
     Parameters
     ----------
@@ -71,6 +71,8 @@ def random_walk(
         The minimum allowed angle between 3 consecutive sites.
     max_angle : float, radians, required
         The maximum allowed angle between 3 consecutive sites.
+    max_tries : int, default 1000
+        The maximum number of attemps to complete the random walk.
     seed : int, default 24
         Random seed used during random walk.
 
@@ -81,21 +83,19 @@ def random_walk(
 
     """
     np.random.seed(seed)
+    # First coord is always [0,0,0], next pos is always accepted.
     coordinates = np.zeros((N, 3))
+    coordinates[1] = _next_coordinate(pos1=coordinates[0], bond_L=bond_L)
     tries = 0
-    count = 0
+    count = 1  # Start at 1; we already have 2 accepted moves
     while count < N - 1:
-        current_xyz = coordinates[count]
-        if count == 0:
-            new_xyz = _next_coordinate(pos1=current_xyz, bond_L=bond_L)
-        else:
-            new_xyz = _next_coordinate(
-                pos1=current_xyz,
-                pos2=coordinates[count - 1],
-                min_angle=min_angle,
-                max_angle=max_angle,
-                bond_L=bond_L,
-            )
+        new_xyz = _next_coordinate(
+            pos1=coordinates[count],
+            pos2=coordinates[count - 1],
+            min_angle=min_angle,
+            max_angle=max_angle,
+            bond_L=bond_L,
+        )
         coordinates[count + 1] = new_xyz
 
         if _check_system(
@@ -103,14 +103,14 @@ def random_walk(
         ):
             count += 1
             tries += 1
-        else:  # Next step failed
-            # Set next coordinate back to (0,0,0)
+        else:  # Next step failed. Set next coordinate back to (0,0,0).
             coordinates[count + 1] = np.zeros(3)
             tries += 1
         if tries == max_tries and count < N:
             raise RuntimeError(
                 "The maximum number attempts allowed have passed, and only ",
                 f"{count} sucsessful attempts were completed.",
+                "Try changing the parameters and running again.",
             )
 
     return coordinates
@@ -127,7 +127,7 @@ def _next_coordinate(bond_L, pos1, pos2=None, min_angle=None, max_angle=None):
                 bond_L * np.cos(theta),
             ]
         )
-    else:  # Get the last bond vector
+    else:  # Get the last bond vector, use angle range with last 2 coords.
         v1 = pos2 - pos1
         v1_norm = v1 / np.linalg.norm(v1)
         theta = np.random.uniform(min_angle, max_angle)
@@ -141,8 +141,6 @@ def _next_coordinate(bond_L, pos1, pos2=None, min_angle=None, max_angle=None):
 
 
 def _check_system(system_coordinates, radius, count):
-    if count <= 1:
-        return True
     # Count is the last particle, iterate through all others
     # Skip the particle bonded to the current one
     current_xyz = system_coordinates[count]
