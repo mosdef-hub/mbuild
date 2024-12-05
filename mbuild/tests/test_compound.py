@@ -1723,7 +1723,7 @@ class TestCompound(BaseTest):
         "win" in sys.platform, reason="Unknown issue with Window's Open Babel "
     )
     def test_energy_minimize_shift_anchor(self, octane):
-        anchor_compound = octane.labels["chain"].labels["CH3"][0]
+        anchor_compound = octane.labels["chain"].labels["CH3[0]"]
         pos_old = anchor_compound.pos
         octane.energy_minimize(anchor=anchor_compound)
         # check to see if COM of the anchor Compound
@@ -1735,9 +1735,9 @@ class TestCompound(BaseTest):
         "win" in sys.platform, reason="Unknown issue with Window's Open Babel "
     )
     def test_energy_minimize_fix_compounds(self, octane):
-        methyl_end0 = octane.labels["chain"].labels["CH3"][0]
-        methyl_end1 = octane.labels["chain"].labels["CH3"][1]
-        carbon_end = octane.labels["chain"].labels["CH3"][0].labels["C"][0]
+        methyl_end0 = octane.labels["chain"].labels["CH3[0]"][0]
+        methyl_end1 = octane.labels["chain"].labels["CH3[0]"][1]
+        carbon_end = octane.labels["chain"].labels["CH3[0]"][0].labels["C"]
         not_in_compound = mb.Compound(name="H")
 
         # fix the whole molecule and make sure positions are close
@@ -1824,9 +1824,9 @@ class TestCompound(BaseTest):
         "win" in sys.platform, reason="Unknown issue with Window's Open Babel "
     )
     def test_energy_minimize_ignore_compounds(self, octane):
-        methyl_end0 = octane.labels["chain"].labels["CH3"][0]
-        methyl_end1 = octane.labels["chain"].labels["CH3"][1]
-        carbon_end = octane.labels["chain"].labels["CH3"][0].labels["C"][0]
+        methyl_end0 = octane.labels["chain"].labels["CH3[0]"]
+        methyl_end1 = octane.labels["chain"].labels["CH3[1]"]
+        carbon_end = octane.labels["chain"].labels["CH3[0]"].labels["C"]
         not_in_compound = mb.Compound(name="H")
 
         # fix the whole molecule and make sure positions are close
@@ -1856,12 +1856,12 @@ class TestCompound(BaseTest):
         "win" in sys.platform, reason="Unknown issue with Window's Open Babel "
     )
     def test_energy_minimize_distance_constraints(self, octane):
-        methyl_end0 = octane.labels["chain"].labels["CH3"][0]
-        methyl_end1 = octane.labels["chain"].labels["CH3"][1]
+        methyl_end0 = octane.labels["chain"].labels["CH3[0]"]
+        methyl_end1 = octane.labels["chain"].labels["CH3[1]"]
 
-        carbon_end0 = octane.labels["chain"].labels["CH3"][0].labels["C"][0]
-        carbon_end1 = octane.labels["chain"].labels["CH3"][1].labels["C"][0]
-        h_end0 = octane.labels["chain"].labels["CH3"][0].labels["H"][0]
+        carbon_end0 = octane.labels["chain"].labels["CH3[0]"].labels["C"]
+        carbon_end1 = octane.labels["chain"].labels["CH3[1]"].labels["C"]
+        h_end0 = octane.labels["chain"].labels["CH3[0]"].labels["H"]
 
         not_in_compound = mb.Compound(name="H")
 
