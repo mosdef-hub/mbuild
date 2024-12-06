@@ -604,7 +604,7 @@ class TestCompound(BaseTest):
         temp_comp.add(comp_list, label=label_list)
         a = [k for k, v in temp_comp.labels.items()]
         assert a == [
-            "water",
+            "all-waters",
             "water[0]",
             "water[1]",
             "water[2]",
@@ -783,42 +783,14 @@ class TestCompound(BaseTest):
 
         # Test to reset labels after hydrogens
         ethane6 = mb.clone(ethane)
-        ethane6.flatten()
         hydrogens = ethane6.particles_by_name("H")
-        ethane6.remove(hydrogens)
+        ethane6.remove(hydrogens, reset_labels=True)
         assert list(ethane6.labels.keys()) == [
             "methyl1",
             "methyl2",
-            "C",
-            "C[0]",
-            "H",
-            "C[1]",
-            "port",
-            "port[1]",
-            "port[3]",
-            "port[5]",
-            "port[7]",
-            "port[9]",
-            "port[11]",
         ]
-
-        ethane7 = mb.clone(ethane)
-        ethane7.flatten()
-        hydrogens = ethane7.particles_by_name("H")
-        ethane7.remove(hydrogens, reset_labels=True)
-
-        assert list(ethane7.labels.keys()) == [
-            "C",
-            "C[0]",
-            "C[1]",
-            "port",
-            "port[0]",
-            "port[1]",
-            "port[2]",
-            "port[3]",
-            "port[4]",
-            "port[5]",
-        ]
+        assert ethane6.available_ports() == []
+        assert len(ethane6.all_ports()) == 6
 
     def test_remove_many(self, ethane):
         ethane.remove([ethane.children[0], ethane.children[1]])
@@ -1041,6 +1013,31 @@ class TestCompound(BaseTest):
         box_of_eth.flatten()
         assert len(box_of_eth.children) == box_of_eth.n_particles == 8 * 2
         assert box_of_eth.n_bonds == 7 * 2
+        assert list(box_of_eth.labels.keys()) == [
+            "all-Cs",
+            "C[0]",
+            "all-Hs",
+            "H[0]",
+            "H[1]",
+            "H[2]",
+            "C[1]",
+            "H[3]",
+            "H[4]",
+            "H[5]",
+            "C[2]",
+            "H[6]",
+            "H[7]",
+            "H[8]",
+            "C[3]",
+            "H[9]",
+            "H[10]",
+            "H[11]",
+        ]
+
+    def test_flatten_then_fill_box(self, benzene):
+        benzene.flatten(inplace=True)
+        benzene_box = mb.packing.fill_box(compound=benzene, n_compounds=2, density=0.3)
+        assert next(iter(benzene_box.particles())).root.bond_graph
 
     def test_flatten_with_port(self, ethane):
         ethane.remove(ethane[2])
@@ -1726,7 +1723,7 @@ class TestCompound(BaseTest):
         "win" in sys.platform, reason="Unknown issue with Window's Open Babel "
     )
     def test_energy_minimize_shift_anchor(self, octane):
-        anchor_compound = octane.labels["chain"].labels["CH3"][0]
+        anchor_compound = octane.labels["chain"].labels["CH3[0]"]
         pos_old = anchor_compound.pos
         octane.energy_minimize(anchor=anchor_compound)
         # check to see if COM of the anchor Compound
@@ -1738,9 +1735,9 @@ class TestCompound(BaseTest):
         "win" in sys.platform, reason="Unknown issue with Window's Open Babel "
     )
     def test_energy_minimize_fix_compounds(self, octane):
-        methyl_end0 = octane.labels["chain"].labels["CH3"][0]
-        methyl_end1 = octane.labels["chain"].labels["CH3"][1]
-        carbon_end = octane.labels["chain"].labels["CH3"][0].labels["C"][0]
+        methyl_end0 = octane.labels["chain"].labels["CH3[0]"]
+        methyl_end1 = octane.labels["chain"].labels["CH3[0]"]
+        carbon_end = octane.labels["chain"].labels["CH3[0]"].labels["C[0]"]
         not_in_compound = mb.Compound(name="H")
 
         # fix the whole molecule and make sure positions are close
@@ -1827,9 +1824,9 @@ class TestCompound(BaseTest):
         "win" in sys.platform, reason="Unknown issue with Window's Open Babel "
     )
     def test_energy_minimize_ignore_compounds(self, octane):
-        methyl_end0 = octane.labels["chain"].labels["CH3"][0]
-        methyl_end1 = octane.labels["chain"].labels["CH3"][1]
-        carbon_end = octane.labels["chain"].labels["CH3"][0].labels["C"][0]
+        methyl_end0 = octane.labels["chain"].labels["CH3[0]"]
+        methyl_end1 = octane.labels["chain"].labels["CH3[1]"]
+        carbon_end = octane.labels["chain"].labels["CH3[0]"].labels["C[0]"]
         not_in_compound = mb.Compound(name="H")
 
         # fix the whole molecule and make sure positions are close
@@ -1859,12 +1856,12 @@ class TestCompound(BaseTest):
         "win" in sys.platform, reason="Unknown issue with Window's Open Babel "
     )
     def test_energy_minimize_distance_constraints(self, octane):
-        methyl_end0 = octane.labels["chain"].labels["CH3"][0]
-        methyl_end1 = octane.labels["chain"].labels["CH3"][1]
+        methyl_end0 = octane.labels["chain"].labels["CH3[0]"]
+        methyl_end1 = octane.labels["chain"].labels["CH3[1]"]
 
-        carbon_end0 = octane.labels["chain"].labels["CH3"][0].labels["C"][0]
-        carbon_end1 = octane.labels["chain"].labels["CH3"][1].labels["C"][0]
-        h_end0 = octane.labels["chain"].labels["CH3"][0].labels["H"][0]
+        carbon_end0 = octane.labels["chain"].labels["CH3[0]"].labels["C[0]"]
+        carbon_end1 = octane.labels["chain"].labels["CH3[1]"].labels["C[0]"]
+        h_end0 = octane.labels["chain"].labels["CH3[0]"].labels["H[0]"]
 
         not_in_compound = mb.Compound(name="H")
 
@@ -2539,3 +2536,10 @@ class TestCompound(BaseTest):
             catalog_bondgraph_type(compound.children[1][0], compound.bond_graph)
             == "particle_graph"
         )
+
+    def test_reset_labels(self):
+        ethane = mb.load("CC", smiles=True)
+        Hs = ethane.particles_by_name("H")
+        ethane.remove(Hs, reset_labels=True)
+        ports = set(f"port[{i}]" for i in range(6))
+        assert ports.issubset(set(ethane.labels.keys()))
