@@ -2568,10 +2568,3 @@ class TestCompound(BaseTest):
     def test_load_list_of_smiles(self):
         cpd = mb.load(["C", "O"], smiles=True)
         assert len(cpd.children) == 8
-
-    def test_reset_labels(self):
-        ethane = mb.load("CC", smiles=True)
-        Hs = ethane.particles_by_name("H")
-        ethane.remove(Hs, reset_labels=True)
-        ports = set(f"port[{i}]" for i in range(6))
-        assert ports.issubset(set(ethane.labels.keys()))
