@@ -17,7 +17,7 @@ from setuptools import find_packages, setup
 
 #####################################
 NAME = "mbuild"
-VERSION = "1.0.0"
+VERSION = "1.1.0"
 ISRELEASED = True
 if ISRELEASED:
     __version__ = VERSION
