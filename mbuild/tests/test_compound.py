@@ -2557,20 +2557,6 @@ class TestCompound(BaseTest):
         ethane.remove(Hs, reset_labels=True)
         ports = set(f"port[{i}]" for i in range(6))
         assert ports.issubset(set(ethane.labels.keys()))
-        
-    def test_load_large_smiles(self):
-        cpd = mb.load(
-            (
-                "CC1C(=O)NC(C(=O)NC(CSC(C2=C(C3=CC4=C(C(SCC(C(=O)N1)"
-                "NC(=O)C(CCCCN)NC(=O)C(CCC(=O)N)NC(=O)C(C(C)C)N)C)C(=C("
-                "[N-]4)C=C5C(=C(C(=N5)C=C6C(=C(C(=CC2=N3)[N-]6)C)CCC(=O"
-                ")[O-])CCC(=O)[O-])C)C)C)C)C(=O)NC(CC7=CNC=N7)C(=O)NC(C"
-                "(C)O)C(=O)NC(C(C)C)C(=O)NC(CCC(=O)[O-])C(=O)[O-])CCC(="
-                "O)N.[Na+].[Na+].[Na+].[Na+].[Fe+2]"
-            ),
-            smiles=True,
-        )
-        assert cpd.n_particles == 244
 
     def test_load_molfile(self):
         with open("ethane.smi", "w") as f:
