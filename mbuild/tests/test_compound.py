@@ -2571,3 +2571,21 @@ class TestCompound(BaseTest):
             smiles=True,
         )
         assert cpd.n_particles == 244
+
+    def test_load_molfile(self):
+        with open("ethane.smi", "w") as f:
+            f.writelines("CC ethane\nCCC propane\nCCCC butane")  # write a test file
+
+        cpd = mb.load("ethane.smi", smiles=True, backend="rdkit")
+        assert cpd.n_particles == 33
+
+    def test_load_list_of_smiles(self):
+        cpd = mb.load(["C", "O"], smiles=True)
+        assert len(cpd.children) == 8
+
+    def test_reset_labels(self):
+        ethane = mb.load("CC", smiles=True)
+        Hs = ethane.particles_by_name("H")
+        ethane.remove(Hs, reset_labels=True)
+        ports = set(f"port[{i}]" for i in range(6))
+        assert ports.issubset(set(ethane.labels.keys()))

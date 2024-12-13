@@ -88,7 +88,11 @@ def load(
     structure's position (recommended).
     """
     # First check if we are loading from an object
-    if not isinstance(filename_or_object, str):
+    if not (
+        isinstance(filename_or_object, str)
+        or isinstance(filename_or_object, list)
+        or isinstance(filename_or_object, tuple)
+    ):
         return load_object(
             obj=filename_or_object,
             compound=compound,
@@ -97,7 +101,7 @@ def load(
             **kwargs,
         )
     # Second check if we are loading SMILES strings
-    elif smiles and (backend == "rdkit" or backend is None):
+    elif smiles and (backend is None or backend.lower() == "rdkit"):
         # Ignore the box info for SMILES (its never there)
         seed = kwargs.get("seed", 0)
         return load_rdkit_smiles(
@@ -107,7 +111,7 @@ def load(
             ignore_box_warn=True,
             seed=seed,
         )
-    elif smiles and backend == "pybel":
+    elif smiles and isinstance(backend, str) and backend.lower() == "pybel":
         return load_pybel_smiles(
             smiles_or_filename=filename_or_object,
             compound=compound,
@@ -226,34 +230,28 @@ def load_pybel_smiles(
     -------
     compound : mb.Compound
     """
+    if compound is None:
+        compound = mb.Compound()
 
     pybel = import_("pybel")
     # First we try treating smiles_or_filename as a SMILES string
     try:
         mymol = pybel.readstring("smi", smiles_or_filename)
+        mymolGen = [mymol]
     # Now we treat it as a filename
     except (OSError, IOError):
-        # For now, we only support reading in a single smiles molecule,
-        # but pybel returns a generator, so we get the first molecule
-        # and warn the user if there is more
-        mymol_generator = pybel.readfile("smi", smiles_or_filename)
-        mymol_list = list(mymol_generator)
-        if len(mymol_list) == 1:
-            mymol = mymol_list[0]
-        else:
-            mymol = mymol_list[0]
-            warn(
-                "More than one SMILES string in file, more than one SMILES "
-                f"string is not supported, using {mymol.write('smi')}"
-            )
+        mymolGen = pybel.readfile("smi", smiles_or_filename)
 
-    mymol.make3D()
-    return from_pybel(
-        pybel_mol=mymol,
-        compound=compound,
-        infer_hierarchy=infer_hierarchy,
-        ignore_box_warn=ignore_box_warn,
-    )
+    for mymol in mymolGen:
+        mymol.make3D()
+        from_pybel(
+            pybel_mol=mymol,
+            compound=compound,
+            infer_hierarchy=infer_hierarchy,
+            ignore_box_warn=ignore_box_warn,
+        )
+
+    return compound
 
 
 def load_rdkit_smiles(
@@ -295,6 +293,17 @@ def load_rdkit_smiles(
     rdkit = import_("rdkit")  # noqa: F841
     from rdkit import Chem
 
+    if isinstance(smiles_or_filename, (tuple, list)):
+        for mol in smiles_or_filename:
+            rdmol = Chem.MolFromSmiles(mol)
+            from_rdkit(
+                rdkit_mol=rdmol,
+                compound=compound,
+                coords_only=coords_only,
+                smiles_seed=seed,
+            )
+        return compound
+
     rdmol = Chem.MolFromSmiles(smiles_or_filename)
     if rdmol:  # return right away if the smiles loads properly
         return from_rdkit(
@@ -305,33 +314,26 @@ def load_rdkit_smiles(
         )
 
     # Try to assume it's a smiles file
-    mymol = Chem.SmilesMolSupplier(smiles_or_filename)
+    mymol = Chem.SmilesMolSupplier(smiles_or_filename, titleLine=0)
     if not mymol:
         raise ValueError(
             "Provided smiles string or file was invalid. Refer to the "
             "above RDKit error messages for additional information."
         )
-    # Will try to support list of smiles strings in the future
-    mol_list = [mol for mol in mymol]
-    if len(mol_list) == 1:
-        rdmol = mymol[0]
-    else:
-        rdmol = mymol[0]
-        warn(
-            "More than one SMILES string in file, more than one SMILES "
-            f"string is not supported, using {Chem.MolToSmiles(rdmol)}"
+    molList = [mol for mol in mymol]
+    for rdmol in molList:
+        from_rdkit(
+            rdkit_mol=rdmol,
+            compound=compound,
+            coords_only=coords_only,
+            smiles_seed=seed,
         )
-    return from_rdkit(
-        rdkit_mol=rdmol,
-        compound=compound,
-        coords_only=coords_only,
-        smiles_seed=seed,
-    )
-
-    # raise ValueError(
-    #     "Expected SMILES loading backend 'rdkit' or 'pybel'. "
-    #     f"Was provided: {backend}"
-    # )
+    if not compound:
+        raise ValueError(
+            "Expected SMILES loading backend 'rdkit' failed to load any compouds."
+            f"Check the SMILES string of .smi file passed to {smiles_or_filename=}"
+        )
+    return compound
 
 
 def load_file(
