@@ -521,7 +521,7 @@ class Compound(object):
     def mass(self, value):
         if self._contains_only_ports() is False:
             raise MBuildError(
-                "Cannot set the mass of a Compound containing " "children compounds"
+                "Cannot set the mass of a Compound containing children compounds"
             )
 
         value = float(value)
@@ -1081,7 +1081,7 @@ class Compound(object):
                 "unspecified",
             ]:
                 raise ValueError(
-                    "Invalid bond_order given. Available bond orders are: " "single",
+                    "Invalid bond_order given. Available bond orders are: single",
                     "double",
                     "triple",
                     "aromatic",
@@ -1239,7 +1239,7 @@ class Compound(object):
         bond_vector = particle_pair[0].pos - particle_pair[1].pos
         if np.allclose(bond_vector, np.zeros(3)):
             warn(
-                "Particles {} and {} overlap! Ports will not be added." "".format(
+                "Particles {} and {} overlap! Ports will not be added.".format(
                     *particle_pair
                 )
             )

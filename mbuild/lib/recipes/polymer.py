@@ -95,8 +95,7 @@ class Polymer(Compound):
             )
         elif len(self._end_groups) != 2:
             raise ValueError(
-                "Please provide two end groups; "
-                f"you provided {len(self._end_groups)}"
+                f"Please provide two end groups; you provided {len(self._end_groups)}"
             )
         self._port_labels = ["up", "down"]
         self._headtail = [None, None]

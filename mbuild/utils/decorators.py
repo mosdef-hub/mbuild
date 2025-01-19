@@ -96,8 +96,7 @@ def deprecated_property(
             def show_warning_msg(self):
                 if self.warning_msg is not None:
                     warn(
-                        f"Property {fcn.__name__} is deprecated. "
-                        f"{self.warning_msg}",
+                        f"Property {fcn.__name__} is deprecated. {self.warning_msg}",
                         DeprecationWarning,
                     )
                     if not self.always_show:

@@ -208,7 +208,8 @@ def import_(module):
             message = MESSAGES[module]
         except KeyError:
             message = (
-                "The code at {filename}:{line_number} requires the " f"{module} package"
+                "The code at {filename}:{line_number} requires the "
+                f"{module} package"
             )
             raise ImportError(f"No module named {module}")
 

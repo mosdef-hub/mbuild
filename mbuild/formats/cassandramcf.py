@@ -53,7 +53,7 @@ def write_mcf(structure, filename, angle_style, dihedral_style, lj14=None, coul1
     # Only will write MCF for Cassandra-supported options
     if angle_style.casefold() != "fixed" and angle_style.casefold() != "harmonic":
         raise ValueError(
-            "Invalid selection for angle_style. Please choose 'fixed' or " "'harmonic'"
+            "Invalid selection for angle_style. Please choose 'fixed' or 'harmonic'"
         )
 
     if len(structure.urey_bradleys) > 0:
@@ -75,7 +75,7 @@ def write_mcf(structure, filename, angle_style, dihedral_style, lj14=None, coul1
     if dihedral_style.casefold() != "none":
         if len(structure.rb_torsions) > 0 and dihedral_style.casefold() != "opls":
             raise ValueError(
-                "Dihedral style declared as {} but RB torsions " "found.".format(
+                "Dihedral style declared as {} but RB torsions found.".format(
                     dihedral_style
                 )
             )
@@ -131,15 +131,17 @@ def write_mcf(structure, filename, angle_style, dihedral_style, lj14=None, coul1
             else:
                 lj14 = 0.0
                 warnings.warn(
-                    "Unable to infer LJ 1-4 scaling factor. Setting to "
-                    "{:.1f}".format(lj14)
+                    "Unable to infer LJ 1-4 scaling factor. Setting to {:.1f}".format(
+                        lj14
+                    )
                 )
         else:
             lj14 = 0.0
             if len(structure.dihedrals) > 0 or len(structure.rb_torsions) > 0:
                 warnings.warn(
-                    "Unable to infer LJ 1-4 scaling factor. Setting to "
-                    "{:.1f}".format(lj14)
+                    "Unable to infer LJ 1-4 scaling factor. Setting to {:.1f}".format(
+                        lj14
+                    )
                 )
 
     if coul14 < 0.0 or coul14 > 1.0:
@@ -353,8 +355,7 @@ def _write_atom_information(mcf_file, structure, in_ring, IG_CONSTANT_KCAL):
     mcf_file.write("{:d}\n".format(len(structure.atoms)))
     for i in range(len(structure.atoms)):
         mcf_file.write(
-            "{:<4d}  {:<6s}  {:<2s}  {:7.3f}  {:12.8f}  "
-            "{:3s}  {:8.5f}  {:8.5f}".format(
+            "{:<4d}  {:<6s}  {:<2s}  {:7.3f}  {:12.8f}  {:3s}  {:8.5f}  {:8.5f}".format(
                 i + 1,
                 types[i],
                 elements[i],
@@ -422,7 +423,7 @@ def _write_angle_information(mcf_file, structure, angle_style, IG_CONSTANT_KCAL)
         ]
     else:
         raise ValueError(
-            "Only 'fixed' and 'harmonic' angle styles are supported by " "Cassandra"
+            "Only 'fixed' and 'harmonic' angle styles are supported by Cassandra"
         )
 
     header = (
@@ -529,7 +530,7 @@ def _write_dihedral_information(mcf_file, structure, dihedral_style, KCAL_TO_KJ)
                 dihedral_parms = ["" for dihedral in dihedrals]
         else:
             raise ValueError(
-                "Only 'OPLS', 'CHARMM', and 'none' dihedral styles are " "supported."
+                "Only 'OPLS', 'CHARMM', and 'none' dihedral styles are supported."
             )
 
         mcf_file.write("{:d}\n".format(len(dihedrals)))
@@ -539,7 +540,7 @@ def _write_dihedral_information(mcf_file, structure, dihedral_style, KCAL_TO_KJ)
             # The atom order provided in the parmed.Structure
             # is written to the MCF file.
             mcf_file.write(
-                "{:<4d}  {:<4d}  {:<4d}  {:<4d}  {:<4d}" "  {:s}  {:s}\n".format(
+                "{:<4d}  {:<4d}  {:<4d}  {:<4d}  {:<4d}  {:s}  {:s}\n".format(
                     i + 1,
                     dihedral.atom1.idx + 1,
                     dihedral.atom2.idx + 1,
@@ -578,8 +579,7 @@ def _write_improper_information(mcf_file, structure, KCAL_TO_KJ):
     improper_type = "harmonic"
     for i, improper in enumerate(structure.impropers):
         mcf_file.write(
-            "{:<4d}  {:<4d}  {:<4d}  {:<4d}  {:<4d}"
-            "  {:s}  {:8.3f}  {:8.3f}\n".format(
+            "{:<4d}  {:<4d}  {:<4d}  {:<4d}  {:<4d}  {:s}  {:8.3f}  {:8.3f}\n".format(
                 i + 1,
                 improper.atom1.idx + 1,
                 improper.atom2.idx + 1,

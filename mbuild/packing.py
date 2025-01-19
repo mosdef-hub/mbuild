@@ -281,7 +281,7 @@ def fill_box(
                     )
                 if len(compound) != len(compound_ratio):
                     raise ValueError(
-                        "Length of `compound_ratio` must equal length of " "`compound`"
+                        "Length of `compound_ratio` must equal length of `compound`"
                     )
                 prototype_mass = 0
                 for c, r in zip(compound, compound_ratio):
@@ -747,7 +747,7 @@ def fill_sphere(
                     )
                 if len(compound) != len(compound_ratio):
                     raise ValueError(
-                        "Length of `compound_ratio` must equal length of " "`compound`"
+                        "Length of `compound_ratio` must equal length of `compound`"
                     )
                 prototype_mass = 0
                 for c, r in zip(compound, compound_ratio):
