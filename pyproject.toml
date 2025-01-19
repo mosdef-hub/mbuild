@@ -10,7 +10,7 @@ authors = [
   {name = "Janos Sallai", email = "janos.sallai@vanderbilt.edu"},
   {name = "Christopher Klein", email = "christoph.klein@vanderbilt.edu"},
 ]
-maintainiers = [
+maintainers = [
   {name = "Nicholas Craven", email = "nicholas.c.craven@vanderbilt.edu"},
   {name = "Chris Jones", email = "chrisjones4@u.boisestate.edu"},
 ]
