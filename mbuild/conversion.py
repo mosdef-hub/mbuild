@@ -1782,9 +1782,7 @@ def to_smiles(compound, backend="pybel"):
     if backend == "pybel":
         mol = to_pybel(compound)
 
-        warn(
-            "The bond orders will be guessed using pybel" "OBMol.PerceviedBondOrders()"
-        )
+        warn("The bond orders will be guessed using pybelOBMol.PerceviedBondOrders()")
         mol.OBMol.PerceiveBondOrders()
         smiles_string = mol.write("smi").replace("\t", " ").split(" ")[0]
 
