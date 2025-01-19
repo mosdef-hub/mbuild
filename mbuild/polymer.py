@@ -6,6 +6,7 @@ import numpy as np
 
 from mbuild import clone
 from mbuild.compound import Compound
+from mbuild.conformations import random_walk
 from mbuild.coordinate_transform import (
     force_overlap,
     x_axis_transform,
@@ -14,7 +15,6 @@ from mbuild.coordinate_transform import (
 )
 from mbuild.lib.atoms import H
 from mbuild.port import Port
-from mbuild.utils.conformations import random_walk
 from mbuild.utils.validation import assert_port_exists
 
 __all__ = ["Polymer"]
