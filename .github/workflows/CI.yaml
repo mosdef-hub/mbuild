@@ -30,7 +30,7 @@ jobs:
         name: Checkout Branch / Pull Request
 
       - name: Install Mamba (Linux)
-        uses: mamba-org/setup-micromamba@v1
+        uses: mamba-org/setup-micromamba@v2
         with:
           environment-file: environment-dev.yml
           create-args: >-
@@ -38,7 +38,7 @@ jobs:
         if: runner.os != 'Windows'
 
       - name: Install Mamba (Windows)
-        uses: mamba-org/setup-micromamba@v1
+        uses: mamba-org/setup-micromamba@v2
         with:
           environment-file: environment-dev-win.yml
           create-args: >-
@@ -52,7 +52,7 @@ jobs:
         run: python -m pytest -v --cov=mbuild --cov-report=xml --cov-append --cov-config=setup.cfg --color yes --pyargs mbuild
 
       - name: Upload Coverage Report
-        uses: codecov/codecov-action@v4
+        uses: codecov/codecov-action@v5
         with:
           name: mBuild-Coverage
           verbose: true
@@ -76,7 +76,7 @@ jobs:
         name: Checkout Branch / Pull Request
 
       - name: Install Mamba (Linux)
-        uses: mamba-org/setup-micromamba@v1
+        uses: mamba-org/setup-micromamba@v2
         with:
           environment-file: environment-dev.yml
           create-args: >-
@@ -84,7 +84,7 @@ jobs:
         if: runner.os != 'Windows'
 
       - name: Install Mamba (Windows)
-        uses: mamba-org/setup-micromamba@v1
+        uses: mamba-org/setup-micromamba@v2
         with:
           environment-file: environment-dev-win.yml
           create-args: >-
@@ -110,7 +110,7 @@ jobs:
         name: Checkout Branch / Pull Request
 
       - name: Install Mamba
-        uses: mamba-org/setup-micromamba@v1
+        uses: mamba-org/setup-micromamba@v2
         with:
           environment-file: environment-dev.yml
           create-args: python=3.12
