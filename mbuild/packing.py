@@ -28,6 +28,7 @@ output {1}
 seed {2}
 sidemax {3}
 {4}
+{5}
 """
 
 PACKMOL_SOLUTE = """
@@ -102,6 +103,7 @@ def fill_box(
     compound,
     n_compounds=None,
     box=None,
+    use_pbc=False,
     density=None,
     overlap=0.2,
     seed=12345,
@@ -303,7 +305,8 @@ def fill_box(
     box_mins = np.asarray(my_mins) * 10
     box_maxs = np.asarray(my_maxs) * 10
     overlap *= 10
-
+    if use_pbc:
+        edge = 0
     # Apply 0.2nm edge buffer
     box_maxs = [a_max - (edge * 10) for a_max in box_maxs]
     box_mins = [a_min + (edge * 10) for a_min in box_mins]
@@ -321,8 +324,17 @@ def fill_box(
     # create a list to contain the file handles for the compound temp files
     compound_xyz_list = list()
     try:
+        if use_pbc:
+            print("My Mins:", my_mins)
+            print("My Maxs:", my_maxs)
+            pbc_box = [i * 10 for i in my_mins] + [i * 10 for i in my_maxs]
+            pbc_arg = "pbc {0} {1} {2} {3} {4} {5}".format(*pbc_box)
+            print("PBC ARG")
+            print(pbc_arg)
+        else:
+            pbc_arg = ""
         input_text = PACKMOL_HEADER.format(
-            overlap, filled_xyz.name, seed, sidemax * 10, packmol_commands
+            overlap, filled_xyz.name, seed, sidemax * 10, packmol_commands, pbc_arg
         )
         for comp, m_compounds, rotate in zip(compound, n_compounds, fix_orientation):
             m_compounds = int(m_compounds)

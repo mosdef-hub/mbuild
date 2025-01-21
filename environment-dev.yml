@@ -17,7 +17,7 @@ dependencies:
   - nglview>=3
   - numpy=1.26.4
   - openbabel>=3
-  - packmol>=20
+  - packmol>=20.15
   - parmed>=3.4.3
   - pip
   - pre-commit
