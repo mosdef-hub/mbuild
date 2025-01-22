@@ -10,15 +10,20 @@ dependencies:
   - boltons
   - lark>=1.2
   - lxml
+  - intermol
+  - mdtraj
   - pydantic>=2
   - networkx
+  - nglview>=3
   - pytest
+  - garnett>=0.7.1
   - openbabel>=3.0.0
   - openmm
   - gsd>=2.9
   - parmed>=3.4.3
-  - packmol>=18
+  - packmol>=20
   - pytest-cov
+  - pycifrw
   - rdkit>=2021
   - requests
   - scipy
