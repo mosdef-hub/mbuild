@@ -282,6 +282,33 @@ class TestPacking(BaseTest):
         with pytest.raises(MBuildError, match=r"co\-linear"):
             mb.fill_box(h2o, n_compounds=10, box=[0, 0, 0])
 
+    def test_save_packmol_input(self, h2o):
+        cwd = os.getcwd()  # Must keep track of the temp dir that pytest creates
+        filled = mb.fill_box(
+            h2o, n_compounds=10, box=Box([4, 4, 4]), save_packmol_input=True
+        )
+        assert os.path.isfile(os.path.join(cwd, "packmol.inp"))
+        os.remove(os.path.join(cwd, "packmol.inp"))
+        mb.fill_region(
+            h2o,
+            10,
+            [[2, 2, 2, 4, 4, 4]],
+            temp_file="temp_file2.pdb",
+            bounds=[[2, 2, 2, 4, 4, 4]],
+            save_packmol_input=True,
+        )
+        assert os.path.isfile(os.path.join(cwd, "packmol.inp"))
+        os.remove(os.path.join(cwd, "packmol.inp"))
+        mb.solvate(
+            filled,
+            h2o,
+            10,
+            box=[4, 4, 4],
+            temp_file="temp_file3.pdb",
+            save_packmol_input=True,
+        )
+        assert os.path.isfile(os.path.join(cwd, "packmol.inp"))
+
     def test_packmol_args(self, h2o):
         with pytest.raises(RuntimeError):
             mb.fill_box(

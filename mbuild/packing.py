@@ -551,7 +551,7 @@ def fill_region(
     compound_xyz_list = list()
     try:
         input_text = PACKMOL_HEADER.format(
-            overlap, filled_xyz.name, seed, sidemax * 10, packmol_commands
+            overlap, filled_xyz.name, seed, sidemax * 10, packmol_commands, ""
         )
         for comp, m_compounds, rotate, items_n in zip(
             compound, n_compounds, fix_orientation, container
@@ -570,15 +570,16 @@ def fill_region(
             reg_maxs = np.asarray(my_max) * 10.0
 
             reg_maxs -= edge * 10  # Apply edge buffer
+            box_arg = list(reg_mins) + list(reg_maxs)
+            fill_arg = (
+                "inside box {0:.3f} {1:.3f} {2:.3f} {3:.3f} {4:.3f} {5:.3f}".format(
+                    *box_arg
+                )
+            )
             input_text += PACKMOL_BOX.format(
                 compound_xyz.name,
                 m_compounds,
-                reg_mins[0],
-                reg_mins[1],
-                reg_mins[2],
-                reg_maxs[0],
-                reg_maxs[1],
-                reg_maxs[2],
+                fill_arg,
                 PACKMOL_CONSTRAIN if rotate else "",
             )
 
