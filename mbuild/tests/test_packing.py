@@ -18,6 +18,44 @@ class TestPacking(BaseTest):
         assert np.array_equal(filled.box.lengths, [2, 2, 2])
         assert np.array_equal(filled.box.angles, (90, 90, 90))
 
+    def test_fill_box_pbc(self, h2o):
+        mb.fill_box(
+            h2o,
+            n_compounds=50,
+            box=Box([2.0, 2.0, 2.0]),
+            use_pbc=True,
+            save_packmol_input=True,
+        )
+        found_pbc = False
+        found_inside_box = False
+        with open("packmol.inp", "r") as f:
+            for line in f:
+                if line[0:3] == "pbc":
+                    found_pbc = True
+                    assert line.strip() == "pbc 0.0 0.0 0.0 20.0 20.0 20.0"
+                if "inside box" in line:
+                    found_inside_box = True
+        assert found_pbc
+        assert not found_inside_box
+
+        mb.fill_box(
+            h2o,
+            n_compounds=50,
+            box=Box([2.0, 2.0, 2.0]),
+            use_pbc=False,
+            save_packmol_input=True,
+        )
+        found_pbc = False
+        found_inside_box = False
+        with open("packmol.inp", "r") as f:
+            for line in f:
+                if line[0:3] == "pbc":
+                    found_pbc = True
+                if "inside box" in line:
+                    found_inside_box = True
+        assert not found_pbc
+        assert found_inside_box
+
     def test_fill_box_density_box(self, h2o):
         filled = mb.fill_box(h2o, n_compounds=100, density=100)
         assert np.all(np.isclose(filled.box.lengths, np.ones(3) * 3.104281669169261))
@@ -218,6 +256,49 @@ class TestPacking(BaseTest):
         assert np.isclose(solvated2.children[0].pos, ethane_pos).all()
 
         assert ethane.parent is None
+
+    def test_solvate_pbc(self, ethane, h2o):
+        n_solvent = 100
+        mb.solvate(
+            ethane,
+            h2o,
+            n_solvent=n_solvent,
+            box=[4.0, 4.0, 4.0],
+            center_solute=True,
+            use_pbc=True,
+            save_packmol_input=True,
+        )
+        found_pbc = False
+        found_inside_box = False
+        with open("packmol.inp", "r") as f:
+            for line in f:
+                if line[0:3] == "pbc":
+                    found_pbc = True
+                    assert line.strip() == "pbc 0.0 0.0 0.0 40.0 40.0 40.0"
+                if "inside box" in line:
+                    found_inside_box = True
+        assert found_pbc
+        assert not found_inside_box
+
+        mb.solvate(
+            ethane,
+            h2o,
+            n_solvent=n_solvent,
+            box=[4.0, 4.0, 4.0],
+            center_solute=True,
+            use_pbc=False,
+            save_packmol_input=True,
+        )
+        found_pbc = False
+        found_inside_box = False
+        with open("packmol.inp", "r") as f:
+            for line in f:
+                if line[0:3] == "pbc":
+                    found_pbc = True
+                if "inside box" in line:
+                    found_inside_box = True
+        assert not found_pbc
+        assert found_inside_box
 
     def test_solvate_multiple(self, methane, ethane, h2o):
         init_box = mb.fill_box(methane, 2, box=[4, 4, 4])
