@@ -67,7 +67,7 @@ def check_packmol_args(custom_args):
     # Only file-level arguments can be passed.
     allowed_args = [
         "maxit",  # int
-        "nloop0",  # int
+        "nloop",  # int
         "fbins",  # float
         "discale",  # float
         "movefrac",  # float
@@ -831,6 +831,7 @@ def solvate(
     solvent,
     n_solvent,
     box,
+    use_pbc=False,
     overlap=0.2,
     seed=12345,
     sidemax=100.0,
@@ -937,6 +938,8 @@ def solvate(
     box_mins = np.asarray(min_tmp) * 10
     box_maxs = np.asarray(max_tmp) * 10
     overlap *= 10
+    if use_pbc:
+        edge = 0
     if center_solute:
         center_solute = (box_maxs + box_mins) / 2
     else:
@@ -944,7 +947,7 @@ def solvate(
     # Apply edge buffer
     box_maxs = np.subtract(box_maxs, edge * 10)
     box_mins = np.add(box_mins, edge * 10)
-
+    box_arg = list(box_mins) + list(box_maxs)
     # generate string of addl. packmol inputs given in packmol_args
     packmol_commands = ""
     if packmol_args:
@@ -959,9 +962,19 @@ def solvate(
     # generate list of temp files for the solvents
     solvent_xyz_list = list()
     try:
+        if use_pbc:
+            pbc_arg = "pbc {0} {1} {2} {3} {4} {5}".format(*box_arg)
+            fill_arg = ""
+        else:
+            fill_arg = (
+                "inside box {0:.3f} {1:.3f} {2:.3f} {3:.3f} {4:.3f} {5:.3f}".format(
+                    *box_arg
+                )
+            )
+            pbc_arg = ""
         solute.save(solute_xyz.name, overwrite=True)
         input_text = PACKMOL_HEADER.format(
-            overlap, solvated_xyz.name, seed, sidemax * 10, packmol_commands
+            overlap, solvated_xyz.name, seed, sidemax * 10, packmol_commands, pbc_arg
         ) + PACKMOL_SOLUTE.format(solute_xyz.name, *center_solute.tolist())
 
         for solv, m_solvent, rotate in zip(solvent, n_solvent, fix_orientation):
@@ -973,12 +986,7 @@ def solvate(
             input_text += PACKMOL_BOX.format(
                 solvent_xyz.name,
                 m_solvent,
-                box_mins[0],
-                box_mins[1],
-                box_mins[2],
-                box_maxs[0],
-                box_maxs[1],
-                box_maxs[2],
+                fill_arg,
                 PACKMOL_CONSTRAIN if rotate else "",
             )
         _run_packmol(input_text, solvated_xyz, temp_file, save_packmol_input)
