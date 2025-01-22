@@ -113,22 +113,9 @@ jobs:
         uses: mamba-org/setup-micromamba@v2
         with:
           environment-file: environment-dev.yml
-          create-args: python=3.12
-
-      - name: Clone Foyer and GMSO
-        run: |
-          git clone https://github.com/mosdef-hub/foyer.git
-          git clone https://github.com/mosdef-hub/gmso.git
-
-      - name: Update Environment with foyer/gmso Dependencies
-        run: |
-          micromamba update --name mbuild-dev --file foyer/environment.yml
-          micromamba update --name mbuild-dev --file gmso/environment.yml
 
       - name: Install Packages from Source
         run: |
-          pip install -e foyer
-          pip install -e gmso
           pip install -e .
 
       - name: Run Bleeding Edge Tests

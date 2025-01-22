@@ -1,5 +1,5 @@
 [build-system]
-requires = ["setuptools>=61.2", "versioningit"]
+requires = ["setuptools>=61.2"]
 build-backend = "setuptools.build_meta"
 
 [project]
@@ -43,22 +43,12 @@ find = {namespaces = false}
 [tool.setuptools.package-data]
 mbuild = ['"utils/**"', '"lib/**"']
 
+[tool.setuptools.dynamic]
+version = {attr = "mbuild.__version__"}
+
 [project.entry-points."mbuild.plugins"]
 Alkane = "mbuild.lib.recipes.alkane:Alkane"
 Monolayer = "mbuild.lib.recipes.monolayer:Monolayer"
 Polymer = "mbuild.lib.recipes.polymer:Polymer"
 SilicaInterface = "mbuild.lib.recipes.silica_interface:SilicaInterface"
 TiledCompound = "mbuild.lib.recipes.tiled_compound:TiledCompound"
-
-[tool.versioningit]
-default-version = "1+unknown"
-
-[tool.versioningit.format]
-distance = "{base_version}+{distance}.{vcs}{rev}"
-dirty = "{base_version}+{distance}.{vcs}{rev}.dirty"
-distance-dirty = "{base_version}+{distance}.{vcs}{rev}.dirty"
-
-[tool.versioningit.vcs]
-method = "git"
-match = ["*"]
-default-tag = "0.0.0"
