@@ -113,6 +113,7 @@ jobs:
         uses: mamba-org/setup-micromamba@v2
         with:
           environment-file: environment-dev.yml
+          create-args: python=3.12
 
       - name: Install Packages from Source
         run: |
