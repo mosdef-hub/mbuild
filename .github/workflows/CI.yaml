@@ -30,7 +30,7 @@ jobs:
         name: Checkout Branch / Pull Request
 
       - name: Install Mamba (Linux)
-        uses: mamba-org/setup-micromamba@v1
+        uses: mamba-org/setup-micromamba@v2
         with:
           environment-file: environment-dev.yml
           create-args: >-
@@ -38,7 +38,7 @@ jobs:
         if: runner.os != 'Windows'
 
       - name: Install Mamba (Windows)
-        uses: mamba-org/setup-micromamba@v1
+        uses: mamba-org/setup-micromamba@v2
         with:
           environment-file: environment-dev-win.yml
           create-args: >-
@@ -52,7 +52,7 @@ jobs:
         run: python -m pytest -v --cov=mbuild --cov-report=xml --cov-append --cov-config=setup.cfg --color yes --pyargs mbuild
 
       - name: Upload Coverage Report
-        uses: codecov/codecov-action@v4
+        uses: codecov/codecov-action@v5
         with:
           name: mBuild-Coverage
           verbose: true
@@ -76,7 +76,7 @@ jobs:
         name: Checkout Branch / Pull Request
 
       - name: Install Mamba (Linux)
-        uses: mamba-org/setup-micromamba@v1
+        uses: mamba-org/setup-micromamba@v2
         with:
           environment-file: environment-dev.yml
           create-args: >-
@@ -84,7 +84,7 @@ jobs:
         if: runner.os != 'Windows'
 
       - name: Install Mamba (Windows)
-        uses: mamba-org/setup-micromamba@v1
+        uses: mamba-org/setup-micromamba@v2
         with:
           environment-file: environment-dev-win.yml
           create-args: >-
@@ -110,25 +110,13 @@ jobs:
         name: Checkout Branch / Pull Request
 
       - name: Install Mamba
-        uses: mamba-org/setup-micromamba@v1
+        uses: mamba-org/setup-micromamba@v2
         with:
           environment-file: environment-dev.yml
           create-args: python=3.12
 
-      - name: Clone Foyer and GMSO
-        run: |
-          git clone https://github.com/mosdef-hub/foyer.git
-          git clone https://github.com/mosdef-hub/gmso.git
-
-      - name: Update Environment with foyer/gmso Dependencies
-        run: |
-          micromamba update --name mbuild-dev --file foyer/environment.yml
-          micromamba update --name mbuild-dev --file gmso/environment.yml
-
       - name: Install Packages from Source
         run: |
-          pip install -e foyer
-          pip install -e gmso
           pip install -e .
 
       - name: Run Bleeding Edge Tests
