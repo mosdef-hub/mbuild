@@ -162,8 +162,7 @@ jobs:
   build_docker_on_change:
     runs-on: ubuntu-latest
     name: Build Docker Image (no push)
-    if: github.event_name == 'pull_request'
-    needs: test
+    if: github.event_name == 'pull_request' && contains(github.event.pull_request.changes, 'Dockerfile')
     steps:
       # Set up Docker Buildx
       - name: Set up Docker Buildx
@@ -186,8 +185,3 @@ jobs:
         with:
           push: false  # Don't push the image, just build
           tags: ${{ env.DOCKER_TAGS }}
-    # Only run this job if Dockerfile is changed in the PR
-    on:
-      pull_request:
-        paths:
-          - 'Dockerfile'
