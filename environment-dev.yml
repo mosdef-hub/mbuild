@@ -18,6 +18,7 @@ dependencies:
   - pytest
   - garnett>=0.7.1
   - openbabel>=3.0.0
+  - openff-toolkit-base >=0.11
   - openmm
   - gsd>=2.9
   - parmed>=3.4.3
@@ -26,10 +27,10 @@ dependencies:
   - pycifrw
   - rdkit>=2021
   - requests
+  - requests-mock
   - scipy
   - treelib
   - codecov
-  - bump2version
   - matplotlib
   - ipywidgets
   - ele>=0.2.0
