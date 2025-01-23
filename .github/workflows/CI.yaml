@@ -158,3 +158,36 @@ jobs:
         with:
           push: true
           tags: ${{ env.DOCKER_TAGS }}
+
+  build_docker_on_change:
+    runs-on: ubuntu-latest
+    name: Build Docker Image (no push)
+    if: github.event_name == 'pull_request'
+    needs: test
+    steps:
+      # Set up Docker Buildx
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      # Get Push Version
+      - name: Get Push Version
+        run: |
+          echo "DOCKER_TAGS=mosdef/mbuild:${GITHUB_REF_NAME}, mosdef/mbuild:latest" >> $GITHUB_ENV
+        if: github.ref_type == 'branch'
+
+      # Docker Image Info
+      - name: Docker Image Info
+        run: |
+          echo Docker Image tags: ${DOCKER_TAGS}
+
+      # Build the Docker image without pushing
+      - name: Build Docker Image
+        uses: docker/build-push-action@v6
+        with:
+          push: false  # Don't push the image, just build
+          tags: ${{ env.DOCKER_TAGS }}
+    # Only run this job if Dockerfile is changed in the PR
+    on:
+      pull_request:
+        paths:
+          - 'Dockerfile'
