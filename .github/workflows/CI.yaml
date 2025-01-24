@@ -127,7 +127,7 @@ jobs:
 
   docker_build_on_comment:
     runs-on: ubuntu-latest
-    if: github.event.pull_request.draft == false && github.event_name == 'issue_comment' && contains(github.event.comment.body, '/dockerbuild')
+    if: github.event.pull_request.draft == false && github.event_name == 'issue_comment' && contains(github.event.comment.body, '\dockerbuild')
     name: Build Docker Image (no push)
 
     steps:
@@ -150,6 +150,15 @@ jobs:
         with:
           push: false
           tags: ${{ env.DOCKER_TAGS }}
+
+      - name: Add Rocket Reaction 🚀
+        if: always() # Run this step even if the build fails
+        run: |
+          COMMENT_ID=${{ github.event.comment.id }}
+          curl -s -X POST -H "Authorization: Bearer ${{ secrets.GITHUB_TOKEN }}" \
+            -H "Accept: application/vnd.github+json" \
+            https://api.github.com/repos/${{ github.repository }}/issues/comments/$COMMENT_ID/reactions \
+            -d '{"content": "rocket"}'
 
   docker:
     runs-on: ubuntu-latest
