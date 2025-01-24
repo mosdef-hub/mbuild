@@ -168,20 +168,36 @@ jobs:
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
 
-      # Get Push Version
+      # Check if Dockerfile was changed
+      - name: Check for Dockerfile changes
+        id: dockerfile_check
+        run: |
+          if git diff --name-only ${{ github.event.before }} ${{ github.sha }} | grep -q "^Dockerfile$"; then
+            echo "Dockerfile changed"
+            echo "changed=true" >> $GITHUB_ENV
+          else
+            echo "Dockerfile not changed"
+            echo "changed=false" >> $GITHUB_ENV
+          fi
+
+      # Build Docker image only if Dockerfile has changed
+      - name: Set up Docker Buildx
+        if: env.changed == 'true'
+        uses: docker/setup-buildx-action@v3
+
       - name: Get Push Version
+        if: env.changed == 'true' && github.ref_type == 'branch'
         run: |
           echo "DOCKER_TAGS=mosdef/mbuild:${GITHUB_REF_NAME}, mosdef/mbuild:latest" >> $GITHUB_ENV
-        if: github.ref_type == 'branch'
 
-      # Docker Image Info
       - name: Docker Image Info
+        if: env.changed == 'true'
         run: |
           echo Docker Image tags: ${DOCKER_TAGS}
 
-      # Build the Docker image without pushing
       - name: Build Docker Image
+        if: env.changed == 'true'
         uses: docker/build-push-action@v6
         with:
-          push: false  # Don't push the image, just build
+          push: false
           tags: ${{ env.DOCKER_TAGS }}
