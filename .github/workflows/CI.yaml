@@ -162,11 +162,10 @@ jobs:
   build_docker_on_change:
     runs-on: ubuntu-latest
     name: Build Docker Image (no push)
-    if: github.event_name == 'pull_request' && contains(github.event.pull_request.changes, 'Dockerfile')
     steps:
-      # Set up Docker Buildx
-      - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@v3
+      # Checkout the repository
+      - name: Checkout code
+        uses: actions/checkout@v3
 
       # Check if Dockerfile was changed
       - name: Check for Dockerfile changes
@@ -180,21 +179,29 @@ jobs:
             echo "changed=false" >> $GITHUB_ENV
           fi
 
-      # Build Docker image only if Dockerfile has changed
+      # Skip remaining steps if Dockerfile wasn't changed
+      - name: Stop if no changes
+        if: env.changed == 'false'
+        run: echo "No Dockerfile changes detected. Skipping build."
+
+      # Set up Docker Buildx
       - name: Set up Docker Buildx
         if: env.changed == 'true'
         uses: docker/setup-buildx-action@v3
 
+      # Get Push Version
       - name: Get Push Version
         if: env.changed == 'true' && github.ref_type == 'branch'
         run: |
           echo "DOCKER_TAGS=mosdef/mbuild:${GITHUB_REF_NAME}, mosdef/mbuild:latest" >> $GITHUB_ENV
 
+      # Docker Image Info
       - name: Docker Image Info
         if: env.changed == 'true'
         run: |
           echo Docker Image tags: ${DOCKER_TAGS}
 
+      # Build Docker Image
       - name: Build Docker Image
         if: env.changed == 'true'
         uses: docker/build-push-action@v6
