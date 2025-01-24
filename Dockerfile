@@ -9,9 +9,7 @@ LABEL maintainer.name="mosdef-hub"\
 ENV PATH /opt/conda/bin:$PATH
 
 USER root
-
 ADD . /mbuild
-
 WORKDIR /mbuild
 
 # Create a group and user
