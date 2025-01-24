@@ -9,12 +9,10 @@ on:
       - "main"
   schedule:
     - cron:  "0 0 * * *"
-  issue_comment:
-    types: ["created"]
 
 jobs:
   test:
-    if: github.event.pull_request.draft == false && github.event_name != 'issue_comment'
+    if: github.event.pull_request.draft == false
     name: mBuild Tests (python)
     runs-on: ${{ matrix.os }}
     strategy:
@@ -60,7 +58,7 @@ jobs:
           verbose: true
           files: ./coverage.xml
   arch-test:
-    if: github.event.pull_request.draft == false && github.event_name != 'issue_comment'
+    if: github.event.pull_request.draft == false
     name: mBuild Tests (arch)
     runs-on: ${{ matrix.os }}
     strategy:
@@ -100,7 +98,7 @@ jobs:
         run: python -m pytest -v --cov=mbuild --cov-report=xml --cov-append --cov-config=setup.cfg --color yes --pyargs mbuild
 
   bleeding-edge-test:
-    if: github.event.pull_request.draft == false && github.event_name != 'issue_comment'
+    if: github.event.pull_request.draft == false
     name: Bleeding Edge mosdef Tests for mBuild
     runs-on: ubuntu-latest
     defaults:
@@ -125,46 +123,11 @@ jobs:
         run: |
           python -m pytest -v --color yes --pyargs mbuild
 
-  docker_build_on_comment:
-    runs-on: ubuntu-latest
-    if: github.event.pull_request.draft == false && github.event_name == 'issue_comment' && contains(github.event.comment.body, '\dockerbuild')
-    name: Build Docker Image (no push)
-
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v3
-
-      - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@v3
-
-      - name: Set DOCKER_TAGS
-        run: |
-          echo "DOCKER_TAGS=mosdef/mbuild:${GITHUB_REF_NAME}, mosdef/mbuild:latest" >> $GITHUB_ENV
-
-      - name: Docker Image Info
-        run: |
-          echo Docker Image tags: ${DOCKER_TAGS}
-
-      - name: Build Docker Image
-        uses: docker/build-push-action@v6
-        with:
-          push: false
-          tags: ${{ env.DOCKER_TAGS }}
-
-      - name: Add Rocket Reaction 🚀
-        if: always() # Run this step even if the build fails
-        run: |
-          COMMENT_ID=${{ github.event.comment.id }}
-          curl -s -X POST -H "Authorization: Bearer ${{ secrets.GITHUB_TOKEN }}" \
-            -H "Accept: application/vnd.github+json" \
-            https://api.github.com/repos/${{ github.repository }}/issues/comments/$COMMENT_ID/reactions \
-            -d '{"content": "rocket"}'
-
   docker:
     runs-on: ubuntu-latest
     needs: test
     name: Build Docker Image
-    if: github.event_name != 'pull_request' && github.event_name != 'issue_comment'
+    if: github.event_name != 'pull_request'
 
     steps:
       - name: Set up Docker Buildx
