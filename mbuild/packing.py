@@ -147,6 +147,11 @@ def fill_box(
         Number of compounds to be filled in box.
     box : mb.Box
         Box to be filled by compounds.
+    use_pbc : bool, default=False
+        If True, applies periodic boundary conditions
+        when placing molecules.
+        Changing this to True will automatically change
+        edge to zero.
     density : float, units :math:`kg/m^3` , default=None
         Target density for the system in macroscale units. If not None, one of
         `n_compounds` or `box` , but not both, must be specified.
@@ -174,6 +179,9 @@ def fill_box(
         default=False.
     temp_file : str, default=None
         File name to write PACKMOL raw output to.
+    save_packmol_input : bool, default=False,
+        If true, saves the file `packmol.inp` to the
+        current working directory.
     update_port_locations : bool, default=False
         After packing, port locations can be updated, but since compounds
         can be rotated, port orientation may be incorrect.
@@ -420,6 +428,9 @@ def fill_region(
         of `compound` and not the second.
     temp_file : str, default=None
         File name to write PACKMOL raw output to.
+    save_packmol_input : bool, default=False,
+        If true, saves the file `packmol.inp` to the
+        current working directory.
     update_port_locations : bool, default=False
         After packing, port locations can be updated, but since compounds
         can be rotated, port orientation may be incorrect.
@@ -657,6 +668,9 @@ def fill_sphere(
         default=False.
     temp_file : str, default=None
         File name to write PACKMOL raw output to.
+    save_packmol_input : bool, default=False,
+        If true, saves the file `packmol.inp` to the
+        current working directory.
     update_port_locations : bool, default=False
         After packing, port locations can be updated, but since compounds
         can be rotated, port orientation may be incorrect.
@@ -856,6 +870,11 @@ def solvate(
         Number of solvents to be put in box.
     box : mb.Box
         Box to be filled by compounds.
+    use_pbc : bool, default=False
+        If True, applies periodic boundary conditions
+        when placing molecules.
+        Changing this to True will automatically change
+        edge to zero.
     overlap : float, units nm, default=0.2
         Minimum separation between atoms of different molecules.
     seed : int, default=12345
@@ -873,6 +892,9 @@ def solvate(
         default=False.
     temp_file : str, default=None
         File name to write PACKMOL raw output to.
+    save_packmol_input : bool, default=False,
+        If true, saves the file `packmol.inp` to the
+        current working directory.
     update_port_locations : bool, default=False
         After packing, port locations can be updated, but since compounds
         can be rotated, port orientation may be incorrect.
