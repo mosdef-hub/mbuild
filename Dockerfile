@@ -1,5 +1,4 @@
-ARG PY_VERSION=3.10
-FROM continuumio/miniconda3:4.10.3-alpine AS builder
+FROM continuumio/miniconda3:23.5.2-0-alpine AS builder
 
 EXPOSE 8888
 
@@ -21,12 +20,11 @@ RUN apk update && apk add libarchive &&\
   conda update conda -yq && \
   conda config --set always_yes yes --set changeps1 no && \
   . /opt/conda/etc/profile.d/conda.sh && \
-  sed -i -E "s/python.*$/python="$(PY_VERSION)"/" environment-dev.yml && \
-  conda install -c conda-forge mamba && \
-  mamba env create --file environment-dev.yml && \
+  conda install -c conda-forge mamba git && \
+  mamba env create --file environment-dev.yml python=3.12 && \
   conda activate mbuild-dev && \
-  mamba install -c conda-forge jupyter python="$PY_VERSION" && \
-  python setup.py install && \
+  mamba install -c conda-forge jupyter && \
+  pip install -e .&& \
   echo "source activate mbuild-dev" >> \
   /home/anaconda/.profile && \
   conda clean -afy && \

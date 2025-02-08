@@ -13,4 +13,5 @@ from mbuild.pattern import *
 from mbuild.port import Port
 from mbuild.recipes import recipes
 
-__version__ = "1.0.0"
+__version__ = "1.1.1"
+__date__ = "2025-01-23"
