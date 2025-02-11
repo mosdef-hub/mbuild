@@ -24,6 +24,7 @@ class TestPacking(BaseTest):
             n_compounds=50,
             box=Box([2.0, 2.0, 2.0]),
             use_pbc=True,
+            edge=0,
             save_packmol_input=True,
         )
         found_pbc = False
@@ -266,6 +267,7 @@ class TestPacking(BaseTest):
             box=[4.0, 4.0, 4.0],
             center_solute=True,
             use_pbc=True,
+            edge=0,
             save_packmol_input=True,
         )
         found_pbc = False

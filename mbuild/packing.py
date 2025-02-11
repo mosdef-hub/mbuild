@@ -150,8 +150,7 @@ def fill_box(
     use_pbc : bool, default=False
         If True, applies periodic boundary conditions
         when placing molecules.
-        Changing this to True will automatically change
-        edge to zero.
+        `edge` must be zero when use_pbc is True.
     density : float, units :math:`kg/m^3` , default=None
         Target density for the system in macroscale units. If not None, one of
         `n_compounds` or `box` , but not both, must be specified.
@@ -314,8 +313,8 @@ def fill_box(
     box_mins = np.asarray(my_mins) * 10
     box_maxs = np.asarray(my_maxs) * 10
     overlap *= 10
-    if use_pbc:
-        edge = 0
+    if use_pbc and edge != 0:
+        raise ValueError("edge must be 0 if use_pbc is set to True")
     # Apply 0.2nm edge buffer
     box_maxs = [a_max - (edge * 10) for a_max in box_maxs]
     box_mins = [a_min + (edge * 10) for a_min in box_mins]
@@ -806,7 +805,7 @@ def fill_sphere(
     compound_xyz_list = list()
     try:
         input_text = PACKMOL_HEADER.format(
-            overlap, filled_xyz.name, seed, sidemax * 10, packmol_commands
+            overlap, filled_xyz.name, seed, sidemax * 10, packmol_commands, ""
         )
         for comp, m_compounds, rotate in zip(compound, n_compounds, fix_orientation):
             m_compounds = int(m_compounds)
@@ -873,8 +872,7 @@ def solvate(
     use_pbc : bool, default=False
         If True, applies periodic boundary conditions
         when placing molecules.
-        Changing this to True will automatically change
-        edge to zero.
+        `edge` must be zero when use_pbc is True.
     overlap : float, units nm, default=0.2
         Minimum separation between atoms of different molecules.
     seed : int, default=12345
@@ -961,8 +959,8 @@ def solvate(
     box_mins = np.asarray(min_tmp) * 10
     box_maxs = np.asarray(max_tmp) * 10
     overlap *= 10
-    if use_pbc:
-        edge = 0
+    if use_pbc and edge != 0:
+        raise ValueError("edge must be 0 if use_pbc is set to True")
     if center_solute:
         center_solute = (box_maxs + box_mins) / 2
     else:
