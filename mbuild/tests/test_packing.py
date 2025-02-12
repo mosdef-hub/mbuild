@@ -25,7 +25,7 @@ class TestPacking(BaseTest):
             box=Box([2.0, 2.0, 2.0]),
             use_pbc=True,
             edge=0,
-            save_packmol_input=True,
+            packmol_file="packmol.inp",
         )
         found_pbc = False
         found_inside_box = False
@@ -45,7 +45,7 @@ class TestPacking(BaseTest):
             n_compounds=50,
             box=Box([2.0, 2.0, 2.0]),
             use_pbc=False,
-            save_packmol_input=True,
+            packmol_file="packmol.inp",
         )
         found_pbc = False
         found_inside_box = False
@@ -270,7 +270,7 @@ class TestPacking(BaseTest):
             center_solute=True,
             use_pbc=True,
             edge=0,
-            save_packmol_input=True,
+            packmol_file="packmol.inp",
         )
         found_pbc = False
         found_inside_box = False
@@ -278,7 +278,7 @@ class TestPacking(BaseTest):
             for line in f:
                 if line[0:3] == "pbc":
                     found_pbc = True
-                    assert line.strip() == "pbc 0.0 0.0 0.0 40.0 40.0 40.0"
+                    assert line.strip() == "pbc 0.000 0.000 0.000 40.000 40.000 40.000"
                 if "inside box" in line:
                     found_inside_box = True
         assert found_pbc
@@ -292,7 +292,7 @@ class TestPacking(BaseTest):
             box=[4.0, 4.0, 4.0],
             center_solute=True,
             use_pbc=False,
-            save_packmol_input=True,
+            packmol_file="packmol.inp",
         )
         found_pbc = False
         found_inside_box = False
@@ -372,29 +372,29 @@ class TestPacking(BaseTest):
     def test_save_packmol_input(self, h2o):
         cwd = os.getcwd()  # Must keep track of the temp dir that pytest creates
         filled = mb.fill_box(
-            h2o, n_compounds=10, box=Box([4, 4, 4]), save_packmol_input=True
+            h2o, n_compounds=10, box=Box([4, 4, 4]), packmol_file="fill_box.inp"
         )
-        assert os.path.isfile(os.path.join(cwd, "packmol.inp"))
-        os.remove(os.path.join(cwd, "packmol.inp"))
+        assert os.path.isfile(os.path.join(cwd, "fill_box.inp"))
+        os.remove(os.path.join(cwd, "fill_box.inp"))
         mb.fill_region(
             h2o,
             10,
             [[2, 2, 2, 4, 4, 4]],
             temp_file="temp_file2.pdb",
             bounds=[[2, 2, 2, 4, 4, 4]],
-            save_packmol_input=True,
+            packmol_file="region.inp",
         )
-        assert os.path.isfile(os.path.join(cwd, "packmol.inp"))
-        os.remove(os.path.join(cwd, "packmol.inp"))
+        assert os.path.isfile(os.path.join(cwd, "region.inp"))
+        os.remove(os.path.join(cwd, "region.inp"))
         mb.solvate(
             filled,
             h2o,
             10,
             box=[4, 4, 4],
             temp_file="temp_file3.pdb",
-            save_packmol_input=True,
+            packmol_file="solvate.inp",
         )
-        assert os.path.isfile(os.path.join(cwd, "packmol.inp"))
+        assert os.path.isfile(os.path.join(cwd, "solvate.inp"))
 
     def test_packmol_args(self, h2o):
         with pytest.raises(RuntimeError):

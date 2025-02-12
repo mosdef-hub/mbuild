@@ -113,7 +113,7 @@ def fill_box(
     aspect_ratio=None,
     fix_orientation=False,
     temp_file=None,
-    save_packmol_input=False,
+    packmol_file=None,
     update_port_locations=False,
     packmol_args=None,
 ):
@@ -178,9 +178,8 @@ def fill_box(
         default=False.
     temp_file : str, default=None
         File name to write PACKMOL raw output to.
-    save_packmol_input : bool, default=False,
-        If true, saves the file `packmol.inp` to the
-        current working directory.
+    packmol_file : str, default=None,
+        Provide a filepath to save the PACKMOL input file generated.
     update_port_locations : bool, default=False
         After packing, port locations can be updated, but since compounds
         can be rotated, port orientation may be incorrect.
@@ -363,7 +362,7 @@ def fill_box(
                 fill_arg,
                 PACKMOL_CONSTRAIN if rotate else "",
             )
-        _run_packmol(input_text, filled_xyz, temp_file, save_packmol_input)
+        _run_packmol(input_text, filled_xyz, temp_file, packmol_file)
         # Create the topology and update the coordinates.
         filled = Compound(periodicity=periodicity)
         filled = _create_topology(filled, compound, n_compounds)
@@ -393,7 +392,7 @@ def fill_region(
     edge=0.2,
     fix_orientation=False,
     temp_file=None,
-    save_packmol_input=False,
+    packmol_file=None,
     update_port_locations=False,
     packmol_args=None,
 ):
@@ -431,9 +430,8 @@ def fill_region(
         of `compound` and not the second.
     temp_file : str, default=None
         File name to write PACKMOL raw output to.
-    save_packmol_input : bool, default=False,
-        If true, saves the file `packmol.inp` to the
-        current working directory.
+    packmol_file : str, default=None,
+        Provide a filepath to save the PACKMOL input file generated.
     update_port_locations : bool, default=False
         After packing, port locations can be updated, but since compounds
         can be rotated, port orientation may be incorrect.
@@ -597,7 +595,7 @@ def fill_region(
                 PACKMOL_CONSTRAIN if rotate else "",
             )
 
-        _run_packmol(input_text, filled_xyz, temp_file, save_packmol_input)
+        _run_packmol(input_text, filled_xyz, temp_file, packmol_file)
 
         # Create the topology and update the coordinates.
         filled = Compound()
@@ -626,7 +624,7 @@ def fill_sphere(
     compound_ratio=None,
     fix_orientation=False,
     temp_file=None,
-    save_packmol_input=False,
+    packmol_file=None,
     update_port_locations=False,
     packmol_args=None,
 ):
@@ -671,9 +669,8 @@ def fill_sphere(
         default=False.
     temp_file : str, default=None
         File name to write PACKMOL raw output to.
-    save_packmol_input : bool, default=False,
-        If true, saves the file `packmol.inp` to the
-        current working directory.
+    packmol_file : str, default=None,
+        Provide a filepath to save the PACKMOL input file generated.
     update_port_locations : bool, default=False
         After packing, port locations can be updated, but since compounds
         can be rotated, port orientation may be incorrect.
@@ -827,7 +824,7 @@ def fill_sphere(
                 radius,
                 PACKMOL_CONSTRAIN if rotate else "",
             )
-        _run_packmol(input_text, filled_xyz, temp_file, save_packmol_input)
+        _run_packmol(input_text, filled_xyz, temp_file, packmol_file)
 
         # Create the topology and update the coordinates.
         filled = Compound()
@@ -856,7 +853,7 @@ def solvate(
     edge=0.2,
     fix_orientation=False,
     temp_file=None,
-    save_packmol_input=False,
+    packmol_file=None,
     update_port_locations=False,
     center_solute=True,
     packmol_args=None,
@@ -894,9 +891,8 @@ def solvate(
         default=False.
     temp_file : str, default=None
         File name to write PACKMOL raw output to.
-    save_packmol_input : bool, default=False,
-        If true, saves the file `packmol.inp` to the
-        current working directory.
+    packmol_file : str, default=None,
+        Provide a filepath to save the PACKMOL input file generated.
     update_port_locations : bool, default=False
         After packing, port locations can be updated, but since compounds
         can be rotated, port orientation may be incorrect.
@@ -1018,7 +1014,7 @@ def solvate(
                 fill_arg,
                 PACKMOL_CONSTRAIN if rotate else "",
             )
-        _run_packmol(input_text, solvated_xyz, temp_file, save_packmol_input)
+        _run_packmol(input_text, solvated_xyz, temp_file, packmol_file)
 
         # Create the topology and update the coordinates.
         solvated = Compound(periodicity=periodicity)
@@ -1164,7 +1160,7 @@ def _packmol_error(out, err):
     raise RuntimeError("PACKMOL failed. See 'log.txt'")
 
 
-def _run_packmol(input_text, filled_xyz, temp_file, save_packmol_input):
+def _run_packmol(input_text, filled_xyz, temp_file, packmol_file):
     """Call PACKMOL to pack system based on the input text.
 
     Parameters
@@ -1175,6 +1171,8 @@ def _run_packmol(input_text, filled_xyz, temp_file, save_packmol_input):
         Tempfile that will store the results of PACKMOL packing.
     temp_file : `tempfile` object, required
         Where to copy the filled tempfile.
+    packmol_file : str, required
+        Path to save the generated PACKMOL input file if desired.
     """
     # Create input file
     packmol_inp = tempfile.NamedTemporaryFile(
@@ -1183,11 +1181,10 @@ def _run_packmol(input_text, filled_xyz, temp_file, save_packmol_input):
     packmol_inp.write(input_text)
     packmol_inp.close()
     # Save PACKMOL file to cwd
-    if save_packmol_input:
-        new_file_path = "packmol.inp"
+    if packmol_file:
         with (
             open(packmol_inp.name, "r") as inp_file,
-            open(new_file_path, "w") as new_file,
+            open(packmol_file, "w") as new_file,
         ):
             shutil.copyfileobj(inp_file, new_file)
 
