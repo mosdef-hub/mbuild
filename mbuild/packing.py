@@ -315,7 +315,7 @@ def fill_box(
     overlap *= 10
     if use_pbc and edge != 0:
         raise ValueError("edge must be 0 if use_pbc is set to True")
-    # Apply 0.2nm edge buffer
+    # Apply edge buffer
     box_maxs = [a_max - (edge * 10) for a_max in box_maxs]
     box_mins = [a_min + (edge * 10) for a_min in box_mins]
     box_arg = box_mins + box_maxs
@@ -334,8 +334,11 @@ def fill_box(
     compound_xyz_list = list()
     try:
         if use_pbc:
-            pbc_arg = "pbc {0} {1} {2} {3} {4} {5}".format(*box_arg)
+            pbc_arg = "pbc {0:.3f} {1:.3f} {2:.3f} {3:.3f} {4:.3f} {5:.3f}".format(
+                *box_arg
+            )
             fill_arg = ""
+            periodicity = (True, True, True)
         else:
             fill_arg = (
                 "inside box {0:.3f} {1:.3f} {2:.3f} {3:.3f} {4:.3f} {5:.3f}".format(
@@ -343,6 +346,7 @@ def fill_box(
                 )
             )
             pbc_arg = ""
+            periodicity = (False, False, False)
         input_text = PACKMOL_HEADER.format(
             overlap, filled_xyz.name, seed, sidemax * 10, packmol_commands, pbc_arg
         )
@@ -361,7 +365,7 @@ def fill_box(
             )
         _run_packmol(input_text, filled_xyz, temp_file, save_packmol_input)
         # Create the topology and update the coordinates.
-        filled = Compound()
+        filled = Compound(periodicity=periodicity)
         filled = _create_topology(filled, compound, n_compounds)
         filled.update_coordinates(
             filled_xyz.name, update_port_locations=update_port_locations
@@ -986,6 +990,7 @@ def solvate(
         if use_pbc:
             pbc_arg = "pbc {0} {1} {2} {3} {4} {5}".format(*box_arg)
             fill_arg = ""
+            periodicity = (True, True, True)
         else:
             fill_arg = (
                 "inside box {0:.3f} {1:.3f} {2:.3f} {3:.3f} {4:.3f} {5:.3f}".format(
@@ -993,6 +998,7 @@ def solvate(
                 )
             )
             pbc_arg = ""
+            periodicity = (False, False, False)
         solute.save(solute_xyz.name, overwrite=True)
         input_text = PACKMOL_HEADER.format(
             overlap, solvated_xyz.name, seed, sidemax * 10, packmol_commands, pbc_arg
@@ -1013,7 +1019,7 @@ def solvate(
         _run_packmol(input_text, solvated_xyz, temp_file, save_packmol_input)
 
         # Create the topology and update the coordinates.
-        solvated = Compound()
+        solvated = Compound(periodicity=periodicity)
         solvated.add(clone(solute))
         solvated = _create_topology(solvated, solvent, n_solvent)
         solvated.update_coordinates(
