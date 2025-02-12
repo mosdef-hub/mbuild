@@ -988,7 +988,9 @@ def solvate(
     solvent_xyz_list = list()
     try:
         if use_pbc:
-            pbc_arg = "pbc {0} {1} {2} {3} {4} {5}".format(*box_arg)
+            pbc_arg = "pbc {0:.3f} {1:.3f} {2:.3f} {3:.3f} {4:.3f} {5:.3f}".format(
+                *box_arg
+            )
             fill_arg = ""
             periodicity = (True, True, True)
         else:
