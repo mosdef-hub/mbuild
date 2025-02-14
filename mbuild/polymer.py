@@ -96,8 +96,7 @@ class Polymer(Compound):
             )
         elif len(self._end_groups) != 2:
             raise ValueError(
-                "Please provide two end groups; "
-                f"you provided {len(self._end_groups)}"
+                f"Please provide two end groups; you provided {len(self._end_groups)}"
             )
         self._port_labels = ["up", "down"]
         self._headtail = [None, None]
@@ -165,14 +164,9 @@ class Polymer(Compound):
         axis = np.asarray(axis)
         avg_bond_L = np.mean([L for L in self.backbone_bond_lengths()])
         coords = np.array(
-            [
-                np.zeros(3) + i * avg_bond_L * axis
-                for i in range(len(self.children))
-            ]
+            [np.zeros(3) + i * avg_bond_L * axis for i in range(len(self.children))]
         )
-        self.set_monomer_positions(
-            coordinates=coords, energy_minimize=energy_minimize
-        )
+        self.set_monomer_positions(coordinates=coords, energy_minimize=energy_minimize)
 
     def generate_configuration(
         self,
@@ -212,9 +206,7 @@ class Polymer(Compound):
             radius=radius,
             seed=seed,
         )
-        self.set_monomer_positions(
-            coordinates=coords, energy_minimize=energy_minimize
-        )
+        self.set_monomer_positions(coordinates=coords, energy_minimize=energy_minimize)
 
     def build(self, n, sequence="A", add_hydrogens=True):
         """Connect one or more components in a specified sequence.
@@ -290,9 +282,7 @@ class Polymer(Compound):
                 break
 
         self.head_port = first_part["up"] if not first_part["up"].used else None
-        self.tail_port = (
-            last_part["down"] if not last_part["down"].used else None
-        )
+        self.tail_port = last_part["down"] if not last_part["down"].used else None
 
         head_tail = [self.head_port, self.tail_port]
         for i, compound in enumerate(self._end_groups):
@@ -471,9 +461,7 @@ class Polymer(Compound):
             `add_end_groups()` a second time to add another end group.
         """
         comp = clone(compound)
-        separation = _add_port(
-            comp, "up", index, separation, orientation, replace
-        )
+        separation = _add_port(comp, "up", index, separation, orientation, replace)
         if replace:
             comp.remove(comp[index])
         if duplicate:

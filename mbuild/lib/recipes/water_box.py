@@ -80,7 +80,7 @@ class Water3SiteBox(Compound):
             radii_dict = {}
         else:
             if not isinstance(radii_dict, dict):
-                raise ValueError(f"radii_dict should be dictionary.")
+                raise ValueError("radii_dict should be dictionary.")
 
         # check if we are given a list or single value
         if isinstance(edge, (list, tuple)):
@@ -98,7 +98,7 @@ class Water3SiteBox(Compound):
 
         if model is not None:
             if not isinstance(model, Compound):
-                raise MBuildError(f"Model must be a compound.")
+                raise MBuildError("Model must be a compound.")
             particles = [p for p in model.particles()]
             if particles[0].element.symbol != "O":
                 raise MBuildError(
@@ -185,22 +185,14 @@ class Water3SiteBox(Compound):
                             if p1.name in radii_dict:
                                 c1 = radii_scaling * radii_dict[p1.name]
                             elif p1.element is not None:
-                                c1 = (
-                                    radii_scaling
-                                    * p1.element.radius_alvarez
-                                    / 10.0
-                                )
+                                c1 = radii_scaling * p1.element.radius_alvarez / 10.0
                             else:
                                 c1 = radii_scaling * radii_overlap
 
                             if p2.name in radii_dict:
                                 c2 = radii_scaling * radii_dict[p2.name]
                             elif p2.element is not None:
-                                c2 = (
-                                    radii_scaling
-                                    * p2.element.radius_alvarez
-                                    / 10.0
-                                )
+                                c2 = radii_scaling * p2.element.radius_alvarez / 10.0
                             else:
                                 c2 = radii_scaling * radii_overlap
 

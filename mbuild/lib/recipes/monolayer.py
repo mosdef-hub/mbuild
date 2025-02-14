@@ -43,7 +43,7 @@ class Monolayer(mb.Compound):
         pattern=None,
         tile_x=1,
         tile_y=1,
-        **kwargs
+        **kwargs,
     ):
         from mbuild.lib.recipes import TiledCompound
 
@@ -93,10 +93,7 @@ class Monolayer(mb.Compound):
 
                 # Attach chains to the surface
                 attached_chains, _ = subpattern.apply_to_compound(
-                    guest=chain,
-                    host=self["tiled_surface"],
-                    backfill=None,
-                    **kwargs
+                    guest=chain, host=self["tiled_surface"], backfill=None, **kwargs
                 )
                 self.add(attached_chains)
 
@@ -106,10 +103,7 @@ class Monolayer(mb.Compound):
         # Attach final chain type. Remaining sites get a backfill.
         warn("\n Adding {} of chain {}".format(len(pattern), chains[-1]))
         attached_chains, backfills = pattern.apply_to_compound(
-            guest=chains[-1],
-            host=self["tiled_surface"],
-            backfill=backfill,
-            **kwargs
+            guest=chains[-1], host=self["tiled_surface"], backfill=backfill, **kwargs
         )
         self.add(attached_chains)
         self.add(backfills)

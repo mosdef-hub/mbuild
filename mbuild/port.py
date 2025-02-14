@@ -167,9 +167,7 @@ class Port(Compound):
             referrer_labels = [
                 key for key, val in self.root.labels.items() if val == referrer
             ]
-            port_labels = [
-                key for key, val in referrer.labels.items() if val == self
-            ]
+            port_labels = [key for key, val in referrer.labels.items() if val == self]
             if referrer is self.root:
                 for label in port_labels:
                     access_labels.add(f"['{label}']")

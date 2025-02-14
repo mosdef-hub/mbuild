@@ -14,9 +14,7 @@ import parmed as pmd
 __all__ = ["write_mcf"]
 
 
-def write_mcf(
-    structure, filename, angle_style, dihedral_style, lj14=None, coul14=None
-):
+def write_mcf(structure, filename, angle_style, dihedral_style, lj14=None, coul14=None):
     """Output a Cassandra molecular connectivity file (MCF).
 
     Outputs a Cassandra MCF from a Parmed structure object.
@@ -45,9 +43,7 @@ def write_mcf(
     if not isinstance(structure, pmd.Structure):
         raise ValueError("MCF writer requires parmed structure.")
     if not all([a.type for a in structure.atoms]):
-        raise ValueError(
-            "MCF writing not supported without parameterized forcefield."
-        )
+        raise ValueError("MCF writing not supported without parameterized forcefield.")
 
     # Conversion factors
     IG_CONSTANT_KCAL = 0.00198720425864083  # kcal/mol*K
@@ -55,13 +51,9 @@ def write_mcf(
 
     # Check some things before we start writing the MCF
     # Only will write MCF for Cassandra-supported options
-    if (
-        angle_style.casefold() != "fixed"
-        and angle_style.casefold() != "harmonic"
-    ):
+    if angle_style.casefold() != "fixed" and angle_style.casefold() != "harmonic":
         raise ValueError(
-            "Invalid selection for angle_style. Please choose 'fixed' or "
-            "'harmonic'"
+            "Invalid selection for angle_style. Please choose 'fixed' or 'harmonic'"
         )
 
     if len(structure.urey_bradleys) > 0:
@@ -81,19 +73,14 @@ def write_mcf(
         )
 
     if dihedral_style.casefold() != "none":
-        if (
-            len(structure.rb_torsions) > 0
-            and dihedral_style.casefold() != "opls"
-        ):
+        if len(structure.rb_torsions) > 0 and dihedral_style.casefold() != "opls":
             raise ValueError(
-                "Dihedral style declared as {} but RB torsions "
-                "found.".format(dihedral_style)
+                "Dihedral style declared as {} but RB torsions found.".format(
+                    dihedral_style
+                )
             )
 
-        if (
-            len(structure.dihedrals) > 0
-            and dihedral_style.casefold() != "charmm"
-        ):
+        if len(structure.dihedrals) > 0 and dihedral_style.casefold() != "charmm":
             raise ValueError(
                 "Dihedral style declared as {} but charmm-style dihedrals "
                 "found.".format(dihedral_style)
@@ -136,9 +123,7 @@ def write_mcf(
                         "{:.1f}".format(lj14)
                     )
                 else:
-                    scaled_eps_list = [
-                        adj.type.epsilon for adj in structure.adjusts
-                    ]
+                    scaled_eps_list = [adj.type.epsilon for adj in structure.adjusts]
                     for i_adj, combined_eps in enumerate(combined_eps_list):
                         if combined_eps != 0:
                             lj14 = scaled_eps_list[i_adj] / combined_eps
@@ -146,21 +131,21 @@ def write_mcf(
             else:
                 lj14 = 0.0
                 warnings.warn(
-                    "Unable to infer LJ 1-4 scaling factor. Setting to "
-                    "{:.1f}".format(lj14)
+                    "Unable to infer LJ 1-4 scaling factor. Setting to {:.1f}".format(
+                        lj14
+                    )
                 )
         else:
             lj14 = 0.0
             if len(structure.dihedrals) > 0 or len(structure.rb_torsions) > 0:
                 warnings.warn(
-                    "Unable to infer LJ 1-4 scaling factor. Setting to "
-                    "{:.1f}".format(lj14)
+                    "Unable to infer LJ 1-4 scaling factor. Setting to {:.1f}".format(
+                        lj14
+                    )
                 )
 
     if coul14 < 0.0 or coul14 > 1.0:
-        raise ValueError(
-            "Unreasonable value {} for coul14 scaling.".format(coul14)
-        )
+        raise ValueError("Unreasonable value {} for coul14 scaling.".format(coul14))
     if lj14 < 0.0 or lj14 > 1.0:
         raise ValueError("Unreasonable value {} for lj14 scaling.".format(lj14))
 
@@ -178,12 +163,8 @@ def write_mcf(
         mcf_file.write(header)
         _write_atom_information(mcf_file, structure, in_ring, IG_CONSTANT_KCAL)
         _write_bond_information(mcf_file, structure)
-        _write_angle_information(
-            mcf_file, structure, angle_style, IG_CONSTANT_KCAL
-        )
-        _write_dihedral_information(
-            mcf_file, structure, dihedral_style, KCAL_TO_KJ
-        )
+        _write_angle_information(mcf_file, structure, angle_style, IG_CONSTANT_KCAL)
+        _write_dihedral_information(mcf_file, structure, dihedral_style, KCAL_TO_KJ)
         _write_improper_information(mcf_file, structure, KCAL_TO_KJ)
         _write_fragment_information(mcf_file, structure, frag_list, frag_conn)
         _write_intrascaling_information(mcf_file, lj14, coul14)
@@ -216,16 +197,14 @@ def _id_rings_fragments(structure):
     )
 
     if len(structure.bonds) == 0:
-        warnings.warn(
-            "No bonds found. Cassandra will interpet this as a rigid species"
-        )
+        warnings.warn("No bonds found. Cassandra will interpet this as a rigid species")
         in_ring = [False] * len(structure.atoms)
         frag_list = []
         frag_conn = []
         return in_ring, frag_list, frag_conn
 
     # Check if entire molecule is connected. Warn if not.
-    if nx.is_connected(bond_graph) == False:
+    if nx.is_connected(bond_graph) is False:
         raise ValueError(
             "Not all components of the molecule are connected. MCF files are "
             "for a single molecule and thus everything should be connected "
@@ -246,8 +225,7 @@ def _id_rings_fragments(structure):
 
     # First create a neighbor list for each atom
     neigh_dict = {
-        i: list(bond_graph.neighbors(i))
-        for i in range(bond_graph.number_of_nodes())
+        i: list(bond_graph.neighbors(i)) for i in range(bond_graph.number_of_nodes())
     }
 
     # Handle fused/adjoining rings
@@ -281,7 +259,7 @@ def _id_rings_fragments(structure):
     # Now ID the other fragments
     for idx in neigh_dict:
         if len(neigh_dict[idx]) > 1:
-            if in_ring[idx] == True:
+            if in_ring[idx] is True:
                 continue
             else:
                 frag_list.append([idx] + neigh_dict[idx])
@@ -377,8 +355,7 @@ def _write_atom_information(mcf_file, structure, in_ring, IG_CONSTANT_KCAL):
     mcf_file.write("{:d}\n".format(len(structure.atoms)))
     for i in range(len(structure.atoms)):
         mcf_file.write(
-            "{:<4d}  {:<6s}  {:<2s}  {:7.3f}  {:12.8f}  "
-            "{:3s}  {:8.5f}  {:8.5f}".format(
+            "{:<4d}  {:<6s}  {:<2s}  {:7.3f}  {:12.8f}  {:3s}  {:8.5f}  {:8.5f}".format(
                 i + 1,
                 types[i],
                 elements[i],
@@ -389,7 +366,7 @@ def _write_atom_information(mcf_file, structure, in_ring, IG_CONSTANT_KCAL):
                 sigmas[i],
             )
         )
-        if in_ring[i] == True:
+        if in_ring[i] is True:
             mcf_file.write("  ring")
         mcf_file.write("\n")
 
@@ -407,9 +384,7 @@ def _write_bond_information(mcf_file, structure):
     bond_parms = [f"{bond.type.req:8.3f}" for bond in structure.bonds]
 
     mcf_file.write("\n!Bond Format\n")
-    mcf_file.write(
-        "!index i j type parameters\n" + '!type="fixed", parms=bondLength\n'
-    )
+    mcf_file.write("!index i j type parameters\n" + '!type="fixed", parms=bondLength\n')
     mcf_file.write("\n# Bond_Info\n")
     mcf_file.write("{:d}\n".format(len(structure.bonds)))
     for i, bond in enumerate(structure.bonds):
@@ -424,9 +399,7 @@ def _write_bond_information(mcf_file, structure):
         )
 
 
-def _write_angle_information(
-    mcf_file, structure, angle_style, IG_CONSTANT_KCAL
-):
+def _write_angle_information(mcf_file, structure, angle_style, IG_CONSTANT_KCAL):
     """Write the angles in the system.
 
     Parameters
@@ -450,8 +423,7 @@ def _write_angle_information(
         ]
     else:
         raise ValueError(
-            "Only 'fixed' and 'harmonic' angle styles are supported by "
-            "Cassandra"
+            "Only 'fixed' and 'harmonic' angle styles are supported by Cassandra"
         )
 
     header = (
@@ -478,9 +450,7 @@ def _write_angle_information(
         )
 
 
-def _write_dihedral_information(
-    mcf_file, structure, dihedral_style, KCAL_TO_KJ
-):
+def _write_dihedral_information(mcf_file, structure, dihedral_style, KCAL_TO_KJ):
     """Write the dihedrals in the system.
 
     Parameters
@@ -560,8 +530,7 @@ def _write_dihedral_information(
                 dihedral_parms = ["" for dihedral in dihedrals]
         else:
             raise ValueError(
-                "Only 'OPLS', 'CHARMM', and 'none' dihedral styles are "
-                "supported."
+                "Only 'OPLS', 'CHARMM', and 'none' dihedral styles are supported."
             )
 
         mcf_file.write("{:d}\n".format(len(dihedrals)))
@@ -571,8 +540,7 @@ def _write_dihedral_information(
             # The atom order provided in the parmed.Structure
             # is written to the MCF file.
             mcf_file.write(
-                "{:<4d}  {:<4d}  {:<4d}  {:<4d}  {:<4d}"
-                "  {:s}  {:s}\n".format(
+                "{:<4d}  {:<4d}  {:<4d}  {:<4d}  {:<4d}  {:s}  {:s}\n".format(
                     i + 1,
                     dihedral.atom1.idx + 1,
                     dihedral.atom2.idx + 1,
@@ -611,8 +579,7 @@ def _write_improper_information(mcf_file, structure, KCAL_TO_KJ):
     improper_type = "harmonic"
     for i, improper in enumerate(structure.impropers):
         mcf_file.write(
-            "{:<4d}  {:<4d}  {:<4d}  {:<4d}  {:<4d}"
-            "  {:s}  {:8.3f}  {:8.3f}\n".format(
+            "{:<4d}  {:<4d}  {:<4d}  {:<4d}  {:<4d}  {:s}  {:8.3f}  {:8.3f}\n".format(
                 i + 1,
                 improper.atom1.idx + 1,
                 improper.atom2.idx + 1,
@@ -656,9 +623,7 @@ def _write_fragment_information(mcf_file, structure, frag_list, frag_conn):
             mcf_file.write("1\n")
             mcf_file.write("1 2 1 2\n")
         else:
-            warnings.warn(
-                "More than two atoms present but no fragments identified."
-            )
+            warnings.warn("More than two atoms present but no fragments identified.")
             mcf_file.write("0\n")
     else:
         mcf_file.write("{:d}\n".format(len(frag_list)))
@@ -671,9 +636,7 @@ def _write_fragment_information(mcf_file, structure, frag_list, frag_conn):
     mcf_file.write("\n\n# Fragment_Connectivity\n")
     mcf_file.write("{:d}\n".format(len(frag_conn)))
     for i, conn in enumerate(frag_conn):
-        mcf_file.write(
-            "{:d}    {:d}    {:d}\n".format(i + 1, conn[0] + 1, conn[1] + 1)
-        )
+        mcf_file.write("{:d}    {:d}    {:d}\n".format(i + 1, conn[0] + 1, conn[1] + 1))
 
 
 def _write_intrascaling_information(mcf_file, lj14, coul14):

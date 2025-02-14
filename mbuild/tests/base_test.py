@@ -161,9 +161,7 @@ class BaseTest:
     def box_of_benzenes(self, benzene):
         n_benzenes = 10
         benzene.name = "Benzene"
-        filled = mb.fill_box(
-            benzene, n_compounds=n_benzenes, box=[0, 0, 0, 4, 4, 4]
-        )
+        filled = mb.fill_box(benzene, n_compounds=n_benzenes, box=[0, 0, 0, 4, 4, 4])
         return filled
 
     @pytest.fixture
@@ -192,15 +190,11 @@ class BaseTest:
             first = mb.clone(chf)
             second = mb.clone(chf)
             first.add(
-                mb.Port(
-                    anchor=first[0], orientation=bond_vector, separation=0.075
-                ),
+                mb.Port(anchor=first[0], orientation=bond_vector, separation=0.075),
                 label="up",
             )
             second.add(
-                mb.Port(
-                    anchor=second[0], orientation=-bond_vector, separation=0.075
-                ),
+                mb.Port(anchor=second[0], orientation=-bond_vector, separation=0.075),
                 label="down",
             )
             c2h2f2 = mb.Compound(subcompounds=(first, second))
@@ -252,9 +246,7 @@ class BaseTest:
             lattice_points=basis,
         )
         carbon_dict = {"C": carbon}
-        graphene_cell = graphene.populate(
-            compound_dict=carbon_dict, x=3, y=3, z=1
-        )
+        graphene_cell = graphene.populate(compound_dict=carbon_dict, x=3, y=3, z=1)
         return graphene_cell
 
     @pytest.fixture
@@ -266,9 +258,7 @@ class BaseTest:
         cscl_lattice = mb.Lattice(spacing, lattice_points=basis)
 
         cscl_dict = {"Cs": cesium, "Cl": chlorine}
-        cscl_compound = cscl_lattice.populate(
-            x=3, y=3, z=1, compound_dict=cscl_dict
-        )
+        cscl_compound = cscl_lattice.populate(x=3, y=3, z=1, compound_dict=cscl_dict)
         return cscl_compound
 
     @pytest.fixture
@@ -285,38 +275,16 @@ class BaseTest:
             angles=[114.94999695, 93.05000305, 91.91999817],
         )
         gilmerite.add(
-            mb.Particle(
-                name="As", pos=[5.43783569e-01, 1.54457900e-04, 4.61488000e-05]
-            )
+            mb.Particle(name="As", pos=[5.43783569e-01, 1.54457900e-04, 4.61488000e-05])
         )
-        gilmerite.add(
-            mb.Particle(name="Cu", pos=[0.00615697, 0.28454988, 0.14878373])
-        )
-        gilmerite.add(
-            mb.Particle(name="Cu", pos=[0.28204174, 0.13594167, 0.16465892])
-        )
-        gilmerite.add(
-            mb.Particle(name="Cu", pos=[0.28377297, 0.43348074, 0.17854972])
-        )
-        gilmerite.add(
-            mb.Particle(name="O", pos=[0.08094841, 0.14370937, 0.03276565])
-        )
-        gilmerite.add(
-            mb.Particle(name="O", pos=[0.08451646, 0.45650253, 0.03415011])
-        )
-        gilmerite.add(
-            mb.Particle(name="O", pos=[0.36793642, 0.28482277, 0.07106915])
-        )
-        gilmerite.add(
-            mb.Particle(name="O", pos=[0.39833167, -0.00501952, 0.08583677])
-        )
-        gilmerite.add(
-            mb.Particle(name="O", pos=[0.17415644, 0.27864442, 0.24828055])
-        )
-        gilmerite.add(
-            mb.Particle(name="O", pos=[0.24149659, -0.00539473, 0.29073744])
-        )
-        gilmerite.add(
-            mb.Particle(name="O", pos=[0.45795937, 0.36822546, 0.30135167])
-        )
+        gilmerite.add(mb.Particle(name="Cu", pos=[0.00615697, 0.28454988, 0.14878373]))
+        gilmerite.add(mb.Particle(name="Cu", pos=[0.28204174, 0.13594167, 0.16465892]))
+        gilmerite.add(mb.Particle(name="Cu", pos=[0.28377297, 0.43348074, 0.17854972]))
+        gilmerite.add(mb.Particle(name="O", pos=[0.08094841, 0.14370937, 0.03276565]))
+        gilmerite.add(mb.Particle(name="O", pos=[0.08451646, 0.45650253, 0.03415011]))
+        gilmerite.add(mb.Particle(name="O", pos=[0.36793642, 0.28482277, 0.07106915]))
+        gilmerite.add(mb.Particle(name="O", pos=[0.39833167, -0.00501952, 0.08583677]))
+        gilmerite.add(mb.Particle(name="O", pos=[0.17415644, 0.27864442, 0.24828055]))
+        gilmerite.add(mb.Particle(name="O", pos=[0.24149659, -0.00539473, 0.29073744]))
+        gilmerite.add(mb.Particle(name="O", pos=[0.45795937, 0.36822546, 0.30135167]))
         return gilmerite

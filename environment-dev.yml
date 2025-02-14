@@ -2,32 +2,45 @@ name: mbuild-dev
 channels:
   - conda-forge
 dependencies:
-  - bump2version
-  - codecov
-  - ele
-  - gmso>=0.9.0
-  - foyer>=0.11.0
-  - freud>=2.0.0
-  - garnett>=0.7.1
-  - gsd>=2.9
-  - hoomd>=3
+  - python>=3.9,<=3.12
+  - boltons
+  - numpy=1.26.4
+  - sympy
+  - unyt>=2.9.5
+  - boltons
+  - lark>=1.2
+  - lxml
   - intermol
   - mdtraj
+  - pydantic>=2
   - networkx
   - nglview>=3
-  - numpy=1.26.4
-  - openbabel>=3
-  - packmol>=20
-  - parmed>=3.4.3
-  - pip
-  - pre-commit
-  - py3Dmol
-  - pycifrw
   - pytest
-  - pytest-azurepipelines
+  - garnett>=0.7.1
+  - openbabel>=3.0.0
+  - openff-toolkit-base >=0.11,<0.16.7
+  - openmm
+  - gsd>=2.9
+  - parmed>=3.4.3
+  - packmol>=20
   - pytest-cov
-  - python>=3.8
+  - pycifrw
   - rdkit>=2021
+  - requests
+  - requests-mock
   - scipy
   - treelib
+  - codecov
+  - matplotlib
+  - ipywidgets
+  - ele>=0.2.0
+  - pre-commit
+  - pandas
+  - symengine
+  - python-symengine
+  - hoomd>=4.0,<5.0
   - importlib_resources
+  - pip:
+      - git+https://github.com/mosdef-hub/gmso.git@main
+      - git+https://github.com/mosdef-hub/foyer.git@main
+      - git+https://github.com/mosdef-hub/forcefield-utilities.git@main

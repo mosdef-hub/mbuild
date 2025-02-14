@@ -9,9 +9,7 @@ def assert_port_exists(port_name, compound):
         from mbuild.port import Port
 
         available_ports = [
-            name
-            for name in compound.labels
-            if isinstance(compound.labels[name], Port)
+            name for name in compound.labels if isinstance(compound.labels[name], Port)
         ]
         compound_name = compound.__class__.__name__
         raise ValueError(

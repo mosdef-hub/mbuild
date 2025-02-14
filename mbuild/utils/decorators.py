@@ -96,8 +96,7 @@ def deprecated_property(
             def show_warning_msg(self):
                 if self.warning_msg is not None:
                     warn(
-                        f"Property {fcn.__name__} is deprecated. "
-                        f"{self.warning_msg}",
+                        f"Property {fcn.__name__} is deprecated. {self.warning_msg}",
                         DeprecationWarning,
                     )
                     if not self.always_show:
@@ -114,9 +113,7 @@ def breaking_change(warning_string=""):
 
     def old_function(fcn):
         def wrapper(*args, **kwargs):
-            warn(
-                f"{fcn.__name__} has breaking change. {warning_string}", Warning
-            )
+            warn(f"{fcn.__name__} has breaking change. {warning_string}", Warning)
             fcn(*args, **kwargs)
 
         return wrapper
