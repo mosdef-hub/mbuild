@@ -369,32 +369,35 @@ class TestPacking(BaseTest):
         with pytest.raises(MBuildError, match=r"co\-linear"):
             mb.fill_box(h2o, n_compounds=10, box=[0, 0, 0])
 
-    def test_save_packmol_input(self, h2o):
+    def test_save_packmol_input(self, h2o, methane):
         cwd = os.getcwd()  # Must keep track of the temp dir that pytest creates
-        filled = mb.fill_box(
+        mb.fill_box(
             h2o, n_compounds=10, box=Box([4, 4, 4]), packmol_file="fill_box.inp"
         )
         assert os.path.isfile(os.path.join(cwd, "fill_box.inp"))
-        os.remove(os.path.join(cwd, "fill_box.inp"))
+
         mb.fill_region(
             h2o,
             10,
             [[2, 2, 2, 4, 4, 4]],
-            temp_file="temp_file2.pdb",
             bounds=[[2, 2, 2, 4, 4, 4]],
             packmol_file="region.inp",
         )
         assert os.path.isfile(os.path.join(cwd, "region.inp"))
-        os.remove(os.path.join(cwd, "region.inp"))
+
         mb.solvate(
-            filled,
+            methane,
             h2o,
             10,
             box=[4, 4, 4],
-            temp_file="temp_file3.pdb",
             packmol_file="solvate.inp",
         )
         assert os.path.isfile(os.path.join(cwd, "solvate.inp"))
+
+        mb.fill_sphere(
+            h2o, sphere=[3, 3, 3, 1.5], n_compounds=50, packmol_file="sphere.inp"
+        )
+        assert os.path.isfile(os.path.join(cwd, "sphere.inp"))
 
     def test_packmol_args(self, h2o):
         with pytest.raises(RuntimeError):
