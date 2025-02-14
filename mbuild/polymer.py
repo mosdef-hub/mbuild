@@ -321,6 +321,15 @@ class Polymer(Compound):
             if id(port) not in port_ids:
                 self.remove(port)
 
+    def build_lamellae(self, num_layers, layer_length, layer_separation):
+        pass
+
+    def build_random_configuration(self, n, min_angle, max_angle, radius, seed=42):
+        pass
+
+    def build_strain_chain(self, n, axis=(1, 0, 0)):
+        pass
+
     def add_monomer(
         self,
         compound,
