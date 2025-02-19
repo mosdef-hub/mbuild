@@ -6,7 +6,7 @@ import numpy as np
 
 from mbuild import clone
 from mbuild.compound import Compound
-from mbuild.conformations import random_walk
+from mbuild.conformations import lamellae, random_walk
 from mbuild.coordinate_transform import (
     force_overlap,
     x_axis_transform,
@@ -168,46 +168,6 @@ class Polymer(Compound):
         )
         self.set_monomer_positions(coordinates=coords, energy_minimize=energy_minimize)
 
-    def generate_configuration(
-        self,
-        radius=None,
-        min_angle=np.pi / 2,
-        max_angle=np.pi,
-        max_attemps=5000,
-        seed=42,
-        energy_minimize=True,
-    ):
-        """Update monomer positions to a random configuration.
-
-        Parameters
-        ----------
-        radius : float, default None
-            Set the minimum distance between monomer centers.
-        min_angle : float, default pi/2
-            Set the minimum angle between 3 sites.
-        max_angle : float, default pi
-            Set the maximum angle between 3 sites.
-        max_attempts : int, default 5000
-            The maximum random walk attempts before exiting random walk.
-        seed : int, default 42
-            The seed used in the random walk algorithm.
-        energy_minimize : bool, default True
-            If True, run energy minimization on resulting structure.
-            See `mbuild.Compound.energy_minimize()`
-        """
-        avg_bond_L = np.mean([L for L in self.backbone_bond_lengths()])
-        if not radius:
-            radius = avg_bond_L * 1.2
-        coords = random_walk(
-            N=len(self.children),
-            min_angle=min_angle,
-            max_angle=max_angle,
-            bond_L=avg_bond_L,
-            radius=radius,
-            seed=seed,
-        )
-        self.set_monomer_positions(coordinates=coords, energy_minimize=energy_minimize)
-
     def build(self, n, sequence="A", add_hydrogens=True):
         """Connect one or more components in a specified sequence.
 
@@ -321,13 +281,54 @@ class Polymer(Compound):
             if id(port) not in port_ids:
                 self.remove(port)
 
-    def build_lamellae(self, num_layers, layer_length, layer_separation):
-        pass
+    def build_random_configuration(
+        self,
+        n,
+        sequence="A",
+        min_angle=np.pi / 2,
+        max_angle=np.pi,
+        radius=None,
+        seed=42,
+        energy_minimize=True,
+        add_hydrogens=True,
+    ):
+        # Build initial polymer chain
+        self.build(n=n, sequence=sequence, add_hydrogens=add_hydrogens)
+        # Get new coordinates
+        avg_bond_L = np.mean([L for L in self.backbone_bond_lengths()])
+        if not radius:
+            radius = avg_bond_L * 1.2
+        coords = random_walk(
+            N=len(self.children),
+            min_angle=min_angle,
+            max_angle=max_angle,
+            bond_L=avg_bond_L,
+            radius=radius,
+            seed=seed,
+        )
+        self.set_monomer_positions(coordinates=coords, energy_minimize=energy_minimize)
 
-    def build_random_configuration(self, n, min_angle, max_angle, radius, seed=42):
-        pass
+    def build_lamellae(
+        self,
+        num_layers,
+        layer_length,
+        layer_separation,
+        bond_L,
+        sequence="A",
+        energy_minimize=True,
+        add_hydrogens=True,
+    ):
+        # Get lamellar coords first to determine n monomers
+        coords = lamellae(
+            num_layers=num_layers,
+            layer_length=layer_length,
+            bond_L=bond_L,
+            layer_separation=layer_separation,
+        )
+        self.build(n=len(coords), sequence=sequence, add_hydrogens=add_hydrogens)
+        self.set_monomer_positions(coordinates=coords, energy_minimize=energy_minimize)
 
-    def build_strain_chain(self, n, axis=(1, 0, 0)):
+    def build_straight_chain(self, n, axis=(1, 0, 0)):
         pass
 
     def add_monomer(
