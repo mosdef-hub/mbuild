@@ -89,6 +89,11 @@ jobs:
     steps:
       - uses: actions/checkout@v4
         name: Checkout Branch / Pull Request
+      - uses: Vampire/setup-wsl@v4
+        with:
+          distribution: Ubuntu-24.04
+        name: Set up WSL
+
 
 
   bleeding-edge-test:
