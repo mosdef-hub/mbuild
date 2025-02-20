@@ -95,7 +95,8 @@ jobs:
           distribution: Ubuntu-24.04
           update: false
 
-      - shell: wsl-bash {0}
+      - name: run command
+        shell: wsl-bash {0}
         run: ls -a
 
   bleeding-edge-test:
