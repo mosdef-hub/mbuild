@@ -86,11 +86,8 @@ jobs:
     runs-on: windows-latest
 
     steps:
-      - name: Checkout repository
-        uses: actions/checkout@v4
-
-      - name: WSL
-        uses: Vampire/setup-wsl@v4
+      - uses: actions/checkout@v4
+      - uses: Vampire/setup-wsl@v4
         with:
           distribution: Ubuntu-24.04
           update: false
