@@ -91,8 +91,9 @@ jobs:
 
       - name: WSL
         uses: Vampire/setup-wsl@v4
-        run: ls -a
-        shell: wsl-bash {0}
+        with:
+          distribution: Ubuntu-24.04
+          update: false
 
   bleeding-edge-test:
     if: github.event.pull_request.draft == false
