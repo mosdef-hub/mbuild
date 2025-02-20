@@ -13,7 +13,7 @@ on:
 jobs:
   test:
     if: github.event.pull_request.draft == false
-    name: mBuild Tests (python)
+    name: mBuild Tests (Linux)
     runs-on: ${{ matrix.os }}
     strategy:
       fail-fast: false
@@ -35,15 +35,6 @@ jobs:
           environment-file: environment-dev.yml
           create-args: >-
             python=${{ matrix.python-version }}
-        if: runner.os != 'Windows'
-
-      - name: Install Mamba (Windows)
-        uses: mamba-org/setup-micromamba@v2
-        with:
-          environment-file: environment-dev-win.yml
-          create-args: >-
-            python=${{ matrix.python-version }}
-        if: runner.os == 'Windows'
 
       - name: Install Package
         run: python -m pip install -e .
@@ -57,14 +48,15 @@ jobs:
           name: mBuild-Coverage
           verbose: true
           files: ./coverage.xml
-  arch-test:
+
+  macos-test:
     if: github.event.pull_request.draft == false
-    name: mBuild Tests (arch)
+    name: mBuild Tests (MacOS)
     runs-on: ${{ matrix.os }}
     strategy:
       fail-fast: false
       matrix:
-        os: [macOS-latest, macOS-13, ubuntu-latest, windows-latest]
+        os: [macOS-latest, macOS-13]
         python-version: ["3.12"]
 
     defaults:
@@ -81,21 +73,55 @@ jobs:
           environment-file: environment-dev.yml
           create-args: >-
             python=${{ matrix.python-version }}
-        if: runner.os != 'Windows'
-
-      - name: Install Mamba (Windows)
-        uses: mamba-org/setup-micromamba@v2
-        with:
-          environment-file: environment-dev-win.yml
-          create-args: >-
-            python=${{ matrix.python-version }}
-        if: runner.os == 'Windows'
 
       - name: Install Package
         run: python -m pip install -e .
 
       - name: Test (OS -> ${{ matrix.os }} / Python -> ${{ matrix.python-version }})
         run: python -m pytest -v --cov=mbuild --cov-report=xml --cov-append --cov-config=setup.cfg --color yes --pyargs mbuild
+
+  windows-wsl-test:
+    if: github.event.pull_request.draft == false
+    name: mBuild Tests (WSL)
+    runs-on: windows-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Install WSL and Set Up Ubuntu
+        run: |
+          wsl --install -d Ubuntu
+          wsl --version
+        shell: powershell
+
+      - name: Install Miniforge in WSL
+        run: |
+          wsl wget https://github.com/conda-forge/miniforge/releases/latest/download/Miniforge3-Linux-x86_64.sh -O ~/Miniforge3.sh
+          wsl bash ~/Miniforge3.sh -b -p $HOME/miniforge
+          wsl echo 'export PATH=$HOME/miniforge/bin:$PATH' >> ~/.bashrc
+          wsl source ~/.bashrc
+          wsl conda init bash
+          wsl conda --version
+        shell: bash
+
+      - name: Create Conda Environment
+        run: |
+          wsl bash -c "
+            source ~/.bashrc &&
+            mamba env create -f environment-dev.yml &&
+            mamba activate mbuild-dev &&
+            mamba list
+          "
+        shell: bash
+
+      - name: Run Tests in Conda Environment
+        run: |
+          wsl bash -c "
+            source ~/.bashrc &&
+            mamba activate mbuild-dev &&
+            python -m pytest -v --color yes --pyargs mbuild
+          "
+        shell: bash
 
   bleeding-edge-test:
     if: github.event.pull_request.draft == false
