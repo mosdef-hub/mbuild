@@ -81,6 +81,16 @@ jobs:
       - name: Test (OS -> ${{ matrix.os }} / Python -> ${{ matrix.python-version }})
         run: python -m pytest -v --cov=mbuild --cov-report=xml --cov-append --cov-config=setup.cfg --color yes --pyargs mbuild
 
+  wsl-test:
+    if: github.event.pull_request.draft == false
+    name: mBuild Tests (WSL)
+    runs-on: windows-latest
+
+    steps:
+      - uses: actions/checkout@v4
+        name: Checkout Branch / Pull Request
+
+
   bleeding-edge-test:
     if: github.event.pull_request.draft == false
     name: Bleeding Edge mosdef Tests for mBuild
