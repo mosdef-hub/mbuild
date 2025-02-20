@@ -118,8 +118,7 @@ jobs:
         run: |
           wsl bash -c "
             source ~/.bashrc &&
-            mamba activate mbuild-dev &&
-            python -m pytest -v --color yes --pyargs mbuild
+            mamba run -n mbuild-dev python -m pytest -v --color yes --pyargs mbuild
           "
         shell: bash
 
