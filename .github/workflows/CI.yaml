@@ -84,16 +84,15 @@ jobs:
     if: github.event.pull_request.draft == false
     name: mBuild Tests (WSL)
     runs-on: windows-latest
-
     steps:
-      - uses: actions/checkout@v4
-        name: Checkout Branch / Pull Request
+      - name: Checkout repository
+        uses: actions/checkout@v4
 
-      - uses: Vampire/setup-wsl@v4
-        name: Setup WSL
+      - name: Set up WSL
+        uses: Vampire/setup-wsl@v4
         with:
-          distribution: Ubuntu-24.04
-          update: false
+          distribution: "Ubuntu-24.04"
+          update: true
 
   bleeding-edge-test:
     if: github.event.pull_request.draft == false
