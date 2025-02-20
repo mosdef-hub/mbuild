@@ -1,4 +1,4 @@
-uame: CI
+name: CI
 
 on:
   push:
@@ -13,7 +13,7 @@ on:
 jobs:
   test:
     if: github.event.pull_request.draft == false
-    name: mBuild Tests (Linux)
+    name: mBuild Tests (python)
     runs-on: ${{ matrix.os }}
     strategy:
       fail-fast: false
@@ -35,6 +35,15 @@ jobs:
           environment-file: environment-dev.yml
           create-args: >-
             python=${{ matrix.python-version }}
+        if: runner.os != 'Windows'
+
+      - name: Install Mamba (Windows)
+        uses: mamba-org/setup-micromamba@v2
+        with:
+          environment-file: environment-dev-win.yml
+          create-args: >-
+            python=${{ matrix.python-version }}
+        if: runner.os == 'Windows'
 
       - name: Install Package
         run: python -m pip install -e .
@@ -48,15 +57,14 @@ jobs:
           name: mBuild-Coverage
           verbose: true
           files: ./coverage.xml
-
-  macos-test:
+  arch-test:
     if: github.event.pull_request.draft == false
-    name: mBuild Tests (MacOS)
+    name: mBuild Tests (arch)
     runs-on: ${{ matrix.os }}
     strategy:
       fail-fast: false
       matrix:
-        os: [macOS-latest, macOS-13]
+        os: [macOS-latest, macOS-13, ubuntu-latest, windows-latest]
         python-version: ["3.12"]
 
     defaults:
@@ -73,6 +81,15 @@ jobs:
           environment-file: environment-dev.yml
           create-args: >-
             python=${{ matrix.python-version }}
+        if: runner.os != 'Windows'
+
+      - name: Install Mamba (Windows)
+        uses: mamba-org/setup-micromamba@v2
+        with:
+          environment-file: environment-dev-win.yml
+          create-args: >-
+            python=${{ matrix.python-version }}
+        if: runner.os == 'Windows'
 
       - name: Install Package
         run: python -m pip install -e .
