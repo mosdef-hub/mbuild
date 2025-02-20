@@ -94,8 +94,6 @@ jobs:
         with:
           distribution: Ubuntu-24.04
           update: false
-
-      - name: Install dependencies on Windows (WSL)
         shell: wsl-bash {0}
         run: |
           apt-get update
