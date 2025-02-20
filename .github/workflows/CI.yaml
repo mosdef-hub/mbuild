@@ -100,9 +100,10 @@ jobs:
         shell: wsl-bash {0}
         run: |
           wget https://github.com/conda-forge/miniforge/releases/latest/download/Miniforge3-Linux-x86_64.sh -O ~/Miniforge3.sh
-
-
-
+          ./~/Miniforge3.sh -b -p $HOME/miniforge
+          echo 'export PATH=$HOME/miniforge/bin:$PATH' >> ~/.bashrc
+          source ~/.bashrc
+          mamba env create -f environment-dev.yml -y
 
 
   bleeding-edge-test:
