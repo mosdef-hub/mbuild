@@ -17,6 +17,7 @@ import numpy as np
 from boltons.setutils import IndexedSet
 from ele.element import Element, element_from_name, element_from_symbol
 from ele.exceptions import ElementError
+from scipy.spatial.distance import pdist
 from treelib import Tree
 
 from mbuild import conversion
@@ -1456,6 +1457,18 @@ class Compound(object):
                     if neigh not in self.particles():
                         return False
             return True
+
+    def check_for_overlap(self, minimum_distance=0.09):
+        """Check if a compound contains overlapping particles.
+
+        Parameters:
+        -----------
+        minimum_distance : float, default=0.09
+            Distance in nanometers used as the threshold in
+            determining if a pair of particles overlap.
+        """
+        pair_distances = pdist(self.xyz)
+        return np.any(pair_distances < minimum_distance)
 
     def get_boundingbox(self, pad_box=None):
         """Compute the bounding box of the compound.
