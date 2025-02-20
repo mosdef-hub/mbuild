@@ -88,39 +88,14 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      - name: Install WSL and Set Up Ubuntu
-        run: |
-          wsl --install -d Ubuntu
-          wsl --version
-        shell: powershell
-
-      - name: Install Miniforge in WSL
-        run: |
-          wsl wget https://github.com/conda-forge/miniforge/releases/latest/download/Miniforge3-Linux-x86_64.sh -O ~/Miniforge3.sh
-          wsl bash ~/Miniforge3.sh -b -p $HOME/miniforge
-          wsl echo 'export PATH=$HOME/miniforge/bin:$PATH' >> ~/.bashrc
-          wsl source ~/.bashrc
-          wsl conda init bash
-          wsl conda --version
-        shell: bash
-
-      - name: Create Conda Environment
-        run: |
-          wsl bash -c "
-            source ~/.bashrc &&
-            mamba env create -f environment-dev.yml &&
-            mamba activate mbuild-dev &&
-            mamba list
-          "
-        shell: bash
-
-      - name: Run Tests in Conda Environment
-        run: |
-          wsl bash -c "
-            source ~/.bashrc &&
-            mamba run -n mbuild-dev python -m pytest -v --color yes --pyargs mbuild
-          "
-        shell: bash
+      - name: Set up WSL
+        uses: Vampire/setup-wsl@v4
+        with:
+          distribution: "Ubuntu-24.04"
+          wsl-shell-user: test
+          update: true
+        run : |
+          wsl-shell-command wget https://github.com/conda-forge/miniforge/releases/latest/download/Miniforge3-Linux-x86_64.sh -O ~/Miniforge3.sh
 
   bleeding-edge-test:
     if: github.event.pull_request.draft == false
