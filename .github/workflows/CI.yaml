@@ -37,14 +37,6 @@ jobs:
             python=${{ matrix.python-version }}
         if: runner.os != 'Windows'
 
-      - name: Install Mamba (Windows)
-        uses: mamba-org/setup-micromamba@v2
-        with:
-          environment-file: environment-dev-win.yml
-          create-args: >-
-            python=${{ matrix.python-version }}
-        if: runner.os == 'Windows'
-
       - name: Install Package
         run: python -m pip install -e .
 
