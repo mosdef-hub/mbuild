@@ -328,9 +328,6 @@ class Polymer(Compound):
         self.build(n=len(coords), sequence=sequence, add_hydrogens=add_hydrogens)
         self.set_monomer_positions(coordinates=coords, energy_minimize=energy_minimize)
 
-    def build_straight_chain(self, n, axis=(1, 0, 0)):
-        pass
-
     def add_monomer(
         self,
         compound,
