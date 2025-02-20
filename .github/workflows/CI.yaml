@@ -87,14 +87,18 @@ jobs:
 
     steps:
       - uses: actions/checkout@v4
+        name: Checkout Branch / Pull Request
+
       - uses: Vampire/setup-wsl@v4
+        name: Setup WSL
         with:
           distribution: Ubuntu-24.04
           update: false
 
-      - name: run command
+      - name: Install dependencies on Windows (WSL)
         shell: wsl-bash {0}
-        run: ls -a
+        run: |
+          apt-get update
 
   bleeding-edge-test:
     if: github.event.pull_request.draft == false
