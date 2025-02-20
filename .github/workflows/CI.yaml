@@ -1,4 +1,4 @@
-name: CI
+uame: CI
 
 on:
   push:
@@ -94,8 +94,9 @@ jobs:
         with:
           distribution: Ubuntu-24.04
           update: false
+
+      - shell: wsl-bash {0}
         run: ls -a
-        shell: wsl-bash {0}
 
   bleeding-edge-test:
     if: github.event.pull_request.draft == false
