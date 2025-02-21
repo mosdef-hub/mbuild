@@ -106,9 +106,9 @@ jobs:
           echo 'export PATH=$HOME/miniforge/bin:$PATH' >> ~/.bashrc
           export PATH=$HOME/miniforge/bin:$PATH
           source ~/.bashrc
-          mamba init bash
+          mamba init
           mamba env create -f environment-dev.yml python=3.12 -y
-          mamba activate mbuild-dev
+          conda activate mbuild-dev
           pip install -e . --prefix=$HOME/tmp_egginfo --no-build-isolation
           python -m pytest -v --color yes --pyargs mbuild
 
