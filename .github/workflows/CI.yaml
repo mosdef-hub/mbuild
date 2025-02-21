@@ -106,10 +106,11 @@ jobs:
           echo 'export PATH=$HOME/miniforge/bin:$PATH' >> ~/.bashrc
           export PATH=$HOME/miniforge/bin:$PATH
           source ~/.bashrc
+          mamba shell init
           mamba env create -f environment-dev.yml python=3.12 -y
-          mamba run -n mbuild-dev pip install -e . --prefix=$HOME/tmp_egginfo --no-build-isolation
-          mamba run -n mbuild-dev mamba list
-          mamba run -n mbuild-dev python -m pytest -v --color yes --pyargs mbuild
+          mamba activate mbuild-dev
+          pip install -e . --prefix=$HOME/tmp_egginfo --no-build-isolation
+          python -m pytest -v --color yes --pyargs mbuild
 
   bleeding-edge-test:
     if: github.event.pull_request.draft == false
