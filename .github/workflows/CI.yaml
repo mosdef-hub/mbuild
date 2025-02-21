@@ -97,7 +97,7 @@ jobs:
           wsl-shell-user: runner
         name: Set up WSL
 
-      - name: Install dependencies on Windows (WSL)
+      - name: Install mBuild and run pytest
         if: ${{ runner.os == 'Windows' }}
         shell: wsl-bash {0}
         run: |
@@ -108,6 +108,7 @@ jobs:
           source ~/.bashrc
           mamba env create -f environment-dev.yml python=3.12 -y
           mamba run -n mbuild-dev pip install -e . --prefix=$HOME/tmp_egginfo --no-build-isolation
+          mamba run -n mbuild-dev mamba list
           mamba run -n mbuild-dev python -m pytest -v --color yes --pyargs mbuild
 
   bleeding-edge-test:
