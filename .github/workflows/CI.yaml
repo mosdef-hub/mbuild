@@ -103,10 +103,10 @@ jobs:
         run: |
           wget https://github.com/conda-forge/miniforge/releases/latest/download/Miniforge3-Linux-x86_64.sh -O $HOME/Miniforge3.sh
           bash $HOME/Miniforge3.sh -b -p $HOME/miniforge
-          #echo 'export PATH=$HOME/miniforge/bin:$PATH' >> ~/.bashrc
+          echo 'export PATH=$HOME/miniforge/bin:$PATH' >> ~/.bashrc
           export PATH=$HOME/miniforge/bin:$PATH
           source ~/.bashrc
-          mamba env create -f environment-dev.yml -y
+          mamba env create -f environment-dev.yml python=3.12 -y
           mamba activate mbuild-dev
           pip install .
           python -m pytest -v --color yes --pyargs mbuild
