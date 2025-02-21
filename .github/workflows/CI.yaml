@@ -107,6 +107,7 @@ jobs:
           export PATH=$HOME/miniforge/bin:$PATH
           source ~/.bashrc
           mamba env create -f environment-dev.yml python=3.12 -y
+          export TMPDIR=$HOME
           mamba run -n mbuild-dev pip install -e .
           mamba run -n mbuild-dev python -m pytest -v --color yes --pyargs mbuild
 
