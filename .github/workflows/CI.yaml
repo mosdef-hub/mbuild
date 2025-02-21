@@ -104,10 +104,12 @@ jobs:
           echo $HOME
           wget https://github.com/conda-forge/miniforge/releases/latest/download/Miniforge3-Linux-x86_64.sh -O $HOME/Miniforge3.sh
           bash $HOME/Miniforge3.sh -b -p $HOME/miniforge
-          echo 'export PATH=$HOME/miniforge/bin:$PATH' >> ~/.bashrc
+          #echo 'export PATH=$HOME/miniforge/bin:$PATH' >> ~/.bashrc
+          export PATH=$HOME/miniforge/bin:$PATH
           source ~/.bashrc
+          ls -l $HOME/miniforge/bin
+          echo $PATH
           micromamba env create -f environment-dev.yml -y
-          ls
 
 
   bleeding-edge-test:
