@@ -107,9 +107,7 @@ jobs:
           export PATH=$HOME/miniforge/bin:$PATH
           source ~/.bashrc
           mamba env create -f environment-dev.yml python=3.12 -y
-          export TMPDIR=$HOME
-          echo $TMPDIR
-          mamba run -n mbuild-dev pip install -e .
+          mamba run -n mbuild-dev pip install -e . --prefix=$HOME/tmp_egginfo --no-build-isolation
           mamba run -n mbuild-dev python -m pytest -v --color yes --pyargs mbuild
 
   bleeding-edge-test:
