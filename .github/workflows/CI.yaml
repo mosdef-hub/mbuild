@@ -107,13 +107,9 @@ jobs:
           export PATH=$HOME/miniforge/bin:$PATH
           source ~/.bashrc
           mamba env create -f environment-dev.yml -y
-      - name: Run tests
-        if: ${{ runner.os == 'Windows' }}
-        shell: wsl-bash {0}
-        run: |
-          ls -l -1
           mamba activate mbuild-dev
-          pip install mbuild
+          pip install .
+          python -m pytest -v --color yes --pyargs mbuild
 
   bleeding-edge-test:
     if: github.event.pull_request.draft == false
