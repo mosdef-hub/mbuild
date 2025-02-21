@@ -106,7 +106,8 @@ jobs:
           bash $HOME/Miniforge3.sh -b -p $HOME/miniforge
           echo 'export PATH=$HOME/miniforge/bin:$PATH' >> ~/.bashrc
           source ~/.bashrc
-          mamba env create -f environment-dev.yml -y
+          micromamba env create -f environment-dev.yml -y
+          ls
 
 
   bleeding-edge-test:
