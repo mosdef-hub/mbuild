@@ -107,9 +107,8 @@ jobs:
           export PATH=$HOME/miniforge/bin:$PATH
           source ~/.bashrc
           mamba env create -f environment-dev.yml python=3.12 -y
-          mamba activate mbuild-dev
-          pip install .
-          python -m pytest -v --color yes --pyargs mbuild
+          mamba run -n mbuild-dev pip install .
+          mamba run -n python -m pytest -v --color yes --pyargs mbuild
 
   bleeding-edge-test:
     if: github.event.pull_request.draft == false
