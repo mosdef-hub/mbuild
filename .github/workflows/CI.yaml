@@ -49,6 +49,7 @@ jobs:
           name: mBuild-Coverage
           verbose: true
           files: ./coverage.xml
+
   arch-test:
     if: github.event.pull_request.draft == false
     name: mBuild Tests (arch)
@@ -93,14 +94,16 @@ jobs:
       - uses: Vampire/setup-wsl@v4
         with:
           distribution: Ubuntu-24.04
+          wsl-shell-user: runner
         name: Set up WSL
 
       - name: Install dependencies on Windows (WSL)
         if: ${{ runner.os == 'Windows' }}
         shell: wsl-bash {0}
         run: |
-          wget https://github.com/conda-forge/miniforge/releases/latest/download/Miniforge3-Linux-x86_64.sh -O ~/Miniforge3.sh
-          ~/Miniforge3.sh -b -p $HOME/miniforge
+          echo $HOME
+          wget https://github.com/conda-forge/miniforge/releases/latest/download/Miniforge3-Linux-x86_64.sh -O $HOME/Miniforge3.sh
+          $HOME/Miniforge3.sh -b -p $HOME/miniforge
           echo 'export PATH=$HOME/miniforge/bin:$PATH' >> ~/.bashrc
           source ~/.bashrc
           mamba env create -f environment-dev.yml -y
