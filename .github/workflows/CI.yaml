@@ -106,7 +106,7 @@ jobs:
           echo 'export PATH=$HOME/miniforge/bin:$PATH' >> ~/.bashrc
           export PATH=$HOME/miniforge/bin:$PATH
           source ~/.bashrc
-          conda init
+          source $HOME/miniforge/etc/profile.d/conda.sh
           mamba env create -f environment-dev.yml python=3.12 -y
           conda activate mbuild-dev
           pip install -e . --prefix=$HOME/tmp_egginfo --no-build-isolation
