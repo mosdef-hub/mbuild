@@ -36,7 +36,7 @@ class TestPolymer(BaseTest):
 
     def test_errors(self, ch2, ester):
         with pytest.raises(ValueError):  # Not enough end groups
-            chain = Polymer(monomers=[ch2], end_groups=[ester])
+            Polymer(monomers=[ch2], end_groups=[ester])
 
         with pytest.raises(ValueError):  # Bad sequence
             chain = Polymer(monomers=[ch2])
