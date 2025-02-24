@@ -107,12 +107,12 @@ jobs:
           #export PATH=$HOME/miniforge/bin:$PATH
           #source ~/.bashrc
           #source $HOME/miniforge/etc/profile.d/conda.sh
-          mamba run update -n base --all -y
-          mamba run mamba env create -f environment-dev.yml python=3.12 -y
-          #conda activate mbuild-dev
+          conda update -n base --all -y
+          conda env create -f environment-dev.yml python=3.12 -y
+          conda activate mbuild-dev
           sudo pip install --user -e .
           #pip install -e . --prefix=$HOME/tmp_egginfo --no-build-isolation
-          mamba run -n mbuild-dev python -m pytest -v --color yes --pyargs mbuild
+          python -m pytest -v --color yes --pyargs mbuild
 
   bleeding-edge-test:
     if: github.event.pull_request.draft == false
