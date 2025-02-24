@@ -2,7 +2,7 @@ import pytest
 
 import mbuild as mb
 from mbuild.lib.atoms import H
-from mbuild.lib.recipes import Monolayer
+from mbuild.lib.recipes import Monolayer, Polymer
 from mbuild.lib.surfaces import Betacristobalite
 from mbuild.tests.base_test import BaseTest
 
@@ -13,7 +13,7 @@ class TestMonolayer(BaseTest):
         m = 8
         pattern = mb.Grid2DPattern(n, m)
 
-        chain = mb.recipes.Polymer(monomers=[ch2])
+        chain = Polymer(monomers=[ch2])
         chain.build(n=10, add_hydrogens=False)
         monolayer = Monolayer(
             surface=Betacristobalite(),
