@@ -970,7 +970,7 @@ class Compound(object):
 
         return [p for p in self.labels.values() if isinstance(p, Port) and not p.used]
 
-    def direct_bonds(self):
+    def direct_bonds(self, graph_depth=1):
         """Return a list of particles that this particle bonds to.
 
         Returns
@@ -987,8 +987,16 @@ class Compound(object):
                 "The direct_bonds method can only "
                 "be used on compounds at the bottom of their hierarchy."
             )
-        for b1, b2 in self.root.bond_graph.edges(self):
-            yield b2
+        if not self.parent:
+            return None
+        # Get all nodes within n edges (graph_depth=n) using BFS
+        top_ancestor = [i for i in self.ancestors()][-1]
+        neighbor_dict = nx.single_source_shortest_path_length(
+            top_ancestor.bond_graph, self, cutoff=graph_depth
+        )
+        # Exclude the source node itself
+        all_neighbors = {n for n, depth in neighbor_dict.items() if depth > 0}
+        return all_neighbors
 
     def bonds(self, return_bond_order=False):
         """Return all bonds in the Compound and sub-Compounds.
@@ -1037,7 +1045,10 @@ class Compound(object):
                 "The direct_bonds method can only "
                 "be used on compounds at the bottom of their hierarchy."
             )
-        return sum(1 for _ in self.direct_bonds())
+        if self.direct_bonds(graph_depth=1):
+            return len(self.direct_bonds(graph_depth=1))
+        else:
+            return 0
 
     @property
     def n_bonds(self):
