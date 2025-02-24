@@ -110,8 +110,8 @@ jobs:
           mamba update -n base --all -y
           mamba env create -f environment-dev.yml python=3.12 -y
           conda activate mbuild-dev
-          pip install -e . --prefix=$HOME/tmp_egginfo --no-build-isolation
-          python -c "import mbuild; print(dir(mbuild.lib.recipes))"
+          pip install --user -e .
+          #pip install -e . --prefix=$HOME/tmp_egginfo --no-build-isolation
           python -m pytest -v --color yes --pyargs mbuild
 
   bleeding-edge-test:
