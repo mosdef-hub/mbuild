@@ -35,7 +35,6 @@ jobs:
           environment-file: environment-dev.yml
           create-args: >-
             python=${{ matrix.python-version }}
-        if: runner.os != 'Windows'
 
       - name: Install Package
         run: python -m pip install -e .
@@ -74,7 +73,6 @@ jobs:
           environment-file: environment-dev.yml
           create-args: >-
             python=${{ matrix.python-version }}
-        if: runner.os != 'Windows'
 
       - name: Install Package
         run: python -m pip install -e .
@@ -94,24 +92,22 @@ jobs:
       - uses: Vampire/setup-wsl@v4
         with:
           distribution: Ubuntu-24.04
-            #wsl-shell-user: runner
+          wsl-shell-user: runner
         name: Set up WSL
 
       - name: Install mBuild and run pytest
-        if: ${{ runner.os == 'Windows' }}
         shell: wsl-bash {0}
         run: |
           wget https://github.com/conda-forge/miniforge/releases/latest/download/Miniforge3-Linux-x86_64.sh -O $HOME/Miniforge3.sh
           bash $HOME/Miniforge3.sh -b -p $HOME/miniforge
           echo 'export PATH=$HOME/miniforge/bin:$PATH' >> ~/.bashrc
-          #export PATH=$HOME/miniforge/bin:$PATH
-          #source ~/.bashrc
-          #source $HOME/miniforge/etc/profile.d/conda.sh
-          conda update -n base --all -y
-          conda env create -f environment-dev.yml python=3.12 -y
+          export PATH=$HOME/miniforge/bin:$PATH
+          source ~/.bashrc
+          source $HOME/miniforge/etc/profile.d/conda.sh
+          mamba update -n base --all -y
+          mamba env create -f environment-dev.yml python=3.12 -y
           conda activate mbuild-dev
-          sudo pip install --user -e .
-          #pip install -e . --prefix=$HOME/tmp_egginfo --no-build-isolation
+          pip install -e . --prefix=$HOME/tmp_egginfo --no-build-isolation
           python -m pytest -v --color yes --pyargs mbuild
 
   bleeding-edge-test:
