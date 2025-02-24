@@ -110,32 +110,6 @@ jobs:
           pip install -e . --prefix=$HOME/tmp_egginfo --no-build-isolation
           python -m pytest -v --color yes --pyargs mbuild
 
-  bleeding-edge-test:
-    if: github.event.pull_request.draft == false
-    name: Bleeding Edge mosdef Tests for mBuild
-    runs-on: ubuntu-latest
-    defaults:
-      run:
-        shell: bash -l {0}
-
-    steps:
-      - uses: actions/checkout@v4
-        name: Checkout Branch / Pull Request
-
-      - name: Install Mamba
-        uses: mamba-org/setup-micromamba@v2
-        with:
-          environment-file: environment-dev.yml
-          create-args: python=3.12
-
-      - name: Install Packages from Source
-        run: |
-          pip install -e .
-
-      - name: Run Bleeding Edge Tests
-        run: |
-          python -m pytest -v --color yes --pyargs mbuild
-
   docker:
     runs-on: ubuntu-latest
     needs: test
