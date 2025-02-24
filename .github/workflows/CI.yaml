@@ -94,7 +94,7 @@ jobs:
       - uses: Vampire/setup-wsl@v4
         with:
           distribution: Ubuntu-24.04
-          wsl-shell-user: runner
+            #wsl-shell-user: runner
         name: Set up WSL
 
       - name: Install mBuild and run pytest
