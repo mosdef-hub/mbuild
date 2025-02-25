@@ -94,6 +94,12 @@ class TestCompound(BaseTest):
         with pytest.raises(MBuildError):
             [i for i in methane.direct_bonds()]
 
+    def test_direct_bonds_depth(self, ethane):
+        bonded_particles = ethane[0].direct_bonds(graph_depth=1)
+        assert len(bonded_particles) == 4
+        bonded_particles = ethane[0].direct_bonds(graph_depth=2)
+        assert len(bonded_particles) == ethane.n_particles - 1
+
     def test_direct_bonds(self, methane):
         bond_particles = [i for i in methane[0].direct_bonds()]
         for H in methane.particles_by_name("H"):
@@ -464,6 +470,29 @@ class TestCompound(BaseTest):
         assert not compound.check_for_overlap(
             excluded_bond_depth=2, minimum_distance=0.5
         )
+
+    def test_check_overlap_chain(self):
+        positions = [
+            [0.10, 0.0, 0.0],
+            [0.20, 0.0, 0.0],
+            [0.30, 0.0, 0.0],
+            [0.30, 0.10, 0.0],
+            [0.20, 0.10, 0.0],
+            [0.10, 0.10, 0.0],
+        ]
+        comp = mb.Compound()
+        last_bead = None
+        for pos in positions:
+            bead = mb.Compound(pos=pos, name="A")
+            comp.add(bead)
+            if last_bead:
+                comp.add_bond([bead, last_bead])
+            last_bead = bead
+
+        overlap = comp.check_for_overlap(excluded_bond_depth=4, minimum_distance=0.11)
+        assert len(overlap) == 1
+        assert overlap[0] == [0, 5]
+        assert not comp.check_for_overlap(excluded_bond_depth=5, minimum_distance=0.11)
 
     def test_clone_with_box(self, ethane):
         ethane.box = ethane.get_boundingbox()

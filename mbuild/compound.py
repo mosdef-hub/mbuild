@@ -1440,7 +1440,7 @@ class Compound(object):
                         return False
             return True
 
-    def check_for_overlap(self, excluded_bond_depth, minimum_distance=0.09):
+    def check_for_overlap(self, excluded_bond_depth, minimum_distance=0.10):
         """Check if a compound contains overlapping particles.
 
         Parameters:
@@ -1448,8 +1448,8 @@ class Compound(object):
         excluded_bond_depth : int, required
             The depth of bonded neighbors to exclude from overlap check.
             see Compound.direct_bonds()
-        minimum_distance : float, default=0.09
-            Distance in nanometers used as the threshold in
+        minimum_distance : float, default=0.10
+            Distance in nanometers used as the distance threshold in
             determining if a pair of particles overlap.
         """
         freud = import_("freud")
@@ -3264,13 +3264,7 @@ class Compound(object):
         return smiles
 
     def _to_freud(self):
-        """Convert a compound to a freud system (freud box and coordinates)
-
-        Notes
-        -----
-        This is an experimental feature and some behavior might change out of step of a standard development release.
-
-        """
+        """Convert a compound to a freud system (freud box and shifted coordinates)."""
         freud = import_("freud")
         if self.box is None:
             box = self.get_boundingbox()
