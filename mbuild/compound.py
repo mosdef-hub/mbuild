@@ -973,6 +973,14 @@ class Compound(object):
     def direct_bonds(self, graph_depth=1):
         """Return a list of particles that this particle bonds to.
 
+        Parameters
+        ----------
+        graph_depth : int, default=1
+            Determines how many subsequent bonded neighbors to count.
+            A value of 1 returns only paricles this particle is directly bonded to.
+            A value of 2 returns direct bonded neighbors,
+            plus their direct bonded neighbors.
+
         Returns
         -------
         List of mb.Compound
