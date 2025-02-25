@@ -437,10 +437,14 @@ class TestCompound(BaseTest):
         assert struct.residues[1].number == 2
 
     def test_check_for_overlap(self, ethane):
-        assert not ethane.check_for_overlap()
-        assert ethane.check_for_overlap(minimum_distance=1)
+        assert not ethane.check_for_overlap(excluded_bond_depth=0)
+        overlap = ethane.check_for_overlap(excluded_bond_depth=0, minimum_distance=0.5)
+        assert len(overlap) == ethane.n_particles
         compound = mb.Compound([ethane, mb.clone(ethane)])
-        assert compound.check_for_overlap()
+        overlap = compound.check_for_overlap(
+            excluded_bond_depth=0, minimum_distance=0.5
+        )
+        assert len(overlap) == compound.n_particles
 
     def test_clone_with_box(self, ethane):
         ethane.box = ethane.get_boundingbox()

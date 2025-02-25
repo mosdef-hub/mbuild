@@ -17,7 +17,6 @@ import numpy as np
 from boltons.setutils import IndexedSet
 from ele.element import Element, element_from_name, element_from_symbol
 from ele.exceptions import ElementError
-from scipy.spatial.distance import pdist
 from treelib import Tree
 
 from mbuild import conversion
@@ -1150,13 +1149,7 @@ class Compound(object):
                     added_bonds.append(bond_tuple)
 
     @experimental_feature()
-    def freud_generate_bonds(
-        self,
-        name_a,
-        name_b,
-        dmin,
-        dmax,
-    ):
+    def freud_generate_bonds(self, name_a, name_b, dmin, dmax):
         """Add Bonds between all pairs of types a/b within [dmin, dmax].
 
         Parameters
@@ -1176,33 +1169,7 @@ class Compound(object):
 
         """
         freud = import_("freud")
-        if self.box is None:
-            box = self.get_boundingbox()
-        else:
-            box = self.box
-        moved_positions = self.xyz - np.array([box.Lx / 2, box.Ly / 2, box.Lz / 2])
-
-        # quadruple box lengths for non-periodic dimensions
-        # since freud boxes are centered at the origin, extend box
-        #   lengths 2x in the positive and negative direction
-
-        # we are periodic in all directions, no need to change anything
-        if all(self.periodicity):
-            freud_box = freud.box.Box.from_matrix(box.vectors.T)
-        # not periodic in some dimensions, lets make them pseudo-periodic
-        else:
-            tmp_lengths = [length for length in box.lengths]
-            max_tmp_length = max(tmp_lengths)
-            for i, is_periodic in enumerate(self.periodicity):
-                if is_periodic:
-                    continue
-                else:
-                    tmp_lengths[i] = tmp_lengths[i] + 4 * max_tmp_length
-            tmp_box = Box.from_lengths_angles(lengths=tmp_lengths, angles=box.angles)
-            freud_box = freud.box.Box.from_matrix(tmp_box.vectors.T)
-
-        freud_box.periodic = (True, True, True)
-
+        moved_positions, freud_box = self._to_freud()
         a_indices = []
         b_indices = []
         for i, part in enumerate(self.particles()):
@@ -1229,11 +1196,7 @@ class Compound(object):
 
         nlist = aq.query(
             moved_positions[a_indices],
-            dict(
-                r_min=dmin,
-                r_max=dmax,
-                exclude_ii=exclude_ii,
-            ),
+            dict(r_min=dmin, r_max=dmax, exclude_ii=exclude_ii),
         ).toNeighborList()
 
         part_list = [part for part in self.particles(include_ports=False)]
@@ -1477,17 +1440,39 @@ class Compound(object):
                         return False
             return True
 
-    def check_for_overlap(self, minimum_distance=0.09):
+    def check_for_overlap(self, excluded_bond_depth, minimum_distance=0.09):
         """Check if a compound contains overlapping particles.
 
         Parameters:
         -----------
+        excluded_bond_depth : int, required
+            The depth of bonded neighbors to exclude from overlap check.
+            see Compound.direct_bonds()
         minimum_distance : float, default=0.09
             Distance in nanometers used as the threshold in
             determining if a pair of particles overlap.
         """
-        pair_distances = pdist(self.xyz)
-        return np.any(pair_distances < minimum_distance)
+        freud = import_("freud")
+        moved_positions, freud_box = self._to_freud()
+        aq = freud.locality.AABBQuery(freud_box, moved_positions)
+        aq_query = aq.query(
+            query_points=moved_positions,
+            query_args=dict(r_min=0.0, r_max=minimum_distance, exclude_ii=True),
+        )
+        nlist = aq_query.toNeighborList()
+        # nlist contains each pair twice, get the set
+        pairs_set = set([tuple(sorted((i, j))) for i, j in nlist])
+        all_particles = [p for p in self.particles()]
+        overlapping_particles = []
+        for i, j in pairs_set:
+            # Exclude bonded neighbors that are within min distance
+            if excluded_bond_depth > 0:
+                i_bonds = all_particles[i].direct_bonds(graph_depth=excluded_bond_depth)
+                if all_particles[j] not in i_bonds:
+                    overlapping_particles.append([i, j])
+            else:  # Don't exclude bonded neighbors
+                overlapping_particles.append([i, j])
+        return overlapping_particles
 
     def get_boundingbox(self, pad_box=None):
         """Compute the bounding box of the compound.
@@ -3277,6 +3262,43 @@ class Compound(object):
         # we only need the smiles string
         smiles = pybel_cmp.write().split()[0]
         return smiles
+
+    def _to_freud(self):
+        """Convert a compound to a freud system (freud box and coordinates)
+
+        Notes
+        -----
+        This is an experimental feature and some behavior might change out of step of a standard development release.
+
+        """
+        freud = import_("freud")
+        if self.box is None:
+            box = self.get_boundingbox()
+        else:
+            box = self.box
+        moved_positions = self.xyz - np.array([box.Lx / 2, box.Ly / 2, box.Lz / 2])
+
+        # quadruple box lengths for non-periodic dimensions
+        # since freud boxes are centered at the origin, extend box
+        #   lengths 2x in the positive and negative direction
+
+        # we are periodic in all directions, no need to change anything
+        if all(self.periodicity):
+            freud_box = freud.box.Box.from_matrix(box.vectors.T)
+        # not periodic in some dimensions, lets make them pseudo-periodic
+        else:
+            tmp_lengths = [length for length in box.lengths]
+            max_tmp_length = max(tmp_lengths)
+            for i, is_periodic in enumerate(self.periodicity):
+                if is_periodic:
+                    continue
+                else:
+                    tmp_lengths[i] = tmp_lengths[i] + 4 * max_tmp_length
+            tmp_box = Box.from_lengths_angles(lengths=tmp_lengths, angles=box.angles)
+            freud_box = freud.box.Box.from_matrix(tmp_box.vectors.T)
+
+        freud_box.periodic = (True, True, True)
+        return moved_positions, freud_box
 
     def __getitem__(self, selection):
         """Get item from Compound."""
