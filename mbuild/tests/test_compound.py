@@ -101,9 +101,17 @@ class TestCompound(BaseTest):
         assert len(bonded_particles) == ethane.n_particles - 1
 
     def test_direct_bonds(self, methane):
-        bond_particles = [i for i in methane[0].direct_bonds()]
+        bond_particles = methane[0].direct_bonds()
         for H in methane.particles_by_name("H"):
             assert H in bond_particles
+
+    def test_direct_bonds_bad_inputs(self, methane):
+        with pytest.raises(ValueError):
+            methane[0].direct_bonds(graph_depth=0)
+        with pytest.raises(ValueError):
+            methane[0].direct_bonds(graph_depth=-2)
+        with pytest.raises(ValueError):
+            methane[0].direct_bonds(graph_depth=2.4)
 
     def test_bond_order(self, methane):
         # test the default behavior
@@ -493,6 +501,12 @@ class TestCompound(BaseTest):
         assert len(overlap) == 1
         assert overlap[0] == [0, 5]
         assert not comp.check_for_overlap(excluded_bond_depth=5, minimum_distance=0.11)
+
+    def test_check_for_overlap_bad_inputs(self, ethane):
+        with pytest.raises(ValueError):
+            ethane.check_for_overlap(excluded_bond_depth=-2, minimum_distance=0.5)
+        with pytest.raises(ValueError):
+            ethane.check_for_overlap(excluded_bond_depth=2.4, minimum_distance=0.5)
 
     def test_clone_with_box(self, ethane):
         ethane.box = ethane.get_boundingbox()

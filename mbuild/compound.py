@@ -989,6 +989,8 @@ class Compound(object):
         bond_graph.edges_iter : Iterations over all edges in a BondGraph
         Compound.n_direct_bonds : Returns the number of bonds a particle contains
         """
+        if graph_depth <= 0 or not isinstance(graph_depth, int):
+            raise ValueError("`graph_depth` must be an integer >= 1.")
         if list(self.particles()) != [self]:
             raise MBuildError(
                 "The direct_bonds method can only "
@@ -1452,6 +1454,8 @@ class Compound(object):
             Distance in nanometers used as the distance threshold in
             determining if a pair of particles overlap.
         """
+        if excluded_bond_depth < 0 or not isinstance(excluded_bond_depth, int):
+            raise ValueError("`excluded_bond_depth must be an integer >= 0.")
         freud = import_("freud")
         moved_positions, freud_box = self._to_freud()
         aq = freud.locality.AABBQuery(freud_box, moved_positions)
