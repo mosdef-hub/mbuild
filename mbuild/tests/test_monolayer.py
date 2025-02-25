@@ -2,7 +2,7 @@ import pytest
 
 import mbuild as mb
 from mbuild.lib.atoms import H
-from mbuild.lib.recipes import Monolayer
+from mbuild.lib.recipes import Monolayer, Polymer
 from mbuild.lib.surfaces import Betacristobalite
 from mbuild.tests.base_test import BaseTest
 
@@ -13,7 +13,7 @@ class TestMonolayer(BaseTest):
         m = 8
         pattern = mb.Grid2DPattern(n, m)
 
-        chain = mb.recipes.Polymer(monomers=[ch2])
+        chain = Polymer(monomers=[ch2])
         chain.build(n=10, add_hydrogens=False)
         monolayer = Monolayer(
             surface=Betacristobalite(),
@@ -30,7 +30,7 @@ class TestMonolayer(BaseTest):
         m = 8
         pattern = mb.Grid2DPattern(n, m)
 
-        chain = mb.recipes.Polymer(monomers=[ch2])
+        chain = Polymer(monomers=[ch2])
         chain.build(n=10, add_hydrogens=False)
 
         monolayer = Monolayer(
@@ -50,7 +50,7 @@ class TestMonolayer(BaseTest):
     def test_periodic_pattern(self, ch2):
         # Make Periodic without Hydrogen Conflict
         for axis in ["x", "y", "z"]:
-            chain = mb.recipes.Polymer(monomers=[ch2])
+            chain = Polymer(monomers=[ch2])
             chain.build(n=10, add_hydrogens=False)
             chain.create_periodic_bond(axis=axis)
             assert not chain.all_ports()
@@ -60,21 +60,19 @@ class TestMonolayer(BaseTest):
         assert bonded_atoms.count("C") == 2
 
         # Make Periodic with Hydrogen Conflict
-        chain2 = mb.recipes.Polymer(monomers=[ch2])
+        chain2 = Polymer(monomers=[ch2])
         chain2.build(n=10, add_hydrogens=True)
         with pytest.raises(ValueError):
             chain2.create_periodic_bond(axis="y")
 
         # Make Periodic with End-Group Conflict
-        chain3 = mb.recipes.Polymer(
-            monomers=[ch2], end_groups=[mb.clone(ch2), mb.clone(ch2)]
-        )
+        chain3 = Polymer(monomers=[ch2], end_groups=[mb.clone(ch2), mb.clone(ch2)])
         chain3.build(n=10)
         with pytest.raises(ValueError):
             chain3.create_periodic_bond(axis="z")
 
         # Make Periodic with Unsupported Axis
-        chain2 = mb.recipes.Polymer(monomers=[ch2])
+        chain2 = Polymer(monomers=[ch2])
         chain2.build(n=10, add_hydrogens=True)
         with pytest.raises(ValueError):
             chain2.create_periodic_bond(axis="a")
@@ -85,10 +83,10 @@ class TestMonolayer(BaseTest):
         pattern = mb.Grid2DPattern(n, m)
         fractions = [0.75, 0.25]
 
-        chain_a = mb.recipes.Polymer(monomers=[ch2])
+        chain_a = Polymer(monomers=[ch2])
         chain_a.build(n=5, add_hydrogens=False)
 
-        chain_b = mb.recipes.Polymer(monomers=[ch2])
+        chain_b = Polymer(monomers=[ch2])
         chain_b.build(n=15, add_hydrogens=False)
 
         monolayer = Monolayer(
