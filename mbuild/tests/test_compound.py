@@ -439,12 +439,12 @@ class TestCompound(BaseTest):
     def test_check_for_overlap(self, ethane):
         assert not ethane.check_for_overlap(excluded_bond_depth=0)
         overlap = ethane.check_for_overlap(excluded_bond_depth=0, minimum_distance=0.5)
-        assert len(overlap) == ethane.n_particles
+        assert len(overlap) == ethane.n_particles * (ethane.n_particles - 1) / 2
         compound = mb.Compound([ethane, mb.clone(ethane)])
         overlap = compound.check_for_overlap(
             excluded_bond_depth=0, minimum_distance=0.5
         )
-        assert len(overlap) == compound.n_particles
+        assert len(overlap) == compound.n_particles * (compound.n_particles - 1) / 2
 
     def test_clone_with_box(self, ethane):
         ethane.box = ethane.get_boundingbox()
