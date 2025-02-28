@@ -94,6 +94,10 @@ class TestCompound(BaseTest):
         with pytest.raises(MBuildError):
             [i for i in methane.direct_bonds()]
 
+    def test_direct_bonds_no_bonds(self):
+        compound = mb.Compound(name="A")
+        assert compound.direct_bonds() is None
+
     def test_direct_bonds_depth(self, ethane):
         bonded_particles = ethane[0].direct_bonds(graph_depth=1)
         assert len(bonded_particles) == 4
