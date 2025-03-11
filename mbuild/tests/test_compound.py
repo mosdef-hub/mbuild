@@ -41,7 +41,6 @@ class TestCompound(BaseTest):
         parm = compound.to_parmed()
         traj = compound.to_trajectory()
         belmol = compound.to_pybel()
-        box, shifted_coords = compound.to_freud()
 
         for topo in [compound, parm, traj, belmol]:
             topo_converted = mb.load(topo)
