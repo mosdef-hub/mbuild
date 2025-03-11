@@ -6,7 +6,9 @@ dependencies:
   - numpy=1.26.4
   - packmol>=18
   - gmso>=0.9.0
+  - garnett
   - parmed>=3.4.3
+  - pycifrw
   - python>=3.8
   - rdkit>=2021
   - scipy
