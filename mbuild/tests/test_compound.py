@@ -41,6 +41,7 @@ class TestCompound(BaseTest):
         parm = compound.to_parmed()
         traj = compound.to_trajectory()
         belmol = compound.to_pybel()
+        box, shifted_coords = compound.to_freud()
 
         for topo in [compound, parm, traj, belmol]:
             topo_converted = mb.load(topo)
@@ -2656,3 +2657,8 @@ class TestCompound(BaseTest):
     def test_load_list_of_smiles(self):
         cpd = mb.load(["C", "O"], smiles=True)
         assert len(cpd.children) == 8
+
+    def test_to_freud(self, methane):
+        methane.box = mb.box.Box(lengths=[2, 2, 2])
+        shifted_pos, freud_box = methane.to_freud()
+        assert np.array_equal(methane.xyz - 1, shifted_pos)
