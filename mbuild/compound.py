@@ -3297,37 +3297,6 @@ class Compound(object):
         smiles = pybel_cmp.write().split()[0]
         return smiles
 
-    def _to_freud(self):
-        """Convert a compound to a freud system (freud box and shifted coordinates)."""
-        freud = import_("freud")
-        if self.box is None:
-            box = self.get_boundingbox()
-        else:
-            box = self.box
-        moved_positions = self.xyz - np.array([box.Lx / 2, box.Ly / 2, box.Lz / 2])
-
-        # quadruple box lengths for non-periodic dimensions
-        # since freud boxes are centered at the origin, extend box
-        #   lengths 2x in the positive and negative direction
-
-        # we are periodic in all directions, no need to change anything
-        if all(self.periodicity):
-            freud_box = freud.box.Box.from_matrix(box.vectors.T)
-        # not periodic in some dimensions, lets make them pseudo-periodic
-        else:
-            tmp_lengths = [length for length in box.lengths]
-            max_tmp_length = max(tmp_lengths)
-            for i, is_periodic in enumerate(self.periodicity):
-                if is_periodic:
-                    continue
-                else:
-                    tmp_lengths[i] = tmp_lengths[i] + 4 * max_tmp_length
-            tmp_box = Box.from_lengths_angles(lengths=tmp_lengths, angles=box.angles)
-            freud_box = freud.box.Box.from_matrix(tmp_box.vectors.T)
-
-        freud_box.periodic = (True, True, True)
-        return moved_positions, freud_box
-
     def __getitem__(self, selection):
         """Get item from Compound."""
         if isinstance(selection, int):
