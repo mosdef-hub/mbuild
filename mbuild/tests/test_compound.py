@@ -2661,3 +2661,8 @@ class TestCompound(BaseTest):
         methane.box = mb.box.Box(lengths=[2, 2, 2])
         shifted_pos, freud_box = methane.to_freud()
         assert np.array_equal(methane.xyz - 1, shifted_pos)
+        # methane isn't perioidc, box should be box L * 4 + 2
+        assert freud_box.Lx == freud_box.Ly == freud_box.Lz == 10.0
+        methane.periodicity = (True, True, True)
+        shifted_pos, freud_box = methane.to_freud()
+        assert freud_box.Lx == freud_box.Ly == freud_box.Lz == 2.0
