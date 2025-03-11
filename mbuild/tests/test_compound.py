@@ -468,6 +468,14 @@ class TestCompound(BaseTest):
         )
         assert len(overlap) == compound.n_particles * (compound.n_particles - 1) / 2
 
+    def test_check_for_overlap_box_lengths(self, ethane):
+        comp = mb.Compound([mb.clone(ethane), mb.clone(ethane)])
+        comp.box = mb.box.Box(lengths=[2, 2, 2])
+        with pytest.raises(ValueError):
+            comp.check_for_overlap(excluded_bond_depth=1, minimum_distance=2.1)
+        with pytest.raises(ValueError):
+            comp.check_for_overlap(excluded_bond_depth=1, minimum_distance=1.0)
+
     def test_check_overlap_bond_depth(self):
         methane = mb.load("C", smiles=True)
         methane.box = mb.box.Box(lengths=[5, 5, 5])

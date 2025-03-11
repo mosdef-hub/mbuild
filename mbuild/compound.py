@@ -1451,11 +1451,38 @@ class Compound(object):
             The depth of bonded neighbors to exclude from overlap check.
             see Compound.direct_bonds()
         minimum_distance : float, default=0.10
-            Distance in nanometers used as the distance threshold in
+            Distance (in nanometers) used as the threshold in
             determining if a pair of particles overlap.
+
+        Notes:
+        ------
+        If `minimum_distance` is set larger than existing bond lengths,
+        adjust the `excluded_bond_depth` parameter to excluded directly
+        bonded neighbors from overlap checks.
+
+        See Also:
+        ---------
+        mbuild.Compound.direct_bonds()
+
+        Returns:
+        --------
+        overlapping_particles : list of lists
+            A list of particle pairs that were found within minimum_distance.
         """
         if excluded_bond_depth < 0 or not isinstance(excluded_bond_depth, int):
             raise ValueError("`excluded_bond_depth must be an integer >= 0.")
+
+        if self.box:
+            min_length = np.min(self.box.lengths)
+        else:
+            min_length = np.min(self.get_boundingbox().lengths)
+
+        if minimum_distance >= min_length / 2:
+            raise ValueError(
+                "The minimum distance chosen is greater than or equal to "
+                "half of the box length."
+            )
+
         freud = import_("freud")
         moved_positions, freud_box = self.to_freud()
         aq = freud.locality.AABBQuery(freud_box, moved_positions)
