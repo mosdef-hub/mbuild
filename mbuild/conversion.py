@@ -1883,36 +1883,37 @@ def to_gmso(
         infer_elements=infer_elements,
     )
 
-    def to_freud(compound):
-        """Convert a compound to a freud system (freud box and shifted coordinates)."""
-        freud = import_("freud")
-        if compound.box is None:
-            box = compound.get_boundingbox()
-        else:
-            box = compound.box
-        moved_positions = compound.xyz - np.array([box.Lx / 2, box.Ly / 2, box.Lz / 2])
 
-        # quadruple box lengths for non-periodic dimensions
-        # since freud boxes are centered at the origin, extend box
-        #   lengths 2x in the positive and negative direction
+def to_freud(compound):
+    """Convert a compound to a freud system (freud box and shifted coordinates)."""
+    freud = import_("freud")
+    if compound.box is None:
+        box = compound.get_boundingbox()
+    else:
+        box = compound.box
+    moved_positions = compound.xyz - np.array([box.Lx / 2, box.Ly / 2, box.Lz / 2])
 
-        # we are periodic in all directions, no need to change anything
-        if all(compound.periodicity):
-            freud_box = freud.box.Box.from_matrix(box.vectors.T)
-        # not periodic in some dimensions, lets make them pseudo-periodic
-        else:
-            tmp_lengths = [length for length in box.lengths]
-            max_tmp_length = max(tmp_lengths)
-            for i, is_periodic in enumerate(compound.periodicity):
-                if is_periodic:
-                    continue
-                else:
-                    tmp_lengths[i] = tmp_lengths[i] + 4 * max_tmp_length
-            tmp_box = Box.from_lengths_angles(lengths=tmp_lengths, angles=box.angles)
-            freud_box = freud.box.Box.from_matrix(tmp_box.vectors.T)
+    # quadruple box lengths for non-periodic dimensions
+    # since freud boxes are centered at the origin, extend box
+    #   lengths 2x in the positive and negative direction
 
-        freud_box.periodic = (True, True, True)
-        return moved_positions, freud_box
+    # we are periodic in all directions, no need to change anything
+    if all(compound.periodicity):
+        freud_box = freud.box.Box.from_matrix(box.vectors.T)
+    # not periodic in some dimensions, lets make them pseudo-periodic
+    else:
+        tmp_lengths = [length for length in box.lengths]
+        max_tmp_length = max(tmp_lengths)
+        for i, is_periodic in enumerate(compound.periodicity):
+            if is_periodic:
+                continue
+            else:
+                tmp_lengths[i] = tmp_lengths[i] + 4 * max_tmp_length
+        tmp_box = Box.from_lengths_angles(lengths=tmp_lengths, angles=box.angles)
+        freud_box = freud.box.Box.from_matrix(tmp_box.vectors.T)
+
+    freud_box.periodic = (True, True, True)
+    return moved_positions, freud_box
 
 
 def to_intermol(compound, molecule_types=None):  # pragma: no cover
