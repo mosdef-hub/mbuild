@@ -455,6 +455,7 @@ class TestCompound(BaseTest):
         assert struct.residues[1].number == 2
 
     def test_check_for_overlap(self, ethane):
+        ethane.box = mb.box.Box(lengths=[5, 5, 5])
         assert not ethane.check_for_overlap(excluded_bond_depth=0)
         overlap = ethane.check_for_overlap(excluded_bond_depth=0, minimum_distance=0.5)
         assert len(overlap) == ethane.n_particles * (ethane.n_particles - 1) / 2
@@ -469,6 +470,7 @@ class TestCompound(BaseTest):
 
     def test_check_overlap_bond_depth(self):
         methane = mb.load("C", smiles=True)
+        methane.box = mb.box.Box(lengths=[5, 5, 5])
         overlap = methane.check_for_overlap(
             excluded_bond_depth=0, minimum_distance=0.13
         )
@@ -479,6 +481,7 @@ class TestCompound(BaseTest):
         methane2 = mb.clone(methane)
         methane2.translate(np.array([5, 0, 0]))
         compound = mb.Compound([methane, methane2])
+        compound.box = mb.box.Box(lengths=[5, 5, 5])
         assert not compound.check_for_overlap(
             excluded_bond_depth=2, minimum_distance=0.5
         )
@@ -493,6 +496,7 @@ class TestCompound(BaseTest):
             [0.10, 0.10, 0.0],
         ]
         comp = mb.Compound()
+        comp.box = mb.box.Box(lengths=[10, 10, 10])
         last_bead = None
         for pos in positions:
             bead = mb.Compound(pos=pos, name="A")
