@@ -8,19 +8,18 @@ dependencies:
   - importlib_resources
   - python=3.11
   - ipython
+  - boltons
+  - networkx
+  - gmso
+  - lark
+  - mock
+  - cairosvg
+  - requests
+  - lxml
+  - numpydoc
+  - sphinx<8.0
+  - sphinx_rtd_theme
+  - sphinxcontrib-svg2pdfconverter[CairoSVG]
+  - widgetsnbextension
+  - nbsphinx
   - pip
-  - pip:
-    - boltons
-    - networkx
-    - sphinx
-    - sphinx_rtd_theme
-    - sphinxcontrib-svg2pdfconverter[CairoSVG]
-    - cairosvg
-    - nbsphinx
-    - networkx >=2.0
-    - lark-parser
-    - requests
-    - lxml
-    - numpydoc
-    - widgetsnbextension
-    - mock
