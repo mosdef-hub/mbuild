@@ -33,5 +33,3 @@ Support for `GPU Optimized Monte Carlo (GOMC) <http://gomc.eng.wayne.edu/>`_  is
 .. toctree::
 
 	cassandra_file_writers
-   	HOOMD_blue_file_writers
-	LAMMPS_file_writers
