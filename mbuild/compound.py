@@ -1171,7 +1171,7 @@ class Compound(object):
 
         """
         freud = import_("freud")
-        moved_positions, freud_box = self._to_freud()
+        moved_positions, freud_box = self.to_freud()
         a_indices = []
         b_indices = []
         for i, part in enumerate(self.particles()):
@@ -1457,7 +1457,7 @@ class Compound(object):
         if excluded_bond_depth < 0 or not isinstance(excluded_bond_depth, int):
             raise ValueError("`excluded_bond_depth must be an integer >= 0.")
         freud = import_("freud")
-        moved_positions, freud_box = self._to_freud()
+        moved_positions, freud_box = self.to_freud()
         aq = freud.locality.AABBQuery(freud_box, moved_positions)
         aq_query = aq.query(
             query_points=moved_positions,
@@ -2941,6 +2941,9 @@ class Compound(object):
             HOOMD-Blue compatible topology.
         """
         return conversion.to_hoomdsnapshot(self, **kwargs)
+
+    def to_freud(self):
+        return conversion.to_freud(self)
 
     # Interface to Trajectory for reading/writing .pdb and .mol2 files.
     # -----------------------------------------------------------------

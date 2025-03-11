@@ -10,7 +10,7 @@ dependencies:
   - boltons
   - lark>=1.2
   - lxml
-  - freud
+  - freud>=3.0
   - intermol
   - mdtraj
   - pydantic>=2
