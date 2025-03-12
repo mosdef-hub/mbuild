@@ -1466,7 +1466,7 @@ class Compound(object):
 
         Returns:
         --------
-        overlapping_particles : list of lists
+        overlapping_particles : list of tuples 
             A list of particle pairs that were found within minimum_distance.
         """
         if excluded_bond_depth < 0 or not isinstance(excluded_bond_depth, int):
@@ -1500,9 +1500,9 @@ class Compound(object):
             if excluded_bond_depth > 0:
                 i_bonds = all_particles[i].direct_bonds(graph_depth=excluded_bond_depth)
                 if all_particles[j] not in i_bonds:
-                    overlapping_particles.append([i, j])
+                    overlapping_particles.append((i, j))
             else:  # Don't exclude bonded neighbors
-                overlapping_particles.append([i, j])
+                overlapping_particles.append((i, j))
         return overlapping_particles
 
     def get_boundingbox(self, pad_box=None):

@@ -515,7 +515,7 @@ class TestCompound(BaseTest):
 
         overlap = comp.check_for_overlap(excluded_bond_depth=4, minimum_distance=0.11)
         assert len(overlap) == 1
-        assert overlap[0] == [0, 5]
+        assert overlap[0] == (0, 5)
         assert not comp.check_for_overlap(excluded_bond_depth=5, minimum_distance=0.11)
 
     def test_check_for_overlap_bad_inputs(self, ethane):
