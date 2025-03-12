@@ -969,8 +969,16 @@ class Compound(object):
 
         return [p for p in self.labels.values() if isinstance(p, Port) and not p.used]
 
-    def direct_bonds(self):
+    def direct_bonds(self, graph_depth=1):
         """Return a list of particles that this particle bonds to.
+
+        Parameters
+        ----------
+        graph_depth : int, default=1
+            Determines how many subsequent bonded neighbors to count.
+            A value of 1 returns only paricles this particle is directly bonded to.
+            A value of 2 returns direct bonded neighbors,
+            plus their direct bonded neighbors.
 
         Returns
         -------
@@ -981,13 +989,23 @@ class Compound(object):
         bond_graph.edges_iter : Iterations over all edges in a BondGraph
         Compound.n_direct_bonds : Returns the number of bonds a particle contains
         """
+        if graph_depth <= 0 or not isinstance(graph_depth, int):
+            raise ValueError("`graph_depth` must be an integer >= 1.")
         if list(self.particles()) != [self]:
             raise MBuildError(
                 "The direct_bonds method can only "
                 "be used on compounds at the bottom of their hierarchy."
             )
-        for b1, b2 in self.root.bond_graph.edges(self):
-            yield b2
+        if not self.parent:
+            return None
+        # Get all nodes within n edges (graph_depth=n) using BFS
+        top_ancestor = [i for i in self.ancestors()][-1]
+        neighbor_dict = nx.single_source_shortest_path_length(
+            top_ancestor.bond_graph, self, cutoff=graph_depth
+        )
+        # Exclude the source node itself
+        all_neighbors = {n for n, depth in neighbor_dict.items() if depth > 0}
+        return all_neighbors
 
     def bonds(self, return_bond_order=False):
         """Return all bonds in the Compound and sub-Compounds.
@@ -1036,7 +1054,10 @@ class Compound(object):
                 "The direct_bonds method can only "
                 "be used on compounds at the bottom of their hierarchy."
             )
-        return sum(1 for _ in self.direct_bonds())
+        if self.direct_bonds(graph_depth=1):
+            return len(self.direct_bonds(graph_depth=1))
+        else:
+            return 0
 
     @property
     def n_bonds(self):
@@ -1130,13 +1151,7 @@ class Compound(object):
                     added_bonds.append(bond_tuple)
 
     @experimental_feature()
-    def freud_generate_bonds(
-        self,
-        name_a,
-        name_b,
-        dmin,
-        dmax,
-    ):
+    def freud_generate_bonds(self, name_a, name_b, dmin, dmax):
         """Add Bonds between all pairs of types a/b within [dmin, dmax].
 
         Parameters
@@ -1156,33 +1171,7 @@ class Compound(object):
 
         """
         freud = import_("freud")
-        if self.box is None:
-            box = self.get_boundingbox()
-        else:
-            box = self.box
-        moved_positions = self.xyz - np.array([box.Lx / 2, box.Ly / 2, box.Lz / 2])
-
-        # quadruple box lengths for non-periodic dimensions
-        # since freud boxes are centered at the origin, extend box
-        #   lengths 2x in the positive and negative direction
-
-        # we are periodic in all directions, no need to change anything
-        if all(self.periodicity):
-            freud_box = freud.box.Box.from_matrix(box.vectors.T)
-        # not periodic in some dimensions, lets make them pseudo-periodic
-        else:
-            tmp_lengths = [length for length in box.lengths]
-            max_tmp_length = max(tmp_lengths)
-            for i, is_periodic in enumerate(self.periodicity):
-                if is_periodic:
-                    continue
-                else:
-                    tmp_lengths[i] = tmp_lengths[i] + 4 * max_tmp_length
-            tmp_box = Box.from_lengths_angles(lengths=tmp_lengths, angles=box.angles)
-            freud_box = freud.box.Box.from_matrix(tmp_box.vectors.T)
-
-        freud_box.periodic = (True, True, True)
-
+        moved_positions, freud_box = self.to_freud()
         a_indices = []
         b_indices = []
         for i, part in enumerate(self.particles()):
@@ -1209,11 +1198,7 @@ class Compound(object):
 
         nlist = aq.query(
             moved_positions[a_indices],
-            dict(
-                r_min=dmin,
-                r_max=dmax,
-                exclude_ii=exclude_ii,
-            ),
+            dict(r_min=dmin, r_max=dmax, exclude_ii=exclude_ii),
         ).toNeighborList()
 
         part_list = [part for part in self.particles(include_ports=False)]
@@ -1456,6 +1441,69 @@ class Compound(object):
                     if neigh not in self.particles():
                         return False
             return True
+
+    def check_for_overlap(self, excluded_bond_depth, minimum_distance=0.10):
+        """Check if a compound contains overlapping particles.
+
+        Parameters:
+        -----------
+        excluded_bond_depth : int, required
+            The depth of bonded neighbors to exclude from overlap check.
+            see Compound.direct_bonds()
+        minimum_distance : float, default=0.10
+            Distance (in nanometers) used as the threshold in
+            determining if a pair of particles overlap.
+
+        Notes:
+        ------
+        If `minimum_distance` is set larger than existing bond lengths,
+        adjust the `excluded_bond_depth` parameter to excluded directly
+        bonded neighbors from overlap checks.
+
+        See Also:
+        ---------
+        mbuild.Compound.direct_bonds()
+
+        Returns:
+        --------
+        overlapping_particles : list of tuples
+            A list of particle pairs that were found within minimum_distance.
+        """
+        if excluded_bond_depth < 0 or not isinstance(excluded_bond_depth, int):
+            raise ValueError("`excluded_bond_depth must be an integer >= 0.")
+
+        if self.box:
+            min_length = np.min(self.box.lengths)
+        else:
+            min_length = np.min(self.get_boundingbox().lengths)
+
+        if minimum_distance >= min_length / 2:
+            raise ValueError(
+                "The minimum distance chosen is greater than or equal to "
+                "half of the box length."
+            )
+
+        freud = import_("freud")
+        moved_positions, freud_box = self.to_freud()
+        aq = freud.locality.AABBQuery(freud_box, moved_positions)
+        aq_query = aq.query(
+            query_points=moved_positions,
+            query_args=dict(r_min=0.0, r_max=minimum_distance, exclude_ii=True),
+        )
+        nlist = aq_query.toNeighborList()
+        # nlist contains each pair twice, get the set
+        pairs_set = set([tuple(sorted((i, j))) for i, j in nlist])
+        all_particles = [p for p in self.particles()]
+        overlapping_particles = []
+        for i, j in pairs_set:
+            # Exclude bonded neighbors that are within min distance
+            if excluded_bond_depth > 0:
+                i_bonds = all_particles[i].direct_bonds(graph_depth=excluded_bond_depth)
+                if all_particles[j] not in i_bonds:
+                    overlapping_particles.append((i, j))
+            else:  # Don't exclude bonded neighbors
+                overlapping_particles.append((i, j))
+        return overlapping_particles
 
     def get_boundingbox(self, pad_box=None):
         """Compute the bounding box of the compound.
@@ -2920,6 +2968,9 @@ class Compound(object):
             HOOMD-Blue compatible topology.
         """
         return conversion.to_hoomdsnapshot(self, **kwargs)
+
+    def to_freud(self):
+        return conversion.to_freud(self)
 
     # Interface to Trajectory for reading/writing .pdb and .mol2 files.
     # -----------------------------------------------------------------

@@ -94,10 +94,28 @@ class TestCompound(BaseTest):
         with pytest.raises(MBuildError):
             [i for i in methane.direct_bonds()]
 
+    def test_direct_bonds_no_bonds(self):
+        compound = mb.Compound(name="A")
+        assert compound.direct_bonds() is None
+
+    def test_direct_bonds_depth(self, ethane):
+        bonded_particles = ethane[0].direct_bonds(graph_depth=1)
+        assert len(bonded_particles) == 4
+        bonded_particles = ethane[0].direct_bonds(graph_depth=2)
+        assert len(bonded_particles) == ethane.n_particles - 1
+
     def test_direct_bonds(self, methane):
-        bond_particles = [i for i in methane[0].direct_bonds()]
+        bond_particles = methane[0].direct_bonds()
         for H in methane.particles_by_name("H"):
             assert H in bond_particles
+
+    def test_direct_bonds_bad_inputs(self, methane):
+        with pytest.raises(ValueError):
+            methane[0].direct_bonds(graph_depth=0)
+        with pytest.raises(ValueError):
+            methane[0].direct_bonds(graph_depth=-2)
+        with pytest.raises(ValueError):
+            methane[0].direct_bonds(graph_depth=2.4)
 
     def test_bond_order(self, methane):
         # test the default behavior
@@ -435,6 +453,76 @@ class TestCompound(BaseTest):
         struct = pmd.load_file("resnames_single.gro")
         assert struct.residues[0].number == 1
         assert struct.residues[1].number == 2
+
+    def test_check_for_overlap(self, ethane):
+        ethane.box = mb.box.Box(lengths=[5, 5, 5])
+        assert not ethane.check_for_overlap(excluded_bond_depth=0)
+        overlap = ethane.check_for_overlap(excluded_bond_depth=0, minimum_distance=0.5)
+        assert len(overlap) == ethane.n_particles * (ethane.n_particles - 1) / 2
+        assert not ethane.check_for_overlap(
+            excluded_bond_depth=0, minimum_distance=0.001
+        )
+        compound = mb.Compound([ethane, mb.clone(ethane)])
+        overlap = compound.check_for_overlap(
+            excluded_bond_depth=0, minimum_distance=0.5
+        )
+        assert len(overlap) == compound.n_particles * (compound.n_particles - 1) / 2
+
+    def test_check_for_overlap_box_lengths(self, ethane):
+        comp = mb.Compound([mb.clone(ethane), mb.clone(ethane)])
+        comp.box = mb.box.Box(lengths=[2, 2, 2])
+        with pytest.raises(ValueError):
+            comp.check_for_overlap(excluded_bond_depth=1, minimum_distance=2.1)
+        with pytest.raises(ValueError):
+            comp.check_for_overlap(excluded_bond_depth=1, minimum_distance=1.0)
+
+    def test_check_overlap_bond_depth(self):
+        methane = mb.load("C", smiles=True)
+        methane.box = mb.box.Box(lengths=[5, 5, 5])
+        overlap = methane.check_for_overlap(
+            excluded_bond_depth=0, minimum_distance=0.13
+        )
+        assert len(overlap) == 4
+        assert not methane.check_for_overlap(
+            excluded_bond_depth=1, minimum_distance=0.13
+        )
+        methane2 = mb.clone(methane)
+        methane2.translate(np.array([5, 0, 0]))
+        compound = mb.Compound([methane, methane2])
+        compound.box = mb.box.Box(lengths=[5, 5, 5])
+        assert not compound.check_for_overlap(
+            excluded_bond_depth=2, minimum_distance=0.5
+        )
+
+    def test_check_overlap_chain(self):
+        positions = [
+            [0.10, 0.0, 0.0],
+            [0.20, 0.0, 0.0],
+            [0.30, 0.0, 0.0],
+            [0.30, 0.10, 0.0],
+            [0.20, 0.10, 0.0],
+            [0.10, 0.10, 0.0],
+        ]
+        comp = mb.Compound()
+        comp.box = mb.box.Box(lengths=[10, 10, 10])
+        last_bead = None
+        for pos in positions:
+            bead = mb.Compound(pos=pos, name="A")
+            comp.add(bead)
+            if last_bead:
+                comp.add_bond([bead, last_bead])
+            last_bead = bead
+
+        overlap = comp.check_for_overlap(excluded_bond_depth=4, minimum_distance=0.11)
+        assert len(overlap) == 1
+        assert overlap[0] == (0, 5)
+        assert not comp.check_for_overlap(excluded_bond_depth=5, minimum_distance=0.11)
+
+    def test_check_for_overlap_bad_inputs(self, ethane):
+        with pytest.raises(ValueError):
+            ethane.check_for_overlap(excluded_bond_depth=-2, minimum_distance=0.5)
+        with pytest.raises(ValueError):
+            ethane.check_for_overlap(excluded_bond_depth=2.4, minimum_distance=0.5)
 
     def test_clone_with_box(self, ethane):
         ethane.box = ethane.get_boundingbox()
@@ -2568,3 +2656,13 @@ class TestCompound(BaseTest):
     def test_load_list_of_smiles(self):
         cpd = mb.load(["C", "O"], smiles=True)
         assert len(cpd.children) == 8
+
+    def test_to_freud(self, methane):
+        methane.box = mb.box.Box(lengths=[2, 2, 2])
+        shifted_pos, freud_box = methane.to_freud()
+        assert np.array_equal(methane.xyz - 1, shifted_pos)
+        # methane isn't perioidc, box should be box L * 4 + 2
+        assert freud_box.Lx == freud_box.Ly == freud_box.Lz == 10.0
+        methane.periodicity = (True, True, True)
+        shifted_pos, freud_box = methane.to_freud()
+        assert freud_box.Lx == freud_box.Ly == freud_box.Lz == 2.0
