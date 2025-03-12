@@ -29,9 +29,7 @@ def lamellae(num_layers, layer_separation, layer_length, bond_L):
     coordinates = []
     for i in range(num_layers):
         if i % 2 == 0:  # Even layer; build from left to right
-            layer = [
-                np.array([layer_separation * i, y, 0]) for y in layer_spacing
-            ]
+            layer = [np.array([layer_separation * i, y, 0]) for y in layer_spacing]
             # Mid-point between this and next layer; use to get curve coords.
             origin = layer[-1] + np.array([r, 0, 0])
             arc = [
@@ -40,8 +38,7 @@ def lamellae(num_layers, layer_separation, layer_length, bond_L):
             ]
         else:  # Odd layer; build from right to left
             layer = [
-                np.array([layer_separation * i, y, 0])
-                for y in layer_spacing[::-1]
+                np.array([layer_separation * i, y, 0]) for y in layer_spacing[::-1]
             ]
             # Mid-point between this and next layer; use to get curve coords.
             origin = layer[-1] + np.array([r, 0, 0])
@@ -56,9 +53,7 @@ def lamellae(num_layers, layer_separation, layer_length, bond_L):
     return coordinates
 
 
-def random_walk(
-    N, bond_L, radius, min_angle, max_angle, max_tries=1000, seed=24
-):
+def random_walk(N, bond_L, radius, min_angle, max_angle, max_tries=1000, seed=24):
     """Generate chain coordinates resulting from a simple self-avoiding random walk.
 
     Parameters
@@ -67,6 +62,8 @@ def random_walk(
         The number of particles in the random walk.
     bond_L : float, nm, required
         The fixed bond distance between consecutive sites.
+    radius : float, nm, required
+        Defines the monomer radius used when checking for overlapping sites.
     min_angle : float, radians, required
         The minimum allowed angle between 3 consecutive sites.
     max_angle : float, radians, required
