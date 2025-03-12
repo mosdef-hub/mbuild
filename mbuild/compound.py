@@ -1466,7 +1466,7 @@ class Compound(object):
 
         Returns:
         --------
-        overlapping_particles : list of tuples 
+        overlapping_particles : list of tuples
             A list of particle pairs that were found within minimum_distance.
         """
         if excluded_bond_depth < 0 or not isinstance(excluded_bond_depth, int):
