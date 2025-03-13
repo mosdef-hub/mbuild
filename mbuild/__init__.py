@@ -10,6 +10,7 @@ from mbuild.coordinate_transform import *
 from mbuild.lattice import Lattice
 from mbuild.packing import *
 from mbuild.pattern import *
+from mbuild.polymer import Polymer
 from mbuild.port import Port
 from mbuild.recipes import recipes
 

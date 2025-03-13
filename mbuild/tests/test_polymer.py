@@ -4,7 +4,7 @@ from collections import Counter
 import pytest
 
 import mbuild as mb
-from mbuild.lib.recipes import Polymer
+from mbuild import Polymer
 from mbuild.tests.base_test import BaseTest
 
 

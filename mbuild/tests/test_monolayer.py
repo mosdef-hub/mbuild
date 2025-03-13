@@ -1,8 +1,9 @@
 import pytest
 
 import mbuild as mb
+from mbuild import Polymer
 from mbuild.lib.atoms import H
-from mbuild.lib.recipes import Monolayer, Polymer
+from mbuild.lib.recipes import Monolayer
 from mbuild.lib.surfaces import Betacristobalite
 from mbuild.tests.base_test import BaseTest
 
