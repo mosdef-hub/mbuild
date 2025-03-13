@@ -59,6 +59,17 @@ class TestPacking(BaseTest):
         assert found_inside_box
         assert filled.periodicity == (False, False, False)
 
+    def test_fill_box_pbc_with_edge(self, h2o):
+        with pytest.raises(ValueError):
+            mb.fill_box(
+                h2o,
+                n_compounds=50,
+                box=Box([2.0, 2.0, 2.0]),
+                use_pbc=True,
+                edge=0.5,
+                packmol_file="packmol.inp",
+            )
+
     def test_fill_box_density_box(self, h2o):
         filled = mb.fill_box(h2o, n_compounds=100, density=100)
         assert np.all(np.isclose(filled.box.lengths, np.ones(3) * 3.104281669169261))
