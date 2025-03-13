@@ -59,12 +59,24 @@ class TestPacking(BaseTest):
         assert found_inside_box
         assert filled.periodicity == (False, False, False)
 
-    def test_fill_box_pbc_with_edge(self, h2o):
+    def test_pbc_with_edge(self, h2o, ethane):
         with pytest.raises(ValueError):
             mb.fill_box(
                 h2o,
                 n_compounds=50,
                 box=Box([2.0, 2.0, 2.0]),
+                use_pbc=True,
+                edge=0.5,
+                packmol_file="packmol.inp",
+            )
+
+        with pytest.raises(ValueError):
+            mb.solvate(
+                ethane,
+                h2o,
+                n_solvent=100,
+                box=[4.0, 4.0, 4.0],
+                center_solute=True,
                 use_pbc=True,
                 edge=0.5,
                 packmol_file="packmol.inp",
