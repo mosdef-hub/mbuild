@@ -76,7 +76,7 @@ class TestCompound(BaseTest):
         assert np.allclose(test_converted1.xyz, test_converted2.xyz)
 
     def test_save_ports(self):
-        #ensure that setting include_ports=True works
+        # ensure that setting include_ports=True works
         mol = mb.Compound()
 
         carbon = mb.Particle(pos=[0, 0, 0], name="C")
