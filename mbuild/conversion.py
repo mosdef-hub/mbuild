@@ -1038,7 +1038,7 @@ def save(
         output_sdf.write(pybel_molecule)
         output_sdf.close()
     else:  # ParmEd supported saver.
-        structure = compound.to_parmed()
+        structure = compound.to_parmed(include_ports=include_ports)
         structure.save(filename, overwrite=overwrite, **kwargs)
 
 
