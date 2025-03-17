@@ -75,6 +75,20 @@ class TestCompound(BaseTest):
         test_converted2.from_parmed(test, coords_only=True)
         assert np.allclose(test_converted1.xyz, test_converted2.xyz)
 
+    def test_save_ports(self):
+        #ensure that setting include_ports=True works
+        mol = mb.Compound()
+
+        carbon = mb.Particle(pos=[0, 0, 0], name="C")
+        mol.add(carbon)
+        port1 = mb.Port(anchor=carbon, orientation=[1, 0, 0], separation=0.1)
+        mol.add(port1)
+
+        mol.save("test_ports.mol2", overwrite=True, include_ports=True)
+        mol_in = mb.load("test_ports.mol2")
+
+        assert mol_in.n_particles == 9
+
     def test_load_xyz(self):
         myethane = mb.load(get_fn("ethane.xyz"))
         assert myethane.n_particles == 8
