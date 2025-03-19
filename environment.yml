@@ -4,7 +4,7 @@ channels:
 dependencies:
   - ele
   - numpy=1.26.4
-  - packmol>=18
+  - packmol>=20.15
   - gmso>=0.9.0
   - garnett
   - parmed>=3.4.3

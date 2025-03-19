@@ -23,7 +23,7 @@ dependencies:
   - openmm
   - gsd>=2.9
   - parmed>=3.4.3
-  - packmol>=20
+  - packmol>=20.15
   - pytest-cov
   - pycifrw
   - rdkit>=2021
