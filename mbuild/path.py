@@ -108,7 +108,7 @@ class HardSphereRandomWalk(Path):
 
     def generate(self):
         np.random.seed(self.seed)
-        # First move is always accepted
+        # With fixed bond lengths, the first move is always accepted
         self.coordinates[1] = self._next_coordinate(pos1=self.coordinates[0])
         self.bonds.append([0, 1])
         self.count += 1  # We already have 1 accepted move
