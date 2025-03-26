@@ -281,6 +281,16 @@ class Polymer(Compound):
             if id(port) not in port_ids:
                 self.remove(port)
 
+    def build_from_path(
+        self, path, sequence="A", add_hydrogens=True, energy_minimize=True
+    ):
+        self.build(
+            n=path.coordinates.shape[0], sequence=sequence, add_hydrogens=add_hydrogens
+        )
+        self.set_monomer_positions(
+            coordinates=path.coordinates, energy_minimize=energy_minimize
+        )
+
     def build_random_configuration(
         self,
         n,
