@@ -26,6 +26,7 @@ from mbuild.coordinate_transform import _rotate, _translate
 from mbuild.exceptions import MBuildError
 from mbuild.periodic_kdtree import PeriodicKDTree
 from mbuild.utils.decorators import experimental_feature
+from mbuild.utils.geometry import bounding_box
 from mbuild.utils.io import import_, run_from_ipython
 from mbuild.utils.jsutils import overwrite_nglview_default
 
@@ -1532,40 +1533,7 @@ class Compound(object):
         that are generated from mb.Lattice's and the resulting
         mb.Lattice.populate method
         """
-        # case where only 1 particle exists
-        is_one_particle = False
-        if self.xyz.shape[0] == 1:
-            is_one_particle = True
-
-        # are any columns all equalivalent values?
-        # an example of this would be a planar molecule
-        # example: all z values are 0.0
-        # from: https://stackoverflow.com/a/14860884
-        # steps: create mask array comparing first value in each column
-        # use np.all with axis=0 to do row columnar comparision
-        has_dimension = [True, True, True]
-        if not is_one_particle:
-            missing_dimensions = np.all(
-                np.isclose(self.xyz, self.xyz[0, :], atol=1e-2),
-                axis=0,
-            )
-            for i, truthy in enumerate(missing_dimensions):
-                has_dimension[i] = not truthy
-
-        if is_one_particle:
-            v1 = np.asarray([[1.0, 0.0, 0.0]])
-            v2 = np.asarray([[0.0, 1.0, 0.0]])
-            v3 = np.asarray([[0.0, 0.0, 1.0]])
-        else:
-            v1 = np.asarray((self.maxs[0] - self.mins[0], 0.0, 0.0))
-            v2 = np.asarray((0.0, self.maxs[1] - self.mins[1], 0.0))
-            v3 = np.asarray((0.0, 0.0, self.maxs[2] - self.mins[2]))
-        vecs = [v1, v2, v3]
-
-        # handle any missing dimensions (planar molecules)
-        for i, dim in enumerate(has_dimension):
-            if not dim:
-                vecs[i][i] = 0.1
+        vecs = bounding_box(xyz=self.xyz)
 
         if pad_box is not None:
             if isinstance(pad_box, (int, float, str, Sequence)):
@@ -1588,8 +1556,7 @@ class Compound(object):
             for dim, val in enumerate(padding):
                 vecs[dim][dim] = vecs[dim][dim] + val
 
-        bounding_box = Box.from_vectors(vectors=np.asarray([vecs]).reshape(3, 3))
-        return bounding_box
+        return Box.from_vectors(vectors=np.asarray([vecs]).reshape(3, 3))
 
     def min_periodic_distance(self, xyz0, xyz1):
         """Vectorized distance calculation considering minimum image.
