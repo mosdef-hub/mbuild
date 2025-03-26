@@ -12,13 +12,13 @@ from mbuild.utils.geometry import bounding_box
 class Path(ABC):
     def __init__(self, N=None, max_attempts=10000):
         self.max_attempts = max_attempts
-        self.attempts = 0
         self.compound = None
         self.N = N
-        self.nlist = None
+        self.attempts = 0
         if N:
             self.coordinates = np.zeros((N, 3))
         # Not every path will know N ahead of time (Lamellae)
+        # Do we have a different data structure for these? Template?
         else:
             self.coordinates = []
         # Generate dict values now?
@@ -29,23 +29,63 @@ class Path(ABC):
     A path is basically a bond graph with coordinates/positions
     assigned to the nodes. This is kind of what Compound is already.
 
-    The interesting part is building up/creating the path.
+    The interesting and challenging part is building up/creating the path.
     This follows an algorithm to generate next coordinates.
-    Any useful path generation algorithm will include
-    a rejection/acception step. Basically end up with
-    monte carlo.
+    Any random path generation algorithm will include
+    a rejection/acception step. We basically end up with
+    monte carlo. Some path algorithms won't be random (lamellae)
 
-    Is Path basically going to be a simple Monte carlo
-    class that others can inherit from?
+    Is Path essentially going to be a simple Monte carlo-ish
+    class that others can inherit from then implement their own approach?
 
     Classes that inherit from path will have their own
-    verions of next_coordinate, check path, etc..
-    We can define abstract methods here.
+    verions of next_coordinate(), check_path(), etc..
+    We can define abstract methods for these in Path.
+    We can put universally useful methods in Path as well.
+
+    Some paths (lamellar structures) would kind of just do
+    everything in generate() without having to use
+    next_coordinate() or check_path(). These would still need to be
+    defined, but just left empty and/or always return True in the case of check_path.
+    Maybe that means these kinds of "paths" need a different data structure?
+
+    Do we just have RandomPath and DeterministicPath?
+
+    RandomPath ideas:
+    - Random walk (tons of possibilities here)
+    - Branching
+    - Multiple random walks
+    -
+
+    DeterministicPath ideas:
+    - Lamellar layers
+    - Protein sub structure
 
     """
 
     @abstractmethod
     def generate(self):
+        """Abstract class for running a Path generation algorithm
+
+        This method should:
+        -----------------
+            - Set initial conditions
+            - Implement Path generation steps by calling _next_coordinate() and _check_path()
+            - Update bonding info depending on specific path approach
+                - Ex) Random walk will always bond consecutive beads together
+            - Handle cases of next coordiante acceptance
+            - Handle cases of next coordinate rejection
+        """
+        pass
+
+    @abstractmethod
+    def _next_coordinate(self):
+        """Algorithm to generate the next coordinate in the path"""
+        pass
+
+    @abstractmethod
+    def _check_path(self):
+        """Algorithm to accept/reject trial move of the current path"""
         pass
 
     def neighbor_list(self, r_max, coordinates=None, box=None):
@@ -62,26 +102,24 @@ class Path(ABC):
         nlist = aq_query.toNeighborList()
         return nlist
 
-    def to_compound(self):
+    def to_compound(self, bead_name="Bead", bead_mass=1):
+        """Visualize a path as an mBuild Compound"""
         compound = Compound()
         for xyz in self.coordinates:
-            compound.add(Compound(name="Bead", pos=xyz))
+            compound.add(Compound(name=bead_name, mass=bead_mass, pos=xyz))
         for bond_group in self.bonds:
             compound.add_bond([compound[bond_group[0]], compound[bond_group[1]]])
         return compound
 
     def apply_mapping(self):
+        """Mapping other compounds onto a Path's coordinates"""
         pass
 
     def _path_history(self):
-        pass
-
-    @abstractmethod
-    def _next_coordinate(self):
-        pass
-
-    @abstractmethod
-    def _check_path(self):
+        """Maybe this is a method that can be used optionally.
+        We could add a save_history parameter to __init__.
+        Depending on the approach, saving histories might add additionally computation time and resources.
+        """
         pass
 
 
