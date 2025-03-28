@@ -1,5 +1,6 @@
 """Molecular paths and templates"""
 
+import math
 from abc import ABC, abstractmethod
 
 import freud
@@ -211,5 +212,50 @@ class HardSphereRandomWalk(Path):
 
 
 class Lamellae(Path):
-    def __init__(self):
+    def __init__(self, num_layers, layer_separation, layer_length, bond_length):
+        self.num_layers = num_layers
+        self.layer_separation = layer_separation
+        self.layer_length = layer_length
+        self.bond_length = bond_length
         super(Lamellae, self).__init__()
+
+    def generate(self):
+        layer_spacing = np.arange(0, self.layer_length, self.bond_length)
+        # Info for generating coords of the curves between layers
+        r = self.layer_separation / 2
+        arc_length = r * np.pi
+        arc_num_points = math.floor(arc_length / self.bond_length)
+        arc_angle = np.pi / (arc_num_points + 1)  # incremental angle
+        arc_angles = np.linspace(arc_angle, np.pi, arc_num_points, endpoint=False)
+        for i in range(self.num_layers):
+            if i % 2 == 0:  # Even layer; build from left to right
+                layer = [
+                    np.array([self.layer_separation * i, y, 0]) for y in layer_spacing
+                ]
+                # Mid-point between this and next layer; use to get curve coords.
+                origin = layer[-1] + np.array([r, 0, 0])
+                arc = [
+                    origin + np.array([-np.cos(theta), np.sin(theta), 0]) * r
+                    for theta in arc_angles
+                ]
+            else:  # Odd layer; build from right to left
+                layer = [
+                    np.array([self.layer_separation * i, y, 0])
+                    for y in layer_spacing[::-1]
+                ]
+                # Mid-point between this and next layer; use to get curve coords.
+                origin = layer[-1] + np.array([r, 0, 0])
+                arc = [
+                    origin + np.array([-np.cos(theta), -np.sin(theta), 0]) * r
+                    for theta in arc_angles
+                ]
+            if i != self.num_layers - 1:
+                self.coordinates.extend(layer + arc)
+            else:
+                self.coordinates.extend(layer)
+
+    def _next_coordinate(self):
+        pass
+
+    def _check_path(self):
+        return True
