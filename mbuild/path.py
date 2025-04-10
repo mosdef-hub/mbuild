@@ -11,19 +11,14 @@ from mbuild.utils.geometry import bounding_box
 
 
 class Path(ABC):
-    def __init__(self, N=None, max_attempts=10000):
-        self.max_attempts = max_attempts
-        self.compound = None
+    def __init__(self, N=None):
         self.N = N
-        self.attempts = 0
         if N:
             self.coordinates = np.zeros((N, 3))
         # Not every path will know N ahead of time (Lamellae)
-        # Do we have a different data structure for these? Template?
+        # Do we make a different class and data structures for these? Template?
         else:
             self.coordinates = []
-        # Generate dict values now?
-        # Entry for each node, initialize with empty lists
         self.bonds = []
 
     """
@@ -34,7 +29,7 @@ class Path(ABC):
     This follows an algorithm to generate next coordinates.
     Any random path generation algorithm will include
     a rejection/acception step. We basically end up with
-    monte carlo. Some path algorithms won't be random (lamellae)
+    Monte Carlo. Some path algorithms won't be random (lamellae)
 
     Is Path essentially going to be a simple Monte carlo-ish
     class that others can inherit from then implement their own approach?
@@ -55,12 +50,16 @@ class Path(ABC):
     RandomPath ideas:
     - Random walk (tons of possibilities here)
     - Branching
-    - Multiple random walks
+    - Multiple self-avoiding random walks
     -
 
     DeterministicPath ideas:
     - Lamellar layers
-    - Protein sub structure
+    -
+
+    Some combination of these?
+    - Lamellar + random walk to generate semi-crystalline like structures?
+    -
 
     """
 
@@ -142,8 +141,10 @@ class HardSphereRandomWalk(Path):
         self.max_angle = max_angle
         self.seed = seed
         self.tolerance = tolerance
+        self.max_attempts = max_attempts
+        self.attempts = 0
         self.count = 0
-        super(HardSphereRandomWalk, self).__init__(N=N, max_attempts=max_attempts)
+        super(HardSphereRandomWalk, self).__init__(N=N)
 
     def generate(self):
         np.random.seed(self.seed)
@@ -253,6 +254,8 @@ class Lamellae(Path):
                 self.coordinates.extend(layer + arc)
             else:
                 self.coordinates.extend(layer)
+        for i in range(len(self.coordinates) - 1):
+            self.bonds.append([i, i + 1])
 
     def _next_coordinate(self):
         pass

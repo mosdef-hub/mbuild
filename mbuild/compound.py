@@ -2018,7 +2018,7 @@ class Compound(object):
             The number of optimization iterations
         forcefield : str, optional, default='UFF'
             The generic force field to apply to the Compound for minimization.
-            Valid options are 'MMFF94', 'MMFF94s', ''UFF', 'GAFF', 'Ghemical'.
+            Valid options are 'MMFF94', 'MMFF94s', 'UFF', 'GAFF', 'Ghemical'.
             Please refer to the `Open Babel documentation
             <http://open-babel.readthedocs.io/en/latest/Forcefields/Overview.html>`_
             when considering your choice of force field.
