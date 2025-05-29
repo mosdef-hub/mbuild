@@ -291,33 +291,6 @@ class Polymer(Compound):
             coordinates=path.coordinates, energy_minimize=energy_minimize
         )
 
-    def build_random_configuration(
-        self,
-        n,
-        sequence="A",
-        min_angle=np.pi / 2,
-        max_angle=np.pi,
-        radius=None,
-        seed=42,
-        energy_minimize=True,
-        add_hydrogens=True,
-    ):
-        # Build initial polymer chain
-        self.build(n=n, sequence=sequence, add_hydrogens=add_hydrogens)
-        # Get new coordinates
-        avg_bond_L = np.mean([L for L in self.backbone_bond_lengths()])
-        if not radius:
-            radius = avg_bond_L * 1.2
-        coords = random_walk(
-            N=len(self.children),
-            min_angle=min_angle,
-            max_angle=max_angle,
-            bond_L=avg_bond_L,
-            radius=radius,
-            seed=seed,
-        )
-        self.set_monomer_positions(coordinates=coords, energy_minimize=energy_minimize)
-
     def build_lamellae(
         self,
         num_layers,
