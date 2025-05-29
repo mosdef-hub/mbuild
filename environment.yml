@@ -14,4 +14,3 @@ dependencies:
   - scipy
   - networkx
   - treelib
-  - importlib_resources

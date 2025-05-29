@@ -26,9 +26,8 @@ import os
 import sys
 import textwrap
 import warnings
+from importlib.resources import files
 from unittest import SkipTest
-
-import importlib_resources as resources
 
 
 class DelayImportError(ImportError, SkipTest):
@@ -362,8 +361,8 @@ def get_fn(name):
     name : str
         Name of the file to load (with respect to the reference/ folder).
     """
-    fn = resources.files("mbuild").joinpath("utils", "reference", name)
-    # fn = resource_filename("mbuild", os.path.join("utils", "reference", name))
+    fn = files("mbuild").joinpath("utils", "reference", name)
+
     if not os.path.exists(fn):
         raise IOError(f"Sorry! {fn} does not exists.")
     return str(fn)
