@@ -5,7 +5,6 @@ channels:
 dependencies:
   - ele
   - numpy
-  - importlib_resources
   - python=3.11
   - ipython
   - boltons
