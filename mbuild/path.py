@@ -149,7 +149,17 @@ class HardSphereRandomWalk(Path):
     def generate(self):
         np.random.seed(self.seed)
         # With fixed bond lengths, the first move is always accepted
-        self.coordinates[1] = self._next_coordinate(pos1=self.coordinates[0])
+        phi = np.random.uniform(0, 2 * np.pi)
+        theta = np.random.uniform(0, np.pi)
+        next_pos = np.array(
+            [
+                self.bond_length * np.sin(theta) * np.cos(phi),
+                self.bond_length * np.sin(theta) * np.sin(phi),
+                self.bond_length * np.cos(theta),
+            ]
+        )
+        self.coordinates[1] = next_pos
+        #self.coordinates[1] = _next_coordinate(pos1=self.coordinates[0])
         self.bonds.append([0, 1])
         self.count += 1  # We already have 1 accepted move
         while self.count < self.N - 1:
@@ -173,25 +183,25 @@ class HardSphereRandomWalk(Path):
                 )
 
     def _next_coordinate(self, pos1, pos2=None):
-        if pos2 is None:
-            phi = np.random.uniform(0, 2 * np.pi)
-            theta = np.random.uniform(0, np.pi)
-            next_pos = np.array(
-                [
-                    self.bond_length * np.sin(theta) * np.cos(phi),
-                    self.bond_length * np.sin(theta) * np.sin(phi),
-                    self.bond_length * np.cos(theta),
-                ]
-            )
-        else:  # Get the last bond vector, use angle range with last 2 coords.
-            v1 = pos2 - pos1
-            v1_norm = v1 / np.linalg.norm(v1)
-            theta = np.random.uniform(self.min_angle, self.max_angle)
-            r = np.random.rand(3) - 0.5
-            r_perp = r - np.dot(r, v1_norm) * v1_norm
-            r_perp_norm = r_perp / np.linalg.norm(r_perp)
-            v2 = np.cos(theta) * v1_norm + np.sin(theta) * r_perp_norm
-            next_pos = v2 * self.bond_length
+        #if pos2 is None:
+        #    phi = np.random.uniform(0, 2 * np.pi)
+        #    theta = np.random.uniform(0, np.pi)
+        #    next_pos = np.array(
+        #        [
+        #            self.bond_length * np.sin(theta) * np.cos(phi),
+        #            self.bond_length * np.sin(theta) * np.sin(phi),
+        #            self.bond_length * np.cos(theta),
+        #        ]
+        #    )
+        #else:  # Get the last bond vector, use angle range with last 2 coords.
+        v1 = pos2 - pos1
+        v1_norm = v1 / np.linalg.norm(v1)
+        theta = np.random.uniform(self.min_angle, self.max_angle)
+        r = np.random.rand(3) - 0.5
+        r_perp = r - np.dot(r, v1_norm) * v1_norm
+        r_perp_norm = r_perp / np.linalg.norm(r_perp)
+        v2 = np.cos(theta) * v1_norm + np.sin(theta) * r_perp_norm
+        next_pos = v2 * self.bond_length
 
         return pos1 + next_pos
 
@@ -261,4 +271,17 @@ class Lamellae(Path):
         pass
 
     def _check_path(self):
-        return True
+        """Use neighbor_list to check for pairs within a distance smaller than the radius"""
+        # Grow box size as number of steps grows
+        box_length = self.count * self.radius * 2.01
+        # Only need neighbor list for accepted moves + current trial move
+        coordinates = self.coordinates[: self.count + 2]
+        nlist = self.neighbor_list(
+            coordinates=coordinates,
+            r_max=self.radius - self.tolerance,
+            box=[box_length, box_length, box_length],
+        )
+        if len(nlist.distances) > 0:  # Particle pairs found within the particle radius
+            return False
+        else:
+            return True
