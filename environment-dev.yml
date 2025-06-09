@@ -40,7 +40,6 @@ dependencies:
   - symengine
   - python-symengine
   - hoomd>=4.0,<5.0
-  - importlib_resources
   - py3Dmol
   - pip:
       - git+https://github.com/mosdef-hub/gmso.git@main
