@@ -14,5 +14,5 @@ from mbuild.polymer import Polymer
 from mbuild.port import Port
 from mbuild.recipes import recipes
 
-__version__ = "1.1.1"
+__version__ = "1.2.0"
 __date__ = "2025-01-23"

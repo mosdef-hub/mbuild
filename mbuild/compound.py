@@ -25,7 +25,6 @@ from mbuild.box import Box
 from mbuild.coordinate_transform import _rotate, _translate
 from mbuild.exceptions import MBuildError
 from mbuild.periodic_kdtree import PeriodicKDTree
-from mbuild.utils.decorators import experimental_feature
 from mbuild.utils.geometry import bounding_box
 from mbuild.utils.io import import_, run_from_ipython
 from mbuild.utils.jsutils import overwrite_nglview_default
@@ -1151,7 +1150,6 @@ class Compound(object):
                     self.add_bond((p1, p2))
                     added_bonds.append(bond_tuple)
 
-    @experimental_feature()
     def freud_generate_bonds(self, name_a, name_b, dmin, dmax):
         """Add Bonds between all pairs of types a/b within [dmin, dmax].
 
@@ -1165,11 +1163,6 @@ class Compound(object):
             The minimum distance (in nm) between Particles for considering a bond
         dmax : float
             The maximum distance (in nm) between Particles for considering a bond
-
-        Notes
-        -----
-        This is an experimental feature and some behavior might change out of step of a standard development release.
-
         """
         freud = import_("freud")
         moved_positions, freud_box = self.to_freud()
