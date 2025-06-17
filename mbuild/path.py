@@ -1,7 +1,7 @@
 """Molecular paths and templates"""
 
 import math
-from abc import ABC, abstractmethod
+from abc import abstractmethod
 
 import freud
 import numpy as np
@@ -9,59 +9,66 @@ import numpy as np
 from mbuild import Compound
 from mbuild.utils.geometry import bounding_box
 
+"""
+A path is basically a bond graph with coordinates/positions
+assigned to the nodes. This is kind of what Compound is already.
 
-class Path(ABC):
-    def __init__(self, N=None):
-        self.N = N
-        if N:
+The interesting and challenging part is building up/creating the path.
+This follows an algorithm to generate next coordinates.
+Any random path generation algorithm will include
+a rejection/acception step. We basically end up with
+Monte Carlo. Some path algorithms won't be random (lamellae)
+
+Is Path essentially going to be a simple Monte carlo-ish
+class that others can inherit from then implement their own approach?
+
+Classes that inherit from path will have their own
+verions of next_coordinate(), check_path(), etc..
+We can define abstract methods for these in Path.
+We can put universally useful methods in Path as well (e.g., n_list(), to_compound(), etc..).
+
+Some paths (lamellar structures) would kind of just do
+everything in generate() without having to use
+next_coordinate() or check_path(). These would still need to be
+defined, but just left empty and/or always return True in the case of check_path.
+Maybe that means these kinds of "paths" need a different data structure?
+
+Do we just have RandomPath and DeterministicPath?
+
+RandomPath ideas:
+- Random walk (tons of possibilities here)
+- Branching
+- Multiple self-avoiding random walks
+
+DeterministicPath ideas:
+- Lamellar layers
+- DNA strands
+
+Some combination of these?
+- Lamellar + random walk to generate semi-crystalline like structures?
+-
+"""
+
+
+class Path:
+    def __init__(self, N=None, bond_graph=None, coordinates=None):
+        self.bond_graph = bond_graph
+        if N and coordinates is None:
+            self.N = N
             self.coordinates = np.zeros((N, 3))
-        # Not every path will know N ahead of time (Lamellae)
-        # Do we make a different class and data structures for these? Template?
-        else:
+        elif coordinates is not None and not N:
+            self.N = len(coordinates)
+            self.coordinates = coordinates
+        elif coordinates is not None and N:
+            self.N = N
             self.coordinates = []
-        self.bonds = []
+        else:
+            raise ValueError("Specify either one of N and coordinates, or neither")
+        self.generate()
 
-    """
-    A path is basically a bond graph with coordinates/positions
-    assigned to the nodes. This is kind of what Compound is already.
-
-    The interesting and challenging part is building up/creating the path.
-    This follows an algorithm to generate next coordinates.
-    Any random path generation algorithm will include
-    a rejection/acception step. We basically end up with
-    Monte Carlo. Some path algorithms won't be random (lamellae)
-
-    Is Path essentially going to be a simple Monte carlo-ish
-    class that others can inherit from then implement their own approach?
-
-    Classes that inherit from path will have their own
-    verions of next_coordinate(), check_path(), etc..
-    We can define abstract methods for these in Path.
-    We can put universally useful methods in Path as well.
-
-    Some paths (lamellar structures) would kind of just do
-    everything in generate() without having to use
-    next_coordinate() or check_path(). These would still need to be
-    defined, but just left empty and/or always return True in the case of check_path.
-    Maybe that means these kinds of "paths" need a different data structure?
-
-    Do we just have RandomPath and DeterministicPath?
-
-    RandomPath ideas:
-    - Random walk (tons of possibilities here)
-    - Branching
-    - Multiple self-avoiding random walks
-    -
-
-    DeterministicPath ideas:
-    - Lamellar layers
-    -
-
-    Some combination of these?
-    - Lamellar + random walk to generate semi-crystalline like structures?
-    -
-
-    """
+    @classmethod
+    def from_coordinates(cls, coordinates, bond_graph=None):
+        return cls(coordinates=coordinates, bond_graph=bond_graph)
 
     @abstractmethod
     def generate(self):
@@ -107,8 +114,8 @@ class Path(ABC):
         compound = Compound()
         for xyz in self.coordinates:
             compound.add(Compound(name=bead_name, mass=bead_mass, pos=xyz))
-        for bond_group in self.bonds:
-            compound.add_bond([compound[bond_group[0]], compound[bond_group[1]]])
+        if self.bond_graph:
+            compound.update_bond_graph(self.bond_graph)
         return compound
 
     def apply_mapping(self):
@@ -118,7 +125,7 @@ class Path(ABC):
     def _path_history(self):
         """Maybe this is a method that can be used optionally.
         We could add a save_history parameter to __init__.
-        Depending on the approach, saving histories might add additionally computation time and resources.
+        Depending on the approach, saving histories might add additional computation time and resources.
         """
         pass
 
@@ -134,6 +141,7 @@ class HardSphereRandomWalk(Path):
         max_attempts,
         seed,
         tolerance=1e-5,
+        bond_graph=None,
     ):
         self.bond_length = bond_length
         self.radius = radius
@@ -144,7 +152,7 @@ class HardSphereRandomWalk(Path):
         self.max_attempts = max_attempts
         self.attempts = 0
         self.count = 0
-        super(HardSphereRandomWalk, self).__init__(N=N)
+        super(HardSphereRandomWalk, self).__init__(N=N, bond_graph=bond_graph)
 
     def generate(self):
         np.random.seed(self.seed)
@@ -159,8 +167,7 @@ class HardSphereRandomWalk(Path):
             ]
         )
         self.coordinates[1] = next_pos
-        #self.coordinates[1] = _next_coordinate(pos1=self.coordinates[0])
-        self.bonds.append([0, 1])
+        # self.coordinates[1] = _next_coordinate(pos1=self.coordinates[0])
         self.count += 1  # We already have 1 accepted move
         while self.count < self.N - 1:
             new_xyz = self._next_coordinate(
@@ -169,7 +176,6 @@ class HardSphereRandomWalk(Path):
             )
             self.coordinates[self.count + 1] = new_xyz
             if self._check_path():
-                self.bonds.append((self.count, self.count + 1))
                 self.count += 1
                 self.attempts += 1
             else:
@@ -183,7 +189,7 @@ class HardSphereRandomWalk(Path):
                 )
 
     def _next_coordinate(self, pos1, pos2=None):
-        #if pos2 is None:
+        # if pos2 is None:
         #    phi = np.random.uniform(0, 2 * np.pi)
         #    theta = np.random.uniform(0, np.pi)
         #    next_pos = np.array(
@@ -193,7 +199,7 @@ class HardSphereRandomWalk(Path):
         #            self.bond_length * np.cos(theta),
         #        ]
         #    )
-        #else:  # Get the last bond vector, use angle range with last 2 coords.
+        # else:  # Get the last bond vector, use angle range with last 2 coords.
         v1 = pos2 - pos1
         v1_norm = v1 / np.linalg.norm(v1)
         theta = np.random.uniform(self.min_angle, self.max_angle)
@@ -271,17 +277,4 @@ class Lamellae(Path):
         pass
 
     def _check_path(self):
-        """Use neighbor_list to check for pairs within a distance smaller than the radius"""
-        # Grow box size as number of steps grows
-        box_length = self.count * self.radius * 2.01
-        # Only need neighbor list for accepted moves + current trial move
-        coordinates = self.coordinates[: self.count + 2]
-        nlist = self.neighbor_list(
-            coordinates=coordinates,
-            r_max=self.radius - self.tolerance,
-            box=[box_length, box_length, box_length],
-        )
-        if len(nlist.distances) > 0:  # Particle pairs found within the particle radius
-            return False
-        else:
-            return True
+        pass

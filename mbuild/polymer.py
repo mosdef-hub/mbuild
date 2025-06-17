@@ -6,7 +6,6 @@ import numpy as np
 
 from mbuild import clone
 from mbuild.compound import Compound
-from mbuild.conformations import lamellae, random_walk
 from mbuild.coordinate_transform import (
     force_overlap,
     x_axis_transform,
@@ -290,26 +289,6 @@ class Polymer(Compound):
         self.set_monomer_positions(
             coordinates=path.coordinates, energy_minimize=energy_minimize
         )
-
-    def build_lamellae(
-        self,
-        num_layers,
-        layer_length,
-        layer_separation,
-        bond_L,
-        sequence="A",
-        energy_minimize=True,
-        add_hydrogens=True,
-    ):
-        # Get lamellar coords first to determine n monomers
-        coords = lamellae(
-            num_layers=num_layers,
-            layer_length=layer_length,
-            bond_L=bond_L,
-            layer_separation=layer_separation,
-        )
-        self.build(n=len(coords), sequence=sequence, add_hydrogens=add_hydrogens)
-        self.set_monomer_positions(coordinates=coords, energy_minimize=energy_minimize)
 
     def add_monomer(
         self,
