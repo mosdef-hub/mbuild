@@ -240,6 +240,26 @@ class Compound(object):
             for subpart in part.successors():
                 yield subpart
 
+    def update_bond_graph(self, new_graph):
+        """Manually set the compound's complete bond graph.
+
+        Parameters:
+        -----------
+        new_graph : networkx.Graph, required
+            A networkx.Graph containing information about
+            nodes and edges.
+        """
+        graph = nx.Graph()
+        # node is int corresponding to particle index
+        for node in new_graph.nodes:
+            graph.add_node(node_for_adding=self[node])
+        for edge in new_graph.edges:
+            graph.add_edge(
+                u_of_edge=self[edge[0]],
+                v_of_edge=self[edge[1]],
+            )
+        self.bond_graph = graph
+
     @property
     def n_particles(self):
         """Return the number of Particles in the Compound.
@@ -637,7 +657,7 @@ class Compound(object):
                 if self.root.bond_graph.has_node(self):
                     self.root.bond_graph.remove_node(self)
                 # compose the bond graph of all the children with the root
-                self.root.bond_graph = nx.compose(
+                self.root._bond_graph = nx.compose(
                     self.root.bond_graph, children_bond_graph
                 )
             for i, child in enumerate(compound_list):
@@ -3396,10 +3416,12 @@ class Compound(object):
             newone.bond_graph.add_node(clone_of[particle])
         for c1, c2, data in self.bonds(return_bond_order=True):
             try:
+                try:
+                    bond_order = data["bond_order"]
+                except KeyError:
+                    bond_order = "unspecified"
                 # bond order is added to the data dictionary as 'bo'
-                newone.add_bond(
-                    (clone_of[c1], clone_of[c2]), bond_order=data["bond_order"]
-                )
+                newone.add_bond((clone_of[c1], clone_of[c2]), bond_order=bond_order)
             except KeyError:
                 raise MBuildError(
                     "Cloning failed. Compound contains bonds to "
