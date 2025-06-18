@@ -4,13 +4,34 @@ import os
 import tempfile
 from warnings import warn
 
+import gmso
 import numpy as np
 from ele.element import element_from_name, element_from_symbol
 from ele.exceptions import ElementError
+from gmso.parameterization import apply
 
 from mbuild import Compound
 from mbuild.exceptions import MBuildError
 from mbuild.utils.io import import_
+
+
+def remove_overlaps(compound, forcefield, steps, max_displacement=1e-3, **kwargs):
+    """Run a short HOOMD-Blue simulation to remove overlapping particles.
+    This uses hoomd.md.methods.DisplacementCapped."""
+    pass
+    top = compound.to_gmso()
+    top.identify_connections()
+    apply(top=top, forcefield=forcefield, **kwargs)
+    snap, refs = gmso.external.to_gsd_snapshot(top=top, autoscale=False)
+    hoomd_ff, refs = gmso.external.to_hoomd_forcefield(top=top, r_cut=1.2)
+
+
+def _run_hoomd_simulation(snapshot, forces, method):
+    # Set up common hoomd stuff here
+
+    # Set up method specific stuff here
+    if method == "displacement_capped":
+        pass
 
 
 def energy_minimize(
