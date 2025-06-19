@@ -5,6 +5,7 @@ import tempfile
 from warnings import warn
 
 import gmso
+import hoomd
 import numpy as np
 from ele.element import element_from_name, element_from_symbol
 from ele.exceptions import ElementError
@@ -15,23 +16,58 @@ from mbuild.exceptions import MBuildError
 from mbuild.utils.io import import_
 
 
-def remove_overlaps(compound, forcefield, steps, max_displacement=1e-3, **kwargs):
+def remove_overlaps(
+    compound, forcefield, steps, max_displacement=1e-3, run_on_gpu=True, **kwargs
+):
     """Run a short HOOMD-Blue simulation to remove overlapping particles.
-    This uses hoomd.md.methods.DisplacementCapped."""
-    pass
+    This uses hoomd.md.methods.DisplacementCapped.
+
+    Parameters:
+    -----------
+    compound : mbuild.compound.Compound; required
+        The compound to perform the displacement capped simulation with.
+    forcefield : foyer.focefield.ForceField or gmso.core.Forcefield; required
+        The forcefield used for the simulation
+    steps : int; required
+        The number of simulation steps to run
+    max_displacement : float, default 1e-3
+        The value of the maximum displacement (nm)
+    run_on_gpu : bool, default True
+        If true, attempts to run HOOMD-Blue on a GPU.
+        If a GPU device isn't found, then it will run on the CPU
+    """
     top = compound.to_gmso()
     top.identify_connections()
     apply(top=top, forcefield=forcefield, **kwargs)
     snap, refs = gmso.external.to_gsd_snapshot(top=top, autoscale=False)
     hoomd_ff, refs = gmso.external.to_hoomd_forcefield(top=top, r_cut=1.2)
+    forces = hoomd_ff
+    sim = _create_hoomd_simulation(snapshot=snap, forces=forces, run_on_gpu=run_on_gpu)
+    method = hoomd.md.methods.DisplacementCapped(
+        filter=hoomd.filter.All(),
+        maximum_displacement=max_displacement,
+    )
+    sim.operations.integrator.methods.append(method)
+    sim.run(steps)
 
 
-def _run_hoomd_simulation(snapshot, forces, method):
+def _create_hoomd_simulation(snapshot, forces, run_on_gpu):
     # Set up common hoomd stuff here
-
-    # Set up method specific stuff here
-    if method == "displacement_capped":
-        pass
+    if run_on_gpu:
+        try:
+            device = hoomd.device.GPU()
+            print(f"GPU found, running on device {device.device}")
+        except RuntimeError:
+            print("GPU not found, running on CPU.")
+            device = hoomd.device.CPU()
+    else:
+        device = hoomd.device.CPU()
+    sim = hoomd.Simulation(device=device)
+    sim.create_state_from_snapshot(snapshot)
+    integrator = hoomd.md.Integrator(dt=0.0001)
+    integrator.forces = forces
+    sim.operations.integrator = integrator
+    return sim
 
 
 def energy_minimize(
