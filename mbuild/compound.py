@@ -256,7 +256,7 @@ class Compound(object):
         the indices of the particles in the compound.
 
         mbuild bond graphs accept `bond_order` arguments. If the
-        `bond_order` is present in `new_graph`, it will be used,
+        `bond_order` data is present in `new_graph`, it will be used,
         otherwise `bond_under` is set to 'unspecified'.
         """
         if new_graph.number_of_nodes() != self.n_particles:
