@@ -1,6 +1,7 @@
 import os
 import sys
 
+import networkx as nx
 import numpy as np
 import parmed as pmd
 import pytest
@@ -920,6 +921,26 @@ class TestCompound(BaseTest):
         assert ethane._n_particles() == 0
         assert ethane.n_direct_bonds == 0
         assert len(ethane.children) == 0
+
+    def test_set_bond_graph(self):
+        compound = Compound()
+        for i in range(5):
+            compound.add(Compound(pos=[0.2 * i, 0, 0]))
+        assert compound.n_bonds == 0
+        compound.set_bond_graph(new_graph=nx.path_graph(5))
+        assert compound.bond_graph.number_of_nodes() == 5
+        assert compound.n_bonds == compound.bond_graph.number_of_edges() == 4
+        for bond in compound.bonds(return_bond_order=True):
+            assert bond[2]["bond_order"] == "unspecified"
+
+    def test_set_bond_graph_mismatch(self):
+        compound = Compound()
+        for i in range(5):
+            compound.add(Compound(pos=[0.2 * i, 0, 0]))
+        with pytest.raises(ValueError):
+            compound.set_bond_graph(new_graph=nx.path_graph(6))
+        with pytest.raises(ValueError):
+            compound.set_bond_graph(new_graph=nx.path_graph(4))
 
     def test_remove_no_bond_graph(self):
         compound = Compound()

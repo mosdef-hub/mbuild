@@ -241,23 +241,42 @@ class Compound(object):
             for subpart in part.successors():
                 yield subpart
 
-    def update_bond_graph(self, new_graph):
+    def set_bond_graph(self, new_graph):
         """Manually set the compound's complete bond graph.
 
         Parameters:
         -----------
         new_graph : networkx.Graph, required
             A networkx.Graph containing information about
-            nodes and edges.
+            nodes and edges that is used to construct a
+            new mbuild.bond_graph.BondGraph().
+
+        Notes:
+        ------
+        The nodes of the new graph should be ints that are mapped to
+        the indices of the particles in the compound.
+
+        mbuild bond graphs accept `bond_order` arguments. If the
+        `bond_order` data is present in `new_graph`, it will be used,
+        otherwise `bond_under` is set to 'unspecified'.
         """
-        graph = nx.Graph()
+        if new_graph.number_of_nodes() != self.n_particles:
+            raise ValueError(
+                f"new_graph contains {new_graph.number_of_nodes()}",
+                f" but the Compound only contains {self.n_particles}",
+                "The graph must contain one node per particle.",
+            )
+        graph = BondGraph()
         # node is int corresponding to particle index
         for node in new_graph.nodes:
             graph.add_node(node_for_adding=self[node])
         for edge in new_graph.edges:
+            if "bond_order" in edge:
+                bond_order = edge["bond_order"]
+            else:
+                bond_order = "unspecified"
             graph.add_edge(
-                u_of_edge=self[edge[0]],
-                v_of_edge=self[edge[1]],
+                u_of_edge=self[edge[0]], v_of_edge=self[edge[1]], bond_order=bond_order
             )
         self.bond_graph = graph
 
