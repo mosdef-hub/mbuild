@@ -16,11 +16,17 @@ from mbuild.exceptions import MBuildError
 from mbuild.utils.io import import_
 
 
-def remove_overlaps(
-    compound, forcefield, steps, max_displacement=1e-3, run_on_gpu=True, **kwargs
+def remove_overlaps_fire(
+    compound,
+    forcefield,
+    A_initial=10,
+    bond_k_scale=100,
+    angle_k_scale=100,
+    fire_iteration_steps=5000,
+    final_relaxation_steps=5000,
+    run_on_gpu=True,
 ):
     """Run a short HOOMD-Blue simulation to remove overlapping particles.
-    This uses hoomd.md.methods.DisplacementCapped.
 
     Parameters:
     -----------
@@ -38,17 +44,71 @@ def remove_overlaps(
     """
     top = compound.to_gmso()
     top.identify_connections()
-    apply(top=top, forcefield=forcefield, **kwargs)
-    snap, refs = gmso.external.to_gsd_snapshot(top=top, autoscale=False)
-    hoomd_ff, refs = gmso.external.to_hoomd_forcefield(top=top, r_cut=1.2)
-    forces = hoomd_ff
-    sim = _create_hoomd_simulation(snapshot=snap, forces=forces, run_on_gpu=run_on_gpu)
-    method = hoomd.md.methods.DisplacementCapped(
-        filter=hoomd.filter.All(),
-        maximum_displacement=max_displacement,
+    apply(top, forcefields=forcefield)
+
+    forces, ref = gmso.external.to_hoomd_forcefield(top, r_cut=0.4)
+    snap, ref = gmso.external.to_gsd_snapshot(top)
+    forces = list(set().union(*forces.values()))
+    lj = [f for f in forces if isinstance(f, hoomd.md.pair.LJ)][0]
+    bond = [f for f in forces if isinstance(f, hoomd.md.bond.Harmonic)][0]
+    angle = [f for f in forces if isinstance(f, hoomd.md.angle.Harmonic)][0]
+
+    # Make DPD force, pulling info from LJ
+    dpd = hoomd.md.pair.DPDConservative(nlist=lj.nlist)
+    for param in lj.params:
+        dpd.params[param] = dict(A=A_initial)
+        dpd.r_cut[param] = lj.r_cut[param]
+        dpd.r_cut[param] = lj.params[param]["sigma"]
+
+    # Scale bond K and angle K
+    for param in bond.params:
+        bond.params[param]["k"] /= bond_k_scale
+    for param in angle.params:
+        angle.params[param]["k"] /= angle_k_scale
+
+    ### HOOMD SIMULATION
+    sim = hoomd.Simulation(device=hoomd.device.auto_select())
+    sim.create_state_from_snapshot(snap)
+    nvt = hoomd.md.methods.ConstantVolume(filter=hoomd.filter.All())
+    fire = hoomd.md.minimize.FIRE(
+        dt=1e-4,
+        force_tol=1e-2,
+        angmom_tol=1e-2,
+        energy_tol=1e-3,
+        finc_dt=1.1,
+        fdec_dt=0.5,
+        alpha_start=0.2,
+        fdec_alpha=0.95,
+        min_steps_adapt=10,
+        min_steps_conv=20,
+        methods=[nvt],
     )
-    sim.operations.integrator.methods.append(method)
-    sim.run(steps)
+    fire.forces = [dpd, bond, angle]
+    sim.operations.integrator = fire
+    gsd_writer = hoomd.write.GSD(
+        filename="traj.gsd",
+        trigger=hoomd.trigger.Periodic(10),
+        mode="wb",
+        filter=hoomd.filter.All(),
+    )
+    sim.operations.writers.append(gsd_writer)
+    sim.run(5000, write_at_start=True)
+    # Scale bond K and angle K
+    for param in bond.params:
+        bond.params[param]["k"] *= bond_k_scale
+    for param in angle.params:
+        angle.params[param]["k"] *= angle_k_scale
+    sim.run(5000, write_at_start=False)
+    sim.operations.integrator.forces.remove(dpd)
+    sim.operations.integrator.forces.append(lj)
+    sim.run(10000, write_at_start=False)
+    with sim.state.cpu_local_snapshot as snap:
+        # freud_box = freud.Box.from_box(sim.state.box)
+        # unwrap_pos = freud_box.unwrap(
+        #    snap.particles.position,
+        #    snap.particles.image
+        # )
+        compound.xyz = snap.particles.position
 
 
 def _create_hoomd_simulation(snapshot, forces, run_on_gpu):
