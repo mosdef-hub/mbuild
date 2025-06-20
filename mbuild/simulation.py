@@ -22,7 +22,12 @@ def remove_overlaps_fire(
     A_initial=10,
     bond_k_scale=100,
     angle_k_scale=100,
+    dt=1e-4,
+    force_tol=1e-2,
+    angmom_tol=1e-2,
+    energy_tol=1e-3,
     fire_iteration_steps=5000,
+    num_fire_iterations=2,
     final_relaxation_steps=5000,
     run_on_gpu=True,
 ):
@@ -71,15 +76,15 @@ def remove_overlaps_fire(
     sim.create_state_from_snapshot(snap)
     nvt = hoomd.md.methods.ConstantVolume(filter=hoomd.filter.All())
     fire = hoomd.md.minimize.FIRE(
-        dt=1e-4,
-        force_tol=1e-2,
-        angmom_tol=1e-2,
-        energy_tol=1e-3,
+        dt=dt,
+        force_tol=force_tol,
+        angmom_tol=angmom_tol,
+        energy_tol=energy_tol,
         finc_dt=1.1,
         fdec_dt=0.5,
         alpha_start=0.2,
         fdec_alpha=0.95,
-        min_steps_adapt=10,
+        min_steps_adapt=5,
         min_steps_conv=20,
         methods=[nvt],
     )
@@ -87,28 +92,27 @@ def remove_overlaps_fire(
     sim.operations.integrator = fire
     gsd_writer = hoomd.write.GSD(
         filename="traj.gsd",
-        trigger=hoomd.trigger.Periodic(10),
+        trigger=hoomd.trigger.Periodic(1000),
         mode="wb",
         filter=hoomd.filter.All(),
     )
     sim.operations.writers.append(gsd_writer)
-    sim.run(5000, write_at_start=True)
+    for sim_num in range(num_fire_iterations):
+        sim.run(fire_iteration_steps, write_at_start=True)
     # Scale bond K and angle K
     for param in bond.params:
         bond.params[param]["k"] *= bond_k_scale
     for param in angle.params:
         angle.params[param]["k"] *= angle_k_scale
-    sim.run(5000, write_at_start=False)
+    sim.run(fire_iteration_steps, write_at_start=False)
     sim.operations.integrator.forces.remove(dpd)
     sim.operations.integrator.forces.append(lj)
-    sim.run(10000, write_at_start=False)
+    for sim_num in range(num_fire_iterations):
+        sim.run(fire_iteration_steps, write_at_start=True)
     with sim.state.cpu_local_snapshot as snap:
-        # freud_box = freud.Box.from_box(sim.state.box)
-        # unwrap_pos = freud_box.unwrap(
-        #    snap.particles.position,
-        #    snap.particles.image
-        # )
-        compound.xyz = snap.particles.position
+        particles = snap.particles.rtag[:]
+        pos = snap.particles.position[particles]
+        compound.xyz = pos
 
 
 def _create_hoomd_simulation(snapshot, forces, run_on_gpu):
