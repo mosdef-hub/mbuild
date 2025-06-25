@@ -53,13 +53,16 @@ Some combination of these?
 class Path:
     def __init__(self, N=None, bond_graph=None, coordinates=None):
         self.bond_graph = bond_graph
-        if N and coordinates is None:
+        # Only N is defined, make empty coordinates
+        if N is not None and coordinates is None:
             self.N = N
             self.coordinates = np.zeros((N, 3))
-        elif coordinates is not None and not N:
+        # Only coordinates is defined, set N from length
+        elif coordinates is not None and N is None:
             self.N = len(coordinates)
             self.coordinates = coordinates
-        elif coordinates is not None and N:
+        # Neither is defined, use list for coordinates
+        elif N is None and coordinates is None:
             self.N = N
             self.coordinates = []
         else:
@@ -68,7 +71,7 @@ class Path:
 
     @classmethod
     def from_coordinates(cls, coordinates, bond_graph=None):
-        return cls(coordinates=coordinates, bond_graph=bond_graph)
+        return cls(coordinates=coordinates, bond_graph=bond_graph, N=None)
 
     @abstractmethod
     def generate(self):
@@ -119,6 +122,7 @@ class Path:
         return compound
 
     def apply_mapping(self):
+        # TODO: Finish, add logic to align orientation with path site pos and bond graph
         """Mapping other compounds onto a Path's coordinates"""
         pass
 
@@ -167,7 +171,6 @@ class HardSphereRandomWalk(Path):
             ]
         )
         self.coordinates[1] = next_pos
-        # self.coordinates[1] = _next_coordinate(pos1=self.coordinates[0])
         self.count += 1  # We already have 1 accepted move
         while self.count < self.N - 1:
             new_xyz = self._next_coordinate(
@@ -188,24 +191,16 @@ class HardSphereRandomWalk(Path):
                     "Try changing the parameters and running again.",
                 )
 
-    def _next_coordinate(self, pos1, pos2=None):
-        # if pos2 is None:
-        #    phi = np.random.uniform(0, 2 * np.pi)
-        #    theta = np.random.uniform(0, np.pi)
-        #    next_pos = np.array(
-        #        [
-        #            self.bond_length * np.sin(theta) * np.cos(phi),
-        #            self.bond_length * np.sin(theta) * np.sin(phi),
-        #            self.bond_length * np.cos(theta),
-        #        ]
-        #    )
-        # else:  # Get the last bond vector, use angle range with last 2 coords.
+    def _next_coordinate(self, pos1, pos2):
+        # Vector formed by previous 2 coordinates
         v1 = pos2 - pos1
         v1_norm = v1 / np.linalg.norm(v1)
         theta = np.random.uniform(self.min_angle, self.max_angle)
+        # Pick random vector and center around origin (0,0,0)
         r = np.random.rand(3) - 0.5
         r_perp = r - np.dot(r, v1_norm) * v1_norm
         r_perp_norm = r_perp / np.linalg.norm(r_perp)
+        # New vector, rotated relative to v1
         v2 = np.cos(theta) * v1_norm + np.sin(theta) * r_perp_norm
         next_pos = v2 * self.bond_length
 
@@ -228,13 +223,15 @@ class HardSphereRandomWalk(Path):
             return True
 
 
-class Lamellae(Path):
-    def __init__(self, num_layers, layer_separation, layer_length, bond_length):
+class Lamellar(Path):
+    def __init__(
+        self, num_layers, layer_separation, layer_length, bond_length, bond_graph=None
+    ):
         self.num_layers = num_layers
         self.layer_separation = layer_separation
         self.layer_length = layer_length
         self.bond_length = bond_length
-        super(Lamellae, self).__init__()
+        super(Lamellar, self).__init__(N=None, bond_graph=bond_graph)
 
     def generate(self):
         layer_spacing = np.arange(0, self.layer_length, self.bond_length)
@@ -270,8 +267,24 @@ class Lamellae(Path):
                 self.coordinates.extend(layer + arc)
             else:
                 self.coordinates.extend(layer)
-        for i in range(len(self.coordinates) - 1):
-            self.bonds.append([i, i + 1])
+
+    def _next_coordinate(self):
+        pass
+
+    def _check_path(self):
+        pass
+
+
+class StraightLine(Path):
+    def __init__(self, spacing, N, direction=(1, 0, 0), bond_graph=None):
+        self.spacing = spacing
+        self.direction = np.asarray(direction)
+        super(StraightLine, self).__init__(N=N, bond_graph=bond_graph)
+
+    def generate(self):
+        self.coordinates = np.array(
+            [np.zeros(3) + i * self.spacing * self.direction for i in range(self.N + 1)]
+        )
 
     def _next_coordinate(self):
         pass
