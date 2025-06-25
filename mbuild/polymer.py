@@ -207,6 +207,8 @@ class Polymer(Compound):
         """
         if n < 1:
             raise ValueError("n must be 1 or more")
+        head_and_tail_compounds = []
+        repeat_compounds = []
 
         for monomer in self._monomers:
             for label in self._port_labels:
@@ -225,7 +227,8 @@ class Polymer(Compound):
         last_part = None
         for n_added, seq_item in enumerate(it.cycle(sequence)):
             this_part = clone(seq_map[seq_item])
-            self.add(this_part, "monomer[$]")
+            repeat_compounds.append(this_part)
+            # self.add(this_part, "monomer[$]")
             if last_part is None:
                 first_part = this_part
             else:
@@ -248,7 +251,8 @@ class Polymer(Compound):
             if compound is not None:
                 if self._headtail[i] is not None:
                     head_tail[i].update_separation(self._headtail[i])
-                self.add(compound)
+                # self.add(compound)
+                head_and_tail_compounds.append(compound)
                 force_overlap(compound, compound.labels["up"], head_tail[i])
                 head_tail[i] = None
             else:
@@ -279,12 +283,20 @@ class Polymer(Compound):
         for port in self.all_ports():
             if id(port) not in port_ids:
                 self.remove(port)
+        if self.end_groups[0]:
+            self.add(self.end_groups[0])
+        for compound in repeat_compounds:
+            self.add(new_child=compound, label="monomer[$]")
+        if self.end_groups[1]:
+            self.add(self.end_groups[1])
 
     def build_from_path(
         self, path, sequence="A", add_hydrogens=True, energy_minimize=True
     ):
         self.build(
-            n=len(path.coordinates), sequence=sequence, add_hydrogens=add_hydrogens
+            n=len(path.coordinates) - len(self._end_groups),
+            sequence=sequence,
+            add_hydrogens=add_hydrogens,
         )
         self.set_monomer_positions(
             coordinates=path.coordinates, energy_minimize=energy_minimize

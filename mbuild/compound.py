@@ -262,8 +262,8 @@ class Compound(object):
         """
         if new_graph.number_of_nodes() != self.n_particles:
             raise ValueError(
-                f"new_graph contains {new_graph.number_of_nodes()}",
-                f" but the Compound only contains {self.n_particles}",
+                f"new_graph contains {new_graph.number_of_nodes()} nodes",
+                f" but the Compound contains {self.n_particles} particles",
                 "The graph must contain one node per particle.",
             )
         graph = BondGraph()

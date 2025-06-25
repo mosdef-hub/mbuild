@@ -118,7 +118,7 @@ class Path:
         for xyz in self.coordinates:
             compound.add(Compound(name=bead_name, mass=bead_mass, pos=xyz))
         if self.bond_graph:
-            compound.update_bond_graph(self.bond_graph)
+            compound.set_bond_graph(self.bond_graph)
         return compound
 
     def apply_mapping(self):
@@ -283,7 +283,7 @@ class StraightLine(Path):
 
     def generate(self):
         self.coordinates = np.array(
-            [np.zeros(3) + i * self.spacing * self.direction for i in range(self.N + 1)]
+            [np.zeros(3) + i * self.spacing * self.direction for i in range(self.N)]
         )
 
     def _next_coordinate(self):
