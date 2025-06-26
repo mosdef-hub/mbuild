@@ -2,7 +2,7 @@ name: mbuild-dev
 channels:
   - conda-forge
 dependencies:
-  - python>=3.9,<=3.12
+  - python>=3.10,<=3.13
   - boltons
   - numpy>=2.0,<2.3
   - sympy
@@ -10,7 +10,6 @@ dependencies:
   - boltons
   - lark>=1.2
   - lxml
-  - freud>=3.0
   - intermol
   - mdtraj
   - pydantic>=2
@@ -21,11 +20,12 @@ dependencies:
   - openff-toolkit-base>0.16.7
   - openmm
   - gsd>=2.9
+  - freud>=3.2
   - parmed>=3.4.3
   - packmol>=20.15
   - pytest-cov
   - pycifrw
-  - rdkit>=2021,<2025.3.3
+  - rdkit>=2021
   - requests
   - requests-mock
   - scipy
@@ -38,8 +38,8 @@ dependencies:
   - pandas
   - symengine
   - python-symengine
-  - hoomd>=4.0,<5.0
   - py3Dmol
+  - hoomd>=4.0
   - pip:
       - git+https://github.com/mosdef-hub/gmso.git@main
       - git+https://github.com/mosdef-hub/foyer.git@main
