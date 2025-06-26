@@ -43,25 +43,30 @@ RandomPath ideas:
 DeterministicPath ideas:
 - Lamellar layers
 - DNA strands
+- Cyclic polymers
 
 Some combination of these?
 - Lamellar + random walk to generate semi-crystalline like structures?
--
+- Make a new path by adding together multiple paths
+- Some kind of data structure/functionality for new_path = Path(start_from_path=other_path)
 """
 
 
 class Path:
     def __init__(self, N=None, bond_graph=None, coordinates=None):
         self.bond_graph = bond_graph
-        # Only N is defined, make empty coordinates
+        # Only N is defined, make empty coordinates with size N
+        # Use case: Random walks
         if N is not None and coordinates is None:
             self.N = N
             self.coordinates = np.zeros((N, 3))
         # Only coordinates is defined, set N from length
+        # Use case: class method from_coordinates
         elif coordinates is not None and N is None:
             self.N = len(coordinates)
             self.coordinates = coordinates
         # Neither is defined, use list for coordinates
+        # Use case: Lamellar - Won't know N initially
         elif N is None and coordinates is None:
             self.N = N
             self.coordinates = []
@@ -123,13 +128,17 @@ class Path:
 
     def apply_mapping(self):
         # TODO: Finish, add logic to align orientation with path site pos and bond graph
-        """Mapping other compounds onto a Path's coordinates"""
+        """Mapping other compounds onto a Path's coordinates
+
+        mapping = {"A": "c1ccccc1C=C", "B": "C=CC=C"}
+        """
         pass
 
     def _path_history(self):
         """Maybe this is a method that can be used optionally.
         We could add a save_history parameter to __init__.
         Depending on the approach, saving histories might add additional computation time and resources.
+
         """
         pass
 
@@ -203,7 +212,6 @@ class HardSphereRandomWalk(Path):
         # New vector, rotated relative to v1
         v2 = np.cos(theta) * v1_norm + np.sin(theta) * r_perp_norm
         next_pos = v2 * self.bond_length
-
         return pos1 + next_pos
 
     def _check_path(self):
@@ -284,6 +292,35 @@ class StraightLine(Path):
     def generate(self):
         self.coordinates = np.array(
             [np.zeros(3) + i * self.spacing * self.direction for i in range(self.N)]
+        )
+
+    def _next_coordinate(self):
+        pass
+
+    def _check_path(self):
+        pass
+
+
+class CyclicPath(Path):
+    def __init__(self, spacing=None, N=None, radius=None, bond_graph=None):
+        self.spacing = spacing
+        self.radius = radius
+        n_params = sum(1 for i in (spacing, N, radius) if i is not None)
+        if n_params != 2:
+            raise ValueError("You must specify only 2 of spacing, N and radius.")
+        super(CyclicPath, self).__init__(N=N, bond_graph=bond_graph)
+
+    def generate(self):
+        if self.spacing and self.N:
+            self.radius = (self.N * self.spacing) / (2 * np.pi)
+        elif self.radius and self.spacing:
+            self.N = int((2 * np.pi * self.radius) / self.spacing)
+        else:
+            self.spacing = (2 * np.pi) / self.N
+
+        angles = np.arange(0, 2 * np.pi, (2 * np.pi) / self.N)
+        self.coordinates = np.array(
+            [(np.cos(a) * self.radius, np.sin(a) * self.radius, 0) for a in angles]
         )
 
     def _next_coordinate(self):
