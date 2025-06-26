@@ -3,7 +3,7 @@ channels:
   - conda-forge
 dependencies:
   - ele
-  - numpy>=2.2,<2.3
+  - numpy>=2.0,<2.3
   - packmol>=20.15
   - gmso>=0.9.0
   - garnett
