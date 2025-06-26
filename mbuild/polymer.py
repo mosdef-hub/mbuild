@@ -167,7 +167,7 @@ class Polymer(Compound):
         )
         self.set_monomer_positions(coordinates=coords, energy_minimize=energy_minimize)
 
-    def build(self, n, sequence="A", add_hydrogens=True):
+    def build(self, n, sequence="A", add_hydrogens=True, bond_head_tail=False):
         """Connect one or more components in a specified sequence.
 
         Uses the compounds that are stored in Polymer.monomers and
@@ -205,6 +205,11 @@ class Polymer(Compound):
             If ``None``, ``end_groups`` compound is None, and ``add_hydrogens`` is
             False then the head or tail port will be exposed in the polymer.
         """
+        if add_hydrogens and bond_head_tail:
+            raise ValueError(
+                "In order to bond head and tail ports, the Polymer instance cannot contain "
+                "end_groups and add_hydrogens must be set to `False`"
+            )
         if n < 1:
             raise ValueError("n must be 1 or more")
         head_and_tail_compounds = []
@@ -290,13 +295,23 @@ class Polymer(Compound):
         if self.end_groups[1]:
             self.add(self.end_groups[1])
 
+        if bond_head_tail:
+            force_overlap(self, self.head_port, self.tail_port)
+
     def build_from_path(
-        self, path, sequence="A", add_hydrogens=True, energy_minimize=True
+        self,
+        path,
+        sequence="A",
+        add_hydrogens=True,
+        bond_head_tail=False,
+        energy_minimize=True,
     ):
+        n = len(path.coordinates) - sum([i for i in self.end_groups if i is not None])
         self.build(
-            n=len(path.coordinates) - len(self._end_groups),
+            n=n,
             sequence=sequence,
             add_hydrogens=add_hydrogens,
+            bond_head_tail=bond_head_tail,
         )
         self.set_monomer_positions(
             coordinates=path.coordinates, energy_minimize=energy_minimize
