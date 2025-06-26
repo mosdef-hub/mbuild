@@ -39,6 +39,7 @@ RandomPath ideas:
 - Random walk (tons of possibilities here)
 - Branching
 - Multiple self-avoiding random walks
+- ??
 
 DeterministicPath ideas:
 - Lamellar layers
@@ -49,13 +50,16 @@ Some combination of these?
 - Lamellar + random walk to generate semi-crystalline like structures?
 - Make a new path by adding together multiple paths
 - Some kind of data structure/functionality for new_path = Path(start_from_path=other_path)
+
+Other TODOs:
+    Make coordinates a property with a setter? use self_coordinates for initial condition
 """
 
 
 class Path:
-    def __init__(self, N=None, bond_graph=None, coordinates=None):
+    def __init__(self, N=None, coordinates=None, bond_graph=None):
         self.bond_graph = bond_graph
-        # Only N is defined, make empty coordinates with size N
+        # Only N is defined, make empty coordinates array with size N
         # Use case: Random walks
         if N is not None and coordinates is None:
             self.N = N
@@ -86,8 +90,6 @@ class Path:
         -----------------
             - Set initial conditions
             - Implement Path generation steps by calling _next_coordinate() and _check_path()
-            - Update bonding info depending on specific path approach
-                - Ex) Random walk will always bond consecutive beads together
             - Handle cases of next coordiante acceptance
             - Handle cases of next coordinate rejection
         """
@@ -104,6 +106,7 @@ class Path:
         pass
 
     def neighbor_list(self, r_max, coordinates=None, box=None):
+        """Use freud to create a neighbor list of a set of coordinates."""
         if coordinates is None:
             coordinates = self.coordinates
         if box is None:
@@ -138,7 +141,7 @@ class Path:
         """Maybe this is a method that can be used optionally.
         We could add a save_history parameter to __init__.
         Depending on the approach, saving histories might add additional computation time and resources.
-
+        Might be useful for more complicated random walks/branching algorithms
         """
         pass
 
@@ -156,6 +159,32 @@ class HardSphereRandomWalk(Path):
         tolerance=1e-5,
         bond_graph=None,
     ):
+        """Generates coordinates from a self avoiding random walk using
+        fixed bond lengths, hard spheres, and minimum and maximum angles
+        formed by 3 consecutive points.
+
+        Possible angle values are sampled uniformly between min_angle
+        and max_angle between a new site and the two previous sites.
+
+        Parameters:
+        -----------
+        bond_length : float, required
+            Fixed bond length between 2 coordinates.
+        radius : float, required
+            Radius of sites used in checking for overlaps.
+        min_angle : float, required
+            Minimum angle used when randomly selecting angle
+            for the next step.
+        max_angle : float, required
+            Maximum angle used when randomly selecting angle
+            for the next step.
+        seed : int, default = 42
+            Random seed
+        tolerance : float, default = 1e-5
+            Tolerance used for rounding.
+        bond_graph : networkx.graph.Graph; optional
+            Sets the bonding of sites along the path.
+        """
         self.bond_length = bond_length
         self.radius = radius
         self.min_angle = min_angle
