@@ -26,7 +26,7 @@ dependencies:
   - packmol>=20.15
   - pytest-cov
   - pycifrw
-  - rdkit>=2021
+  - rdkit>=2021,<2025.3.3
   - requests
   - requests-mock
   - scipy
