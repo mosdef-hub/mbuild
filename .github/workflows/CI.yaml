@@ -40,7 +40,7 @@ jobs:
         run: python -m pip install -e .
 
       - name: Conditionally install OpenBabel
-        if: ${{ matrix.python-version != "3.13" }}
+        if: ${{ matrix.python-version != '3.13' }}
         run: micromamba install -y openbabel
 
       - name: Test (OS -> ${{ matrix.os }} / Python -> ${{ matrix.python-version }})
