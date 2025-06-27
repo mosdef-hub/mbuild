@@ -93,7 +93,7 @@ jobs:
       - uses: actions/checkout@v4
         name: Checkout Branch / Pull Request
 
-      - uses: Vampire/setup-wsl@v4
+      - uses: Vampire/setup-wsl@v5
         with:
           distribution: Ubuntu-24.04
           wsl-shell-user: runner
