@@ -5,6 +5,7 @@ from abc import abstractmethod
 
 import freud
 import numpy as np
+from scipy.interpolate import interp1d
 
 from mbuild import Compound
 from mbuild.utils.geometry import bounding_box
@@ -52,7 +53,7 @@ Some combination of these?
 - Some kind of data structure/functionality for new_path = Path(start_from_path=other_path)
 
 Other TODOs:
-    Make coordinates a property with a setter? use self_coordinates for initial condition
+    Make coordinates a property with a setter? Keep as a plain attribute?
 """
 
 
@@ -357,3 +358,47 @@ class CyclicPath(Path):
 
     def _check_path(self):
         pass
+
+
+class Knot(Path):
+    def __init__(self, spacing, N, m, bond_graph=None):
+        self.spacing = spacing
+        self.m = m
+        super(Knot, self).__init__(N=N, bond_graph=bond_graph)
+
+    def generate(self):
+        t_dense = np.linspace(0, 2 * np.pi, 5000)
+        # Base (unscaled) curve
+        if self.m == 3:  # Trefoil knot (3_1)
+            R, r = 1.0, 0.3
+            x = (R + r * np.cos(3 * t_dense)) * np.cos(2 * t_dense)
+            y = (R + r * np.cos(3 * t_dense)) * np.sin(2 * t_dense)
+            z = r * np.sin(3 * t_dense)
+        elif self.m == 4:  # Figure-eight knot (4_1)
+            x = (2 + np.cos(2 * t_dense)) * np.cos(3 * t_dense)
+            y = (2 + np.cos(2 * t_dense)) * np.sin(3 * t_dense)
+            z = np.sin(4 * t_dense)
+        elif self.m == 5:  # Cinquefoil knot (5_1), a (5,2) torus knot
+            R, r = 1.0, 0.3
+            x = (R + r * np.cos(5 * t_dense)) * np.cos(2 * t_dense)
+            y = (R + r * np.cos(5 * t_dense)) * np.sin(2 * t_dense)
+            z = r * np.sin(5 * t_dense)
+        else:
+            raise ValueError("Only m=3, m=4 and m=5 are supported.")
+        # Compute arc length of base curve
+        coords_dense = np.stack((x, y, z), axis=1)
+        deltas = np.diff(coords_dense, axis=0)
+        dists = np.linalg.norm(deltas, axis=1)
+        arc_lengths = np.concatenate([[0], np.cumsum(dists)])
+        base_length = arc_lengths[-1]
+        L_target = (self.N - 1) * self.spacing
+        # Scale to match target contour length
+        scale = L_target / base_length
+        coords_dense *= scale
+        arc_lengths *= scale
+        # Resample uniformly along arc length based on target separation and N sites
+        desired_arcs = np.linspace(0, L_target, self.N, endpoint=False)
+        x_interp = interp1d(arc_lengths, coords_dense[:, 0])(desired_arcs)
+        y_interp = interp1d(arc_lengths, coords_dense[:, 1])(desired_arcs)
+        z_interp = interp1d(arc_lengths, coords_dense[:, 2])(desired_arcs)
+        self.coordinates = np.stack((x_interp, y_interp, z_interp), axis=1)
