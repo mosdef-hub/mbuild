@@ -116,7 +116,7 @@ class TestPacking(BaseTest):
         assert filled.n_bonds == 50 * 2
 
         center = np.array([3.0, 3.0, 3.0])
-        assert np.alltrue(np.linalg.norm(filled.xyz - center, axis=1) < 1.5)
+        assert np.all(np.linalg.norm(filled.xyz - center, axis=1) < 1.5)
 
     def test_fill_sphere_density(self, h2o):
         filled = mb.fill_sphere(h2o, sphere=[3, 3, 3, 1.5], density=1000)
