@@ -28,13 +28,13 @@ verions of next_coordinate(), check_path(), etc..
 We can define abstract methods for these in Path.
 We can put universally useful methods in Path as well (e.g., n_list(), to_compound(), etc..).
 
-Some paths (lamellar structures) would kind of just do
+Some paths (lamellar, cyclic, spiral, etc..) would kind of just do
 everything in generate() without having to use
 next_coordinate() or check_path(). These would still need to be
 defined, but just left empty and/or always return True in the case of check_path.
 Maybe that means these kinds of "paths" need a different data structure?
 
-Do we just have RandomPath and DeterministicPath?
+Do we have RandomPath and DeterministicPath?
 
 RandomPath ideas:
 - Random walk (tons of possibilities here)
@@ -44,8 +44,10 @@ RandomPath ideas:
 
 DeterministicPath ideas:
 - Lamellar layers
-- DNA strands
 - Cyclic polymers
+- Helix
+- Spiral
+- Knots
 
 Some combination of these?
 - Lamellar + random walk to generate semi-crystalline like structures?
@@ -263,22 +265,32 @@ class HardSphereRandomWalk(Path):
 
 class Lamellar(Path):
     def __init__(
-        self, num_layers, layer_separation, layer_length, bond_length, bond_graph=None
+        self,
+        num_layers,
+        layer_separation,
+        layer_length,
+        bond_length,
+        num_stacks=1,
+        stack_separation=None,
+        bond_graph=None,
     ):
         self.num_layers = num_layers
         self.layer_separation = layer_separation
         self.layer_length = layer_length
         self.bond_length = bond_length
+        self.num_stacks = num_stacks
+        self.stack_separation = stack_separation
         super(Lamellar, self).__init__(N=None, bond_graph=bond_graph)
 
     def generate(self):
         layer_spacing = np.arange(0, self.layer_length, self.bond_length)
-        # Info for generating coords of the curves between layers
+        # Info needed for generating coords of the curves between layers
         r = self.layer_separation / 2
         arc_length = r * np.pi
         arc_num_points = math.floor(arc_length / self.bond_length)
         arc_angle = np.pi / (arc_num_points + 1)  # incremental angle
         arc_angles = np.linspace(arc_angle, np.pi, arc_num_points, endpoint=False)
+        #        stack_coordinates = []
         for i in range(self.num_layers):
             if i % 2 == 0:  # Even layer; build from left to right
                 layer = [
@@ -305,6 +317,43 @@ class Lamellar(Path):
                 self.coordinates.extend(layer + arc)
             else:
                 self.coordinates.extend(layer)
+        if self.num_stacks > 1:
+            first_stack_coordinates = np.copy(np.array(self.coordinates))
+            # Now find info for curves between stacked layers
+            r = self.stack_separation / 2
+            arc_length = r * np.pi
+            arc_num_points = math.floor(arc_length / self.bond_length)
+            arc_angle = np.pi / (arc_num_points + 1)  # incremental angle
+            arc_angles = np.linspace(arc_angle, np.pi, arc_num_points, endpoint=False)
+            if self.num_layers % 2 == 0:
+                odd_stack_mult = -1
+            else:
+                odd_stack_mult = 1
+            for i in range(1, self.num_stacks):
+                if i % 2 != 0:  # Odd stack
+                    this_stack = np.copy(first_stack_coordinates[::-1]) + np.array(
+                        [0, 0, self.stack_separation * i]
+                    )
+                    origin = self.coordinates[-1] + np.array([0, 0, r])
+                    arc = [
+                        origin
+                        + np.array([0, odd_stack_mult * np.sin(theta), np.cos(theta)])
+                        * r
+                        for theta in arc_angles
+                    ]
+                    self.coordinates.extend(arc[::-1])
+                    self.coordinates.extend(list(this_stack))
+                elif i % 2 == 0:  # Even stack
+                    this_stack = np.copy(first_stack_coordinates) + np.array(
+                        [0, 0, self.stack_separation * i]
+                    )
+                    origin = self.coordinates[-1] + np.array([0, 0, r])
+                    arc = [
+                        origin + np.array([0, -np.sin(theta), np.cos(theta)]) * r
+                        for theta in arc_angles
+                    ]
+                    self.coordinates.extend(arc[::-1])
+                    self.coordinates.extend(list(this_stack))
 
     def _next_coordinate(self):
         pass
@@ -331,14 +380,14 @@ class StraightLine(Path):
         pass
 
 
-class CyclicPath(Path):
+class Cyclic(Path):
     def __init__(self, spacing=None, N=None, radius=None, bond_graph=None):
         self.spacing = spacing
         self.radius = radius
         n_params = sum(1 for i in (spacing, N, radius) if i is not None)
         if n_params != 2:
             raise ValueError("You must specify only 2 of spacing, N and radius.")
-        super(CyclicPath, self).__init__(N=N, bond_graph=bond_graph)
+        super(Cyclic, self).__init__(N=N, bond_graph=bond_graph)
 
     def generate(self):
         if self.spacing and self.N:
@@ -385,7 +434,7 @@ class Knot(Path):
             z = r * np.sin(5 * t_dense)
         else:
             raise ValueError("Only m=3, m=4 and m=5 are supported.")
-        # Compute arc length of base curve
+        # Compute arc length of a base curve
         coords_dense = np.stack((x, y, z), axis=1)
         deltas = np.diff(coords_dense, axis=0)
         dists = np.linalg.norm(deltas, axis=1)
@@ -402,3 +451,138 @@ class Knot(Path):
         y_interp = interp1d(arc_lengths, coords_dense[:, 1])(desired_arcs)
         z_interp = interp1d(arc_lengths, coords_dense[:, 2])(desired_arcs)
         self.coordinates = np.stack((x_interp, y_interp, z_interp), axis=1)
+
+
+class Helix(Path):
+    def __init__(
+        self, N, radius, rise, twist, right_handed=True, bottom_up=True, bond_graph=None
+    ):
+        """
+        Generate helical path.
+
+        Parameters:
+        -----------
+        radius : float, required
+            Radius of the helix (nm)
+        rise : float, required
+            Rise per site on path (nm)
+        twist : float, required
+            Twist per site in path (degrees)
+        right_handed : bool, default True
+            Set the handedness of the helical twist
+            Set to false for a left handed twist
+        bottom_up : bool, default True
+            If True, the twist is in the positive Z direction
+            If False, the twist is in the negative Z direction
+
+        Notes:
+        ------
+        To create a double helix pair (e.g., DNA) create two paths
+        with opposite values for right_handed and bottom_up
+        """
+        self.radius = radius
+        self.rise = rise
+        self.twist = twist
+        self.right_handed = right_handed
+        self.bottom_up = bottom_up
+        super(Helix, self).__init__(N=N, bond_graph=bond_graph)
+
+    def generate(self):
+        indices = reversed(range(self.N)) if not self.bottom_up else range(self.N)
+        for i in indices:
+            angle = np.deg2rad(i * self.twist)
+            if not self.right_handed:
+                angle *= -1
+            x = self.radius * np.cos(angle)
+            y = self.radius * np.sin(angle)
+            z = i * self.rise if self.bottom_up else -i * self.rise
+            self.coordinates[i] = (x, y, z)
+
+
+class Spiral2D(Path):
+    def __init__(self, N, a, b, spacing, bond_graph=None):
+        """
+        Generate a 2D spiral path in the XY plane.
+
+        Parameters
+        ----------
+        N: int, required
+            Number of sites in the path
+        a : float, required
+            The initial radius (nm)
+        b : float, required
+            Determines how fast radius grows per angle increment (r = a + bθ)
+        spacing : float, required
+            Distance between adjacent sites (nm)
+        """
+        self.a = a
+        self.b = b
+        self.spacing = spacing
+        super().__init__(N=N, bond_graph=bond_graph)
+
+    def generate(self):
+        theta = 0.0
+        for i in range(self.N):
+            r = self.a + self.b * theta
+            x = r * np.cos(theta)
+            y = r * np.sin(theta)
+            z = 0.0
+            self.coordinates[i] = (x, y, z)
+            # Estimate next angle increment based on arc length
+            ds_dtheta = np.sqrt((r) ** 2 + self.b**2)
+            dtheta = self.spacing / ds_dtheta
+            theta += dtheta
+
+
+class ZigZag(Path):
+    def __init__(
+        self,
+        N,
+        spacing=1.0,
+        angle_deg=120.0,
+        sites_per_segment=1,
+        plane="xy",
+        bond_graph=None,
+    ):
+        self.spacing = spacing
+        self.angle_deg = angle_deg
+        self.sites_per_segment = sites_per_segment
+        self.plane = plane
+        if N % sites_per_segment != 0:
+            raise ValueError("N must be evenly divisible by sites_per_segment")
+        super(ZigZag, self).__init__(N=N, bond_graph=bond_graph)
+
+    def generate(self):
+        angle_rad = np.deg2rad(self.angle_deg)
+        direction = np.array([1.0, 0.0])
+        position = np.zeros(2)
+        coords = []
+        step_count = 0
+        segment_count = 0
+
+        for i in range(self.N):
+            coords.append(position.copy())
+            position += self.spacing * direction
+            step_count += 1
+
+            # Rotate
+            if step_count == self.sites_per_segment:
+                step_count = 0
+                sign = -1 if segment_count % 2 == 0 else 1
+                rot_matrix = np.array(
+                    [
+                        [np.cos(sign * angle_rad), -np.sin(sign * angle_rad)],
+                        [np.sin(sign * angle_rad), np.cos(sign * angle_rad)],
+                    ]
+                )
+                direction = rot_matrix @ direction
+                segment_count += 1
+
+        # Map into 3D space based on chosen plane
+        for i, (x2d, y2d) in enumerate(coords):
+            if self.plane == "xy":
+                self.coordinates[i] = (x2d, y2d, 0)
+            elif self.plane == "xz":
+                self.coordinates[i] = (x2d, 0, y2d)
+            elif self.plane == "yz":
+                self.coordinates[i] = (0, x2d, y2d)
