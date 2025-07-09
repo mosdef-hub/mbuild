@@ -605,6 +605,17 @@ class Compound(object):
                 "not at the bottom of the containment hierarchy."
             )
 
+    def volume(self):
+        """Estimate volume of the compound's particles.
+        Uses rdkit.Chem.AllChem.ComputeMolVolume
+        """
+        from rdkit import Chem
+
+        rdmol = self.to_rdkit(embed=True)
+        vol = Chem.AllChem.ComputeMolVolume(rdmol)
+        vol /= 1000  # Convert from cubic angstrom to cubic nm
+        return vol
+
     def add(
         self,
         new_child,
@@ -3058,7 +3069,7 @@ class Compound(object):
             infer_hierarchy=infer_hierarchy,
         )
 
-    def to_rdkit(self):
+    def to_rdkit(self, embed=False):
         """Create an RDKit RWMol from an mBuild Compound.
 
         Returns
@@ -3085,7 +3096,7 @@ class Compound(object):
         See https://www.rdkit.org/docs/GettingStartedInPython.html
 
         """
-        return conversion.to_rdkit(self)
+        return conversion.to_rdkit(self, embed=embed)
 
     def to_parmed(
         self,
