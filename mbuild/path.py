@@ -143,7 +143,8 @@ class Path:
     def _path_history(self):
         """Maybe this is a method that can be used optionally.
         We could add a save_history parameter to __init__.
-        Depending on the approach, saving histories might add additional computation time and resources.
+        Depending on the approach, saving histories might add additional
+        computation time and resources.
         Might be useful for more complicated random walks/branching algorithms
         """
         pass
