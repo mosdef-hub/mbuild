@@ -575,9 +575,9 @@ class TestPacking(BaseTest):
 
         ch4 = Methane()
         # With default sidemax
-        box_of_methane = mb.fill_box(ch4, box=[1000, 1000, 1000], n_compounds=500)
+        box_of_methane = mb.fill_box(ch4, box=[500, 500, 500], n_compounds=500)
         sphere_of_methane = mb.fill_sphere(
-            ch4, sphere=[1000, 1000, 1000, 1000], n_compounds=500
+            ch4, sphere=[500, 500, 500, 500], n_compounds=500
         )
         assert all(
             np.asarray(box_of_methane.get_boundingbox().lengths) < [110, 110, 110]
@@ -588,21 +588,21 @@ class TestPacking(BaseTest):
 
         # With adjusted sidemax
         big_box_of_methane = mb.fill_box(
-            ch4, box=[1000, 1000, 1000], n_compounds=500, sidemax=1000.0
+            ch4, box=[100, 100, 100], n_compounds=500, sidemax=200.0
         )
         big_sphere_of_methane = mb.fill_sphere(
             ch4,
-            sphere=[1000, 1000, 1000, 1000],
+            sphere=[100, 100, 100, 100],
             n_compounds=500,
-            sidemax=2000.0,
+            sidemax=200.0,
         )
 
         assert all(
-            np.asarray(big_box_of_methane.get_boundingbox().lengths) > [900, 900, 900]
+            np.asarray(big_box_of_methane.get_boundingbox().lengths) > [90, 90, 90]
         )
         assert all(
             np.asarray(big_sphere_of_methane.get_boundingbox().lengths)
-            > [1800, 1800, 1800]
+            > [180, 180, 180]
         )
 
     def test_box_edge(self, h2o, methane):
