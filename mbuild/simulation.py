@@ -16,12 +16,152 @@ from mbuild.exceptions import MBuildError
 from mbuild.utils.io import import_
 
 
+class HoomdSimulation(hoomd.simulation.Simulation):
+    def __init__(
+        self,
+        compound,
+        forcefield,
+        r_cut,
+        run_on_gpu,
+        seed,
+    ):
+        if run_on_gpu:
+            try:
+                device = hoomd.device.GPU()
+                print(f"GPU found, running on device {device.device}")
+            except RuntimeError:
+                print(
+                    "Unable to find compatible GPU device. ",
+                    "set `run_on_gpu = False` or see HOOMD documentation "
+                    "for further information about GPU support.",
+                )
+        else:
+            device = hoomd.device.CPU()
+        self.compound = compound
+        self.forcefield = forcefield
+        self.r_cut = r_cut
+        self.snapshot, self.forces = self._to_hoomd_snap_forces()
+        self.active_forces = []
+        self.inactive_forces = []
+        super(HoomdSimulation, self).__init__(device=device, seed=seed)
+        self.create_state_from_snapshot(self.snapshot)
+
+    def _to_hoomd_snap_forces(self):
+        # Convret to GMSO, apply forcefield
+        top = self.compound.to_gmso()
+        top.identify_connections()
+        apply(top, forcefields=self.forcefield)
+        # Get hoomd snapshot and force objects
+        forces, ref = gmso.external.to_hoomd_forcefield(top, r_cut=self.r_cut)
+        snap, ref = gmso.external.to_gsd_snapshot(top)
+        forces = list(set().union(*forces.values()))
+        return snap, forces
+
+    def get_force(self, instance):
+        for force in set(self.forces + self.active_forces + self.inactive_forces):
+            if isinstance(force, instance):
+                return force
+
+    def get_dpd_from_lj(self, A):
+        """Make a best-guess DPD force from types and parameters of an LJ force."""
+        lj_force = self.get_force(hoomd.md.pair.LJ)
+        dpd = hoomd.md.pair.DPDConservative(nlist=lj_force.nlist)
+        for param in lj_force.params:
+            dpd.params[param] = dict(A=A)
+            dpd.r_cut[param] = lj_force.params[param]["sigma"]
+        return dpd
+
+    def set_fire_integrator(
+        self,
+        dt,
+        force_tol,
+        angmom_tol,
+        energy_tol,
+        methods,
+        finc_dt=1.1,
+        fdec_dt=0.4,
+        alpha_start=0.2,
+        fdec_alpha=0.95,
+        min_steps_adapt=5,
+        min_steps_conv=20,
+    ):
+        fire = hoomd.md.minimize.FIRE(
+            dt=dt,
+            force_tol=force_tol,
+            angmom_tol=angmom_tol,
+            energy_tol=energy_tol,
+            finc_dt=finc_dt,
+            fdec_dt=fdec_dt,
+            alpha_start=alpha_start,
+            fdec_alpha=fdec_alpha,
+            min_steps_adapt=min_steps_adapt,
+            min_steps_conv=min_steps_conv,
+            methods=methods,
+        )
+        fire.forces = self.active_forces
+        self.operations.integrator = fire
+
+    def set_integrator(self, dt, method):
+        integrator = hoomd.md.Integrator(dt=dt)
+        integrator.forces = self.active_forces
+        integrator.methods = [method]
+        self.operations.integrator = integrator
+
+    def add_gsd_writer(self, file_name, write_period):
+        """"""
+        pass
+
+
 ## HOOMD METHODS ##
+def remove_overlaps_displacement_capped(
+    compound,
+    forcefield,
+    n_steps,
+    dt,
+    r_cut,
+    max_displacement,
+    run_on_gpu=False,
+    seed=42,
+):
+    compound._kick()
+    sim = HoomdSimulation(
+        compound=compound,
+        forcefield=forcefield,
+        r_cut=r_cut,
+        run_on_gpu=run_on_gpu,
+        seed=seed,
+    )
+    bond = sim.get_force(hoomd.md.bond.Harmonic)
+    angle = sim.get_force(hoomd.md.angle.Harmonic)
+    lj = sim.get_force(hoomd.md.pair.LJ)
+    # dpd = sim.get_dpd_from_lj(A=A_initial)
+    # Scale bond K and angle K
+    # for param in bond.params:
+    #    bond.params[param]["k"] /= bond_k_scale
+    # for param in angle.params:
+    #    angle.params[param]["k"] /= angle_k_scale
+    # Set up and run
+    sim.active_forces.extend([bond, angle, lj])
+    displacement_capped = hoomd.md.methods.DisplacementCapped(
+        filter=hoomd.filter.All(),
+        maximum_displacement=max_displacement,
+    )
+    sim.set_integrator(method=displacement_capped, dt=dt)
+    sim.run(n_steps)
+    with sim.state.cpu_local_snapshot as snap:
+        particles = snap.particles.rtag[:]
+        pos = snap.particles.position[particles]
+        compound.xyz = pos
+
+
 def remove_overlaps_fire(
     compound,
     forcefield,
     fire_iteration_steps,
     num_fire_iterations,
+    run_on_gpu,
+    seed=42,
+    r_cut=1.0,
     A_initial=10,
     bond_k_scale=100,
     angle_k_scale=100,
@@ -30,8 +170,6 @@ def remove_overlaps_fire(
     angmom_tol=1e-2,
     energy_tol=1e-3,
     final_relaxation_steps=5000,
-    run_on_gpu=True,
-    seed=42,
     gsd_file=None,
 ):
     """Run a short HOOMD-Blue simulation with the FIRE integrator
@@ -51,28 +189,30 @@ def remove_overlaps_fire(
         If true, attempts to run HOOMD-Blue on a GPU.
         If a GPU device isn't found, then it will run on the CPU
     """
-    snap, forces = _compound_to_hoomd_snap_forces(compound, forcefield, r_cut=1.2)
-    lj, bond, angle = (None, None, None)
-    for force in forces:
-        if isinstance(force, hoomd.md.pair.LJ):
-            lj = force
-        if isinstance(force, hoomd.md.bond.Harmonic):
-            bond = force
-        elif isinstance(force, hoomd.md.angle.Harmonic):
-            angle = force
-    # Make DPD force, pulling info from LJ
-    dpd = hoomd.md.pair.DPDConservative(nlist=lj.nlist)
-    for param in lj.params:
-        dpd.params[param] = dict(A=A_initial)
-        dpd.r_cut[param] = lj.params[param]["sigma"]
+    compound._kick()
+    sim = HoomdSimulation(
+        compound=compound,
+        forcefield=forcefield,
+        r_cut=r_cut,
+        run_on_gpu=run_on_gpu,
+        seed=seed,
+    )
+    bond = sim.get_force(hoomd.md.bond.Harmonic)
+    angle = sim.get_force(hoomd.md.angle.Harmonic)
+    lj = sim.get_force(hoomd.md.pair.LJ)
+    dpd = sim.get_dpd_from_lj(A=A_initial)
     # Scale bond K and angle K
     for param in bond.params:
         bond.params[param]["k"] /= bond_k_scale
     for param in angle.params:
         angle.params[param]["k"] /= angle_k_scale
     # Set up and run
-    nvt = hoomd.md.methods.ConstantVolume(filter=hoomd.filter.All())
-    fire = hoomd.md.minimize.FIRE(
+    sim.active_forces.extend([bond, angle, dpd])
+    displacement_capped = hoomd.md.methods.DisplacementCapped(
+        filter=hoomd.filter.All(),
+        maximum_displacement=1e-3,
+    )
+    sim.set_fire_integrator(
         dt=dt,
         force_tol=force_tol,
         angmom_tol=angmom_tol,
@@ -83,19 +223,13 @@ def remove_overlaps_fire(
         fdec_alpha=0.95,
         min_steps_adapt=5,
         min_steps_conv=20,
-        methods=[nvt],
-    )
-    sim = _hoomd_fire_sim(
-        snapshot=snap,
-        forces=[dpd, bond, angle],
-        fire=fire,
-        run_on_gpu=run_on_gpu,
-        seed=seed,
-        gsd_file=gsd_file,
+        methods=[displacement_capped],
     )
     # Run FIRE sims with DPD + scaled bonds and angles
     for sim_num in range(num_fire_iterations):
         sim.run(fire_iteration_steps)
+    # while not (sim.operations.integrator.converged):
+    #    sim.run(200)
     # Re-scale bonds and angle force constants, Run DPD sim again
     for param in bond.params:
         bond.params[param]["k"] *= bond_k_scale
@@ -111,70 +245,6 @@ def remove_overlaps_fire(
         particles = snap.particles.rtag[:]
         pos = snap.particles.position[particles]
         compound.xyz = pos
-
-
-def _compound_to_hoomd_snap_forces(compound, forcefield, r_cut):
-    # Convret to GMSO, apply forcefield
-    top = compound.to_gmso()
-    top.identify_connections()
-    apply(top, forcefields=forcefield)
-    # Get hoomd snapshot and force objects
-    forces, ref = gmso.external.to_hoomd_forcefield(top, r_cut=r_cut)
-    snap, ref = gmso.external.to_gsd_snapshot(top)
-    forces = list(set().union(*forces.values()))
-    return snap, forces
-
-
-def _hoomd_fire_sim(snapshot, forces, run_on_gpu, seed, fire, gsd_file):
-    sim = _create_hoomd_simulation(snapshot, forces, run_on_gpu, seed, gsd_file)
-    fire.forces = forces
-    sim.operations.integrator = fire
-    return sim
-
-
-def _hoomd_nvt_sim(snapshot, forces, run_on_gpu, seed, gsd_file):
-    sim = _create_hoomd_simulation(snapshot, forces, run_on_gpu, seed, gsd_file)
-    nvt = hoomd.md.methods.ConstantVolume(filter=hoomd.filter.All())
-    integrator = hoomd.md.Integrator(dt=0.0001)
-    integrator.forces = forces
-    integrator.methods = [nvt]
-    sim.operations.integrator = integrator
-    return sim
-
-
-def _hoomd_box_update(snapshot, forces, run_on_gpu, seed, gsd_file, target_box):
-    """Run a quick compression to expansion on an mBuild Compound."""
-    sim = _create_hoomd_simulation(snapshot, forces, run_on_gpu, seed, gsd_file)
-    nvt = hoomd.md.methods.ConstantVolume(filter=hoomd.filter.All())
-    integrator = hoomd.md.Integrator(dt=0.0001)
-    integrator.forces = forces
-    integrator.methods = [nvt]
-    sim.operations.integrator = integrator
-    return sim
-
-
-def _create_hoomd_simulation(snapshot, forces, run_on_gpu, seed, gsd_file):
-    # Set up common hoomd stuff here
-    if run_on_gpu:
-        try:
-            device = hoomd.device.GPU()
-            print(f"GPU found, running on device {device.device}")
-        except RuntimeError:
-            print("GPU not found, running on CPU anyway.")
-            device = hoomd.device.CPU()
-    else:
-        device = hoomd.device.CPU()
-    sim = hoomd.Simulation(device=device, seed=seed)
-    sim.create_state_from_snapshot(snapshot)
-    if gsd_file:
-        gsd_writer = hoomd.write.GSD(
-            filename=gsd_file,
-            trigger=hoomd.trigger.Periodic(1000),
-            mode="wb",
-            filter=hoomd.filter.All(),
-        )
-        sim.operations.writers.append(gsd_writer)
-    return sim
 
 
 # Openbabel and OpenMM
