@@ -40,7 +40,25 @@ class HoomdSimulation(hoomd.simulation.Simulation):
         self.compound = compound
         self.forcefield = forcefield
         self.r_cut = r_cut
-        self.snapshot, self.forces = self._to_hoomd_snap_forces()
+        # Check if a sim method has been used on this compound already
+        if compound._hoomd_data:
+            last_snapshot, last_forces, last_forcefield = compound._get_sim_data()
+            # Check if the forcefield passed this time matches last time
+            if forcefield == last_forcefield:
+                self.snapshot = last_snapshot
+                self.forces = last_forces
+                self.forcefield = last_forcefield
+            else:  # New foyer/gmso forcefield has been passed, reapply
+                self.snapshot, self.forces = self._to_hoomd_snap_forces()
+                compound._add_sim_data(
+                    state=self.snapshot, forces=self.forces, forcefield=self.forcefield
+                )
+        else:  # Sim method not used on this compound previously
+            self.snapshot, self.forces = self._to_hoomd_snap_forces()
+            compound._add_sim_data(
+                state=self.snapshot, forces=self.forces, forcefield=self.forcefield
+            )
+        # Place holders for forces added/changed by specific methods below
         self.active_forces = []
         self.inactive_forces = []
         super(HoomdSimulation, self).__init__(device=device, seed=seed)
@@ -111,16 +129,27 @@ class HoomdSimulation(hoomd.simulation.Simulation):
         """"""
         pass
 
+    def update_positions(self):
+        """Update compound positions from snapshot."""
+        with self.state.cpu_local_snapshot as snap:
+            particles = snap.particles.rtag[:]
+            pos = snap.particles.position[particles]
+            self.compound.xyz = pos
+
 
 ## HOOMD METHODS ##
 def remove_overlaps_displacement_capped(
     compound,
     forcefield,
     n_steps,
+    n_relax_steps,
     dt,
     r_cut,
     max_displacement,
+    dpd_A,
     run_on_gpu=False,
+    bond_scale=1,
+    angle_scale=1,
     seed=42,
 ):
     compound._kick()
@@ -134,20 +163,29 @@ def remove_overlaps_displacement_capped(
     bond = sim.get_force(hoomd.md.bond.Harmonic)
     angle = sim.get_force(hoomd.md.angle.Harmonic)
     lj = sim.get_force(hoomd.md.pair.LJ)
-    # dpd = sim.get_dpd_from_lj(A=A_initial)
+    dpd = sim.get_dpd_from_lj(A=dpd_A)
     # Scale bond K and angle K
-    # for param in bond.params:
-    #    bond.params[param]["k"] /= bond_k_scale
-    # for param in angle.params:
-    #    angle.params[param]["k"] /= angle_k_scale
+    for param in bond.params:
+        bond.params[param]["k"] /= bond_scale
+    for param in angle.params:
+        angle.params[param]["k"] /= angle_scale
     # Set up and run
-    sim.active_forces.extend([bond, angle, lj])
+    sim.active_forces.extend([bond, angle, dpd])
     displacement_capped = hoomd.md.methods.DisplacementCapped(
         filter=hoomd.filter.All(),
         maximum_displacement=max_displacement,
     )
     sim.set_integrator(method=displacement_capped, dt=dt)
     sim.run(n_steps)
+    # Run with LJ pairs, original bonds and angles
+    if n_relax_steps > 0:
+        sim.operations.integrator.forces.remove(dpd)
+        sim.operations.integrator.forces.append(lj)
+        for param in bond.params:
+            bond.params[param]["k"] *= bond_scale
+        for param in angle.params:
+            angle.params[param]["k"] *= angle_scale
+        sim.run(n_relax_steps)
     with sim.state.cpu_local_snapshot as snap:
         particles = snap.particles.rtag[:]
         pos = snap.particles.position[particles]

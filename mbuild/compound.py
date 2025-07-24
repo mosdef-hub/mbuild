@@ -197,6 +197,8 @@ class Compound(object):
             self._charge = charge
             self._mass = mass
 
+        self._hoomd_data = {}
+
     def particles(self, include_ports=False):
         """Return all Particles of the Compound.
 
@@ -2715,6 +2717,21 @@ class Compound(object):
                     "Cloning failed. Compound contains bonds to "
                     "Particles outside of its containment hierarchy."
                 )
+
+    def _add_sim_data(self, state, forces, forcefield):
+        self._hoomd_data["state"] = state
+        self._hoomd_data["force_field"] = forcefield
+        self._hoomd_data["forces"] = forces
+
+    def _get_sim_data(self):
+        if not self._hoomd_data:
+            return None, None, None
+        else:
+            return (
+                self._hoomd_data["state"],
+                self._hoomd_data["forces"],
+                self._hoomd_data["forcefield"],
+            )
 
 
 Particle = Compound

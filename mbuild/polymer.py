@@ -14,6 +14,7 @@ from mbuild.coordinate_transform import (
 )
 from mbuild.lib.atoms import H
 from mbuild.port import Port
+from mbuild.simulation import energy_minimize as e_min
 from mbuild.utils.validation import assert_port_exists
 
 __all__ = ["Polymer"]
@@ -152,7 +153,7 @@ class Polymer(Compound):
         for i, xyz in enumerate(coordinates):
             self.children[i].translate_to(xyz)
         if energy_minimize:
-            self.energy_minimize()
+            e_min(self)
 
     def straighten(self, axis=(1, 0, 0), energy_minimize=True):
         """Shift monomer positions so that the backbone is straight.
