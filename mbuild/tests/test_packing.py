@@ -575,34 +575,33 @@ class TestPacking(BaseTest):
 
         ch4 = Methane()
         # With default sidemax
-        box_of_methane = mb.fill_box(ch4, box=[1000, 1000, 1000], n_compounds=500)
+        box_of_methane = mb.fill_box(
+            ch4, box=[20, 20, 20], n_compounds=500, sidemax=10.0
+        )
         sphere_of_methane = mb.fill_sphere(
-            ch4, sphere=[1000, 1000, 1000, 1000], n_compounds=500
+            ch4, sphere=[20, 20, 20, 20], n_compounds=500, sidemax=10.0
         )
+        assert all(np.asarray(box_of_methane.get_boundingbox().lengths) < [11, 11, 11])
         assert all(
-            np.asarray(box_of_methane.get_boundingbox().lengths) < [110, 110, 110]
-        )
-        assert all(
-            np.asarray(sphere_of_methane.get_boundingbox().lengths) < [210, 210, 210]
+            np.asarray(sphere_of_methane.get_boundingbox().lengths) < [21, 21, 21]
         )
 
         # With adjusted sidemax
         big_box_of_methane = mb.fill_box(
-            ch4, box=[1000, 1000, 1000], n_compounds=500, sidemax=1000.0
+            ch4, box=[120, 120, 120], n_compounds=500, sidemax=20.0
         )
         big_sphere_of_methane = mb.fill_sphere(
             ch4,
-            sphere=[1000, 1000, 1000, 1000],
+            sphere=[120, 120, 120, 120],
             n_compounds=500,
-            sidemax=2000.0,
+            sidemax=20.0,
         )
 
         assert all(
-            np.asarray(big_box_of_methane.get_boundingbox().lengths) > [900, 900, 900]
+            np.asarray(big_box_of_methane.get_boundingbox().lengths) > [10, 10, 10]
         )
         assert all(
-            np.asarray(big_sphere_of_methane.get_boundingbox().lengths)
-            > [1800, 1800, 1800]
+            np.asarray(big_sphere_of_methane.get_boundingbox().lengths) > [14, 14, 14]
         )
 
     def test_box_edge(self, h2o, methane):
