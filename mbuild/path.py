@@ -80,10 +80,18 @@ class Path:
         else:
             raise ValueError("Specify either one of N and coordinates, or neither")
         self.generate()
+        if self.N is None:
+            self.N = len(self.coordinates)
 
     @classmethod
     def from_coordinates(cls, coordinates, bond_graph=None):
         return cls(coordinates=coordinates, bond_graph=bond_graph, N=None)
+
+    def _extend_coordinates(self, N):
+        zeros = np.zeros((N, 3))
+        new_array = np.concatenate(self.coordinates, zeros)
+        self.coordinates = new_array
+        self.N += N
 
     @abstractmethod
     def generate(self):
@@ -123,7 +131,7 @@ class Path:
         nlist = aq_query.toNeighborList()
         return nlist
 
-    def to_compound(self, bead_name="Bead", bead_mass=1):
+    def to_compound(self, bead_name="_A", bead_mass=1):
         """Visualize a path as an mBuild Compound"""
         compound = Compound()
         for xyz in self.coordinates:
@@ -160,6 +168,8 @@ class HardSphereRandomWalk(Path):
         max_angle,
         max_attempts,
         seed,
+        start_from_path=None,
+        start_from_path_index=None,
         tolerance=1e-5,
         bond_graph=None,
     ):
@@ -197,23 +207,63 @@ class HardSphereRandomWalk(Path):
         self.tolerance = tolerance
         self.max_attempts = max_attempts
         self.attempts = 0
-        self.count = 0
-        super(HardSphereRandomWalk, self).__init__(N=N, bond_graph=bond_graph)
+        self.start_from_path_index = start_from_path_index
+        self.start_from_path = start_from_path
+        if start_from_path and start_from_path_index is not None:
+            coordinates = np.concatenate(
+                (np.copy(start_from_path.coordinates), np.zeros((N, 3))), axis=0
+            )
+            self.count = len(start_from_path.coordinates) - 1
+            N = None
+        else:
+            self.count = 0
+            self.start_index = 0
+            coordinates = None
+
+        super(HardSphereRandomWalk, self).__init__(
+            coordinates=coordinates, N=N, bond_graph=bond_graph
+        )
 
     def generate(self):
         np.random.seed(self.seed)
-        # With fixed bond lengths, the first move is always accepted
-        phi = np.random.uniform(0, 2 * np.pi)
-        theta = np.random.uniform(0, np.pi)
-        next_pos = np.array(
-            [
-                self.bond_length * np.sin(theta) * np.cos(phi),
-                self.bond_length * np.sin(theta) * np.sin(phi),
-                self.bond_length * np.cos(theta),
-            ]
-        )
-        self.coordinates[1] = next_pos
-        self.count += 1  # We already have 1 accepted move
+        if not self.start_from_path:
+            # With fixed bond lengths, first move is always accepted
+            phi = np.random.uniform(0, 2 * np.pi)
+            theta = np.random.uniform(0, np.pi)
+            next_pos = np.array(
+                [
+                    self.bond_length * np.sin(theta) * np.cos(phi),
+                    self.bond_length * np.sin(theta) * np.sin(phi),
+                    self.bond_length * np.cos(theta),
+                ]
+            )
+            self.coordinates[1] = next_pos
+            self.count += 1  # We already have 1 accepted move
+        else:
+            # Start a while loop here
+            started_next_path = False
+            while not started_next_path:
+                next_pos = self._next_coordinate(
+                    pos1=self.start_from_path.coordinates[self.start_from_path_index],
+                    pos2=self.start_from_path.coordinates[
+                        self.start_from_path_index - 1
+                    ],
+                )
+                self.coordinates[self.count + 1] = next_pos
+                if self._check_path():
+                    self.count += 1
+                    self.attempts += 1
+                    started_next_path = True
+                else:
+                    self.coordinates[self.count + 1] = np.zeros(3)
+
+                if self.attempts == self.max_attempts and self.count < self.N:
+                    raise RuntimeError(
+                        "The maximum number attempts allowed have passed, and only ",
+                        f"{self.count} sucsessful attempts were completed.",
+                        "Try changing the parameters and running again.",
+                    )
+
         while self.count < self.N - 1:
             new_xyz = self._next_coordinate(
                 pos1=self.coordinates[self.count],
