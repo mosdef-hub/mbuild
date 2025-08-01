@@ -199,6 +199,10 @@ class HardSphereRandomWalk(Path):
         bond_graph : networkx.graph.Graph; optional
             Sets the bonding of sites along the path.
         """
+        if tolerance < 1e-6:
+            self.dtype = np.float64
+        else:
+            self.dtype = np.float32
         self.bond_length = bond_length
         self.radius = radius
         self.min_angle = min_angle
@@ -211,17 +215,21 @@ class HardSphereRandomWalk(Path):
         self.start_from_path = start_from_path
         if start_from_path and start_from_path_index is not None:
             coordinates = np.concatenate(
-                (np.copy(start_from_path.coordinates), np.zeros((N, 3))), axis=0
+                (
+                    np.copy(start_from_path.coordinates).astype(self.dtype),
+                    np.zeros((N, 3), dtype=self.dtype),
+                ),
+                axis=0,
             )
             self.count = len(start_from_path.coordinates) - 1
             N = None
         else:
+            coordinates = np.zeros((N, 3), dtype=self.dtype)
             self.count = 0
             self.start_index = 0
-            coordinates = None
 
         super(HardSphereRandomWalk, self).__init__(
-            coordinates=coordinates, N=N, bond_graph=bond_graph
+            coordinates=coordinates, N=None, bond_graph=bond_graph
         )
 
     def generate(self):
@@ -289,7 +297,7 @@ class HardSphereRandomWalk(Path):
         v1_norm = v1 / np.linalg.norm(v1)
         theta = np.random.uniform(self.min_angle, self.max_angle)
         # Pick random vector and center around origin (0,0,0)
-        r = np.random.rand(3) - 0.5
+        r = (np.random.rand(3) - 0.5).astype(self.dtype)
         r_perp = r - np.dot(r, v1_norm) * v1_norm
         r_perp_norm = r_perp / np.linalg.norm(r_perp)
         # New vector, rotated relative to v1
