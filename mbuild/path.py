@@ -306,20 +306,12 @@ class HardSphereRandomWalk(Path):
         return pos1 + next_pos
 
     def _check_path(self):
-        """Use neighbor_list to check for pairs within a distance smaller than the radius"""
-        # Grow box size as number of steps grows
-        box_length = self.count * self.radius * 2.01
-        # Only need neighbor list for accepted moves + current trial move
-        coordinates = self.coordinates[: self.count + 2]
-        nlist = self.neighbor_list(
-            coordinates=coordinates,
-            r_max=self.radius - self.tolerance,
-            box=[box_length, box_length, box_length],
-        )
-        if len(nlist.distances) > 0:  # Particle pairs found within the particle radius
-            return False
-        else:
-            return True
+        """Check new trial point against previous ones only."""
+        new_point = self.coordinates[self.count + 1]
+        existing_points = self.coordinates[: self.count + 1]
+        sq_dists = np.sum((existing_points - new_point) ** 2, axis=1)
+        min_sq_dist = (self.radius - self.tolerance) ** 2
+        return not np.any(sq_dists < min_sq_dist)
 
 
 class Lamellar(Path):
