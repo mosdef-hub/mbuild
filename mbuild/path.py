@@ -187,7 +187,7 @@ class HardSphereRandomWalk(Path):
         formed by 3 consecutive points.
 
         Possible angle values are sampled uniformly between min_angle
-        and max_angle between a new site and the two previous sites.
+        and max_angle between the new site and the two previous sites.
 
         Parameters:
         -----------
@@ -212,7 +212,7 @@ class HardSphereRandomWalk(Path):
         self.radius = radius
         self.min_angle = min_angle
         self.max_angle = max_angle
-        self.seed = int(seed)
+        self.seed = seed
         self.tolerance = tolerance
         self.trial_batch_size = int(trial_batch_size)
         self.max_attempts = int(max_attempts)
@@ -234,6 +234,7 @@ class HardSphereRandomWalk(Path):
             coordinates = np.zeros((N, 3), dtype=np.float32)
             self.count = 0
             self.start_index = 0
+        # Get methods to use for random walk
         if not use_numba:
             self.next_coordinate = _random_coordinate_numpy
             self.check_path = _check_path_numpy
@@ -242,14 +243,13 @@ class HardSphereRandomWalk(Path):
             self.check_path = _check_path_numba
         elif use_numba and not _NUMBA_AVAILABLE:
             raise RuntimeError(
-                "numba was not found. Set `use_numba` to `False` to add numba to your environment."
+                "numba was not found. Set `use_numba` to `False` or add numba to your environment."
             )
 
         super(HardSphereRandomWalk, self).__init__(
             coordinates=coordinates, N=None, bond_graph=bond_graph
         )
 
-    # Get methods to use for random walk
     def generate(self):
         np.random.seed(self.seed)
         if not self.start_from_path:
@@ -312,7 +312,6 @@ class HardSphereRandomWalk(Path):
                 max_angle=self.max_angle,
                 batch_size=self.trial_batch_size,
             )
-            new_xyz_found = False
             for xyz in new_xyzs:
                 if self.check_path(
                     existing_points=self.coordinates[: self.count + 1],
@@ -322,11 +321,8 @@ class HardSphereRandomWalk(Path):
                 ):
                     self.coordinates[self.count + 1] = xyz
                     self.count += 1
-                    self.attempts += 1
-                    new_xyz_found = True
                     break
-            if not new_xyz_found:
-                self.attempts += 1
+            self.attempts += 1
 
             if self.attempts == self.max_attempts and self.count < self.N:
                 raise RuntimeError(
