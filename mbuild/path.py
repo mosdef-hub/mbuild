@@ -168,6 +168,7 @@ class HardSphereRandomWalk(Path):
         max_angle,
         max_attempts,
         seed,
+        trial_batch_size=5,
         start_from_path=None,
         start_from_path_index=None,
         tolerance=1e-5,
@@ -209,11 +210,13 @@ class HardSphereRandomWalk(Path):
         self.max_angle = max_angle
         self.seed = seed
         self.tolerance = tolerance
+        self.trial_batch_size = trial_batch_size
         self.max_attempts = max_attempts
         self.attempts = 0
         self.start_from_path_index = start_from_path_index
         self.start_from_path = start_from_path
         if start_from_path and start_from_path_index is not None:
+            # TODO: Do we need np.copy here?
             coordinates = np.concatenate(
                 (
                     np.copy(start_from_path.coordinates).astype(self.dtype),
@@ -251,19 +254,23 @@ class HardSphereRandomWalk(Path):
             # Start a while loop here
             started_next_path = False
             while not started_next_path:
-                next_pos = self._next_coordinate(
+                new_xyzs = self._next_coordinate(
                     pos1=self.start_from_path.coordinates[self.start_from_path_index],
                     pos2=self.start_from_path.coordinates[
                         self.start_from_path_index - 1
                     ],
                 )
-                self.coordinates[self.count + 1] = next_pos
-                if self._check_path():
-                    self.count += 1
+                new_xyz_found = False
+                for xyz in new_xyzs:
+                    if self._check_path(xyz):
+                        self.coordinates[self.count + 1] = xyz
+                        self.count += 1
+                        self.attempts += 1
+                        new_xyz_found = True
+                        started_next_path = True
+                        break
+                if not new_xyz_found:
                     self.attempts += 1
-                    started_next_path = True
-                else:
-                    self.coordinates[self.count + 1] = np.zeros(3)
 
                 if self.attempts == self.max_attempts and self.count < self.N:
                     raise RuntimeError(
@@ -273,17 +280,22 @@ class HardSphereRandomWalk(Path):
                     )
 
         while self.count < self.N - 1:
-            new_xyz = self._next_coordinate(
+            new_xyzs = self._next_coordinate(
                 pos1=self.coordinates[self.count],
                 pos2=self.coordinates[self.count - 1],
             )
-            self.coordinates[self.count + 1] = new_xyz
-            if self._check_path():
-                self.count += 1
+            new_xyz_found = False
+            for xyz in new_xyzs:
+                if self._check_path(new_point=xyz):
+                    self.coordinates[self.count + 1] = xyz
+                    self.count += 1
+                    self.attempts += 1
+                    new_xyz_found = True
+                    break
+            if not new_xyz_found:
+                # self.coordinates[self.count + 1] = np.zeros(3)
                 self.attempts += 1
-            else:
-                self.coordinates[self.count + 1] = np.zeros(3)
-                self.attempts += 1
+
             if self.attempts == self.max_attempts and self.count < self.N:
                 raise RuntimeError(
                     "The maximum number attempts allowed have passed, and only ",
@@ -295,19 +307,25 @@ class HardSphereRandomWalk(Path):
         # Vector formed by previous 2 coordinates
         v1 = pos2 - pos1
         v1_norm = v1 / np.linalg.norm(v1)
-        theta = np.random.uniform(self.min_angle, self.max_angle)
-        # Pick random vector and center around origin (0,0,0)
-        r = (np.random.rand(3) - 0.5).astype(self.dtype)
-        r_perp = r - np.dot(r, v1_norm) * v1_norm
-        r_perp_norm = r_perp / np.linalg.norm(r_perp)
-        # New vector, rotated relative to v1
-        v2 = np.cos(theta) * v1_norm + np.sin(theta) * r_perp_norm
-        next_pos = v2 * self.bond_length
-        return pos1 + next_pos
+        # Generate batch of random angles
+        thetas = np.random.uniform(
+            self.min_angle, self.max_angle, size=self.trial_batch_size
+        ).astype(self.dtype)
+        # Batch of random vectors and center around origin (0,0,0)
+        r = (np.random.rand(self.trial_batch_size, 3) - 0.5).astype(self.dtype)
+        dot_products = np.dot(r, v1_norm)
+        r_perp = r - dot_products[:, np.newaxis] * v1_norm
+        norms = np.linalg.norm(r_perp, axis=1)
+        r_perp_norm = r_perp / norms[:, np.newaxis]
+        v2s = (
+            np.cos(thetas)[:, np.newaxis] * v1_norm
+            + np.sin(thetas)[:, np.newaxis] * r_perp_norm
+        )
+        next_positions = pos1 + v2s * self.bond_length
+        return next_positions
 
-    def _check_path(self):
+    def _check_path(self, new_point):
         """Check new trial point against previous ones only."""
-        new_point = self.coordinates[self.count + 1]
         existing_points = self.coordinates[: self.count + 1]
         sq_dists = np.sum((existing_points - new_point) ** 2, axis=1)
         min_sq_dist = (self.radius - self.tolerance) ** 2
