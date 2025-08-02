@@ -58,6 +58,13 @@ Other TODOs:
     Make coordinates a property with a setter? Keep as a plain attribute?
 """
 
+try:
+    from numba import njit
+
+    _NUMBA_AVAILABLE = True
+except ImportError:
+    _NUMBA_AVAILABLE = False
+
 
 class Path:
     def __init__(self, N=None, coordinates=None, bond_graph=None):
@@ -172,6 +179,7 @@ class HardSphereRandomWalk(Path):
         start_from_path=None,
         start_from_path_index=None,
         tolerance=1e-5,
+        use_numba=False,
         bond_graph=None,
     ):
         """Generates coordinates from a self avoiding random walk using
@@ -195,23 +203,19 @@ class HardSphereRandomWalk(Path):
             for the next step.
         seed : int, default = 42
             Random seed
-        tolerance : float, default = 1e-5
+        tolerance : float, default = 1e-4
             Tolerance used for rounding.
         bond_graph : networkx.graph.Graph; optional
             Sets the bonding of sites along the path.
         """
-        if tolerance < 1e-6:
-            self.dtype = np.float64
-        else:
-            self.dtype = np.float32
         self.bond_length = bond_length
         self.radius = radius
         self.min_angle = min_angle
         self.max_angle = max_angle
-        self.seed = seed
+        self.seed = int(seed)
         self.tolerance = tolerance
-        self.trial_batch_size = trial_batch_size
-        self.max_attempts = max_attempts
+        self.trial_batch_size = int(trial_batch_size)
+        self.max_attempts = int(max_attempts)
         self.attempts = 0
         self.start_from_path_index = start_from_path_index
         self.start_from_path = start_from_path
@@ -219,22 +223,33 @@ class HardSphereRandomWalk(Path):
             # TODO: Do we need np.copy here?
             coordinates = np.concatenate(
                 (
-                    np.copy(start_from_path.coordinates).astype(self.dtype),
-                    np.zeros((N, 3), dtype=self.dtype),
+                    np.copy(start_from_path.coordinates).astype(np.float32),
+                    np.zeros((N, 3), dtype=np.float32),
                 ),
                 axis=0,
             )
             self.count = len(start_from_path.coordinates) - 1
             N = None
         else:
-            coordinates = np.zeros((N, 3), dtype=self.dtype)
+            coordinates = np.zeros((N, 3), dtype=np.float32)
             self.count = 0
             self.start_index = 0
+        if not use_numba:
+            self.next_coordinate = _random_coordinate_numpy
+            self.check_path = _check_path_numpy
+        elif use_numba and _NUMBA_AVAILABLE:
+            self.next_coordinate = _random_coordinate_numba
+            self.check_path = _check_path_numba
+        elif use_numba and not _NUMBA_AVAILABLE:
+            raise RuntimeError(
+                "numba was not found. Set `use_numba` to `False` to add numba to your environment."
+            )
 
         super(HardSphereRandomWalk, self).__init__(
             coordinates=coordinates, N=None, bond_graph=bond_graph
         )
 
+    # Get methods to use for random walk
     def generate(self):
         np.random.seed(self.seed)
         if not self.start_from_path:
@@ -254,15 +269,24 @@ class HardSphereRandomWalk(Path):
             # Start a while loop here
             started_next_path = False
             while not started_next_path:
-                new_xyzs = self._next_coordinate(
+                new_xyzs = self.next_coordinate(
                     pos1=self.start_from_path.coordinates[self.start_from_path_index],
                     pos2=self.start_from_path.coordinates[
                         self.start_from_path_index - 1
                     ],
+                    bond_length=self.bond_length,
+                    min_angle=self.min_angle,
+                    max_angle=self.max_angle,
+                    batch_size=self.trial_batch_size,
                 )
                 new_xyz_found = False
                 for xyz in new_xyzs:
-                    if self._check_path(xyz):
+                    if self.check_path(
+                        existing_points=self.coordinates[: self.count + 1],
+                        new_point=xyz,
+                        radius=self.radius,
+                        tolerance=self.tolerance,
+                    ):
                         self.coordinates[self.count + 1] = xyz
                         self.count += 1
                         self.attempts += 1
@@ -280,20 +304,28 @@ class HardSphereRandomWalk(Path):
                     )
 
         while self.count < self.N - 1:
-            new_xyzs = self._next_coordinate(
+            new_xyzs = self.next_coordinate(
                 pos1=self.coordinates[self.count],
                 pos2=self.coordinates[self.count - 1],
+                bond_length=self.bond_length,
+                min_angle=self.min_angle,
+                max_angle=self.max_angle,
+                batch_size=self.trial_batch_size,
             )
             new_xyz_found = False
             for xyz in new_xyzs:
-                if self._check_path(new_point=xyz):
+                if self.check_path(
+                    existing_points=self.coordinates[: self.count + 1],
+                    new_point=xyz,
+                    radius=self.radius,
+                    tolerance=self.tolerance,
+                ):
                     self.coordinates[self.count + 1] = xyz
                     self.count += 1
                     self.attempts += 1
                     new_xyz_found = True
                     break
             if not new_xyz_found:
-                # self.coordinates[self.count + 1] = np.zeros(3)
                 self.attempts += 1
 
             if self.attempts == self.max_attempts and self.count < self.N:
@@ -302,34 +334,6 @@ class HardSphereRandomWalk(Path):
                     f"{self.count} sucsessful attempts were completed.",
                     "Try changing the parameters and running again.",
                 )
-
-    def _next_coordinate(self, pos1, pos2):
-        # Vector formed by previous 2 coordinates
-        v1 = pos2 - pos1
-        v1_norm = v1 / np.linalg.norm(v1)
-        # Generate batch of random angles
-        thetas = np.random.uniform(
-            self.min_angle, self.max_angle, size=self.trial_batch_size
-        ).astype(self.dtype)
-        # Batch of random vectors and center around origin (0,0,0)
-        r = (np.random.rand(self.trial_batch_size, 3) - 0.5).astype(self.dtype)
-        dot_products = np.dot(r, v1_norm)
-        r_perp = r - dot_products[:, np.newaxis] * v1_norm
-        norms = np.linalg.norm(r_perp, axis=1)
-        r_perp_norm = r_perp / norms[:, np.newaxis]
-        v2s = (
-            np.cos(thetas)[:, np.newaxis] * v1_norm
-            + np.sin(thetas)[:, np.newaxis] * r_perp_norm
-        )
-        next_positions = pos1 + v2s * self.bond_length
-        return next_positions
-
-    def _check_path(self, new_point):
-        """Check new trial point against previous ones only."""
-        existing_points = self.coordinates[: self.count + 1]
-        sq_dists = np.sum((existing_points - new_point) ** 2, axis=1)
-        min_sq_dist = (self.radius - self.tolerance) ** 2
-        return not np.any(sq_dists < min_sq_dist)
 
 
 class Lamellar(Path):
@@ -655,3 +659,117 @@ class ZigZag(Path):
                 self.coordinates[i] = (x2d, 0, y2d)
             elif self.plane == "yz":
                 self.coordinates[i] = (0, x2d, y2d)
+
+
+# Internal helper/utility methods below:
+
+
+def _random_coordinate_numpy(pos1, pos2, bond_length, min_angle, max_angle, batch_size):
+    # Vector formed by previous 2 coordinates
+    v1 = pos2 - pos1
+    v1_norm = v1 / np.linalg.norm(v1)
+    # Generate batch of random angles
+    thetas = np.random.uniform(min_angle, max_angle, size=batch_size)
+    # Batch of random vectors and center around origin (0,0,0)
+    r = np.random.rand(batch_size, 3) - 0.5
+    dot_products = np.dot(r, v1_norm)
+    r_perp = r - dot_products[:, np.newaxis] * v1_norm
+    norms = np.linalg.norm(r_perp, axis=1)
+    for norm in norms:
+        if norm < 1e-6:
+            norm = 1.0
+    r_perp_norm = r_perp / norms[:, np.newaxis]
+    v2s = (
+        np.cos(thetas)[:, np.newaxis] * v1_norm
+        + np.sin(thetas)[:, np.newaxis] * r_perp_norm
+    )
+    next_positions = pos1 + v2s * bond_length
+    return next_positions
+
+
+def _check_path_numpy(existing_points, new_point, radius, tolerance):
+    """Check new trial point against previous ones only."""
+    sq_dists = np.sum((existing_points - new_point) ** 2, axis=1)
+    min_sq_dist = (radius - tolerance) ** 2
+    return not np.any(sq_dists < min_sq_dist)
+
+
+@njit(fastmath=True)
+def norm(vec):
+    s = 0.0
+    for i in range(vec.shape[0]):
+        s += vec[i] * vec[i]
+    return np.sqrt(s)
+
+
+@njit(fastmath=True)
+def _random_coordinate_numba(
+    pos1,
+    pos2,
+    bond_length,
+    min_angle,
+    max_angle,
+    batch_size,
+):
+    v1 = pos2 - pos1
+    v1_norm = v1 / norm(v1)
+
+    thetas = np.empty(batch_size, dtype=np.float32)
+    for i in range(batch_size):
+        thetas[i] = min_angle + (max_angle - min_angle) * np.random.random()
+
+    r = np.empty((batch_size, 3), dtype=np.float32)
+    for i in range(batch_size):
+        for j in range(3):
+            r[i, j] = np.random.random() - 0.5
+
+    dot_products = np.empty(batch_size, dtype=np.float32)
+    for i in range(batch_size):
+        dot = 0.0
+        for j in range(3):
+            dot += r[i, j] * v1_norm[j]
+        dot_products[i] = dot
+
+    r_perp = np.empty((batch_size, 3), dtype=np.float32)
+    for i in range(batch_size):
+        for j in range(3):
+            r_perp[i, j] = r[i, j] - dot_products[i] * v1_norm[j]
+
+    norms = np.empty(batch_size, dtype=np.float32)
+    for i in range(batch_size):
+        norms[i] = norm(r_perp[i])
+
+    for i in range(batch_size):
+        if norms[i] < 1e-6:
+            norms[i] = 1.0
+
+    r_perp_norm = np.empty((batch_size, 3), dtype=np.float32)
+    for i in range(batch_size):
+        for j in range(3):
+            r_perp_norm[i, j] = r_perp[i, j] / norms[i]
+
+    v2s = np.empty((batch_size, 3), dtype=np.float32)
+    for i in range(batch_size):
+        cos_theta = np.cos(thetas[i])
+        sin_theta = np.sin(thetas[i])
+        for j in range(3):
+            v2s[i, j] = cos_theta * v1_norm[j] + sin_theta * r_perp_norm[i, j]
+
+    next_positions = np.empty((batch_size, 3), dtype=np.float32)
+    for i in range(batch_size):
+        for j in range(3):
+            next_positions[i, j] = pos1[j] + v2s[i, j] * bond_length
+    return next_positions
+
+
+@njit
+def _check_path_numba(existing_points, new_point, radius, tolerance):
+    min_sq_dist = (radius - tolerance) ** 2
+    for i in range(existing_points.shape[0]):
+        dist_sq = 0.0
+        for j in range(existing_points.shape[1]):
+            diff = existing_points[i, j] - new_point[j]
+            dist_sq += diff * diff
+        if dist_sq < min_sq_dist:
+            return False
+    return True
