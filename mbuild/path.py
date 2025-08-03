@@ -113,16 +113,6 @@ class Path:
         """
         pass
 
-    @abstractmethod
-    def _next_coordinate(self):
-        """Algorithm to generate the next coordinate in the path"""
-        pass
-
-    @abstractmethod
-    def _check_path(self):
-        """Algorithm to accept/reject trial move of the current path"""
-        pass
-
     def neighbor_list(self, r_max, coordinates=None, box=None):
         """Use freud to create a neighbor list of a set of coordinates."""
         if coordinates is None:
@@ -234,6 +224,8 @@ class HardSphereRandomWalk(Path):
             coordinates = np.zeros((N, 3), dtype=np.float32)
             self.count = 0
             self.start_index = 0
+        # Need this for error message about reaching max tries
+        self._init_count = self.count
         # Get methods to use for random walk
         if not use_numba:
             self.next_coordinate = _random_coordinate_numpy
@@ -265,7 +257,8 @@ class HardSphereRandomWalk(Path):
             )
             self.coordinates[1] = next_pos
             self.count += 1  # We already have 1 accepted move
-        else:
+            self.cound_adj = 0
+        else:  # Start random walk from a previous set of coordinates
             # Start a while loop here
             started_next_path = False
             while not started_next_path:
@@ -299,7 +292,7 @@ class HardSphereRandomWalk(Path):
                 if self.attempts == self.max_attempts and self.count < self.N:
                     raise RuntimeError(
                         "The maximum number attempts allowed have passed, and only ",
-                        f"{self.count} sucsessful attempts were completed.",
+                        f"{self.count - self._init_count} sucsessful attempts were completed.",
                         "Try changing the parameters and running again.",
                     )
 
@@ -424,14 +417,10 @@ class Lamellar(Path):
                     self.coordinates.extend(arc[::-1])
                     self.coordinates.extend(list(this_stack))
 
-    def _next_coordinate(self):
-        pass
-
-    def _check_path(self):
-        pass
-
 
 class StraightLine(Path):
+    """Generates a set of coordinates in a straight line along a given axis."""
+
     def __init__(self, spacing, N, direction=(1, 0, 0), bond_graph=None):
         self.spacing = spacing
         self.direction = np.asarray(direction)
@@ -442,14 +431,10 @@ class StraightLine(Path):
             [np.zeros(3) + i * self.spacing * self.direction for i in range(self.N)]
         )
 
-    def _next_coordinate(self):
-        pass
-
-    def _check_path(self):
-        pass
-
 
 class Cyclic(Path):
+    """Generates a set of coordinates evenly spaced along a circle."""
+
     def __init__(self, spacing=None, N=None, radius=None, bond_graph=None):
         self.spacing = spacing
         self.radius = radius
@@ -470,12 +455,6 @@ class Cyclic(Path):
         self.coordinates = np.array(
             [(np.cos(a) * self.radius, np.sin(a) * self.radius, 0) for a in angles]
         )
-
-    def _next_coordinate(self):
-        pass
-
-    def _check_path(self):
-        pass
 
 
 class Knot(Path):
