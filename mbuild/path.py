@@ -10,53 +10,7 @@ from scipy.interpolate import interp1d
 from mbuild import Compound
 from mbuild.utils.geometry import bounding_box
 
-"""
-A path is basically a bond graph with coordinates/positions
-assigned to the nodes. This is kind of what Compound is already.
-
-The interesting and challenging part is building up/creating the path.
-This follows an algorithm to generate next coordinates.
-Any random path generation algorithm will include
-a rejection/acception step. We basically end up with
-Monte Carlo. Some path algorithms won't be random (lamellae)
-
-Is Path essentially going to be a simple Monte carlo-ish
-class that others can inherit from then implement their own approach?
-
-Classes that inherit from path will have their own
-verions of next_coordinate(), check_path(), etc..
-We can define abstract methods for these in Path.
-We can put universally useful methods in Path as well (e.g., n_list(), to_compound(), etc..).
-
-Some paths (lamellar, cyclic, spiral, etc..) would kind of just do
-everything in generate() without having to use
-next_coordinate() or check_path(). These would still need to be
-defined, but just left empty and/or always return True in the case of check_path.
-Maybe that means these kinds of "paths" need a different data structure?
-
-Do we have RandomPath and DeterministicPath?
-
-RandomPath ideas:
-- Random walk (tons of possibilities here)
-- Branching
-- Multiple self-avoiding random walks
-- ??
-
-DeterministicPath ideas:
-- Lamellar layers
-- Cyclic polymers
-- Helix
-- Spiral
-- Knots
-
-Some combination of these?
-- Lamellar + random walk to generate semi-crystalline like structures?
-- Make a new path by adding together multiple paths
-- Some kind of data structure/functionality for new_path = Path(start_from_path=other_path)
-
-Other TODOs:
-    Make coordinates a property with a setter? Keep as a plain attribute?
-"""
+"""Classes to generate intra-molecular paths and configurations."""
 
 try:
     from numba import njit
@@ -80,7 +34,7 @@ class Path:
             self.N = len(coordinates)
             self.coordinates = coordinates
         # Neither is defined, use list for coordinates
-        # Use case: Lamellar - Won't know N initially
+        # Use case: Lamellar - Don't know N initially
         elif N is None and coordinates is None:
             self.N = N
             self.coordinates = []
@@ -320,7 +274,7 @@ class HardSphereRandomWalk(Path):
             if self.attempts == self.max_attempts and self.count < self.N:
                 raise RuntimeError(
                     "The maximum number attempts allowed have passed, and only ",
-                    f"{self.count} sucsessful attempts were completed.",
+                    f"{self.count - self._init_count} sucsessful attempts were completed.",
                     "Try changing the parameters and running again.",
                 )
 
