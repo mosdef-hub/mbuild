@@ -2718,10 +2718,13 @@ class Compound(object):
                     "Particles outside of its containment hierarchy."
                 )
 
-    def _add_sim_data(self, state, forces, forcefield):
-        self._hoomd_data["state"] = state
-        self._hoomd_data["force_field"] = forcefield
-        self._hoomd_data["forces"] = forces
+    def _add_sim_data(self, state=None, forces=None, forcefield=None):
+        if state:
+            self._hoomd_data["state"] = state
+        if forces:
+            self._hoomd_data["forces"] = forces
+        if forcefield:
+            self._hoomd_data["forcefield"] = forcefield
 
     def _get_sim_data(self):
         if not self._hoomd_data:
