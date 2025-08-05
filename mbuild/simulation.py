@@ -24,6 +24,9 @@ class HoomdSimulation(hoomd.simulation.Simulation):
         r_cut,
         run_on_gpu,
         seed,
+        integrate_compounds=None,
+        fixed_compounds=None,
+        gsd_file_name=None,
     ):
         if run_on_gpu:
             try:
@@ -40,6 +43,8 @@ class HoomdSimulation(hoomd.simulation.Simulation):
         self.compound = compound
         self.forcefield = forcefield
         self.r_cut = r_cut
+        self.integrate_compounds = integrate_compounds
+        self.fixed_compounds = fixed_compounds
         # Check if a hoomd sim method has been used on this compound already
         if compound._hoomd_data:
             last_snapshot, last_forces, last_forcefield = compound._get_sim_data()
@@ -74,6 +79,30 @@ class HoomdSimulation(hoomd.simulation.Simulation):
         snap, ref = gmso.external.to_gsd_snapshot(top)
         forces = list(set().union(*forces.values()))
         return snap, forces
+
+    def get_integrate_group(self):
+        # Get indices of compounds to include in integration
+        if self.integrate_compounds and not self.fixed_compounds:
+            integrate_indices = []
+            for comp in self.integrate_compounds:
+                integrate_indices.extend(list(self.compound.get_child_indices(comp)))
+            return hoomd.filter.Tags(integrate_indices)
+        # Get indices of compounds to NOT include in integration
+        elif self.fixed_compounds and not self.integrate_compounds:
+            fix_indices = []
+            for comp in self.fixed_compounds:
+                fix_indices.extend(list(self.compound.get_child_indices(comp)))
+            return hoomd.filter.SetDifference(
+                hoomd.filter.All(), hoomd.filter.Tags(fix_indices)
+            )
+        # Both are passed in, not supported
+        elif self.integrate_compounds and self.fixed_compounds:
+            raise RuntimeError(
+                "You can specify only one of integrate_compounds and fixed_compounds."
+            )
+        # Neither are given, include everything in integration
+        else:
+            return hoomd.filter.All()
 
     def get_force(self, instance):
         for force in set(self.forces + self.active_forces + self.inactive_forces):
@@ -155,6 +184,8 @@ def hoomd_cap_displacement(
     max_displacement,
     dpd_A,
     n_relax_steps,
+    fixed_compounds=None,
+    integrate_compounds=None,
     bond_k_scale=1,
     angle_k_scale=1,
     run_on_gpu=False,
@@ -167,6 +198,8 @@ def hoomd_cap_displacement(
         r_cut=r_cut,
         run_on_gpu=run_on_gpu,
         seed=seed,
+        integrate_compounds=integrate_compounds,
+        fixed_compounds=fixed_compounds,
     )
     bond = sim.get_force(hoomd.md.bond.Harmonic)
     angle = sim.get_force(hoomd.md.angle.Harmonic)
@@ -186,7 +219,7 @@ def hoomd_cap_displacement(
         sim.active_forces.append(lj)
     # Set up and run
     displacement_capped = hoomd.md.methods.DisplacementCapped(
-        filter=hoomd.filter.All(),
+        filter=sim.get_integrate_group(),
         maximum_displacement=max_displacement,
     )
     sim.set_integrator(method=displacement_capped, dt=dt)
@@ -215,6 +248,8 @@ def hoomd_fire(
     forcefield,
     run_on_gpu,
     fire_iteration_steps,
+    fixed_compounds=None,
+    integrate_compounds=None,
     num_fire_iterations=1,
     n_relax_steps=1000,
     dt=1e-5,
@@ -260,6 +295,8 @@ def hoomd_fire(
         r_cut=r_cut,
         run_on_gpu=run_on_gpu,
         seed=seed,
+        integrate_compounds=integrate_compounds,
+        fixed_compounds=fixed_compounds,
     )
     bond = sim.get_force(hoomd.md.bond.Harmonic)
     angle = sim.get_force(hoomd.md.angle.Harmonic)
@@ -280,7 +317,7 @@ def hoomd_fire(
         sim.active_forces.append(lj)
     # Set up and run
     displacement_capped = hoomd.md.methods.DisplacementCapped(
-        filter=hoomd.filter.All(),
+        filter=sim.get_integrate_group(),
         maximum_displacement=1e-3,
     )
     sim.set_fire_integrator(
