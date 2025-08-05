@@ -248,10 +248,10 @@ def hoomd_fire(
     forcefield,
     run_on_gpu,
     fire_iteration_steps,
-    fixed_compounds=None,
-    integrate_compounds=None,
     num_fire_iterations=1,
     n_relax_steps=1000,
+    fixed_compounds=None,
+    integrate_compounds=None,
     dt=1e-5,
     dpd_A=10,
     integrate_dof=False,
@@ -316,10 +316,7 @@ def hoomd_fire(
     else:
         sim.active_forces.append(lj)
     # Set up and run
-    displacement_capped = hoomd.md.methods.DisplacementCapped(
-        filter=sim.get_integrate_group(),
-        maximum_displacement=1e-3,
-    )
+    nvt = hoomd.md.methods.ConstantVolume(filter=sim.get_integrate_group())
     sim.set_fire_integrator(
         dt=dt,
         force_tol=force_tol,
@@ -331,7 +328,7 @@ def hoomd_fire(
         fdec_alpha=fdec_alpha,
         min_steps_adapt=min_steps_adapt,
         min_steps_conv=min_steps_conv,
-        methods=[displacement_capped],
+        methods=[nvt],
     )
     # Run FIRE sims with DPD + scaled bonds and angles
     for sim_num in range(num_fire_iterations):
