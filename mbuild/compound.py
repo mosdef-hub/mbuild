@@ -242,6 +242,22 @@ class Compound(object):
             for subpart in part.successors():
                 yield subpart
 
+    def get_child_indices(self, child):
+        """Gets the indices of particles belonging to a child compound.
+
+        Parameters:
+        -----------
+        child : mb.Compound
+            Compound that belongs to self.children
+        """
+        if child not in self.children:
+            raise ValueError(f"{child} is not a child in this compound's hiearchy.")
+        matches = np.any(
+            np.all(self.xyz[:, np.newaxis, :] == child.xyz, axis=2), axis=1
+        )
+        matching_indices = np.where(matches)[0]
+        return matching_indices
+
     def set_bond_graph(self, new_graph):
         """Manually set the compound's complete bond graph.
 
