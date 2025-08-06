@@ -56,14 +56,9 @@ class Path:
 
     @abstractmethod
     def generate(self):
-        """Abstract class for running a Path generation algorithm
-
-        This method should:
-        -----------------
-            - Set initial conditions
-            - Implement Path generation steps by calling _next_coordinate() and _check_path()
-            - Handle cases of next coordiante acceptance
-            - Handle cases of next coordinate rejection
+        """Abstract class for running a Path generation algorithm.
+        Sub-classes that inherit from Path should implement their
+        own method under genrate.
         """
         pass
 
@@ -140,15 +135,24 @@ class HardSphereRandomWalk(Path):
         radius : float, required
             Radius of sites used in checking for overlaps.
         min_angle : float, required
-            Minimum angle used when randomly selecting angle
+            Minimum angle (radians) used when randomly selecting angle
             for the next step.
         max_angle : float, required
-            Maximum angle used when randomly selecting angle
+            Maximum angle (radians) used when randomly selecting angle
             for the next step.
         seed : int, default = 42
             Random seed
+        trial_batch_size : int, default = 5
+            The number of trial moves to attempt in parallel for each step.
+            Using larger values can improve success rates for more dense
+            random walks.
+        start_from_path : mbuild.path.Path, optional
+            An instance of a previous Path to start the random walk from.
+        start_from_path_index : int, optional
+            The index of `start_from_path` to use as the initial point
+            for the random walk.
         tolerance : float, default = 1e-4
-            Tolerance used for rounding.
+            Tolerance used for rounding and checkig for overlaps.
         bond_graph : networkx.graph.Graph; optional
             Sets the bonding of sites along the path.
         """
@@ -280,6 +284,24 @@ class HardSphereRandomWalk(Path):
 
 
 class Lamellar(Path):
+    """Generate a 2-D or 3_D lamellar-like path.
+
+    Parameters
+    ----------
+    num_layers : int, required
+        The number of times the lamellar path curves around
+        creating another layer.
+    layer_separation : float (nm), required
+        The distance between any two layers.
+    spacing : float (nm), required
+        The distance between two sites along the path.
+    num_stacks : int, required
+        The number of times to repeat each layer in the Z direction.
+        Setting this to 1 creates a single, 2D lamellar-like path.
+    stack_separation : float (nm), required
+        The distance between two stacked layers.
+    """
+
     def __init__(
         self,
         num_layers,
@@ -373,7 +395,17 @@ class Lamellar(Path):
 
 
 class StraightLine(Path):
-    """Generates a set of coordinates in a straight line along a given axis."""
+    """Generates a set of coordinates in a straight line along a given axis.
+
+    Parameters
+    ----------
+    spacing : float, required
+        The distance between sites along the path.
+    N : int, required
+        The number of sites in the path.
+    direction : array-like (1,3), default = (1,0,0)
+        The direction to align the path along.
+    """
 
     def __init__(self, spacing, N, direction=(1, 0, 0), bond_graph=None):
         self.spacing = spacing
@@ -387,7 +419,25 @@ class StraightLine(Path):
 
 
 class Cyclic(Path):
-    """Generates a set of coordinates evenly spaced along a circle."""
+    """Generates a set of coordinates evenly spaced along a circle.
+
+    Parameters
+    ----------
+    spacing : float, optional
+        Distance between sites along the path.
+    N : int, optional
+        Number of sites in the cyclic path.
+    radius : float, optional
+        The radius (nm) of the cyclic path.
+
+    Notes
+    -----
+    Only two of spacing, N and radius can be defined, as the third
+    is determined by the other two.
+
+    If using this Path to build a cyclic polymer, be sure to
+    set `bond_head_tail = True` in `mbuild.polymer.Polymer.build_from_path`
+    """
 
     def __init__(self, spacing=None, N=None, radius=None, bond_graph=None):
         self.spacing = spacing
@@ -412,6 +462,8 @@ class Cyclic(Path):
 
 
 class Knot(Path):
+    """Generate a knot path."""
+
     def __init__(self, spacing, N, m, bond_graph=None):
         self.spacing = spacing
         self.m = m
@@ -459,8 +511,7 @@ class Helix(Path):
     def __init__(
         self, N, radius, rise, twist, right_handed=True, bottom_up=True, bond_graph=None
     ):
-        """
-        Generate helical path.
+        """Generate helical path.
 
         Parameters:
         -----------
@@ -472,7 +523,7 @@ class Helix(Path):
             Twist per site in path (degrees)
         right_handed : bool, default True
             Set the handedness of the helical twist
-            Set to false for a left handed twist
+            Set to False for a left handed twist
         bottom_up : bool, default True
             If True, the twist is in the positive Z direction
             If False, the twist is in the negative Z direction
@@ -503,8 +554,7 @@ class Helix(Path):
 
 class Spiral2D(Path):
     def __init__(self, N, a, b, spacing, bond_graph=None):
-        """
-        Generate a 2D spiral path in the XY plane.
+        """Generate a 2D spiral path in the XY plane.
 
         Parameters
         ----------
@@ -676,14 +726,14 @@ def _random_coordinate_numba(
     for i in range(batch_size):
         for j in range(3):
             r_perp_norm[i, j] = r_perp[i, j] / norms[i]
-
+    # Batch of trial vectors
     v2s = np.empty((batch_size, 3), dtype=np.float32)
     for i in range(batch_size):
         cos_theta = np.cos(thetas[i])
         sin_theta = np.sin(thetas[i])
         for j in range(3):
             v2s[i, j] = cos_theta * v1_norm[j] + sin_theta * r_perp_norm[i, j]
-
+    # Batch of trial positions
     next_positions = np.empty((batch_size, 3), dtype=np.float32)
     for i in range(batch_size):
         for j in range(3):

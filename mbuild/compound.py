@@ -705,7 +705,7 @@ class Compound(object):
                 if self.root.bond_graph.has_node(self):
                     self.root.bond_graph.remove_node(self)
                 # compose the bond graph of all the children with the root
-                self.root._bond_graph = nx.compose(
+                self.root.bond_graph = nx.compose(
                     self.root.bond_graph, children_bond_graph
                 )
             for i, child in enumerate(compound_list):
