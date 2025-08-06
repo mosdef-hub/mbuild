@@ -470,6 +470,8 @@ class Knot(Path):
         super(Knot, self).__init__(N=N, bond_graph=bond_graph)
 
     def generate(self):
+        # Generate dense sites first, sample actual ones later from spacing
+        # Prevents spacing between sites changing with curvature
         t_dense = np.linspace(0, 2 * np.pi, 5000)
         # Base (unscaled) curve
         if self.m == 3:  # Trefoil knot (3_1)
