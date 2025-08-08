@@ -2,6 +2,8 @@ import numpy as np
 
 from mbuild.path import HardSphereRandomWalk
 from mbuild.tests.base_test import BaseTest
+from mbuild.utils.geometry import bounding_box
+from mbuild.utils.volumes import CuboidConstraint
 
 
 class TestRandomWalk(BaseTest):
@@ -61,3 +63,18 @@ class TestRandomWalk(BaseTest):
             start_from_path_index=-1,
         )
         assert len(rw_path2.coordinates) == 40
+
+    def test_walk_inside_cube(self):
+        cube = CuboidConstraint(Lx=5, Ly=5, Lz=5)
+        rw_path = HardSphereRandomWalk(
+            N=50,
+            bond_length=0.25,
+            radius=0.22,
+            volume_constraint=cube,
+            min_angle=np.pi / 4,
+            max_angle=np.pi,
+            max_attempts=1e4,
+            seed=14,
+        )
+        bounds = bounding_box(rw_path.coordinates)
+        assert np.all(bounds < np.array([5, 5, 5]))

@@ -104,6 +104,7 @@ class HardSphereRandomWalk(Path):
         radius,
         min_angle,
         max_angle,
+        volume_constraint=None,
         max_attempts=1e5,
         seed=42,
         trial_batch_size=20,
@@ -152,12 +153,15 @@ class HardSphereRandomWalk(Path):
         self.min_angle = min_angle
         self.max_angle = max_angle
         self.seed = seed
+        self.volume_constraint = volume_constraint
         self.tolerance = tolerance
         self.trial_batch_size = int(trial_batch_size)
         self.max_attempts = int(max_attempts)
         self.attempts = 0
         self.start_from_path_index = start_from_path_index
         self.start_from_path = start_from_path
+
+        # This random walk is including a previous path
         if start_from_path and start_from_path_index is not None:
             coordinates = np.concatenate(
                 (
@@ -168,8 +172,11 @@ class HardSphereRandomWalk(Path):
             )
             self.count = len(start_from_path.coordinates) - 1
             N = None
-        else:
+        else:  # Not starting from another path
             coordinates = np.zeros((N, 3), dtype=np.float32)
+            # If volume constraint; can't always start with (0,0,0)
+            if self.volume_constraint:
+                coordinates[0] = self.volume_constraint.center
             self.count = 0
             self.start_index = 0
         # Need this for error message about reaching max tries
@@ -196,7 +203,7 @@ class HardSphereRandomWalk(Path):
                     self.bond_length * np.cos(theta),
                 ]
             )
-            self.coordinates[1] = next_pos
+            self.coordinates[1] = self.coordinates[0] + next_pos
             self.count += 1  # We already have 1 accepted move
         else:  # Start random walk from a previous set of coordinates
             started_next_path = False
@@ -212,6 +219,11 @@ class HardSphereRandomWalk(Path):
                     r_vectors=batch_vectors,
                     batch_size=self.trial_batch_size,
                 )
+                if self.volume_constraint:
+                    is_inside_mask = self.volume_constraint.is_inside(
+                        points=new_xyzs, radius=self.radius
+                    )
+                    new_xyzs = new_xyzs[is_inside_mask]
                 new_xyz_found = False
                 for xyz in new_xyzs:
                     if self.check_path(
@@ -246,6 +258,11 @@ class HardSphereRandomWalk(Path):
                 r_vectors=batch_vectors,
                 batch_size=self.trial_batch_size,
             )
+            if self.volume_constraint:
+                is_inside_mask = self.volume_constraint.is_inside(
+                    points=new_xyzs, radius=self.radius
+                )
+                new_xyzs = new_xyzs[is_inside_mask]
             for xyz in new_xyzs:
                 if self.check_path(
                     existing_points=self.coordinates[: self.count + 1],
