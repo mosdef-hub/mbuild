@@ -1,23 +1,15 @@
-"""Molecular paths and templates"""
+"""Classes to generate intra-molecular paths and configurations."""
 
 import math
 from abc import abstractmethod
 
 import freud
 import numpy as np
+from numba import njit
 from scipy.interpolate import interp1d
 
 from mbuild import Compound
 from mbuild.utils.geometry import bounding_box
-
-"""Classes to generate intra-molecular paths and configurations."""
-
-try:
-    from numba import njit
-
-    _NUMBA_AVAILABLE = True
-except ImportError:
-    _NUMBA_AVAILABLE = False
 
 
 class Path:
@@ -112,13 +104,12 @@ class HardSphereRandomWalk(Path):
         radius,
         min_angle,
         max_angle,
-        max_attempts,
-        seed,
-        trial_batch_size=5,
+        max_attempts=1e5,
+        seed=42,
+        trial_batch_size=20,
         start_from_path=None,
         start_from_path_index=None,
         tolerance=1e-5,
-        use_numba=False,
         bond_graph=None,
     ):
         """Generates coordinates from a self avoiding random walk using
@@ -185,27 +176,20 @@ class HardSphereRandomWalk(Path):
         # Need this for error message about reaching max tries
         self._init_count = self.count
         # Get methods to use for random walk
-        if not use_numba:
-            self.next_coordinate = _random_coordinate_numpy
-            self.check_path = _check_path_numpy
-        elif use_numba and _NUMBA_AVAILABLE:
-            self.next_coordinate = _random_coordinate_numba
-            self.check_path = _check_path_numba
-        elif use_numba and not _NUMBA_AVAILABLE:
-            raise RuntimeError(
-                "numba was not found. Set `use_numba` to `False` or add numba to your environment."
-            )
+        self.next_coordinate = _random_coordinate_numba
+        self.check_path = _check_path_numba
+        # Create RNG state.
+        self.rng = np.random.default_rng(seed)
 
         super(HardSphereRandomWalk, self).__init__(
             coordinates=coordinates, N=None, bond_graph=bond_graph
         )
 
     def generate(self):
-        np.random.seed(self.seed)
         if not self.start_from_path:
             # With fixed bond lengths, first move is always accepted
-            phi = np.random.uniform(0, 2 * np.pi)
-            theta = np.random.uniform(0, np.pi)
+            phi = self.rng.uniform(0, 2 * np.pi)
+            theta = self.rng.uniform(0, np.pi)
             next_pos = np.array(
                 [
                     self.bond_length * np.sin(theta) * np.cos(phi),
@@ -215,19 +199,19 @@ class HardSphereRandomWalk(Path):
             )
             self.coordinates[1] = next_pos
             self.count += 1  # We already have 1 accepted move
-            self.cound_adj = 0
         else:  # Start random walk from a previous set of coordinates
             # Start a while loop here
             started_next_path = False
             while not started_next_path:
+                batch_angles, batch_vectors = self._generate_random_trials()
                 new_xyzs = self.next_coordinate(
                     pos1=self.start_from_path.coordinates[self.start_from_path_index],
                     pos2=self.start_from_path.coordinates[
                         self.start_from_path_index - 1
                     ],
                     bond_length=self.bond_length,
-                    min_angle=self.min_angle,
-                    max_angle=self.max_angle,
+                    thetas=batch_angles,
+                    r_vectors=batch_vectors,
                     batch_size=self.trial_batch_size,
                 )
                 new_xyz_found = False
@@ -255,12 +239,13 @@ class HardSphereRandomWalk(Path):
                     )
 
         while self.count < self.N - 1:
+            batch_angles, batch_vectors = self._generate_random_trials()
             new_xyzs = self.next_coordinate(
                 pos1=self.coordinates[self.count],
                 pos2=self.coordinates[self.count - 1],
                 bond_length=self.bond_length,
-                min_angle=self.min_angle,
-                max_angle=self.max_angle,
+                thetas=batch_angles,
+                r_vectors=batch_vectors,
                 batch_size=self.trial_batch_size,
             )
             for xyz in new_xyzs:
@@ -281,6 +266,18 @@ class HardSphereRandomWalk(Path):
                     f"{self.count - self._init_count} sucsessful attempts were completed.",
                     "Try changing the parameters and running again.",
                 )
+
+    def _generate_random_trials(self):
+        """Generate a batch of random angles and vectors using the RNG state."""
+        # Batch of angles used to determine next positions
+        thetas = self.rng.uniform(
+            self.min_angle, self.max_angle, size=self.trial_batch_size
+        ).astype(np.float32)
+        # Batch of random vectors and center around origin (0,0,0)
+        r = self.rng.uniform(-0.5, 0.5, size=(self.trial_batch_size, 3)).astype(
+            np.float32
+        )
+        return thetas, r
 
 
 class Lamellar(Path):
@@ -328,7 +325,6 @@ class Lamellar(Path):
         arc_num_points = math.floor(arc_length / self.bond_length)
         arc_angle = np.pi / (arc_num_points + 1)  # incremental angle
         arc_angles = np.linspace(arc_angle, np.pi, arc_num_points, endpoint=False)
-        #        stack_coordinates = []
         for i in range(self.num_layers):
             if i % 2 == 0:  # Even layer; build from left to right
                 layer = [
@@ -489,7 +485,7 @@ class Knot(Path):
             y = (R + r * np.cos(5 * t_dense)) * np.sin(2 * t_dense)
             z = r * np.sin(5 * t_dense)
         else:
-            raise ValueError("Only m=3, m=4 and m=5 are supported.")
+            raise ValueError("Only m=3, m=4 and m=5 are currently supported.")
         # Compute arc length of a base curve
         coords_dense = np.stack((x, y, z), axis=1)
         deltas = np.diff(coords_dense, axis=0)
@@ -675,7 +671,7 @@ def _check_path_numpy(existing_points, new_point, radius, tolerance):
     return not np.any(sq_dists < min_sq_dist)
 
 
-@njit(fastmath=True)
+@njit(cache=True, fastmath=True)
 def norm(vec):
     s = 0.0
     for i in range(vec.shape[0]):
@@ -683,38 +679,28 @@ def norm(vec):
     return np.sqrt(s)
 
 
-@njit(fastmath=True)
+@njit(cache=True, fastmath=True)
 def _random_coordinate_numba(
     pos1,
     pos2,
     bond_length,
-    min_angle,
-    max_angle,
+    thetas,
+    r_vectors,
     batch_size,
 ):
     v1 = pos2 - pos1
     v1_norm = v1 / norm(v1)
-
-    thetas = np.empty(batch_size, dtype=np.float32)
-    for i in range(batch_size):
-        thetas[i] = min_angle + (max_angle - min_angle) * np.random.random()
-
-    r = np.empty((batch_size, 3), dtype=np.float32)
-    for i in range(batch_size):
-        for j in range(3):
-            r[i, j] = np.random.random() - 0.5
-
     dot_products = np.empty(batch_size, dtype=np.float32)
     for i in range(batch_size):
         dot = 0.0
         for j in range(3):
-            dot += r[i, j] * v1_norm[j]
+            dot += r_vectors[i, j] * v1_norm[j]
         dot_products[i] = dot
 
     r_perp = np.empty((batch_size, 3), dtype=np.float32)
     for i in range(batch_size):
         for j in range(3):
-            r_perp[i, j] = r[i, j] - dot_products[i] * v1_norm[j]
+            r_perp[i, j] = r_vectors[i, j] - dot_products[i] * v1_norm[j]
 
     norms = np.empty(batch_size, dtype=np.float32)
     for i in range(batch_size):
@@ -728,7 +714,7 @@ def _random_coordinate_numba(
     for i in range(batch_size):
         for j in range(3):
             r_perp_norm[i, j] = r_perp[i, j] / norms[i]
-    # Batch of trial vectors
+    # Batch of trial vectors using angles and r_norms
     v2s = np.empty((batch_size, 3), dtype=np.float32)
     for i in range(batch_size):
         cos_theta = np.cos(thetas[i])
@@ -743,7 +729,7 @@ def _random_coordinate_numba(
     return next_positions
 
 
-@njit
+@njit(cache=True, fastmath=True)
 def _check_path_numba(existing_points, new_point, radius, tolerance):
     min_sq_dist = (radius - tolerance) ** 2
     for i in range(existing_points.shape[0]):
