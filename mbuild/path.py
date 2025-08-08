@@ -159,10 +159,9 @@ class HardSphereRandomWalk(Path):
         self.start_from_path_index = start_from_path_index
         self.start_from_path = start_from_path
         if start_from_path and start_from_path_index is not None:
-            # TODO: Do we need np.copy here?
             coordinates = np.concatenate(
                 (
-                    np.copy(start_from_path.coordinates).astype(np.float32),
+                    start_from_path.coordinates.astype(np.float32),
                     np.zeros((N, 3), dtype=np.float32),
                 ),
                 axis=0,
@@ -200,7 +199,6 @@ class HardSphereRandomWalk(Path):
             self.coordinates[1] = next_pos
             self.count += 1  # We already have 1 accepted move
         else:  # Start random walk from a previous set of coordinates
-            # Start a while loop here
             started_next_path = False
             while not started_next_path:
                 batch_angles, batch_vectors = self._generate_random_trials()
@@ -639,40 +637,9 @@ class ZigZag(Path):
 
 
 # Internal helper/utility methods below:
-
-
-def _random_coordinate_numpy(pos1, pos2, bond_length, min_angle, max_angle, batch_size):
-    # Vector formed by previous 2 coordinates
-    v1 = pos2 - pos1
-    v1_norm = v1 / np.linalg.norm(v1)
-    # Generate batch of random angles
-    thetas = np.random.uniform(min_angle, max_angle, size=batch_size)
-    # Batch of random vectors and center around origin (0,0,0)
-    r = np.random.rand(batch_size, 3) - 0.5
-    dot_products = np.dot(r, v1_norm)
-    r_perp = r - dot_products[:, np.newaxis] * v1_norm
-    norms = np.linalg.norm(r_perp, axis=1)
-    for norm in norms:
-        if norm < 1e-6:
-            norm = 1.0
-    r_perp_norm = r_perp / norms[:, np.newaxis]
-    v2s = (
-        np.cos(thetas)[:, np.newaxis] * v1_norm
-        + np.sin(thetas)[:, np.newaxis] * r_perp_norm
-    )
-    next_positions = pos1 + v2s * bond_length
-    return next_positions
-
-
-def _check_path_numpy(existing_points, new_point, radius, tolerance):
-    """Check new trial point against previous ones only."""
-    sq_dists = np.sum((existing_points - new_point) ** 2, axis=1)
-    min_sq_dist = (radius - tolerance) ** 2
-    return not np.any(sq_dists < min_sq_dist)
-
-
 @njit(cache=True, fastmath=True)
 def norm(vec):
+    """Used by HardSphereRandomWalk."""
     s = 0.0
     for i in range(vec.shape[0]):
         s += vec[i] * vec[i]
@@ -688,6 +655,7 @@ def _random_coordinate_numba(
     r_vectors,
     batch_size,
 ):
+    """Default method for HardSphereRandomWalk"""
     v1 = pos2 - pos1
     v1_norm = v1 / norm(v1)
     dot_products = np.empty(batch_size, dtype=np.float32)
@@ -731,6 +699,7 @@ def _random_coordinate_numba(
 
 @njit(cache=True, fastmath=True)
 def _check_path_numba(existing_points, new_point, radius, tolerance):
+    """Default method for HardSphereRandomWalk."""
     min_sq_dist = (radius - tolerance) ** 2
     for i in range(existing_points.shape[0]):
         dist_sq = 0.0

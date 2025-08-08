@@ -3,6 +3,7 @@ test-output.xml
 *.pymon
 *.ipynb_checkpoints
 *DS_Store*
+__pycache__
 
 # C extensions
 *.so
