@@ -31,7 +31,7 @@ class Path:
             self.N = N
             self.coordinates = []
         else:
-            raise ValueError("Specify either one of N and coordinates, or neither")
+            raise ValueError("Specify either one of N and coordinates, or neither.")
         self.generate()
         if self.N is None:
             self.N = len(self.coordinates)
@@ -70,7 +70,7 @@ class Path:
         return nlist
 
     def to_compound(self, bead_name="_A", bead_mass=1):
-        """Visualize a path as an mBuild Compound"""
+        """Visualize a path as an mBuild Compound."""
         compound = Compound()
         for xyz in self.coordinates:
             compound.add(Compound(name=bead_name, mass=bead_mass, pos=xyz))
@@ -174,7 +174,7 @@ class HardSphereRandomWalk(Path):
             self.start_index = 0
         # Need this for error message about reaching max tries
         self._init_count = self.count
-        # Get methods to use for random walk
+        # Select methods to use for random walk
         self.next_coordinate = _random_coordinate_numba
         self.check_path = _check_path_numba
         # Create RNG state.
@@ -279,7 +279,7 @@ class HardSphereRandomWalk(Path):
 
 
 class Lamellar(Path):
-    """Generate a 2-D or 3_D lamellar-like path.
+    """Generate a 2-D or 3-D lamellar-like path.
 
     Parameters
     ----------
@@ -351,7 +351,7 @@ class Lamellar(Path):
                 self.coordinates.extend(layer)
         if self.num_stacks > 1:
             first_stack_coordinates = np.copy(np.array(self.coordinates))
-            # Now find info for curves between stacked layers
+            # Get info for curves between stacked layers
             r = self.stack_separation / 2
             arc_length = r * np.pi
             arc_num_points = math.floor(arc_length / self.bond_length)
@@ -430,7 +430,7 @@ class Cyclic(Path):
     is determined by the other two.
 
     If using this Path to build a cyclic polymer, be sure to
-    set `bond_head_tail = True` in `mbuild.polymer.Polymer.build_from_path`
+    set ``bond_head_tail = True`` in ``mbuild.polymer.Polymer.build_from_path``
     """
 
     def __init__(self, spacing=None, N=None, radius=None, bond_graph=None):
@@ -527,7 +527,7 @@ class Helix(Path):
         Notes:
         ------
         To create a double helix pair (e.g., DNA) create two paths
-        with opposite values for right_handed and bottom_up
+        with opposite values for right_handed and bottom_up.
         """
         self.radius = radius
         self.rise = rise
@@ -655,45 +655,21 @@ def _random_coordinate_numba(
     r_vectors,
     batch_size,
 ):
-    """Default method for HardSphereRandomWalk"""
+    """Default method for HardSphereRandomWalk."""
     v1 = pos2 - pos1
     v1_norm = v1 / norm(v1)
-    dot_products = np.empty(batch_size, dtype=np.float32)
-    for i in range(batch_size):
-        dot = 0.0
-        for j in range(3):
-            dot += r_vectors[i, j] * v1_norm[j]
-        dot_products[i] = dot
-
-    r_perp = np.empty((batch_size, 3), dtype=np.float32)
-    for i in range(batch_size):
-        for j in range(3):
-            r_perp[i, j] = r_vectors[i, j] - dot_products[i] * v1_norm[j]
-
-    norms = np.empty(batch_size, dtype=np.float32)
-    for i in range(batch_size):
-        norms[i] = norm(r_perp[i])
-
-    for i in range(batch_size):
-        if norms[i] < 1e-6:
-            norms[i] = 1.0
-
-    r_perp_norm = np.empty((batch_size, 3), dtype=np.float32)
-    for i in range(batch_size):
-        for j in range(3):
-            r_perp_norm[i, j] = r_perp[i, j] / norms[i]
-    # Batch of trial vectors using angles and r_norms
-    v2s = np.empty((batch_size, 3), dtype=np.float32)
-    for i in range(batch_size):
-        cos_theta = np.cos(thetas[i])
-        sin_theta = np.sin(thetas[i])
-        for j in range(3):
-            v2s[i, j] = cos_theta * v1_norm[j] + sin_theta * r_perp_norm[i, j]
+    dot_products = (r_vectors * v1_norm).sum(axis=1)
+    r_perp = r_vectors - dot_products[:, None] * v1_norm
+    norms = np.sqrt((r_perp * r_perp).sum(axis=1))
+    # Handle rare cases where rprep vectors approach zero
+    norms = np.where(norms < 1e-6, 1.0, norms)
+    r_perp_norm = r_perp / norms[:, None]
+    # Batch of trial next-step vectors using angles and r_norms
+    cos_thetas = np.cos(thetas)
+    sin_thetas = np.sin(thetas)
+    v2s = cos_thetas[:, None] * v1_norm + sin_thetas[:, None] * r_perp_norm
     # Batch of trial positions
-    next_positions = np.empty((batch_size, 3), dtype=np.float32)
-    for i in range(batch_size):
-        for j in range(3):
-            next_positions[i, j] = pos1[j] + v2s[i, j] * bond_length
+    next_positions = pos1 + v2s * bond_length
     return next_positions
 
 
