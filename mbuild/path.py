@@ -221,7 +221,7 @@ class HardSphereRandomWalk(Path):
                 )
                 if self.volume_constraint:
                     is_inside_mask = self.volume_constraint.is_inside(
-                        points=new_xyzs, radius=self.radius
+                        points=new_xyzs, particle_radius=self.radius
                     )
                     new_xyzs = new_xyzs[is_inside_mask]
                 new_xyz_found = False
@@ -260,7 +260,7 @@ class HardSphereRandomWalk(Path):
             )
             if self.volume_constraint:
                 is_inside_mask = self.volume_constraint.is_inside(
-                    points=new_xyzs, radius=self.radius
+                    points=new_xyzs, particle_radius=self.radius
                 )
                 new_xyzs = new_xyzs[is_inside_mask]
             for xyz in new_xyzs:
