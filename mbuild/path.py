@@ -294,6 +294,27 @@ class HardSphereRandomWalk(Path):
         )
         return thetas, r
 
+    def _initial_point(self):
+        # Random initial point, bounds set by radius and N steps
+        if not any([self.volume_constraint, self.initial_point, self.start_from_path]):
+            max_dist = self.N * self.radius
+            coord = self.rng.uniform(low=-max_dist, high=max_dist, size=3)
+            return coord
+
+        # Random point inside volume constraint, not starting from another path
+        elif self.volume_constraint and not self.start_from_path_index:
+            coord = self.rng.uniform(
+                low=self.volume_constraint.mins,
+                high=self.volume_constraint.maxs,
+                size=3,
+            )
+            return coord
+
+        # Starting from another path, get accepted next move
+        elif self.start_from_path and self.start_from_path_index:
+            pass
+        #
+
 
 class Lamellar(Path):
     """Generate a 2-D or 3-D lamellar-like path.
