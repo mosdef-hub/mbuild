@@ -29,6 +29,21 @@ class TestRandomWalk(BaseTest):
         comp = rw_path.to_compound()
         assert comp.n_particles == 20
         assert comp.n_bonds == 19
+        # Test bounds of random initial point
+        assert np.all(rw_path.coordinates[0]) < 20 * 0.22
+
+    def test_set_initial_point(self):
+        rw_path = HardSphereRandomWalk(
+            N=20,
+            bond_length=0.25,
+            radius=0.22,
+            min_angle=np.pi / 4,
+            max_angle=np.pi,
+            max_attempts=1e4,
+            initial_point=(1, 2, 3),
+            seed=14,
+        )
+        assert np.array_equal(rw_path.coordinates[0], np.array([1, 2, 3]))
 
     def test_seeds(self):
         rw_path_1 = HardSphereRandomWalk(
@@ -61,7 +76,6 @@ class TestRandomWalk(BaseTest):
             max_attempts=1e4,
             seed=14,
         )
-
         rw_path2 = HardSphereRandomWalk(
             N=20,
             bond_length=0.25,
@@ -94,14 +108,15 @@ class TestRandomWalk(BaseTest):
     def test_walk_inside_sphere(self):
         sphere = SphereConstraint(radius=4, center=(2, 2, 2))
         rw_path = HardSphereRandomWalk(
-            N=100,
+            N=200,
             bond_length=0.25,
             radius=0.22,
             volume_constraint=sphere,
+            initial_point=(0, 0, 0),
             min_angle=np.pi / 4,
             max_angle=np.pi,
             max_attempts=1e4,
-            seed=14,
+            seed=90,
         )
         bounds = bounding_box(rw_path.coordinates)
         assert np.all(bounds < np.array([(2 * 4) - 0.22]))
@@ -109,7 +124,7 @@ class TestRandomWalk(BaseTest):
     def test_walk_inside_cylinder(self):
         cylinder = CylinderConstraint(radius=3, height=6, center=(1.5, 1.5, 3))
         rw_path = HardSphereRandomWalk(
-            N=100,
+            N=200,
             bond_length=0.25,
             radius=0.22,
             volume_constraint=cylinder,

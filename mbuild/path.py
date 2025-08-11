@@ -105,11 +105,13 @@ class HardSphereRandomWalk(Path):
         min_angle,
         max_angle,
         volume_constraint=None,
+        start_from_path=None,
+        start_from_path_index=None,
+        initial_point=None,
+        include_compound=None,
         max_attempts=1e5,
         seed=42,
         trial_batch_size=20,
-        start_from_path=None,
-        start_from_path_index=None,
         tolerance=1e-5,
         bond_graph=None,
     ):
@@ -148,6 +150,11 @@ class HardSphereRandomWalk(Path):
         bond_graph : networkx.graph.Graph; optional
             Sets the bonding of sites along the path.
         """
+        if initial_point is not None:
+            self.initial_point = np.asarray(initial_point)
+        else:
+            self.initial_point = None
+        self.include_compound = include_compound
         self.bond_length = bond_length
         self.radius = radius
         self.min_angle = min_angle
@@ -162,7 +169,7 @@ class HardSphereRandomWalk(Path):
         self.start_from_path = start_from_path
 
         # This random walk is including a previous path
-        if start_from_path and start_from_path_index is not None:
+        if start_from_path:
             coordinates = np.concatenate(
                 (
                     start_from_path.coordinates.astype(np.float32),
@@ -174,9 +181,6 @@ class HardSphereRandomWalk(Path):
             N = None
         else:  # Not starting from another path
             coordinates = np.zeros((N, 3), dtype=np.float32)
-            # If volume constraint; can't always start with (0,0,0)
-            if self.volume_constraint:
-                coordinates[0] = self.volume_constraint.center
             self.count = 0
             self.start_index = 0
         # Need this for error message about reaching max tries
@@ -192,8 +196,11 @@ class HardSphereRandomWalk(Path):
         )
 
     def generate(self):
-        if not self.start_from_path:
-            # With fixed bond lengths, first move is always accepted
+        initial_xyz = self._initial_points()
+        if not self.start_from_path and not self.volume_constraint:
+            # Set the first coordinate
+            self.coordinates[0] = initial_xyz
+            # If no volume constraint, then first move is always accepted
             phi = self.rng.uniform(0, 2 * np.pi)
             theta = self.rng.uniform(0, np.pi)
             next_pos = np.array(
@@ -204,50 +211,42 @@ class HardSphereRandomWalk(Path):
                 ]
             )
             self.coordinates[1] = self.coordinates[0] + next_pos
-            self.count += 1  # We already have 1 accepted move
-        else:  # Start random walk from a previous set of coordinates
-            started_next_path = False
-            while not started_next_path:
-                batch_angles, batch_vectors = self._generate_random_trials()
-                new_xyzs = self.next_coordinate(
-                    pos1=self.start_from_path.coordinates[self.start_from_path_index],
-                    pos2=self.start_from_path.coordinates[
-                        self.start_from_path_index - 1
-                    ],
-                    bond_length=self.bond_length,
-                    thetas=batch_angles,
-                    r_vectors=batch_vectors,
-                    batch_size=self.trial_batch_size,
+            self.count += 1
+
+        # Not starting from another path, but have a volume constraint
+        # Possible for second point to be out-of-bounds
+        elif not self.start_from_path and self.volume_constraint:
+            self.coordinates[0] = initial_xyz
+            next_point_found = False
+            while not next_point_found:
+                phi = self.rng.uniform(0, 2 * np.pi)
+                theta = self.rng.uniform(0, np.pi)
+                xyz = np.array(
+                    [
+                        self.bond_length * np.sin(theta) * np.cos(phi),
+                        self.bond_length * np.sin(theta) * np.sin(phi),
+                        self.bond_length * np.cos(theta),
+                    ]
                 )
-                if self.volume_constraint:
-                    is_inside_mask = self.volume_constraint.is_inside(
-                        points=new_xyzs, particle_radius=self.radius
-                    )
-                    new_xyzs = new_xyzs[is_inside_mask]
-                new_xyz_found = False
-                for xyz in new_xyzs:
-                    if self.check_path(
-                        existing_points=self.coordinates[: self.count + 1],
-                        new_point=xyz,
-                        radius=self.radius,
-                        tolerance=self.tolerance,
-                    ):
-                        self.coordinates[self.count + 1] = xyz
-                        self.count += 1
-                        self.attempts += 1
-                        new_xyz_found = True
-                        started_next_path = True
-                        break
-                if not new_xyz_found:
+                is_inside_mask = self.volume_constraint.is_inside(
+                    points=np.array([xyz]), particle_radius=self.radius
+                )
+                if np.all(is_inside_mask):
+                    self.coordinates[1] = self.coordinates[0] + xyz
+                    self.count += 1
                     self.attempts += 1
+                    next_point_found = True
+                # 2nd point failed, continue while loop
+                self.attempts += 1
 
-                if self.attempts == self.max_attempts and self.count < self.N:
-                    raise RuntimeError(
-                        "The maximum number attempts allowed have passed, and only ",
-                        f"{self.count - self._init_count} sucsessful attempts were completed.",
-                        "Try changing the parameters and running again.",
-                    )
+        # Starting random walk from a previous set of coordinates
+        # This point was accepted in self._initial_point with these conditions
+        else:
+            self.coordinates[self.count + 1] = initial_xyz
+            self.count += 1
+            self.attempts += 1
 
+        # Initial conditions set (points 1 and 2), now start RW with min/max angles
         while self.count < self.N - 1:
             batch_angles, batch_vectors = self._generate_random_trials()
             new_xyzs = self.next_coordinate(
@@ -264,8 +263,14 @@ class HardSphereRandomWalk(Path):
                 )
                 new_xyzs = new_xyzs[is_inside_mask]
             for xyz in new_xyzs:
+                if self.include_compound:
+                    existing_points = np.concatenate(
+                        (self.coordinates[: self.count + 1], self.include_compound.xyz)
+                    )
+                else:
+                    existing_points = self.coordinates[: self.count + 1]
                 if self.check_path(
-                    existing_points=self.coordinates[: self.count + 1],
+                    existing_points=existing_points,
                     new_point=xyz,
                     radius=self.radius,
                     tolerance=self.tolerance,
@@ -294,26 +299,75 @@ class HardSphereRandomWalk(Path):
         )
         return thetas, r
 
-    def _initial_point(self):
+    def _initial_points(self):
+        """Choosing first and second points depends on the parameters passed in."""
+        # Use manually specified initial point
+        if self.initial_point is not None:
+            return self.initial_point
+
         # Random initial point, bounds set by radius and N steps
-        if not any([self.volume_constraint, self.initial_point, self.start_from_path]):
-            max_dist = self.N * self.radius
-            coord = self.rng.uniform(low=-max_dist, high=max_dist, size=3)
-            return coord
+        elif not any(
+            [self.volume_constraint, self.initial_point, self.start_from_path]
+        ):
+            max_dist = (self.N * self.radius) - self.radius
+            xyz = self.rng.uniform(low=-max_dist, high=max_dist, size=3)
+            return xyz
 
         # Random point inside volume constraint, not starting from another path
         elif self.volume_constraint and not self.start_from_path_index:
-            coord = self.rng.uniform(
-                low=self.volume_constraint.mins,
-                high=self.volume_constraint.maxs,
+            xyz = self.rng.uniform(
+                low=self.volume_constraint.mins + self.radius,
+                high=self.volume_constraint.maxs - self.radius,
                 size=3,
             )
-            return coord
+            return xyz
 
-        # Starting from another path, get accepted next move
+        # Starting from another path, run Monte Carlo
+        # Accepted next move is first point of this random walk
         elif self.start_from_path and self.start_from_path_index:
-            pass
-        #
+            started_next_path = False
+            while not started_next_path:
+                batch_angles, batch_vectors = self._generate_random_trials()
+                new_xyzs = self.next_coordinate(
+                    pos1=self.start_from_path.coordinates[self.start_from_path_index],
+                    pos2=self.start_from_path.coordinates[
+                        self.start_from_path_index - 1
+                    ],
+                    bond_length=self.bond_length,
+                    thetas=batch_angles,
+                    r_vectors=batch_vectors,
+                    batch_size=self.trial_batch_size,
+                )
+                if self.volume_constraint:
+                    is_inside_mask = self.volume_constraint.is_inside(
+                        points=new_xyzs, particle_radius=self.radius
+                    )
+                    new_xyzs = new_xyzs[is_inside_mask]
+                for xyz in new_xyzs:
+                    if self.include_compound:
+                        existing_points = np.concatenate(
+                            (
+                                self.coordinates[: self.count + 1],
+                                self.include_compound.xyz,
+                            )
+                        )
+                    else:
+                        existing_points = self.coordinates[: self.count + 1]
+                    if self.check_path(
+                        existing_points=existing_points,
+                        new_point=xyz,
+                        radius=self.radius,
+                        tolerance=self.tolerance,
+                    ):
+                        return xyz
+                self.attempts += 1
+
+                if self.attempts == self.max_attempts and self.count < self.N:
+                    raise RuntimeError(
+                        "The maximum number attempts allowed have passed, and only ",
+                        f"{self.count - self._init_count} sucsessful attempts were completed.",
+                        "Try changing the parameters and running again.",
+                    )
 
 
 class Lamellar(Path):
@@ -321,13 +375,13 @@ class Lamellar(Path):
 
     Parameters
     ----------
+    spacing : float (nm), required
+        The distance between two adjacent sites in the path.
     num_layers : int, required
         The number of times the lamellar path curves around
         creating another layer.
     layer_separation : float (nm), required
         The distance between any two layers.
-    spacing : float (nm), required
-        The distance between two sites along the path.
     num_stacks : int, required
         The number of times to repeat each layer in the Z direction.
         Setting this to 1 creates a single, 2D lamellar-like path.
@@ -436,7 +490,7 @@ class StraightLine(Path):
     N : int, required
         The number of sites in the path.
     direction : array-like (1,3), default = (1,0,0)
-        The direction to align the path along.
+        The direction to align the straight path along.
     """
 
     def __init__(self, spacing, N, direction=(1, 0, 0), bond_graph=None):

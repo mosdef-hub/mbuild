@@ -18,7 +18,7 @@ class CuboidConstraint(Constraint):
         self.maxs = self.center + np.array([Lx / 2, Ly / 2, Lz / 2])
 
     def is_inside(self, points, particle_radius):
-        """Points are particle_radius are passed in from HardSphereRandomWalk"""
+        """Points and particle_radius are passed in from HardSphereRandomWalk"""
         return is_inside_cuboid(
             mins=self.mins,
             maxs=self.maxs,
@@ -35,6 +35,7 @@ class SphereConstraint(Constraint):
         self.maxs = self.center + self.radius
 
     def is_inside(self, points, particle_radius):
+        """Points and particle_radius are passed in from HardSphereRandomWalk"""
         return is_inside_sphere(
             points=points, sphere_radius=self.radius, particle_radius=particle_radius
         )
@@ -61,6 +62,7 @@ class CylinderConstraint(Constraint):
         )
 
     def is_inside(self, points, particle_radius):
+        """Points and particle_radius are passed in from HardSphereRandomWalk"""
         return is_inside_cylinder(
             points=points,
             center=self.center,
