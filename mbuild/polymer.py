@@ -45,6 +45,11 @@ class Polymer(Compound):
     add_end_groups(compound, index, separation, orientation, replace)
         Use to add an end group compound to Polymer.end_groups
 
+    build_from_path(path, sequence, add_hydrogens, bond_head_tail, energy_minimize)
+        Used to set the polymer configuration from a pre-determined mbuild.path.Path
+        Use this to create polymers that follow a random walk, or form
+        lamellar order, ring polymers and more. See the ``mbuild.path`` module.
+
     build(n, sequence)
         Use to create a single polymer compound. This method uses the compounds
         created by calling the add_monomer and add_end_group methods.

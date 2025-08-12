@@ -54,7 +54,7 @@ class Path:
         """
         pass
 
-    def neighbor_list(self, r_max, coordinates=None, box=None):
+    def neighbor_list(self, r_max, query_points, coordinates=None, box=None):
         """Use freud to create a neighbor list of a set of coordinates."""
         if coordinates is None:
             coordinates = self.coordinates
@@ -63,7 +63,7 @@ class Path:
         freud_box = freud.box.Box(Lx=box[0], Ly=box[1], Lz=box[2])
         aq = freud.locality.AABBQuery(freud_box, coordinates)
         aq_query = aq.query(
-            query_points=coordinates,
+            query_points=query_points,
             query_args=dict(r_min=0.0, r_max=r_max, exclude_ii=True),
         )
         nlist = aq_query.toNeighborList()
@@ -140,6 +140,8 @@ class HardSphereRandomWalk(Path):
             The number of trial moves to attempt in parallel for each step.
             Using larger values can improve success rates for more dense
             random walks.
+        max_attempts : int, defualt = 1e5
+            The maximum number of trial moves to attempt before quiting.
         start_from_path : mbuild.path.Path, optional
             An instance of a previous Path to start the random walk from.
         start_from_path_index : int, optional
@@ -149,6 +151,21 @@ class HardSphereRandomWalk(Path):
             Tolerance used for rounding and checkig for overlaps.
         bond_graph : networkx.graph.Graph; optional
             Sets the bonding of sites along the path.
+
+        Notes
+        -----
+        Each next-move can be attempted in batches, set by the ``trial_batch_size``
+        parameter. The batch size moves do not count towards the maximum allowed
+        attemps. For example, 1 random walk with a trail batch size of 20 counts at
+        only one attempted move. Larger values of ``trial_batch_size`` may help
+        highly constrained walks finish, but may hurt performance.
+
+        You can start a random walk from a previously created path with the
+        ``start_from_path`` and ``start_from_path_index`` parameters. For example,
+        create a ``Lamellar`` path and run a random walk from its last index to begin
+        generating a semi-crystalline-like structure. Or, string together multiple
+        HardSphereRandomWalk paths where the final result of each is passed into the
+        next random walk.
         """
         if initial_point is not None:
             self.initial_point = np.asarray(initial_point)
