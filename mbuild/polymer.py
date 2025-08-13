@@ -129,23 +129,78 @@ class Polymer(Compound):
         """
         return self._end_groups
 
-    @property
-    def contour_length(self):
-        """The contour length (nm) of the polymer chain."""
-        return sum([length for length in self.backbone_bond_lengths()])
+    def build_from_path(
+        self,
+        path,
+        sequence="A",
+        add_hydrogens=True,
+        bond_head_tail=False,
+        energy_minimize=True,
+    ):
+        """Build the polymer chain to a pre-defined configuraiton.
 
-    def backbone_vectors(self):
-        """Yield the consecutive monomer-monomer vectors."""
-        for i, mon in enumerate(self.children):
-            try:
-                yield self.children[i + 1].center - mon.center
-            except IndexError:
-                pass
+        See ``mbuild.path.Path`` to available polymer configurations
+        or use mbuild.path.Path.from_coordinates() to manually set
+        a polymer chan configuraiton.
 
-    def backbone_bond_lengths(self):
-        """Yield lengths (nm) of consecutive monomer-monomer vectors."""
-        for vec in self.backbone_vectors():
-            yield np.linalg.norm(vec)
+        Parameters
+        ----------
+        path : mbuild.path.Path, required
+            The configuration the polymer will be mapped to after connecting
+            all of the components (monomers and end groups).
+            The path will determine the number of monomer sites.
+        sequence : str, optional, default 'A'
+            A string of characters where each unique character represents one
+            repetition of a monomer. Characters in `sequence` are assigned to
+            monomers in the order they appear in `Polymer.monomers`.
+            The characters in `sequence` are assigned to the compounds in the
+            in the order that they appear in the Polymer.monomers list.
+            For example, 'AB' where 'A'corresponds to the first compound
+            added to Polymer.monomers and 'B' to the second compound.
+        add_hydrogens : bool, default True
+            If True and an ``end_groups`` compound is None, then the head or tail
+            of the polymer will be capped off with hydrogen atoms. If end group
+            compounds exist, then they will be used.
+            If False and an end group compound is None, then the head or tail
+            port will be exposed in the polymer.
+        bond_head_tail : bool, default False
+            If set to ``True``, then a bond between the head and tail groups (monomers or end groups)
+            is created. This does not create a periodic bond (see Polymer.create_periodic_bond).
+            The ``add_hydrogens`` parameter must be set to ``False`` to create this bond.
+            This is useful for creating ring polymers, knot polymers.
+            See ``mbuild.path.Cyclic`` and ``mbuild.path.Knot``.
+        energy_minimize : bool, default True
+            If ``True`` then relax the bonds and angles that may be distorted from mapping
+            the atomistic polymer to a path.
+            This uses the capped displacement methods in ``mbuild.simulation``.
+
+        Notes
+        -----
+        Energy Minimization:
+
+            It is required to run energy minimization on chains built from a path to relax
+            the topology to a suitable starting point.
+            mBuild contains multiple energy minimization approaches in the ``mbuild.simulation`` module.
+
+            When ``energy_minimize`` is set to ``True``, this method uses the OpenBabel based energy
+            minimization method with the UFF force field. We have found that once polymers
+            reach a size on the order of ~500 atoms, significantly faster energy minimization can be
+            achieved using one of the hoomd-based methods in ``mbuild.simulation``.
+            In that case, set ``energy_minimize=False`` and pass the resulting polymer
+            compound into one of these methods.
+            See: ``mbuild.simulation.hoomd_cap_displacement``, and ``mbuild.simulation.hoomd_fire``.
+
+        """
+        n = len(path.coordinates) - sum([1 for i in self.end_groups if i is not None])
+        self.build(
+            n=n,
+            sequence=sequence,
+            add_hydrogens=add_hydrogens,
+            bond_head_tail=bond_head_tail,
+        )
+        self.set_monomer_positions(
+            coordinates=path.coordinates, energy_minimize=energy_minimize
+        )
 
     def set_monomer_positions(self, coordinates, energy_minimize=True):
         """Shift monomers so that their center of mass matches a set of pre-defined coordinates.
@@ -154,29 +209,27 @@ class Polymer(Compound):
         ----------
         coordinates : np.ndarray, shape=(N,3)
             Set of x,y,z coordinatess
+
+        Notes
+        -----
+        Energy Minimization:
+
+            It is required to run energy minimization on chains built from a path to relax
+            the topology to a suitable starting point.
+            mBuild contains multiple energy minimization approaches in the ``mbuild.simulation`` module.
+
+            When ``energy_minimize`` is set to ``True``, this method uses the OpenBabel based energy
+            minimization method with the UFF force field. We have found that once polymers
+            reach a size on the order of ~500 atoms, significantly faster energy minimization can be
+            achieved using one of the hoomd-based methods in ``mbuild.simulation``
+            In that case, set ``energy_minimize=False`` and pass the resulting polymer
+            compound into one of these methods.
+            See: `hoomd_cap_displacement`, and `hoomd_fire`.
         """
         for i, xyz in enumerate(coordinates):
             self.children[i].translate_to(xyz)
         if energy_minimize:
             e_min(self)
-
-    def straighten(self, axis=(1, 0, 0), energy_minimize=True):
-        """Shift monomer positions so that the backbone is straight.
-
-        Parameters
-        ----------
-        axis : np.ndarray, shape=(1,3), default (1, 0, 0)
-            Direction to align the polymer backbone.
-        energy_minimize : bool, default True
-            If True, run energy minimization on resulting structure.
-            See `mbuild.Compound.energy_minimize()`
-        """
-        axis = np.asarray(axis)
-        avg_bond_L = np.mean([L for L in self.backbone_bond_lengths()])
-        coords = np.array(
-            [np.zeros(3) + i * avg_bond_L * axis for i in range(len(self.children))]
-        )
-        self.set_monomer_positions(coordinates=coords, energy_minimize=energy_minimize)
 
     def build(self, n, sequence="A", add_hydrogens=True, bond_head_tail=False):
         """Connect one or more components in a specified sequence.
@@ -206,15 +259,18 @@ class Polymer(Compound):
             compounds exist, then they will be used.
             If False and an end group compound is None, then the head or tail
             port will be exposed in the polymer.
-        periodic_axis : str, default None
-            If not ``None`` and an ``end_groups`` compound is None, then the head
-            and tail will be forced into an overlap with a periodicity along the
-            ``axis`` (default="z") specified. See
-            :meth:`mbuild.lib.recipes.polymer.Polymer.create_periodic_bond` for
-            more details. If end group compounds exist, then there will be a
-            warning. However ``add_hydrogens`` will simply be overwritten.
-            If ``None``, ``end_groups`` compound is None, and ``add_hydrogens`` is
-            False then the head or tail port will be exposed in the polymer.
+        bond_head_tail : bool, default False
+            If set to ``True``, then a bond between the head and tail groups (monomers or end groups)
+            is created. This does not create a periodic bond (see Polymer.create_periodic_bond).
+            The ``add_hydrogens`` parameter must be set to ``False`` to create this bond.
+            This is useful for creating ring polymers, knot polymers.
+            See ``mbuild.path.Cyclic`` and ``mbuild.path.Knot``.
+
+        Notes
+        -----
+        The chain conformations obtained from this method are often difficult to use
+        in later steps of creating systems of polymers. See the alternative build
+        method ``Polymer.build_from_path``.
         """
         if add_hydrogens and bond_head_tail:
             raise ValueError(
@@ -308,25 +364,6 @@ class Polymer(Compound):
 
         if bond_head_tail:
             force_overlap(self, self.head_port, self.tail_port)
-
-    def build_from_path(
-        self,
-        path,
-        sequence="A",
-        add_hydrogens=True,
-        bond_head_tail=False,
-        energy_minimize=True,
-    ):
-        n = len(path.coordinates) - sum([1 for i in self.end_groups if i is not None])
-        self.build(
-            n=n,
-            sequence=sequence,
-            add_hydrogens=add_hydrogens,
-            bond_head_tail=bond_head_tail,
-        )
-        self.set_monomer_positions(
-            coordinates=path.coordinates, energy_minimize=energy_minimize
-        )
 
     def add_monomer(
         self,

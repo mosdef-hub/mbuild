@@ -17,6 +17,11 @@ from mbuild.utils.io import import_
 
 
 class HoomdSimulation(hoomd.simulation.Simulation):
+    """A custom class to help in creating internal hoomd-based simulation methods.
+
+    See ``hoomd_cap_displacement`` and ``hoomd_fire``.
+    """
+
     def __init__(
         self,
         compound,
@@ -181,16 +186,88 @@ def hoomd_cap_displacement(
     n_steps,
     dt,
     r_cut,
-    max_displacement,
-    dpd_A,
-    n_relax_steps,
+    max_displacement=1e-3,
     fixed_compounds=None,
     integrate_compounds=None,
+    dpd_A=None,
     bond_k_scale=1,
     angle_k_scale=1,
+    n_relax_steps=0,
     run_on_gpu=False,
     seed=42,
 ):
+    """Run a short simulation with hoomd.md.methods.DisplacementCapped
+
+    Parameters
+    ----------
+    compound : mb.Compound
+        The compound to use in the simulation
+    forcefield : foyer.forcefield.Forcefield or gmso.core.Forcefield
+        The forcefield to apply to the system
+    n_steps : int
+        The number of simulation time steps to run with the modified forcefield
+        created by bond_k_scale, angle_k_scale, and dpd_A.
+        See these parameters for more information.
+    dt : float
+        The simulation timestep. Note that for running capped displacement on highly unstable
+        systems (e.g. overlapping particles), it is often more stable to use a larger
+        value of dt and let the displacement cap limit position updates.
+    r_cut : float (nm)
+        The cutoff distance (nm) used in the non-bonded pair neighborlist.
+        Use smaller values for unstable starting conditions and faster performance.
+    max_displacement : float (nm), default = 1e-3 nm
+        The maximum displacement (nm) allowed per timestep. Use smaller values for
+        highly unstable systems.
+    fixed_compounds : list of mb.Compound, default None
+        If given, these compounds will be removed from the integration updates and
+        held "frozen" during the hoomd simulation.
+        They are still able to interact with other particles in the simulation.
+        If desired, pass in a subset of children from `compound.children`.
+    integrate_compounds : list of mb.Compound, default None
+        If given, then only these compounds will be updated during integration
+        and all other compunds in `compound` are removed from the integration group.
+    dpd_A : float, default None
+        If set to a value, then the initial simulation replaces the LJ 12-6 pair potential
+        with the softer hoomd.md.pair.DPDConservative pair force from HOOMD.
+        This is used for `n_steps` and replace with the original LJ for potential which is
+        used for n_relax_steps. This can be useful for highly unstable starting configutations.
+        Note that the cutoff for the DPD force is set to the sigma value for each atom type
+        and force cosntant (A) is set to dpd_A for all atom types.
+    bond_k_scale : float, default 1
+        Scale the bond-stretching force constants so that K_new = K * bond_k_scale.
+        This can be useful for relaxing highly unstable starting configutations.
+        The bond force constants are scaled back to their original values
+        during the run of `n_relax_steps`
+    angle_k_scale : float, default 1
+        Scale the bond-angle force constants so that K_new = K * angle_k_scale.
+        This can be useful for relaxing highly unstable starting configutations.
+        The angle force constants are scaled back to their original values
+        during the run of `n_relax_steps`
+    n_relax_steps: int, optional
+        The number of steps to run after running for `n_steps` with the modified
+        forcefield. This is designed to be used when utilize the parameters
+        `dpd_A`, `bond_k_scale`, and `angle_k_scale`.
+    run_on_gpu : bool, default False
+        When `True` the HOOMD simulation uses the hoomd.device.GPU() device.
+        This requires that you have a GPU compatible HOOMD install and
+        a compatible GPU device.
+    seed : int, default 42
+        The seed passed to HOOMD
+
+    Notes
+    -----
+    Running on GPU:
+        The hoomd-based methods in ``mbuild.simulation``
+        are able to utilize and run on GPUs to perform energy minimization for larger systems if needed.
+        Performance improvements of using GPU over CPU may not be significant until systems reach a
+        size of ~1,000 particles.
+
+    Running multiple simulations:
+        The information needed to run the HOOMD simulation is saved after the first simulation.
+        Therefore, calling hoomd-based simulation methods multiple times (e.g, in a for loop or while loop)
+        does not require re-running performing atom-typing, applying the forcefield, or running hoomd
+        format writers again.
+    """
     compound._kick()
     sim = HoomdSimulation(
         compound=compound,
@@ -204,13 +281,16 @@ def hoomd_cap_displacement(
     bond = sim.get_force(hoomd.md.bond.Harmonic)
     angle = sim.get_force(hoomd.md.angle.Harmonic)
     lj = sim.get_force(hoomd.md.pair.LJ)
-    # Scale bond K and angle K
-    for param in bond.params:
-        bond.params[param]["k"] *= bond_k_scale
+    # If needed scale bond K and angle K
+    if bond_k_scale != 1.0:
+        for param in bond.params:
+            bond.params[param]["k"] *= bond_k_scale
     sim.active_forces.append(bond)
+    # If angle_k_scale is zero, then "turn off" angles; skip adding the angle force
     if angle_k_scale != 0:
-        for param in angle.params:
-            angle.params[param]["k"] *= angle_k_scale
+        if angle_k_scale != 1.0:
+            for param in angle.params:
+                angle.params[param]["k"] *= angle_k_scale
         sim.active_forces.append(angle)
     if dpd_A:
         dpd = sim.get_dpd_from_lj(A=dpd_A)
@@ -229,16 +309,18 @@ def hoomd_cap_displacement(
         if dpd_A:  # Repalce DPD with original LJ for final relaxation
             sim.active_forces.remove(dpd)
             sim.active_forces.append(lj)
-        for param in bond.params:
-            bond.params[param]["k"] /= bond_k_scale
-        if angle_k_scale != 0:
-            for param in angle.params:
-                angle.params[param]["k"] /= angle_k_scale
-        else:
+        if bond_k_scale != 1.0:
+            for param in bond.params:
+                bond.params[param]["k"] /= bond_k_scale
+        if angle_k_scale != 0:  # Angle force already added, rescale
+            if angle_k_scale != 1.0:
+                for param in angle.params:
+                    angle.params[param]["k"] /= angle_k_scale
+        else:  # Don't rescale, just add the original angle force
             sim.active_forces.append(angle)
         sim._update_integrator_forces()
         sim.run(n_relax_steps)
-
+    # Update particle positions, save latest state point snapshot
     sim.update_positions()
     sim._update_snapshot()
 
@@ -287,6 +369,20 @@ def hoomd_fire(
     run_on_gpu : bool, default True
         If true, attempts to run HOOMD-Blue on a GPU.
         If a GPU device isn't found, then it will run on the CPU
+
+    Notes
+    -----
+    Running on GPU:
+        The hoomd-based methods in ``mbuild.simulation``
+        are able to utilize and run on GPUs to perform energy minimization for larger systems if needed.
+        Performance improvements of using GPU over CPU may not be significant until systems reach a
+        size of ~1,000 particles.
+
+    Running multiple simulations:
+        The information needed to run the HOOMD simulation is saved after the first simulation.
+        Therefore, calling hoomd-based simulation methods multiple times (e.g, in a for loop or while loop)
+        does not require re-running performing atom-typing, applying the forcefield, or running hoomd
+        format writers again.
     """
     compound._kick()
     sim = HoomdSimulation(
@@ -302,13 +398,15 @@ def hoomd_fire(
     angle = sim.get_force(hoomd.md.angle.Harmonic)
     lj = sim.get_force(hoomd.md.pair.LJ)
     # Scale bond K and angle K
-    for param in bond.params:
-        bond.params[param]["k"] *= bond_k_scale
+    if bond_k_scale != 1.0:
+        for param in bond.params:
+            bond.params[param]["k"] *= bond_k_scale
     sim.active_forces.append(bond)
     # If angle_k_scale is zero, skip and don't append angle force
     if angle_k_scale != 0:
-        for param in angle.params:
-            angle.params[param]["k"] *= angle_k_scale
+        if angle_k_scale != 1.0:
+            for param in angle.params:
+                angle.params[param]["k"] *= angle_k_scale
         sim.active_forces.append(angle)
     if dpd_A:
         dpd = sim.get_dpd_from_lj(A=dpd_A)
@@ -340,16 +438,18 @@ def hoomd_fire(
         if dpd_A:  # Replace DPD pair force with original LJ
             sim.active_forces.remove(dpd)
             sim.active_forces.append(lj)
-        for param in bond.params:
-            bond.params[param]["k"] /= bond_k_scale
-        if angle_k_scale != 0:
-            for param in angle.params:
-                angle.params[param]["k"] /= angle_k_scale
-        else:  # Include angles in final relaxation step
+        if bond_k_scale != 1.0:
+            for param in bond.params:
+                bond.params[param]["k"] /= bond_k_scale
+        if angle_k_scale != 0:  # Angle force already included, rescale.
+            if angle_k_scale != 1.0:
+                for param in angle.params:
+                    angle.params[param]["k"] /= angle_k_scale
+        else:  # Don't recale, just add angles for final relaxation step
             sim.active_forces.append(angle)
         sim._update_integrator_forces()
         sim.run(n_relax_steps)
-    # Update particle positions
+    # Update particle positions, save latest state point snapshot
     sim._update_snapshot()
     sim.update_positions()
 
