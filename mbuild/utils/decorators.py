@@ -1,7 +1,9 @@
 """Some helpful decorators."""
 
+import logging
 from functools import wraps
-from warnings import warn
+
+logger = logging.getLogger(__name__)
 
 
 def make_callable(decorator):  # pragma: no cover
@@ -27,7 +29,7 @@ def deprecated(warning_string=""):  # pragma: no cover
     def old_function(fcn):
         def wrapper(*args, **kwargs):
             printed_message = f"{fcn.__name__} is deprecated. {warning_string}"
-            warn(printed_message, DeprecationWarning)
+            logger.warning(printed_message)
             return fcn(*args, **kwargs)
 
         return wrapper
@@ -95,9 +97,8 @@ def deprecated_property(
 
             def show_warning_msg(self):
                 if self.warning_msg is not None:
-                    warn(
-                        f"Property {fcn.__name__} is deprecated. {self.warning_msg}",
-                        DeprecationWarning,
+                    logger.warning(
+                        f"Property {fcn.__name__} is deprecated. {self.warning_msg}"
                     )
                     if not self.always_show:
                         self.warning_msg = None
@@ -113,7 +114,7 @@ def breaking_change(warning_string=""):
 
     def old_function(fcn):
         def wrapper(*args, **kwargs):
-            warn(f"{fcn.__name__} has breaking change. {warning_string}", Warning)
+            logger.warning(f"{fcn.__name__} has breaking change. {warning_string}")
             fcn(*args, **kwargs)
 
         return wrapper
@@ -127,9 +128,8 @@ def experimental_feature(warning_string=""):  # pragma no cover
     def experimental_function(fcn):
         @wraps(fcn)
         def wrapper(*args, **kwargs):
-            warn(
-                f"{fcn.__name__} is an experimental feature and is not subject to follow standard deprecation cycles. Use at your own risk! {warning_string}",
-                Warning,
+            logger.warning(
+                f"{fcn.__name__} is an experimental feature and is not subject to follow standard deprecation cycles. Use at your own risk! {warning_string}"
             )
             fcn(*args, **kwargs)
 

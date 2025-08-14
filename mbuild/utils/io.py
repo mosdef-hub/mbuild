@@ -22,12 +22,14 @@ following license.
 
 import importlib
 import inspect
+import logging
 import os
 import sys
 import textwrap
-import warnings
 from importlib.resources import files
 from unittest import SkipTest
+
+logger = logging.getLogger(__name__)
 
 
 class DelayImportError(ImportError, SkipTest):
@@ -184,7 +186,7 @@ def import_(module):
                 "openbabel 2.0 detected and will be dropped in a future "
                 "release. Consider upgrading to 3.x."
             )
-            warnings.warn(msg, DeprecationWarning)
+            logger.info(msg, DeprecationWarning)
             return pybel
         except ModuleNotFoundError:
             pass
@@ -199,7 +201,7 @@ def import_(module):
                 "openbabel 2.0 detected and will be dropped in a future "
                 "release. Consider upgrading to 3.x."
             )
-            warnings.warn(msg, DeprecationWarning)
+            logger.info(msg, DeprecationWarning)
             return openbabel
         except ModuleNotFoundError:
             pass

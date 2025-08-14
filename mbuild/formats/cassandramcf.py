@@ -5,13 +5,14 @@ https://cassandra-mc.readthedocs.io/en/latest/guides/input_files.html#molecular-
 
 from __future__ import division
 
-import warnings
+import logging
 from math import sqrt
 
 import networkx as nx
 import parmed as pmd
 
 __all__ = ["write_mcf"]
+logger = logging.getLogger(__name__)
 
 
 def write_mcf(structure, filename, angle_style, dihedral_style, lj14=None, coul14=None):
@@ -102,7 +103,7 @@ def write_mcf(structure, filename, angle_style, dihedral_style, lj14=None, coul1
         else:
             coul14 = 0.0
             if len(structure.dihedrals) > 0 or len(structure.rb_torsions) > 0:
-                warnings.warn(
+                logger.info(
                     "Unable to infer coulombic 1-4 scaling factor. Setting to "
                     "{:.1f}".format(coul14)
                 )
@@ -118,7 +119,7 @@ def write_mcf(structure, filename, angle_style, dihedral_style, lj14=None, coul1
                 ]
                 if all([c_eps == 0 for c_eps in combined_eps_list]):
                     lj14 = 0.0
-                    warnings.warn(
+                    logger.info(
                         "Unable to infer LJ 1-4 scaling factor. Setting to "
                         "{:.1f}".format(lj14)
                     )
@@ -130,7 +131,7 @@ def write_mcf(structure, filename, angle_style, dihedral_style, lj14=None, coul1
                             break
             else:
                 lj14 = 0.0
-                warnings.warn(
+                logger.info(
                     "Unable to infer LJ 1-4 scaling factor. Setting to {:.1f}".format(
                         lj14
                     )
@@ -138,7 +139,7 @@ def write_mcf(structure, filename, angle_style, dihedral_style, lj14=None, coul1
         else:
             lj14 = 0.0
             if len(structure.dihedrals) > 0 or len(structure.rb_torsions) > 0:
-                warnings.warn(
+                logger.info(
                     "Unable to infer LJ 1-4 scaling factor. Setting to {:.1f}".format(
                         lj14
                     )
@@ -197,7 +198,7 @@ def _id_rings_fragments(structure):
     )
 
     if len(structure.bonds) == 0:
-        warnings.warn("No bonds found. Cassandra will interpet this as a rigid species")
+        logger.info("No bonds found. Cassandra will interpet this as a rigid species")
         in_ring = [False] * len(structure.atoms)
         frag_list = []
         frag_conn = []
@@ -272,7 +273,7 @@ def _id_rings_fragments(structure):
             if len(shared_atoms) == 2:
                 frag_conn.append([i, j])
             elif len(shared_atoms) > 2:
-                warnings.warn(
+                logger.warning(
                     "Fragments share more than two atoms... something may be "
                     "going awry unless there are fused rings in your system. "
                     "See below for details."
@@ -313,14 +314,14 @@ def _write_atom_information(mcf_file, structure, in_ring, IG_CONSTANT_KCAL):
     n_unique_elements = len(set(elements))
     for element in elements:
         if len(element) > max_element_length:
-            warnings.warn(
+            logger.info(
                 "Element name {} will be shortened to {} characters. Please "
                 "confirm your final MCF.".format(element, max_element_length)
             )
 
     elements = [element[:max_element_length] for element in elements]
     if len(set(elements)) < n_unique_elements:
-        warnings.warn(
+        logger.info(
             "The number of unique elements has been reduced due to shortening "
             "the element name to {} characters.".format(max_element_length)
         )
@@ -328,7 +329,7 @@ def _write_atom_information(mcf_file, structure, in_ring, IG_CONSTANT_KCAL):
     n_unique_types = len(set(types))
     for itype in types:
         if len(itype) > max_atomtype_length:
-            warnings.warn(
+            logger.info(
                 "Type name {} will be shortened to {} characters as {}. Please "
                 "confirm your final MCF.".format(
                     itype, max_atomtype_length, itype[-max_atomtype_length:]
@@ -336,7 +337,7 @@ def _write_atom_information(mcf_file, structure, in_ring, IG_CONSTANT_KCAL):
             )
         types = [itype[-max_atomtype_length:] for itype in types]
     if len(set(types)) < n_unique_types:
-        warnings.warn(
+        logger.info(
             "The number of unique atomtypes has been reduced due to shortening "
             "the atomtype name to {} characters.".format(max_atomtype_length)
         )
@@ -518,9 +519,7 @@ def _write_dihedral_information(mcf_file, structure, dihedral_style, KCAL_TO_KJ)
             ]
 
         elif dihedral_style.casefold() == "none":
-            warnings.warn(
-                "Dihedral style 'none' selected. Ignoring dihedral parameters"
-            )
+            logger.info("Dihedral style 'none' selected. Ignoring dihedral parameters")
             dihedral_style = dihedral_style.lower()
             if structure.dihedrals:
                 dihedrals = structure.dihedrals
@@ -623,7 +622,7 @@ def _write_fragment_information(mcf_file, structure, frag_list, frag_conn):
             mcf_file.write("1\n")
             mcf_file.write("1 2 1 2\n")
         else:
-            warnings.warn("More than two atoms present but no fragments identified.")
+            logger.info("More than two atoms present but no fragments identified.")
             mcf_file.write("0\n")
     else:
         mcf_file.write("{:d}\n".format(len(frag_list)))

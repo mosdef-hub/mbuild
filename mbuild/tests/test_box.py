@@ -1,3 +1,5 @@
+import logging
+
 import numpy as np
 import pytest
 
@@ -41,9 +43,10 @@ class TestBox(BaseTest):
             ],
         ],
     )
-    def test_left_handed_matrix(self, lh_matrix):
-        with pytest.warns(UserWarning, match=r"provided for a left\-handed basis"):
+    def test_left_handed_matrix(self, lh_matrix, caplog):
+        with caplog.at_level(logging.WARNING, logger="mbuild"):
             mb.Box.from_vectors(vectors=lh_matrix)
+        assert "provided for a left-handed basis" in caplog.text
 
     @pytest.mark.parametrize(
         "vecs",

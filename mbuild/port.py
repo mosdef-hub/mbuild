@@ -1,13 +1,15 @@
 """Ports used to facilitate bond formation."""
 
 import itertools
-from warnings import warn
+import logging
 
 import numpy as np
 
 from mbuild import clone
 from mbuild.compound import Compound, Particle
 from mbuild.coordinate_transform import angle, unit_vector
+
+logger = logging.getLogger(__name__)
 
 
 class Port(Compound):
@@ -93,7 +95,7 @@ class Port(Compound):
             shifted from the origin.
         """
         if self.used:
-            warn(
+            logger.warning(
                 "This port is already being used and changing its separation "
                 "will have no effect on the distance between particles."
             )
@@ -112,7 +114,7 @@ class Port(Compound):
             Vector along which to orient the port
         """
         if self.used:
-            warn(
+            logger.warning(
                 "This port is already being used and changing its orientation "
                 "will have no effect on the direction between particles."
             )
@@ -147,7 +149,7 @@ class Port(Compound):
         if self.anchor:
             return np.linalg.norm(self.center - self.anchor.pos)
         else:
-            warn(
+            logger.warning(
                 "This port is not anchored to another particle. Returning a "
                 "separation of None"
             )
