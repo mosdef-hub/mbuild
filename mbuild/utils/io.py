@@ -88,6 +88,9 @@ openbabel can be installed with conda using:
 
 # conda install -c conda-forge openbabel
 
+NOTE: openbabel is only available for python<3.13.
+If you need it in your environment, make sure your python is 3.10, 3.11 or 3.12.
+
 or from source following instructions at:
 
 # http://openbabel.org/docs/current/UseTheLibrary/PythonInstall.html

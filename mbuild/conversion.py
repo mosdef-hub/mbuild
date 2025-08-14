@@ -835,6 +835,7 @@ def from_rdkit(rdkit_mol, compound=None, coords_only=False, smiles_seed=0):
             "to the RDKit error messages for possible fixes. You can also "
             "install openbabel and use the backend='pybel' instead"
         )
+    # AllChem.EmbedMolecule(mymol, useExpTorsionAnglePrefs=True, useBasicKnowledge=True)
     AllChem.UFFOptimizeMolecule(mymol)
     single_mol = mymol.GetConformer(0)
     # convert from Angstroms to nanometers
@@ -1706,7 +1707,7 @@ def to_pybel(
     return pybelmol
 
 
-def to_rdkit(compound):
+def to_rdkit(compound, embed=False):
     """Create an RDKit RWMol from an mBuild Compound.
 
     Parameters
@@ -1761,6 +1762,11 @@ def to_rdkit(compound):
         temp_mol.AddBond(*bond_indices)
         rdkit_bond = temp_mol.GetBondBetweenAtoms(*bond_indices)
         rdkit_bond.SetBondType(bond_order_dict[bond[2]["bond_order"]])
+
+    if embed:
+        Chem.SanitizeMol(temp_mol)
+        temp_mol = Chem.AddHs(temp_mol)
+        Chem.AllChem.EmbedMolecule(temp_mol)
 
     return temp_mol
 
