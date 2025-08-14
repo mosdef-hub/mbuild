@@ -580,7 +580,21 @@ class Cyclic(Path):
 
 
 class Knot(Path):
-    """Generate a knot path."""
+    """Generate a knot path.
+
+    Parameters
+    ----------
+    spacing : float (nm)
+        The spacing between sites along the path.
+    N : int
+        The number of total sites in the path.
+    m : int in [3, 4, 5]
+        The number of crossings in the knot.
+        3 gives the trefoil knot, 4 gives the figure 8 knot and 5 gives the cinquefoil knot.
+        Only values of 3, 4 and 5 are currently supported.
+    bond_graph : networkx.graph
+        Sets the bond graph between sites.
+    """
 
     def __init__(self, spacing, N, m, bond_graph=None):
         self.spacing = spacing
@@ -592,16 +606,20 @@ class Knot(Path):
         # Prevents spacing between sites changing with curvature
         t_dense = np.linspace(0, 2 * np.pi, 5000)
         # Base (unscaled) curve
-        if self.m == 3:  # Trefoil knot (3_1)
+        if self.m == 3:  # Trefoil knot  https://en.wikipedia.org/wiki/Trefoil_knot
             R, r = 1.0, 0.3
             x = (R + r * np.cos(3 * t_dense)) * np.cos(2 * t_dense)
             y = (R + r * np.cos(3 * t_dense)) * np.sin(2 * t_dense)
             z = r * np.sin(3 * t_dense)
-        elif self.m == 4:  # Figure-eight knot (4_1)
+        elif (
+            self.m == 4
+        ):  # Figure-eight https://en.wikipedia.org/wiki/Figure-eight_knot_(mathematics)
             x = (2 + np.cos(2 * t_dense)) * np.cos(3 * t_dense)
             y = (2 + np.cos(2 * t_dense)) * np.sin(3 * t_dense)
             z = np.sin(4 * t_dense)
-        elif self.m == 5:  # Cinquefoil knot (5_1), a (5,2) torus knot
+        elif (
+            self.m == 5
+        ):  # Cinquefoil knot https://en.wikipedia.org/wiki/Cinquefoil_knot
             R, r = 1.0, 0.3
             x = (R + r * np.cos(5 * t_dense)) * np.cos(2 * t_dense)
             y = (R + r * np.cos(5 * t_dense)) * np.sin(2 * t_dense)
