@@ -31,8 +31,8 @@ class TestPolymer(BaseTest):
         ester_2 = mb.clone(ester)
         c6 = Polymer(monomers=[ch2], end_groups=[ester, ester_2])
         c6.build(n=6)
+        assert c6.children[0].name == "Ester"
         assert c6.children[-1].name == "Ester"
-        assert c6.children[-2].name == "Ester"
 
     def test_errors(self, ch2, ester):
         with pytest.raises(ValueError):  # Not enough end groups

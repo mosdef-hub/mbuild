@@ -252,10 +252,11 @@ class Compound(object):
         """
         if child not in self.children:
             raise ValueError(f"{child} is not a child in this compound's hiearchy.")
-        matches = np.any(
-            np.all(self.xyz[:, np.newaxis, :] == child.xyz, axis=2), axis=1
+        parent_hashes = np.array([p.__hash__() for p in self.particles()])
+        child_hashes = np.array([p.__hash__() for p in child.particles()])
+        matching_indices = list(
+            int(np.where(parent_hashes == i)[0][0]) for i in child_hashes
         )
-        matching_indices = np.where(matches)[0]
         return matching_indices
 
     def set_bond_graph(self, new_graph):

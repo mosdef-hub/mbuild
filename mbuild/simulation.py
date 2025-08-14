@@ -20,6 +20,30 @@ class HoomdSimulation(hoomd.simulation.Simulation):
     """A custom class to help in creating internal hoomd-based simulation methods.
 
     See ``hoomd_cap_displacement`` and ``hoomd_fire``.
+
+    Parameters
+    ----------
+    compound : mb.Compound
+        The compound to use in the simulation
+    forcefield : foyer.forcefield.Forcefield or gmso.core.Forcefield
+        The forcefield to apply to the system
+    r_cut : float (nm)
+        The cutoff distance (nm) used in the non-bonded pair neighborlist.
+        Use smaller values for unstable starting conditions and faster performance.
+    fixed_compounds : list of mb.Compound, default None
+        If given, these compounds will be removed from the integration updates and
+        held "frozen" during the hoomd simulation.
+        They are still able to interact with other particles in the simulation.
+        If desired, pass in a subset of children from `compound.children`.
+    integrate_compounds : list of mb.Compound, default None
+        If given, then only these compounds will be updated during integration
+        and all other compunds in `compound` are removed from the integration group.
+    run_on_gpu : bool, default False
+        When `True` the HOOMD simulation uses the hoomd.device.GPU() device.
+        This requires that you have a GPU compatible HOOMD install and
+        a compatible GPU device.
+    seed : int, default 42
+        The seed passed to HOOMD
     """
 
     def __init__(
@@ -29,6 +53,8 @@ class HoomdSimulation(hoomd.simulation.Simulation):
         r_cut,
         run_on_gpu,
         seed,
+        automatic_box=False,
+        box_buffer=1.5,
         integrate_compounds=None,
         fixed_compounds=None,
         gsd_file_name=None,
@@ -50,6 +76,10 @@ class HoomdSimulation(hoomd.simulation.Simulation):
         self.r_cut = r_cut
         self.integrate_compounds = integrate_compounds
         self.fixed_compounds = fixed_compounds
+        self.automatic_box = automatic_box
+        self.box_buffer = box_buffer
+        # TODO
+        # self.set_box
         # Check if a hoomd sim method has been used on this compound already
         if compound._hoomd_data:
             last_snapshot, last_forces, last_forcefield = compound._get_sim_data()
@@ -229,7 +259,7 @@ def hoomd_cap_displacement(
     dpd_A : float, default None
         If set to a value, then the initial simulation replaces the LJ 12-6 pair potential
         with the softer hoomd.md.pair.DPDConservative pair force from HOOMD.
-        This is used for `n_steps` and replace with the original LJ for potential which is
+        This is used for `n_steps` and replaced with the original LJ for potential which is
         used for n_relax_steps. This can be useful for highly unstable starting configutations.
         Note that the cutoff for the DPD force is set to the sigma value for each atom type
         and force cosntant (A) is set to dpd_A for all atom types.
@@ -245,7 +275,7 @@ def hoomd_cap_displacement(
         during the run of `n_relax_steps`
     n_relax_steps: int, optional
         The number of steps to run after running for `n_steps` with the modified
-        forcefield. This is designed to be used when utilize the parameters
+        forcefield. This is designed to be used when utilizing the parameters
         `dpd_A`, `bond_k_scale`, and `angle_k_scale`.
     run_on_gpu : bool, default False
         When `True` the HOOMD simulation uses the hoomd.device.GPU() device.

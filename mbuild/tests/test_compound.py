@@ -90,6 +90,20 @@ class TestCompound(BaseTest):
 
         assert mol_in.n_particles == 9
 
+    def test_get_child_indices(self):
+        methane = mb.load("C", smiles=True)
+        methane2 = mb.clone(methane)
+        ethane = mb.load("CC", smiles=True)
+        comp = Compound(subcompounds=[methane, ethane, methane2])
+        assert comp.get_child_indices(child=methane) == [0, 1, 2, 3, 4]
+        assert comp.get_child_indices(child=ethane) == [5, 6, 7, 8, 9, 10, 11, 12]
+        assert comp.get_child_indices(child=methane2) == [13, 14, 15, 16, 17]
+        assert methane.get_child_indices(child=methane.children[0]) == [0]
+        assert ethane.get_child_indices(child=ethane.children[0]) == [0]
+
+        with pytest.raises(ValueError):
+            ethane.get_child_indices(child=methane.children[0])
+
     def test_load_xyz(self):
         myethane = mb.load(get_fn("ethane.xyz"))
         assert myethane.n_particles == 8
@@ -2317,9 +2331,10 @@ class TestCompound(BaseTest):
         # This fails prior to applying PR # 892
         ff.apply(ethane)
 
-    def test_ordered_bonds(self):
-        ethane = mb.load("CC", smiles=True)
-        ethane2 = mb.load("CC", smiles=True)
+    def test_ordered_bonds(self, ethane):
+        ethane2 = mb.clone(ethane)
+        # ethane = mb.load("CC", smiles=True)
+        # ethane2 = mb.load("CC", smiles=True)
         for bond2, bond in zip(ethane2.bonds(), ethane.bonds()):
             assert bond2[0].name == bond[0].name
             assert all(bond2[0].pos == bond[0].pos)

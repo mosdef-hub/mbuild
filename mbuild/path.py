@@ -46,6 +46,12 @@ class Path:
         self.coordinates = new_array
         self.N += N
 
+    def get_coordinates(self):
+        if isinstance(self.coordinates, list):
+            return np.array(self.coordinates)
+        else:
+            return self.coordinates
+
     @abstractmethod
     def generate(self):
         """Abstract class for running a Path generation algorithm.
@@ -189,7 +195,7 @@ class HardSphereRandomWalk(Path):
         if start_from_path:
             coordinates = np.concatenate(
                 (
-                    start_from_path.coordinates.astype(np.float32),
+                    start_from_path.get_coordinates().astype(np.float32),
                     np.zeros((N, 3), dtype=np.float32),
                 ),
                 axis=0,
@@ -203,11 +209,11 @@ class HardSphereRandomWalk(Path):
         # Need this for error message about reaching max tries
         self._init_count = self.count
         # Select methods to use for random walk
+        # Hard-coded for, possible to make other RW methods and pass them in
         self.next_coordinate = _random_coordinate_numba
         self.check_path = _check_path_numba
         # Create RNG state.
         self.rng = np.random.default_rng(seed)
-
         super(HardSphereRandomWalk, self).__init__(
             coordinates=coordinates, N=None, bond_graph=bond_graph
         )
@@ -265,6 +271,8 @@ class HardSphereRandomWalk(Path):
 
         # Initial conditions set (points 1 and 2), now start RW with min/max angles
         while self.count < self.N - 1:
+            # Choosing angles and vectors is the only random part
+            # Get a batch of these once, pass them into numba functions
             batch_angles, batch_vectors = self._generate_random_trials()
             new_xyzs = self.next_coordinate(
                 pos1=self.coordinates[self.count],
@@ -281,11 +289,14 @@ class HardSphereRandomWalk(Path):
                 new_xyzs = new_xyzs[is_inside_mask]
             for xyz in new_xyzs:
                 if self.include_compound:
+                    # Include compound particle coordinates in check for overlaps
                     existing_points = np.concatenate(
                         (self.coordinates[: self.count + 1], self.include_compound.xyz)
                     )
                 else:
                     existing_points = self.coordinates[: self.count + 1]
+                # Now check for overlaps for each trial point
+                # Stop after the first success
                 if self.check_path(
                     existing_points=existing_points,
                     new_point=xyz,
@@ -301,7 +312,7 @@ class HardSphereRandomWalk(Path):
                 raise RuntimeError(
                     "The maximum number attempts allowed have passed, and only ",
                     f"{self.count - self._init_count} sucsessful attempts were completed.",
-                    "Try changing the parameters and running again.",
+                    "Try changing the parameters or seed and running again.",
                 )
 
     def _generate_random_trials(self):
@@ -341,15 +352,19 @@ class HardSphereRandomWalk(Path):
 
         # Starting from another path, run Monte Carlo
         # Accepted next move is first point of this random walk
-        elif self.start_from_path and self.start_from_path_index:
+        elif self.start_from_path and self.start_from_path_index is not None:
+            if self.start_from_path_index == 0:
+                pos2_coord = 1
+            else:
+                pos2_coord = self.start_from_path_index - 1
             started_next_path = False
             while not started_next_path:
                 batch_angles, batch_vectors = self._generate_random_trials()
                 new_xyzs = self.next_coordinate(
-                    pos1=self.start_from_path.coordinates[self.start_from_path_index],
-                    pos2=self.start_from_path.coordinates[
-                        self.start_from_path_index - 1
+                    pos1=self.start_from_path.get_coordinates()[
+                        self.start_from_path_index
                     ],
+                    pos2=self.start_from_path.get_coordinates()[pos2_coord],
                     bond_length=self.bond_length,
                     thetas=batch_angles,
                     r_vectors=batch_vectors,
@@ -383,7 +398,7 @@ class HardSphereRandomWalk(Path):
                     raise RuntimeError(
                         "The maximum number attempts allowed have passed, and only ",
                         f"{self.count - self._init_count} sucsessful attempts were completed.",
-                        "Try changing the parameters and running again.",
+                        "Try changing the parameters or seed and running again.",
                     )
 
 
@@ -426,7 +441,7 @@ class Lamellar(Path):
 
     def generate(self):
         layer_spacing = np.arange(0, self.layer_length, self.bond_length)
-        # Info needed for generating coords of the curves between layers
+        # Info needed for generating coords of the arc curves between layers
         r = self.layer_separation / 2
         arc_length = r * np.pi
         arc_num_points = math.floor(arc_length / self.bond_length)
@@ -456,7 +471,7 @@ class Lamellar(Path):
                 ]
             if i != self.num_layers - 1:
                 self.coordinates.extend(layer + arc)
-            else:
+            else:  # Last layer, don't include another arc set of coordinates
                 self.coordinates.extend(layer)
         if self.num_stacks > 1:
             first_stack_coordinates = np.copy(np.array(self.coordinates))
