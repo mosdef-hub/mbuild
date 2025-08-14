@@ -835,7 +835,7 @@ def from_rdkit(rdkit_mol, compound=None, coords_only=False, smiles_seed=0):
             "to the RDKit error messages for possible fixes. You can also "
             "install openbabel and use the backend='pybel' instead"
         )
-    AllChem.EmbedMolecule(mymol, useExpTorsionAnglePrefs=True, useBasicKnowledge=True)
+    # AllChem.EmbedMolecule(mymol, useExpTorsionAnglePrefs=True, useBasicKnowledge=True)
     AllChem.UFFOptimizeMolecule(mymol)
     single_mol = mymol.GetConformer(0)
     # convert from Angstroms to nanometers
