@@ -315,31 +315,30 @@ def _write_atom_information(mcf_file, structure, in_ring, IG_CONSTANT_KCAL):
     for element in elements:
         if len(element) > max_element_length:
             logger.info(
-                "Element name {} will be shortened to {} characters. Please "
-                "confirm your final MCF.".format(element, max_element_length)
+                f"Element name {element} will be shortened to {max_element_length} "
+                "characters. Please confirm your final MCF."
             )
 
     elements = [element[:max_element_length] for element in elements]
     if len(set(elements)) < n_unique_elements:
         logger.info(
             "The number of unique elements has been reduced due to shortening "
-            "the element name to {} characters.".format(max_element_length)
+            f"the element name to {max_element_length} characters."
         )
 
     n_unique_types = len(set(types))
     for itype in types:
         if len(itype) > max_atomtype_length:
             logger.info(
-                "Type name {} will be shortened to {} characters as {}. Please "
-                "confirm your final MCF.".format(
-                    itype, max_atomtype_length, itype[-max_atomtype_length:]
-                )
+                f"Type name {itype} will be shortened to {max_atomtype_length} "
+                f"characters as {itype[-max_atomtype_length:]}. Please "
+                "confirm your final MCF."
             )
         types = [itype[-max_atomtype_length:] for itype in types]
     if len(set(types)) < n_unique_types:
         logger.info(
             "The number of unique atomtypes has been reduced due to shortening "
-            "the atomtype name to {} characters.".format(max_atomtype_length)
+            f"the atomtype name to {max_atomtype_length} characters."
         )
 
     vdw_type = "LJ"

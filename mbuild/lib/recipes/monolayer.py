@@ -77,7 +77,7 @@ class Monolayer(mb.Compound):
                 # Create sub-pattern for this chain type
                 subpattern = deepcopy(pattern)
                 n_points = int(round(fraction * n_chains))
-                logger.info("\n Adding {} of chain {}".format(n_points, chain))
+                logger.info(f"\n Adding {n_points} of chain {chain}")
                 pick = np.random.choice(
                     subpattern.points.shape[0], n_points, replace=False
                 )
@@ -103,7 +103,7 @@ class Monolayer(mb.Compound):
             logger.info("\n No fractions provided. Assuming a single chain type.")
 
         # Attach final chain type. Remaining sites get a backfill.
-        logger.info("\n Adding {} of chain {}".format(len(pattern), chains[-1]))
+        logger.info(f"\n Adding {len(pattern)} of chain {chains[-1]}")
         attached_chains, backfills = pattern.apply_to_compound(
             guest=chains[-1], host=self["tiled_surface"], backfill=backfill, **kwargs
         )
