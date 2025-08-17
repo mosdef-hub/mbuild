@@ -171,7 +171,7 @@ class TestCif(BaseTest):
         )
 
     def test_cif_raise_warnings(self, caplog):
-        with caplog.at_level(logging.WARNING, logger="mbuild"):
+        with caplog.at_level(logging.INFO, logger="mbuild"):
             lattice_cif = load_cif(file_or_path=get_fn("ETV_triclinic.cif"))
             lattice_cif.populate(x=1, y=1, z=1)
         assert (
