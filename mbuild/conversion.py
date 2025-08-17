@@ -797,7 +797,7 @@ def from_pybel(
         )
         compound.box = box
     else:
-        if not ignore_box_warn.info:
+        if not ignore_box_warn:
             logger.info(f"No unitcell detected for pybel.Molecule {pybel_mol}")
     return compound
 
