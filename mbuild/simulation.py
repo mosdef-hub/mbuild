@@ -108,7 +108,7 @@ class HoomdSimulation(hoomd.simulation.Simulation):
         # Convret to GMSO, apply forcefield
         top = self.compound.to_gmso()
         top.identify_connections()
-        apply(top, forcefields=self.forcefield)
+        apply(top, forcefields=self.forcefield, ignore_params=["dihedral", "improper"])
         # Get hoomd snapshot and force objects
         forces, ref = gmso.external.to_hoomd_forcefield(top, r_cut=self.r_cut)
         snap, ref = gmso.external.to_gsd_snapshot(top)
