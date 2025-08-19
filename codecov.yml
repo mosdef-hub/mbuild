@@ -1,3 +1,4 @@
 ignore:
   - "mbuild/examples"
   - "mbuild/tests"
+  - "mbuild/__init__.py"
