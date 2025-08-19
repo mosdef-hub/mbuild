@@ -1,5 +1,6 @@
+import logging
+
 import numpy as np
-import pytest
 
 import mbuild as mb
 from mbuild.tests.base_test import BaseTest
@@ -50,32 +51,35 @@ class TestPattern(BaseTest):
         port.rotate(np.pi, [1, 0, 0])
         assert np.allclose([0, -1, 0], port.direction, atol=1e-15)
 
-    def test_port_separation(self, ethane):
+    def test_port_separation(self, ethane, caplog):
         port = mb.Port(anchor=ethane, separation=0.7)
         assert np.allclose(0.7, port.separation, atol=1e-15)
 
         port_no_anchor = mb.Port()
-        with pytest.warns(UserWarning):
+        with caplog.at_level(logging.WARNING, logger="mbuild"):
             separation = port_no_anchor.separation
+        assert "This port is not anchored to another particle." in caplog.text
         assert separation is None
 
-    def test_update_separation(self, ethane, hexane):
+    def test_update_separation(self, ethane, hexane, caplog):
         port = mb.Port(anchor=ethane, separation=0.7)
         port.update_separation(separation=0.9)
         assert np.allclose(0.9, port.separation, atol=1e-15)
 
         port_used = hexane.labels["propyl2"].labels["down"]
-        with pytest.warns(UserWarning):
+        with caplog.at_level(logging.WARNING, logger="mbuild"):
             port_used.update_separation(0.10)
+        assert " This port is already being used and changing" in caplog.text
 
-    def test_update_orientaiton(self, ch2, hexane):
+    def test_update_orientaiton(self, ch2, hexane, caplog):
         port = ch2["up"]
         port.update_orientation(orientation=(1, 0, 0))
         assert np.allclose([-1, 0, 0], port.direction, atol=1e-15)
 
         port_used = hexane.labels["propyl2"].labels["down"]
-        with pytest.warns(UserWarning):
+        with caplog.at_level(logging.WARNING, logger="mbuild"):
             port_used.update_orientation([0, 1, 0])
+        assert " This port is already being used and changing" in caplog.text
 
     def test_access_labels(self):
         port = mb.Port()
