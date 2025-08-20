@@ -95,5 +95,5 @@ def find_low_density_point(points, box_min, box_max, edge_buffer=0, n_candidates
         box_min + edge_buffer, box_max - edge_buffer, size=(n_candidates, dim)
     )
     dists, _ = tree.query(candidates, k=1)
-    idx = np.argmax(dists)
-    return candidates[idx]
+    sorted_order = np.argsort(dists)
+    return candidates[sorted_order]
