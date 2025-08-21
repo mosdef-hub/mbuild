@@ -193,7 +193,7 @@ class Polymer(Compound):
         """
         n = len(path.coordinates) - sum([1 for i in self.end_groups if i is not None])
         self.build(
-            n=n,
+            n=n // len(sequence),
             sequence=sequence,
             add_hydrogens=add_hydrogens,
             bond_head_tail=bond_head_tail,

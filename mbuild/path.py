@@ -8,6 +8,7 @@ import numpy as np
 from numba import njit
 from scipy.interpolate import interp1d
 
+import mbuild as mb
 from mbuild import Compound
 from mbuild.utils.geometry import bounding_box
 
@@ -102,6 +103,123 @@ class Path:
         pass
 
 
+class CompoundRandomWalk:
+    def __init__(
+        self,
+        compound,
+        N,
+        bond_length,
+        min_angle=np.pi / 2,
+        max_angle=np.pi,
+        volume_constraint=None,
+        start_from_path=None,
+        start_from_path_index=None,
+        initial_point=None,
+        include_compound=None,
+        max_attempts=1e5,
+        trial_batch_size=10,
+        tolerance=0.15,
+        seed=42,
+    ):
+        self.compound = compound
+        self.N = N
+        self.bond_length = bond_length
+        self.min_angle = min_angle
+        self.max_angle = max_angle
+        self.volume_constraint = volume_constraint
+        self.start_from_path = start_from_path
+        self.start_from_path_index = start_from_path_index
+        if initial_point is not None:
+            self.initial_point = np.asarray(initial_point)
+        else:
+            self.initial_point = None
+        self.include_compound = include_compound
+        self.max_attempts = max_attempts
+        self.trial_batch_size = trial_batch_size
+        self.tolerance = tolerance
+        self.rng = np.random.default_rng(seed)
+        # Store everything here
+        self.parent_compound = Compound()
+        self.count = 0
+        self.attempts = 0
+        self.next_step = _batch_rotate_molecule
+        self.check_path = _check_new_molecule
+        self.generate()
+
+    def generate(self):
+        last_compound = mb.clone(self.compound)
+        if self.initial_point is not None:
+            last_compound.translate(self.initial_point)
+        self.parent_compound.add(last_compound)
+        self.count += 1
+
+        while self.count < self.N:
+            this_compound = mb.clone(last_compound)
+            head_tail_vec = (
+                this_compound["head"].anchor.xyz[0]
+                - this_compound["tail"].anchor.xyz[0]
+            )
+            head_tail_norm = np.linalg.norm(head_tail_vec)
+            head_tail_unit = head_tail_vec / head_tail_norm
+            # TODO: Make sure bond length addition is handled correctly here
+            this_compound.translate(
+                by=head_tail_vec + head_tail_unit * self.bond_length
+            )
+            # Find current torsion axis and hinge point used in trial moves
+            torsion_axis = head_tail_vec / np.linalg.norm(head_tail_vec)
+            hinge_point = (
+                this_compound["head"].anchor.xyz[0]
+                + last_compound["tail"].anchor.xyz[0]
+            ) / 2
+            # Get trial move batch values
+            bend_axes, bend_thetas, torsion_phis = self._generate_random_trials()
+            candiate_compound_coords = self.next_step(
+                coords=this_compound.xyz,
+                hinge_point=hinge_point,
+                torsion_axis=torsion_axis,
+                bend_axes=bend_axes,
+                bend_thetas=bend_thetas,
+                torsion_phis=torsion_phis,
+            )
+            for coords in candiate_compound_coords:
+                if self.check_path(
+                    system_coords=self.parent_compound.xyz,
+                    new_coords=coords,
+                    distance_tolerance=self.tolerance,
+                ):
+                    this_compound.xyz = coords
+                    self.parent_compound.add(this_compound)
+                    self.parent_compound.add_bond(
+                        [last_compound["head"].anchor, this_compound["tail"].anchor]
+                    )
+                    last_compound = this_compound
+                    self.count += 1
+                    break
+            self.attempts += 1
+
+            if self.attempts == self.max_attempts and self.count < self.N:
+                raise RuntimeError(
+                    "The maximum number attempts allowed have passed, and only ",
+                    f"{self.count} sucsessful attempts were completed.",
+                    "Try changing the parameters or seed and running again.",
+                )
+
+    def _generate_random_trials(self):
+        """Generate a batch of random bend axes, bend angles, and torsion angles."""
+        # Get a batch of bend angles
+        thetas = self.rng.uniform(
+            self.min_angle, self.max_angle, size=self.trial_batch_size
+        ).astype(np.float32)
+        # Batch of torsion rotation angles
+        phis = self.rng.uniform(0.0, np.pi, size=self.trial_batch_size).astype(
+            np.float32
+        )
+        # Batch of random vectors used for bend axis
+        vectors = self.rng.normal(size=(self.trial_batch_size, 3)).astype(np.float32)
+        vectors /= np.linalg.norm(vectors, axis=1)[:, None]
+        return vectors, thetas, phis
+
+
 class HardSphereRandomWalk(Path):
     def __init__(
         self,
@@ -162,7 +280,7 @@ class HardSphereRandomWalk(Path):
         -----
         Each next-move can be attempted in batches, set by the ``trial_batch_size``
         parameter. The batch size moves do not count towards the maximum allowed
-        attemps. For example, 1 random walk with a trail batch size of 20 counts at
+        attempts. For example, 1 random walk with a trail batch size of 20 counts at
         only one attempted move. Larger values of ``trial_batch_size`` may help
         highly constrained walks finish, but may hurt performance.
 
@@ -190,6 +308,7 @@ class HardSphereRandomWalk(Path):
         self.attempts = 0
         self.start_from_path_index = start_from_path_index
         self.start_from_path = start_from_path
+        self._particle_pairs = {}
 
         # This random walk is including a previous path
         if start_from_path:
@@ -210,8 +329,8 @@ class HardSphereRandomWalk(Path):
         self._init_count = self.count
         # Select methods to use for random walk
         # Hard-coded for, possible to make other RW methods and pass them in
-        self.next_coordinate = _random_coordinate_numba
-        self.check_path = _check_path_numba
+        self.next_step = _random_coordinate
+        self.check_path = _check_path
         # Create RNG state.
         self.rng = np.random.default_rng(seed)
         super(HardSphereRandomWalk, self).__init__(
@@ -274,7 +393,7 @@ class HardSphereRandomWalk(Path):
             # Choosing angles and vectors is the only random part
             # Get a batch of these once, pass them into numba functions
             batch_angles, batch_vectors = self._generate_random_trials()
-            new_xyzs = self.next_coordinate(
+            new_xyzs = self.next_step(
                 pos1=self.coordinates[self.count],
                 pos2=self.coordinates[self.count - 1],
                 bond_length=self.bond_length,
@@ -360,7 +479,7 @@ class HardSphereRandomWalk(Path):
             started_next_path = False
             while not started_next_path:
                 batch_angles, batch_vectors = self._generate_random_trials()
-                new_xyzs = self.next_coordinate(
+                new_xyzs = self.next_step(
                     pos1=self.start_from_path.get_coordinates()[
                         self.start_from_path_index
                     ],
@@ -778,18 +897,9 @@ class ZigZag(Path):
                 self.coordinates[i] = (0, x2d, y2d)
 
 
-# Internal helper/utility methods below:
+# METHODS BELOW ARE USED BY HardSphereRandomWalk
 @njit(cache=True, fastmath=True)
-def norm(vec):
-    """Used by HardSphereRandomWalk."""
-    s = 0.0
-    for i in range(vec.shape[0]):
-        s += vec[i] * vec[i]
-    return np.sqrt(s)
-
-
-@njit(cache=True, fastmath=True)
-def _random_coordinate_numba(
+def _random_coordinate(
     pos1,
     pos2,
     bond_length,
@@ -797,7 +907,7 @@ def _random_coordinate_numba(
     r_vectors,
     batch_size,
 ):
-    """Default method for HardSphereRandomWalk."""
+    """Default next_step method for HardSphereRandomWalk."""
     v1 = pos2 - pos1
     v1_norm = v1 / norm(v1)
     dot_products = (r_vectors * v1_norm).sum(axis=1)
@@ -816,8 +926,8 @@ def _random_coordinate_numba(
 
 
 @njit(cache=True, fastmath=True)
-def _check_path_numba(existing_points, new_point, radius, tolerance):
-    """Default method for HardSphereRandomWalk."""
+def _check_path(existing_points, new_point, radius, tolerance):
+    """Default check path method for HardSphereRandomWalk."""
     min_sq_dist = (radius - tolerance) ** 2
     for i in range(existing_points.shape[0]):
         dist_sq = 0.0
@@ -827,3 +937,84 @@ def _check_path_numba(existing_points, new_point, radius, tolerance):
         if dist_sq < min_sq_dist:
             return False
     return True
+
+
+# METHODS BELOW ARE USED BY CompoundRandomWalk
+@njit(cache=True, fastmath=True)
+def _batch_rotate_molecule(
+    coords, hinge_point, torsion_axis, bend_axes, bend_thetas, torsion_phis
+):
+    """Default next_step method for CompoundRandomWalk.
+
+    Given a set of original molecular coordinates and a batch of bending axes, angles, and torsion angles
+    a batch of updated trial molecular coordinates is created.
+    """
+    N_atoms = coords.shape[0]
+    N_trials = bend_axes.shape[0]
+    rotated_batch = np.zeros((N_trials, N_atoms, 3), dtype=np.float32)
+    torsion_axis = torsion_axis / norm(torsion_axis)
+
+    for t in range(N_trials):
+        trial_coords = np.zeros((N_atoms, 3), dtype=np.float32)
+        for i in range(N_atoms):
+            trial_coords[i, :] = coords[i, :]
+        for i in range(N_atoms):
+            trial_coords[i, :] -= hinge_point
+        # Apply torsion rotation before any bending.
+        # Torsion done first as the torsion axis can change after bending.
+        phi = torsion_phis[t]
+        for i in range(N_atoms):
+            trial_coords[i, :] = rotate_vector(trial_coords[i, :], torsion_axis, phi)
+        # Apply bend rotation
+        bend_axis = bend_axes[t] / norm(bend_axes[t])
+        theta = bend_thetas[t]
+        for i in range(N_atoms):
+            trial_coords[i, :] = rotate_vector(trial_coords[i, :], bend_axis, theta)
+        # Reverse the original hinge point translation
+        for i in range(N_atoms):
+            trial_coords[i, :] += hinge_point
+        rotated_batch[t, :, :] = trial_coords
+    return rotated_batch
+
+
+@njit(cache=True, fastmath=True)
+def _check_new_molecule(system_coords, new_coords, distance_tolerance):
+    """Default check_path method for CompoundRandomWalk."""
+    tol2 = (
+        distance_tolerance * distance_tolerance
+    )  # compare squared distances for speed
+    for i in range(new_coords.shape[0]):
+        for j in range(system_coords.shape[0]):
+            dx = new_coords[i, 0] - system_coords[j, 0]
+            dy = new_coords[i, 1] - system_coords[j, 1]
+            dz = new_coords[i, 2] - system_coords[j, 2]
+            if dx * dx + dy * dy + dz * dz < tol2:
+                return False
+    return True
+
+
+# NUMBA HELPER/UTILITY METHODS:
+@njit(cache=True, fastmath=True)
+def norm(vec):
+    """Use in place of np.linalg.norm inside of numba functions."""
+    s = 0.0
+    for i in range(vec.shape[0]):
+        s += vec[i] * vec[i]
+    return np.sqrt(s)
+
+
+@njit(cache=True, fastmath=True)
+def rotate_vector(v, axis, theta):
+    """Rotate vector v around a normalized axis by angle theta using Rodrigues' formula."""
+    c = np.cos(theta)
+    s = np.sin(theta)
+    k = axis
+    k_dot_v = k[0] * v[0] + k[1] * v[1] + k[2] * v[2]
+    cross = np.zeros(3)
+    cross[0] = k[1] * v[2] - k[2] * v[1]
+    cross[1] = k[2] * v[0] - k[0] * v[2]
+    cross[2] = k[0] * v[1] - k[1] * v[0]
+    rotated = np.zeros(3)
+    for i in range(3):
+        rotated[i] = v[i] * c + cross[i] * s + k[i] * k_dot_v * (1 - c)
+    return rotated
