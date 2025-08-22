@@ -111,6 +111,8 @@ class CompoundRandomWalk:
         bond_length,
         min_angle=np.pi / 2,
         max_angle=np.pi,
+        min_torsion=0.0,
+        max_torsion=np.pi,
         volume_constraint=None,
         start_from_path=None,
         start_from_path_index=None,
@@ -126,6 +128,8 @@ class CompoundRandomWalk:
         self.bond_length = bond_length
         self.min_angle = min_angle
         self.max_angle = max_angle
+        self.min_torsion = min_torsion
+        self.max_torsion = max_torsion
         self.volume_constraint = volume_constraint
         self.start_from_path = start_from_path
         self.start_from_path_index = start_from_path_index
@@ -156,8 +160,7 @@ class CompoundRandomWalk:
         while self.count < self.N:
             this_compound = mb.clone(last_compound)
             head_tail_vec = (
-                this_compound["head"].anchor.xyz[0]
-                - this_compound["tail"].anchor.xyz[0]
+                this_compound[">"].anchor.xyz[0] - this_compound["<"].anchor.xyz[0]
             )
             head_tail_norm = np.linalg.norm(head_tail_vec)
             head_tail_unit = head_tail_vec / head_tail_norm
@@ -168,8 +171,7 @@ class CompoundRandomWalk:
             # Find current torsion axis and hinge point used in trial moves
             torsion_axis = head_tail_vec / np.linalg.norm(head_tail_vec)
             hinge_point = (
-                this_compound["head"].anchor.xyz[0]
-                + last_compound["tail"].anchor.xyz[0]
+                this_compound[">"].anchor.xyz[0] + last_compound["<"].anchor.xyz[0]
             ) / 2
             # Get trial move batch values
             bend_axes, bend_thetas, torsion_phis = self._generate_random_trials()
@@ -181,6 +183,12 @@ class CompoundRandomWalk:
                 bend_thetas=bend_thetas,
                 torsion_phis=torsion_phis,
             )
+            if self.volume_constraint:
+                is_inside_mask = self.volume_constraint.is_inside(
+                    points=candiate_compound_coords, buffer=0.10
+                )
+                self.is_inside_mask = is_inside_mask
+                candiate_compound_coords = candiate_compound_coords[is_inside_mask]
             for coords in candiate_compound_coords:
                 if self.check_path(
                     system_coords=self.parent_compound.xyz,
@@ -190,7 +198,7 @@ class CompoundRandomWalk:
                     this_compound.xyz = coords
                     self.parent_compound.add(this_compound)
                     self.parent_compound.add_bond(
-                        [last_compound["head"].anchor, this_compound["tail"].anchor]
+                        [last_compound[">"].anchor, this_compound["<"].anchor]
                     )
                     last_compound = this_compound
                     self.count += 1
@@ -211,9 +219,9 @@ class CompoundRandomWalk:
             self.min_angle, self.max_angle, size=self.trial_batch_size
         ).astype(np.float32)
         # Batch of torsion rotation angles
-        phis = self.rng.uniform(0.0, np.pi, size=self.trial_batch_size).astype(
-            np.float32
-        )
+        phis = self.rng.uniform(
+            self.min_torsion, self.max_torsion, size=self.trial_batch_size
+        ).astype(np.float32)
         # Batch of random vectors used for bend axis
         vectors = self.rng.normal(size=(self.trial_batch_size, 3)).astype(np.float32)
         vectors /= np.linalg.norm(vectors, axis=1)[:, None]
@@ -371,7 +379,7 @@ class HardSphereRandomWalk(Path):
                     ]
                 )
                 is_inside_mask = self.volume_constraint.is_inside(
-                    points=np.array([xyz]), particle_radius=self.radius
+                    points=np.array([xyz]), buffer=self.radius
                 )
                 if np.all(is_inside_mask):
                     self.coordinates[1] = self.coordinates[0] + xyz
@@ -403,7 +411,7 @@ class HardSphereRandomWalk(Path):
             )
             if self.volume_constraint:
                 is_inside_mask = self.volume_constraint.is_inside(
-                    points=new_xyzs, particle_radius=self.radius
+                    points=new_xyzs, buffer=self.radius
                 )
                 new_xyzs = new_xyzs[is_inside_mask]
             for xyz in new_xyzs:
@@ -491,7 +499,7 @@ class HardSphereRandomWalk(Path):
                 )
                 if self.volume_constraint:
                     is_inside_mask = self.volume_constraint.is_inside(
-                        points=new_xyzs, particle_radius=self.radius
+                        points=new_xyzs, buffer=self.radius
                     )
                     new_xyzs = new_xyzs[is_inside_mask]
                 for xyz in new_xyzs:

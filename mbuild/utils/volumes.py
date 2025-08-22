@@ -17,13 +17,10 @@ class CuboidConstraint(Constraint):
         self.mins = self.center - np.array([Lx / 2, Ly / 2, Lz / 2])
         self.maxs = self.center + np.array([Lx / 2, Ly / 2, Lz / 2])
 
-    def is_inside(self, points, particle_radius):
-        """Points and particle_radius are passed in from HardSphereRandomWalk"""
+    def is_inside(self, points, buffer):
+        """Points and buffer are passed in from HardSphereRandomWalk"""
         return is_inside_cuboid(
-            mins=self.mins,
-            maxs=self.maxs,
-            points=points,
-            particle_radius=particle_radius,
+            mins=self.mins, maxs=self.maxs, points=points, buffer=buffer
         )
 
 
@@ -34,11 +31,9 @@ class SphereConstraint(Constraint):
         self.mins = self.center - self.radius
         self.maxs = self.center + self.radius
 
-    def is_inside(self, points, particle_radius):
-        """Points and particle_radius are passed in from HardSphereRandomWalk"""
-        return is_inside_sphere(
-            points=points, sphere_radius=self.radius, particle_radius=particle_radius
-        )
+    def is_inside(self, points, buffer):
+        """Points and buffer are passed in from HardSphereRandomWalk"""
+        return is_inside_sphere(points=points, sphere_radius=self.radius, buffer=buffer)
 
 
 class CylinderConstraint(Constraint):
@@ -61,25 +56,25 @@ class CylinderConstraint(Constraint):
             ]
         )
 
-    def is_inside(self, points, particle_radius):
-        """Points and particle_radius are passed in from HardSphereRandomWalk"""
+    def is_inside(self, points, buffer):
+        """Points and buffer are passed in from HardSphereRandomWalk"""
         return is_inside_cylinder(
             points=points,
             center=self.center,
             cylinder_radius=self.radius,
             height=self.height,
-            particle_radius=particle_radius,
+            buffer=buffer,
         )
 
 
 @njit(cache=True, fastmath=True)
-def is_inside_cylinder(points, center, cylinder_radius, height, particle_radius):
+def is_inside_cylinder(points, center, cylinder_radius, height, buffer):
     n_points = points.shape[0]
     results = np.empty(n_points, dtype=np.bool_)
-    max_r = cylinder_radius - particle_radius
+    max_r = cylinder_radius - buffer
     max_r_sq = max_r * max_r  # Radial limit squared
     half_height = height / 2.0
-    max_z = half_height - particle_radius
+    max_z = half_height - buffer
     # Shift to center
     for i in range(n_points):
         dx = points[i, 0] - center[0]
@@ -93,10 +88,10 @@ def is_inside_cylinder(points, center, cylinder_radius, height, particle_radius)
 
 
 @njit(cache=True, fastmath=True)
-def is_inside_sphere(sphere_radius, points, particle_radius):
+def is_inside_sphere(sphere_radius, points, buffer):
     n_points = points.shape[0]
     results = np.empty(n_points, dtype=np.bool_)
-    max_distance = sphere_radius - particle_radius
+    max_distance = sphere_radius - buffer
     max_distance_sq = max_distance * max_distance
     for i in range(n_points):
         dist_from_center_sq = 0.0
@@ -107,16 +102,56 @@ def is_inside_sphere(sphere_radius, points, particle_radius):
 
 
 @njit(cache=True, fastmath=True)
-def is_inside_cuboid(mins, maxs, points, particle_radius):
+def is_inside_cuboid(mins, maxs, points, buffer):
+    """
+    Works with:
+      points.shape == (N, 3)    # N single-site particles
+      points.shape == (N, n, 3) # N molecules with n sites
+    Returns:
+      (N,) boolean mask: True if the particle/molecule is inside
+    """
+    if points.ndim == 2:  # (N, 3)
+        n_batches = points.shape[0]
+        results = np.empty(n_batches, dtype=np.bool_)
+        for b in range(n_batches):
+            inside = True
+            for j in range(3):
+                coord = points[b, j]
+                if coord - buffer < mins[j] or coord + buffer > maxs[j]:
+                    inside = False
+                    break
+            results[b] = inside
+        return results
+
+    elif points.ndim == 3:  # (N, n, 3)
+        n_batches = points.shape[0]
+        n_sites = points.shape[1]
+        results = np.empty(n_batches, dtype=np.bool_)
+        for b in range(n_batches):
+            inside = True
+            for i in range(n_sites):
+                for j in range(3):
+                    coord = points[b, i, j]
+                    if coord - buffer < mins[j] or coord + buffer > maxs[j]:
+                        inside = False
+                        break
+                if not inside:
+                    break
+            results[b] = inside
+        return results
+
+    else:
+        raise ValueError("points must have shape (N,3) or (N,n,3)")
+
+
+@njit(cache=True, fastmath=True)
+def _is_inside_cuboid(mins, maxs, points, buffer):
     n_points = points.shape[0]
     results = np.empty(n_points, dtype=np.bool_)
     for i in range(n_points):
         inside = True
         for j in range(3):
-            if (
-                points[i, j] - particle_radius < mins[j]
-                or points[i, j] + particle_radius > maxs[j]
-            ):
+            if points[i, j] - buffer < mins[j] or points[i, j] + buffer > maxs[j]:
                 inside = False
                 break
         results[i] = inside
