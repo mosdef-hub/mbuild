@@ -196,7 +196,7 @@ class Compound(object):
         else:
             self._charge = charge
             self._mass = mass
-
+        self._bond_tag = None
         self._hoomd_data = {}
 
     def particles(self, include_ports=False):
@@ -258,6 +258,14 @@ class Compound(object):
             int(np.where(parent_hashes == i)[0][0]) for i in child_hashes
         )
         return matching_indices
+
+    @property
+    def bond_tag(self):
+        return self._bond_tag
+
+    @bond_tag.setter
+    def bond_tag(self, tag):
+        self._bond_tag = tag
 
     def set_bond_graph(self, new_graph):
         """Manually set the compound's complete bond graph.
@@ -1723,6 +1731,7 @@ class Compound(object):
         backend="py3dmol",
         color_scheme={},
         bead_size=0.3,
+        show_bond_tags=False,
     ):  # pragma: no cover
         """Visualize the Compound using py3dmol (default) or nglview.
 
