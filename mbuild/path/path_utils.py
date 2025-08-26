@@ -46,62 +46,6 @@ def check_path(existing_points, new_point, radius, tolerance):
 
 
 @njit(cache=True, fastmath=True)
-def batch_rotate_molecule(
-    coords, hinge_point, torsion_axis, bend_axes, bend_thetas, torsion_phis
-):
-    """Default next_step method for CompoundRandomWalk.
-
-    Given a set of original molecular coordinates and a batch of bending axes, angles, and torsion angles
-    a batch of updated trial molecular coordinates is created.
-    """
-    coords = coords.astype(np.float32)
-    N_atoms = coords.shape[0]
-    N_trials = bend_axes.shape[0]
-    rotated_batch = np.zeros((N_trials, N_atoms, 3), dtype=np.float32)
-    torsion_axis = torsion_axis / norm(torsion_axis)
-
-    for t in range(N_trials):
-        trial_coords = np.zeros((N_atoms, 3), dtype=np.float32)
-        for i in range(N_atoms):
-            trial_coords[i, :] = coords[i, :]
-        for i in range(N_atoms):
-            trial_coords[i, :] -= hinge_point
-        # Apply torsion rotation before any bending.
-        # Torsion done first as the torsion axis can change after bending.
-        phi = torsion_phis[t]
-        for i in range(N_atoms):
-            trial_coords[i, :] = rotate_vector(trial_coords[i, :], torsion_axis, phi)
-        # Apply bend rotation, bend_axis already normalized
-        bend_axis = bend_axes[t] / norm(bend_axes[t])
-        theta = bend_thetas[t]
-        for i in range(N_atoms):
-            # TODO: Do normalization here instead of batch generation?
-            trial_coords[i, :] = rotate_vector(trial_coords[i, :], bend_axis, theta)
-        # Reverse the original hinge point translation
-        for i in range(N_atoms):
-            trial_coords[i, :] += hinge_point
-        rotated_batch[t, :, :] = trial_coords
-    return rotated_batch
-
-
-@njit(cache=True, fastmath=True)
-def check_new_molecule(system_coords, new_coords, distance_tolerance):
-    """Check if new molecule overlaps with system or with itself."""
-    tol2 = distance_tolerance * distance_tolerance
-    system_coords = system_coords.astype(np.float32)
-    new_coords = new_coords.astype(np.float32)
-    # Check for overlaps
-    for i in range(new_coords.shape[0]):
-        for j in range(system_coords.shape[0]):
-            dx = new_coords[i, 0] - system_coords[j, 0]
-            dy = new_coords[i, 1] - system_coords[j, 1]
-            dz = new_coords[i, 2] - system_coords[j, 2]
-            if dx * dx + dy * dy + dz * dz < tol2:
-                return False
-    return True
-
-
-@njit(cache=True, fastmath=True)
 def norm(vec):
     """Use in place of np.linalg.norm inside of numba functions."""
     s = 0.0
