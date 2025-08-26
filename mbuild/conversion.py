@@ -1,11 +1,11 @@
 """Module for handling conversions in mBuild."""
 
+import logging
 import os
 import sys
 from collections import defaultdict
 from copy import deepcopy
 from pathlib import Path
-from warnings import warn
 
 import gmso
 import numpy as np
@@ -22,6 +22,8 @@ from mbuild.box import Box
 from mbuild.exceptions import MBuildError
 from mbuild.formats.json_formats import compound_from_json, compound_to_json
 from mbuild.utils.io import has_mdtraj, has_openbabel, import_
+
+logger = logging.getLogger(__name__)
 
 
 def load(
@@ -180,10 +182,10 @@ def load_object(
     # TODO 1.0: What is the use case for this?
     if isinstance(obj, mb.Compound):
         if not compound:
-            warn("Given object is already an mb.Compound, doing nothing.")
+            logger.info("Given object is already an mb.Compound, doing nothing.")
             return obj
         else:
-            warn("Given object is an mb.Compound, adding to the host compound.")
+            logger.info("Given object is an mb.Compound, adding to the host compound.")
             compound.add(obj)
             return compound
 
@@ -443,7 +445,7 @@ def load_file(
 
         # text file detected, assume contain smiles string
         elif extension == ".txt":
-            warn(".txt file detected, loading as a SMILES string")
+            logger.info(".txt file detected, loading as a SMILES string")
             # Fail-safe measure
             compound = load_pybel_smiles(filename, compound)
 
@@ -461,7 +463,7 @@ def load_file(
 
     # Then parmed reader
     elif backend == "parmed":
-        warn(
+        logger.warning(
             "Using parmed reader. Bonds may be inferred from inter-particle "
             "distances and standard residue templates. Please check that the "
             "bonds in mb.Compound are accurate"
@@ -573,7 +575,7 @@ def from_parmed(
 
     # Convert box information
     if structure.box is not None:
-        warn("All angles are assumed to be 90 degrees")
+        logger.info("All angles are assumed to be 90 degrees")
         compound.box = Box(structure.box[0:3] / 10)
 
     return compound
@@ -730,7 +732,7 @@ def from_pybel(
     resindex_to_cmpd = {}
 
     if coords_only:
-        raise Warning(
+        logger.error(
             "coords_only=True is not yet implemented for conversion from pybel"
         )
 
@@ -747,7 +749,7 @@ def from_pybel(
             element = None
         if use_element:
             if element is None:
-                warn(
+                logger.info(
                     "No element detected for atom at index "
                     f"{atom.idx} with number {atom.atomicnum}, type {atom.type}"
                 )
@@ -796,7 +798,7 @@ def from_pybel(
         compound.box = box
     else:
         if not ignore_box_warn:
-            warn(f"No unitcell detected for pybel.Molecule {pybel_mol}")
+            logger.info(f"No unitcell detected for pybel.Molecule {pybel_mol}")
     return compound
 
 
@@ -998,7 +1000,9 @@ def save(
         raise IOError(f"{filename} exists; not overwriting")
     if compound.charge:
         if round(compound.charge, 4) != 0.0:
-            warn(f"System is not charge neutral. Total charge is {compound.charge}.")
+            logger.info(
+                f"System is not charge neutral. Total charge is {compound.charge}."
+            )
 
     extension = os.path.splitext(filename)[-1]
     # Keep json stuff with internal mbuild method
@@ -1788,7 +1792,9 @@ def to_smiles(compound, backend="pybel"):
     if backend == "pybel":
         mol = to_pybel(compound)
 
-        warn("The bond orders will be guessed using pybelOBMol.PerceviedBondOrders()")
+        logger.info(
+            "The bond orders will be guessed using pybelOBMol.PerceviedBondOrders()"
+        )
         mol.OBMol.PerceiveBondOrders()
         smiles_string = mol.write("smi").replace("\t", " ").split(" ")[0]
 
@@ -2017,7 +2023,7 @@ def _infer_element_from_compound(compound, guessed_elements):
     except ElementError:
         try:
             element = element_from_name(compound.name)
-            warn_msg = (
+            logger.warning_msg = (
                 f"No element attribute associated with '{compound}'; "
                 f"Guessing it is element '{element}'"
             )
@@ -2029,7 +2035,7 @@ def _infer_element_from_compound(compound, guessed_elements):
                 "compound name. Setting atomic number to zero."
             )
         if compound.name not in guessed_elements:
-            warn(warn_msg)
+            logger.warning(warn_msg)
             guessed_elements.add(compound.name)
 
     return element

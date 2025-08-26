@@ -1,15 +1,13 @@
 """Module for working with mBuild Compounds."""
 
-__all__ = ["clone", "Compound", "Particle"]
-
 import itertools
+import logging
 import os
 import tempfile
 from collections import OrderedDict
 from collections.abc import Iterable
 from copy import deepcopy
 from typing import Sequence
-from warnings import warn
 
 import ele
 import networkx as nx
@@ -27,6 +25,10 @@ from mbuild.periodic_kdtree import PeriodicKDTree
 from mbuild.utils.geometry import bounding_box
 from mbuild.utils.io import import_, run_from_ipython
 from mbuild.utils.jsutils import overwrite_nglview_default
+
+__all__ = ["clone", "Compound", "Particle"]
+
+logger = logging.getLogger(__name__)
 
 
 def clone(existing_compound, clone_of=None, root_container=None):
@@ -565,7 +567,7 @@ class Compound(object):
         else:
             particle_masses = [self._particle_mass(p) for p in self.particles()]
             if None in particle_masses:
-                warn(
+                logger.info(
                     f"Some particle of {self} does not have mass."
                     "They will not be accounted for during this calculation."
                 )
@@ -609,8 +611,8 @@ class Compound(object):
             return self._particle_charge(self)
         charges = [p._charge for p in self.particles()]
         if None in charges:
-            warn(
-                f"Some particle of {self} does not have a charge."
+            logger.info(
+                f"Some particle of {self} does not have a charge. "
                 "They will not be accounted for during this calculation."
             )
         filtered_charges = [charge for charge in charges if charge is not None]
@@ -736,7 +738,7 @@ class Compound(object):
                 f"to Compounds. You tried to add '{new_child}'."
             )
         if self._mass is not None and not isinstance(new_child, Port):
-            warn(
+            logger.info(
                 f"{self} has a pre-defined mass of {self._mass}, "
                 "which will be reset to zero now that it contains children "
                 "compounds."
@@ -803,7 +805,7 @@ class Compound(object):
         else:
             if inherit_box:
                 if new_child.box is None:
-                    warn(
+                    logger.info(
                         "The Compound you are adding has no box but "
                         "inherit_box=True. The box of the original "
                         "Compound will remain unchanged."
@@ -812,7 +814,7 @@ class Compound(object):
                     self.box = new_child.box
             else:
                 if new_child.box is not None:
-                    warn(
+                    logger.info(
                         "The Compound you are adding has a box. "
                         "The box of the parent compound will be used. Use "
                         "inherit_box = True if you wish to replace the parent "
@@ -824,7 +826,7 @@ class Compound(object):
             if (
                 np.array(self.box.lengths) < np.array(self.get_boundingbox().lengths)
             ).any():
-                warn(
+                logger.warning(
                     "After adding new Compound, Compound.box.lengths < "
                     "Compound.boundingbox.lengths. There may be particles "
                     "outside of the defined simulation box"
@@ -878,7 +880,7 @@ class Compound(object):
                     to_remove.append(child)
                     _check_if_empty(child.parent)
                 else:
-                    warn(f"This will remove all particles in {self}")
+                    logger.warning(f"This will remove all particles in {self}")
             return
 
         for particle in particles_to_remove:
@@ -1288,12 +1290,14 @@ class Compound(object):
         if self.root.bond_graph is None or not self.root.bond_graph.has_edge(
             *particle_pair
         ):
-            warn("Bond between {} and {} doesn't exist!".format(*particle_pair))
+            raise MBuildError(
+                "Bond between {} and {} doesn't exist!".format(*particle_pair)
+            )
             return
         self.root.bond_graph.remove_edge(*particle_pair)
         bond_vector = particle_pair[0].pos - particle_pair[1].pos
         if np.allclose(bond_vector, np.zeros(3)):
-            warn(
+            logger.warning(
                 "Particles {} and {} overlap! Ports will not be added.".format(
                     *particle_pair
                 )
@@ -1370,7 +1374,7 @@ class Compound(object):
         # Make sure the box is bigger than the bounding box
         if box is not None:
             if np.asarray((box.lengths < self.get_boundingbox().lengths)).any():
-                warn(
+                logger.warning(
                     "Compound.box.lengths < Compound.boundingbox.lengths. "
                     "There may be particles outside of the defined "
                     "simulation box."
@@ -1663,7 +1667,9 @@ class Compound(object):
             raise MBuildError(f'Cannot calculate minimum periodic distance. '
                               f'No Box set for {self}')
             """
-            warn(f"No Box object set for {self}, using rectangular bounding box")
+            logger.warning(
+                f"No Box object set for {self}, using rectangular bounding box"
+            )
             self.box = self.get_boundingbox()
             if np.allclose(self.box.angles, 90.0):
                 d = np.where(

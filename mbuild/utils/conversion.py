@@ -1,8 +1,10 @@
 """mBuild conversion utilities."""
 
-from warnings import warn
+import logging
 
 import numpy as np
+
+logger = logging.getLogger(__name__)
 
 
 def RB_to_OPLS(
@@ -92,7 +94,7 @@ def RB_to_OPLS(
         if error_if_outside_tolerance is True:
             raise ValueError(text_for_error_tolerance)
         elif error_if_outside_tolerance is False:
-            warn(text_for_error_tolerance)
+            logger.warning(text_for_error_tolerance)
 
     f1 = -2 * c1 - (3 * c3) / 2
     f2 = -c2 - c4
@@ -147,7 +149,7 @@ def OPLS_to_RB(f0, f1, f2, f3, f4, error_tolerance=1e-4):
     error_tolerance = abs(error_tolerance)
 
     if np.all(np.isclose(f0 / 2, 0, atol=error_tolerance, rtol=0)):
-        warn(
+        logger.warning(
             "The f0/2 term is the constant for the OPLS dihedral equation, "
             "which is added to a constant for the RB torsions equation via the c0 coefficient. "
             "The f0 term is zero in the OPLS dihedral form or is force set to zero in this equation, "

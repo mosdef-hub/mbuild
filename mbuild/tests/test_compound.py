@@ -1,3 +1,4 @@
+import logging
 import os
 import sys
 
@@ -666,21 +667,23 @@ class TestCompound(BaseTest):
         A.add(mb.Port())
         assert A.mass == 2.0
 
-    def test_none_mass(self):
+    def test_none_mass(self, caplog):
         A = mb.Compound()
         assert A.mass is None
 
         container = mb.Compound(subcompounds=[A])
-        with pytest.warns(UserWarning):
+        with caplog.at_level(logging.INFO, logger="mbuild"):
             container_mass = container.mass
             assert container_mass is None
+        assert "Some particle of <Compound 1 particles, 0 bonds" in caplog.text
 
         A.mass = 1
         B = mb.Compound()
         container.add(B)
-        with pytest.warns(UserWarning):
+        with caplog.at_level(logging.WARNING, logger="mbuild"):
             container_mass = container.mass
             assert container_mass == A.mass == 1
+        assert "Some particle of <Compound 1 particles, 0 bonds" in caplog.text
 
     def test_add_existing_parent(self, ethane, h2o):
         water_in_water = mb.clone(h2o)
@@ -963,12 +966,11 @@ class TestCompound(BaseTest):
         compound.remove(particle)
         assert particle not in compound.particles()
 
-    def test_remove_bond(self, ch3):
+    def test_remove_bond(self, ch3, caplog):
         ch_bond = list(ch3.bonds())[0]
         ch3.remove_bond(ch_bond)
         assert ch3.n_bonds == 2
-
-        with pytest.warns(UserWarning):
+        with pytest.raises(MBuildError):
             ch3.remove_bond(ch_bond)
 
     def test_port_does_not_exist(self, ethane):
@@ -1647,14 +1649,22 @@ class TestCompound(BaseTest):
             + 2 * len(hexane.children)
         )
 
-    def test_parmed_element_guess(self):
+    def test_parmed_element_guess(self, caplog):
         compound = Particle(name="foobar")
-        with pytest.warns(UserWarning):
+        with caplog.at_level(logging.WARNING, logger="mbuild"):
             _ = compound.to_parmed()
+        assert (
+            "No element attribute associated with '<foobar pos=([0. 0. 0.]), 0 bonds"
+            in caplog.text
+        )
 
         compound = Particle(name="XXXXXX")
-        with pytest.warns(UserWarning):
+        with caplog.at_level(logging.WARNING, logger="mbuild"):
             _ = compound.to_parmed()
+        assert (
+            "No element attribute associated with '<foobar pos=([0. 0. 0.]), 0 bonds"
+            in caplog.text
+        )
 
     def test_parmed_box(self, h2o):
         compound = Compound()
@@ -1819,12 +1829,13 @@ class TestCompound(BaseTest):
         with pytest.raises(MBuildError):
             compound = Compound(subcompounds=ch3, charge=1.0)
 
-    def test_charge_neutrality_warn(self, benzene):
+    def test_charge_neutrality_warn(self, benzene, caplog):
         benzene[0].charge = 0.25
-        with pytest.warns(UserWarning):
+        with caplog.at_level(logging.INFO, logger="mbuild"):
             benzene.save("charge-test.mol2")
+        assert "System is not charge neutral. Total charge is 0.3118." in caplog.text
 
-    def test_none_charge(self):
+    def test_none_charge(self, caplog):
         A = mb.Compound()
         assert A.charge is None
 
@@ -1833,9 +1844,13 @@ class TestCompound(BaseTest):
         container = mb.Compound(subcompounds=[A, B])
         assert A.charge == 1
         assert B.charge is None
-        with pytest.warns(UserWarning):
+        with caplog.at_level(logging.INFO, logger="mbuild"):
             container_charge = container.charge
             assert container_charge == 1
+        assert (
+            "does not have a charge. They will not be accounted for during this calculation"
+            in caplog.text
+        )
 
     @pytest.mark.skipif(not has_openbabel, reason="Open Babel not installed")
     @pytest.mark.skipif(
@@ -2145,7 +2160,7 @@ class TestCompound(BaseTest):
         sdf_string = mb.load("methane.sdf")
         assert np.allclose(filled.xyz, sdf_string.xyz, atol=1e-5)
 
-    def test_box(self):
+    def test_box(self, caplog):
         angles = [90.0, 90.0, 90.0]
         lengths = [3.0, 3.0, 3.0]
         compound = Compound()
@@ -2169,8 +2184,12 @@ class TestCompound(BaseTest):
         assert np.allclose(compound.box.angles, angles)
         compound = Compound(box=Box([3.0, 3.0, 3.0]))
         subcomp = Compound(box=Box([6.0, 6.0, 6.0], angles=[90.0, 90.0, 120.0]))
-        with pytest.warns(UserWarning):
+        with caplog.at_level(logging.INFO, logger="mbuild"):
             compound.add(subcomp)
+        assert (
+            "The Compound you are adding has a box. The box of the parent"
+            in caplog.text
+        )
         assert np.allclose(compound.box.lengths, [3.0, 3.0, 3.0])
         assert np.allclose(compound.box.angles, [90.0, 90.0, 90.0])
         compound = Compound(box=Box(lengths=lengths, angles=angles))
@@ -2180,8 +2199,12 @@ class TestCompound(BaseTest):
         assert np.allclose(compound.box.angles, [90.0, 90.0, 120.0])
         compound = Compound(box=Box(lengths=lengths, angles=angles))
         subcomp = Compound()
-        with pytest.warns(UserWarning):
+        with caplog.at_level(logging.INFO, logger="mbuild"):
             compound.add(subcomp, inherit_box=True)
+        assert (
+            "The Compound you are adding has a box. The box of the parent compound"
+            in caplog.text
+        )
         assert np.allclose(compound.box.lengths, [3.0, 3.0, 3.0])
         assert np.allclose(compound.box.angles, [90.0, 90.0, 90.0])
         compound = Compound()
@@ -2189,11 +2212,19 @@ class TestCompound(BaseTest):
         compound.add(carbon)
         compound.box = Box(lengths=lengths, angles=angles)
         nitrogen = Compound(name="N", pos=[4, 3, 3])
-        with pytest.warns(UserWarning):
+        with caplog.at_level(logging.INFO, logger="mbuild"):
             compound.add(nitrogen)
+        assert (
+            "The Compound you are adding has a box. The box of the parent compound"
+            in caplog.text
+        )
         compound.box = Box(lengths=[5.0, 4.0, 4.0], angles=angles)
-        with pytest.warns(UserWarning):
+        with caplog.at_level(logging.INFO, logger="mbuild"):
             compound.box = Box(lengths=[1.0, 1.0, 1.0], angles=angles)
+        assert (
+            "The Compound you are adding has a box. The box of the parent compound"
+            in caplog.text
+        )
 
     def test_get_boundingbox_extrema(self):
         h1 = mb.Compound()

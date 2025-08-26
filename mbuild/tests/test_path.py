@@ -1,4 +1,3 @@
-import networkx as nx
 import numpy as np
 
 from mbuild.path import HardSphereRandomWalk
@@ -21,7 +20,6 @@ class TestRandomWalk(BaseTest):
             max_angle=np.pi,
             max_attempts=1e4,
             seed=14,
-            bond_graph=nx.path_graph(20),
         )
         assert len(rw_path.coordinates) == 20
         diffs = rw_path.coordinates[0:-2] - rw_path.coordinates[1:-1]
