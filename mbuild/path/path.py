@@ -209,9 +209,11 @@ class HardSphereRandomWalk(Path):
                 ),
                 axis=0,
             )
-            self.count = len(start_from_path.coordinates) - 1
+            self.count = len(start_from_path.coordinates)
             N = None
             bond_graph = deepcopy(start_from_path.bond_graph)
+            if start_from_path_index < 0:
+                self.start_from_path_index = self.count + start_from_path_index
         else:  # Not starting from another path
             bond_graph = nx.Graph()
             coordinates = np.zeros((N, 3), dtype=np.float32)
@@ -232,7 +234,7 @@ class HardSphereRandomWalk(Path):
     def generate(self):
         initial_xyz = self._initial_points()
         # Set the first coordinate
-        self.coordinates[0] = initial_xyz
+        self.coordinates[self.count] = initial_xyz
         self.bond_graph.add_node(
             self.count,
             name=self.bead_name,
@@ -293,8 +295,6 @@ class HardSphereRandomWalk(Path):
         # This point was accepted in self._initial_point with these conditions
         # If attach_paths, then add edge between first node of this path and node of last path
         else:
-            self.coordinates[self.count + 1] = initial_xyz
-            self.count += 1
             self.bond_graph.add_node(self.count, name=self.bead_name, xyz=initial_xyz)
             if self.attach_paths:
                 self.add_edge(u=self.start_from_path_index, v=self.count)
@@ -366,7 +366,7 @@ class HardSphereRandomWalk(Path):
         if self.initial_point is not None:
             return self.initial_point
 
-        # Random initial point, bounds set by radius and N steps
+        # Random initial point, no volume constraint: Bounds set by radius and N steps
         elif not any(
             [self.volume_constraint, self.initial_point, self.start_from_path]
         ):
@@ -386,9 +386,11 @@ class HardSphereRandomWalk(Path):
         # Starting from another path, run Monte Carlo
         # Accepted next move is first point of this random walk
         elif self.start_from_path and self.start_from_path_index is not None:
+            # TODO: handle start_from_path index of negative values
+            # Set to the corresponding actual index value of the last path
             if self.start_from_path_index == 0:
-                pos2_coord = 1
-            else:
+                pos2_coord = 1  # Use the second (1) point of the last path for angles
+            else:  # use the site previous to start_from_path_index for angles
                 pos2_coord = self.start_from_path_index - 1
             started_next_path = False
             while not started_next_path:
