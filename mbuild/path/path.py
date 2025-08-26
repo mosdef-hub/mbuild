@@ -46,6 +46,29 @@ class Path:
         self.coordinates = new_array
         self.N += N
 
+    def add_edge(self, u, v):
+        """Add an edge to the Path's bond graph.
+        This sets attributes for the edge which include: bond direction, bond length and bond type
+        u -> v corresponds to previous site and current site where the bond direction is calculated as v - u.
+        """
+        bond_vec = self.coordinates[v] - self.coordinates[u]
+        bond_length = np.linalg.norm(bond_vec)
+        bond_vec /= bond_length
+        # Get node names from previous step to current step
+        u_name = self.bond_graph.nodes[u]["name"]
+        v_name = self.bond_graph.nodes[v]["name"]
+        self.bond_graph.add_edge(
+            u_of_edge=u,
+            v_of_edge=v,
+            direction=bond_vec.tolist(),
+            length=float(bond_length),
+            bond_type=(u_name, v_name),
+        )
+
+    def get_bonded_sites(self):
+        """Get all bonded pairs and their bond-vector orientations."""
+        pass
+
     def get_coordinates(self):
         if isinstance(self.coordinates, list):
             return np.array(self.coordinates)
@@ -188,10 +211,7 @@ class HardSphereRandomWalk(Path):
             )
             self.count = len(start_from_path.coordinates) - 1
             N = None
-            if attach_paths:
-                bond_graph = deepcopy(start_from_path.bond_graph)
-            else:
-                bond_graph = nx.Graph()
+            bond_graph = deepcopy(start_from_path.bond_graph)
         else:  # Not starting from another path
             bond_graph = nx.Graph()
             coordinates = np.zeros((N, 3), dtype=np.float32)
@@ -211,14 +231,14 @@ class HardSphereRandomWalk(Path):
 
     def generate(self):
         initial_xyz = self._initial_points()
+        # Set the first coordinate
+        self.coordinates[0] = initial_xyz
+        self.bond_graph.add_node(
+            self.count,
+            name=self.bead_name,
+            xyz=self.coordinates[self.count],
+        )
         if not self.start_from_path and not self.volume_constraint:
-            # Set the first coordinate
-            self.coordinates[0] = initial_xyz
-            self.bond_graph.add_node(
-                self.count,
-                name=self.bead_name,
-                xyz=self.coordinates[self.count],
-            )
             # If no volume constraint, then first move is always accepted
             phi = self.rng.uniform(0, 2 * np.pi)
             theta = self.rng.uniform(0, np.pi)
@@ -236,8 +256,7 @@ class HardSphereRandomWalk(Path):
                 name=self.bead_name,
                 xyz=self.coordinates[self.count],
             )
-            self.bond_graph.add_edge(u_of_edge=self.count - 1, v_of_edge=self.count)
-
+            self.add_edge(u=self.count - 1, v=self.count)
         # Not starting from another path, but have a volume constraint
         # Possible for second point to be out-of-bounds
         elif not self.start_from_path and self.volume_constraint:
@@ -264,9 +283,7 @@ class HardSphereRandomWalk(Path):
                         name=self.bead_name,
                         xyz=self.coordinates[self.count],
                     )
-                    self.bond_graph.add_edge(
-                        u_of_edge=self.count - 1, v_of_edge=self.count
-                    )
+                    self.add_edge(u=self.count - 1, v=self.count)
                     self.attempts += 1
                     next_point_found = True
                 # 2nd point failed, continue while loop
@@ -280,9 +297,7 @@ class HardSphereRandomWalk(Path):
             self.count += 1
             self.bond_graph.add_node(self.count, name=self.bead_name, xyz=initial_xyz)
             if self.attach_paths:
-                self.bond_graph.add_edge(
-                    self.start_from_path_index, v_of_edge=self.count
-                )
+                self.add_edge(u=self.start_from_path_index, v=self.count)
             self.attempts += 1
 
         # Initial conditions set (points 1 and 2), now start RW with min/max angles
@@ -322,9 +337,7 @@ class HardSphereRandomWalk(Path):
                     self.coordinates[self.count + 1] = xyz
                     self.count += 1
                     self.bond_graph.add_node(self.count, name=self.bead_name, xyz=xyz)
-                    self.bond_graph.add_edge(
-                        u_of_edge=self.count - 1, v_of_edge=self.count
-                    )
+                    self.add_edge(u=self.count - 1, v=self.count)
                     break
             self.attempts += 1
 
