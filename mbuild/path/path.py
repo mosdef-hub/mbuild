@@ -4,7 +4,6 @@ import math
 from abc import abstractmethod
 from copy import deepcopy
 
-import freud
 import networkx as nx
 import numpy as np
 from scipy.interpolate import interp1d
@@ -17,7 +16,6 @@ from mbuild.path.path_utils import (
     check_path,
     random_coordinate,
 )
-from mbuild.utils.geometry import bounding_box
 
 
 class Path:
@@ -67,21 +65,6 @@ class Path:
         own method under genrate.
         """
         pass
-
-    def neighbor_list(self, r_max, query_points, coordinates=None, box=None):
-        """Use freud to create a neighbor list of a set of coordinates."""
-        if coordinates is None:
-            coordinates = self.coordinates
-        if box is None:
-            box = bounding_box(coordinates)
-        freud_box = freud.box.Box(Lx=box[0], Ly=box[1], Lz=box[2])
-        aq = freud.locality.AABBQuery(freud_box, coordinates)
-        aq_query = aq.query(
-            query_points=query_points,
-            query_args=dict(r_min=0.0, r_max=r_max, exclude_ii=True),
-        )
-        nlist = aq_query.toNeighborList()
-        return nlist
 
     def to_compound(self, bead_name="_A", bead_mass=1):
         """Visualize a path as an mBuild Compound."""
