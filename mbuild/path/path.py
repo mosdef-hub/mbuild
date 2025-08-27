@@ -83,8 +83,8 @@ class Path:
         """
         pass
 
-    def to_compound(self, bead_name="_A", bead_mass=1):
-        """Visualize a path as an mBuild Compound."""
+    def to_compound(self):
+        """Convert a path and its bond graph to an mBuild Compound."""
         compound = Compound()
         for node_id, attrs in self.bond_graph.nodes(data=True):
             compound.add(Compound(name=attrs["name"], pos=attrs["xyz"]))
@@ -96,6 +96,14 @@ class Path:
         """Mapping other compounds onto a Path's coordinates
 
         mapping = {"A": "c1ccccc1C=C", "B": "C=CC=C"}
+
+        for bond in bond graph edges:
+            site u: add compound
+            rotate site u head-tail vec to align with bond direction
+            set orientation and separation for site u head port
+            rotate site v tail-head vec to align with bond direction
+            set orientation and separation for site v tail port
+
         """
         pass
 

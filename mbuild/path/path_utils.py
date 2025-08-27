@@ -46,6 +46,19 @@ def check_path(existing_points, new_point, radius, tolerance):
 
 
 @njit(cache=True, fastmath=True)
+def target_sq_distances(target_coordinate, new_points):
+    """Return squared distances from target_coordinate to new_points."""
+    n_points = new_points.shape[0]
+    sq_distances = np.empty(n_points, dtype=np.float32)
+    for i in range(n_points):
+        dx = target_coordinate[0] - new_points[i, 0]
+        dy = target_coordinate[1] - new_points[i, 1]
+        dz = target_coordinate[2] - new_points[i, 2]
+        sq_distances[i] = dx * dx + dy * dy + dz * dz
+    return sq_distances
+
+
+@njit(cache=True, fastmath=True)
 def norm(vec):
     """Use in place of np.linalg.norm inside of numba functions."""
     s = 0.0
