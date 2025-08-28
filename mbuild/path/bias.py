@@ -6,8 +6,17 @@ from mbuild.path.path_utils import target_sq_distances
 
 
 class Bias:
-    def __init__(self, system_coordinates, new_coordinates):
-        self.system_coordinates = system_coordinates
+    def __init__(self, random_walk, new_coordinates):
+        # Extract any needed information for all sub-classes
+        # Complete system coords needed for density and direction biases
+        self.system_coordinates = random_walk.coordinates
+        self.N = len(self.system_coordinates)
+        # Site types needed for TargetType and AvoidType
+        self.site_types = [
+            attrs["name"] for node, attrs in random_walk.bond_graph.nodes(data=True)
+        ]
+        # Current step count needed for TargetPath
+        self.count = random_walk.count
         self.new_coordinates = new_coordinates
 
     def __call__(self):

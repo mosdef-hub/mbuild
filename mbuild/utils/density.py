@@ -17,7 +17,7 @@ def rank_points_by_density(points, k=14, box_min=None, box_max=None, wall_cutoff
     A new random walk path can begin from this site.
 
     If you want to find an unoccupied point with the lowest local density
-    use mbuild.utils.density.find_low_density_point instead.
+    use `mbuild.utils.density.find_low_density_point` instead.
 
     Parameters
     ----------

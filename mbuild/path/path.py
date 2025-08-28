@@ -220,7 +220,7 @@ class HardSphereRandomWalk(Path):
             self.count = len(start_from_path.coordinates)
             N = None
             bond_graph = deepcopy(start_from_path.bond_graph)
-            if start_from_path_index < 0:
+            if start_from_path_index is not None and start_from_path_index < 0:
                 self.start_from_path_index = self.count + start_from_path_index
         else:  # Not starting from another path
             bond_graph = nx.Graph()

@@ -72,10 +72,9 @@ def is_inside_cylinder(points, center, cylinder_radius, height, buffer):
     n_points = points.shape[0]
     results = np.empty(n_points, dtype=np.bool_)
     max_r = cylinder_radius - buffer
-    max_r_sq = max_r * max_r  # Radial limit squared
+    max_r_sq = max_r * max_r
     half_height = height / 2.0
     max_z = half_height - buffer
-    # Shift to center
     for i in range(n_points):
         dx = points[i, 0] - center[0]
         dy = points[i, 1] - center[1]
@@ -103,49 +102,6 @@ def is_inside_sphere(sphere_radius, points, buffer):
 
 @njit(cache=True, fastmath=True)
 def is_inside_cuboid(mins, maxs, points, buffer):
-    """
-    Works with:
-      points.shape == (N, 3)    # N single-site particles
-      points.shape == (N, n, 3) # N molecules with n sites
-    Returns:
-      (N,) boolean mask: True if the particle/molecule is inside
-    """
-    if points.ndim == 2:  # (N, 3)
-        n_batches = points.shape[0]
-        results = np.empty(n_batches, dtype=np.bool_)
-        for b in range(n_batches):
-            inside = True
-            for j in range(3):
-                coord = points[b, j]
-                if coord - buffer < mins[j] or coord + buffer > maxs[j]:
-                    inside = False
-                    break
-            results[b] = inside
-        return results
-
-    elif points.ndim == 3:  # (N, n, 3)
-        n_batches = points.shape[0]
-        n_sites = points.shape[1]
-        results = np.empty(n_batches, dtype=np.bool_)
-        for b in range(n_batches):
-            inside = True
-            for i in range(n_sites):
-                for j in range(3):
-                    coord = points[b, i, j]
-                    if coord - buffer < mins[j] or coord + buffer > maxs[j]:
-                        inside = False
-                        break
-                if not inside:
-                    break
-            results[b] = inside
-        return results
-
-    else:
-        raise ValueError("points must have shape (N,3) or (N,n,3)")
-
-
-@njit(cache=True, fastmath=True)
-def _is_inside_cuboid(mins, maxs, points, buffer):
     n_points = points.shape[0]
     results = np.empty(n_points, dtype=np.bool_)
     for i in range(n_points):
