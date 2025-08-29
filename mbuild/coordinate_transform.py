@@ -1,19 +1,18 @@
 """Coordinate transformation functions."""
 
-from warnings import simplefilter, warn
+import logging
 
 import numpy as np
 from numpy.linalg import inv, norm, svd
-
-simplefilter("always", DeprecationWarning)
 
 __all__ = [
     "force_overlap",
     "x_axis_transform",
     "y_axis_transform",
     "z_axis_transform",
-    "equivalence_transform",
 ]
+
+logger = logging.getLogger(__name__)
 
 
 def force_overlap(
@@ -61,7 +60,7 @@ def force_overlap(
     if add_bond:
         if isinstance(from_positions, Port) and isinstance(to_positions, Port):
             if not from_positions.anchor or not to_positions.anchor:
-                warn("Attempting to form bond from port that has no anchor")
+                logger.warning("Attempting to form bond from port that has no anchor")
             else:
                 from_positions.anchor.parent.add_bond(
                     (from_positions.anchor, to_positions.anchor)
@@ -335,59 +334,6 @@ def _create_equivalence_transform(equiv):
                 other_points = np.vstack([other_points, atom1.pos])
     T = RigidTransform(self_points, other_points)
     return T
-
-
-def equivalence_transform(compound, from_positions, to_positions, add_bond=True):
-    """Compute an affine transformation.
-
-    Maps the from_positions to the respective to_positions, and applies this
-    transformation to the compound.
-
-    Parameters
-    ----------
-    compound : mb.Compound
-        The Compound to be transformed.
-    from_positions : np.ndarray, shape=(n, 3), dtype=float
-        Original positions.
-    to_positions : np.ndarray, shape=(n, 3), dtype=float
-        New positions.
-    """
-    warn(
-        "The `equivalence_transform` function is being phased out in favor of"
-        " `force_overlap`.",
-        DeprecationWarning,
-    )
-    from mbuild.port import Port
-
-    T = None
-    if isinstance(from_positions, (list, tuple)) and isinstance(
-        to_positions, (list, tuple)
-    ):
-        equivalence_pairs = zip(from_positions, to_positions)
-    elif isinstance(from_positions, Port) and isinstance(to_positions, Port):
-        equivalence_pairs, T = _choose_correct_port(from_positions, to_positions)
-        from_positions.used = True
-        to_positions.used = True
-    else:
-        equivalence_pairs = [(from_positions, to_positions)]
-
-    if not T:
-        T = _create_equivalence_transform(equivalence_pairs)
-    atom_positions = compound.xyz_with_ports
-    atom_positions = T.apply_to(atom_positions)
-    compound.xyz_with_ports = atom_positions
-
-    if add_bond:
-        if isinstance(from_positions, Port) and isinstance(to_positions, Port):
-            if not from_positions.anchor or not to_positions.anchor:
-                warn("Attempting to form bond from port that has no anchor")
-            else:
-                from_positions.anchor.parent.add_bond(
-                    (from_positions.anchor, to_positions.anchor)
-                )
-                to_positions.anchor.parent.add_bond(
-                    (from_positions.anchor, to_positions.anchor)
-                )
 
 
 def _choose_correct_port(from_port, to_port):

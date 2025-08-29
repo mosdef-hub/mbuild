@@ -1,3 +1,5 @@
+import logging
+
 import numpy as np
 import pytest
 
@@ -74,10 +76,11 @@ class TestVasp(BaseTest):
 
         assert coord == coord_type
 
-    def test_warning_raised(self, copper_cell):
+    def test_warning_raised(self, copper_cell, caplog):
         copper_cell.box = None
-        with pytest.warns(UserWarning):
+        with caplog.at_level(logging.INFO, logger="mbuild"):
             write_poscar(copper_cell, "test.poscar", coord_style="direct")
+        assert "'direct' coord_style specified, but compound has no box" in caplog.text
 
     def test_error_raised(self, copper_cell):
         with pytest.raises(ValueError):

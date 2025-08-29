@@ -254,13 +254,6 @@ class TestCoordinateTransform(BaseTest):
         )
         assert np.allclose(angles_before, angles_after, atol=1e-15)
 
-    def test_equivalence_transform_deprectation_warning(self, ch2):
-        ch22 = mb.clone(ch2)
-        with pytest.warns(DeprecationWarning):
-            mb.equivalence_transform(
-                ch22, from_positions=ch22["up"], to_positions=ch2["down"]
-            )
-
     def test_rotate_around_x(self, methane):
         before = methane.xyz_with_ports
         methane.rotate(np.pi, around=np.asarray([1, 0, 0]))

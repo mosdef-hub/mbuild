@@ -1,12 +1,14 @@
 """mBuild box module."""
 
-from warnings import warn
+import logging
 
 import numpy as np
 
 from mbuild.exceptions import MBuildError
 
 __all__ = ["Box"]
+
+logger = logging.getLogger(__name__)
 
 
 class Box(object):
@@ -350,7 +352,7 @@ def _normalize_box(vectors):
             f"3D region in space.\n Box vectors evaluated: {vectors}"
         )
     if det < 0.0:
-        warn(
+        logger.warning(
             "Box vectors provided for a left-handed basis, these will be "
             "transformed into a right-handed basis automatically."
         )

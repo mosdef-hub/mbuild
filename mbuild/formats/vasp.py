@@ -1,6 +1,6 @@
 """VASP POSCAR format."""
 
-import warnings
+import logging
 from itertools import chain
 
 import numpy as np
@@ -10,6 +10,8 @@ from numpy.linalg import inv
 import mbuild as mb
 
 __all__ = ["write_poscar", "read_poscar"]
+
+logger = logging.getLogger(__name__)
 
 
 def write_poscar(compound, filename, lattice_constant=1.0, coord_style="cartesian"):
@@ -51,7 +53,7 @@ def write_poscar(compound, filename, lattice_constant=1.0, coord_style="cartesia
     except AttributeError:
         lattice = compound.get_boundingbox().vectors
         if coord_style == "direct":
-            warnings.warn(
+            logger.info(
                 "'direct' coord_style specified, but compound has no box "
                 "-- using 'cartesian' instead"
             )

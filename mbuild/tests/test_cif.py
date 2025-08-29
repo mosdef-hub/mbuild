@@ -1,3 +1,4 @@
+import logging
 from collections import OrderedDict
 
 import numpy as np
@@ -169,10 +170,11 @@ class TestCif(BaseTest):
             map(lambda x: x.element, periodic_boxed_molecule.particles())
         )
 
-    def test_cif_raise_warnings(self):
-        with pytest.warns(
-            UserWarning,
-            match=r"Element assumed from cif file to be Element: silicon, symbol: Si, atomic number: 14, mass: 28.085.",
-        ):
+    def test_cif_raise_warnings(self, caplog):
+        with caplog.at_level(logging.INFO, logger="mbuild"):
             lattice_cif = load_cif(file_or_path=get_fn("ETV_triclinic.cif"))
             lattice_cif.populate(x=1, y=1, z=1)
+        assert (
+            "Element assumed from cif file to be Element: silicon, symbol: Si, atomic number: 14, mass: 28.085."
+            in caplog.text
+        )
