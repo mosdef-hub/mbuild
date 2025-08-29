@@ -87,7 +87,6 @@ class HoomdSimulation(hoomd.simulation.Simulation):
             if forcefield == last_forcefield:
                 snapshot = last_snapshot
                 self.forces = last_forces
-                forcefield = last_forcefield
             else:  # New foyer/gmso forcefield has been passed, reapply
                 snapshot, self.forces = self._to_hoomd_snap_forces()
                 compound._add_sim_data(
@@ -143,6 +142,7 @@ class HoomdSimulation(hoomd.simulation.Simulation):
         for force in set(self.forces + self.active_forces + self.inactive_forces):
             if isinstance(force, instance):
                 return force
+        raise ValueError(f"No force of {instance} was found.")
 
     def get_dpd_from_lj(self, A):
         """Make a best-guess DPD force from types and parameters of an LJ force."""

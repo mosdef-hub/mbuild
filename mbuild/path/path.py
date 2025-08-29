@@ -28,10 +28,13 @@ class Path:
         # Neither is defined, use list for coordinates
         # Use case: Lamellar - Don't know N initially
         elif N is None and coordinates is None:
-            self.N = N
             self.coordinates = []
         else:
             raise ValueError("Specify either one of N and coordinates, or neither.")
+        self.__post_init__()
+
+    def __post_init__(self):
+        """Needed for CodeQL in order to call abstract method inside __init__()"""
         self.generate()
         if self.N is None:
             self.N = len(self.coordinates)
@@ -225,6 +228,7 @@ class HardSphereRandomWalk(Path):
         else:  # Not starting from another path
             bond_graph = nx.Graph()
             coordinates = np.zeros((N, 3), dtype=np.float32)
+            N = None
             self.count = 0
             self.start_index = 0
         # Need this for error message about reaching max tries
@@ -236,7 +240,7 @@ class HardSphereRandomWalk(Path):
         # Create RNG state.
         self.rng = np.random.default_rng(seed)
         super(HardSphereRandomWalk, self).__init__(
-            coordinates=coordinates, N=None, bond_graph=bond_graph
+            coordinates=coordinates, N=N, bond_graph=bond_graph
         )
 
     def generate(self):

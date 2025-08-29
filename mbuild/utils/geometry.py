@@ -2,7 +2,7 @@
 
 import numpy as np
 
-import mbuild as mb
+from mbuild.box import Box
 from mbuild.coordinate_transform import angle
 
 
@@ -124,7 +124,7 @@ def wrap_coords(xyz, box, mins=None):
     -----
     Currently only supports orthorhombic boxes
     """
-    if not isinstance(box, mb.Box):
+    if not isinstance(box, Box):
         box_arr = np.asarray(box)
         assert box_arr.shape == (3,)
 
