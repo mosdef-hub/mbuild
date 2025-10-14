@@ -1092,22 +1092,11 @@ class Compound(object):
         if self.root.bond_graph is None:
             self.root.bond_graph = BondGraph()
         if bond_order is None:
-            bond_order = "default"
+            bond_order = 0.0
         else:
-            if not isinstance(bond_order, str) or bond_order.lower() not in [
-                "default",
-                "single",
-                "double",
-                "triple",
-                "aromatic",
-                "unspecified",
-            ]:
+            if bond_order not in [0.0, 1.0, 2.0, 3.0, 1.5]:
                 raise ValueError(
-                    "Invalid bond_order given. Available bond orders are: single",
-                    "double",
-                    "triple",
-                    "aromatic",
-                    "unspecified",
+                    f"Invalid bond_order given {bond_order=}. Available bond orders are: 0.0, 1.0, 2.0, 3.0, 1.5"
                 )
         self.root.bond_graph.add_edge(
             particle_pair[0], particle_pair[1], bond_order=bond_order
