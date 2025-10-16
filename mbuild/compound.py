@@ -30,6 +30,15 @@ __all__ = ["clone", "Compound", "Particle"]
 
 logger = logging.getLogger(__name__)
 
+bond_orderDict = {
+    "single": 1.0,
+    "double": 2.0,
+    "triple": 3.0,
+    "aromatic": 1.0,
+    "unspecified": 0.0,
+    "default": 1.0,
+}
+
 
 def clone(existing_compound, clone_of=None, root_container=None):
     """Clone Compound.
@@ -1086,13 +1095,19 @@ class Compound(object):
             The pair of Particles to add a bond between
         bond_order : float, optional, default=None
             Bond order of the bond.
-            Available options include "default", "single", "double",
-            "triple", "aromatic" or "unspecified"
+            Available options include "None", 1.0, 2.0,
+            3.0, 1.5 or 0.0. The previous string options include "default", "single", "double",
+            "triple", "aromatic" or "unspecified", are supported but will be deprecated.
         """
         if self.root.bond_graph is None:
             self.root.bond_graph = BondGraph()
         if bond_order is None:
             bond_order = 0.0
+        elif isinstance(bond_order, str):
+            logger.warning(
+                "Bond order as a string will be deprecated and replaced with floats."
+            )
+            bond_order = bond_orderDict.get(bond_order, 0.0)
         else:
             if bond_order not in [0.0, 1.0, 2.0, 3.0, 1.5]:
                 raise ValueError(
