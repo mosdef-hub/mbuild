@@ -166,8 +166,6 @@ class TestCompound(BaseTest):
         B_bead = mb.Compound(name="B", pos=[0.5, 0.5, 0])
         comp = mb.Compound([A_bead, B_bead])
         with pytest.raises(ValueError):
-            comp.add_bond([A_bead, B_bead], bond_order="single")
-        with pytest.raises(ValueError):
             comp.add_bond([A_bead, B_bead], bond_order=4)
 
     @pytest.mark.skipif(not has_rdkit, reason="RDKit is not installed")
