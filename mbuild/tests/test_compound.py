@@ -135,27 +135,24 @@ class TestCompound(BaseTest):
     def test_bond_order(self, methane):
         # test the default behavior
         bonds = [bond for bond in methane.bonds(return_bond_order=True)]
-        assert bonds[0][2]["bond_order"] == "default"
+        assert bonds[0][2]["bond_order"] == 1.0
 
         # test setting bond order when adding a bond
         carbon = mb.Compound(pos=[0, 0, 0], name="C")
         carbon_clone = mb.clone(carbon)
         C2 = mb.Compound([carbon, carbon_clone])
-        C2.add_bond([carbon, carbon_clone], bond_order="double")
+        C2.add_bond([carbon, carbon_clone], bond_order=2.0)
         bonds = [bond for bond in C2.bonds(return_bond_order=True)]
 
-        assert bonds[0][2]["bond_order"] == "double"
+        assert bonds[0][2]["bond_order"] == 2
 
         # ensure we propagate bond order information when we clone a compound
         C2_clone = mb.clone(C2)
         bonds = [bond for bond in C2_clone.bonds(return_bond_order=True)]
 
-        assert bonds[0][2]["bond_order"] == "double"
+        assert bonds[0][2]["bond_order"] == 2
 
-    @pytest.mark.parametrize(
-        "bond_order",
-        ["single", "double", "triple", "aromatic"],
-    )
+    @pytest.mark.parametrize("bond_order", [1, 2, 3, 1.5])
     def test_add_bond_order(self, bond_order):
         A_bead = mb.Compound(name="A", pos=[0, 0, 0])
         B_bead = mb.Compound(name="B", pos=[0.5, 0.5, 0])
@@ -169,9 +166,7 @@ class TestCompound(BaseTest):
         B_bead = mb.Compound(name="B", pos=[0.5, 0.5, 0])
         comp = mb.Compound([A_bead, B_bead])
         with pytest.raises(ValueError):
-            comp.add_bond([A_bead, B_bead], bond_order=1.0)
-        with pytest.raises(ValueError):
-            comp.add_bond([A_bead, B_bead], bond_order="quadruple")
+            comp.add_bond([A_bead, B_bead], bond_order=4)
 
     @pytest.mark.skipif(not has_rdkit, reason="RDKit is not installed")
     def test_to_rdkit(self, methane):

@@ -571,7 +571,7 @@ def from_parmed(
     for bond in structure.bonds:
         atom1 = atom_mapping[bond.atom1]
         atom2 = atom_mapping[bond.atom2]
-        compound.add_bond((atom1, atom2))
+        compound.add_bond((atom1, atom2), bond_order=bond.order)
 
     # Convert box information
     if structure.box is not None:
@@ -858,11 +858,11 @@ def from_rdkit(rdkit_mol, compound=None, coords_only=False, smiles_seed=0):
 
     comp.add(part_list)
     bond_order_dict = {
-        Chem.BondType.SINGLE: "single",
-        Chem.BondType.DOUBLE: "double",
-        Chem.BondType.TRIPLE: "triple",
-        Chem.BondType.AROMATIC: "aromatic",
-        Chem.BondType.UNSPECIFIED: "unspecified",
+        Chem.BondType.SINGLE: 1.0,
+        Chem.BondType.DOUBLE: 2.0,
+        Chem.BondType.TRIPLE: 3.0,
+        Chem.BondType.AROMATIC: 1.5,
+        Chem.BondType.UNSPECIFIED: 0.0,
     }
 
     for bond in mymol.GetBonds():
@@ -1383,8 +1383,10 @@ def to_parmed(
     structure.residues.claim()
 
     # Create and add bonds to ParmEd Structure
-    for atom1, atom2 in compound.bonds():
-        bond = pmd.Bond(atom_mapping[atom1], atom_mapping[atom2])
+    for atom1, atom2, bond_orderDict in compound.bonds(return_bond_order=True):
+        bond = pmd.Bond(
+            atom_mapping[atom1], atom_mapping[atom2], order=bond_orderDict["bond_order"]
+        )
         structure.bonds.append(bond)
 
     # If a box is not explicitly provided:
@@ -1744,12 +1746,11 @@ def to_rdkit(compound):
     p_dict = {particle: i for i, particle in enumerate(compound.particles())}
 
     bond_order_dict = {
-        "single": Chem.BondType.SINGLE,
-        "double": Chem.BondType.DOUBLE,
-        "triple": Chem.BondType.TRIPLE,
-        "aromatic": Chem.BondType.AROMATIC,
-        "unspecified": Chem.BondType.UNSPECIFIED,
-        "default": Chem.BondType.SINGLE,
+        1.0: Chem.BondType.SINGLE,
+        2.0: Chem.BondType.DOUBLE,
+        3.0: Chem.BondType.TRIPLE,
+        1.5: Chem.BondType.AROMATIC,
+        0.0: Chem.BondType.UNSPECIFIED,
     }
 
     for particle in compound.particles():
