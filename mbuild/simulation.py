@@ -104,6 +104,9 @@ class HoomdSimulation(hoomd.simulation.Simulation):
         self.create_state_from_snapshot(snapshot)
 
     def _to_hoomd_snap_forces(self):
+        # If a box isn't set, make one with the buffer
+        if not self.compound.box:
+            self.compound.box = self.compound.get_boundingbox(pad_box=self.box_buffer)
         # Convret to GMSO, apply forcefield
         top = self.compound.to_gmso()
         top.identify_connections()
