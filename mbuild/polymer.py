@@ -20,11 +20,6 @@ from mbuild.utils.validation import assert_port_exists
 __all__ = ["Polymer"]
 
 
-class Monomer(Compound):
-    def __init__(self):
-        pass
-
-
 class Polymer(Compound):
     """Connect one or more components in a specified sequence.
 

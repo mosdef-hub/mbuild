@@ -6,7 +6,7 @@ class Constraint:
     def __init__(self):
         pass
 
-    def is_inside(self, point):
+    def is_inside(self, points, buffer):
         """Return True if point satisfies constraint (inside), else False."""
         raise NotImplementedError("Must be implemented in subclasses")
 
