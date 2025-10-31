@@ -3,6 +3,21 @@ from numba import njit
 
 
 class Constraint:
+    """
+    Defines a volume that acts as a constraint in mbuild.path.HardSphereRandomWalk.
+    This is the base class from which all constraints inherit from.
+
+    Notes
+    -----
+    Design and implement your own volume constraint by inheriting from this class
+    and implementing the constraint check in an `is_inside` method. 
+
+    `is_inside` is expected to return a mask of booleans.
+
+    The existing contraints of CuboidConstraint, SphereConstraint, and CylinderConstraint
+    call numba methods from their respectice `is_inside` method, but that is not a required
+    implementation to design your own constraint.
+    """
     def __init__(self):
         pass
 
@@ -12,19 +27,53 @@ class Constraint:
 
 
 class CuboidConstraint(Constraint):
+    """Creates a cuboid constraint.
+
+    Parameters
+    ----------
+    Lx : float, required
+        The length of the volume along the x-axis.
+    Ly : float, required
+        The length of the volume along the y-axis.
+    Lz : float, required
+        The length of the volume along the z-axis.
+    center : array-like (1,3), default = (0, 0, 0)
+        Defines the center of the volume.
+    """
     def __init__(self, Lx, Ly, Lz, center=(0, 0, 0)):
         self.center = np.asarray(center)
         self.mins = self.center - np.array([Lx / 2, Ly / 2, Lz / 2])
         self.maxs = self.center + np.array([Lx / 2, Ly / 2, Lz / 2])
 
     def is_inside(self, points, buffer):
-        """Points and buffer are passed in from HardSphereRandomWalk"""
+        """Check a set of coordinates against the volume constraint.
+
+        Parameters
+        ----------
+        points : ndarray (N, 3), required
+            The set of points to check against the volume constraint.
+        buffer : float, required
+            Buffer used for rounding
+
+        Returns
+        -------
+        Mask of booleans of length N corresponding to each point.
+        """
         return is_inside_cuboid(
             mins=self.mins, maxs=self.maxs, points=points, buffer=buffer
         )
 
 
 class SphereConstraint(Constraint):
+    """Creates a spherical constraint.
+
+    Parameters
+    ----------
+    radius : float, required
+        The radius of the sphere
+    center : array-like (1,3), default = (0, 0, 0)
+        Defines the center point of the sphere.
+    """
     def __init__(self, center, radius):
         self.center = np.array(center)
         self.radius = radius
@@ -32,12 +81,35 @@ class SphereConstraint(Constraint):
         self.maxs = self.center + self.radius
 
     def is_inside(self, points, buffer):
-        """Points and buffer are passed in from HardSphereRandomWalk"""
+        """Check a set of coordinates against the volume constraint.
+
+        Parameters
+        ----------
+        points : ndarray (N, 3), required
+            The set of points to check against the volume constraint.
+        buffer : float, required
+            Buffer used for rounding
+
+        Returns
+        -------
+        Mask of booleans of length N corresponding to each point.
+        """
         return is_inside_sphere(points=points, sphere_radius=self.radius, buffer=buffer)
 
 
 class CylinderConstraint(Constraint):
-    def __init__(self, center, radius, height):
+    """Creates a cylindrical constraint.
+
+    Parameters
+    ----------
+    radius : float, required
+        The radius of the cylinder
+    height : float, required
+        The height  of the cylinder
+    center : array-like (1,3), default = (0, 0, 0)
+        Defines the center point of the sphere.
+    """
+    def __init__(self, radius, height, center=(0, 0, 0)):
         self.center = np.array(center)
         self.height = height
         self.radius = radius
@@ -57,7 +129,19 @@ class CylinderConstraint(Constraint):
         )
 
     def is_inside(self, points, buffer):
-        """Points and buffer are passed in from HardSphereRandomWalk"""
+        """Check a set of coordinates against the volume constraint.
+
+        Parameters
+        ----------
+        points : ndarray (N, 3), required
+            The set of points to check against the volume constraint.
+        buffer : float, required
+            Buffer used for rounding
+
+        Returns
+        -------
+        Mask of booleans of length N corresponding to each point.
+        """
         return is_inside_cylinder(
             points=points,
             center=self.center,

@@ -13,6 +13,19 @@ from mbuild.path.path_utils import check_path, random_coordinate
 
 
 class Path:
+    """Creates a path from a given set of coordinates and a bond graph.
+    This class is designed to be use in mbuild.polymer.Polymer.build_from_path().
+    This also serves as the base class from which other paths inherit from.
+
+    Parameters
+    ----------
+    N : int, optional
+        The number of sites belonging to the path.
+    coordinates : array-like, optional
+        Creates a path from a pre-defined set of coordinates
+    bond_graph : networkx.Graph, optional
+       The graph defining the edges between coordinates 
+    """
     def __init__(self, N=None, coordinates=None, bond_graph=None):
         self.bond_graph = bond_graph
         # Only N is defined, make empty coordinates array with size N
@@ -67,10 +80,10 @@ class Path:
             length=float(bond_length),
             bond_type=(u_name, v_name),
         )
-
+    
     def get_bonded_sites(self):
         """Get all bonded pairs and their bond-vector orientations."""
-        pass
+        raise NotImplementedError("This feature of mBuild 2.0 has not been implemented yet.")
 
     def get_coordinates(self):
         if isinstance(self.coordinates, list):
@@ -99,6 +112,7 @@ class Path:
         """Mapping other compounds onto a Path's coordinates
 
         mapping = {"A": "c1ccccc1C=C", "B": "C=CC=C"}
+        mapping = {"A": mb.Compound, "B": mb.Compound}
 
         for bond in bond graph edges:
             site u: add compound
@@ -108,7 +122,7 @@ class Path:
             set orientation and separation for site v tail port
 
         """
-        pass
+        raise NotImplementedError("This feature of mBuild 2.0 has not been implemented yet.")
 
     def _path_history(self):
         """Maybe this is a method that can be used optionally.
@@ -117,7 +131,7 @@ class Path:
         computation time and resources.
         Might be useful for more complicated random walks/branching algorithms
         """
-        pass
+        raise NotImplementedError("This feature of mBuild 2.0 has not been implemented yet.")
 
 
 class HardSphereRandomWalk(Path):
@@ -159,6 +173,23 @@ class HardSphereRandomWalk(Path):
         max_angle : float, required
             Maximum angle (radians) used when randomly selecting angle
             for the next step.
+        bead_name : str, default = "_A"
+            The name assigned to each site in this random walk.
+        volume_constraint : mbuild.utils.volumes.Constraint, optional
+            Used to reject moves which are outside of the volume constraint
+        start_from_path : mbuild.path.Path, optional
+            An instance of a previous Path to start the random walk from.
+            This path's sites are used in checking for overlapping sites.
+        start_from_path_index : int, optional
+            An index of `start_from_path` used as the starting point for this random walk.
+        attach_paths : bool, default = False 
+            If True, adds an edge between the starting point of the last path and the first
+            point of this path.
+        initial_point : array-like, optional
+            Used as the coordinate for the first site in this random walk path.
+        include_compound : mb.Compound, optional
+            An mBuild compound that is considered in this random walk.
+            This random walk with reject new points that overlap with the Compound's coordinates.
         seed : int, default = 42
             Random seed
         trial_batch_size : int, default = 5
@@ -167,15 +198,7 @@ class HardSphereRandomWalk(Path):
             random walks.
         max_attempts : int, default = 1e5
             The maximum number of trial moves to attempt before quiting.
-        start_from_path : mbuild.path.Path, optional
-            An instance of a previous Path to start the random walk from.
-        start_from_path_index : int, optional
-            The index of `start_from_path` to use as the initial point
             for the random walk.
-        attach_paths : bool, default = False
-            If True, an edge will be created in the bond graph between
-            the last point of `start_from_path` and the first point of
-            this random walk.
         tolerance : float, default = 1e-4
             Tolerance used for rounding and checking for overlaps.
 
@@ -776,12 +799,28 @@ class Spiral2D(Path):
 
 
 class ZigZag(Path):
+    """Generates a path following a zig-zag pattern in a given plane.
+
+    Parameters
+    ----------
+    spacing : float, default = 1.0
+        The distance between consecutive sites along the path.
+    angle_deg : float, default = 120.
+        The rotation applied between segments
+    sites_per_segment : int, default = 4 
+        The number of sites before rotating and beginning next segment.
+    plane : str, default = "xy"
+        The plane that the sites in the path occupy
+    bond_graph : networkx.Graph
+        Defines connectivity between sites
+
+    """
     def __init__(
         self,
         N,
         spacing=1.0,
         angle_deg=120.0,
-        sites_per_segment=1,
+        sites_per_segment=4,
         plane="xy",
         bond_graph=None,
     ):
