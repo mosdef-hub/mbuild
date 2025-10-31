@@ -24,8 +24,9 @@ class Path:
     coordinates : array-like, optional
         Creates a path from a pre-defined set of coordinates
     bond_graph : networkx.Graph, optional
-       The graph defining the edges between coordinates 
+       The graph defining the edges between coordinates
     """
+
     def __init__(self, N=None, coordinates=None, bond_graph=None):
         self.bond_graph = bond_graph
         # Only N is defined, make empty coordinates array with size N
@@ -80,10 +81,12 @@ class Path:
             length=float(bond_length),
             bond_type=(u_name, v_name),
         )
-    
+
     def get_bonded_sites(self):
         """Get all bonded pairs and their bond-vector orientations."""
-        raise NotImplementedError("This feature of mBuild 2.0 has not been implemented yet.")
+        raise NotImplementedError(
+            "This feature of mBuild 2.0 has not been implemented yet."
+        )
 
     def get_coordinates(self):
         if isinstance(self.coordinates, list):
@@ -122,7 +125,9 @@ class Path:
             set orientation and separation for site v tail port
 
         """
-        raise NotImplementedError("This feature of mBuild 2.0 has not been implemented yet.")
+        raise NotImplementedError(
+            "This feature of mBuild 2.0 has not been implemented yet."
+        )
 
     def _path_history(self):
         """Maybe this is a method that can be used optionally.
@@ -131,7 +136,9 @@ class Path:
         computation time and resources.
         Might be useful for more complicated random walks/branching algorithms
         """
-        raise NotImplementedError("This feature of mBuild 2.0 has not been implemented yet.")
+        raise NotImplementedError(
+            "This feature of mBuild 2.0 has not been implemented yet."
+        )
 
 
 class HardSphereRandomWalk(Path):
@@ -182,7 +189,7 @@ class HardSphereRandomWalk(Path):
             This path's sites are used in checking for overlapping sites.
         start_from_path_index : int, optional
             An index of `start_from_path` used as the starting point for this random walk.
-        attach_paths : bool, default = False 
+        attach_paths : bool, default = False
             If True, adds an edge between the starting point of the last path and the first
             point of this path.
         initial_point : array-like, optional
@@ -807,7 +814,7 @@ class ZigZag(Path):
         The distance between consecutive sites along the path.
     angle_deg : float, default = 120.
         The rotation applied between segments
-    sites_per_segment : int, default = 4 
+    sites_per_segment : int, default = 4
         The number of sites before rotating and beginning next segment.
     plane : str, default = "xy"
         The plane that the sites in the path occupy
@@ -815,6 +822,7 @@ class ZigZag(Path):
         Defines connectivity between sites
 
     """
+
     def __init__(
         self,
         N,

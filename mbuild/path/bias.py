@@ -58,7 +58,9 @@ class TargetType(Bias):
         super(TargetType, self).__init__(system_coordinates, new_coordinates)
 
     def __call__(self):
-        raise NotImplementedError("This feature of mBuild 2.0 has not been implemented yet.")
+        raise NotImplementedError(
+            "This feature of mBuild 2.0 has not been implemented yet."
+        )
 
 
 class AvoidType(Bias):
@@ -69,7 +71,9 @@ class AvoidType(Bias):
         super(AvoidType, self).__init__(system_coordinates, new_coordinates)
 
     def __call__(self):
-        raise NotImplementedError("This feature of mBuild 2.0 has not been implemented yet.")
+        raise NotImplementedError(
+            "This feature of mBuild 2.0 has not been implemented yet."
+        )
 
 
 class TargetEdge(Bias):
@@ -80,7 +84,9 @@ class TargetEdge(Bias):
         super(TargetEdge, self).__init__(system_coordinates, new_coordinates)
 
     def __call__(self):
-        raise NotImplementedError("This feature of mBuild 2.0 has not been implemented yet.")
+        raise NotImplementedError(
+            "This feature of mBuild 2.0 has not been implemented yet."
+        )
 
 
 class AvoidEdge(Bias):
@@ -91,7 +97,9 @@ class AvoidEdge(Bias):
         super(AvoidEdge, self).__init__(system_coordinates, new_coordinates)
 
     def __call__(self):
-        raise NotImplementedError("This feature of mBuild 2.0 has not been implemented yet.")
+        raise NotImplementedError(
+            "This feature of mBuild 2.0 has not been implemented yet."
+        )
 
 
 class TargetDirection(Bias):
@@ -102,7 +110,9 @@ class TargetDirection(Bias):
         super(TargetDirection, self).__init__(system_coordinates, new_coordinates)
 
     def __call__(self):
-        raise NotImplementedError("This feature of mBuild 2.0 has not been implemented yet.")
+        raise NotImplementedError(
+            "This feature of mBuild 2.0 has not been implemented yet."
+        )
 
 
 class AvoidDirection(Bias):
@@ -113,7 +123,9 @@ class AvoidDirection(Bias):
         super(AvoidDirection, self).__init__(system_coordinates, new_coordinates)
 
     def __call__(self):
-        raise NotImplementedError("This feature of mBuild 2.0 has not been implemented yet.")
+        raise NotImplementedError(
+            "This feature of mBuild 2.0 has not been implemented yet."
+        )
 
 
 class TargetPath(Bias):
@@ -124,4 +136,6 @@ class TargetPath(Bias):
         super(TargetPath, self).__init__(system_coordinates, new_coordinates)
 
     def __call__(self):
-        raise NotImplementedError("This feature of mBuild 2.0 has not been implemented yet.")
+        raise NotImplementedError(
+            "This feature of mBuild 2.0 has not been implemented yet."
+        )

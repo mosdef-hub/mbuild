@@ -10,7 +10,7 @@ class Constraint:
     Notes
     -----
     Design and implement your own volume constraint by inheriting from this class
-    and implementing the constraint check in an `is_inside` method. 
+    and implementing the constraint check in an `is_inside` method.
 
     `is_inside` is expected to return a mask of booleans.
 
@@ -18,6 +18,7 @@ class Constraint:
     call numba methods from their respectice `is_inside` method, but that is not a required
     implementation to design your own constraint.
     """
+
     def __init__(self):
         pass
 
@@ -40,6 +41,7 @@ class CuboidConstraint(Constraint):
     center : array-like (1,3), default = (0, 0, 0)
         Defines the center of the volume.
     """
+
     def __init__(self, Lx, Ly, Lz, center=(0, 0, 0)):
         self.center = np.asarray(center)
         self.mins = self.center - np.array([Lx / 2, Ly / 2, Lz / 2])
@@ -74,6 +76,7 @@ class SphereConstraint(Constraint):
     center : array-like (1,3), default = (0, 0, 0)
         Defines the center point of the sphere.
     """
+
     def __init__(self, center, radius):
         self.center = np.array(center)
         self.radius = radius
@@ -109,6 +112,7 @@ class CylinderConstraint(Constraint):
     center : array-like (1,3), default = (0, 0, 0)
         Defines the center point of the sphere.
     """
+
     def __init__(self, radius, height, center=(0, 0, 0)):
         self.center = np.array(center)
         self.height = height
