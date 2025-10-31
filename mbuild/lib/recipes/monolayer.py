@@ -1,13 +1,15 @@
 """mBuild monolayer recipe."""
 
+import logging
 from copy import deepcopy
-from warnings import warn
 
 import numpy as np
 
 import mbuild as mb
 
 __all__ = ["Monolayer"]
+
+logger = logging.getLogger(__name__)
 
 
 class Monolayer(mb.Compound):
@@ -75,7 +77,7 @@ class Monolayer(mb.Compound):
                 # Create sub-pattern for this chain type
                 subpattern = deepcopy(pattern)
                 n_points = int(round(fraction * n_chains))
-                warn("\n Adding {} of chain {}".format(n_points, chain))
+                logger.info(f"\n Adding {n_points} of chain {chain}")
                 pick = np.random.choice(
                     subpattern.points.shape[0], n_points, replace=False
                 )
@@ -98,10 +100,10 @@ class Monolayer(mb.Compound):
                 self.add(attached_chains)
 
         else:
-            warn("\n No fractions provided. Assuming a single chain type.")
+            logger.info("\n No fractions provided. Assuming a single chain type.")
 
         # Attach final chain type. Remaining sites get a backfill.
-        warn("\n Adding {} of chain {}".format(len(pattern), chains[-1]))
+        logger.info(f"\n Adding {len(pattern)} of chain {chains[-1]}")
         attached_chains, backfills = pattern.apply_to_compound(
             guest=chains[-1], host=self["tiled_surface"], backfill=backfill, **kwargs
         )

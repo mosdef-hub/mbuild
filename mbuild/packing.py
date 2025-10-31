@@ -3,11 +3,11 @@
 http://leandro.iqm.unicamp.br/m3g/packmol/home.shtml
 """
 
+import logging
 import os
 import shutil
 import sys
 import tempfile
-import warnings
 from itertools import zip_longest
 from subprocess import PIPE, Popen
 
@@ -19,6 +19,8 @@ from mbuild.compound import Compound
 from mbuild.exceptions import MBuildError
 
 __all__ = ["fill_box", "fill_region", "fill_sphere", "solvate"]
+
+logger = logging.getLogger(__name__)
 
 PACKMOL = shutil.which("packmol")
 PACKMOL_HEADER = """
@@ -91,7 +93,7 @@ def check_packmol_args(custom_args):
                 "See https://m3g.github.io/packmol/userguide.shtml#run"
             )
         if key in default_args:
-            warnings.warn(
+            logger.info(
                 f"The PACKMOL argument {key} was passed to `packmol_args`, "
                 "but should be set using the corresponding function parameters. "
                 "The value passed to the function will be used. "
@@ -1062,7 +1064,7 @@ def _validate_mass(compound, n_compounds):
             "on how mass is handled."
         )
     if found_zero_mass:
-        warnings.warn(
+        logger.info(
             "Some of the compounds or subcompounds in `compound` "
             "have a mass of zero/None. This may have an effect on "
             "density calculations"
@@ -1199,7 +1201,7 @@ def _run_packmol(input_text, filled_xyz, temp_file, packmol_file):
     out, err = proc.communicate()
 
     if "WITHOUT PERFECT PACKING" in out:
-        warnings.warn(
+        logger.warning(
             "Packmol finished with imperfect packing. Using the .xyz_FORCED "
             "file instead. This may not be a sufficient packing result."
         )

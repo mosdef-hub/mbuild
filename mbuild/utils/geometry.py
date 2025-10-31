@@ -28,6 +28,47 @@ def calc_dihedral(point1, point2, point3, point4):
     return angle(x, y)
 
 
+def bounding_box(xyz):
+    """Find the bounding box from a set of coordinates."""
+    # case where only 1 particle exists
+    is_one_particle = False
+    if xyz.shape[0] == 1:
+        is_one_particle = True
+
+    # are any columns all equalivalent values?
+    # an example of this would be a planar molecule
+    # example: all z values are 0.0
+    # from: https://stackoverflow.com/a/14860884
+    # steps: create mask array comparing first value in each column
+    # use np.all with axis=0 to do row columnar comparision
+    has_dimension = [True, True, True]
+    if not is_one_particle:
+        missing_dimensions = np.all(
+            np.isclose(xyz, xyz[0, :], atol=1e-2),
+            axis=0,
+        )
+        for i, truthy in enumerate(missing_dimensions):
+            has_dimension[i] = not truthy
+
+    if is_one_particle:
+        v1 = np.asarray([[1.0, 0.0, 0.0]])
+        v2 = np.asarray([[0.0, 1.0, 0.0]])
+        v3 = np.asarray([[0.0, 0.0, 1.0]])
+    else:
+        maxs = xyz.max(axis=0)
+        mins = xyz.min(axis=0)
+        v1 = np.asarray((maxs[0] - mins[0], 0.0, 0.0))
+        v2 = np.asarray((0.0, maxs[1] - mins[1], 0.0))
+        v3 = np.asarray((0.0, 0.0, maxs[2] - mins[2]))
+    vecs = [v1, v2, v3]
+
+    # handle any missing dimensions (planar molecules)
+    for i, dim in enumerate(has_dimension):
+        if not dim:
+            vecs[i][i] = 0.1
+    return vecs
+
+
 def coord_shift(xyz, box):
     """Ensure that coordinates are -L/2, L/2.
 
@@ -83,7 +124,7 @@ def wrap_coords(xyz, box, mins=None):
     -----
     Currently only supports orthorhombic boxes
     """
-    if not isinstance(box, mb.Box):
+    if not isinstance(box, mb.box.Box):
         box_arr = np.asarray(box)
         assert box_arr.shape == (3,)
 

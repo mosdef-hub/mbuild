@@ -1,22 +1,19 @@
 """Module for working with mBuild Compounds."""
 
-__all__ = ["clone", "Compound", "Particle"]
-
 import itertools
+import logging
 import os
 import tempfile
 from collections import OrderedDict
 from collections.abc import Iterable
 from copy import deepcopy
 from typing import Sequence
-from warnings import warn
 
 import ele
 import networkx as nx
 import numpy as np
 from boltons.setutils import IndexedSet
-from ele.element import Element, element_from_name, element_from_symbol
-from ele.exceptions import ElementError
+from ele.element import Element
 from treelib import Tree
 
 from mbuild import conversion
@@ -25,8 +22,22 @@ from mbuild.box import Box
 from mbuild.coordinate_transform import _rotate, _translate
 from mbuild.exceptions import MBuildError
 from mbuild.periodic_kdtree import PeriodicKDTree
+from mbuild.utils.geometry import bounding_box
 from mbuild.utils.io import import_, run_from_ipython
 from mbuild.utils.jsutils import overwrite_nglview_default
+
+__all__ = ["clone", "Compound", "Particle"]
+
+logger = logging.getLogger(__name__)
+
+bond_orderDict = {
+    "single": 1.0,
+    "double": 2.0,
+    "triple": 3.0,
+    "aromatic": 1.0,
+    "unspecified": 0.0,
+    "default": 1.0,
+}
 
 
 def clone(existing_compound, clone_of=None, root_container=None):
@@ -196,6 +207,8 @@ class Compound(object):
         else:
             self._charge = charge
             self._mass = mass
+        self._bond_tag = None
+        self._hoomd_data = {}
 
     def particles(self, include_ports=False):
         """Return all Particles of the Compound.
@@ -239,6 +252,70 @@ class Compound(object):
             # Parts further down the hierarchy.
             for subpart in part.successors():
                 yield subpart
+
+    def get_child_indices(self, child):
+        """Gets the indices of particles belonging to a child compound.
+
+        Parameters:
+        -----------
+        child : mb.Compound
+            Compound that belongs to self.children
+        """
+        if child not in self.children:
+            raise ValueError(f"{child} is not a child in this compound's hiearchy.")
+        parent_hashes = np.array([p.__hash__() for p in self.particles()])
+        child_hashes = np.array([p.__hash__() for p in child.particles()])
+        matching_indices = list(
+            int(np.where(parent_hashes == i)[0][0]) for i in child_hashes
+        )
+        return matching_indices
+
+    @property
+    def bond_tag(self):
+        return self._bond_tag
+
+    @bond_tag.setter
+    def bond_tag(self, tag):
+        self._bond_tag = tag
+
+    def set_bond_graph(self, new_graph):
+        """Manually set the compound's complete bond graph.
+
+        Parameters:
+        -----------
+        new_graph : networkx.Graph, required
+            A networkx.Graph containing information about
+            nodes and edges that is used to construct a
+            new mbuild.bond_graph.BondGraph().
+
+        Notes:
+        ------
+        The nodes of the new graph should be ints that are mapped to
+        the indices of the particles in the compound.
+
+        mbuild bond graphs accept `bond_order` arguments. If the
+        `bond_order` data is present in `new_graph`, it will be used,
+        otherwise `bond_under` is set to 'unspecified'.
+        """
+        if new_graph.number_of_nodes() != self.n_particles:
+            raise ValueError(
+                f"new_graph contains {new_graph.number_of_nodes()} nodes",
+                f" but the Compound contains {self.n_particles} particles",
+                "The graph must contain one node per particle.",
+            )
+        graph = BondGraph()
+        # node is int corresponding to particle index
+        for node in new_graph.nodes:
+            graph.add_node(node_for_adding=self[node])
+        for edge in new_graph.edges:
+            if "bond_order" in edge:
+                bond_order = edge["bond_order"]
+            else:
+                bond_order = "unspecified"
+            graph.add_edge(
+                u_of_edge=self[edge[0]], v_of_edge=self[edge[1]], bond_order=bond_order
+            )
+        self.bond_graph = graph
 
     @property
     def n_particles(self):
@@ -499,7 +576,7 @@ class Compound(object):
         else:
             particle_masses = [self._particle_mass(p) for p in self.particles()]
             if None in particle_masses:
-                warn(
+                logger.info(
                     f"Some particle of {self} does not have mass."
                     "They will not be accounted for during this calculation."
                 )
@@ -543,8 +620,8 @@ class Compound(object):
             return self._particle_charge(self)
         charges = [p._charge for p in self.particles()]
         if None in charges:
-            warn(
-                f"Some particle of {self} does not have a charge."
+            logger.info(
+                f"Some particle of {self} does not have a charge. "
                 "They will not be accounted for during this calculation."
             )
         filtered_charges = [charge for charge in charges if charge is not None]
@@ -564,6 +641,17 @@ class Compound(object):
                 "charge is immutable for Compounds that are "
                 "not at the bottom of the containment hierarchy."
             )
+
+    def volume(self):
+        """Estimate volume of the compound's particles.
+        Uses rdkit.Chem.AllChem.ComputeMolVolume
+        """
+        from rdkit import Chem
+
+        rdmol = self.to_rdkit(embed=True)
+        vol = Chem.AllChem.ComputeMolVolume(rdmol)
+        vol /= 1000  # Convert from cubic angstrom to cubic nm
+        return vol
 
     def add(
         self,
@@ -659,7 +747,7 @@ class Compound(object):
                 f"to Compounds. You tried to add '{new_child}'."
             )
         if self._mass is not None and not isinstance(new_child, Port):
-            warn(
+            logger.info(
                 f"{self} has a pre-defined mass of {self._mass}, "
                 "which will be reset to zero now that it contains children "
                 "compounds."
@@ -726,7 +814,7 @@ class Compound(object):
         else:
             if inherit_box:
                 if new_child.box is None:
-                    warn(
+                    logger.info(
                         "The Compound you are adding has no box but "
                         "inherit_box=True. The box of the original "
                         "Compound will remain unchanged."
@@ -735,7 +823,7 @@ class Compound(object):
                     self.box = new_child.box
             else:
                 if new_child.box is not None:
-                    warn(
+                    logger.info(
                         "The Compound you are adding has a box. "
                         "The box of the parent compound will be used. Use "
                         "inherit_box = True if you wish to replace the parent "
@@ -747,7 +835,7 @@ class Compound(object):
             if (
                 np.array(self.box.lengths) < np.array(self.get_boundingbox().lengths)
             ).any():
-                warn(
+                logger.warning(
                     "After adding new Compound, Compound.box.lengths < "
                     "Compound.boundingbox.lengths. There may be particles "
                     "outside of the defined simulation box"
@@ -801,7 +889,7 @@ class Compound(object):
                     to_remove.append(child)
                     _check_if_empty(child.parent)
                 else:
-                    warn(f"This will remove all particles in {self}")
+                    logger.warning(f"This will remove all particles in {self}")
             return
 
         for particle in particles_to_remove:
@@ -1084,28 +1172,23 @@ class Compound(object):
             The pair of Particles to add a bond between
         bond_order : float, optional, default=None
             Bond order of the bond.
-            Available options include "default", "single", "double",
-            "triple", "aromatic" or "unspecified"
+            Available options include "None", 1.0, 2.0,
+            3.0, 1.5 or 0.0. The previous string options include "default", "single", "double",
+            "triple", "aromatic" or "unspecified", are supported but will be deprecated.
         """
         if self.root.bond_graph is None:
             self.root.bond_graph = BondGraph()
         if bond_order is None:
-            bond_order = "default"
+            bond_order = 0.0
+        elif isinstance(bond_order, str):
+            logger.warning(
+                "Bond order as a string will be deprecated and replaced with floats."
+            )
+            bond_order = bond_orderDict.get(bond_order, 0.0)
         else:
-            if not isinstance(bond_order, str) or bond_order.lower() not in [
-                "default",
-                "single",
-                "double",
-                "triple",
-                "aromatic",
-                "unspecified",
-            ]:
+            if bond_order not in [0.0, 1.0, 2.0, 3.0, 1.5]:
                 raise ValueError(
-                    "Invalid bond_order given. Available bond orders are: single",
-                    "double",
-                    "triple",
-                    "aromatic",
-                    "unspecified",
+                    f"Invalid bond_order given {bond_order=}. Available bond orders are: 0.0, 1.0, 2.0, 3.0, 1.5"
                 )
         self.root.bond_graph.add_edge(
             particle_pair[0], particle_pair[1], bond_order=bond_order
@@ -1211,12 +1294,14 @@ class Compound(object):
         if self.root.bond_graph is None or not self.root.bond_graph.has_edge(
             *particle_pair
         ):
-            warn("Bond between {} and {} doesn't exist!".format(*particle_pair))
+            raise MBuildError(
+                "Bond between {} and {} doesn't exist!".format(*particle_pair)
+            )
             return
         self.root.bond_graph.remove_edge(*particle_pair)
         bond_vector = particle_pair[0].pos - particle_pair[1].pos
         if np.allclose(bond_vector, np.zeros(3)):
-            warn(
+            logger.warning(
                 "Particles {} and {} overlap! Ports will not be added.".format(
                     *particle_pair
                 )
@@ -1293,7 +1378,7 @@ class Compound(object):
         # Make sure the box is bigger than the bounding box
         if box is not None:
             if np.asarray((box.lengths < self.get_boundingbox().lengths)).any():
-                warn(
+                logger.warning(
                     "Compound.box.lengths < Compound.boundingbox.lengths. "
                     "There may be particles outside of the defined "
                     "simulation box."
@@ -1525,40 +1610,7 @@ class Compound(object):
         that are generated from mb.Lattice's and the resulting
         mb.Lattice.populate method
         """
-        # case where only 1 particle exists
-        is_one_particle = False
-        if self.xyz.shape[0] == 1:
-            is_one_particle = True
-
-        # are any columns all equalivalent values?
-        # an example of this would be a planar molecule
-        # example: all z values are 0.0
-        # from: https://stackoverflow.com/a/14860884
-        # steps: create mask array comparing first value in each column
-        # use np.all with axis=0 to do row columnar comparision
-        has_dimension = [True, True, True]
-        if not is_one_particle:
-            missing_dimensions = np.all(
-                np.isclose(self.xyz, self.xyz[0, :], atol=1e-2),
-                axis=0,
-            )
-            for i, truthy in enumerate(missing_dimensions):
-                has_dimension[i] = not truthy
-
-        if is_one_particle:
-            v1 = np.asarray([[1.0, 0.0, 0.0]])
-            v2 = np.asarray([[0.0, 1.0, 0.0]])
-            v3 = np.asarray([[0.0, 0.0, 1.0]])
-        else:
-            v1 = np.asarray((self.maxs[0] - self.mins[0], 0.0, 0.0))
-            v2 = np.asarray((0.0, self.maxs[1] - self.mins[1], 0.0))
-            v3 = np.asarray((0.0, 0.0, self.maxs[2] - self.mins[2]))
-        vecs = [v1, v2, v3]
-
-        # handle any missing dimensions (planar molecules)
-        for i, dim in enumerate(has_dimension):
-            if not dim:
-                vecs[i][i] = 0.1
+        vecs = bounding_box(xyz=self.xyz)
 
         if pad_box is not None:
             if isinstance(pad_box, (int, float, str, Sequence)):
@@ -1581,8 +1633,7 @@ class Compound(object):
             for dim, val in enumerate(padding):
                 vecs[dim][dim] = vecs[dim][dim] + val
 
-        bounding_box = Box.from_vectors(vectors=np.asarray([vecs]).reshape(3, 3))
-        return bounding_box
+        return Box.from_vectors(vectors=np.asarray([vecs]).reshape(3, 3))
 
     def min_periodic_distance(self, xyz0, xyz1):
         """Vectorized distance calculation considering minimum image.
@@ -1620,7 +1671,9 @@ class Compound(object):
             raise MBuildError(f'Cannot calculate minimum periodic distance. '
                               f'No Box set for {self}')
             """
-            warn(f"No Box object set for {self}, using rectangular bounding box")
+            logger.warning(
+                f"No Box object set for {self}, using rectangular bounding box"
+            )
             self.box = self.get_boundingbox()
             if np.allclose(self.box.angles, 90.0):
                 d = np.where(
@@ -1688,6 +1741,7 @@ class Compound(object):
         backend="py3dmol",
         color_scheme={},
         bead_size=0.3,
+        show_bond_tags=False,
     ):  # pragma: no cover
         """Visualize the Compound using py3dmol (default) or nglview.
 
@@ -2014,714 +2068,6 @@ class Compound(object):
         for particle in self.particles():
             particle.pos += (np.random.rand(3) - 0.5) / 100
         self._update_port_locations(xyz_init)
-
-    def energy_minimize(
-        self,
-        forcefield="UFF",
-        steps=1000,
-        shift_com=True,
-        anchor=None,
-        **kwargs,
-    ):
-        """Perform an energy minimization on a Compound.
-
-        Default behavior utilizes `Open Babel <http://openbabel.org/docs/dev/>`_
-        to perform an energy minimization/geometry optimization on a Compound by
-        applying a generic force field
-
-        Can also utilize `OpenMM <http://openmm.org/>`_ to energy minimize after
-        atomtyping a Compound using
-        `Foyer <https://github.com/mosdef-hub/foyer>`_ to apply a forcefield XML
-        file that contains valid SMARTS strings.
-
-        This function is primarily intended to be used on smaller components,
-        with sizes on the order of 10's to 100's of particles, as the energy
-        minimization scales poorly with the number of particles.
-
-        Parameters
-        ----------
-        steps : int, optional, default=1000
-            The number of optimization iterations
-        forcefield : str, optional, default='UFF'
-            The generic force field to apply to the Compound for minimization.
-            Valid options are 'MMFF94', 'MMFF94s', ''UFF', 'GAFF', 'Ghemical'.
-            Please refer to the `Open Babel documentation
-            <http://open-babel.readthedocs.io/en/latest/Forcefields/Overview.html>`_
-            when considering your choice of force field.
-            Utilizing OpenMM for energy minimization requires a forcefield
-            XML file with valid SMARTS strings. Please refer to `OpenMM docs
-            <http://docs.openmm.org/7.0.0/userguide/application.html#creating-force-fields>`_
-            for more information.
-        shift_com : bool, optional, default=True
-            If True, the energy-minimized Compound is translated such that the
-            center-of-mass is unchanged relative to the initial configuration.
-        anchor : Compound, optional, default=None
-            Translates the energy-minimized Compound such that the
-            position of the anchor Compound is unchanged relative to the
-            initial configuration.
-
-
-        Other Parameters
-        ----------------
-        algorithm : str, optional, default='cg'
-            The energy minimization algorithm.  Valid options are 'steep', 'cg',
-            and 'md', corresponding to steepest descent, conjugate gradient, and
-            equilibrium molecular dynamics respectively.
-            For _energy_minimize_openbabel
-        fixed_compounds : Compound, optional, default=None
-            An individual Compound or list of Compounds that will have their
-            position fixed during energy minimization. Note, positions are fixed
-            using a restraining potential and thus may change slightly.
-            Position fixing will apply to all Particles (i.e., atoms) that exist
-            in the Compound and to particles in any subsequent sub-Compounds.
-            By default x,y, and z position is fixed. This can be toggled by instead
-            passing a list containing the Compound and an list or tuple of bool values
-            corresponding to x,y and z; e.g., [Compound, (True, True, False)]
-            will fix the x and y position but allow z to be free.
-            For _energy_minimize_openbabel
-        ignore_compounds: Compound, optional, default=None
-            An individual compound or list of Compounds whose underlying particles
-            will have their positions fixed and not interact with other atoms via
-            the specified force field during the energy minimization process.
-            Note, a restraining potential used and thus absolute position may vary
-            as a result of the energy minimization process.
-            Interactions of these ignored atoms can  be specified by the user,
-            e.g., by explicitly setting a distance constraint.
-            For _energy_minimize_openbabel
-        distance_constraints: list, optional, default=None
-            A list containing a pair of Compounds as a tuple or list and
-            a float value specifying the target distance between the two Compounds, e.g.,:
-            [(compound1, compound2), distance].
-            To specify more than one constraint, pass constraints as a 2D list, e.g.,:
-            [ [(compound1, compound2), distance1],  [(compound3, compound4), distance2] ].
-            Note, Compounds specified here must represent individual point particles.
-            For _energy_minimize_openbabel
-        constraint_factor: float, optional, default=50000.0
-            Harmonic springs are used to constrain distances and fix atom positions, where
-            the resulting energy associated with the spring is scaled by the
-            constraint_factor; the energy of this spring is considering during the minimization.
-            As such, very small values of the constraint_factor may result in an energy
-            minimized state that does not adequately restrain the distance/position of atoms.
-            For _energy_minimize_openbabel
-        scale_bonds : float, optional, default=1
-            Scales the bond force constant (1 is completely on).
-            For _energy_minimize_openmm
-        scale_angles : float, optional, default=1
-            Scales the angle force constant (1 is completely on)
-            For _energy_minimize_openmm
-        scale_torsions : float, optional, default=1
-            Scales the torsional force constants (1 is completely on)
-            For _energy_minimize_openmm
-            Note: Only Ryckaert-Bellemans style torsions are currently supported
-        scale_nonbonded : float, optional, default=1
-            Scales epsilon (1 is completely on)
-            For _energy_minimize_openmm
-        constraints : str, optional, default="AllBonds"
-            Specify constraints on the molecule to minimize, options are:
-            None, "HBonds", "AllBonds", "HAngles"
-            For _energy_minimize_openmm
-
-        References
-        ----------
-        If using _energy_minimize_openmm(), please cite:
-
-        .. [Eastman2013] P. Eastman, M. S. Friedrichs, J. D. Chodera,
-           R. J. Radmer, C. M. Bruns, J. P. Ku, K. A. Beauchamp, T. J. Lane,
-           L.-P. Wang, D. Shukla, T. Tye, M. Houston, T. Stich, C. Klein,
-           M. R. Shirts, and V. S. Pande. "OpenMM 4: A Reusable, Extensible,
-           Hardware Independent Library for High Performance Molecular
-           Simulation." J. Chem. Theor. Comput. 9(1): 461-469. (2013).
-
-        If using _energy_minimize_openbabel(), please cite:
-
-        .. [OBoyle2011] O'Boyle, N.M.; Banck, M.; James, C.A.; Morley, C.;
-           Vandermeersch, T.; Hutchison, G.R. "Open Babel: An open chemical
-           toolbox." (2011) J. Cheminf. 3, 33
-
-        .. [OpenBabel] Open Babel, version X.X.X http://openbabel.org,
-           (installed Month Year)
-
-        If using the 'MMFF94' force field please also cite the following:
-
-        .. [Halgren1996a] T.A. Halgren, "Merck molecular force field. I. Basis,
-           form, scope, parameterization, and performance of MMFF94." (1996)
-           J. Comput. Chem. 17, 490-519
-
-        .. [Halgren1996b] T.A. Halgren, "Merck molecular force field. II. MMFF94
-           van der Waals and electrostatic parameters for intermolecular
-           interactions." (1996) J. Comput. Chem. 17, 520-552
-
-        .. [Halgren1996c] T.A. Halgren, "Merck molecular force field. III.
-           Molecular geometries and vibrational frequencies for MMFF94." (1996)
-           J. Comput. Chem. 17, 553-586
-
-        .. [Halgren1996d] T.A. Halgren and R.B. Nachbar, "Merck molecular force
-           field. IV. Conformational energies and geometries for MMFF94." (1996)
-           J. Comput. Chem. 17, 587-615
-
-        .. [Halgren1996e] T.A. Halgren, "Merck molecular force field. V.
-           Extension of MMFF94 using experimental data, additional computational
-           data, and empirical rules." (1996) J. Comput. Chem. 17, 616-641
-
-        If using the 'MMFF94s' force field please cite the above along with:
-
-        .. [Halgren1999] T.A. Halgren, "MMFF VI. MMFF94s option for energy minimization
-           studies." (1999) J. Comput. Chem. 20, 720-729
-
-        If using the 'UFF' force field please cite the following:
-
-        .. [Rappe1992] Rappe, A.K., Casewit, C.J., Colwell, K.S., Goddard, W.A.
-           III, Skiff, W.M. "UFF, a full periodic table force field for
-           molecular mechanics and molecular dynamics simulations." (1992)
-           J. Am. Chem. Soc. 114, 10024-10039
-
-        If using the 'GAFF' force field please cite the following:
-
-        .. [Wang2004] Wang, J., Wolf, R.M., Caldwell, J.W., Kollman, P.A.,
-           Case, D.A. "Development and testing of a general AMBER force field"
-           (2004) J. Comput. Chem. 25, 1157-1174
-
-        If using the 'Ghemical' force field please cite the following:
-
-        .. [Hassinen2001] T. Hassinen and M. Perakyla, "New energy terms for
-           reduced protein models implemented in an off-lattice force field"
-           (2001) J. Comput. Chem. 22, 1229-1242
-
-        """
-        # TODO: Update mbuild tutorials to provide overview of new features
-        #   Preliminary tutorials: https://github.com/chrisiacovella/mbuild_energy_minimization
-        com = self.pos
-        anchor_in_compound = False
-        if anchor is not None:
-            # check to see if the anchor exists
-            # in the Compound to be energy minimized
-            for succesor in self.successors():
-                if id(anchor) == id(succesor):
-                    anchor_in_compound = True
-                    anchor_pos_old = anchor.pos
-
-            if not anchor_in_compound:
-                raise MBuildError(
-                    f"Anchor: {anchor} is not part of the Compound: {self}"
-                    "that you are trying to energy minimize."
-                )
-        self._kick()
-        extension = os.path.splitext(forcefield)[-1]
-        openbabel_ffs = ["MMFF94", "MMFF94s", "UFF", "GAFF", "Ghemical"]
-        if forcefield in openbabel_ffs:
-            self._energy_minimize_openbabel(
-                forcefield=forcefield, steps=steps, **kwargs
-            )
-        else:
-            tmp_dir = tempfile.mkdtemp()
-            self.save(os.path.join(tmp_dir, "un-minimized.mol2"))
-
-            if extension == ".xml":
-                self._energy_minimize_openmm(
-                    tmp_dir,
-                    forcefield_files=forcefield,
-                    forcefield_name=None,
-                    steps=steps,
-                    **kwargs,
-                )
-            else:
-                self._energy_minimize_openmm(
-                    tmp_dir,
-                    forcefield_files=None,
-                    forcefield_name=forcefield,
-                    steps=steps,
-                    **kwargs,
-                )
-
-            self.update_coordinates(os.path.join(tmp_dir, "minimized.pdb"))
-
-        if shift_com:
-            self.translate_to(com)
-
-        if anchor_in_compound:
-            anchor_pos_new = anchor.pos
-            delta = anchor_pos_old - anchor_pos_new
-            self.translate(delta)
-
-    def _energy_minimize_openmm(
-        self,
-        tmp_dir,
-        forcefield_files=None,
-        forcefield_name=None,
-        steps=1000,
-        scale_bonds=1,
-        scale_angles=1,
-        scale_torsions=1,
-        scale_nonbonded=1,
-        constraints="AllBonds",
-    ):
-        """Perform energy minimization using OpenMM.
-
-        Converts an mBuild Compound to a ParmEd Structure,
-        applies a forcefield using Foyer, and creates an OpenMM System.
-
-        Parameters
-        ----------
-        forcefield_files : str or list of str, optional, default=None
-            Forcefield files to load
-        forcefield_name : str, optional, default=None
-            Apply a named forcefield to the output file using the `foyer`
-            package, e.g. 'oplsaa'. `Foyer forcefields`
-            <https://github.com/mosdef-hub/foyer/tree/master/foyer/forcefields>_
-        steps : int, optional, default=1000
-            Number of energy minimization iterations
-        scale_bonds : float, optional, default=1
-            Scales the bond force constant (1 is completely on)
-        scale_angles : float, optiona, default=1
-            Scales the angle force constant (1 is completely on)
-        scale_torsions : float, optional, default=1
-            Scales the torsional force constants (1 is completely on)
-        scale_nonbonded : float, optional, default=1
-            Scales epsilon (1 is completely on)
-        constraints : str, optional, default="AllBonds"
-            Specify constraints on the molecule to minimize, options are:
-            None, "HBonds", "AllBonds", "HAngles"
-
-        Notes
-        -----
-        Assumes a particular organization for the force groups
-        (HarmonicBondForce, HarmonicAngleForce, RBTorsionForce, NonBondedForce)
-
-        References
-        ----------
-        [Eastman2013]_
-        """
-        foyer = import_("foyer")
-
-        to_parmed = self.to_parmed()
-        ff = foyer.Forcefield(forcefield_files=forcefield_files, name=forcefield_name)
-        to_parmed = ff.apply(to_parmed)
-
-        import openmm.unit as u
-        from openmm.app import AllBonds, HAngles, HBonds
-        from openmm.app.pdbreporter import PDBReporter
-        from openmm.app.simulation import Simulation
-        from openmm.openmm import LangevinIntegrator
-
-        if constraints:
-            if constraints == "AllBonds":
-                constraints = AllBonds
-            elif constraints == "HBonds":
-                constraints = HBonds
-            elif constraints == "HAngles":
-                constraints = HAngles
-            else:
-                raise ValueError(
-                    f"Provided constraints value of: {constraints}.\n"
-                    f'Expected "HAngles", "AllBonds" "HBonds".'
-                )
-            system = to_parmed.createSystem(
-                constraints=constraints
-            )  # Create an OpenMM System
-        else:
-            system = to_parmed.createSystem()  # Create an OpenMM System
-        # Create a Langenvin Integrator in OpenMM
-        integrator = LangevinIntegrator(
-            298 * u.kelvin, 1 / u.picosecond, 0.002 * u.picoseconds
-        )
-        # Create Simulation object in OpenMM
-        simulation = Simulation(to_parmed.topology, system, integrator)
-
-        # Loop through forces in OpenMM System and set parameters
-        for force in system.getForces():
-            if type(force).__name__ == "HarmonicBondForce":
-                for bond_index in range(force.getNumBonds()):
-                    atom1, atom2, r0, k = force.getBondParameters(bond_index)
-                    force.setBondParameters(
-                        bond_index, atom1, atom2, r0, k * scale_bonds
-                    )
-                force.updateParametersInContext(simulation.context)
-
-            elif type(force).__name__ == "HarmonicAngleForce":
-                for angle_index in range(force.getNumAngles()):
-                    atom1, atom2, atom3, r0, k = force.getAngleParameters(angle_index)
-                    force.setAngleParameters(
-                        angle_index, atom1, atom2, atom3, r0, k * scale_angles
-                    )
-                force.updateParametersInContext(simulation.context)
-
-            elif type(force).__name__ == "RBTorsionForce":
-                for torsion_index in range(force.getNumTorsions()):
-                    (
-                        atom1,
-                        atom2,
-                        atom3,
-                        atom4,
-                        c0,
-                        c1,
-                        c2,
-                        c3,
-                        c4,
-                        c5,
-                    ) = force.getTorsionParameters(torsion_index)
-                    force.setTorsionParameters(
-                        torsion_index,
-                        atom1,
-                        atom2,
-                        atom3,
-                        atom4,
-                        c0 * scale_torsions,
-                        c1 * scale_torsions,
-                        c2 * scale_torsions,
-                        c3 * scale_torsions,
-                        c4 * scale_torsions,
-                        c5 * scale_torsions,
-                    )
-                force.updateParametersInContext(simulation.context)
-
-            elif type(force).__name__ == "NonbondedForce":
-                for nb_index in range(force.getNumParticles()):
-                    charge, sigma, epsilon = force.getParticleParameters(nb_index)
-                    force.setParticleParameters(
-                        nb_index, charge, sigma, epsilon * scale_nonbonded
-                    )
-                force.updateParametersInContext(simulation.context)
-
-            elif type(force).__name__ == "CMMotionRemover":
-                pass
-
-            else:
-                warn(
-                    f"OpenMM Force {type(force).__name__} is "
-                    "not currently supported in _energy_minimize_openmm. "
-                    "This Force will not be updated!"
-                )
-
-        simulation.context.setPositions(to_parmed.positions)
-        # Run energy minimization through OpenMM
-        simulation.minimizeEnergy(maxIterations=steps)
-        reporter = PDBReporter(os.path.join(tmp_dir, "minimized.pdb"), 1)
-        reporter.report(simulation, simulation.context.getState(getPositions=True))
-
-    def _check_openbabel_constraints(
-        self,
-        particle_list,
-        successors_list,
-        check_if_particle=False,
-    ):
-        """Provide routines commonly used to check constraint inputs."""
-        for part in particle_list:
-            if not isinstance(part, Compound):
-                raise MBuildError(f"{part} is not a Compound.")
-            if id(part) != id(self) and id(part) not in successors_list:
-                raise MBuildError(f"{part} is not a member of Compound {self}.")
-
-            if check_if_particle:
-                if len(part.children) != 0:
-                    raise MBuildError(
-                        f"{part} does not correspond to an individual particle."
-                    )
-
-    def _energy_minimize_openbabel(
-        self,
-        steps=1000,
-        algorithm="cg",
-        forcefield="UFF",
-        constraint_factor=50000.0,
-        distance_constraints=None,
-        fixed_compounds=None,
-        ignore_compounds=None,
-    ):
-        """Perform an energy minimization on a Compound.
-
-        Utilizes Open Babel (http://openbabel.org/docs/dev/) to perform an
-        energy minimization/geometry optimization on a Compound by applying
-        a generic force field.
-
-        This function is primarily intended to be used on smaller components,
-        with sizes on the order of 10's to 100's of particles, as the energy
-        minimization scales poorly with the number of particles.
-
-        Parameters
-        ----------
-        steps : int, optionl, default=1000
-            The number of optimization iterations
-        algorithm : str, optional, default='cg'
-            The energy minimization algorithm.  Valid options are 'steep',
-            'cg', and 'md', corresponding to steepest descent, conjugate
-            gradient, and equilibrium molecular dynamics respectively.
-        forcefield : str, optional, default='UFF'
-            The generic force field to apply to the Compound for minimization.
-            Valid options are 'MMFF94', 'MMFF94s', ''UFF', 'GAFF', 'Ghemical'.
-            Please refer to the Open Babel documentation
-            (http://open-babel.readthedocs.io/en/latest/Forcefields/Overview.html)
-            when considering your choice of force field.
-        fixed_compounds : Compound, optional, default=None
-            An individual Compound or list of Compounds that will have their
-            position fixed during energy minimization. Note, positions are fixed
-            using a restraining potential and thus may change slightly.
-            Position fixing will apply to all Particles (i.e., atoms) that exist
-            in the Compound and to particles in any subsequent sub-Compounds.
-            By default x,y, and z position is fixed. This can be toggled by instead
-            passing a list containing the Compound and a list or tuple of bool values
-            corresponding to x,y and z; e.g., [Compound, (True, True, False)]
-            will fix the x and y position but allow z to be free.
-        ignore_compounds: Compound, optional, default=None
-            An individual compound or list of Compounds whose underlying particles
-            will have their positions fixed and not interact with other atoms via
-            the specified force field during the energy minimization process.
-            Note, a restraining potential is used and thus absolute position may vary
-            as a result of the energy minimization process.
-            Interactions of these ignored atoms can  be specified by the user,
-            e.g., by explicitly setting a distance constraint.
-        distance_constraints: list, optional, default=None
-            A list containing a pair of Compounds as a tuple or list and
-            a float value specifying the target distance between the two Compounds, e.g.,:
-            [(compound1, compound2), distance].
-            To specify more than one constraint, pass constraints as a 2D list, e.g.,:
-            [ [(compound1, compound2), distance1],  [(compound3, compound4), distance2] ].
-            Note, Compounds specified here must represent individual point particles.
-        constraint_factor: float, optional, default=50000.0
-            Harmonic springs are used to constrain distances and fix atom positions, where
-            the resulting energy associated with the spring is scaled by the
-            constraint_factor; the energy of this spring is considering during the minimization.
-            As such, very small values of the constraint_factor may result in an energy
-            minimized state that does not adequately restrain the distance/position of atom(s)e.
-
-
-        References
-        ----------
-        [OBoyle2011]_
-        [OpenBabel]_
-
-        If using the 'MMFF94' force field please also cite the following:
-        [Halgren1996a]_
-        [Halgren1996b]_
-        [Halgren1996c]_
-        [Halgren1996d]_
-        [Halgren1996e]_
-
-        If using the 'MMFF94s' force field please cite the above along with:
-        [Halgren1999]_
-
-        If using the 'UFF' force field please cite the following:
-        [Rappe1992]_
-
-        If using the 'GAFF' force field please cite the following:
-        [Wang2001]_
-
-        If using the 'Ghemical' force field please cite the following:
-        [Hassinen2001]_
-        """
-        openbabel = import_("openbabel")
-        for particle in self.particles():
-            if particle.element is None:
-                try:
-                    particle._element = element_from_symbol(particle.name)
-                except ElementError:
-                    try:
-                        particle._element = element_from_name(particle.name)
-                    except ElementError:
-                        raise MBuildError(
-                            f"No element assigned to {particle}; element could not be"
-                            f"inferred from particle name {particle.name}. Cannot perform"
-                            "an energy minimization."
-                        )
-        # Create a dict containing particle id and associated index to speed up looping
-        particle_idx = {
-            id(particle): idx for idx, particle in enumerate(self.particles())
-        }
-
-        # A list containing all Compounds ids contained in self. Will be used to check if
-        # compounds refered to in the constrains are actually in the Compound we are minimizing.
-        successors_list = [id(compound) for compound in self.successors()]
-
-        # initialize constraints
-        ob_constraints = openbabel.OBFFConstraints()
-
-        if distance_constraints is not None:
-            # if a user passes single constraint as a 1-D array,
-            # i.e., [(p1,p2), 2.0]  rather than [[(p1,p2), 2.0]],
-            # just add it to a list so we can use the same looping code
-            if len(np.array(distance_constraints, dtype=object).shape) == 1:
-                distance_constraints = [distance_constraints]
-
-            for con_temp in distance_constraints:
-                p1 = con_temp[0][0]
-                p2 = con_temp[0][1]
-
-                self._check_openbabel_constraints(
-                    [p1, p2], successors_list, check_if_particle=True
-                )
-                if id(p1) == id(p2):
-                    raise MBuildError(
-                        f"Cannot create a constraint between a Particle and itself: {p1} {p2} ."
-                    )
-
-                # openbabel indices start at 1
-                pid_1 = particle_idx[id(p1)] + 1
-                # openbabel indices start at 1
-                pid_2 = particle_idx[id(p2)] + 1
-                dist = (
-                    con_temp[1] * 10.0
-                )  # obenbabel uses angstroms, not nm, convert to angstroms
-
-                ob_constraints.AddDistanceConstraint(pid_1, pid_2, dist)
-
-        if fixed_compounds is not None:
-            # if we are just passed a single Compound, wrap it into
-            # and array so we can just use the same looping code
-            if isinstance(fixed_compounds, Compound):
-                fixed_compounds = [fixed_compounds]
-
-            # if fixed_compounds is a 1-d array and it is of length 2, we need to determine whether it is
-            # a list of two Compounds or if fixed_compounds[1] should correspond to the directions to constrain
-            if len(np.array(fixed_compounds, dtype=object).shape) == 1:
-                if len(fixed_compounds) == 2:
-                    if not isinstance(fixed_compounds[1], Compound):
-                        # if it is not a list of two Compounds, make a 2d array so we can use the same looping code
-                        fixed_compounds = [fixed_compounds]
-
-            for fixed_temp in fixed_compounds:
-                # if an individual entry is a list, validate the input
-                if isinstance(fixed_temp, list):
-                    if len(fixed_temp) == 2:
-                        msg1 = (
-                            "Expected tuple or list of length 3 to set"
-                            "which dimensions to fix motion."
-                        )
-                        assert isinstance(fixed_temp[1], (list, tuple)), msg1
-
-                        msg2 = (
-                            "Expected tuple or list of length 3 to set"
-                            "which dimensions to fix motion, "
-                            f"{len(fixed_temp[1])} found."
-                        )
-                        assert len(fixed_temp[1]) == 3, msg2
-
-                        dims = [dim for dim in fixed_temp[1]]
-                        msg3 = (
-                            "Expected bool values for which directions are fixed."
-                            f"Found instead {dims}."
-                        )
-                        assert all(isinstance(dim, bool) for dim in dims), msg3
-
-                        p1 = fixed_temp[0]
-
-                    # if fixed_compounds is defined as [[Compound],[Compound]],
-                    # fixed_temp will be a list of length 1
-                    elif len(fixed_temp) == 1:
-                        p1 = fixed_temp[0]
-                        dims = [True, True, True]
-
-                else:
-                    p1 = fixed_temp
-                    dims = [True, True, True]
-
-                all_true = all(dims)
-
-                self._check_openbabel_constraints([p1], successors_list)
-
-                if len(p1.children) == 0:
-                    pid = particle_idx[id(p1)] + 1  # openbabel indices start at 1
-
-                    if all_true:
-                        ob_constraints.AddAtomConstraint(pid)
-                    else:
-                        if dims[0]:
-                            ob_constraints.AddAtomXConstraint(pid)
-                        if dims[1]:
-                            ob_constraints.AddAtomYConstraint(pid)
-                        if dims[2]:
-                            ob_constraints.AddAtomZConstraint(pid)
-                else:
-                    for particle in p1.particles():
-                        pid = (
-                            particle_idx[id(particle)] + 1
-                        )  # openbabel indices start at 1
-
-                        if all_true:
-                            ob_constraints.AddAtomConstraint(pid)
-                        else:
-                            if dims[0]:
-                                ob_constraints.AddAtomXConstraint(pid)
-                            if dims[1]:
-                                ob_constraints.AddAtomYConstraint(pid)
-                            if dims[2]:
-                                ob_constraints.AddAtomZConstraint(pid)
-
-        if ignore_compounds is not None:
-            temp1 = np.array(ignore_compounds, dtype=object)
-            if len(temp1.shape) == 2:
-                ignore_compounds = list(temp1.reshape(-1))
-
-            # Since the ignore_compounds can only be passed as a list
-            # we can check the whole list at once before looping over it
-            self._check_openbabel_constraints(ignore_compounds, successors_list)
-
-            for ignore in ignore_compounds:
-                p1 = ignore
-                if len(p1.children) == 0:
-                    pid = particle_idx[id(p1)] + 1  # openbabel indices start at 1
-                    ob_constraints.AddIgnore(pid)
-
-                else:
-                    for particle in p1.particles():
-                        pid = (
-                            particle_idx[id(particle)] + 1
-                        )  # openbabel indices start at 1
-                        ob_constraints.AddIgnore(pid)
-
-        mol = self.to_pybel()
-        mol = mol.OBMol
-
-        mol.PerceiveBondOrders()
-        mol.SetAtomTypesPerceived()
-
-        ff = openbabel.OBForceField.FindForceField(forcefield)
-        if ff is None:
-            raise MBuildError(
-                f"Force field '{forcefield}' not supported for energy "
-                "minimization. Valid force fields are 'MMFF94', "
-                "'MMFF94s', 'UFF', 'GAFF', and 'Ghemical'."
-                ""
-            )
-        warn(
-            "Performing energy minimization using the Open Babel package. "
-            "Please refer to the documentation to find the appropriate "
-            f"citations for Open Babel and the {forcefield} force field"
-        )
-
-        if (
-            distance_constraints is not None
-            or fixed_compounds is not None
-            or ignore_compounds is not None
-        ):
-            ob_constraints.SetFactor(constraint_factor)
-            if ff.Setup(mol, ob_constraints) == 0:
-                raise MBuildError(
-                    "Could not setup forcefield for OpenBabel Optimization."
-                )
-        else:
-            if ff.Setup(mol) == 0:
-                raise MBuildError(
-                    "Could not setup forcefield for OpenBabel Optimization."
-                )
-
-        if algorithm == "steep":
-            ff.SteepestDescent(steps)
-        elif algorithm == "md":
-            ff.MolecularDynamicsTakeNSteps(steps, 300)
-        elif algorithm == "cg":
-            ff.ConjugateGradients(steps)
-        else:
-            raise MBuildError(
-                "Invalid minimization algorithm. Valid options "
-                "are 'steep', 'cg', and 'md'."
-            )
-        ff.UpdateCoordinates(mol)
-
-        # update the coordinates in the Compound
-        for i, obatom in enumerate(openbabel.OBMolAtomIter(mol)):
-            x = obatom.GetX() / 10.0
-            y = obatom.GetY() / 10.0
-            z = obatom.GetZ() / 10.0
-            self[i].pos = np.array([x, y, z])
 
     def save(
         self,
@@ -3052,7 +2398,7 @@ class Compound(object):
             infer_hierarchy=infer_hierarchy,
         )
 
-    def to_rdkit(self):
+    def to_rdkit(self, embed=False):
         """Create an RDKit RWMol from an mBuild Compound.
 
         Returns
@@ -3079,7 +2425,7 @@ class Compound(object):
         See https://www.rdkit.org/docs/GettingStartedInPython.html
 
         """
-        return conversion.to_rdkit(self)
+        return conversion.to_rdkit(self, embed=embed)
 
     def to_parmed(
         self,
@@ -3349,6 +2695,7 @@ class Compound(object):
         newone._periodicity = deepcopy(self._periodicity)
         newone._charge = deepcopy(self._charge)
         newone._mass = deepcopy(self._mass)
+        newone._hoomd_data = {}
         if hasattr(self, "index"):
             newone.index = deepcopy(self.index)
 
@@ -3396,15 +2743,35 @@ class Compound(object):
             newone.bond_graph.add_node(clone_of[particle])
         for c1, c2, data in self.bonds(return_bond_order=True):
             try:
+                try:
+                    bond_order = data["bond_order"]
+                except KeyError:
+                    bond_order = "unspecified"
                 # bond order is added to the data dictionary as 'bo'
-                newone.add_bond(
-                    (clone_of[c1], clone_of[c2]), bond_order=data["bond_order"]
-                )
+                newone.add_bond((clone_of[c1], clone_of[c2]), bond_order=bond_order)
             except KeyError:
                 raise MBuildError(
                     "Cloning failed. Compound contains bonds to "
                     "Particles outside of its containment hierarchy."
                 )
+
+    def _add_sim_data(self, state=None, forces=None, forcefield=None):
+        if state:
+            self._hoomd_data["state"] = state
+        if forces:
+            self._hoomd_data["forces"] = forces
+        if forcefield:
+            self._hoomd_data["forcefield"] = forcefield
+
+    def _get_sim_data(self):
+        if not self._hoomd_data:
+            return None, None, None
+        else:
+            return (
+                self._hoomd_data["state"],
+                self._hoomd_data["forces"],
+                self._hoomd_data["forcefield"],
+            )
 
 
 Particle = Compound

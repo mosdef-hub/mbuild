@@ -1,6 +1,8 @@
+import logging
 import os
 import sys
 
+import networkx as nx
 import numpy as np
 import parmed as pmd
 import pytest
@@ -89,6 +91,20 @@ class TestCompound(BaseTest):
 
         assert mol_in.n_particles == 9
 
+    def test_get_child_indices(self):
+        methane = mb.load("C", smiles=True)
+        methane2 = mb.clone(methane)
+        ethane = mb.load("CC", smiles=True)
+        comp = Compound(subcompounds=[methane, ethane, methane2])
+        assert comp.get_child_indices(child=methane) == [0, 1, 2, 3, 4]
+        assert comp.get_child_indices(child=ethane) == [5, 6, 7, 8, 9, 10, 11, 12]
+        assert comp.get_child_indices(child=methane2) == [13, 14, 15, 16, 17]
+        assert methane.get_child_indices(child=methane.children[0]) == [0]
+        assert ethane.get_child_indices(child=ethane.children[0]) == [0]
+
+        with pytest.raises(ValueError):
+            ethane.get_child_indices(child=methane.children[0])
+
     def test_load_xyz(self):
         myethane = mb.load(get_fn("ethane.xyz"))
         assert myethane.n_particles == 8
@@ -134,27 +150,24 @@ class TestCompound(BaseTest):
     def test_bond_order(self, methane):
         # test the default behavior
         bonds = [bond for bond in methane.bonds(return_bond_order=True)]
-        assert bonds[0][2]["bond_order"] == "default"
+        assert bonds[0][2]["bond_order"] == 1.0
 
         # test setting bond order when adding a bond
         carbon = mb.Compound(pos=[0, 0, 0], name="C")
         carbon_clone = mb.clone(carbon)
         C2 = mb.Compound([carbon, carbon_clone])
-        C2.add_bond([carbon, carbon_clone], bond_order="double")
+        C2.add_bond([carbon, carbon_clone], bond_order=2.0)
         bonds = [bond for bond in C2.bonds(return_bond_order=True)]
 
-        assert bonds[0][2]["bond_order"] == "double"
+        assert bonds[0][2]["bond_order"] == 2
 
         # ensure we propagate bond order information when we clone a compound
         C2_clone = mb.clone(C2)
         bonds = [bond for bond in C2_clone.bonds(return_bond_order=True)]
 
-        assert bonds[0][2]["bond_order"] == "double"
+        assert bonds[0][2]["bond_order"] == 2
 
-    @pytest.mark.parametrize(
-        "bond_order",
-        ["single", "double", "triple", "aromatic"],
-    )
+    @pytest.mark.parametrize("bond_order", [1, 2, 3, 1.5])
     def test_add_bond_order(self, bond_order):
         A_bead = mb.Compound(name="A", pos=[0, 0, 0])
         B_bead = mb.Compound(name="B", pos=[0.5, 0.5, 0])
@@ -168,9 +181,7 @@ class TestCompound(BaseTest):
         B_bead = mb.Compound(name="B", pos=[0.5, 0.5, 0])
         comp = mb.Compound([A_bead, B_bead])
         with pytest.raises(ValueError):
-            comp.add_bond([A_bead, B_bead], bond_order=1.0)
-        with pytest.raises(ValueError):
-            comp.add_bond([A_bead, B_bead], bond_order="quadruple")
+            comp.add_bond([A_bead, B_bead], bond_order=4)
 
     @pytest.mark.skipif(not has_rdkit, reason="RDKit is not installed")
     def test_to_rdkit(self, methane):
@@ -651,21 +662,23 @@ class TestCompound(BaseTest):
         A.add(mb.Port())
         assert A.mass == 2.0
 
-    def test_none_mass(self):
+    def test_none_mass(self, caplog):
         A = mb.Compound()
         assert A.mass is None
 
         container = mb.Compound(subcompounds=[A])
-        with pytest.warns(UserWarning):
+        with caplog.at_level(logging.INFO, logger="mbuild"):
             container_mass = container.mass
             assert container_mass is None
+        assert "Some particle of <Compound 1 particles, 0 bonds" in caplog.text
 
         A.mass = 1
         B = mb.Compound()
         container.add(B)
-        with pytest.warns(UserWarning):
+        with caplog.at_level(logging.WARNING, logger="mbuild"):
             container_mass = container.mass
             assert container_mass == A.mass == 1
+        assert "Some particle of <Compound 1 particles, 0 bonds" in caplog.text
 
     def test_add_existing_parent(self, ethane, h2o):
         water_in_water = mb.clone(h2o)
@@ -921,6 +934,26 @@ class TestCompound(BaseTest):
         assert ethane.n_direct_bonds == 0
         assert len(ethane.children) == 0
 
+    def test_set_bond_graph(self):
+        compound = Compound()
+        for i in range(5):
+            compound.add(Compound(pos=[0.2 * i, 0, 0]))
+        assert compound.n_bonds == 0
+        compound.set_bond_graph(new_graph=nx.path_graph(5))
+        assert compound.bond_graph.number_of_nodes() == 5
+        assert compound.n_bonds == compound.bond_graph.number_of_edges() == 4
+        for bond in compound.bonds(return_bond_order=True):
+            assert bond[2]["bond_order"] == "unspecified"
+
+    def test_set_bond_graph_mismatch(self):
+        compound = Compound()
+        for i in range(5):
+            compound.add(Compound(pos=[0.2 * i, 0, 0]))
+        with pytest.raises(ValueError):
+            compound.set_bond_graph(new_graph=nx.path_graph(6))
+        with pytest.raises(ValueError):
+            compound.set_bond_graph(new_graph=nx.path_graph(4))
+
     def test_remove_no_bond_graph(self):
         compound = Compound()
         particle = Compound(name="C", pos=[0, 0, 0])
@@ -928,12 +961,11 @@ class TestCompound(BaseTest):
         compound.remove(particle)
         assert particle not in compound.particles()
 
-    def test_remove_bond(self, ch3):
+    def test_remove_bond(self, ch3, caplog):
         ch_bond = list(ch3.bonds())[0]
         ch3.remove_bond(ch_bond)
         assert ch3.n_bonds == 2
-
-        with pytest.warns(UserWarning):
+        with pytest.raises(MBuildError):
             ch3.remove_bond(ch_bond)
 
     def test_port_does_not_exist(self, ethane):
@@ -1612,14 +1644,22 @@ class TestCompound(BaseTest):
             + 2 * len(hexane.children)
         )
 
-    def test_parmed_element_guess(self):
+    def test_parmed_element_guess(self, caplog):
         compound = Particle(name="foobar")
-        with pytest.warns(UserWarning):
+        with caplog.at_level(logging.WARNING, logger="mbuild"):
             _ = compound.to_parmed()
+        assert (
+            "No element attribute associated with '<foobar pos=([0. 0. 0.]), 0 bonds"
+            in caplog.text
+        )
 
         compound = Particle(name="XXXXXX")
-        with pytest.warns(UserWarning):
+        with caplog.at_level(logging.WARNING, logger="mbuild"):
             _ = compound.to_parmed()
+        assert (
+            "No element attribute associated with '<foobar pos=([0. 0. 0.]), 0 bonds"
+            in caplog.text
+        )
 
     def test_parmed_box(self, h2o):
         compound = Compound()
@@ -1784,12 +1824,13 @@ class TestCompound(BaseTest):
         with pytest.raises(MBuildError):
             compound = Compound(subcompounds=ch3, charge=1.0)
 
-    def test_charge_neutrality_warn(self, benzene):
+    def test_charge_neutrality_warn(self, benzene, caplog):
         benzene[0].charge = 0.25
-        with pytest.warns(UserWarning):
+        with caplog.at_level(logging.INFO, logger="mbuild"):
             benzene.save("charge-test.mol2")
+        assert "System is not charge neutral. Total charge is 0.3118." in caplog.text
 
-    def test_none_charge(self):
+    def test_none_charge(self, caplog):
         A = mb.Compound()
         assert A.charge is None
 
@@ -1798,307 +1839,18 @@ class TestCompound(BaseTest):
         container = mb.Compound(subcompounds=[A, B])
         assert A.charge == 1
         assert B.charge is None
-        with pytest.warns(UserWarning):
+        with caplog.at_level(logging.INFO, logger="mbuild"):
             container_charge = container.charge
             assert container_charge == 1
+        assert (
+            "does not have a charge. They will not be accounted for during this calculation"
+            in caplog.text
+        )
 
     @pytest.mark.skipif(not has_openbabel, reason="Open Babel not installed")
     @pytest.mark.skipif(
         "win" in sys.platform, reason="Unknown issue with Window's Open Babel "
     )
-    def test_energy_minimize(self, octane):
-        octane.energy_minimize()
-
-    @pytest.mark.skipif(not has_openbabel, reason="Open Babel not installed")
-    @pytest.mark.skipif(
-        "win" in sys.platform, reason="Unknown issue with Window's Open Babel "
-    )
-    def test_energy_minimize_shift_com(self, octane):
-        com_old = octane.pos
-        octane.energy_minimize()
-        # check to see if COM of energy minimized Compound
-        # has been shifted back to the original COM
-        assert np.allclose(com_old, octane.pos)
-
-    @pytest.mark.skipif(not has_openbabel, reason="Open Babel not installed")
-    @pytest.mark.skipif(
-        "win" in sys.platform, reason="Unknown issue with Window's Open Babel "
-    )
-    def test_energy_minimize_shift_anchor(self, octane):
-        anchor_compound = octane.labels["chain"].labels["CH3[0]"]
-        pos_old = anchor_compound.pos
-        octane.energy_minimize(anchor=anchor_compound)
-        # check to see if COM of the anchor Compound
-        # has been shifted back to the original COM
-        assert np.allclose(pos_old, anchor_compound.pos)
-
-    @pytest.mark.skipif(not has_openbabel, reason="Open Babel not installed")
-    @pytest.mark.skipif(
-        "win" in sys.platform, reason="Unknown issue with Window's Open Babel "
-    )
-    def test_energy_minimize_fix_compounds(self, octane):
-        methyl_end0 = octane.labels["chain"].labels["CH3[0]"]
-        methyl_end1 = octane.labels["chain"].labels["CH3[0]"]
-        carbon_end = octane.labels["chain"].labels["CH3[0]"].labels["C[0]"]
-        not_in_compound = mb.Compound(name="H")
-
-        # fix the whole molecule and make sure positions are close
-        # given stochastic nature and use of restraining springs
-        # we need to have a pretty loose tolerance for checking
-        old_com = octane.pos
-        octane.energy_minimize(
-            fixed_compounds=octane, shift_com=False, constraint_factor=1e6
-        )
-        assert np.allclose(octane.pos, old_com, rtol=1e-2, atol=1e-2)
-
-        # primarily focus on checking inputs are parsed correctly
-        octane.energy_minimize(fixed_compounds=[octane])
-        octane.energy_minimize(fixed_compounds=carbon_end)
-        octane.energy_minimize(fixed_compounds=methyl_end0)
-        octane.energy_minimize(fixed_compounds=[methyl_end0])
-        octane.energy_minimize(fixed_compounds=[methyl_end0, (True, True, True)])
-
-        octane.energy_minimize(fixed_compounds=[methyl_end0, (True, True, False)])
-        octane.energy_minimize(fixed_compounds=[methyl_end0, [True, True, False]])
-        octane.energy_minimize(fixed_compounds=[methyl_end0, (True, False, False)])
-        octane.energy_minimize(fixed_compounds=[methyl_end0, (False, False, False)])
-
-        octane.energy_minimize(fixed_compounds=[methyl_end0, methyl_end1])
-        octane.energy_minimize(fixed_compounds=[[methyl_end0], [methyl_end1]])
-        octane.energy_minimize(
-            fixed_compounds=[
-                [methyl_end0, (True, True, True)],
-                [methyl_end1, (True, True, True)],
-            ]
-        )
-
-        with pytest.raises(MBuildError):
-            octane.energy_minimize(fixed_compounds=not_in_compound)
-        with pytest.raises(MBuildError):
-            octane.energy_minimize(fixed_compounds=[not_in_compound])
-        with pytest.raises(MBuildError):
-            octane.energy_minimize(fixed_compounds=[12323.3, (True, False, False)])
-        with pytest.raises(Exception):
-            octane.energy_minimize(
-                fixed_compounds=[methyl_end0, (True, False, False, False)]
-            )
-        with pytest.raises(Exception):
-            octane.energy_minimize(fixed_compounds=[methyl_end0, True, False, False])
-        with pytest.raises(Exception):
-            octane.energy_minimize(fixed_compounds=[methyl_end0, True])
-        with pytest.raises(Exception):
-            octane.energy_minimize(
-                fixed_compounds=[methyl_end0, [True, False, False, False]]
-            )
-        with pytest.raises(Exception):
-            octane.energy_minimize(fixed_compounds=[methyl_end0, (True, False)])
-
-        with pytest.raises(Exception):
-            octane.energy_minimize(fixed_compounds=[methyl_end0, (True)])
-
-        with pytest.raises(Exception):
-            octane.energy_minimize(fixed_compounds=[methyl_end0, ("True", True, True)])
-        with pytest.raises(Exception):
-            octane.energy_minimize(fixed_compounds=[methyl_end0, (True, "True", True)])
-        with pytest.raises(Exception):
-            octane.energy_minimize(fixed_compounds=[methyl_end0, (True, True, "True")])
-        with pytest.raises(Exception):
-            octane.energy_minimize(
-                fixed_compounds=[methyl_end0, ("True", True, "True")]
-            )
-        with pytest.raises(Exception):
-            octane.energy_minimize(
-                fixed_compounds=[methyl_end0, (True, "True", "True")]
-            )
-        with pytest.raises(Exception):
-            octane.energy_minimize(
-                fixed_compounds=[methyl_end0, ("True", "True", True)]
-            )
-        with pytest.raises(Exception):
-            octane.energy_minimize(
-                fixed_compounds=[methyl_end0, ("True", "True", "True")]
-            )
-        with pytest.raises(Exception):
-            octane.energy_minimize(fixed_compounds=[methyl_end0, (123.0, 231, "True")])
-
-    @pytest.mark.skipif(not has_openbabel, reason="Open Babel not installed")
-    @pytest.mark.skipif(
-        "win" in sys.platform, reason="Unknown issue with Window's Open Babel "
-    )
-    def test_energy_minimize_ignore_compounds(self, octane):
-        methyl_end0 = octane.labels["chain"].labels["CH3[0]"]
-        methyl_end1 = octane.labels["chain"].labels["CH3[1]"]
-        carbon_end = octane.labels["chain"].labels["CH3[0]"].labels["C[0]"]
-        not_in_compound = mb.Compound(name="H")
-
-        # fix the whole molecule and make sure positions are close
-        # given stochastic nature and use of restraining springs
-        # we need to have a pretty loose tolerance for checking
-        old_com = octane.pos
-        octane.energy_minimize(
-            ignore_compounds=octane, shift_com=False, constraint_factor=1e6
-        )
-        assert np.allclose(octane.pos, old_com, rtol=1e-2, atol=1e-2)
-
-        # primarily focus on checking inputs are parsed correctly
-        octane.energy_minimize(ignore_compounds=[octane])
-        octane.energy_minimize(ignore_compounds=carbon_end)
-        octane.energy_minimize(ignore_compounds=methyl_end0)
-        octane.energy_minimize(ignore_compounds=[methyl_end0])
-        octane.energy_minimize(ignore_compounds=[methyl_end0, methyl_end1])
-        octane.energy_minimize(ignore_compounds=[[methyl_end0], [methyl_end1]])
-
-        with pytest.raises(MBuildError):
-            octane.energy_minimize(ignore_compounds=not_in_compound)
-        with pytest.raises(MBuildError):
-            octane.energy_minimize(ignore_compounds=[1231, 123124])
-
-    @pytest.mark.skipif(not has_openbabel, reason="Open Babel not installed")
-    @pytest.mark.skipif(
-        "win" in sys.platform, reason="Unknown issue with Window's Open Babel "
-    )
-    def test_energy_minimize_distance_constraints(self, octane):
-        methyl_end0 = octane.labels["chain"].labels["CH3[0]"]
-        methyl_end1 = octane.labels["chain"].labels["CH3[1]"]
-
-        carbon_end0 = octane.labels["chain"].labels["CH3[0]"].labels["C[0]"]
-        carbon_end1 = octane.labels["chain"].labels["CH3[1]"].labels["C[0]"]
-        h_end0 = octane.labels["chain"].labels["CH3[0]"].labels["H[0]"]
-
-        not_in_compound = mb.Compound(name="H")
-
-        # given stochastic nature and use of restraining springs
-        # we need to have a pretty loose tolerance for checking
-        octane.energy_minimize(
-            distance_constraints=[(carbon_end0, carbon_end1), 0.7],
-            constraint_factor=1e20,
-        )
-        assert np.allclose(
-            np.linalg.norm(carbon_end0.pos - carbon_end1.pos),
-            0.7,
-            rtol=1e-2,
-            atol=1e-2,
-        )
-
-        octane.energy_minimize(distance_constraints=[[(carbon_end0, carbon_end1), 0.7]])
-        octane.energy_minimize(
-            distance_constraints=[
-                [(carbon_end0, carbon_end1), 0.7],
-                [(carbon_end0, h_end0), 0.1],
-            ]
-        )
-
-        with pytest.raises(MBuildError):
-            octane.energy_minimize(
-                distance_constraints=[(carbon_end0, not_in_compound), 0.7]
-            )
-        with pytest.raises(MBuildError):
-            octane.energy_minimize(
-                distance_constraints=[(carbon_end0, carbon_end0), 0.7]
-            )
-        with pytest.raises(MBuildError):
-            octane.energy_minimize(
-                distance_constraints=[(methyl_end0, carbon_end1), 0.7]
-            )
-        with pytest.raises(MBuildError):
-            octane.energy_minimize(
-                distance_constraints=[(methyl_end0, methyl_end1), 0.7]
-            )
-
-    @pytest.mark.skipif(has_openbabel, reason="Open Babel package is installed")
-    @pytest.mark.skipif(
-        "win" in sys.platform, reason="Unknown issue with Window's Open Babel "
-    )
-    def test_energy_minimize_openbabel_warn(self, octane):
-        with pytest.raises(MBuildError):
-            octane.energy_minimize()
-
-    @pytest.mark.skipif(not has_openbabel, reason="Open Babel not installed")
-    @pytest.mark.skipif(
-        "win" in sys.platform, reason="Unknown issue with Window's Open Babel "
-    )
-    def test_energy_minimize_ff(self, octane):
-        for ff in ["UFF", "GAFF", "MMFF94", "MMFF94s", "Ghemical"]:
-            octane.energy_minimize(forcefield=ff)
-        with pytest.raises(IOError):
-            octane.energy_minimize(forcefield="fakeFF")
-
-    @pytest.mark.skipif(not has_openbabel, reason="Open Babel not installed")
-    @pytest.mark.skipif(
-        "win" in sys.platform, reason="Unknown issue with Window's Open Babel "
-    )
-    def test_energy_minimize_algorithm(self, octane):
-        for algorithm in ["cg", "steep", "md"]:
-            octane.energy_minimize(algorithm=algorithm)
-        with pytest.raises(MBuildError):
-            octane.energy_minimize(algorithm="fakeAlg")
-
-    @pytest.mark.skipif(not has_openbabel, reason="Open Babel not installed")
-    @pytest.mark.skipif(
-        "win" in sys.platform, reason="Unknown issue with Window's Open Babel "
-    )
-    def test_energy_minimize_non_element(self, octane):
-        for particle in octane.particles():
-            particle.element = None
-        # Pass with element inference from names
-        octane.energy_minimize()
-        for particle in octane.particles():
-            particle.name = "Q"
-            particle.element = None
-
-        # Fail once names cannot be set as elements
-        with pytest.raises(MBuildError):
-            octane.energy_minimize()
-
-    @pytest.mark.skipif(not has_openbabel, reason="Open Babel not installed")
-    @pytest.mark.skipif(
-        "win" in sys.platform, reason="Unknown issue with Window's Open Babel "
-    )
-    def test_energy_minimize_ports(self, octane):
-        distances = np.round(
-            [
-                octane.min_periodic_distance(port.pos, port.anchor.pos)
-                for port in octane.all_ports()
-            ],
-            5,
-        )
-        orientations = np.round(
-            [port.pos - port.anchor.pos for port in octane.all_ports()], 5
-        )
-
-        octane.energy_minimize()
-
-        updated_distances = np.round(
-            [
-                octane.min_periodic_distance(port.pos, port.anchor.pos)
-                for port in octane.all_ports()
-            ],
-            5,
-        )
-        updated_orientations = np.round(
-            [port.pos - port.anchor.pos for port in octane.all_ports()], 5
-        )
-
-        assert np.array_equal(distances, updated_distances)
-        assert np.array_equal(orientations, updated_orientations)
-
-    @pytest.mark.skipif(not has_foyer, reason="Foyer is not installed")
-    def test_energy_minimize_openmm(self, octane):
-        octane.energy_minimize(forcefield="oplsaa")
-
-    @pytest.mark.skipif(not has_foyer, reason="Foyer is not installed")
-    @pytest.mark.parametrize("constraints", ["AllBonds", "HBonds", "HAngles", None])
-    def test_energy_minimize_openmm_constraints(self, octane, constraints):
-        octane.energy_minimize(forcefield="oplsaa", constraints=constraints)
-
-    def test_energy_minimize_openmm_invalid_constraints(self, octane):
-        with pytest.raises(ValueError):
-            octane.energy_minimize(forcefield="oplsaa", constraints="boo")
-
-    @pytest.mark.skipif(not has_foyer, reason="Foyer is not installed")
-    def test_energy_minimize_openmm_xml(self, octane):
-        octane.energy_minimize(forcefield=get_fn("small_oplsaa.xml"))
-
     def test_clone_outside_containment(self, ch2, ch3):
         compound = Compound()
         compound.add(ch2)
@@ -2403,7 +2155,7 @@ class TestCompound(BaseTest):
         sdf_string = mb.load("methane.sdf")
         assert np.allclose(filled.xyz, sdf_string.xyz, atol=1e-5)
 
-    def test_box(self):
+    def test_box(self, caplog):
         angles = [90.0, 90.0, 90.0]
         lengths = [3.0, 3.0, 3.0]
         compound = Compound()
@@ -2427,8 +2179,12 @@ class TestCompound(BaseTest):
         assert np.allclose(compound.box.angles, angles)
         compound = Compound(box=Box([3.0, 3.0, 3.0]))
         subcomp = Compound(box=Box([6.0, 6.0, 6.0], angles=[90.0, 90.0, 120.0]))
-        with pytest.warns(UserWarning):
+        with caplog.at_level(logging.INFO, logger="mbuild"):
             compound.add(subcomp)
+        assert (
+            "The Compound you are adding has a box. The box of the parent"
+            in caplog.text
+        )
         assert np.allclose(compound.box.lengths, [3.0, 3.0, 3.0])
         assert np.allclose(compound.box.angles, [90.0, 90.0, 90.0])
         compound = Compound(box=Box(lengths=lengths, angles=angles))
@@ -2438,8 +2194,12 @@ class TestCompound(BaseTest):
         assert np.allclose(compound.box.angles, [90.0, 90.0, 120.0])
         compound = Compound(box=Box(lengths=lengths, angles=angles))
         subcomp = Compound()
-        with pytest.warns(UserWarning):
+        with caplog.at_level(logging.INFO, logger="mbuild"):
             compound.add(subcomp, inherit_box=True)
+        assert (
+            "The Compound you are adding has a box. The box of the parent compound"
+            in caplog.text
+        )
         assert np.allclose(compound.box.lengths, [3.0, 3.0, 3.0])
         assert np.allclose(compound.box.angles, [90.0, 90.0, 90.0])
         compound = Compound()
@@ -2447,11 +2207,19 @@ class TestCompound(BaseTest):
         compound.add(carbon)
         compound.box = Box(lengths=lengths, angles=angles)
         nitrogen = Compound(name="N", pos=[4, 3, 3])
-        with pytest.warns(UserWarning):
+        with caplog.at_level(logging.INFO, logger="mbuild"):
             compound.add(nitrogen)
+        assert (
+            "The Compound you are adding has a box. The box of the parent compound"
+            in caplog.text
+        )
         compound.box = Box(lengths=[5.0, 4.0, 4.0], angles=angles)
-        with pytest.warns(UserWarning):
+        with caplog.at_level(logging.INFO, logger="mbuild"):
             compound.box = Box(lengths=[1.0, 1.0, 1.0], angles=angles)
+        assert (
+            "The Compound you are adding has a box. The box of the parent compound"
+            in caplog.text
+        )
 
     def test_get_boundingbox_extrema(self):
         h1 = mb.Compound()

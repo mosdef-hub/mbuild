@@ -22,12 +22,14 @@ following license.
 
 import importlib
 import inspect
+import logging
 import os
 import sys
 import textwrap
-import warnings
 from importlib.resources import files
 from unittest import SkipTest
+
+logger = logging.getLogger(__name__)
 
 
 class DelayImportError(ImportError, SkipTest):
@@ -87,6 +89,9 @@ The code at {filename}:{line_number} requires the "openbabel" package
 openbabel can be installed with conda using:
 
 # conda install -c conda-forge openbabel
+
+NOTE: openbabel is only available for python<3.13.
+If you need it in your environment, make sure your python is 3.10, 3.11 or 3.12.
 
 or from source following instructions at:
 
@@ -181,7 +186,7 @@ def import_(module):
                 "openbabel 2.0 detected and will be dropped in a future "
                 "release. Consider upgrading to 3.x."
             )
-            warnings.warn(msg, DeprecationWarning)
+            logger.info(msg, DeprecationWarning)
             return pybel
         except ModuleNotFoundError:
             pass
@@ -196,7 +201,7 @@ def import_(module):
                 "openbabel 2.0 detected and will be dropped in a future "
                 "release. Consider upgrading to 3.x."
             )
-            warnings.warn(msg, DeprecationWarning)
+            logger.info(msg, DeprecationWarning)
             return openbabel
         except ModuleNotFoundError:
             pass

@@ -1,5 +1,5 @@
+import logging
 import os
-import warnings
 
 import numpy as np
 import pytest
@@ -116,7 +116,7 @@ class TestPacking(BaseTest):
         assert filled.n_bonds == 50 * 2
 
         center = np.array([3.0, 3.0, 3.0])
-        assert np.alltrue(np.linalg.norm(filled.xyz - center, axis=1) < 1.5)
+        assert np.all(np.linalg.norm(filled.xyz - center, axis=1) < 1.5)
 
     def test_fill_sphere_density(self, h2o):
         filled = mb.fill_sphere(h2o, sphere=[3, 3, 3, 1.5], density=1000)
@@ -522,23 +522,26 @@ class TestPacking(BaseTest):
             dict(sidemax=2.0),
         ],
     )
-    def test_packmol_args_default(self, args):
-        with pytest.warns():
+    def test_packmol_args_default(self, args, caplog):
+        with caplog.at_level(logging.INFO, logger="mbuild"):
             mb.fill_box(
                 mb.load("C", smiles=True),
                 n_compounds=10,
                 box=[10, 10, 10],
                 packmol_args=args,
             )
+        arg = list(args.keys())[0]
+        assert f"The PACKMOL argument {arg} was passed to" in caplog.text
 
-    def test_packmol_warning(self, h2o):
+    def test_packmol_warning(self, h2o, caplog):
         import sys
 
         if (
             "win" in sys.platform and not sys.platform == "darwin"
         ):  # windows uses old 20.0.4 of packmol, which raises a warning
-            with pytest.warns(UserWarning):
+            with caplog.at_level(logging.WARNING, logger="mbuild"):
                 mb.fill_box(h2o, n_compounds=10, box=[1, 1, 1], overlap=10)
+            assert "SOME WARNING" in caplog.text
         else:
             with pytest.raises(RuntimeError):
                 mb.fill_box(h2o, n_compounds=10, box=[1, 1, 1], overlap=10)
@@ -575,34 +578,33 @@ class TestPacking(BaseTest):
 
         ch4 = Methane()
         # With default sidemax
-        box_of_methane = mb.fill_box(ch4, box=[1000, 1000, 1000], n_compounds=500)
+        box_of_methane = mb.fill_box(
+            ch4, box=[20, 20, 20], n_compounds=500, sidemax=10.0
+        )
         sphere_of_methane = mb.fill_sphere(
-            ch4, sphere=[1000, 1000, 1000, 1000], n_compounds=500
+            ch4, sphere=[20, 20, 20, 20], n_compounds=500, sidemax=10.0
         )
+        assert all(np.asarray(box_of_methane.get_boundingbox().lengths) < [11, 11, 11])
         assert all(
-            np.asarray(box_of_methane.get_boundingbox().lengths) < [110, 110, 110]
-        )
-        assert all(
-            np.asarray(sphere_of_methane.get_boundingbox().lengths) < [210, 210, 210]
+            np.asarray(sphere_of_methane.get_boundingbox().lengths) < [21, 21, 21]
         )
 
         # With adjusted sidemax
         big_box_of_methane = mb.fill_box(
-            ch4, box=[1000, 1000, 1000], n_compounds=500, sidemax=1000.0
+            ch4, box=[120, 120, 120], n_compounds=500, sidemax=20.0
         )
         big_sphere_of_methane = mb.fill_sphere(
             ch4,
-            sphere=[1000, 1000, 1000, 1000],
+            sphere=[120, 120, 120, 120],
             n_compounds=500,
-            sidemax=2000.0,
+            sidemax=20.0,
         )
 
         assert all(
-            np.asarray(big_box_of_methane.get_boundingbox().lengths) > [900, 900, 900]
+            np.asarray(big_box_of_methane.get_boundingbox().lengths) > [10, 10, 10]
         )
         assert all(
-            np.asarray(big_sphere_of_methane.get_boundingbox().lengths)
-            > [1800, 1800, 1800]
+            np.asarray(big_sphere_of_methane.get_boundingbox().lengths) > [14, 14, 14]
         )
 
     def test_box_edge(self, h2o, methane):
@@ -639,7 +641,7 @@ class TestPacking(BaseTest):
         edge_sizes = np.subtract(system_box.lengths, solvated.get_boundingbox().lengths)
         assert np.allclose(edge_sizes, np.array([0.4] * 3), atol=0.1)
 
-    def test_validate_mass(self, methane):
+    def test_validate_mass(self, methane, caplog):
         bead = mb.Compound(name="A", mass=0.0)
         with pytest.raises(MBuildError):
             mb.fill_box(compound=bead, n_compounds=10, density=1)
@@ -653,14 +655,14 @@ class TestPacking(BaseTest):
         beadA = mb.Compound(name="A", mass=0.0)
         beadB = mb.Compound(name="B", mass=1.0, pos=[0.5, 0.5, 0.5])
         beads = mb.Compound(subcompounds=[beadA, beadB])
-        with warnings.catch_warnings(record=True) as w:
+        with caplog.at_level(logging.INFO, logger="mbuild"):
             mb.packing._validate_mass(compound=[beadA, beadB], n_compounds=None)
-            assert w
+        assert "Some of the compounds or subcompounds in `compound`" in caplog.text
 
-        with warnings.catch_warnings(record=True) as w:
+        with caplog.at_level(logging.INFO, logger="mbuild"):
             mb.packing._validate_mass(compound=[beads], n_compounds=None)
-            assert w
+        assert "Some of the compounds or subcompounds in `compound`" in caplog.text
 
-        with warnings.catch_warnings(record=True) as w:
+        with caplog.at_level(logging.INFO, logger="mbuild"):
             mb.packing._validate_mass(compound=[beads], n_compounds=[5])
-            assert w
+        assert "Some of the compounds or subcompounds in `compound`" in caplog.text
