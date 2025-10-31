@@ -54,7 +54,7 @@ class HoomdSimulation(hoomd.simulation.Simulation):
         run_on_gpu,
         seed,
         automatic_box=False,
-        box_buffer=1.5,
+        box_buffer=10,
         integrate_compounds=None,
         fixed_compounds=None,
         gsd_file_name=None,

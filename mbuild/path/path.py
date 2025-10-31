@@ -165,28 +165,32 @@ class HardSphereRandomWalk(Path):
             The number of trial moves to attempt in parallel for each step.
             Using larger values can improve success rates for more dense
             random walks.
-        max_attempts : int, defualt = 1e5
+        max_attempts : int, default = 1e5
             The maximum number of trial moves to attempt before quiting.
         start_from_path : mbuild.path.Path, optional
             An instance of a previous Path to start the random walk from.
         start_from_path_index : int, optional
             The index of `start_from_path` to use as the initial point
             for the random walk.
+        attach_paths : bool, default = False
+            If True, an edge will be created in the bond graph between
+            the last point of `start_from_path` and the first point of
+            this random walk.
         tolerance : float, default = 1e-4
-            Tolerance used for rounding and checkig for overlaps.
+            Tolerance used for rounding and checking for overlaps.
 
         Notes
         -----
-        Each next-move can be attempted in batches, set by the ``trial_batch_size``
+        Each next move can be attempted in batches, set by the ``trial_batch_size``
         parameter. The batch size moves do not count towards the maximum allowed
-        attempts. For example, 1 random walk with a trail batch size of 20 counts at
+        attempts. For example, 1 random walk step with a trail batch size of 20 counts at
         only one attempted move. Larger values of ``trial_batch_size`` may help
         highly constrained walks finish, but may hurt performance.
 
         You can start a random walk from a previously created path with the
         ``start_from_path`` and ``start_from_path_index`` parameters. For example,
         create a ``Lamellar`` path and run a random walk from its last index to begin
-        generating a semi-crystalline-like structure. Or, string together multiple
+        generating a semi-crystalline like structure. Or, string together multiple
         HardSphereRandomWalk paths where the final result of each is passed into the
         next random walk.
         """
@@ -234,7 +238,7 @@ class HardSphereRandomWalk(Path):
         # Need this for error message about reaching max tries
         self._init_count = self.count
         # Select methods to use for random walk
-        # Hard-coded for, possible to make other RW methods and pass them in
+        # Hard-coded for now, possible to make other RW methods and pass them in
         self.next_step = random_coordinate
         self.check_path = check_path
         # Create RNG state.
