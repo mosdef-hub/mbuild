@@ -2448,3 +2448,56 @@ class TestCompound(BaseTest):
         methane.periodicity = (True, True, True)
         shifted_pos, freud_box = methane.to_freud()
         assert freud_box.Lx == freud_box.Ly == freud_box.Lz == 2.0
+
+    tagged_smiles_groups = [
+        ('C', 'C{tag}'),
+        ('CCCC', 'C{tag}CCC'),
+        ('c1ccccc1', 'c{tag}1ccccc1'),
+        ('c1ccncc1', 'c{tag}1ccncc1'),
+        ('c1ccccc1O', 'c{tag}1ccccc1O'),
+        ('Cl', 'Cl{tag}'),
+        ('Br', 'Br{tag}'),
+        ('CCl', 'C{tag}Cl'),
+        ('CBr', 'C{tag}Br'),
+        ('CCBr', 'C{tag}CBr'),
+        ('[Fe+2]', '[Fe+2]{tag}'),
+        ('[Mg+2]', '[Mg+2]{tag}'),
+        ('[Na+]', '[Na+]{tag}'),
+        ('[K+]', '[K+]{tag}'),
+        ('[CH3]', '[CH3]{tag}'),
+        ('[OH]', '[OH]{tag}'),
+        ('[NH2]', '[NH2]{tag}'),
+        ('[O-]', '[O-]{tag}'),
+        ('[CH3]C(=O)O', '[CH3]{tag}C(=O)O'),
+        ('C1CCCCC1', 'C{tag}1CCCCC1'),
+        ('C1=CC=CC=C1', 'C{tag}1=CC=CC=C1'),
+        ('c1ccccc1O', 'c{tag}1ccccc1O'),
+        ('C1CC2CCC1C2', 'C{tag}1CC2CCC1C2'),
+        ('CC(C)C', 'C{tag}C(C)C'),
+        ('CC(C)(C)C', 'C{tag}C(C)(C)C'),
+        ('C=C', 'C{tag}=C'),
+        ('C#N', 'C{tag}#N'),
+        ('CC#CC', 'C{tag}C#CC'),
+        ('[NH4+]', '[NH4+]{tag}'),
+        ('[O-]', '[O-]{tag}'),
+        ('[Fe+3]', '[Fe+3]{tag}'),
+        ('[Na+]', '[Na+]{tag}'),
+        ('[Cl-]', '[Cl-]{tag}'),
+        ('[K+]', '[K+]{tag}'),
+        ('c1cnc[nH]1', 'c{tag}1cnc[nH]1'),
+        ('c1ccncc1O', 'c{tag}1ccncc1O'),
+        ('c1ccncc1C(=O)O', 'c{tag}1ccncc1C(=O)O')
+    ]
+    @pytest.mark.parametrize("smiles_group", tagged_smiles_groups)
+    def test_load_tagged_smiles(self, smiles_group):
+        untagged = mb.load(smiles_group[0], smiles=True)
+        tagged = mb.load(smiles_group[1], smiles=True)
+        assert untagged.n_particles == tagged.n_particles
+        for p1, p2 in zip([p for p in untagged.particles()], [p for p in tagged.particles()]):
+            assert p1.element == p2.element
+            assert p1.name == p2.name
+        for idx, p in enumerate(tagged.particles()):
+            if idx == 0:
+                assert p.particle_tag == "tag"
+            else:
+                assert p.particle_tag is None
