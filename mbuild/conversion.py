@@ -101,7 +101,6 @@ def load(
             compound=compound,
             coords_only=coords_only,
             infer_hierarchy=infer_hierarchy,
-            name=name,
             **kwargs,
         )
     # Second check if we are loading SMILES strings
@@ -2002,7 +2001,7 @@ def load_tagged_smiles(
     backend="rdkit",
     compound=None,
     infer_hierarchy=True,
-    name="Compound"
+    name="Compound",
 ):
     """Parse and load a SMILES string containing { } tag indicators.
 
@@ -2029,7 +2028,8 @@ def load_tagged_smiles(
         Cl|Br|         # two-letter atoms
         [A-Z][a-z]? |  # normal atoms
         [cnops]        # aromatic atoms
-        """, re.VERBOSE
+        """,
+        re.VERBOSE,
     )
 
     tags = []
@@ -2040,10 +2040,10 @@ def load_tagged_smiles(
     while pos < len(smiles):
         ch = smiles[pos]
 
-        if ch == '{':
+        if ch == "{":
             # extract tag content
-            end = smiles.index('}', pos)
-            tag_value = smiles[pos + 1:end]
+            end = smiles.index("}", pos)
+            tag_value = smiles[pos + 1 : end]
             if last_atom_index >= 0:
                 tags.append((last_atom_index, tag_value))
             pos = end + 1

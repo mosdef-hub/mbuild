@@ -646,11 +646,11 @@ class Compound(object):
     @property
     def particle_tag(self):
         return self._tag
-    
+
     @particle_tag.setter
     def particle_tag(self, tag):
         if self._contains_only_ports():
-            self._tag = tag  
+            self._tag = tag
         else:
             raise AttributeError(
                 "charge is immutable for Compounds that are "
