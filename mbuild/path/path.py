@@ -27,7 +27,7 @@ class Path:
        The graph defining the edges between coordinates
     """
 
-    def __init__(self, N=None, coordinates=None, bond_graph=None):
+    def __init__(self, N=None, coordinates=None, bond_graph=None, bead_name="_A"):
         self.bond_graph = bond_graph
         # Only N is defined, make empty coordinates array with size N
         # Use case: Random walks
@@ -50,6 +50,10 @@ class Path:
     def __post_init__(self):
         """Needed for CodeQL in order to call abstract method inside __init__()"""
         self.generate()
+        try:
+            self.N
+        except:
+            self.N = len(self.coordinates)
         if self.N is None:
             self.N = len(self.coordinates)
 
@@ -509,6 +513,7 @@ class Lamellar(Path):
         layer_length,
         bond_length,
         num_stacks=1,
+        bead_name="_A",
         stack_separation=None,
         bond_graph=None,
     ):
@@ -518,7 +523,7 @@ class Lamellar(Path):
         self.bond_length = bond_length
         self.num_stacks = num_stacks
         self.stack_separation = stack_separation
-        super(Lamellar, self).__init__(N=None, bond_graph=bond_graph)
+        super(Lamellar, self).__init__(N=None, bond_graph=bond_graph, bead_name=bead_name)
 
     def generate(self):
         layer_spacing = np.arange(0, self.layer_length, self.bond_length)
