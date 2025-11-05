@@ -29,6 +29,7 @@ class Path:
 
     def __init__(self, N=None, coordinates=None, bond_graph=None, bead_name="_A"):
         self.bond_graph = bond_graph
+        self.bead_name = bead_name
         # Only N is defined, make empty coordinates array with size N
         # Use case: Random walks
         if N is not None and coordinates is None:
@@ -515,7 +516,6 @@ class Lamellar(Path):
         num_stacks=1,
         bead_name="_A",
         stack_separation=None,
-        bond_graph=None,
     ):
         self.num_layers = num_layers
         self.layer_separation = layer_separation
@@ -523,10 +523,11 @@ class Lamellar(Path):
         self.bond_length = bond_length
         self.num_stacks = num_stacks
         self.stack_separation = stack_separation
+        bond_graph = nx.Graph()
         super(Lamellar, self).__init__(N=None, bond_graph=bond_graph, bead_name=bead_name)
 
     def generate(self):
-        layer_spacing = np.arange(0, self.layer_length, self.bond_length)
+        layer_spacing = np.arange(0, self.layer_length, self.bond_length, dtype=np.float64)
         # Info needed for generating coords of the arc curves between layers
         r = self.layer_separation / 2
         arc_length = r * np.pi
@@ -596,6 +597,15 @@ class Lamellar(Path):
                     ]
                     self.coordinates.extend(arc[::-1])
                     self.coordinates.extend(list(this_stack))
+        # Create linear (path) bond graph
+        for i, xyz in enumerate(self.coordinates):
+            self.bond_graph.add_node(
+                i,
+                name=self.bead_name,
+                xyz=xyz,
+            )
+            if i != 0:
+                self.add_edge(u=i - 1, v=i)
 
 
 class StraightLine(Path):
