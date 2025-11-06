@@ -342,6 +342,13 @@ class HardSphereRandomWalk(Path):
                 # 2nd point failed, continue while loop
                 self.attempts += 1
 
+                if self.attempts == self.max_attempts and self.count < self.N:
+                    raise RuntimeError(
+                        "The maximum number attempts allowed have passed, and only ",
+                        f"{self.count - self._init_count} sucsessful attempts were completed.",
+                        "Try changing the parameters or seed and running again.",
+                    )
+
         # Starting random walk from a previous set of coordinates (another path)
         # This point was accepted in self._initial_point with these conditions
         # If attach_paths, then add edge between first node of this path and node of last path
