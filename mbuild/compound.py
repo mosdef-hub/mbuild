@@ -1806,6 +1806,9 @@ class Compound(object):
         py3Dmol = import_("py3Dmol")
 
         cloned = clone(self)
+        for edge in cloned.bond_graph.edges(data=True):
+            if edge[2]["bond_order"] == 0.0:
+                edge[2]["bond_order"] = 1.0
 
         modified_color_scheme = {}
         for name, color in color_scheme.items():
