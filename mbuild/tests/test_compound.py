@@ -2265,6 +2265,9 @@ class TestCompound(BaseTest):
         struc = pmd.load_file(get_fn("spc.pdb"))
         comp.from_parmed(struc)
         assert comp.children[0].name == "SPC"
+        comp.save("test.pdb", residues=["SPC"])
+        struc2 = pmd.load_file("test.pdb")
+        assert struc2.residues[0].name == struc.residues[0].name
 
     @pytest.mark.skipif(not has_mdtraj, reason="MDTraj not installed")
     def test_complex_from_trajectory(self):
