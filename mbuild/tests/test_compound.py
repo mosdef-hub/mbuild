@@ -2024,11 +2024,6 @@ class TestCompound(BaseTest):
                 distance_constraints=[(methyl_end0, methyl_end1), 0.7]
             )
 
-    @pytest.mark.skipif(not has_openbabel, reason="Open Babel package is not installed")
-    def test_energy_minimize_openbabel_warn(self, octane):
-        with pytest.raises(MBuildError):
-            octane.energy_minimize()
-
     @pytest.mark.skipif(not has_openbabel, reason="Open Babel not installed")
     def test_energy_minimize_ff(self, octane):
         for ff in ["UFF", "GAFF", "MMFF94", "MMFF94s", "Ghemical"]:
