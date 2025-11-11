@@ -41,9 +41,14 @@ class TestCompound(BaseTest):
         compound = Compound([ethane, h2o])
         parm = compound.to_parmed()
         traj = compound.to_trajectory()
-        belmol = compound.to_pybel()
+        if has_openbabel:
+            belmol = compound.to_pybel()
+        else:
+            belmol = None
 
         for topo in [compound, parm, traj, belmol]:
+            if topo is None:
+                continue
             topo_converted = mb.load(topo)
             assert isinstance(topo_converted, Compound)
             assert topo_converted.n_particles == 11
@@ -399,6 +404,8 @@ class TestCompound(BaseTest):
         # Can't save gsd files with Windows
         if extension == ".gsd" and not has_hoomd:
             return True
+        elif extension == ".sdf" and not has_openbabel:
+            return True
         outfile = "methyl_out" + extension
         ch3.save(filename=outfile)
         assert os.path.exists(outfile)
@@ -429,6 +436,8 @@ class TestCompound(BaseTest):
         box_attributes = ["lengths"]
         custom_box = Box(lengths=[0.8, 0.8, 0.8], angles=[90, 90, 90])
         for ext in extensions:
+            if ext == ".sdf" and not has_openbabel:
+                continue
             outfile_padded = "padded_methyl" + ext
             outfile_custom = "custom_methyl" + ext
             ch3.save(filename=outfile_padded, box=None, overwrite=True)
@@ -2015,18 +2024,7 @@ class TestCompound(BaseTest):
                 distance_constraints=[(methyl_end0, methyl_end1), 0.7]
             )
 
-    @pytest.mark.skipif(has_openbabel, reason="Open Babel package is installed")
-    @pytest.mark.skipif(
-        "win" in sys.platform, reason="Unknown issue with Window's Open Babel "
-    )
-    def test_energy_minimize_openbabel_warn(self, octane):
-        with pytest.raises(MBuildError):
-            octane.energy_minimize()
-
     @pytest.mark.skipif(not has_openbabel, reason="Open Babel not installed")
-    @pytest.mark.skipif(
-        "win" in sys.platform, reason="Unknown issue with Window's Open Babel "
-    )
     def test_energy_minimize_ff(self, octane):
         for ff in ["UFF", "GAFF", "MMFF94", "MMFF94s", "Ghemical"]:
             octane.energy_minimize(forcefield=ff)
@@ -2034,9 +2032,6 @@ class TestCompound(BaseTest):
             octane.energy_minimize(forcefield="fakeFF")
 
     @pytest.mark.skipif(not has_openbabel, reason="Open Babel not installed")
-    @pytest.mark.skipif(
-        "win" in sys.platform, reason="Unknown issue with Window's Open Babel "
-    )
     def test_energy_minimize_algorithm(self, octane):
         for algorithm in ["cg", "steep", "md"]:
             octane.energy_minimize(algorithm=algorithm)
@@ -2044,9 +2039,6 @@ class TestCompound(BaseTest):
             octane.energy_minimize(algorithm="fakeAlg")
 
     @pytest.mark.skipif(not has_openbabel, reason="Open Babel not installed")
-    @pytest.mark.skipif(
-        "win" in sys.platform, reason="Unknown issue with Window's Open Babel "
-    )
     def test_energy_minimize_non_element(self, octane):
         for particle in octane.particles():
             particle.element = None
@@ -2061,9 +2053,6 @@ class TestCompound(BaseTest):
             octane.energy_minimize()
 
     @pytest.mark.skipif(not has_openbabel, reason="Open Babel not installed")
-    @pytest.mark.skipif(
-        "win" in sys.platform, reason="Unknown issue with Window's Open Babel "
-    )
     def test_energy_minimize_ports(self, octane):
         distances = np.round(
             [
@@ -2187,11 +2176,13 @@ class TestCompound(BaseTest):
             angle1, angle2 = connect_and_reconnect(chf, bond_vector)
             assert np.isclose(angle1, angle2, atol=1e-6)
 
+    @pytest.mark.skipif(not has_openbabel, reason="Open Babel not installed")
     def test_smarts_from_string(self):
         p3ht = mb.load("CCCCCCC1=C(SC(=C1)C)C", smiles=True, backend="pybel")
         assert p3ht.n_bonds == 33
         assert p3ht.n_particles == 33
 
+    @pytest.mark.skipif(not has_openbabel, reason="Open Babel not installed")
     def test_smarts_from_file(self):
         p3ht = mb.load(get_fn("p3ht.smi"), smiles=True, backend="pybel")
         assert p3ht.n_bonds == 33
@@ -2400,16 +2391,19 @@ class TestCompound(BaseTest):
             else:
                 assert my_cmp.get_smiles() == test_string
 
+    @pytest.mark.skipif(not has_openbabel, reason="Pybel is not installed")
     def test_sdf(self, methane):
         methane.save("methane.sdf")
         sdf_string = mb.load("methane.sdf")
         assert np.allclose(methane.xyz, sdf_string.xyz, atol=1e-5)
 
+    @pytest.mark.skipif(not has_openbabel, reason="Pybel is not installed")
     def test_load_multiple_sdf(self, methane):
         filled = mb.fill_box(methane, n_compounds=10, box=Box([4, 4, 4]))
         filled.save("methane.sdf")
         mb.load("methane.sdf")
 
+    @pytest.mark.skipif(not has_openbabel, reason="Pybel is not installed")
     def test_save_multiple_sdf(self, methane):
         filled = mb.fill_box(methane, n_compounds=10, box=[0, 0, 0, 4, 4, 4])
         filled.save("methane.sdf")
@@ -2585,6 +2579,8 @@ class TestCompound(BaseTest):
 
     @pytest.mark.parametrize("backend", ["pybel", "rdkit"])
     def test_elements_from_smiles(self, backend):
+        if backend == "pybel" and not has_openbabel:
+            return True
         mol = mb.load("COC", smiles=True, backend=backend)
         for particle in mol.particles():
             assert particle.element is not None
