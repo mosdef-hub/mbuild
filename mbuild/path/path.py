@@ -631,10 +631,14 @@ class StraightLine(Path):
         The direction to align the straight path along.
     """
 
-    def __init__(self, spacing, N, direction=(1, 0, 0), bond_graph=None, bead_name="_A"):
+    def __init__(
+        self, spacing, N, direction=(1, 0, 0), bond_graph=None, bead_name="_A"
+    ):
         self.spacing = spacing
         self.direction = np.asarray(direction)
-        super(StraightLine, self).__init__(N=N, bond_graph=bond_graph, bead_name=bead_name)
+        super(StraightLine, self).__init__(
+            N=N, bond_graph=bond_graph, bead_name=bead_name
+        )
 
     def generate(self):
         self.coordinates = np.array(
@@ -663,7 +667,9 @@ class Cyclic(Path):
     set ``bond_head_tail = True`` in ``mbuild.polymer.Polymer.build_from_path``
     """
 
-    def __init__(self, spacing=None, N=None, radius=None, bond_graph=None, bead_name="_A"):
+    def __init__(
+        self, spacing=None, N=None, radius=None, bond_graph=None, bead_name="_A"
+    ):
         self.spacing = spacing
         self.radius = radius
         n_params = sum(1 for i in (spacing, N, radius) if i is not None)
@@ -753,7 +759,15 @@ class Knot(Path):
 
 class Helix(Path):
     def __init__(
-        self, N, radius, rise, twist, right_handed=True, bottom_up=True, bond_graph=None, bead_name="_A"
+        self,
+        N,
+        radius,
+        rise,
+        twist,
+        right_handed=True,
+        bottom_up=True,
+        bond_graph=None,
+        bead_name="_A",
     ):
         """Generate helical path.
 
@@ -856,7 +870,7 @@ class ZigZag(Path):
         sites_per_segment=4,
         plane="xy",
         bond_graph=None,
-        bead_name="_A"
+        bead_name="_A",
     ):
         self.spacing = spacing
         self.angle_deg = angle_deg
