@@ -530,10 +530,14 @@ class Lamellar(Path):
         self.num_stacks = num_stacks
         self.stack_separation = stack_separation
         bond_graph = nx.Graph()
-        super(Lamellar, self).__init__(N=None, bond_graph=bond_graph, bead_name=bead_name)
+        super(Lamellar, self).__init__(
+            N=None, bond_graph=bond_graph, bead_name=bead_name
+        )
 
     def generate(self):
-        layer_spacing = np.arange(0, self.layer_length, self.bond_length, dtype=np.float64)
+        layer_spacing = np.arange(
+            0, self.layer_length, self.bond_length, dtype=np.float64
+        )
         # Info needed for generating coords of the arc curves between layers
         r = self.layer_separation / 2
         arc_length = r * np.pi
@@ -603,7 +607,7 @@ class Lamellar(Path):
                     ]
                     self.coordinates.extend(arc[::-1])
                     self.coordinates.extend(list(this_stack))
-        # Create linear (path) bond graph
+        # Create linear (path) bond graph
         for i, xyz in enumerate(self.coordinates):
             self.bond_graph.add_node(
                 i,
