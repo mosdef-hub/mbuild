@@ -27,8 +27,9 @@ class Path:
        The graph defining the edges between coordinates
     """
 
-    def __init__(self, N=None, coordinates=None, bond_graph=None):
+    def __init__(self, N=None, coordinates=None, bond_graph=None, bead_name="_A"):
         self.bond_graph = bond_graph
+        self.bead_name = bead_name
         # Only N is defined, make empty coordinates array with size N
         # Use case: Random walks
         if N is not None and coordinates is None:
@@ -50,6 +51,10 @@ class Path:
     def __post_init__(self):
         """Needed for CodeQL in order to call abstract method inside __init__()"""
         self.generate()
+        try:
+            self.N
+        except NameError:
+            self.N = len(self.coordinates)
         if self.N is None:
             self.N = len(self.coordinates)
 
@@ -234,7 +239,6 @@ class HardSphereRandomWalk(Path):
         self.min_angle = min_angle
         self.max_angle = max_angle
         self.seed = seed
-        self.bead_name = bead_name
         self.volume_constraint = volume_constraint
         self.tolerance = tolerance
         self.trial_batch_size = int(trial_batch_size)
@@ -274,7 +278,7 @@ class HardSphereRandomWalk(Path):
         # Create RNG state.
         self.rng = np.random.default_rng(seed)
         super(HardSphereRandomWalk, self).__init__(
-            coordinates=coordinates, N=N, bond_graph=bond_graph
+            coordinates=coordinates, N=N, bond_graph=bond_graph, bead_name=bead_name
         )
 
     def generate(self):
@@ -336,6 +340,13 @@ class HardSphereRandomWalk(Path):
                     next_point_found = True
                 # 2nd point failed, continue while loop
                 self.attempts += 1
+
+                if self.attempts == self.max_attempts and self.count < self.N:
+                    raise RuntimeError(
+                        "The maximum number attempts allowed have passed, and only ",
+                        f"{self.count - self._init_count} sucsessful attempts were completed.",
+                        "Try changing the parameters or seed and running again.",
+                    )
 
         # Starting random walk from a previous set of coordinates (another path)
         # This point was accepted in self._initial_point with these conditions
@@ -509,8 +520,8 @@ class Lamellar(Path):
         layer_length,
         bond_length,
         num_stacks=1,
+        bead_name="_A",
         stack_separation=None,
-        bond_graph=None,
     ):
         self.num_layers = num_layers
         self.layer_separation = layer_separation
@@ -518,10 +529,15 @@ class Lamellar(Path):
         self.bond_length = bond_length
         self.num_stacks = num_stacks
         self.stack_separation = stack_separation
-        super(Lamellar, self).__init__(N=None, bond_graph=bond_graph)
+        bond_graph = nx.Graph()
+        super(Lamellar, self).__init__(
+            N=None, bond_graph=bond_graph, bead_name=bead_name
+        )
 
     def generate(self):
-        layer_spacing = np.arange(0, self.layer_length, self.bond_length)
+        layer_spacing = np.arange(
+            0, self.layer_length, self.bond_length, dtype=np.float64
+        )
         # Info needed for generating coords of the arc curves between layers
         r = self.layer_separation / 2
         arc_length = r * np.pi
@@ -591,6 +607,15 @@ class Lamellar(Path):
                     ]
                     self.coordinates.extend(arc[::-1])
                     self.coordinates.extend(list(this_stack))
+        # Create linear (path) bond graph
+        for i, xyz in enumerate(self.coordinates):
+            self.bond_graph.add_node(
+                i,
+                name=self.bead_name,
+                xyz=xyz,
+            )
+            if i != 0:
+                self.add_edge(u=i - 1, v=i)
 
 
 class StraightLine(Path):
@@ -606,10 +631,14 @@ class StraightLine(Path):
         The direction to align the straight path along.
     """
 
-    def __init__(self, spacing, N, direction=(1, 0, 0), bond_graph=None):
+    def __init__(
+        self, spacing, N, direction=(1, 0, 0), bond_graph=None, bead_name="_A"
+    ):
         self.spacing = spacing
         self.direction = np.asarray(direction)
-        super(StraightLine, self).__init__(N=N, bond_graph=bond_graph)
+        super(StraightLine, self).__init__(
+            N=N, bond_graph=bond_graph, bead_name=bead_name
+        )
 
     def generate(self):
         self.coordinates = np.array(
@@ -638,13 +667,15 @@ class Cyclic(Path):
     set ``bond_head_tail = True`` in ``mbuild.polymer.Polymer.build_from_path``
     """
 
-    def __init__(self, spacing=None, N=None, radius=None, bond_graph=None):
+    def __init__(
+        self, spacing=None, N=None, radius=None, bond_graph=None, bead_name="_A"
+    ):
         self.spacing = spacing
         self.radius = radius
         n_params = sum(1 for i in (spacing, N, radius) if i is not None)
         if n_params != 2:
             raise ValueError("You must specify only 2 of spacing, N and radius.")
-        super(Cyclic, self).__init__(N=N, bond_graph=bond_graph)
+        super(Cyclic, self).__init__(N=N, bond_graph=bond_graph, bead_name=bead_name)
 
     def generate(self):
         if self.spacing and self.N:
@@ -677,10 +708,10 @@ class Knot(Path):
         Sets the bond graph between sites.
     """
 
-    def __init__(self, spacing, N, m, bond_graph=None):
+    def __init__(self, spacing, N, m, bond_graph=None, bead_name="_A"):
         self.spacing = spacing
         self.m = m
-        super(Knot, self).__init__(N=N, bond_graph=bond_graph)
+        super(Knot, self).__init__(N=N, bond_graph=bond_graph, bead_name=bead_name)
 
     def generate(self):
         # Generate dense sites first, sample actual ones later from spacing
@@ -728,7 +759,15 @@ class Knot(Path):
 
 class Helix(Path):
     def __init__(
-        self, N, radius, rise, twist, right_handed=True, bottom_up=True, bond_graph=None
+        self,
+        N,
+        radius,
+        rise,
+        twist,
+        right_handed=True,
+        bottom_up=True,
+        bond_graph=None,
+        bead_name="_A",
     ):
         """Generate helical path.
 
@@ -757,7 +796,7 @@ class Helix(Path):
         self.twist = twist
         self.right_handed = right_handed
         self.bottom_up = bottom_up
-        super(Helix, self).__init__(N=N, bond_graph=bond_graph)
+        super(Helix, self).__init__(N=N, bond_graph=bond_graph, bead_name=bead_name)
 
     def generate(self):
         indices = reversed(range(self.N)) if not self.bottom_up else range(self.N)
@@ -772,7 +811,7 @@ class Helix(Path):
 
 
 class Spiral2D(Path):
-    def __init__(self, N, a, b, spacing, bond_graph=None):
+    def __init__(self, N, a, b, spacing, bond_graph=None, bead_name="_A"):
         """Generate a 2D spiral path in the XY plane.
 
         Parameters
@@ -789,7 +828,7 @@ class Spiral2D(Path):
         self.a = a
         self.b = b
         self.spacing = spacing
-        super().__init__(N=N, bond_graph=bond_graph)
+        super().__init__(N=N, bond_graph=bond_graph, bead_name=bead_name)
 
     def generate(self):
         theta = 0.0
@@ -831,6 +870,7 @@ class ZigZag(Path):
         sites_per_segment=4,
         plane="xy",
         bond_graph=None,
+        bead_name="_A",
     ):
         self.spacing = spacing
         self.angle_deg = angle_deg
@@ -838,7 +878,7 @@ class ZigZag(Path):
         self.plane = plane
         if N % sites_per_segment != 0:
             raise ValueError("N must be evenly divisible by sites_per_segment")
-        super(ZigZag, self).__init__(N=N, bond_graph=bond_graph)
+        super(ZigZag, self).__init__(N=N, bond_graph=bond_graph, bead_name=bead_name)
 
     def generate(self):
         angle_rad = np.deg2rad(self.angle_deg)
