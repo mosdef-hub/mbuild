@@ -32,16 +32,13 @@ def random_coordinate(
 
 
 @njit(cache=True, fastmath=True)
-def check_path(existing_points, new_point, radius, tolerance, pbc, box_lengths):
+def check_path(existing_points, new_point, radius, tolerance):
     """Default check path method for HardSphereRandomWalk."""
     min_sq_dist = (radius - tolerance) ** 2
     for i in range(existing_points.shape[0]):
         dist_sq = 0.0
         for j in range(existing_points.shape[1]):
             diff = existing_points[i, j] - new_point[j]
-            # Apply minimum-image only if PBC is active for dimension j
-            if pbc[j]:
-                diff -= np.round(diff / box_lengths[j]) * box_lengths[j]
             dist_sq += diff * diff
         if dist_sq < min_sq_dist:
             return False

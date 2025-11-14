@@ -382,14 +382,18 @@ class HardSphereRandomWalk(Path):
                     points=new_xyzs, buffer=self.radius
                 )
                 new_xyzs = new_xyzs[is_inside_mask]
+            # Get set of existing points to use for checking candidate points
+            if self.include_compound:
+                # Include compound particle coordinates in check for overlaps
+                existing_points = np.concatenate(
+                    (self.coordinates[: self.count + 1], self.include_compound.xyz)
+                )
+            else:
+                existing_points = self.coordinates[: self.count + 1]
             for xyz in new_xyzs:
-                if self.include_compound:
-                    # Include compound particle coordinates in check for overlaps
-                    existing_points = np.concatenate(
-                        (self.coordinates[: self.count + 1], self.include_compound.xyz)
-                    )
-                else:
-                    existing_points = self.coordinates[: self.count + 1]
+                # wrap the point if we have periodic boundary conditions
+                if any(self.pbc):
+                    xyz -= self.pbc * np.floor(xyz / self.box_lengths) * self.box_lengths
                 # Now check for overlaps for each trial point
                 # Stop after the first success
                 if self.check_path(
@@ -397,8 +401,6 @@ class HardSphereRandomWalk(Path):
                     new_point=xyz,
                     radius=self.radius,
                     tolerance=self.tolerance,
-                    pbc=self.pbc,
-                    box_lengths=self.box_lengths
                 ):
                     self.coordinates[self.count + 1] = xyz
                     self.count += 1
