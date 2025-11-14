@@ -10,6 +10,7 @@ from scipy.interpolate import interp1d
 
 from mbuild import Compound
 from mbuild.path.path_utils import check_path, random_coordinate
+from mbuild.utils.volumes import CuboidConstraint
 
 
 class Path:
@@ -53,7 +54,7 @@ class Path:
         self.generate()
         try:
             self.N
-        except NameError:
+        except AttributeError:
             self.N = len(self.coordinates)
         if self.N is None:
             self.N = len(self.coordinates)
@@ -248,6 +249,10 @@ class HardSphereRandomWalk(Path):
         self.start_from_path = start_from_path
         self.attach_paths = attach_paths
         self._particle_pairs = {}
+        if isinstance(volume_constraint, CuboidConstraint):
+            self.pbc = volume_constraint.pbc
+        else:
+            self.pbc = None
 
         # This random walk is including a previous path
         if start_from_path:
