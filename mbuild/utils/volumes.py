@@ -53,6 +53,7 @@ class CuboidConstraint(Constraint):
         self.center = np.asarray(center)
         self.mins = self.center - np.array([Lx / 2, Ly / 2, Lz / 2])
         self.maxs = self.center + np.array([Lx / 2, Ly / 2, Lz / 2])
+        self.box_lengths = np.array([Lx, Ly, Lz]).astype(np.float32)
         self.pbc = np.asarray(pbc, dtype=np.bool_)
 
     def is_inside(self, points, buffer):
@@ -74,7 +75,7 @@ class CuboidConstraint(Constraint):
             maxs=self.maxs,
             points=points,
             buffer=buffer,
-            pbc=self.pbc
+            pbc=self.pbc,
         )
 
 

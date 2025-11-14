@@ -32,7 +32,7 @@ def random_coordinate(
 
 
 @njit(cache=True, fastmath=True)
-def check_path(existing_points, new_point, radius, tolerance, pbc=None, box_lengths=None):
+def check_path(existing_points, new_point, radius, tolerance, pbc, box_lengths):
     """Default check path method for HardSphereRandomWalk."""
     min_sq_dist = (radius - tolerance) ** 2
     for i in range(existing_points.shape[0]):

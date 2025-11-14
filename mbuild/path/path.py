@@ -251,8 +251,10 @@ class HardSphereRandomWalk(Path):
         self._particle_pairs = {}
         if isinstance(volume_constraint, CuboidConstraint):
             self.pbc = volume_constraint.pbc
+            self.box_lengths = volume_constraint.box_lengths 
         else:
-            self.pbc = None
+            self.pbc = np.array([False, False, False], dtype=np.bool_)
+            self.box_lengths = np.array([1, 1, 1]).astype(np.float32) 
 
         # This random walk is including a previous path
         if start_from_path:
@@ -395,6 +397,8 @@ class HardSphereRandomWalk(Path):
                     new_point=xyz,
                     radius=self.radius,
                     tolerance=self.tolerance,
+                    pbc=self.pbc,
+                    box_lengths=self.box_lengths
                 ):
                     self.coordinates[self.count + 1] = xyz
                     self.count += 1
