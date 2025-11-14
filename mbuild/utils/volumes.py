@@ -40,12 +40,20 @@ class CuboidConstraint(Constraint):
         The length of the volume along the z-axis.
     center : array-like (1,3), default = (0, 0, 0)
         Defines the center of the volume.
+    pbc : array-like of bool, shape (3,), optional
+        Periodic boundary flags for each spatial dimension ``(x, y, z)``.
+        A value of ``True`` indicates that the corresponding boundary is
+        treated as periodic. When periodicity is enabled along a given axis,
+        points are considered automatically inside the constraint along that
+        dimension, regardless of their coordinate. The default is
+        ``(False, False, False)``, meaning no periodic boundaries.
     """
 
-    def __init__(self, Lx, Ly, Lz, center=(0, 0, 0)):
+    def __init__(self, Lx, Ly, Lz, center=(0, 0, 0), pbcs=(False, False, False)):
         self.center = np.asarray(center)
         self.mins = self.center - np.array([Lx / 2, Ly / 2, Lz / 2])
         self.maxs = self.center + np.array([Lx / 2, Ly / 2, Lz / 2])
+        self.pbc = np.asarray(pbc, dtype=np.bool_)
 
     def is_inside(self, points, buffer):
         """Check a set of coordinates against the volume constraint.
@@ -62,7 +70,11 @@ class CuboidConstraint(Constraint):
         Mask of booleans of length N corresponding to each point.
         """
         return is_inside_cuboid(
-            mins=self.mins, maxs=self.maxs, points=points, buffer=buffer
+            mins=self.mins,
+            maxs=self.maxs,
+            points=points,
+            buffer=buffer,
+            pbc=self.pbc
         )
 
 
@@ -189,12 +201,14 @@ def is_inside_sphere(sphere_radius, points, buffer):
 
 
 @njit(cache=True, fastmath=True)
-def is_inside_cuboid(mins, maxs, points, buffer):
+def is_inside_cuboid(mins, maxs, points, buffer, pbc):
     n_points = points.shape[0]
     results = np.empty(n_points, dtype=np.bool_)
     for i in range(n_points):
         inside = True
         for j in range(3):
+            if pbc[j]:
+                continue
             if points[i, j] - buffer < mins[j] or points[i, j] + buffer > maxs[j]:
                 inside = False
                 break
