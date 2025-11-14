@@ -53,7 +53,7 @@ class Path:
         self.generate()
         try:
             self.N
-        except NameError:
+        except AttributeError:
             self.N = len(self.coordinates)
         if self.N is None:
             self.N = len(self.coordinates)
