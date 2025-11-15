@@ -105,6 +105,37 @@ class TestRandomWalk(BaseTest):
         bounds = bounding_box(rw_path.coordinates)
         assert np.all(bounds < np.array([5 - 0.44, 5 - 0.44, 5 - 0.44]))
 
+    def test_walk_inside_cube_with_pbc(self):
+        # First make sure this seed gives a path outside these bounds without PBC
+        rw_path = HardSphereRandomWalk(
+            N=500,
+            bond_length=0.25,
+            radius=0.22,
+            initial_point=(0,0,0),
+            volume_constraint=None,
+            min_angle=np.pi / 4,
+            max_angle=np.pi,
+            max_attempts=1e4,
+            seed=14,
+        )
+        comp = rw_path.to_compound()
+        assert np.all(comp.get_boundingbox().lengths > np.array([5,5,5]))
+
+        cube = CuboidConstraint(Lx=5, Ly=5, Lz=5, pbc=(True, True, True))
+        rw_path = HardSphereRandomWalk(
+            N=500,
+            bond_length=0.25,
+            radius=0.22,
+            initial_point=(0,0,0),
+            volume_constraint=cube,
+            min_angle=np.pi / 4,
+            max_angle=np.pi,
+            max_attempts=1e4,
+            seed=14,
+        )
+        comp = rw_path.to_compound()
+        assert np.all(comp.get_boundingbox().lengths <= np.array([5,5,5]))
+
     def test_walk_inside_sphere(self):
         sphere = SphereConstraint(radius=4, center=(2, 2, 2))
         rw_path = HardSphereRandomWalk(
