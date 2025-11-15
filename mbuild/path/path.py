@@ -251,7 +251,7 @@ class HardSphereRandomWalk(Path):
         self._particle_pairs = {}
         if isinstance(volume_constraint, CuboidConstraint):
             self.pbc = volume_constraint.pbc
-            self.box_lengths = volume_constraint.box_lengths 
+            self.box_lengths = volume_constraint.box_lengths.astype(np.float32) 
         else:
             self.pbc = np.array([False, False, False], dtype=np.bool_)
             self.box_lengths = np.array([1, 1, 1]).astype(np.float32) 
@@ -393,7 +393,7 @@ class HardSphereRandomWalk(Path):
             for xyz in new_xyzs:
                 # wrap the point if we have periodic boundary conditions
                 if any(self.pbc):
-                    xyz -= self.pbc * np.floor(xyz / self.box_lengths) * self.box_lengths
+                    xyz = self.volume_constraint.mins + np.mod(xyz - self.volume_constraint.mins, self.box_lengths)
                 # Now check for overlaps for each trial point
                 # Stop after the first success
                 if self.check_path(

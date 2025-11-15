@@ -28,7 +28,7 @@ def random_coordinate(
     v2s = cos_thetas[:, None] * v1_norm + sin_thetas[:, None] * r_perp_norm
     # Batch of trial positions
     next_positions = pos1 + v2s * bond_length
-    return next_positions
+    return next_positions.astype(np.float32)
 
 
 @njit(cache=True, fastmath=True)
