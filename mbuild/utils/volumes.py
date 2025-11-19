@@ -1,5 +1,6 @@
 import numpy as np
 from numba import njit
+from scipy.spatial import cKDTree
 
 
 class Constraint:
@@ -25,6 +26,13 @@ class Constraint:
     def is_inside(self, points, buffer):
         """Return True if point satisfies constraint (inside), else False."""
         raise NotImplementedError("Must be implemented in subclasses")
+
+    def sample_candidates(self, points, n_candiates, buffer):
+        """Sample the volume for canidate points sorted by lowest local density."""
+        raise NotImplementedError("Must be implemented in subclasses")
+
+    def find_low_density_points(self, points, n_candidates, buffer):
+        low_density_points = self.sample_candidates(points=points, n_candidates=n_candidates, buffer=buffer)
 
 
 class CuboidConstraint(Constraint):
@@ -78,6 +86,49 @@ class CuboidConstraint(Constraint):
             pbc=self.pbc,
         )
 
+    def sample_candidates(self, points, n_candidates, buffer):
+        """Generate candidate points uniformly distributed inside the box,
+        optionally ranked by lowest local density around existing points.
+
+        Parameters
+        ----------
+        points : ndarray, shape (N, 3) or None
+            Existing points inside the volume. If provided, the candidate
+            points will be sorted so that points in regions of lowest local
+            density appear first.
+            If None or empty, candidates are returned in random order.
+        n_candidates : int
+            Number of candidate points to sample uniformly inside the sphere.
+        k : int, optional, default 10
+            Number of neighbors to use for local density.
+        buffer : float
+            Edge buffer to subtract from the box edge, ensuring sampled
+            points remain at least `buffer` distance away from the boundary.
+
+        Returns
+        -------
+        candidates : ndarray, shape (n_candidates, 3)
+            Candidate points inside the volume. If `points` is given,
+            the array is sorted so that points with the greatest distance to
+            the nearest neighbor (lowest local density) appear first.
+        """
+        # Create random candidates inside the box to test and sample from
+        candidates = np.random.uniform(
+            self.mins + buffer, self.maxs - buffer, size=(n_candidates, 3)
+        )
+        if points is None or len(points) == 0:
+            return candidates 
+        # Existing points given, sort candidates by local density
+        points = np.asarray(points)
+        tree = cKDTree(points)
+        dists, _ = tree.query(candidates, k=1)
+        if dists.ndim == 1:
+            density_metric = dists
+        else:
+            density_metric = dists[:, -1]
+        sorted_order = np.argsort(-density_metric)  # negative = biggest first
+        return candidates[sorted_order]
+
 
 class SphereConstraint(Constraint):
     """Creates a spherical constraint.
@@ -111,6 +162,52 @@ class SphereConstraint(Constraint):
         Mask of booleans of length N corresponding to each point.
         """
         return is_inside_sphere(points=points, sphere_radius=self.radius, buffer=buffer)
+
+    def sample_candidates(self, points, n_candidates, buffer, k=10):
+        """Generate candidate points uniformly distributed inside the sphere,
+        optionally ranked by lowest local density around existing points.
+
+        Parameters
+        ----------
+        points : ndarray, shape (N, 3) or None
+            Existing points inside the volume. If provided, the candidate
+            points will be sorted so that points in regions of lowest local
+            density appear first.
+            If None or empty, candidates are returned in random order.
+        n_candidates : int
+            Number of candidate points to sample uniformly inside the sphere.
+        k : int, optional, default 10
+            Number of neighbors to use for local density.
+        buffer : float
+            Radial buffer to subtract from the sphere radius, ensuring sampled
+            points remain at least `buffer` distance away from the boundary.
+
+        Returns
+        -------
+        candidates : ndarray, shape (n_candidates, 3)
+            Candidate points inside the volume. If `points` is given,
+            the array is sorted so that points with the greatest distance to
+            the nearest neighbor (lowest local density) appear first.
+        """
+        effective_radius = self.radius - buffer
+        dirs = np.random.normal(size=(n_candidates, 3))
+        dirs /= np.linalg.norm(dirs, axis=1)[:, None]
+        u = np.random.random(size=n_candidates)
+        radii = effective_radius * (u ** (1/3))
+        candidates = self.center + dirs * radii[:, None]
+        # If just sampling from the volume, no KDTree needed
+        if points is None or len(points) == 0:
+            return candidates
+        # Want to sample around existing points, sort by local density
+        points = np.asarray(points)
+        tree = cKDTree(points)
+        dists, _ = tree.query(candidates, k=k)
+        if dists.ndim == 1:
+            density_metric = dists
+        else:
+            density_metric = dists[:, -1]
+        sorted_order = np.argsort(-density_metric)  # negative = biggest first
+        return candidates[sorted_order]
 
 
 class CylinderConstraint(Constraint):
@@ -166,6 +263,55 @@ class CylinderConstraint(Constraint):
             height=self.height,
             buffer=buffer,
         )
+
+    def sample_candidates(self, points, n_candidates, buffer, k=10):
+        """Generate candidate points uniformly distributed inside the cylinder,
+        optionally ranked by lowest local density around existing points.
+
+        Parameters
+        ----------
+        points : ndarray, shape (N, 3) or None
+            Existing points inside the volume. If provided, the candidate
+            points will be sorted so that points in regions of lowest local
+            density appear first.
+            If None or empty, candidates are returned in random order.
+        n_candidates : int
+            Number of candidate points to sample uniformly.
+        k : int, optional, default 10
+            Number of neighbors to use for local density.
+        buffer : float
+            Radial buffer to subtract from the radius and height, ensuring sampled
+            points remain at least `buffer` distance away from the boundary.
+
+        Returns
+        -------
+        candidates : ndarray, shape (n_candidates, 3)
+            Candidate points inside the volume. If `points` is given,
+            the array is sorted so that points with the greatest distance to
+            the nearest neighbor (lowest local density) appear first.
+        """
+        eff_radius = max(self.radius - buffer, 0.0)
+        eff_half_height = max(self.height * 0.5 - buffer, 0.0)
+        z = self.center[2] + np.random.uniform(
+            -eff_half_height, eff_half_height, size=n_candidates
+        )
+        r = eff_radius * np.sqrt(np.random.random(size=n_candidates))
+        theta = 2 * np.pi * np.random.random(size=n_candidates)
+        x = self.center[0] + r * np.cos(theta)
+        y = self.center[1] + r * np.sin(theta)
+        candidates = np.column_stack((x, y, z))
+        if points is None or len(points) == 0:
+            return candidates
+        # Existing points given, rank by lowest local density
+        points = np.asarray(points)
+        tree = cKDTree(points)
+        dists, _ = tree.query(candidates, k=k)
+        if dists.ndim == 1:
+            density_metric = dists
+        else:
+            density_metric = dists[:, -1]
+        sorted_order = np.argsort(-density_metric)  # negative = biggest first
+        return candidates[sorted_order]
 
 
 @njit(cache=True, fastmath=True)
