@@ -1,5 +1,6 @@
 import numpy as np
 from numba import njit
+from scipy.spatial import cKDTree
 
 
 class Constraint:
@@ -25,6 +26,13 @@ class Constraint:
     def is_inside(self, points, buffer):
         """Return True if point satisfies constraint (inside), else False."""
         raise NotImplementedError("Must be implemented in subclasses")
+
+    def sample_candidates(self, points, n_candiates, buffer):
+        """Sample the volume for canidate points sorted by lowest local density."""
+        raise NotImplementedError("Must be implemented in subclasses")
+
+    def find_low_density_points(self, points, n_candidates, buffer):
+        low_density_points = self.sample_candidates(points=points, n_candidates=n_candidates, buffer=buffer)
 
 
 class CuboidConstraint(Constraint):
@@ -65,6 +73,22 @@ class CuboidConstraint(Constraint):
             mins=self.mins, maxs=self.maxs, points=points, buffer=buffer
         )
 
+    def sample_candidates(self, points, n_candidates, buffer):
+        """"""
+        points = np.asarray(points)
+        # No points to check against, randomly sample inside a cube
+        if len(points) == 0:
+            return np.random.uniform(self.mins + buffer, self.maxs - buffer, size=(n_candidates, 3))
+
+        # Create random candidates inside the box to test and sample from
+        candidates = np.random.uniform(
+            self.mins + buffer, self.maxs - buffer, size=(n_candidates, 3)
+        )
+        tree = cKDTree(points)
+        dists, _ = tree.query(candidates, k=1)
+        sorted_order = np.argsort(-dists)
+        return candidates[sorted_order]
+
 
 class SphereConstraint(Constraint):
     """Creates a spherical constraint.
@@ -98,6 +122,25 @@ class SphereConstraint(Constraint):
         Mask of booleans of length N corresponding to each point.
         """
         return is_inside_sphere(points=points, sphere_radius=self.radius, buffer=buffer)
+
+    def sample_candidates(self, points, n_candidates, buffer):
+        effective_radius = self.radius - buffer
+        # Create random candidates inside the box to test and sample from
+        dirs = np.random.normal(size=(n_candidates, 3))
+        dirs /= np.linalg.norm(dirs, axis=1)[:, None]
+        u = np.random.random(size=n_candidates)
+        radii = effective_radius * (u ** (1/3))
+        # generate candidate points
+        candidates = self.center + dirs * radii[:, None]
+        # If just sampling from the volume, no KDTree needed
+        if points is None or len(points) == 0:
+            return candidates
+        # Want to sample around existing points, sort by local density
+        points = np.asarray(points)
+        tree = cKDTree(points)
+        dists, _ = tree.query(candidates, k=1)
+        sorted_order = np.argsort(-dists)
+        return candidates[sorted_order]
 
 
 class CylinderConstraint(Constraint):
@@ -191,7 +234,7 @@ def is_inside_sphere(sphere_radius, points, buffer):
 @njit(cache=True, fastmath=True)
 def is_inside_cuboid(mins, maxs, points, buffer):
     n_points = points.shape[0]
-    results = np.empty(n_points, dtype=np.bool_)
+    results = np.empty(n_points, dtype=bool)
     for i in range(n_points):
         inside = True
         for j in range(3):
