@@ -153,7 +153,7 @@ class TestRandomWalk(BaseTest):
         assert np.all(bounds < np.array([(2 * 4) - 0.22]))
 
     def test_walk_inside_cylinder(self):
-        cylinder = CylinderConstraint(radius=3, height=6, center=(1.5, 1.5, 3))
+        cylinder = CylinderConstraint(radius=3, height=6, center=(0, 0, 0))
         rw_path = HardSphereRandomWalk(
             N=200,
             bond_length=0.25,
