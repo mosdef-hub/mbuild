@@ -234,7 +234,7 @@ def is_inside_sphere(sphere_radius, points, buffer):
 @njit(cache=True, fastmath=True)
 def is_inside_cuboid(mins, maxs, points, buffer):
     n_points = points.shape[0]
-    results = np.empty(n_points, dtype=bool)
+    results = np.empty(n_points, dtype=np.bool_)
     for i in range(n_points):
         inside = True
         for j in range(3):
