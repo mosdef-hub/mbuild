@@ -28,7 +28,7 @@ def random_coordinate(
     v2s = cos_thetas[:, None] * v1_norm + sin_thetas[:, None] * r_perp_norm
     # Batch of trial positions
     next_positions = pos1 + v2s * bond_length
-    return next_positions
+    return next_positions.astype(np.float32)
 
 
 @njit(cache=True, fastmath=True)
@@ -46,7 +46,12 @@ def check_path(existing_points, new_point, radius, tolerance):
 
 
 @njit(cache=True, fastmath=True)
-def target_sq_distances(target_coordinate, new_points):
+def target_sq_distances(
+    target_coordinate,
+    new_points,
+    pbc=[False, False, False],
+    box_lengths=[None, None, None],
+):
     """Return squared distances from target_coordinate to new_points."""
     n_points = new_points.shape[0]
     sq_distances = np.empty(n_points, dtype=np.float32)
@@ -54,6 +59,13 @@ def target_sq_distances(target_coordinate, new_points):
         dx = target_coordinate[0] - new_points[i, 0]
         dy = target_coordinate[1] - new_points[i, 1]
         dz = target_coordinate[2] - new_points[i, 2]
+        # Apply PBC per-axis
+        if pbc[0]:
+            dx -= np.round(dx / box_lengths[0]) * box_lengths[0]
+        if pbc[1]:
+            dy -= np.round(dy / box_lengths[1]) * box_lengths[1]
+        if pbc[2]:
+            dz -= np.round(dz / box_lengths[2]) * box_lengths[2]
         sq_distances[i] = dx * dx + dy * dy + dz * dz
     return sq_distances
 

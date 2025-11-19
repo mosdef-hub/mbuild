@@ -10,6 +10,7 @@ from scipy.interpolate import interp1d
 
 from mbuild import Compound
 from mbuild.path.path_utils import check_path, random_coordinate
+from mbuild.utils.volumes import CuboidConstraint, CylinderConstraint
 
 
 class Path:
@@ -53,7 +54,7 @@ class Path:
         self.generate()
         try:
             self.N
-        except NameError:
+        except AttributeError:
             self.N = len(self.coordinates)
         if self.N is None:
             self.N = len(self.coordinates)
@@ -248,6 +249,21 @@ class HardSphereRandomWalk(Path):
         self.start_from_path = start_from_path
         self.attach_paths = attach_paths
         self._particle_pairs = {}
+        if isinstance(volume_constraint, CuboidConstraint):
+            self.pbc = volume_constraint.pbc
+            self.box_lengths = volume_constraint.box_lengths.astype(np.float32)
+        elif isinstance(volume_constraint, CylinderConstraint):
+            self.pbc = (False, False, volume_constraint.periodic_height)
+            self.box_lengths = np.array(
+                [
+                    volume_constraint.radius * 2,
+                    volume_constraint.radius * 2,
+                    volume_constraint.height,
+                ]
+            ).astype(np.float32)
+        else:
+            self.pbc = (None, None, None)
+            self.box_lengths = (None, None, None)
 
         # This random walk is including a previous path
         if start_from_path:
@@ -375,14 +391,20 @@ class HardSphereRandomWalk(Path):
                     points=new_xyzs, buffer=self.radius
                 )
                 new_xyzs = new_xyzs[is_inside_mask]
+            # Get set of existing points to use for checking candidate points
+            if self.include_compound:
+                # Include compound particle coordinates in check for overlaps
+                existing_points = np.concatenate(
+                    (self.coordinates[: self.count + 1], self.include_compound.xyz)
+                )
+            else:
+                existing_points = self.coordinates[: self.count + 1]
             for xyz in new_xyzs:
-                if self.include_compound:
-                    # Include compound particle coordinates in check for overlaps
-                    existing_points = np.concatenate(
-                        (self.coordinates[: self.count + 1], self.include_compound.xyz)
+                # wrap the point if we have periodic boundary conditions
+                if any(self.pbc):
+                    xyz = self.volume_constraint.mins + np.mod(
+                        xyz - self.volume_constraint.mins, self.box_lengths
                     )
-                else:
-                    existing_points = self.coordinates[: self.count + 1]
                 # Now check for overlaps for each trial point
                 # Stop after the first success
                 if self.check_path(
@@ -428,14 +450,14 @@ class HardSphereRandomWalk(Path):
             [self.volume_constraint, self.initial_point, self.start_from_path]
         ):
             max_dist = (self.N * self.radius) - self.radius
-            xyz = self.rng.uniform(low=-max_dist, high=max_dist, size=3)
+            xyz = self.rng.uniform(low=-max_dist / 2, high=max_dist / 2, size=3)
             return xyz
 
         # Random point inside volume constraint, not starting from another path
         elif self.volume_constraint and not self.start_from_path_index:
             xyz = self.rng.uniform(
-                low=self.volume_constraint.mins + self.radius,
-                high=self.volume_constraint.maxs - self.radius,
+                low=np.min(self.volume_constraint.mins) + self.radius,
+                high=np.max(self.volume_constraint.maxs) - self.radius,
                 size=3,
             )
             return xyz
@@ -467,16 +489,21 @@ class HardSphereRandomWalk(Path):
                         points=new_xyzs, buffer=self.radius
                     )
                     new_xyzs = new_xyzs[is_inside_mask]
-                for xyz in new_xyzs:
-                    if self.include_compound:
-                        existing_points = np.concatenate(
-                            (
-                                self.coordinates[: self.count + 1],
-                                self.include_compound.xyz,
-                            )
+                # Set up coordinates to check against
+                if self.include_compound:
+                    existing_points = np.concatenate(
+                        (
+                            self.coordinates[: self.count + 1],
+                            self.include_compound.xyz,
                         )
-                    else:
-                        existing_points = self.coordinates[: self.count + 1]
+                    )
+                else:
+                    existing_points = self.coordinates[: self.count + 1]
+                for xyz in new_xyzs:
+                    if any(self.pbc):
+                        xyz = self.volume_constraint.mins + np.mod(
+                            xyz - self.volume_constraint.mins, self.box_lengths
+                        )
                     if self.check_path(
                         existing_points=existing_points,
                         new_point=xyz,
