@@ -46,7 +46,12 @@ def check_path(existing_points, new_point, radius, tolerance):
 
 
 @njit(cache=True, fastmath=True)
-def target_sq_distances(target_coordinate, new_points, pbc=[False, False, False], box_lengths=[None, None, None]):
+def target_sq_distances(
+    target_coordinate,
+    new_points,
+    pbc=[False, False, False],
+    box_lengths=[None, None, None],
+):
     """Return squared distances from target_coordinate to new_points."""
     n_points = new_points.shape[0]
     sq_distances = np.empty(n_points, dtype=np.float32)

@@ -251,13 +251,19 @@ class HardSphereRandomWalk(Path):
         self._particle_pairs = {}
         if isinstance(volume_constraint, CuboidConstraint):
             self.pbc = volume_constraint.pbc
-            self.box_lengths = volume_constraint.box_lengths.astype(np.float32) 
+            self.box_lengths = volume_constraint.box_lengths.astype(np.float32)
         elif isinstance(volume_constraint, CylinderConstraint):
             self.pbc = (False, False, volume_constraint.periodic_height)
-            self.box_lengths = np.array([volume_constraint.radius * 2, volume_constraint.radius * 2, volume_constraint.height]).astype(np.float32)
+            self.box_lengths = np.array(
+                [
+                    volume_constraint.radius * 2,
+                    volume_constraint.radius * 2,
+                    volume_constraint.height,
+                ]
+            ).astype(np.float32)
         else:
-            self.pbc = (None, None, None) 
-            self.box_lengths = (None, None, None) 
+            self.pbc = (None, None, None)
+            self.box_lengths = (None, None, None)
 
         # This random walk is including a previous path
         if start_from_path:
@@ -396,7 +402,9 @@ class HardSphereRandomWalk(Path):
             for xyz in new_xyzs:
                 # wrap the point if we have periodic boundary conditions
                 if any(self.pbc):
-                    xyz = self.volume_constraint.mins + np.mod(xyz - self.volume_constraint.mins, self.box_lengths)
+                    xyz = self.volume_constraint.mins + np.mod(
+                        xyz - self.volume_constraint.mins, self.box_lengths
+                    )
                 # Now check for overlaps for each trial point
                 # Stop after the first success
                 if self.check_path(
@@ -493,7 +501,9 @@ class HardSphereRandomWalk(Path):
                     existing_points = self.coordinates[: self.count + 1]
                 for xyz in new_xyzs:
                     if any(self.pbc):
-                        xyz = self.volume_constraint.mins + np.mod(xyz - self.volume_constraint.mins, self.box_lengths)
+                        xyz = self.volume_constraint.mins + np.mod(
+                            xyz - self.volume_constraint.mins, self.box_lengths
+                        )
                     if self.check_path(
                         existing_points=existing_points,
                         new_point=xyz,

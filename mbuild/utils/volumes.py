@@ -31,8 +31,11 @@ class Constraint:
         """Sample the volume for canidate points sorted by lowest local density."""
         raise NotImplementedError("Must be implemented in subclasses")
 
-    def find_low_density_points(self, points, n_candidates, buffer):
-        low_density_points = self.sample_candidates(points=points, n_candidates=n_candidates, buffer=buffer)
+    def find_low_density_points(self, points, n_candidates, buffer, k=10):
+        low_density_points = self.sample_candidates(
+            points=points, n_candidates=n_candidates, buffer=buffer, k=k
+        )
+        return low_density_points
 
 
 class CuboidConstraint(Constraint):
@@ -86,7 +89,7 @@ class CuboidConstraint(Constraint):
             pbc=self.pbc,
         )
 
-    def sample_candidates(self, points, n_candidates, buffer):
+    def sample_candidates(self, points, n_candidates, buffer, k=10):
         """Generate candidate points uniformly distributed inside the box,
         optionally ranked by lowest local density around existing points.
 
@@ -117,11 +120,11 @@ class CuboidConstraint(Constraint):
             self.mins + buffer, self.maxs - buffer, size=(n_candidates, 3)
         )
         if points is None or len(points) == 0:
-            return candidates 
+            return candidates
         # Existing points given, sort candidates by local density
         points = np.asarray(points)
         tree = cKDTree(points)
-        dists, _ = tree.query(candidates, k=1)
+        dists, _ = tree.query(candidates, k=k)
         if dists.ndim == 1:
             density_metric = dists
         else:
@@ -193,7 +196,7 @@ class SphereConstraint(Constraint):
         dirs = np.random.normal(size=(n_candidates, 3))
         dirs /= np.linalg.norm(dirs, axis=1)[:, None]
         u = np.random.random(size=n_candidates)
-        radii = effective_radius * (u ** (1/3))
+        radii = effective_radius * (u ** (1 / 3))
         candidates = self.center + dirs * radii[:, None]
         # If just sampling from the volume, no KDTree needed
         if points is None or len(points) == 0:
@@ -222,7 +225,7 @@ class CylinderConstraint(Constraint):
     center : array-like (1,3), default = (0, 0, 0)
         Defines the center point of the sphere.
     periodic_height : bool, default False
-        If True, then treat the bounding along the Z-axis (height) 
+        If True, then treat the bounding along the Z-axis (height)
         as periodic.
     """
 
@@ -266,7 +269,7 @@ class CylinderConstraint(Constraint):
             cylinder_radius=self.radius,
             height=self.height,
             buffer=buffer,
-            periodic=self.periodic_height
+            periodic=self.periodic_height,
         )
 
     def sample_candidates(self, points, n_candidates, buffer, k=10):
