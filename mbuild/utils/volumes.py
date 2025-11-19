@@ -221,12 +221,16 @@ class CylinderConstraint(Constraint):
         The height  of the cylinder
     center : array-like (1,3), default = (0, 0, 0)
         Defines the center point of the sphere.
+    periodic_height : bool, default False
+        If True, then treat the bounding along the Z-axis (height) 
+        as periodic.
     """
 
-    def __init__(self, radius, height, center=(0, 0, 0)):
+    def __init__(self, radius, height, center=(0, 0, 0), periodic_height=False):
         self.center = np.array(center)
         self.height = height
         self.radius = radius
+        self.periodic_height = periodic_height
         self.mins = np.array(
             [
                 self.center[0] - self.radius,
@@ -262,6 +266,7 @@ class CylinderConstraint(Constraint):
             cylinder_radius=self.radius,
             height=self.height,
             buffer=buffer,
+            periodic=self.periodic_height
         )
 
     def sample_candidates(self, points, n_candidates, buffer, k=10):
@@ -315,7 +320,7 @@ class CylinderConstraint(Constraint):
 
 
 @njit(cache=True, fastmath=True)
-def is_inside_cylinder(points, center, cylinder_radius, height, buffer):
+def is_inside_cylinder(points, center, cylinder_radius, height, buffer, periodic):
     n_points = points.shape[0]
     results = np.empty(n_points, dtype=np.bool_)
     max_r = cylinder_radius - buffer
@@ -328,7 +333,10 @@ def is_inside_cylinder(points, center, cylinder_radius, height, buffer):
         dz = points[i, 2] - center[2]
         r_sq = dx * dx + dy * dy
         inside_radial = r_sq <= max_r_sq
-        inside_z = abs(dz) <= max_z
+        if periodic:
+            inside_z = True
+        else:
+            inside_z = abs(dz) <= max_z
         results[i] = inside_radial and inside_z
     return results
 

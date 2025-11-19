@@ -10,7 +10,7 @@ from scipy.interpolate import interp1d
 
 from mbuild import Compound
 from mbuild.path.path_utils import check_path, random_coordinate
-from mbuild.utils.volumes import CuboidConstraint
+from mbuild.utils.volumes import CuboidConstraint, CylinderConstraint
 
 
 class Path:
@@ -252,6 +252,9 @@ class HardSphereRandomWalk(Path):
         if isinstance(volume_constraint, CuboidConstraint):
             self.pbc = volume_constraint.pbc
             self.box_lengths = volume_constraint.box_lengths.astype(np.float32) 
+        elif isinstance(volume_constraint, CylinderConstraint):
+            self.pbc = (False, False, volume_constraint.periodic_height)
+            self.box_lengths = np.array([volume_constraint.radius * 2, volume_constraint.radius * 2, volume_constraint.height]).astype(np.float32)
         else:
             self.pbc = (None, None, None) 
             self.box_lengths = (None, None, None) 
