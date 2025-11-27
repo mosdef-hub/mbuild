@@ -659,7 +659,7 @@ class StraightLine(Path):
     """
 
     def __init__(
-        self, spacing, N, direction=(1, 0, 0), bond_graph=None, bead_name="_A"
+        self, spacing, N, direction=(1, 0, 0), bond_graph=nx.Graph(), bead_name="_A"
     ):
         self.spacing = spacing
         self.direction = np.asarray(direction)
@@ -671,6 +671,10 @@ class StraightLine(Path):
         self.coordinates = np.array(
             [np.zeros(3) + i * self.spacing * self.direction for i in range(self.N)]
         )
+        for idx, xyz in enumerate(self.coordinates):
+            self.bond_graph.add_node(idx, name=self.bead_name, xyz=xyz)
+            if idx != 0:
+                self.add_edge(u=idx - 1, v=idx)
 
 
 class Cyclic(Path):
