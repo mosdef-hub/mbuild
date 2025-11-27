@@ -15,6 +15,7 @@ from mbuild.coordinate_transform import (
 from mbuild.lib.atoms import H
 from mbuild.port import Port
 from mbuild.simulation import energy_minimize as e_min
+from mbuild.simulation import hoomd_cap_displacement
 from mbuild.utils.validation import assert_port_exists
 
 __all__ = ["Polymer"]
@@ -192,10 +193,10 @@ class Polymer(Compound):
             sequence=sequence,
             add_hydrogens=add_hydrogens,
             bond_head_tail=bond_head_tail,
+            coordinates=path.coordinates,
         )
-        self.set_monomer_positions(
-            coordinates=path.coordinates, energy_minimize=energy_minimize
-        )
+        if energy_minimize:
+            e_min(self)
 
     def set_monomer_positions(self, coordinates, energy_minimize=True):
         """Shift monomers so that their center of mass matches a set of pre-defined coordinates.
@@ -226,7 +227,7 @@ class Polymer(Compound):
         if energy_minimize:
             e_min(self)
 
-    def build(self, n, sequence="A", add_hydrogens=True, bond_head_tail=False):
+    def build(self, n, sequence="A", add_hydrogens=True, bond_head_tail=False, coordinates=None):
         """Connect one or more components in a specified sequence.
 
         Uses the compounds that are stored in Polymer.monomers and
@@ -260,6 +261,14 @@ class Polymer(Compound):
             The ``add_hydrogens`` parameter must be set to ``False`` to create this bond.
             This is useful for creating ring polymers, knot polymers.
             See ``mbuild.path.Cyclic`` and ``mbuild.path.Knot``.
+        coordinates : np.ndarray (n, 3)
+            Manually pass in the monomer coordinates.
+            Each monomer (including head and end groups) will be translated to the
+            corresponding coordinate. A rotate will be performed to attempt to
+            align the bonds. Further energy minimization may be required to remove 
+            overlapping particles and relax bonds.
+            See mbuild.simulation.hoomd_cap_displacement.
+            See Polyer.build_from_path to build a polymer chain from an mbuild.path.Path.
 
         Notes
         -----
@@ -292,24 +301,46 @@ class Polymer(Compound):
         # 'A': monomer_1, 'B': monomer_2....
         seq_map = dict(zip(unique_seq_ids, self._monomers))
         last_part = None
+        site_count = 0 if not self._end_groups[0] else 1 
         for n_added, seq_item in enumerate(it.cycle(sequence)):
             this_part = clone(seq_map[seq_item])
             repeat_compounds.append(this_part)
-            # self.add(this_part, "monomer[$]")
             if last_part is None:
                 first_part = this_part
+                if coordinates is not None:
+                    this_part.translate_to(coordinates[site_count])
             else:
                 # Transform this part, such that its bottom port is rotated
                 # and translated to the last parts top port.
                 force_overlap(
-                    this_part,
-                    this_part.labels[self._port_labels[0]],
-                    last_part.labels[self._port_labels[1]],
+                    move_this=this_part,
+                    from_positions=this_part.labels[self._port_labels[0]],
+                    to_positions=last_part.labels[self._port_labels[1]],
                 )
+                if coordinates is not None:
+                    try:
+                        this_part.translate_to(coordinates[site_count])
+                        this_part_head = this_part.labels[self._port_labels[1]].anchor
+                        this_part_tail = this_part.labels[self._port_labels[0]].anchor
+                        # Get this parts head-tail vector (head port pos - tail port pos)
+                        v1 = this_part_head.pos - this_part_tail.pos 
+                        v1 /= np.linalg.norm(v1)
+                        # v2 is the vector between the previous site pos and next site pos
+                        v2 = coordinates[site_count + 1] - coordinates[site_count - 1] 
+                        v2 /= np.linalg.norm(v2)
+                        normal = np.cross(v1, v2)
+                        angle = np.arccos(v1.dot(v2) / (np.linalg.norm(v1) * np.linalg.norm(v2)))
+                        if angle > np.pi / 2:
+                            angle = np.pi - angle
+                        this_part.translate_to((0, 0, 0))
+                        this_part.rotate(around=normal, theta=angle)
+                        this_part.translate_to(coordinates[site_count])
+                    except IndexError:
+                        pass
             last_part = this_part
+            site_count += 1
             if n_added == n * len(sequence) - 1:
                 break
-
         self.head_port = first_part["up"] if not first_part["up"].used else None
         self.tail_port = last_part["down"] if not last_part["down"].used else None
 
@@ -318,7 +349,6 @@ class Polymer(Compound):
             if compound is not None:
                 if self._headtail[i] is not None:
                     head_tail[i].update_separation(self._headtail[i])
-                # self.add(compound)
                 head_and_tail_compounds.append(compound)
                 force_overlap(compound, compound.labels["up"], head_tail[i])
                 head_tail[i] = None
@@ -351,11 +381,11 @@ class Polymer(Compound):
             if id(port) not in port_ids:
                 self.remove(port)
         if self.end_groups[0]:
-            self.add(self.end_groups[0])
+            self.add(self.end_groups[0], label="head_group")
         for compound in repeat_compounds:
             self.add(new_child=compound, label="monomer[$]")
         if self.end_groups[1]:
-            self.add(self.end_groups[1])
+            self.add(self.end_groups[1], label="tail_group")
 
         if bond_head_tail:
             force_overlap(self, self.head_port, self.tail_port)
