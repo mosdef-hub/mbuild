@@ -1,6 +1,9 @@
 import numpy as np
 
-from mbuild.path import HardSphereRandomWalk
+from mbuild.path import (
+    HardSphereRandomWalk,
+    StraightLine,
+)
 from mbuild.tests.base_test import BaseTest
 from mbuild.utils.geometry import bounding_box
 from mbuild.utils.volumes import (
@@ -9,6 +12,15 @@ from mbuild.utils.volumes import (
     SphereConstraint,
 )
 
+
+class TestPaths(BaseTest):
+    def test_straight_line(self):
+        path = StraightLine(spacing=0.20, N=5, direction=(1,0,0))
+        assert len(path.coordinates) == 5
+        # 5 sites = 4 bonds at 0.20 each
+        assert np.linalg.norm(path.coordinates[-1] - path.coordinates[0]) == 0.80 
+        for edge in path.bond_graph.edges(data=True):
+            assert np.array_equal(edge[2]["direction"], np.array([1, 0, 0]))
 
 class TestRandomWalk(BaseTest):
     def test_random_walk(self):
