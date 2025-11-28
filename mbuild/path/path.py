@@ -69,6 +69,16 @@ class Path:
         self.coordinates = new_array
         self.N += N
 
+    def create_linear_bond_graph(self, bond_head_tail):
+        for idx, xyz in enumerate(self.coordinates):
+            self.bond_graph.add_node(idx, name=self.bead_name, xyz=xyz)
+            if idx != 0:
+                self.add_edge(u=idx - 1, v=idx)
+            # Add a bond (edge) between last site and first site to make fully cyclic
+            if bond_head_tail:
+                if idx == len(self.coordinates) - 1:
+                    self.add_edge(u=idx, v=0)
+
     def add_edge(self, u, v):
         """Add an edge to the Path's bond graph.
         This sets attributes for the edge which include: bond direction, bond length and bond type
@@ -635,14 +645,7 @@ class Lamellar(Path):
                     self.coordinates.extend(arc[::-1])
                     self.coordinates.extend(list(this_stack))
         # Create linear (path) bond graph
-        for i, xyz in enumerate(self.coordinates):
-            self.bond_graph.add_node(
-                i,
-                name=self.bead_name,
-                xyz=xyz,
-            )
-            if i != 0:
-                self.add_edge(u=i - 1, v=i)
+        self.create_linear_bond_graph(bond_head_tail=False)
 
 
 class StraightLine(Path):
@@ -673,10 +676,8 @@ class StraightLine(Path):
         self.coordinates = np.array(
             [np.zeros(3) + i * self.spacing * self.direction for i in range(self.N)]
         )
-        for idx, xyz in enumerate(self.coordinates):
-            self.bond_graph.add_node(idx, name=self.bead_name, xyz=xyz)
-            if idx != 0:
-                self.add_edge(u=idx - 1, v=idx)
+        # Create linear (path) bond graph
+        self.create_linear_bond_graph(bond_head_tail=False)
 
 
 class Cyclic(Path):
@@ -690,6 +691,8 @@ class Cyclic(Path):
         Number of sites in the cyclic path.
     radius : float, optional
         The radius (nm) of the cyclic path.
+    closed : bool, optional default True
+        If `True` the cyclic path is closed by bonding the first and last sites together
 
     Notes
     -----
@@ -701,11 +704,12 @@ class Cyclic(Path):
     """
 
     def __init__(
-        self, spacing=None, N=None, radius=None, bond_graph=None, bead_name="_A"
+        self, spacing=None, N=None, radius=None, bond_graph=None, bead_name="_A", closed=True
     ):
         self.spacing = spacing
         self.radius = radius
         self.N = N
+        self.closed = closed
         n_params = sum(1 for i in (spacing, N, radius) if i is not None)
         if n_params != 2:
             raise ValueError("You must specify only 2 of spacing, N and radius.")
@@ -725,13 +729,8 @@ class Cyclic(Path):
         self.coordinates = np.array(
             [(np.cos(a) * self.radius, np.sin(a) * self.radius, 0) for a in angles]
         )
-        for idx, xyz in enumerate(self.coordinates):
-            self.bond_graph.add_node(idx, name=self.bead_name, xyz=xyz)
-            if idx != 0:
-                self.add_edge(u=idx - 1, v=idx)
-            # Add the bond (edge) between last site and first site to make fully cyclic
-            if idx == len(self.coordinates) - 1:
-                self.add_edge(u=idx, v=0)
+        # Create linear (path) bond graph
+        self.create_linear_bond_graph(bond_head_tail=self.closed)
 
 
 class Knot(Path):
@@ -747,34 +746,33 @@ class Knot(Path):
         The number of crossings in the knot.
         3 gives the trefoil knot, 4 gives the figure 8 knot and 5 gives the cinquefoil knot.
         Only values of 3, 4 and 5 are currently supported.
-    bond_graph : networkx.graph
-        Sets the bond graph between sites.
+    closed : bool, optional default True
+        If `True` the cyclic path is closed by bonding the first and last sites together
     """
-
-    def __init__(self, spacing, N, m, bond_graph=None, bead_name="_A"):
+    def __init__(self, spacing, N, m, bead_name="_A", closed=True):
         self.spacing = spacing
         self.m = m
+        self.closed = closed
+        bond_graph = nx.Graph()
         super(Knot, self).__init__(N=N, bond_graph=bond_graph, bead_name=bead_name)
 
     def generate(self):
         # Generate dense sites first, sample actual ones later from spacing
         # Prevents spacing between sites changing with curvature
         t_dense = np.linspace(0, 2 * np.pi, 5000)
-        # Base (unscaled) curve
-        if self.m == 3:  # Trefoil knot  https://en.wikipedia.org/wiki/Trefoil_knot
+        # Trefoil knot  https://en.wikipedia.org/wiki/Trefoil_knot
+        if self.m == 3:
             R, r = 1.0, 0.3
             x = (R + r * np.cos(3 * t_dense)) * np.cos(2 * t_dense)
             y = (R + r * np.cos(3 * t_dense)) * np.sin(2 * t_dense)
             z = r * np.sin(3 * t_dense)
-        elif (
-            self.m == 4
-        ):  # Figure-eight https://en.wikipedia.org/wiki/Figure-eight_knot_(mathematics)
+        # Figure-eight https://en.wikipedia.org/wiki/Figure-eight_knot_(mathematics)
+        elif self.m == 4:
             x = (2 + np.cos(2 * t_dense)) * np.cos(3 * t_dense)
             y = (2 + np.cos(2 * t_dense)) * np.sin(3 * t_dense)
             z = np.sin(4 * t_dense)
-        elif (
-            self.m == 5
-        ):  # Cinquefoil knot https://en.wikipedia.org/wiki/Cinquefoil_knot
+        # Cinquefoil knot https://en.wikipedia.org/wiki/Cinquefoil_knot
+        elif self.m == 5:
             R, r = 1.0, 0.3
             x = (R + r * np.cos(5 * t_dense)) * np.cos(2 * t_dense)
             y = (R + r * np.cos(5 * t_dense)) * np.sin(2 * t_dense)
@@ -798,6 +796,8 @@ class Knot(Path):
         y_interp = interp1d(arc_lengths, coords_dense[:, 1])(desired_arcs)
         z_interp = interp1d(arc_lengths, coords_dense[:, 2])(desired_arcs)
         self.coordinates = np.stack((x_interp, y_interp, z_interp), axis=1)
+        # Create linear (path) bond graph
+        self.create_linear_bond_graph(bond_head_tail=self.closed)
 
 
 class Helix(Path):
@@ -871,6 +871,8 @@ class Spiral2D(Path):
         self.a = a
         self.b = b
         self.spacing = spacing
+        if not bond_graph:
+            bond_graph = nx.Graph()
         super().__init__(N=N, bond_graph=bond_graph, bead_name=bead_name)
 
     def generate(self):
@@ -885,6 +887,8 @@ class Spiral2D(Path):
             ds_dtheta = np.sqrt((r) ** 2 + self.b**2)
             dtheta = self.spacing / ds_dtheta
             theta += dtheta
+        # Create linear (path) bond graph
+        self.create_linear_bond_graph(bond_head_tail=False)
 
 
 class ZigZag(Path):
@@ -892,10 +896,10 @@ class ZigZag(Path):
 
     Parameters
     ----------
-    spacing : float, default = 1.0
-        The distance between consecutive sites along the path.
+    spacing : float, default = 1.0 nm
+        The distance (nm) between consecutive sites along the path.
     angle_deg : float, default = 120.
-        The rotation applied between segments
+        The rotation (degrees) applied between segments
     sites_per_segment : int, default = 4
         The number of sites before rotating and beginning next segment.
     plane : str, default = "xy"
@@ -904,7 +908,6 @@ class ZigZag(Path):
         Defines connectivity between sites
 
     """
-
     def __init__(
         self,
         N,
@@ -921,6 +924,8 @@ class ZigZag(Path):
         self.plane = plane
         if N % sites_per_segment != 0:
             raise ValueError("N must be evenly divisible by sites_per_segment")
+        if not bond_graph:
+            bond_graph = nx.Graph()
         super(ZigZag, self).__init__(N=N, bond_graph=bond_graph, bead_name=bead_name)
 
     def generate(self):
@@ -935,7 +940,6 @@ class ZigZag(Path):
             coords.append(position.copy())
             position += self.spacing * direction
             step_count += 1
-
             # Rotate
             if step_count == self.sites_per_segment:
                 step_count = 0
@@ -948,7 +952,6 @@ class ZigZag(Path):
                 )
                 direction = rot_matrix @ direction
                 segment_count += 1
-
         # Map into 3D space based on chosen plane
         for i, (x2d, y2d) in enumerate(coords):
             if self.plane == "xy":
@@ -957,3 +960,5 @@ class ZigZag(Path):
                 self.coordinates[i] = (x2d, 0, y2d)
             elif self.plane == "yz":
                 self.coordinates[i] = (0, x2d, y2d)
+        # Create linear (path) bond graph
+        self.create_linear_bond_graph(bond_head_tail=False)

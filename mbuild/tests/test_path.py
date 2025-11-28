@@ -1,6 +1,13 @@
 import numpy as np
 
-from mbuild.path import Cyclic, HardSphereRandomWalk, Lamellar, StraightLine
+from mbuild.path import (
+    Cyclic,
+    HardSphereRandomWalk,
+    Knot,
+    Lamellar,
+    Spiral2D,
+    StraightLine,
+)
 from mbuild.tests.base_test import BaseTest
 from mbuild.utils.geometry import bounding_box
 from mbuild.utils.volumes import (
@@ -8,6 +15,7 @@ from mbuild.utils.volumes import (
     CylinderConstraint,
     SphereConstraint,
 )
+import pytest
 
 
 class TestPaths(BaseTest):
@@ -37,6 +45,22 @@ class TestPaths(BaseTest):
         assert path.bond_graph.number_of_edges() == 20
         comp = path.to_compound()
         assert comp.n_bonds == comp.n_particles
+
+    def test_knot(self):
+        path = Knot(spacing=0.25, N=50, m=3)
+        assert path.bond_graph.number_of_edges() == 50 
+        comp = path.to_compound()
+        assert comp.n_bonds == comp.n_particles
+
+    def test_knot_bad_arg(self):
+        with pytest.raises(ValueError):
+            Knot(spacing=0.25, N=50, m=2)
+
+    def test_spiral(self):
+        path = Spiral2D(spacing=0.25, N=50, a=0.5, b=2)
+        assert path.bond_graph.number_of_edges() == 49 
+        comp = path.to_compound()
+        assert comp.n_bonds == comp.n_particles - 1
 
     def test_lamellar(self):
         path = Lamellar(
