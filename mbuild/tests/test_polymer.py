@@ -30,6 +30,27 @@ class TestPolymer(BaseTest):
         for pos1, pos2 in zip(monomer_centers, path.coordinates):
             assert np.allclose(pos1, pos2, atol=0.1)
 
+    def test_build_from_path_with_end_groups(self, ch2, ester):
+        path = HardSphereRandomWalk(
+            N=20,
+            bond_length=0.25,
+            radius=0.22,
+            min_angle=np.pi / 2,
+            max_angle=np.pi,
+            max_attempts=1e4,
+            seed=14,
+        )
+        ethane = mb.load("CC", smiles=True)
+        chain = Polymer()
+        chain.add_monomer(ethane, indices=[4, 7], separation=0.145)
+        acid = mb.load("C(=O)O", smiles=True)
+        chain.add_end_groups(acid, index=3, separation=0.15)
+        chain.build_from_path(path=path, add_hydrogens=False, energy_minimize=False)
+        monomer_centers = [child.center for child in chain.children]
+        assert len(chain.children) == 20
+        for pos1, pos2 in zip(monomer_centers, path.coordinates):
+            assert np.allclose(pos1, pos2, atol=0.1)
+
     def test_polymer_from_smiles(self):
         chain = Polymer()
         ethane = mb.load("CC", smiles=True)

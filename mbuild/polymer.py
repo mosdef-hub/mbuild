@@ -130,7 +130,7 @@ class Polymer(Compound):
         sequence="A",
         add_hydrogens=True,
         bond_head_tail=False,
-        energy_minimize=True,
+        energy_minimize=False,
     ):
         """Build the polymer chain to a pre-defined configuraiton.
 
@@ -197,7 +197,7 @@ class Polymer(Compound):
         if energy_minimize:
             e_min(self)
 
-    def set_monomer_positions(self, coordinates, energy_minimize=True):
+    def set_monomer_positions(self, coordinates, energy_minimize=False):
         """Shift monomers so that their center of mass matches a set of pre-defined coordinates.
 
         Parameters
@@ -266,15 +266,15 @@ class Polymer(Compound):
             is created. This does not create a periodic bond (see Polymer.create_periodic_bond).
             The ``add_hydrogens`` parameter must be set to ``False`` to create this bond.
             This is useful for creating ring polymers, knot polymers.
-            See ``mbuild.path.Cyclic`` and ``mbuild.path.Knot``.
+            See ``mbuild.path.Cyclic`` and ``mbuild.path.Knot`` and ``Polymer.build_from_path``.
         coordinates : np.ndarray (n, 3)
             Manually pass in the monomer coordinates.
             Each monomer (including head and end groups) will be translated to the
-            corresponding coordinate. A rotate will be performed to attempt to
-            align the bonds. Further energy minimization may be required to remove
-            overlapping particles and relax bonds.
-            See mbuild.simulation.hoomd_cap_displacement.
-            See Polyer.build_from_path to build a polymer chain from an mbuild.path.Path.
+            corresponding coordinate. A rotatation will be performed to attempt to
+            align the monomer head-tail vector with the neighboring monomer orientations.
+            Further energy minimization may be required to remove overlapping particles and relax bonds.
+            See ``mbuild.simulation.hoomd_cap_displacement`` and ``mbuild.simulation.hoomd_fire``.
+            See ``Polyer.build_from_path`` to build a polymer chain from an ``mbuild.path.Path``.
 
         Notes
         -----
@@ -327,6 +327,7 @@ class Polymer(Compound):
                     )
                     if angle > np.pi / 2:
                         angle = np.pi - angle
+                    # Center of mass needs to be at origin for rotation
                     this_part.translate_to((0, 0, 0))
                     this_part.rotate(around=normal, theta=angle)
                     this_part.translate_to(coordinates[site_count])
@@ -355,6 +356,7 @@ class Polymer(Compound):
                         )
                         if angle > np.pi / 2:
                             angle = np.pi - angle
+                        # Center of mass needs to be at origin for rotation
                         this_part.translate_to((0, 0, 0))
                         this_part.rotate(around=normal, theta=angle)
                         this_part.translate_to(coordinates[site_count])
@@ -372,8 +374,36 @@ class Polymer(Compound):
             if compound is not None:
                 if self._headtail[i] is not None:
                     head_tail[i].update_separation(self._headtail[i])
+                anchor_particle = compound.labels["up"].anchor
+                force_overlap(
+                    move_this=compound,
+                    from_positions=compound.labels["up"],
+                    to_positions=head_tail[i],
+                )
+                if coordinates is not None:
+                    head = anchor_particle.pos
+                    tail = compound.center
+                    v1 = head - tail
+                    v1 /= np.linalg.norm(v1)
+                    if i == 0:  # v2 is between first monomer 0 and end group
+                        end_group_index = 0
+                        v2 = coordinates[1] - coordinates[0]
+                    elif i == 1:  # v2 is between end group and last monomer
+                        end_group_index = -1
+                        v2 = coordinates[-1] - coordinates[-2]
+                    v2 /= np.linalg.norm(v2)
+                    normal = np.cross(v1, v2)
+                    angle = np.arccos(
+                        v1.dot(v2) / (np.linalg.norm(v1) * np.linalg.norm(v2))
+                    )
+                    if angle > np.pi / 2:
+                        angle = np.pi - angle
+                    # Center of mass needs to be at origin for rotation
+                    compound.translate_to((0, 0, 0))
+                    compound.rotate(around=normal, theta=angle)
+                    compound.translate_to(coordinates[end_group_index])
+
                 head_and_tail_compounds.append(compound)
-                force_overlap(compound, compound.labels["up"], head_tail[i])
                 head_tail[i] = None
             else:
                 if add_hydrogens:
@@ -404,11 +434,11 @@ class Polymer(Compound):
             if id(port) not in port_ids:
                 self.remove(port)
         if self.end_groups[0]:
-            self.add(self.end_groups[0], label="head_group")
+            self.add(self.end_groups[0])
         for compound in repeat_compounds:
             self.add(new_child=compound, label="monomer[$]")
         if self.end_groups[1]:
-            self.add(self.end_groups[1], label="tail_group")
+            self.add(self.end_groups[1])
 
         if bond_head_tail:
             force_overlap(self, self.head_port, self.tail_port)
