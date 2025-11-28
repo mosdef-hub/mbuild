@@ -1,9 +1,3 @@
 # ruff: noqa: F401
 # ruff: noqa: F403
-from .path import (
-    HardSphereRandomWalk,
-    Lamellar,
-    StraightLine,
-    Cyclic,
-    Path
-)
+from .path import Cyclic, HardSphereRandomWalk, Lamellar, Path, StraightLine

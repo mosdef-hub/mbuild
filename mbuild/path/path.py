@@ -730,7 +730,7 @@ class Cyclic(Path):
             if idx != 0:
                 self.add_edge(u=idx - 1, v=idx)
             # Add the bond (edge) between last site and first site to make fully cyclic
-            if idx == len(self.coordinates) - 1: 
+            if idx == len(self.coordinates) - 1:
                 self.add_edge(u=idx, v=0)
 
 

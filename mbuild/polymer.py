@@ -15,7 +15,6 @@ from mbuild.coordinate_transform import (
 from mbuild.lib.atoms import H
 from mbuild.port import Port
 from mbuild.simulation import energy_minimize as e_min
-from mbuild.simulation import hoomd_cap_displacement
 from mbuild.utils.validation import assert_port_exists
 
 __all__ = ["Polymer"]
@@ -227,7 +226,14 @@ class Polymer(Compound):
         if energy_minimize:
             e_min(self)
 
-    def build(self, n, sequence="A", add_hydrogens=True, bond_head_tail=False, coordinates=None):
+    def build(
+        self,
+        n,
+        sequence="A",
+        add_hydrogens=True,
+        bond_head_tail=False,
+        coordinates=None,
+    ):
         """Connect one or more components in a specified sequence.
 
         Uses the compounds that are stored in Polymer.monomers and
@@ -265,7 +271,7 @@ class Polymer(Compound):
             Manually pass in the monomer coordinates.
             Each monomer (including head and end groups) will be translated to the
             corresponding coordinate. A rotate will be performed to attempt to
-            align the bonds. Further energy minimization may be required to remove 
+            align the bonds. Further energy minimization may be required to remove
             overlapping particles and relax bonds.
             See mbuild.simulation.hoomd_cap_displacement.
             See Polyer.build_from_path to build a polymer chain from an mbuild.path.Path.
@@ -301,7 +307,7 @@ class Polymer(Compound):
         # 'A': monomer_1, 'B': monomer_2....
         seq_map = dict(zip(unique_seq_ids, self._monomers))
         last_part = None
-        site_count = 0 if not self._end_groups[0] else 1 
+        site_count = 0 if not self._end_groups[0] else 1
         for n_added, seq_item in enumerate(it.cycle(sequence)):
             this_part = clone(seq_map[seq_item])
             repeat_compounds.append(this_part)
@@ -311,12 +317,14 @@ class Polymer(Compound):
                     this_part.translate_to(coordinates[site_count])
                     this_part_head = this_part.labels[self._port_labels[1]].anchor
                     this_part_tail = this_part.labels[self._port_labels[0]].anchor
-                    v1 = this_part_head.pos - this_part_tail.pos 
+                    v1 = this_part_head.pos - this_part_tail.pos
                     v1 /= np.linalg.norm(v1)
-                    v2 = coordinates[site_count + 1] - coordinates[site_count] 
+                    v2 = coordinates[site_count + 1] - coordinates[site_count]
                     v2 /= np.linalg.norm(v2)
                     normal = np.cross(v1, v2)
-                    angle = np.arccos(v1.dot(v2) / (np.linalg.norm(v1) * np.linalg.norm(v2)))
+                    angle = np.arccos(
+                        v1.dot(v2) / (np.linalg.norm(v1) * np.linalg.norm(v2))
+                    )
                     if angle > np.pi / 2:
                         angle = np.pi - angle
                     this_part.translate_to((0, 0, 0))
@@ -335,14 +343,16 @@ class Polymer(Compound):
                         this_part.translate_to(coordinates[site_count])
                         this_part_head = this_part.labels[self._port_labels[1]].anchor
                         this_part_tail = this_part.labels[self._port_labels[0]].anchor
-                        # Get this parts head-tail vector (head port pos - tail port pos)
-                        v1 = this_part_head.pos - this_part_tail.pos 
+                        # Get this parts head-tail vector (head port pos - tail port pos)
+                        v1 = this_part_head.pos - this_part_tail.pos
                         v1 /= np.linalg.norm(v1)
                         # v2 is the vector between the previous site pos and next site pos
-                        v2 = coordinates[site_count + 1] - coordinates[site_count - 1] 
+                        v2 = coordinates[site_count + 1] - coordinates[site_count - 1]
                         v2 /= np.linalg.norm(v2)
                         normal = np.cross(v1, v2)
-                        angle = np.arccos(v1.dot(v2) / (np.linalg.norm(v1) * np.linalg.norm(v2)))
+                        angle = np.arccos(
+                            v1.dot(v2) / (np.linalg.norm(v1) * np.linalg.norm(v2))
+                        )
                         if angle > np.pi / 2:
                             angle = np.pi - angle
                         this_part.translate_to((0, 0, 0))
