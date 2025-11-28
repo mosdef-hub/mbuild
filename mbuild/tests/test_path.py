@@ -1,10 +1,6 @@
 import numpy as np
 
-from mbuild.path import (
-    Cyclic,
-    HardSphereRandomWalk,
-    StraightLine,
-)
+from mbuild.path import Cyclic, HardSphereRandomWalk, Lamellar, StraightLine
 from mbuild.tests.base_test import BaseTest
 from mbuild.utils.geometry import bounding_box
 from mbuild.utils.volumes import (
@@ -41,6 +37,23 @@ class TestPaths(BaseTest):
         assert path.bond_graph.number_of_edges() == 20
         comp = path.to_compound()
         assert comp.n_bonds == comp.n_particles
+
+    def test_lamellar(self):
+        path = Lamellar(
+            bond_length=0.25,
+            num_layers=3,
+            layer_separation=1.0,
+            layer_length=3.0,
+            num_stacks=3,
+            stack_separation=1.0,
+        )
+        assert path.bond_graph.number_of_edges() == len(path.coordinates) - 1
+        compound = path.to_compound()
+        Lx, Ly, Lz = compound.get_boundingbox().lengths
+        # The params used here should create a cubic-like lamellar structure
+        # Y-direction will be slightly larger because of curves between layers
+        assert Lx == Lz  # stacking and layering directions
+        assert Ly > Lx
 
 
 class TestRandomWalk(BaseTest):
