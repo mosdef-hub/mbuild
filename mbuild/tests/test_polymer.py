@@ -1,14 +1,35 @@
 import os
 from collections import Counter
 
+import numpy as np
 import pytest
 
 import mbuild as mb
 from mbuild import Polymer
+from mbuild.path import HardSphereRandomWalk
 from mbuild.tests.base_test import BaseTest
 
 
 class TestPolymer(BaseTest):
+    def test_build_from_path(self):
+        path = HardSphereRandomWalk(
+            N=20,
+            bond_length=0.25,
+            radius=0.22,
+            min_angle=np.pi / 2,
+            max_angle=np.pi,
+            max_attempts=1e4,
+            seed=14,
+        )
+        chain = Polymer()
+        ethane = mb.load("CC", smiles=True)
+        chain.add_monomer(ethane, indices=[4, 7], replace=True)
+        chain.build_from_path(path=path, energy_minimize=False)
+        monomer_centers = [child.center for child in chain.children]
+        assert len(chain.children) == 20
+        for pos1, pos2 in zip(monomer_centers, path.coordinates):
+            assert np.allclose(pos1, pos2, atol=0.1)
+
     def test_polymer_from_smiles(self):
         chain = Polymer()
         ethane = mb.load("CC", smiles=True)
