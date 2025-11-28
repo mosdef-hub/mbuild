@@ -659,10 +659,12 @@ class StraightLine(Path):
     """
 
     def __init__(
-        self, spacing, N, direction=(1, 0, 0), bond_graph=nx.Graph(), bead_name="_A"
+        self, spacing, N, direction=(1, 0, 0), bond_graph=None, bead_name="_A"
     ):
         self.spacing = spacing
         self.direction = np.asarray(direction)
+        if not bond_graph:
+            bond_graph = nx.Graph()
         super(StraightLine, self).__init__(
             N=N, bond_graph=bond_graph, bead_name=bead_name
         )
@@ -703,9 +705,12 @@ class Cyclic(Path):
     ):
         self.spacing = spacing
         self.radius = radius
+        self.N = N
         n_params = sum(1 for i in (spacing, N, radius) if i is not None)
         if n_params != 2:
             raise ValueError("You must specify only 2 of spacing, N and radius.")
+        if not bond_graph:
+            bond_graph = nx.Graph()
         super(Cyclic, self).__init__(N=N, bond_graph=bond_graph, bead_name=bead_name)
 
     def generate(self):
@@ -714,12 +719,19 @@ class Cyclic(Path):
         elif self.radius and self.spacing:
             self.N = int((2 * np.pi * self.radius) / self.spacing)
         else:
-            self.spacing = (2 * np.pi) / self.N
+            self.spacing = (2 * np.pi * self.radius) / self.N
 
         angles = np.arange(0, 2 * np.pi, (2 * np.pi) / self.N)
         self.coordinates = np.array(
             [(np.cos(a) * self.radius, np.sin(a) * self.radius, 0) for a in angles]
         )
+        for idx, xyz in enumerate(self.coordinates):
+            self.bond_graph.add_node(idx, name=self.bead_name, xyz=xyz)
+            if idx != 0:
+                self.add_edge(u=idx - 1, v=idx)
+            # Add the bond (edge) between last site and first site to make fully cyclic
+            if idx == len(self.coordinates) - 1: 
+                self.add_edge(u=idx, v=0)
 
 
 class Knot(Path):

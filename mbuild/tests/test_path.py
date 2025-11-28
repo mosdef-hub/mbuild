@@ -3,6 +3,7 @@ import numpy as np
 from mbuild.path import (
     HardSphereRandomWalk,
     StraightLine,
+    Cyclic,
 )
 from mbuild.tests.base_test import BaseTest
 from mbuild.utils.geometry import bounding_box
@@ -17,10 +18,29 @@ class TestPaths(BaseTest):
     def test_straight_line(self):
         path = StraightLine(spacing=0.20, N=5, direction=(1,0,0))
         assert len(path.coordinates) == 5
+        assert path.bond_graph.number_of_edges() == 4
         # 5 sites = 4 bonds at 0.20 each
         assert np.linalg.norm(path.coordinates[-1] - path.coordinates[0]) == 0.80 
         for edge in path.bond_graph.edges(data=True):
             assert np.array_equal(edge[2]["direction"], np.array([1, 0, 0]))
+
+    def test_cyclic_parameters(self):
+        path = Cyclic(spacing=1, N=20)
+        # C = 2*pi*r
+        radius = 10 / np.pi
+        assert np.allclose(path.radius, radius, 1e-2)
+
+        path = Cyclic(spacing=1, radius=10/np.pi, N=None)
+        assert path.N == 20
+
+        path = Cyclic(N=20, radius=10/np.pi)
+        assert path.spacing == 1
+
+    def test_cyclic_bonding(self):
+        path = Cyclic(spacing=1, N=20)
+        assert path.bond_graph.number_of_edges() == 20 
+        comp = path.to_compound()
+        assert comp.n_bonds == comp.n_particles
 
 class TestRandomWalk(BaseTest):
     def test_random_walk(self):
