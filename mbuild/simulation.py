@@ -78,8 +78,6 @@ class HoomdSimulation(hoomd.simulation.Simulation):
         self.fixed_compounds = fixed_compounds
         self.automatic_box = automatic_box
         self.box_buffer = box_buffer
-        # TODO
-        # self.set_box
         # Check if a hoomd sim method has been used on this compound already
         if compound._hoomd_data:
             last_snapshot, last_forces, last_forcefield = compound._get_sim_data()
@@ -110,6 +108,7 @@ class HoomdSimulation(hoomd.simulation.Simulation):
         # Convret to GMSO, apply forcefield
         top = self.compound.to_gmso()
         top.identify_connections()
+        # TODO: Make a parameter for ignoring dihedrals?
         apply(top, forcefields=self.forcefield, ignore_params=["dihedral", "improper"])
         # Get hoomd snapshot and force objects
         forces, ref = gmso.external.to_hoomd_forcefield(top, r_cut=self.r_cut)
