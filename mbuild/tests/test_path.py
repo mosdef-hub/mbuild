@@ -1,4 +1,5 @@
 import numpy as np
+import pytest
 
 from mbuild.path import (
     Cyclic,
@@ -15,7 +16,6 @@ from mbuild.utils.volumes import (
     CylinderConstraint,
     SphereConstraint,
 )
-import pytest
 
 
 class TestPaths(BaseTest):
@@ -48,7 +48,7 @@ class TestPaths(BaseTest):
 
     def test_knot(self):
         path = Knot(spacing=0.25, N=50, m=3)
-        assert path.bond_graph.number_of_edges() == 50 
+        assert path.bond_graph.number_of_edges() == 50
         comp = path.to_compound()
         assert comp.n_bonds == comp.n_particles
 
@@ -58,7 +58,7 @@ class TestPaths(BaseTest):
 
     def test_spiral(self):
         path = Spiral2D(spacing=0.25, N=50, a=0.5, b=2)
-        assert path.bond_graph.number_of_edges() == 49 
+        assert path.bond_graph.number_of_edges() == 49
         comp = path.to_compound()
         assert comp.n_bonds == comp.n_particles - 1
 

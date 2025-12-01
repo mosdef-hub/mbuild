@@ -52,7 +52,9 @@ class TargetType(Bias):
 
     def __init__(self, target_type, weight, path_coordinates, new_coordinates):
         self.target_type = target_type
-        super(TargetType, self).__init__(new_coordinates=new_coordinates, path_coordinates=path_coordinates)
+        super(TargetType, self).__init__(
+            new_coordinates=new_coordinates, path_coordinates=path_coordinates
+        )
 
     def __call__(self):
         raise NotImplementedError(
@@ -65,7 +67,9 @@ class AvoidType(Bias):
 
     def __init__(self, avoid_type, weight, path_coordinates, new_coordinates):
         self.avoid_type = avoid_type
-        super(AvoidType, self).__init__(new_coordinates=new_coordinates, path_coordinates=path_coordinates)
+        super(AvoidType, self).__init__(
+            new_coordinates=new_coordinates, path_coordinates=path_coordinates
+        )
 
     def __call__(self):
         raise NotImplementedError(

@@ -704,7 +704,13 @@ class Cyclic(Path):
     """
 
     def __init__(
-        self, spacing=None, N=None, radius=None, bond_graph=None, bead_name="_A", closed=True
+        self,
+        spacing=None,
+        N=None,
+        radius=None,
+        bond_graph=None,
+        bead_name="_A",
+        closed=True,
     ):
         self.spacing = spacing
         self.radius = radius
@@ -749,6 +755,7 @@ class Knot(Path):
     closed : bool, optional default True
         If `True` the cyclic path is closed by bonding the first and last sites together
     """
+
     def __init__(self, spacing, N, m, bead_name="_A", closed=True):
         self.spacing = spacing
         self.m = m
@@ -908,6 +915,7 @@ class ZigZag(Path):
         Defines connectivity between sites
 
     """
+
     def __init__(
         self,
         N,

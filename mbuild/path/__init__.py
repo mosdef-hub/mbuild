@@ -7,5 +7,5 @@ from .path import (
     Lamellar,
     Path,
     Spiral2D,
-    StraightLine
+    StraightLine,
 )
