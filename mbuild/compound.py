@@ -1520,7 +1520,9 @@ class Compound(object):
                         return False
             return True
 
-    def check_for_overlap(self, excluded_bond_depth, minimum_distance=0.10):
+    def check_for_overlap(
+        self, excluded_bond_depth, minimum_distance=0.10, return_indices=True
+    ):
         """Check if a compound contains overlapping particles.
 
         Parameters:
@@ -1578,9 +1580,17 @@ class Compound(object):
             if excluded_bond_depth > 0:
                 i_bonds = all_particles[i].direct_bonds(graph_depth=excluded_bond_depth)
                 if all_particles[j] not in i_bonds:
-                    overlapping_particles.append((i, j))
+                    if return_indices:
+                        overlapping_particles.append((int(i), int(j)))
+                    else:
+                        overlapping_particles.append(
+                            (all_particles[i], all_particles[j])
+                        )
             else:  # Don't exclude bonded neighbors
-                overlapping_particles.append((i, j))
+                if return_indices:
+                    overlapping_particles.append((int(i), int(j)))
+                else:
+                    overlapping_particles.append((all_particles[i], all_particles[j]))
         return overlapping_particles
 
     def get_boundingbox(self, pad_box=None):

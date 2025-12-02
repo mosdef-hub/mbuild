@@ -119,15 +119,23 @@ class HoomdSimulation(hoomd.simulation.Simulation):
     def get_integrate_group(self):
         # Get indices of compounds to include in integration
         if self.integrate_compounds and not self.fixed_compounds:
-            integrate_indices = []
-            for comp in self.integrate_compounds:
-                integrate_indices.extend(list(self.compound.get_child_indices(comp)))
+            if all([isinstance(i, Compound) for i in self.integrate_compounds]):
+                integrate_indices = []
+                for comp in self.integrate_compounds:
+                    integrate_indices.extend(
+                        list(self.compound.get_child_indices(comp))
+                    )
+            elif all([isinstance(i, int) for i in self.integrate_compounds]):
+                integrate_indices = self.integrate_compounds
             return hoomd.filter.Tags(integrate_indices)
         # Get indices of compounds to NOT include in integration
         elif self.fixed_compounds and not self.integrate_compounds:
-            fix_indices = []
-            for comp in self.fixed_compounds:
-                fix_indices.extend(list(self.compound.get_child_indices(comp)))
+            if all([isinstance(i, Compound) for i in self.fixed_compounds]):
+                fix_indices = []
+                for comp in self.fixed_compounds:
+                    fix_indices.extend(list(self.compound.get_child_indices(comp)))
+            elif all([isinstance(i, int) for i in self.fixed_compounds]):
+                fix_indices = self.fixed_compounds
             return hoomd.filter.SetDifference(
                 hoomd.filter.All(), hoomd.filter.Tags(fix_indices)
             )
