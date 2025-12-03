@@ -39,9 +39,6 @@ jobs:
           create-args: >-
             python=${{ matrix.python-version }}
 
-      - name: Clean Mamba Cache
-        run: micromamba clean -a --force
-
       - name: Install Package
         run: python -m pip install -e .
 
