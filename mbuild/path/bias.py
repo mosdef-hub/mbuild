@@ -6,18 +6,15 @@ from mbuild.path.path_utils import target_sq_distances
 
 
 class Bias:
-    def __init__(self, random_walk, new_coordinates):
-        # Extract any needed information for all sub-classes
-        # Complete system coords needed for density and direction biases
-        self.system_coordinates = random_walk.coordinates
-        self.N = len(self.system_coordinates)
-        # Site types needed for TargetType and AvoidType
-        self.site_types = [
-            attrs["name"] for node, attrs in random_walk.bond_graph.nodes(data=True)
-        ]
-        # Current step count needed for TargetPath
-        self.count = random_walk.count
+    def __init__(self, new_coordinates, path_coordinates=None, site_types=None):
+        # Batch of candidate coordinates generated in Path
         self.new_coordinates = new_coordinates
+        # Complete system coords needed for density and direction biases
+        self.path_coordinates = path_coordinates
+        # List of site types corresponding to path_coordinates
+        # Needed for TargetType and AvoidType
+        self.site_types = site_types
+        self.N = len(self.system_coordinates)
 
     def __call__(self):
         raise NotImplementedError
@@ -26,9 +23,9 @@ class Bias:
 class TargetCoordinate(Bias):
     """Bias next-moves so that ones moving closer to a final coordinate are more likely to be accepted."""
 
-    def __init__(self, target_coordinate, weight, system_coordinates, new_coordinates):
+    def __init__(self, target_coordinate, weight, new_coordinates):
         self.target_coordinate = target_coordinate
-        super(TargetCoordinate, self).__init__(system_coordinates, new_coordinates)
+        super(TargetCoordinate, self).__init__(new_coordinates=new_coordinates)
 
     def __call__(self):
         sq_distances = target_sq_distances(self.target_coordinate, self.new_coordinates)
@@ -39,9 +36,9 @@ class TargetCoordinate(Bias):
 class AvoidCoordinate(Bias):
     """Bias next-moves so that ones moving further from a specific coordinate are more likely to be accepted."""
 
-    def __init__(self, avoid_coordinate, weight, system_coordinates, new_coordinates):
+    def __init__(self, avoid_coordinate, weight, new_coordinates):
         self.avoid_coordinate = avoid_coordinate
-        super(AvoidCoordinate, self).__init__(system_coordinates, new_coordinates)
+        super(AvoidCoordinate, self).__init__(new_coordinates=new_coordinates)
 
     def __call__(self):
         sq_distances = target_sq_distances(self.avoid_coordinate, self.new_coordinates)
@@ -53,9 +50,11 @@ class AvoidCoordinate(Bias):
 class TargetType(Bias):
     """Bias next-moves so that ones moving towards a specific site type are more likely to be accepted."""
 
-    def __init__(self, site_type, weight, system_coordinates, new_coordinates):
-        self.site_type = site_type
-        super(TargetType, self).__init__(system_coordinates, new_coordinates)
+    def __init__(self, target_type, weight, path_coordinates, new_coordinates):
+        self.target_type = target_type
+        super(TargetType, self).__init__(
+            new_coordinates=new_coordinates, path_coordinates=path_coordinates
+        )
 
     def __call__(self):
         raise NotImplementedError(
@@ -66,9 +65,11 @@ class TargetType(Bias):
 class AvoidType(Bias):
     """Bias next-moves so that ones moving away from a specific site type are more likely to be accepted."""
 
-    def __init__(self, site_type, weight, system_coordinates, new_coordinates):
-        self.site_type = site_type
-        super(AvoidType, self).__init__(system_coordinates, new_coordinates)
+    def __init__(self, avoid_type, weight, path_coordinates, new_coordinates):
+        self.avoid_type = avoid_type
+        super(AvoidType, self).__init__(
+            new_coordinates=new_coordinates, path_coordinates=path_coordinates
+        )
 
     def __call__(self):
         raise NotImplementedError(

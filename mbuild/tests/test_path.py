@@ -1,6 +1,14 @@
 import numpy as np
+import pytest
 
-from mbuild.path import HardSphereRandomWalk
+from mbuild.path import (
+    Cyclic,
+    HardSphereRandomWalk,
+    Knot,
+    Lamellar,
+    Spiral2D,
+    StraightLine,
+)
 from mbuild.tests.base_test import BaseTest
 from mbuild.utils.geometry import bounding_box
 from mbuild.utils.volumes import (
@@ -8,6 +16,68 @@ from mbuild.utils.volumes import (
     CylinderConstraint,
     SphereConstraint,
 )
+
+
+class TestPaths(BaseTest):
+    def test_straight_line(self):
+        path = StraightLine(spacing=0.20, N=5, direction=(1, 0, 0))
+        assert len(path.coordinates) == 5
+        assert path.bond_graph.number_of_edges() == 4
+        # 5 sites = 4 bonds at 0.20 each
+        assert np.linalg.norm(path.coordinates[-1] - path.coordinates[0]) == 0.80
+        for edge in path.bond_graph.edges(data=True):
+            assert np.array_equal(edge[2]["direction"], np.array([1, 0, 0]))
+
+    def test_cyclic_parameters(self):
+        path = Cyclic(spacing=1, N=20)
+        # C = 2*pi*r
+        radius = 10 / np.pi
+        assert np.allclose(path.radius, radius, 1e-2)
+
+        path = Cyclic(spacing=1, radius=10 / np.pi, N=None)
+        assert path.N == 20
+
+        path = Cyclic(N=20, radius=10 / np.pi)
+        assert path.spacing == 1
+
+    def test_cyclic_bonding(self):
+        path = Cyclic(spacing=1, N=20)
+        assert path.bond_graph.number_of_edges() == 20
+        comp = path.to_compound()
+        assert comp.n_bonds == comp.n_particles
+
+    def test_knot(self):
+        path = Knot(spacing=0.25, N=50, m=3)
+        assert path.bond_graph.number_of_edges() == 50
+        comp = path.to_compound()
+        assert comp.n_bonds == comp.n_particles
+
+    def test_knot_bad_arg(self):
+        with pytest.raises(ValueError):
+            Knot(spacing=0.25, N=50, m=2)
+
+    def test_spiral(self):
+        path = Spiral2D(spacing=0.25, N=50, a=0.5, b=2)
+        assert path.bond_graph.number_of_edges() == 49
+        comp = path.to_compound()
+        assert comp.n_bonds == comp.n_particles - 1
+
+    def test_lamellar(self):
+        path = Lamellar(
+            bond_length=0.25,
+            num_layers=3,
+            layer_separation=1.0,
+            layer_length=3.0,
+            num_stacks=3,
+            stack_separation=1.0,
+        )
+        assert path.bond_graph.number_of_edges() == len(path.coordinates) - 1
+        compound = path.to_compound()
+        Lx, Ly, Lz = compound.get_boundingbox().lengths
+        # The params used here should create a cubic-like lamellar structure
+        # Y-direction will be slightly larger because of curves between layers
+        assert Lx == Lz  # stacking and layering directions
+        assert Ly > Lx
 
 
 class TestRandomWalk(BaseTest):
