@@ -11,6 +11,7 @@ class Bias:
 
     def _attach_path(self, path):
         self.path = path
+        self.rng = self.path.rng
 
     def __call__(self, candidates):
         raise NotImplementedError
@@ -20,12 +21,22 @@ class TargetCoordinate(Bias):
     """Bias next-moves so that ones moving closer to a final coordinate are more likely to be accepted."""
 
     def __init__(self, target_coordinate, weight):
+        if weight <= 0 or weight > 1:
+            raise ValueError(
+                "weight should be larger than 0 and smaller than or equal to 1."
+            )
         self.target_coordinate = target_coordinate
+        self.weight = weight
         super(TargetCoordinate, self).__init__()
 
     def __call__(self, candidates):
         sq_distances = target_sq_distances(self.target_coordinate, candidates)
-        sort_idx = np.argsort(sq_distances)
+        # Large beta diminishes the effect of noise
+        beta = self.weight / max(1e-6, (1.0 - self.weight))
+        noise_scale = 1 - self.weight
+        noise = self.rng.normal(0, noise_scale, size=sq_distances.shape)
+        scores = -beta * sq_distances + noise
+        sort_idx = np.argsort(scores)[::-1]
         return candidates[sort_idx]
 
 
@@ -33,7 +44,12 @@ class AvoidCoordinate(Bias):
     """Bias next-moves so that ones moving further from a specific coordinate are more likely to be accepted."""
 
     def __init__(self, avoid_coordinate, weight):
+        if weight <= 0 or weight > 1:
+            raise ValueError(
+                "weight should be larger than 0 and smaller than or equal to 1."
+            )
         self.avoid_coordinate = avoid_coordinate
+        self.weight = weight
         super(AvoidCoordinate, self).__init__()
 
     def __call__(self, candidates):
@@ -49,8 +65,13 @@ class TargetType(Bias):
     """Bias next-moves so that ones moving towards a specific site type are more likely to be accepted."""
 
     def __init__(self, target_type, weight, r_cut):
+        if weight <= 0 or weight > 1:
+            raise ValueError(
+                "weight should be larger than 0 and smaller than or equal to 1."
+            )
         self.target_type = target_type
         self.r_cut = r_cut
+        self.weight = weight
         super(TargetType, self).__init__()
 
     def __call__(self, candidates):
@@ -74,8 +95,13 @@ class AvoidType(Bias):
     """Bias next-moves so that ones moving away from a specific site type are more likely to be accepted."""
 
     def __init__(self, avoid_type, weight, r_cut):
+        if weight <= 0 or weight > 1:
+            raise ValueError(
+                "weight should be larger than 0 and smaller than or equal to 1."
+            )
         self.avoid_type = avoid_type
         self.r_cut = r_cut
+        self.weight = weight
         super(AvoidType, self).__init__()
 
     def __call__(self, candidates):
