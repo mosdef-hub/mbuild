@@ -63,6 +63,10 @@ class Path:
     def from_coordinates(cls, coordinates, bond_graph=None):
         return cls(coordinates=coordinates, bond_graph=bond_graph, N=None)
 
+    @classmethod
+    def from_compound(cls, compound):
+        return cls(coordinates=compound.xyz, bond_graph=compound.bond_graph, N=None)
+
     def _extend_coordinates(self, N):
         zeros = np.zeros((N, 3))
         new_array = np.concatenate(self.coordinates, zeros)
@@ -167,6 +171,7 @@ class HardSphereRandomWalk(Path):
         max_angle,
         bead_name="_A",
         volume_constraint=None,
+        bias=None,
         start_from_path=None,
         start_from_path_index=None,
         attach_paths=False,
@@ -259,6 +264,8 @@ class HardSphereRandomWalk(Path):
         self.start_from_path = start_from_path
         self.attach_paths = attach_paths
         self._particle_pairs = {}
+
+        # Set up PBC info from volume constraints
         if isinstance(volume_constraint, CuboidConstraint):
             self.pbc = volume_constraint.pbc
             self.box_lengths = volume_constraint.box_lengths.astype(np.float32)
@@ -275,7 +282,13 @@ class HardSphereRandomWalk(Path):
             self.pbc = (None, None, None)
             self.box_lengths = (None, None, None)
 
+        # Set up and attach path to bias
+        self.bias = bias
+        if self.bias:
+            self.bias._attach_path(self)
+
         # This random walk is including a previous path
+        # Inherit coordinates, bond graph, and count from previous path
         if start_from_path:
             coordinates = np.concatenate(
                 (
@@ -289,18 +302,24 @@ class HardSphereRandomWalk(Path):
             bond_graph = deepcopy(start_from_path.bond_graph)
             if start_from_path_index is not None and start_from_path_index < 0:
                 self.start_from_path_index = self.count + start_from_path_index
-        else:  # Not starting from another path
+
+        # Not starting from another path
+        # Set default values for coordinates, bond graph and count
+        else:
             bond_graph = nx.Graph()
             coordinates = np.zeros((N, 3), dtype=np.float32)
             N = None
             self.count = 0
             self.start_index = 0
+
         # Need this for error message about reaching max tries
         self._init_count = self.count
+
         # Select methods to use for random walk
         # Hard-coded for now, possible to make other RW methods and pass them in
         self.next_step = random_coordinate
         self.check_path = check_path
+
         # Create RNG state.
         self.rng = np.random.default_rng(seed)
         super(HardSphereRandomWalk, self).__init__(
@@ -308,16 +327,22 @@ class HardSphereRandomWalk(Path):
         )
 
     def generate(self):
+        # Set the first coordinate using method _initial_points()
         initial_xyz = self._initial_points()
-        # Set the first coordinate
         self.coordinates[self.count] = initial_xyz
         self.bond_graph.add_node(
             self.count,
             name=self.bead_name,
             xyz=self.coordinates[self.count],
         )
-        if not self.start_from_path and not self.volume_constraint:
-            # If no volume constraint, then first move is always accepted
+
+        #### Find 2nd point before starting random walk ####
+
+        # No volume constraint, other path or compound to consider
+        # 2nd point is a random orientation and fixed length from the first, always accepted
+        if not any(
+            [self.start_from_path, self.volume_constraint, self.include_compound]
+        ):
             phi = self.rng.uniform(0, 2 * np.pi)
             theta = self.rng.uniform(0, np.pi)
             next_pos = np.array(
@@ -335,10 +360,10 @@ class HardSphereRandomWalk(Path):
                 xyz=self.coordinates[self.count],
             )
             self.add_edge(u=self.count - 1, v=self.count)
+
         # Not starting from another path, but have a volume constraint
         # Possible for second point to be out-of-bounds
         elif not self.start_from_path and self.volume_constraint:
-            self.coordinates[0] = initial_xyz
             next_point_found = False
             while not next_point_found:
                 phi = self.rng.uniform(0, 2 * np.pi)
@@ -375,18 +400,16 @@ class HardSphereRandomWalk(Path):
                     )
 
         # Starting random walk from a previous set of coordinates (another path)
-        # This point was accepted in self._initial_point with these conditions
+        # First point was accepted in self._initial_point with these conditions
         # If attach_paths, then add edge between first node of this path and node of last path
         else:
-            self.bond_graph.add_node(self.count, name=self.bead_name, xyz=initial_xyz)
             if self.attach_paths:
                 self.add_edge(u=self.start_from_path_index, v=self.count)
             self.attempts += 1
 
-        # Initial conditions set (points 1 and 2), now start RW with min/max angles
+        #### Initial conditions set, now start RW ####
         while self.count < self.N - 1:
-            # Choosing angles and vectors is the only random part
-            # Get a batch of these once, pass them into numba functions
+            # Generate a batch of angles and vectors to create a set of candidate next coordinates
             batch_angles, batch_vectors = self._generate_random_trials()
             new_xyzs = self.next_step(
                 pos1=self.coordinates[self.count],
@@ -396,27 +419,36 @@ class HardSphereRandomWalk(Path):
                 r_vectors=batch_vectors,
                 batch_size=self.trial_batch_size,
             )
+
+            # Create mask of bools where True = inside the volume constraint
+            # Filter the batch of candidate points with the mask
             if self.volume_constraint:
                 is_inside_mask = self.volume_constraint.is_inside(
                     points=new_xyzs, buffer=self.radius
                 )
                 new_xyzs = new_xyzs[is_inside_mask]
-            # Get set of existing points to use for checking candidate points
+
+            # If a bias is included, filter/sort the remaining candidates according to the bias
+            if self.bias:
+                new_xyzs = self.bias(candidates=new_xyzs)
+
+            # Include compound particle coordinates in check for overlaps
             if self.include_compound:
-                # Include compound particle coordinates in check for overlaps
                 existing_points = np.concatenate(
                     (self.coordinates[: self.count + 1], self.include_compound.xyz)
                 )
-            else:
+            else:  # No compounds included, only use path's existing coordinates
                 existing_points = self.coordinates[: self.count + 1]
+
+            # Iterate through current state of candidate points
+            # Accept first one that satisfies check_path
             for xyz in new_xyzs:
-                # wrap the point if we have periodic boundary conditions
-                if any(self.pbc):
+                if any(
+                    self.pbc
+                ):  # PBCs exist, wrap this point inside volume constraint
                     xyz = self.volume_constraint.mins + np.mod(
                         xyz - self.volume_constraint.mins, self.box_lengths
                     )
-                # Now check for overlaps for each trial point
-                # Stop after the first success
                 if self.check_path(
                     existing_points=existing_points,
                     new_point=xyz,
@@ -455,16 +487,25 @@ class HardSphereRandomWalk(Path):
         if self.initial_point is not None:
             return self.initial_point
 
-        # Random initial point, no volume constraint: Bounds set by radius and N steps
+        # Random initial point, no constraints: Bounds set by radius and N steps
         elif not any(
-            [self.volume_constraint, self.initial_point, self.start_from_path]
+            [
+                self.volume_constraint,
+                self.initial_point,
+                self.start_from_path,
+                self.include_compound,
+            ]
         ):
             max_dist = (self.N * self.radius) - self.radius
             xyz = self.rng.uniform(low=-max_dist / 2, high=max_dist / 2, size=3)
             return xyz
 
         # Random point inside volume constraint, not starting from another path
-        elif self.volume_constraint and not self.start_from_path_index:
+        elif (
+            self.volume_constraint
+            and not self.start_from_path_index
+            and not self.include_compound
+        ):
             xyz = self.rng.uniform(
                 low=np.min(self.volume_constraint.mins) + self.radius,
                 high=np.max(self.volume_constraint.maxs) - self.radius,
@@ -481,6 +522,7 @@ class HardSphereRandomWalk(Path):
                 pos2_coord = 1  # Use the second (1) point of the last path for angles
             else:  # use the site previous to start_from_path_index for angles
                 pos2_coord = self.start_from_path_index - 1
+
             started_next_path = False
             while not started_next_path:
                 batch_angles, batch_vectors = self._generate_random_trials()
@@ -509,6 +551,9 @@ class HardSphereRandomWalk(Path):
                     )
                 else:
                     existing_points = self.coordinates[: self.count + 1]
+                if self.bias:
+                    new_xyzs = self.bias(candidates=new_xyzs)
+
                 for xyz in new_xyzs:
                     if any(self.pbc):
                         xyz = self.volume_constraint.mins + np.mod(

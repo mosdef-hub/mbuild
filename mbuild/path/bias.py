@@ -2,79 +2,97 @@
 
 import numpy as np
 
-from mbuild.path.path_utils import target_sq_distances
+from mbuild.path.path_utils import target_density, target_sq_distances
 
 
 class Bias:
-    def __init__(self, new_coordinates, path_coordinates=None, site_types=None):
-        # Batch of candidate coordinates generated in Path
-        self.new_coordinates = new_coordinates
-        # Complete system coords needed for density and direction biases
-        self.path_coordinates = path_coordinates
-        # List of site types corresponding to path_coordinates
-        # Needed for TargetType and AvoidType
-        self.site_types = site_types
-        self.N = len(self.system_coordinates)
+    def __init__(self):
+        pass
 
-    def __call__(self):
+    def _attach_path(self, path):
+        self.path = path
+
+    def __call__(self, candidates):
         raise NotImplementedError
 
 
 class TargetCoordinate(Bias):
     """Bias next-moves so that ones moving closer to a final coordinate are more likely to be accepted."""
 
-    def __init__(self, target_coordinate, weight, new_coordinates):
+    def __init__(self, target_coordinate, weight):
         self.target_coordinate = target_coordinate
-        super(TargetCoordinate, self).__init__(new_coordinates=new_coordinates)
+        super(TargetCoordinate, self).__init__()
 
-    def __call__(self):
-        sq_distances = target_sq_distances(self.target_coordinate, self.new_coordinates)
+    def __call__(self, candidates):
+        sq_distances = target_sq_distances(self.target_coordinate, candidates)
         sort_idx = np.argsort(sq_distances)
-        return self.new_points[sort_idx]
+        return candidates[sort_idx]
 
 
 class AvoidCoordinate(Bias):
     """Bias next-moves so that ones moving further from a specific coordinate are more likely to be accepted."""
 
-    def __init__(self, avoid_coordinate, weight, new_coordinates):
+    def __init__(self, avoid_coordinate, weight):
         self.avoid_coordinate = avoid_coordinate
-        super(AvoidCoordinate, self).__init__(new_coordinates=new_coordinates)
+        super(AvoidCoordinate, self).__init__()
 
-    def __call__(self):
-        sq_distances = target_sq_distances(self.avoid_coordinate, self.new_coordinates)
+    def __call__(self, candidates):
+        sq_distances = target_sq_distances(
+            self.avoid_coordinate.astype(np.float32), candidates.astype(np.float32)
+        )
         # Sort in descending order, largest to smallest
         sort_idx = np.argsort(sq_distances)[::-1]
-        return self.new_points[sort_idx]
+        return candidates[sort_idx]
 
 
 class TargetType(Bias):
     """Bias next-moves so that ones moving towards a specific site type are more likely to be accepted."""
 
-    def __init__(self, target_type, weight, path_coordinates, new_coordinates):
+    def __init__(self, target_type, weight, r_cut):
         self.target_type = target_type
-        super(TargetType, self).__init__(
-            new_coordinates=new_coordinates, path_coordinates=path_coordinates
-        )
+        self.r_cut = r_cut
+        super(TargetType, self).__init__()
 
-    def __call__(self):
-        raise NotImplementedError(
-            "This feature of mBuild 2.0 has not been implemented yet."
+    def __call__(self, candidates):
+        types = np.array(
+            [node[1]["name"] for node in self.path.bond_graph.nodes(data=True)]
         )
+        # path.coordinates is an array with place holder values for future sites
+        # Only check as far as types are defined (i.e., once a node is added)
+        target_coords = self.path.coordinates[: len(types)][
+            types == self.target_type
+        ].astype(np.float32)
+        densities = target_density(
+            candidates=candidates, target_coords=target_coords, r_cut=self.r_cut
+        )
+        # Sort by descending density
+        idx = np.argsort(densities)[::-1]
+        return candidates[idx]
 
 
 class AvoidType(Bias):
     """Bias next-moves so that ones moving away from a specific site type are more likely to be accepted."""
 
-    def __init__(self, avoid_type, weight, path_coordinates, new_coordinates):
+    def __init__(self, avoid_type, weight, r_cut):
         self.avoid_type = avoid_type
-        super(AvoidType, self).__init__(
-            new_coordinates=new_coordinates, path_coordinates=path_coordinates
-        )
+        self.r_cut = r_cut
+        super(AvoidType, self).__init__()
 
-    def __call__(self):
-        raise NotImplementedError(
-            "This feature of mBuild 2.0 has not been implemented yet."
+    def __call__(self, candidates):
+        types = np.array(
+            [node[1]["name"] for node in self.path.bond_graph.nodes(data=True)]
         )
+        # path.coordinates is an array with place holder values for future sites
+        # Only check as far as types are defined (i.e., once a node is added)
+        target_coords = self.path.coordinates[: len(types)][
+            types == self.avoid_type
+        ].astype(np.float32)
+        densities = target_density(
+            candidates=candidates, target_coords=target_coords, r_cut=self.r_cut
+        )
+        # Sort by ascending density
+        idx = np.argsort(densities)
+        return candidates[idx]
 
 
 class TargetEdge(Bias):
