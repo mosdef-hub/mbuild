@@ -1,11 +1,14 @@
+import networkx as nx
 import numpy as np
 import pytest
 
+import mbuild as mb
 from mbuild.path import (
     Cyclic,
     HardSphereRandomWalk,
     Knot,
     Lamellar,
+    Path,
     Spiral2D,
     StraightLine,
 )
@@ -19,6 +22,33 @@ from mbuild.utils.volumes import (
 
 
 class TestPaths(BaseTest):
+    def test_from_coordinates(self):
+        coords = np.random.uniform(-5, 5, size=(20, 3))
+        path = Path.from_coordinates(coordinates=coords, bond_graph=nx.Graph())
+        assert np.array_equal(coords, path.coordinates)
+        for idx, node in enumerate(path.bond_graph.nodes(data=True)):
+            assert np.array_equal(node[1]["xyz"], coords[idx])
+
+    def test_from_compound(self):
+        compound = mb.Compound()
+        last_site = None
+        for i in range(10):
+            if i % 2 == 0:
+                this_site = mb.Compound(name="A", pos=(i, 0, 0))
+            else:
+                this_site = mb.Compound(name="B", pos=(i, 0, 0))
+            compound.add(this_site)
+            if last_site:
+                compound.add_bond([this_site, last_site])
+            last_site = this_site
+
+        path = Path.from_compound(compound)
+        assert np.array_equal(path.coordinates, compound.xyz)
+        for idx, node in enumerate(path.bond_graph.nodes(data=True)):
+            assert node[1]["name"] == compound[idx].name
+        for edge1, edge2 in zip(path.bond_graph.edges(), compound.bond_graph.edges()):
+            assert edge1[0] == compound.get_child_indices(edge2[0])[0]
+
     def test_straight_line(self):
         path = StraightLine(spacing=0.20, N=5, direction=(1, 0, 0))
         assert len(path.coordinates) == 5

@@ -61,11 +61,30 @@ class Path:
 
     @classmethod
     def from_coordinates(cls, coordinates, bond_graph=None):
+        """Generate a Path instance from a pre-defined set of coordinates and bond graph.
+
+        Parameters
+        ----------
+        coordinates : nd.array (N, 3), required
+            Set's the coordinates of each site in the Path.
+        bond_graph : networkx.graph.Graph, optional
+            Defines bonding between sites in the Path.
+        """
         return cls(coordinates=coordinates, bond_graph=bond_graph, N=None)
 
     @classmethod
     def from_compound(cls, compound):
-        return cls(coordinates=compound.xyz, bond_graph=compound.bond_graph, N=None)
+        coordinates = compound.xyz
+        path = cls(coordinates=coordinates, bond_graph=nx.Graph(), N=None)
+        # Add particles as nodes to Path bond graph
+        for idx, p in enumerate(compound.particles()):
+            path.bond_graph.add_node(idx, name=p.name, xyz=coordinates[idx])
+        # Add bonds from compound to Path bond graph
+        for edge in compound.bond_graph.edges(data=True):
+            node1 = compound.get_child_indices(edge[0])[0]
+            node2 = compound.get_child_indices(edge[1])[0]
+            path.add_edge(u=node1, v=node2)
+        return path
 
     def _extend_coordinates(self, N):
         zeros = np.zeros((N, 3))
@@ -74,6 +93,19 @@ class Path:
         self.N += N
 
     def create_linear_bond_graph(self, bond_head_tail):
+        """Iterates through the Path's coordinates to build a linear bond graph.
+
+        Parameters
+        ----------
+        bond_head_tail : bool, required
+            If True, an edge is added between the last node and first node of the graph.
+
+        Notes
+        -----
+        This assumes site i is always bonded to site i + 1 and i - 1 (i.e., linear graph).
+        This method is automatically used by several Path classes that build up a linear path
+        such as Lamellar, Spiral2D, Cyclic, StraightLine, etc.
+        """
         for idx, xyz in enumerate(self.coordinates):
             self.bond_graph.add_node(idx, name=self.bead_name, xyz=xyz)
             if idx != 0:
@@ -265,6 +297,9 @@ class HardSphereRandomWalk(Path):
         self.attach_paths = attach_paths
         self._particle_pairs = {}
 
+        # Create RNG state.
+        self.rng = np.random.default_rng(seed)
+
         # Set up PBC info from volume constraints
         if isinstance(volume_constraint, CuboidConstraint):
             self.pbc = volume_constraint.pbc
@@ -320,8 +355,6 @@ class HardSphereRandomWalk(Path):
         self.next_step = random_coordinate
         self.check_path = check_path
 
-        # Create RNG state.
-        self.rng = np.random.default_rng(seed)
         super(HardSphereRandomWalk, self).__init__(
             coordinates=coordinates, N=N, bond_graph=bond_graph, bead_name=bead_name
         )

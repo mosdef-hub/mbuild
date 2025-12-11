@@ -90,7 +90,6 @@ def target_density(candidates, target_coords, r_cut):
     """For a batch of candidate sites, calculate local density of target site-types."""
     n = candidates.shape[0]
     out = np.empty(n, dtype=np.float32)
-
     for i in range(n):
         out[i] = local_density(candidates[i], target_coords, r_cut)
     return out
