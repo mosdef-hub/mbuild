@@ -444,7 +444,7 @@ class HardSphereRandomWalk(Path):
         while self.count < self.N - 1:
             # Generate a batch of angles and vectors to create a set of candidate next coordinates
             batch_angles, batch_vectors = self._generate_random_trials()
-            new_xyzs = self.next_step(
+            candidates = self.next_step(
                 pos1=self.coordinates[self.count],
                 pos2=self.coordinates[self.count - 1],
                 bond_length=self.bond_length,
@@ -457,13 +457,13 @@ class HardSphereRandomWalk(Path):
             # Filter the batch of candidate points with the mask
             if self.volume_constraint:
                 is_inside_mask = self.volume_constraint.is_inside(
-                    points=new_xyzs, buffer=self.radius
+                    points=candidates, buffer=self.radius
                 )
-                new_xyzs = new_xyzs[is_inside_mask]
+                candidates = candidates[is_inside_mask]
 
-            # If a bias is included, filter/sort the remaining candidates according to the bias
+            # If a bias is included, sort the remaining candidates according to the bias
             if self.bias:
-                new_xyzs = self.bias(candidates=new_xyzs)
+                candidates = self.bias(candidates=candidates)
 
             # Include compound particle coordinates in check for overlaps
             if self.include_compound:
@@ -475,7 +475,7 @@ class HardSphereRandomWalk(Path):
 
             # Iterate through current state of candidate points
             # Accept first one that satisfies check_path
-            for xyz in new_xyzs:
+            for xyz in candidates:
                 if any(
                     self.pbc
                 ):  # PBCs exist, wrap this point inside volume constraint
@@ -488,11 +488,13 @@ class HardSphereRandomWalk(Path):
                     radius=self.radius,
                     tolerance=self.tolerance,
                 ):
+                    # Accept this next step, update path's coordinates, add node and edge
                     self.coordinates[self.count + 1] = xyz
                     self.count += 1
                     self.bond_graph.add_node(self.count, name=self.bead_name, xyz=xyz)
                     self.add_edge(u=self.count - 1, v=self.count)
                     break
+            # candidates didn't produce a single valid next point
             self.attempts += 1
 
             if self.attempts == self.max_attempts and self.count < self.N:
@@ -508,7 +510,7 @@ class HardSphereRandomWalk(Path):
         thetas = self.rng.uniform(
             self.min_angle, self.max_angle, size=self.trial_batch_size
         ).astype(np.float32)
-        # Batch of random vectors and center around origin (0,0,0)
+        # Batch of random vectors centered around origin (0,0,0)
         r = self.rng.uniform(-0.5, 0.5, size=(self.trial_batch_size, 3)).astype(
             np.float32
         )
