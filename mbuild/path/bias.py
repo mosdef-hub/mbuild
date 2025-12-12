@@ -56,8 +56,13 @@ class AvoidCoordinate(Bias):
         sq_distances = target_sq_distances(
             self.avoid_coordinate.astype(np.float32), candidates.astype(np.float32)
         )
-        # Sort in descending order, largest to smallest
-        sort_idx = np.argsort(sq_distances)[::-1]
+        # Large beta diminishes the effect of noise
+        beta = self.weight / max(1e-6, (1.0 - self.weight))
+        noise_scale = 1 - self.weight
+        noise = self.rng.normal(0, noise_scale, size=sq_distances.shape)
+        # Use posiive beta term to favor larger distances
+        scores = beta * sq_distances + noise
+        sort_idx = np.argsort(scores)[::-1]
         return candidates[sort_idx]
 
 
