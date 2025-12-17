@@ -12,6 +12,11 @@ from mbuild.path import (
     Spiral2D,
     StraightLine,
 )
+from mbuild.path.path_utils import (
+    local_density,
+    target_density,
+    target_sq_distances,
+)
 from mbuild.tests.base_test import BaseTest
 from mbuild.utils.geometry import bounding_box
 from mbuild.utils.volumes import (
@@ -268,3 +273,103 @@ class TestRandomWalk(BaseTest):
         assert bounds[0][0] < 6 - 0.22 * 2
         assert bounds[1][1] < 6 - 0.22 * 2
         assert bounds[2][2] < 6 - 0.22 * 2
+
+
+class TestPathUtils(BaseTest):
+    def test_target_sq_distances_no_pbc(self):
+        target = np.array([0.0, 0.0, 0.0], dtype=np.float32)
+        points = np.array(
+            [
+                [1.0, 0.0, 0.0],
+                [0.0, 2.0, 0.0],
+                [0.0, 0.0, 3.0],
+            ],
+            dtype=np.float32,
+        )
+        d2 = target_sq_distances(target, points)
+        expected = np.array([1.0, 4.0, 9.0], dtype=np.float32)
+        assert np.allclose(d2, expected)
+
+    def test_target_sq_distances_with_pbc(self):
+        target = np.array([0.0, 0.0, 0.0], dtype=np.float32)
+        # These should wrap up -1
+        points = np.array(
+            [
+                [9.0, 0.0, 0.0],
+                [0.0, 9.0, 0.0],
+                [0.0, 0.0, 9.0],
+            ],
+            dtype=np.float32,
+        )
+        pbc = np.array([True, True, True])
+        box = np.array([10.0, 10.0, 10.0], dtype=np.float32)
+        d2 = target_sq_distances(
+            target,
+            points,
+            pbc=pbc,
+            box_lengths=box,
+        )
+        expected = np.array([1.0, 1.0, 1.0], dtype=np.float32)
+        assert np.allclose(d2, expected)
+
+    def test_local_density_basic(self):
+        candidate = np.array([0.0, 0.0, 0.0], dtype=np.float32)
+        targets = np.array(
+            [
+                [0.5, 0.0, 0.0],  # inside
+                [1.5, 0.0, 0.0],  # outside
+                [0.0, 0.5, 0.0],  # inside
+            ],
+            dtype=np.float32,
+        )
+        r_cut = 1.0
+        density = local_density(candidate, targets, r_cut)
+        assert density == 2
+
+    def test_local_density_excludes_cutoff_boundary(self):
+        candidate = np.array([0.0, 0.0, 0.0], dtype=np.float32)
+        targets = np.array(
+            [
+                [1.0, 0.0, 0.0],  # exactly r_cut
+            ],
+            dtype=np.float32,
+        )
+        r_cut = 1.0
+        density = local_density(candidate, targets, r_cut)
+        assert density == 0
+
+    def test_local_density_no_targets(self):
+        candidate = np.array([0.0, 0.0, 0.0], dtype=np.float32)
+        targets = np.empty((0, 3), dtype=np.float32)
+        r_cut = 1.0
+        density = local_density(candidate, targets, r_cut)
+        assert density == 0
+
+    def test_target_density_batch(self):
+        candidates = np.array(
+            [
+                [0.0, 0.0, 0.0],
+                [2.0, 0.0, 0.0],
+            ],
+            dtype=np.float32,
+        )
+        targets = np.array(
+            [
+                [0.5, 0.0, 0.0],
+                [1.5, 0.0, 0.0],
+            ],
+            dtype=np.float32,
+        )
+        r_cut = 1.0
+        densities = target_density(candidates, targets, r_cut)
+        # First candidate sees one neighbor
+        # Second candidate sees one neighbor
+        assert np.allclose(densities, np.array([1.0, 1.0], dtype=np.float32))
+
+    def test_target_density_shape_and_dtype(self):
+        candidates = np.random.rand(4, 3).astype(np.float32)
+        targets = np.random.rand(10, 3).astype(np.float32)
+        r_cut = 0.5
+        densities = target_density(candidates, targets, r_cut)
+        assert densities.shape == (4,)
+        assert densities.dtype == np.float32
