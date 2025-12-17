@@ -50,9 +50,7 @@ class AvoidCoordinate(Bias):
         super(AvoidCoordinate, self).__init__(weight=weight)
 
     def __call__(self, candidates):
-        sq_distances = target_sq_distances(
-            self.avoid_coordinate.astype(np.float32), candidates.astype(np.float32)
-        )
+        sq_distances = target_sq_distances(self.avoid_coordinate, candidates)
         noise = self.rng.normal(0, self.noise_scale, size=sq_distances.shape)
         scores = self.beta * sq_distances + noise
         # Avoid cooardinate should favor larger distances, sort in descending order
@@ -61,7 +59,7 @@ class AvoidCoordinate(Bias):
 
 
 class TargetType(Bias):
-    """Bias next-moves so that ones moving towards a specific site type are more likely to be accepted."""
+    """Bias next-moves so that ones increasing local density relative to a site type are more likely to be accepted."""
 
     def __init__(self, target_type, weight, r_cut):
         self.target_type = target_type
@@ -73,7 +71,7 @@ class TargetType(Bias):
             [node[1]["name"] for node in self.path.bond_graph.nodes(data=True)]
         )
         # path.coordinates is an array with place holder values for future sites
-        # Only check as far as types are defined (i.e., once a node is added)
+        # Only check as far as types are defined (i.e., once a node is added from an accepted move.)
         target_coords = self.path.coordinates[: len(types)][
             types == self.target_type
         ].astype(np.float32)
@@ -88,7 +86,7 @@ class TargetType(Bias):
 
 
 class AvoidType(Bias):
-    """Bias next-moves so that ones moving avoiding a specific site type are more likely to be accepted."""
+    """Bias next-moves so that ones decreasing local density relative to a site type are more likely to be accepted."""
 
     def __init__(self, avoid_type, weight, r_cut):
         self.avoid_type = avoid_type
