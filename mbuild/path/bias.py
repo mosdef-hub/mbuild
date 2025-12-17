@@ -146,7 +146,7 @@ class AvoidDirection(Bias):
 
     def __init__(self, direction, weight):
         self.direction = direction
-        super(AvoidDirection, self).__init__()
+        super(AvoidDirection, self).__init__(weight=weight)
 
     def __call__(self, candidates):
         last_step_pos = self.path.coordinates[self.path.count]
