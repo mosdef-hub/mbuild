@@ -1,4 +1,5 @@
 import numpy as np
+import pytest
 
 from mbuild.path import HardSphereRandomWalk
 from mbuild.path.bias import (
@@ -22,6 +23,16 @@ def radius_of_gyration(coordinates):
 
 
 class TestBias(BaseTest):
+    def test_bad_weight(self):
+        with pytest.raises(ValueError):
+            AvoidType(avoid_type="A", weight=0.0, r_cut=1)
+
+        with pytest.raises(ValueError):
+            AvoidType(avoid_type="A", weight=2.0, r_cut=1)
+
+        with pytest.raises(ValueError):
+            AvoidType(avoid_type="A", weight=-0.5, r_cut=1)
+
     def test_target_coordinate(self):
         bias = TargetCoordinate(target_coordinate=(3, 3, 3), weight=1.0)
         rw_path = HardSphereRandomWalk(
