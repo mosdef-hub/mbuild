@@ -166,7 +166,6 @@ class TargetEdge(Bias):
     """Bias next-moves so that ones moving towards a surface are more likely to be accepted."""
 
     def __init__(self, weight):
-        self.weight = weight
         super(TargetEdge, self).__init__(weight=weight)
 
     def __call__(self):
@@ -179,7 +178,6 @@ class AvoidEdge(Bias):
     """Bias next-moves so that ones away from a surface are more likely to be accepted."""
 
     def __init__(self, weight):
-        self.weight = weight
         super(AvoidEdge, self).__init__(weight=weight)
 
     def __call__(self):
@@ -193,7 +191,6 @@ class TargetPath(Bias):
 
     def __init__(self, target_path, weight):
         self.target_path = target_path
-        self.weight = weight
         super(TargetPath, self).__init__(weight=weight)
 
     def __call__(self):
