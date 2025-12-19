@@ -357,14 +357,14 @@ class HardSphereRandomWalk(Path):
         self.check_path = check_path
 
         # Needed for WallTime stop criterion
-        self.start_time = 0
+        self.start_time = None
 
         super(HardSphereRandomWalk, self).__init__(
             coordinates=coordinates, N=N, bond_graph=bond_graph, bead_name=bead_name
         )
 
     def generate(self):
-        self.start_time = np.round(time.time(), 1)
+        self.start_time = time.time()
         # Set the first coordinate using method _initial_points()
         initial_xyz = self._initial_points()
         self.coordinates[self.count] = initial_xyz
