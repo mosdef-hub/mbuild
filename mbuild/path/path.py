@@ -1,6 +1,7 @@
 """Classes to generate intra-molecular paths and configurations."""
 
 import math
+import time
 from abc import abstractmethod
 from copy import deepcopy
 
@@ -355,11 +356,15 @@ class HardSphereRandomWalk(Path):
         self.next_step = random_coordinate
         self.check_path = check_path
 
+        # Needed for WallTime stop criterion
+        self.start_time = 0
+
         super(HardSphereRandomWalk, self).__init__(
             coordinates=coordinates, N=N, bond_graph=bond_graph, bead_name=bead_name
         )
 
     def generate(self):
+        self.start_time = np.round(time.time(), 1)
         # Set the first coordinate using method _initial_points()
         initial_xyz = self._initial_points()
         self.coordinates[self.count] = initial_xyz
