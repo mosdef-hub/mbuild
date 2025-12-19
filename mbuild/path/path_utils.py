@@ -49,8 +49,8 @@ def check_path(existing_points, new_point, radius, tolerance):
 def target_sq_distances(
     target_coordinate,
     new_points,
-    pbc=[False, False, False],
-    box_lengths=[None, None, None],
+    pbc=np.array([False, False, False], dtype=bool),
+    box_lengths=np.array([np.inf, np.inf, np.inf], dtype=np.float32),
 ):
     """Return squared distances from target_coordinate to new_points."""
     n_points = new_points.shape[0]
@@ -68,6 +68,31 @@ def target_sq_distances(
             dz -= np.round(dz / box_lengths[2]) * box_lengths[2]
         sq_distances[i] = dx * dx + dy * dy + dz * dz
     return sq_distances
+
+
+@njit(cache=True, fastmath=True)
+def local_density(candidate, target_coords, r_cut):
+    """Return number of target-type sites within r_cut of candidate."""
+    r2_cut = r_cut * r_cut
+    density = 0
+    for i in range(target_coords.shape[0]):
+        dx = candidate[0] - target_coords[i, 0]
+        dy = candidate[1] - target_coords[i, 1]
+        dz = candidate[2] - target_coords[i, 2]
+        dist2 = dx * dx + dy * dy + dz * dz
+        if dist2 < r2_cut:
+            density += 1
+    return density
+
+
+@njit(cache=True, fastmath=True)
+def target_density(candidates, target_coords, r_cut):
+    """For a batch of candidate sites, calculate local density of target site-types."""
+    n = candidates.shape[0]
+    out = np.empty(n, dtype=np.float32)
+    for i in range(n):
+        out[i] = local_density(candidates[i], target_coords, r_cut)
+    return out
 
 
 @njit(cache=True, fastmath=True)
