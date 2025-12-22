@@ -10,6 +10,7 @@ from mbuild.path.bias import (
     TargetDirection,
     TargetType,
 )
+from mbuild.path.termination import NumAttempts, NumSites, Termination
 from mbuild.tests.base_test import BaseTest
 
 
@@ -37,6 +38,7 @@ class TestBias(BaseTest):
         bias = TargetCoordinate(target_coordinate=(3, 3, 3), weight=1.0)
         rw_path = HardSphereRandomWalk(
             N=15,
+            termination=Termination([NumSites(15), NumAttempts(1e4)]),
             bond_length=0.25,
             initial_point=(0, 0, 0),
             radius=0.22,
@@ -48,6 +50,7 @@ class TestBias(BaseTest):
         dist_to_target = np.linalg.norm(rw_path.coordinates[-1] - np.array([3, 3, 3]))
         rw_path_biased = HardSphereRandomWalk(
             N=15,
+            termination=Termination([NumSites(15), NumAttempts(1e4)]),
             bond_length=0.25,
             bias=bias,
             initial_point=(0, 0, 0),
@@ -66,6 +69,7 @@ class TestBias(BaseTest):
         bias = AvoidCoordinate(avoid_coordinate=(3, 3, 3), weight=1.0)
         rw_path = HardSphereRandomWalk(
             N=15,
+            termination=Termination([NumSites(15), NumAttempts(1e4)]),
             bond_length=0.25,
             initial_point=(0, 0, 0),
             radius=0.22,
@@ -77,6 +81,7 @@ class TestBias(BaseTest):
         dist_to_target = np.linalg.norm(rw_path.coordinates[-1] - np.array([3, 3, 3]))
         rw_path_biased = HardSphereRandomWalk(
             N=15,
+            termination=Termination([NumSites(15), NumAttempts(1e4)]),
             bond_length=0.25,
             bias=bias,
             initial_point=(0, 0, 0),
@@ -97,6 +102,7 @@ class TestBias(BaseTest):
 
         rw_path_target = HardSphereRandomWalk(
             N=50,
+            termination=Termination([NumSites(50), NumAttempts(1e4)]),
             bias=target_bias,
             bond_length=0.25,
             initial_point=(0, 0, 0),
@@ -109,6 +115,7 @@ class TestBias(BaseTest):
         )
         rw_path_avoid = HardSphereRandomWalk(
             N=50,
+            termination=Termination([NumSites(50), NumAttempts(1e4)]),
             bond_length=0.25,
             bias=avoid_bias,
             initial_point=(0, 0, 0),
@@ -128,6 +135,7 @@ class TestBias(BaseTest):
         avoid_bias = AvoidDirection(direction=(1, 0, 0), weight=0.7)
         rw_path = HardSphereRandomWalk(
             N=15,
+            termination=Termination([NumSites(15), NumAttempts(1e4)]),
             bond_length=0.25,
             initial_point=(0, 0, 0),
             radius=0.22,
@@ -140,6 +148,7 @@ class TestBias(BaseTest):
 
         rw_path_target = HardSphereRandomWalk(
             N=15,
+            termination=Termination([NumSites(15), NumAttempts(1e4)]),
             bond_length=0.25,
             bias=target_bias,
             initial_point=(0, 0, 0),
@@ -155,6 +164,7 @@ class TestBias(BaseTest):
 
         rw_path_avoid = HardSphereRandomWalk(
             N=15,
+            termination=Termination([NumSites(15), NumAttempts(1e4)]),
             bond_length=0.25,
             bias=avoid_bias,
             initial_point=(0, 0, 0),
