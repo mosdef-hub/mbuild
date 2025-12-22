@@ -91,17 +91,6 @@ class WithinCoordinate(Terminator):
         return current_distance <= self.distance + self.tolerance
 
 
-class FinalCoordinate(Terminator):
-    def __init__(self, target_coordinate, tolerance=1e-3, required_to_end=True):
-        self.target_coordinate = np.asarray(target_coordinate)
-        self.tolerance = tolerance
-        super().__init__(required_to_end)
-
-    def is_met(self):
-        last_site = self.path.coordinates[self.path.count]
-        return np.linalg.norm(self.target_coordinate - last_site) <= self.tolerance
-
-
 class PairDistance(Terminator):
     def __init__(self, distance, pair_type=None, required_to_end=True):
         self.distance = float(distance)
