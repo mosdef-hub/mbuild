@@ -324,7 +324,7 @@ class HardSphereRandomWalk(Path):
         if self.bias:
             self.bias._attach_path(self)
 
-        # Set up termination conditions 
+        # Set up termination conditions
         if termination is None:
             raise RuntimeError("No terminaiton conditions have been passed in.")
         self.termination = termination
@@ -454,7 +454,7 @@ class HardSphereRandomWalk(Path):
             self.attempts += 1
 
         #### Initial conditions set, now start RW ####
-        #while self.count < self.N - 1:
+        # while self.count < self.N - 1:
         walk_finished = False
         while not walk_finished:
             # Generate a batch of angles and vectors to create a set of candidate next coordinates
@@ -612,7 +612,7 @@ class HardSphereRandomWalk(Path):
                         return xyz
                 self.attempts += 1
                 if self.termination.is_met():
-                # if self.attempts == self.max_attempts and self.count < self.N:
+                    # if self.attempts == self.max_attempts and self.count < self.N:
                     raise RuntimeError(
                         "The maximum number attempts allowed have passed, and only ",
                         f"{self.count - self._init_count} sucsessful attempts were completed.",

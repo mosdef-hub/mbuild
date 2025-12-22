@@ -17,7 +17,7 @@ from mbuild.path.path_utils import (
     target_density,
     target_sq_distances,
 )
-from mbuild.path.termination import Termination, NumSites
+from mbuild.path.termination import NumSites, Termination
 from mbuild.tests.base_test import BaseTest
 from mbuild.utils.geometry import bounding_box
 from mbuild.utils.volumes import (
