@@ -4,27 +4,30 @@ import numpy as np
 
 
 class Termination:
-    def __init__(self, criteria):
-        self.criteria = list(criteria)
-        self.required = [c for c in self.criteria if c.required_to_end]
-        self.not_required = [c for c in self.criteria if not c.required_to_end]
+    def __init__(self, terminators):
+        self.terminators = list(terminators)
+        # These must all be True to trigger termination
+        self.required_to_end = [i for i in self.terminators if i.required_to_end]
+        # Don't need to be True, but are used as safe-guards (WallTime, NumAttempts)
+        self.not_required_to_end = [i for i in self.terminators if not i.required_to_end]
         # TODO, keep a list of triggered critera, add to logging when walk ends
         self.triggered = []
 
     def attach_path(self, path):
+        """This is automatically called within HardSphereRandomWalk."""
         for c in self.criteria:
             c._attach_path(path)
 
     def is_met(self):
         # Check required criteria first
-        if all([c.is_met() for c in self.required]):
+        if all([c.is_met() for c in self.required_to_end]):
             return True
-        if any([c.is_met() for c in self.not_required]):
+        if any([c.is_met() for c in self.not_required_to_end]):
             return True
         return False
 
 
-class Criterion:
+class Terminator:
     """"""
 
     def __init__(self, required_to_end):
@@ -35,11 +38,11 @@ class Criterion:
         self.rng = getattr(path, "rng", None)
 
     def is_met(self):
-        """Implemented in sub classes of Criterion."""
+        """Implemented in sub classes of Terminator."""
         raise NotImplementedError
 
 
-class NumSites(Criterion):
+class NumSites(Terminator):
     def __init__(self, num_sites, required_to_end=True):
         self.num_sites = num_sites
         super().__init__(required_to_end)
@@ -48,7 +51,7 @@ class NumSites(Criterion):
         return self.path.count - self.path.init_count >= self.num_sites
 
 
-class NumAttempts(Criterion):
+class NumAttempts(Terminator):
     def __init__(self, max_attempts, required_to_end=False):
         self.max_attempts = int(max_attempts)
         super().__init__(required_to_end)
@@ -57,7 +60,7 @@ class NumAttempts(Criterion):
         return self.path.attempts >= self.max_attempts
 
 
-class WallTime(Criterion):
+class WallTime(Terminator):
     def __init__(self, max_time, required_to_end=False):
         self.max_time = max_time
         super().__init__(required_to_end)
@@ -68,33 +71,33 @@ class WallTime(Criterion):
         return total_time >= self.max_time
 
 
-class WithinCoordinate(Criterion):
+class WithinCoordinate(Terminator):
     def __init__(
-        self, final_coordinate, distance, tolerance=1e-3, required_to_end=True
+        self, target_coordinate, distance, tolerance=1e-3, required_to_end=True
     ):
         self.distance = float(distance)
-        self.final_coordinate = np.asarray(final_coordinate)
+        self.target_coordinate = np.asarray(target_coordinate)
         self.tolerance = tolerance
         super().__init__(required_to_end)
 
     def is_met(self):
         last_site = self.path.coordinates[self.path.count]
-        current_distance = np.linalg.norm(self.final_coordinate - last_site)
+        current_distance = np.linalg.norm(self.target_coordinate - last_site)
         return current_distance <= self.distance + self.tolerance
 
 
-class FinalCoordinate(Criterion):
-    def __init__(self, final_coordinate, tolerance=1e-3, required_to_end=True):
-        self.final_coordinate = np.asarray(final_coordinate)
+class FinalCoordinate(Terminator):
+    def __init__(self, taget_coordinate, tolerance=1e-3, required_to_end=True):
+        self.target_coordinate = np.asarray(target_coordinate)
         self.tolerance = tolerance
         super().__init__(required_to_end)
 
     def is_met(self):
         last_site = self.path.coordinates[self.path.count]
-        return np.linalg.norm(self.final_coordinate - last_site) <= self.tolerance
+        return np.linalg.norm(self.target_coordinate - last_site) <= self.tolerance
 
 
-class PairDistance(Criterion):
+class PairDistance(Terminator):
     def __init__(self, distance, pair_type=None, required_to_end=True):
         self.distance = float(distance)
         self.pair_type = pair_type
@@ -104,7 +107,7 @@ class PairDistance(Criterion):
         raise NotImplementedError
 
 
-class RadiusGyration(Criterion):
+class RadiusOfGyration(Terminator):
     def __init__(self, radius_of_gyration, tolerance=1e-2, required_to_end=True):
         self.radius_of_gyration = float(radius_of_gyration)
         self.tolerance = tolerance
@@ -116,7 +119,6 @@ class RadiusGyration(Criterion):
         n = self.path.count - self.path.init_count + 1
         if n < 2:
             return False
-
         coords = self.path.coordinates[self.path.init_count : self.path.count + 1]
         center = coords.mean(axis=0)
         diffs = coords - center
@@ -124,7 +126,7 @@ class RadiusGyration(Criterion):
         return rg2 >= self.max_rg2
 
 
-class EndtoEndDistance(Criterion):
+class EndToEndDistance(Terminator):
     def __init__(self, distance, tolerance=1e-2, required_to_end=True):
         self.distance = float(distance)
         self.tolerance = tolerance
