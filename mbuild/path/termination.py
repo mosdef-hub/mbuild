@@ -9,7 +9,9 @@ class Termination:
         # These must all be True to trigger termination
         self.required_to_end = [i for i in self.terminators if i.required_to_end]
         # Don't need to be True, but are used as safe-guards (WallTime, NumAttempts)
-        self.not_required_to_end = [i for i in self.terminators if not i.required_to_end]
+        self.not_required_to_end = [
+            i for i in self.terminators if not i.required_to_end
+        ]
         # TODO, keep a list of triggered critera, add to logging when walk ends
         self.triggered = []
 
