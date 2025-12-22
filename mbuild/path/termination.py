@@ -92,7 +92,7 @@ class WithinCoordinate(Terminator):
 
 
 class FinalCoordinate(Terminator):
-    def __init__(self, taget_coordinate, tolerance=1e-3, required_to_end=True):
+    def __init__(self, target_coordinate, tolerance=1e-3, required_to_end=True):
         self.target_coordinate = np.asarray(target_coordinate)
         self.tolerance = tolerance
         super().__init__(required_to_end)
