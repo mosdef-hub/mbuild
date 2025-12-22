@@ -18,9 +18,8 @@ from mbuild.path.path_utils import (
     target_sq_distances,
 )
 from mbuild.path.termination import (
-    NumSites,
-    WallTime,
     NumAttempts,
+    NumSites,
     Termination,
 )
 from mbuild.tests.base_test import BaseTest
