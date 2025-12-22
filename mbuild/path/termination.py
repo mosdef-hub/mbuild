@@ -5,7 +5,10 @@ import numpy as np
 
 class Termination:
     def __init__(self, terminators):
-        self.terminators = list(terminators)
+        if isinstance(terminators, Terminator):
+            self.terminators = [terminators]
+        else:
+            self.terminators = list(terminators)
         # These must all be True to trigger termination
         self.required_to_end = [i for i in self.terminators if i.required_to_end]
         # Don't need to be True, but are used as safe-guards (WallTime, NumAttempts)
@@ -13,16 +16,16 @@ class Termination:
         # TODO, keep a list of triggered critera, add to logging when walk ends
         self.triggered = []
 
-    def attach_path(self, path):
+    def _attach_path(self, path):
         """This is automatically called within HardSphereRandomWalk."""
-        for c in self.criteria:
-            c._attach_path(path)
+        for i in self.terminators:
+            i._attach_path(path)
 
     def is_met(self):
         # Check required criteria first
-        if all([c.is_met() for c in self.required_to_end]):
+        if all([i.is_met() for i in self.required_to_end]):
             return True
-        if any([c.is_met() for c in self.not_required_to_end]):
+        if any([i.is_met() for i in self.not_required_to_end]):
             return True
         return False
 
@@ -48,7 +51,7 @@ class NumSites(Terminator):
         super().__init__(required_to_end)
 
     def is_met(self):
-        return self.path.count - self.path.init_count >= self.num_sites
+        return self.path.count - self.path._init_count >= self.num_sites - 1
 
 
 class NumAttempts(Terminator):
@@ -116,10 +119,10 @@ class RadiusOfGyration(Terminator):
 
     def is_met(self):
         # Enforce at least 3 sites
-        n = self.path.count - self.path.init_count + 1
+        n = self.path.count - self.path._init_count + 1
         if n < 2:
             return False
-        coords = self.path.coordinates[self.path.init_count : self.path.count + 1]
+        coords = self.path.coordinates[self.path._init_count : self.path.count + 1]
         center = coords.mean(axis=0)
         diffs = coords - center
         rg2 = np.mean(np.sum(diffs * diffs, axis=1))
@@ -134,9 +137,9 @@ class EndToEndDistance(Terminator):
 
     def is_met(self):
         # Enforce at least 3 sites
-        n = self.path.count - self.path.init_count + 1
+        n = self.path.count - self.path._init_count + 1
         if n < 2:
             return False
-        first_site = self.path.coordinates[self.path.init_count]
+        first_site = self.path.coordinates[self.path._init_count]
         last_site = self.path.coordinates[self.path.count]
         return np.linalg.norm(last_site - first_site) >= self.distance - self.tolerance

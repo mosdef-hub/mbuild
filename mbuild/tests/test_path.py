@@ -17,6 +17,7 @@ from mbuild.path.path_utils import (
     target_density,
     target_sq_distances,
 )
+from mbuild.path.termination import Termination, NumSites
 from mbuild.tests.base_test import BaseTest
 from mbuild.utils.geometry import bounding_box
 from mbuild.utils.volumes import (
@@ -117,8 +118,10 @@ class TestPaths(BaseTest):
 
 class TestRandomWalk(BaseTest):
     def test_random_walk(self):
+        num_sites = NumSites(20)
         rw_path = HardSphereRandomWalk(
             N=20,
+            termination=Termination(num_sites),
             bond_length=0.25,
             radius=0.22,
             min_angle=np.pi / 4,
@@ -136,8 +139,10 @@ class TestRandomWalk(BaseTest):
         assert np.all(rw_path.coordinates[0]) < 20 * 0.22
 
     def test_set_initial_point(self):
+        num_sites = NumSites(20)
         rw_path = HardSphereRandomWalk(
             N=20,
+            termination=Termination(num_sites),
             bond_length=0.25,
             radius=0.22,
             min_angle=np.pi / 4,
@@ -149,8 +154,10 @@ class TestRandomWalk(BaseTest):
         assert np.array_equal(rw_path.coordinates[0], np.array([1, 2, 3]))
 
     def test_seeds(self):
+        num_sites = NumSites(20)
         rw_path_1 = HardSphereRandomWalk(
             N=20,
+            termination=Termination(num_sites),
             bond_length=0.25,
             radius=0.22,
             min_angle=np.pi / 4,
@@ -160,6 +167,7 @@ class TestRandomWalk(BaseTest):
         )
         rw_path_2 = HardSphereRandomWalk(
             N=20,
+            termination=Termination(num_sites),
             bond_length=0.25,
             radius=0.22,
             min_angle=np.pi / 4,
@@ -170,8 +178,10 @@ class TestRandomWalk(BaseTest):
         assert np.allclose(rw_path_1.coordinates, rw_path_2.coordinates, atol=1e-7)
 
     def test_from_path(self):
+        num_sites = NumSites(20)
         rw_path = HardSphereRandomWalk(
             N=20,
+            termination=Termination(num_sites),
             bond_length=0.25,
             radius=0.22,
             min_angle=np.pi / 4,
@@ -181,6 +191,7 @@ class TestRandomWalk(BaseTest):
         )
         rw_path2 = HardSphereRandomWalk(
             N=20,
+            termination=Termination(num_sites),
             bond_length=0.25,
             radius=0.22,
             min_angle=np.pi / 4,
@@ -199,6 +210,7 @@ class TestRandomWalk(BaseTest):
         cube = CuboidConstraint(Lx=5, Ly=5, Lz=5)
         rw_path = HardSphereRandomWalk(
             N=500,
+            termination=Termination(NumSites(500)),
             bond_length=0.25,
             radius=0.22,
             volume_constraint=cube,
@@ -214,6 +226,7 @@ class TestRandomWalk(BaseTest):
         # First make sure this seed gives a path outside these bounds without PBC
         rw_path = HardSphereRandomWalk(
             N=500,
+            termination=Termination(NumSites(500)),
             bond_length=0.25,
             radius=0.22,
             initial_point=(0, 0, 0),
@@ -229,6 +242,7 @@ class TestRandomWalk(BaseTest):
         cube = CuboidConstraint(Lx=5, Ly=5, Lz=5, pbc=(True, True, True))
         rw_path = HardSphereRandomWalk(
             N=500,
+            termination=Termination(NumSites(500)),
             bond_length=0.25,
             radius=0.22,
             initial_point=(0, 0, 0),
@@ -245,6 +259,7 @@ class TestRandomWalk(BaseTest):
         sphere = SphereConstraint(radius=4, center=(2, 2, 2))
         rw_path = HardSphereRandomWalk(
             N=200,
+            termination=Termination(NumSites(200)),
             bond_length=0.25,
             radius=0.22,
             volume_constraint=sphere,
@@ -261,6 +276,7 @@ class TestRandomWalk(BaseTest):
         cylinder = CylinderConstraint(radius=3, height=6, center=(0, 0, 0))
         rw_path = HardSphereRandomWalk(
             N=200,
+            termination=Termination(NumSites(200)),
             bond_length=0.25,
             radius=0.22,
             volume_constraint=cylinder,

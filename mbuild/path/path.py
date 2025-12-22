@@ -202,6 +202,7 @@ class HardSphereRandomWalk(Path):
         radius,
         min_angle,
         max_angle,
+        termination,
         bead_name="_A",
         volume_constraint=None,
         bias=None,
@@ -318,10 +319,16 @@ class HardSphereRandomWalk(Path):
             self.pbc = (None, None, None)
             self.box_lengths = (None, None, None)
 
-        # Set up and attach path to bias
+        # Set up bias conditions
         self.bias = bias
         if self.bias:
             self.bias._attach_path(self)
+
+        # Set up termination conditions 
+        if termination is None:
+            raise RuntimeError("No terminaiton conditions have been passed in.")
+        self.termination = termination
+        self.termination._attach_path(self)
 
         # This random walk is including a previous path
         # Inherit coordinates, bond graph, and count from previous path
@@ -364,6 +371,7 @@ class HardSphereRandomWalk(Path):
         )
 
     def generate(self):
+        # Used by path.termination.WallTime
         self.start_time = time.time()
         # Set the first coordinate using method _initial_points()
         initial_xyz = self._initial_points()
@@ -446,7 +454,9 @@ class HardSphereRandomWalk(Path):
             self.attempts += 1
 
         #### Initial conditions set, now start RW ####
-        while self.count < self.N - 1:
+        #while self.count < self.N - 1:
+        walk_finished = False
+        while not walk_finished:
             # Generate a batch of angles and vectors to create a set of candidate next coordinates
             batch_angles, batch_vectors = self._generate_random_trials()
             candidates = self.next_step(
@@ -501,13 +511,7 @@ class HardSphereRandomWalk(Path):
                     break
             # candidates didn't produce a single valid next point
             self.attempts += 1
-
-            if self.attempts == self.max_attempts and self.count < self.N:
-                raise RuntimeError(
-                    "The maximum number attempts allowed have passed, and only ",
-                    f"{self.count - self._init_count} sucsessful attempts were completed.",
-                    "Try changing the parameters or seed and running again.",
-                )
+            walk_finished = self.termination.is_met()
 
     def _generate_random_trials(self):
         """Generate a batch of random angles and vectors using the RNG state."""
@@ -607,8 +611,8 @@ class HardSphereRandomWalk(Path):
                     ):
                         return xyz
                 self.attempts += 1
-
-                if self.attempts == self.max_attempts and self.count < self.N:
+                if self.termination.is_met():
+                # if self.attempts == self.max_attempts and self.count < self.N:
                     raise RuntimeError(
                         "The maximum number attempts allowed have passed, and only ",
                         f"{self.count - self._init_count} sucsessful attempts were completed.",
