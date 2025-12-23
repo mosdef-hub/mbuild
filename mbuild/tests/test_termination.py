@@ -52,6 +52,20 @@ class TestTermination(BaseTest):
         assert time.time() - start <= 6
         assert len(rw_path.coordinates) < 5000
 
+    def test_num_attempts_termination(self):
+        rw_path = HardSphereRandomWalk(
+            termination=Termination([NumSites(500), NumAttempts(100)]),
+            bond_length=0.25,
+            radius=0.22,
+            min_angle=np.pi / 4,
+            max_angle=np.pi,
+            max_attempts=1e4,
+            seed=14,
+        )
+        # First 2 steps in unconstrianed RWs are always accepted
+        # Counting doesn't start until afterwards
+        assert len(rw_path.coordinates) == 102
+
     def test_rg_termination(self):
         num_sites = NumSites(20)
         rg = RadiusOfGyration(3)
