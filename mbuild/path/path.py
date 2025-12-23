@@ -510,7 +510,7 @@ class HardSphereRandomWalk(Path):
             # candidates didn't produce a single valid next point
             self.attempts += 1
             # Check if we've filled up the current chunk size, if so, extend.
-            if (self.count - self._init_count - 1) % self.chunk_size == 0:
+            if (self.count - self._init_count + 1) % self.chunk_size == 0:
                 self._extend_coordinates(N=self.chunk_size)
             walk_finished = self.termination.is_met()
 

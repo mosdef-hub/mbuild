@@ -12,16 +12,19 @@ from mbuild.path import (
     Spiral2D,
     StraightLine,
 )
+from mbuild.path.bias import TargetCoordinate
 from mbuild.path.path_utils import (
     local_density,
     target_density,
     target_sq_distances,
 )
 from mbuild.path.termination import (
+    EndToEndDistance,
     NumAttempts,
     NumSites,
     RadiusOfGyration,
     Termination,
+    WithinCoordinate,
 )
 from mbuild.tests.base_test import BaseTest, radius_of_gyration
 from mbuild.utils.geometry import bounding_box
@@ -149,6 +152,85 @@ class TestRandomWalk(BaseTest):
             seed=14,
         )
         assert np.allclose(radius_of_gyration(rw_path.coordinates), 3, atol=1e-1)
+
+    def test_re_termination(self):
+        num_sites = NumSites(20)
+        re = EndToEndDistance(2)
+        max_attempts = NumAttempts(1e4)
+        termination = Termination([num_sites, re, max_attempts])
+        rw_path = HardSphereRandomWalk(
+            termination=termination,
+            bond_length=0.25,
+            radius=0.22,
+            min_angle=np.pi / 4,
+            max_angle=np.pi,
+            max_attempts=1e4,
+            seed=14,
+        )
+        dist = np.linalg.norm(rw_path.coordinates[-1] - rw_path.coordinates[0])
+        assert np.allclose(dist, 2, atol=1e-1)
+
+    def test_within_coord_termination(self):
+        bias = TargetCoordinate(target_coordinate=(2, 2, 2), weight=0.8)
+        termination = Termination(
+            [
+                WithinCoordinate(target_coordinate=(2, 2, 2), distance=0.22),
+                NumAttempts(1e3),
+            ]
+        )
+        rw_path = HardSphereRandomWalk(
+            termination=termination,
+            bias=bias,
+            initial_point=(0, 0, 0),
+            bond_length=0.25,
+            radius=0.22,
+            min_angle=np.pi / 4,
+            max_angle=np.pi,
+            max_attempts=1e4,
+            trial_batch_size=100,
+            seed=14,
+        )
+        dist = np.linalg.norm(rw_path.coordinates[-1] - np.array([2, 2, 2]))
+        assert dist <= 0.22
+
+        termination = Termination(
+            [
+                WithinCoordinate(
+                    target_coordinate=(3, 3, 3), distance=0.0, tolerance=1e-1
+                ),
+                NumAttempts(100),
+            ]
+        )
+        bias = TargetCoordinate(target_coordinate=(3, 3, 3), weight=1.0)
+        rw_path = HardSphereRandomWalk(
+            termination=termination,
+            bias=bias,
+            initial_point=(0, 0, 0),
+            bond_length=0.25,
+            radius=0.22,
+            min_angle=np.pi / 4,
+            max_angle=np.pi,
+            max_attempts=5e4,
+            trial_batch_size=200,
+            seed=14,
+        )
+        dist = np.linalg.norm(rw_path.coordinates[-1] - np.array([3, 3, 3]))
+        assert np.allclose(dist, 0, atol=1e-1)
+
+    def test_extend_coordinates(self):
+        num_sites = NumSites(80)
+        max_attempts = NumAttempts(1e4)
+        rw_path = HardSphereRandomWalk(
+            termination=Termination([num_sites, max_attempts]),
+            bond_length=0.25,
+            radius=0.22,
+            min_angle=np.pi / 4,
+            max_angle=np.pi,
+            max_attempts=1e4,
+            seed=14,
+            chunk_size=50,
+        )
+        assert len(rw_path.coordinates) == 80
 
     def test_random_walk(self):
         num_sites = NumSites(20)
