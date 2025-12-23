@@ -515,7 +515,7 @@ class HardSphereRandomWalk(Path):
             walk_finished = self.termination.is_met()
 
         # Trim the final coordinates, removing any used in last chunk
-        self.coordinates = self.coordinates[:self.count + 1]
+        self.coordinates = self.coordinates[: self.count + 1]
 
     def current_walk_coordinates(self):
         """Return the coordinates from the current random walk only.
