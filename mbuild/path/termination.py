@@ -17,6 +17,7 @@ class Termination:
         ]
         # TODO, keep a list of triggered critera, add to logging when walk ends
         self.triggered = []
+        self.success = False
 
     def _attach_path(self, path):
         """This is automatically called within HardSphereRandomWalk."""
@@ -26,10 +27,26 @@ class Termination:
     def is_met(self):
         # Check required criteria first
         if all([i.is_met() for i in self.required_to_end]):
+            self.success = True
             return True
         if any([i.is_met() for i in self.not_required_to_end]):
             return True
         return False
+
+    def summarize(self):
+        """Print a quick summary of termination status."""
+        lines = []
+        status = "SUCCESS" if self.success else "ABORTED"
+        lines.append(f"Termination status: {status}")
+        lines.append("")
+
+        for term in self.terminators:
+            name = term.__class__.__name__
+            met = term.is_met()
+            role = "required" if term.required_to_end else "safeguard"
+            flag = "✓" if met else "✗"
+            lines.append(f"[{flag}] {name} ({role})")
+        return "\n".join(lines)
 
 
 class Terminator:

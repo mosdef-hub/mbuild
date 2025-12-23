@@ -1,5 +1,6 @@
 """Classes to generate intra-molecular paths and configurations."""
 
+import logging
 import math
 import time
 from abc import abstractmethod
@@ -12,6 +13,8 @@ from scipy.interpolate import interp1d
 from mbuild import Compound
 from mbuild.path.path_utils import check_path, random_coordinate
 from mbuild.utils.volumes import CuboidConstraint, CylinderConstraint
+
+logger = logging.getLogger(__name__)
 
 
 class Path:
@@ -516,6 +519,11 @@ class HardSphereRandomWalk(Path):
 
         # Trim the final coordinates, removing any used in last chunk
         self.coordinates = self.coordinates[: self.count + 1]
+        if self.termination.success:
+            logger.info("Random walk successful.")
+        else:
+            logger.info("Random walk not successful.")
+            logger.info(self.termination.summarize())
 
     def current_walk_coordinates(self):
         """Return the coordinates from the current random walk only.
