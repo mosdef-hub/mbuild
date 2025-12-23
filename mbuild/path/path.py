@@ -213,7 +213,6 @@ class HardSphereRandomWalk(Path):
         attach_paths=False,
         initial_point=None,
         include_compound=None,
-        max_attempts=1e5,
         seed=42,
         trial_batch_size=20,
         tolerance=1e-5,
@@ -261,9 +260,6 @@ class HardSphereRandomWalk(Path):
             The number of trial moves to attempt in parallel for each step.
             Using larger values can improve success rates for more dense
             random walks.
-        max_attempts : int, default = 1e5
-            The maximum number of trial moves to attempt before quiting.
-            for the random walk.
         tolerance : float, default = 1e-4
             Tolerance used for rounding and checking for overlaps.
 
@@ -295,7 +291,6 @@ class HardSphereRandomWalk(Path):
         self.volume_constraint = volume_constraint
         self.tolerance = tolerance
         self.trial_batch_size = int(trial_batch_size)
-        self.max_attempts = int(max_attempts)
         self.attempts = 0
         self.start_from_path_index = start_from_path_index
         self.start_from_path = start_from_path
@@ -440,12 +435,9 @@ class HardSphereRandomWalk(Path):
                 # 2nd point failed, continue while loop
                 self.attempts += 1
                 # TODO Use termination here
-                if self.attempts == self.max_attempts and self.count < self.chunk_size:
-                    raise RuntimeError(
-                        "The maximum number attempts allowed have passed, and only ",
-                        f"{self.count - self._init_count} sucsessful attempts were completed.",
-                        "Try changing the parameters or seed and running again.",
-                    )
+                if self.termination.is_met() and not self.termination.sucsessful:
+                    logger.warning("Random walk not successful.")
+                    logger.warning(self.termination.summarize())
 
         # Starting random walk from a previous set of coordinates (another path)
         # First point was accepted in self._initial_point with these conditions

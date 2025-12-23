@@ -31,7 +31,6 @@ class TestTermination(BaseTest):
                 radius=0.22,
                 min_angle=np.pi / 4,
                 max_angle=np.pi,
-                max_attempts=1e4,
                 seed=14,
             )
 
@@ -45,7 +44,6 @@ class TestTermination(BaseTest):
             volume_constraint=cube,
             min_angle=np.pi / 4,
             max_angle=np.pi,
-            max_attempts=1e4,
             seed=14,
         )
         # Allow some buffer
@@ -59,7 +57,6 @@ class TestTermination(BaseTest):
             radius=0.22,
             min_angle=np.pi / 4,
             max_angle=np.pi,
-            max_attempts=1e4,
             seed=14,
         )
         # First 2 steps in unconstrianed RWs are always accepted
@@ -77,7 +74,6 @@ class TestTermination(BaseTest):
             radius=0.22,
             min_angle=np.pi / 4,
             max_angle=np.pi,
-            max_attempts=1e4,
             seed=14,
         )
         assert np.allclose(radius_of_gyration(rw_path.coordinates), 3, atol=1e-1)
@@ -93,7 +89,6 @@ class TestTermination(BaseTest):
             radius=0.22,
             min_angle=np.pi / 4,
             max_angle=np.pi,
-            max_attempts=1e4,
             seed=14,
         )
         dist = np.linalg.norm(rw_path.coordinates[-1] - rw_path.coordinates[0])
@@ -115,7 +110,6 @@ class TestTermination(BaseTest):
             radius=0.22,
             min_angle=np.pi / 4,
             max_angle=np.pi,
-            max_attempts=1e4,
             trial_batch_size=100,
             seed=14,
         )
@@ -139,7 +133,6 @@ class TestTermination(BaseTest):
             radius=0.22,
             min_angle=np.pi / 4,
             max_angle=np.pi,
-            max_attempts=5e4,
             trial_batch_size=200,
             seed=14,
         )

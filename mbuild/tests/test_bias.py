@@ -34,7 +34,6 @@ class TestBias(BaseTest):
             radius=0.22,
             min_angle=np.pi / 4,
             max_angle=np.pi,
-            max_attempts=1e4,
             seed=14,
         )
         dist_to_target = np.linalg.norm(rw_path.coordinates[-1] - np.array([3, 3, 3]))
@@ -46,7 +45,6 @@ class TestBias(BaseTest):
             radius=0.22,
             min_angle=np.pi / 4,
             max_angle=np.pi,
-            max_attempts=1e4,
             seed=14,
         )
         dist_to_target_biased = np.linalg.norm(
@@ -63,7 +61,6 @@ class TestBias(BaseTest):
             radius=0.22,
             min_angle=np.pi / 4,
             max_angle=np.pi,
-            max_attempts=1e4,
             seed=14,
         )
         dist_to_target = np.linalg.norm(rw_path.coordinates[-1] - np.array([3, 3, 3]))
@@ -75,7 +72,6 @@ class TestBias(BaseTest):
             radius=0.22,
             min_angle=np.pi / 4,
             max_angle=np.pi,
-            max_attempts=1e4,
             seed=14,
         )
         dist_to_target_biased = np.linalg.norm(
@@ -96,7 +92,6 @@ class TestBias(BaseTest):
             radius=0.22,
             min_angle=np.pi / 4,
             max_angle=np.pi,
-            max_attempts=1e4,
             seed=14,
         )
         rw_path_avoid = HardSphereRandomWalk(
@@ -108,7 +103,6 @@ class TestBias(BaseTest):
             radius=0.22,
             min_angle=np.pi / 4,
             max_angle=np.pi,
-            max_attempts=1e4,
             seed=14,
         )
         assert radius_of_gyration(rw_path_target.coordinates) < radius_of_gyration(
@@ -125,7 +119,6 @@ class TestBias(BaseTest):
             radius=0.22,
             min_angle=np.pi / 4,
             max_angle=np.pi,
-            max_attempts=1e4,
             seed=14,
         )
         head_tail_vec = rw_path.coordinates[-1] - rw_path.coordinates[0]
@@ -138,7 +131,6 @@ class TestBias(BaseTest):
             radius=0.22,
             min_angle=np.pi / 4,
             max_angle=np.pi,
-            max_attempts=1e4,
             seed=14,
         )
         head_tail_vec_target = (
@@ -153,7 +145,6 @@ class TestBias(BaseTest):
             radius=0.22,
             min_angle=np.pi / 4,
             max_angle=np.pi,
-            max_attempts=1e4,
             seed=14,
         )
         head_tail_vec_avoid = (

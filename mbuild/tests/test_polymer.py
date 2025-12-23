@@ -19,7 +19,6 @@ class TestPolymer(BaseTest):
             radius=0.22,
             min_angle=np.pi / 2,
             max_angle=np.pi,
-            max_attempts=1e4,
             seed=14,
         )
         chain = Polymer()
@@ -38,7 +37,6 @@ class TestPolymer(BaseTest):
             radius=0.22,
             min_angle=np.pi / 2,
             max_angle=np.pi,
-            max_attempts=1e4,
             seed=14,
         )
         ethane = mb.load("CC", smiles=True)

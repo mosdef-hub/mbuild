@@ -133,7 +133,6 @@ class TestRandomWalk(BaseTest):
                 radius=0.22,
                 min_angle=np.pi / 4,
                 max_angle=np.pi,
-                max_attempts=1e4,
                 seed=14,
             )
 
@@ -148,7 +147,6 @@ class TestRandomWalk(BaseTest):
             radius=0.22,
             min_angle=np.pi / 4,
             max_angle=np.pi,
-            max_attempts=1e4,
             seed=14,
         )
         assert np.allclose(radius_of_gyration(rw_path.coordinates), 3, atol=1e-1)
@@ -164,7 +162,6 @@ class TestRandomWalk(BaseTest):
             radius=0.22,
             min_angle=np.pi / 4,
             max_angle=np.pi,
-            max_attempts=1e4,
             seed=14,
         )
         dist = np.linalg.norm(rw_path.coordinates[-1] - rw_path.coordinates[0])
@@ -186,7 +183,6 @@ class TestRandomWalk(BaseTest):
             radius=0.22,
             min_angle=np.pi / 4,
             max_angle=np.pi,
-            max_attempts=1e4,
             trial_batch_size=100,
             seed=14,
         )
@@ -210,7 +206,6 @@ class TestRandomWalk(BaseTest):
             radius=0.22,
             min_angle=np.pi / 4,
             max_angle=np.pi,
-            max_attempts=5e4,
             trial_batch_size=200,
             seed=14,
         )
@@ -226,7 +221,6 @@ class TestRandomWalk(BaseTest):
             radius=0.22,
             min_angle=np.pi / 4,
             max_angle=np.pi,
-            max_attempts=1e4,
             seed=14,
             chunk_size=50,
         )
@@ -241,7 +235,6 @@ class TestRandomWalk(BaseTest):
             radius=0.22,
             min_angle=np.pi / 4,
             max_angle=np.pi,
-            max_attempts=1e4,
             seed=14,
         )
         assert len(rw_path.coordinates) == 20
@@ -262,7 +255,6 @@ class TestRandomWalk(BaseTest):
             radius=0.22,
             min_angle=np.pi / 4,
             max_angle=np.pi,
-            max_attempts=1e4,
             initial_point=(1, 2, 3),
             seed=14,
         )
@@ -277,7 +269,6 @@ class TestRandomWalk(BaseTest):
             radius=0.22,
             min_angle=np.pi / 4,
             max_angle=np.pi,
-            max_attempts=1e4,
             seed=14,
         )
         rw_path_2 = HardSphereRandomWalk(
@@ -286,7 +277,6 @@ class TestRandomWalk(BaseTest):
             radius=0.22,
             min_angle=np.pi / 4,
             max_angle=np.pi,
-            max_attempts=1e4,
             seed=14,
         )
         assert np.allclose(rw_path_1.coordinates, rw_path_2.coordinates, atol=1e-7)
@@ -300,7 +290,6 @@ class TestRandomWalk(BaseTest):
             radius=0.22,
             min_angle=np.pi / 4,
             max_angle=np.pi,
-            max_attempts=1e4,
             seed=14,
         )
         rw_path2 = HardSphereRandomWalk(
@@ -309,7 +298,6 @@ class TestRandomWalk(BaseTest):
             radius=0.22,
             min_angle=np.pi / 4,
             max_angle=np.pi,
-            max_attempts=1e4,
             seed=24,
             start_from_path=rw_path,
             start_from_path_index=-1,
@@ -328,7 +316,6 @@ class TestRandomWalk(BaseTest):
             volume_constraint=cube,
             min_angle=np.pi / 4,
             max_angle=np.pi,
-            max_attempts=1e4,
             seed=14,
         )
         bounds = bounding_box(rw_path.coordinates)
@@ -344,7 +331,6 @@ class TestRandomWalk(BaseTest):
             volume_constraint=None,
             min_angle=np.pi / 4,
             max_angle=np.pi,
-            max_attempts=1e4,
             seed=14,
         )
         comp = rw_path.to_compound()
@@ -359,7 +345,6 @@ class TestRandomWalk(BaseTest):
             volume_constraint=cube,
             min_angle=np.pi / 4,
             max_angle=np.pi,
-            max_attempts=1e4,
             seed=14,
         )
         comp = rw_path.to_compound()
@@ -375,7 +360,6 @@ class TestRandomWalk(BaseTest):
             initial_point=(0, 0, 0),
             min_angle=np.pi / 4,
             max_angle=np.pi,
-            max_attempts=1e4,
             seed=90,
         )
         bounds = bounding_box(rw_path.coordinates)
@@ -390,7 +374,6 @@ class TestRandomWalk(BaseTest):
             volume_constraint=cylinder,
             min_angle=np.pi / 4,
             max_angle=np.pi,
-            max_attempts=1e4,
             seed=14,
         )
         bounds = bounding_box(rw_path.coordinates)
