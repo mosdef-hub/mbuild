@@ -522,8 +522,8 @@ class HardSphereRandomWalk(Path):
         if self.termination.success:
             logger.info("Random walk successful.")
         else:
-            logger.info("Random walk not successful.")
-            logger.info(self.termination.summarize())
+            logger.warning("Random walk not successful.")
+            logger.warning(self.termination.summarize())
 
     def current_walk_coordinates(self):
         """Return the coordinates from the current random walk only.
