@@ -88,8 +88,8 @@ class Path:
         return path
 
     def _extend_coordinates(self, N):
-        zeros = np.zeros((N, 3))
-        new_array = np.concatenate(self.coordinates, zeros)
+        zeros = np.zeros((N, 3), dtype=self.coordinates.dtype)
+        new_array = np.concatenate([self.coordinates, zeros])
         self.coordinates = new_array
         self.N += N
 
@@ -197,7 +197,6 @@ class Path:
 class HardSphereRandomWalk(Path):
     def __init__(
         self,
-        N,
         bond_length,
         radius,
         min_angle,
@@ -215,6 +214,7 @@ class HardSphereRandomWalk(Path):
         seed=42,
         trial_batch_size=20,
         tolerance=1e-5,
+        chunk_size=512,
     ):
         """Generates coordinates from a self avoiding random walk using
         fixed bond lengths, hard spheres, and minimum and maximum angles
@@ -298,6 +298,7 @@ class HardSphereRandomWalk(Path):
         self.start_from_path = start_from_path
         self.attach_paths = attach_paths
         self._particle_pairs = {}
+        self.chunk_size = chunk_size
 
         # Create RNG state.
         self.rng = np.random.default_rng(seed)
@@ -336,12 +337,11 @@ class HardSphereRandomWalk(Path):
             coordinates = np.concatenate(
                 (
                     start_from_path.get_coordinates().astype(np.float32),
-                    np.zeros((N, 3), dtype=np.float32),
+                    np.zeros((self.chunk_size, 3), dtype=np.float32),
                 ),
                 axis=0,
             )
             self.count = len(start_from_path.coordinates)
-            N = None
             bond_graph = deepcopy(start_from_path.bond_graph)
             if start_from_path_index is not None and start_from_path_index < 0:
                 self.start_from_path_index = self.count + start_from_path_index
@@ -350,8 +350,7 @@ class HardSphereRandomWalk(Path):
         # Set default values for coordinates, bond graph and count
         else:
             bond_graph = nx.Graph()
-            coordinates = np.zeros((N, 3), dtype=np.float32)
-            N = None
+            coordinates = np.zeros((self.chunk_size, 3), dtype=np.float32)
             self.count = 0
             self.start_index = 0
 
@@ -366,12 +365,12 @@ class HardSphereRandomWalk(Path):
         # Needed for WallTime stop criterion
         self.start_time = None
 
-        super(HardSphereRandomWalk, self).__init__(
-            coordinates=coordinates, N=N, bond_graph=bond_graph, bead_name=bead_name
+        super().__init__(
+            coordinates=coordinates, bond_graph=bond_graph, bead_name=bead_name
         )
 
     def generate(self):
-        # Used by path.termination.WallTime
+        # start time is needed for path.termination.WallTime
         self.start_time = time.time()
         # Set the first coordinate using method _initial_points()
         initial_xyz = self._initial_points()
@@ -437,8 +436,8 @@ class HardSphereRandomWalk(Path):
                     next_point_found = True
                 # 2nd point failed, continue while loop
                 self.attempts += 1
-
-                if self.attempts == self.max_attempts and self.count < self.N:
+                # TODO Use termination here
+                if self.attempts == self.max_attempts and self.count < self.chunk_size:
                     raise RuntimeError(
                         "The maximum number attempts allowed have passed, and only ",
                         f"{self.count - self._init_count} sucsessful attempts were completed.",
@@ -454,7 +453,6 @@ class HardSphereRandomWalk(Path):
             self.attempts += 1
 
         #### Initial conditions set, now start RW ####
-        # while self.count < self.N - 1:
         walk_finished = False
         while not walk_finished:
             # Generate a batch of angles and vectors to create a set of candidate next coordinates
@@ -511,7 +509,19 @@ class HardSphereRandomWalk(Path):
                     break
             # candidates didn't produce a single valid next point
             self.attempts += 1
+            # Check if we've filled up the current chunk size, if so, extend.
+            if (self.count - self._init_count - 1) % self.chunk_size == 0:
+                self._extend_coordinates(N=self.chunk_size)
             walk_finished = self.termination.is_met()
+
+        # Trim the final coordinates, removing any used in last chunk
+        self.coordinates = self.coordinates[:self.count + 1]
+
+    def current_walk_coordinates(self):
+        """Return the coordinates from the current random walk only.
+        This ignores any coordinates from previous paths used to start this path.
+        """
+        return self.coordinates[self._init_count : self.count + 1]
 
     def _generate_random_trials(self):
         """Generate a batch of random angles and vectors using the RNG state."""
@@ -540,7 +550,7 @@ class HardSphereRandomWalk(Path):
                 self.include_compound,
             ]
         ):
-            max_dist = (self.N * self.radius) - self.radius
+            max_dist = (5 * self.radius) - self.radius
             xyz = self.rng.uniform(low=-max_dist / 2, high=max_dist / 2, size=3)
             return xyz
 
@@ -612,7 +622,6 @@ class HardSphereRandomWalk(Path):
                         return xyz
                 self.attempts += 1
                 if self.termination.is_met():
-                    # if self.attempts == self.max_attempts and self.count < self.N:
                     raise RuntimeError(
                         "The maximum number attempts allowed have passed, and only ",
                         f"{self.count - self._init_count} sucsessful attempts were completed.",
