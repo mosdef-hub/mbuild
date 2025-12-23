@@ -64,7 +64,7 @@ class TargetType(Bias):
     def __init__(self, target_type, weight, r_cut):
         self.target_type = target_type
         self.r_cut = r_cut
-        super(TargetType, self).__init__(weight=weight)
+        super().__init__(weight=weight)
 
     def __call__(self, candidates):
         types = np.array(
@@ -91,7 +91,7 @@ class AvoidType(Bias):
     def __init__(self, avoid_type, weight, r_cut):
         self.avoid_type = avoid_type
         self.r_cut = r_cut
-        super(AvoidType, self).__init__(weight=weight)
+        super().__init__(weight=weight)
 
     def __call__(self, candidates):
         types = np.array(
@@ -121,7 +121,7 @@ class TargetDirection(Bias):
         if norm < 1e-8:
             raise ValueError("Direction vector must be non-zero.")
         self.direction = direction / norm
-        super(TargetDirection, self).__init__(weight=weight)
+        super().__init__(weight=weight)
 
     def __call__(self, candidates):
         last_step_pos = self.path.coordinates[self.path.count]
@@ -144,7 +144,7 @@ class AvoidDirection(Bias):
 
     def __init__(self, direction, weight):
         self.direction = direction
-        super(AvoidDirection, self).__init__(weight=weight)
+        super().__init__(weight=weight)
 
     def __call__(self, candidates):
         last_step_pos = self.path.coordinates[self.path.count]
@@ -166,7 +166,7 @@ class TargetEdge(Bias):
     """Bias next-moves so that ones moving towards a surface are more likely to be accepted."""
 
     def __init__(self, weight):
-        super(TargetEdge, self).__init__(weight=weight)
+        super().__init__(weight=weight)
 
     def __call__(self):
         raise NotImplementedError(
@@ -178,7 +178,7 @@ class AvoidEdge(Bias):
     """Bias next-moves so that ones away from a surface are more likely to be accepted."""
 
     def __init__(self, weight):
-        super(AvoidEdge, self).__init__(weight=weight)
+        super().__init__(weight=weight)
 
     def __call__(self):
         raise NotImplementedError(
@@ -191,7 +191,7 @@ class TargetPath(Bias):
 
     def __init__(self, target_path, weight):
         self.target_path = target_path
-        super(TargetPath, self).__init__(weight=weight)
+        super().__init__(weight=weight)
 
     def __call__(self):
         raise NotImplementedError(
