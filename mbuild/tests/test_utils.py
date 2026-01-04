@@ -1,4 +1,5 @@
 import difflib
+import logging
 
 import numpy as np
 import pytest
@@ -205,10 +206,10 @@ class TestUtilsConversion(BaseTest):
             c5 = 0.3
             RB_to_OPLS(c0, c1, c2, c3, c4, c5)
 
-    def test_RB_to_OPLS_f0_not_0_within_tolerance_warn(self):
+    def test_RB_to_OPLS_f0_not_0_within_tolerance_warn(self, caplog):
         # should throw a warning that f0 is not zero
         text_for_error_tolerance = (
-            "f0 \= 2 \* \( c0 \+ c1 \+ c2 \+ c3 \+ c4 \+ c5 \) is not zero. "
+            "f0 = 2 * ( c0 + c1 + c2 + c3 + c4 + c5 ) is not zero. "
             "The f0/2 term is the constant for the OPLS dihedral. "
             "Since the f0 term is not zero, the dihedral is not an "
             "exact conversion; since this constant does not contribute "
@@ -216,8 +217,7 @@ class TestUtilsConversion(BaseTest):
             "for MD, but the energy for each dihedral will be shifted "
             "by the f0/2 value."
         )
-
-        with pytest.warns(UserWarning, match=f"{text_for_error_tolerance}"):
+        with caplog.at_level(logging.WARNING, logger="mbuild"):
             c0 = 0.4
             c1 = 0.4
             c2 = -0.1
@@ -225,6 +225,7 @@ class TestUtilsConversion(BaseTest):
             c4 = -0.2
             c5 = 0
             RB_to_OPLS(c0, c1, c2, c3, c4, c5, error_if_outside_tolerance=False)
+        assert text_for_error_tolerance in caplog.text
 
     def test_RB_to_OPLS_f0_not_0_within_tolerance_error(self):
         text_for_error_tolerance = (
@@ -350,7 +351,7 @@ class TestUtilsConversion(BaseTest):
             f4 = 0.2
             OPLS_to_RB(f0, f1, f2, f3, f4, error_tolerance="s")
 
-    def test_OPLS_to_RB_f0_is_zero(self):
+    def test_OPLS_to_RB_f0_is_zero(self, caplog):
         # should throw a warning that f0 is zero
         text_for_error_tolerance = (
             "The f0/2 term is the constant for the OPLS dihedral equation, "
@@ -361,10 +362,11 @@ class TestUtilsConversion(BaseTest):
             "this should provide matching results for MD, but the energy for each"
             "dihedral will be shifted by the real f0/2 value."
         )
-        with pytest.warns(UserWarning, match=text_for_error_tolerance):
+        with caplog.at_level(logging.WARNING, logger="mbuild"):
             f0 = 0
             f1 = 0.1
             f2 = -0.2
             f3 = -0.1
             f4 = 0.2
             OPLS_to_RB(f0, f1, f2, f3, f4)
+        assert text_for_error_tolerance in caplog.text

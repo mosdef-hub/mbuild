@@ -2,13 +2,13 @@ import numpy as np
 import pytest
 
 from mbuild.lib.molecules import (
-    WaterSPC,
+    WaterOPC,
     WaterOPC3,
+    WaterSPC,
     WaterTIP3P,
     WaterTIP4P,
     WaterTIP4P2005,
     WaterTIP4PIce,
-    WaterOPC,
 )
 from mbuild.tests.base_test import BaseTest
 

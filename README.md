@@ -61,6 +61,8 @@ conda activate mbuild-dev
 pip install .
 ```
 
+NOTE: [openbabel](https://github.com/openbabel/openbabel) is required for some energy minimization methods in `mbuild.compound.Compound()`. It can be installed into your mBuild environment from conda-forge with `conda install -c conda-forge openbabel`; however, openbabel does not yet support python 3.13.
+
 #### Install an editable version from source
 
 Once all dependencies have been installed and the ``conda`` environment has been created, the ``mBuild`` itself can be installed.

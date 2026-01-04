@@ -3,11 +3,11 @@
 http://leandro.iqm.unicamp.br/m3g/packmol/home.shtml
 """
 
+import logging
 import os
 import shutil
 import sys
 import tempfile
-import warnings
 from itertools import zip_longest
 from subprocess import PIPE, Popen
 
@@ -20,6 +20,8 @@ from mbuild.exceptions import MBuildError
 
 __all__ = ["fill_box", "fill_region", "fill_sphere", "solvate"]
 
+logger = logging.getLogger(__name__)
+
 PACKMOL = shutil.which("packmol")
 PACKMOL_HEADER = """
 tolerance {0:.16f}
@@ -28,6 +30,7 @@ output {1}
 seed {2}
 sidemax {3}
 {4}
+{5}
 """
 
 PACKMOL_SOLUTE = """
@@ -41,8 +44,8 @@ end structure
 PACKMOL_BOX = """
 structure {0}
     number {1:d}
-    inside box {2:.3f} {3:.3f} {4:.3f} {5:.3f} {6:.3f} {7:.3f}
-    {8}
+    {2}
+    {3}
 end structure
 """
 
@@ -90,7 +93,7 @@ def check_packmol_args(custom_args):
                 "See https://m3g.github.io/packmol/userguide.shtml#run"
             )
         if key in default_args:
-            warnings.warn(
+            logger.info(
                 f"The PACKMOL argument {key} was passed to `packmol_args`, "
                 "but should be set using the corresponding function parameters. "
                 "The value passed to the function will be used. "
@@ -102,6 +105,7 @@ def fill_box(
     compound,
     n_compounds=None,
     box=None,
+    use_pbc=False,
     density=None,
     overlap=0.2,
     seed=12345,
@@ -111,6 +115,7 @@ def fill_box(
     aspect_ratio=None,
     fix_orientation=False,
     temp_file=None,
+    packmol_file=None,
     update_port_locations=False,
     packmol_args=None,
 ):
@@ -144,6 +149,10 @@ def fill_box(
         Number of compounds to be filled in box.
     box : mb.Box
         Box to be filled by compounds.
+    use_pbc : bool, default=False
+        If True, applies periodic boundary conditions
+        when placing molecules.
+        `edge` must be zero when use_pbc is True.
     density : float, units :math:`kg/m^3` , default=None
         Target density for the system in macroscale units. If not None, one of
         `n_compounds` or `box` , but not both, must be specified.
@@ -171,6 +180,8 @@ def fill_box(
         default=False.
     temp_file : str, default=None
         File name to write PACKMOL raw output to.
+    packmol_file : str, default=None,
+        Provide a filepath to save the PACKMOL input file generated.
     update_port_locations : bool, default=False
         After packing, port locations can be updated, but since compounds
         can be rotated, port orientation may be incorrect.
@@ -303,10 +314,12 @@ def fill_box(
     box_mins = np.asarray(my_mins) * 10
     box_maxs = np.asarray(my_maxs) * 10
     overlap *= 10
-
-    # Apply 0.2nm edge buffer
+    if use_pbc and edge != 0:
+        raise ValueError("edge must be 0 if use_pbc is set to True")
+    # Apply edge buffer
     box_maxs = [a_max - (edge * 10) for a_max in box_maxs]
     box_mins = [a_min + (edge * 10) for a_min in box_mins]
+    box_arg = box_mins + box_maxs
 
     # generate string of addl. packmol inputs given in packmol_args
     packmol_commands = ""
@@ -321,8 +334,22 @@ def fill_box(
     # create a list to contain the file handles for the compound temp files
     compound_xyz_list = list()
     try:
+        if use_pbc:
+            pbc_arg = "pbc {0:.3f} {1:.3f} {2:.3f} {3:.3f} {4:.3f} {5:.3f}".format(
+                *box_arg
+            )
+            fill_arg = ""
+            periodicity = (True, True, True)
+        else:
+            fill_arg = (
+                "inside box {0:.3f} {1:.3f} {2:.3f} {3:.3f} {4:.3f} {5:.3f}".format(
+                    *box_arg
+                )
+            )
+            pbc_arg = ""
+            periodicity = (False, False, False)
         input_text = PACKMOL_HEADER.format(
-            overlap, filled_xyz.name, seed, sidemax * 10, packmol_commands
+            overlap, filled_xyz.name, seed, sidemax * 10, packmol_commands, pbc_arg
         )
         for comp, m_compounds, rotate in zip(compound, n_compounds, fix_orientation):
             m_compounds = int(m_compounds)
@@ -334,17 +361,12 @@ def fill_box(
             input_text += PACKMOL_BOX.format(
                 compound_xyz.name,
                 m_compounds,
-                box_mins[0],
-                box_mins[1],
-                box_mins[2],
-                box_maxs[0],
-                box_maxs[1],
-                box_maxs[2],
+                fill_arg,
                 PACKMOL_CONSTRAIN if rotate else "",
             )
-        _run_packmol(input_text, filled_xyz, temp_file)
+        _run_packmol(input_text, filled_xyz, temp_file, packmol_file)
         # Create the topology and update the coordinates.
-        filled = Compound()
+        filled = Compound(periodicity=periodicity)
         filled = _create_topology(filled, compound, n_compounds)
         filled.update_coordinates(
             filled_xyz.name, update_port_locations=update_port_locations
@@ -372,6 +394,7 @@ def fill_region(
     edge=0.2,
     fix_orientation=False,
     temp_file=None,
+    packmol_file=None,
     update_port_locations=False,
     packmol_args=None,
 ):
@@ -409,6 +432,8 @@ def fill_region(
         of `compound` and not the second.
     temp_file : str, default=None
         File name to write PACKMOL raw output to.
+    packmol_file : str, default=None,
+        Provide a filepath to save the PACKMOL input file generated.
     update_port_locations : bool, default=False
         After packing, port locations can be updated, but since compounds
         can be rotated, port orientation may be incorrect.
@@ -540,7 +565,7 @@ def fill_region(
     compound_xyz_list = list()
     try:
         input_text = PACKMOL_HEADER.format(
-            overlap, filled_xyz.name, seed, sidemax * 10, packmol_commands
+            overlap, filled_xyz.name, seed, sidemax * 10, packmol_commands, ""
         )
         for comp, m_compounds, rotate, items_n in zip(
             compound, n_compounds, fix_orientation, container
@@ -559,19 +584,20 @@ def fill_region(
             reg_maxs = np.asarray(my_max) * 10.0
 
             reg_maxs -= edge * 10  # Apply edge buffer
+            box_arg = list(reg_mins) + list(reg_maxs)
+            fill_arg = (
+                "inside box {0:.3f} {1:.3f} {2:.3f} {3:.3f} {4:.3f} {5:.3f}".format(
+                    *box_arg
+                )
+            )
             input_text += PACKMOL_BOX.format(
                 compound_xyz.name,
                 m_compounds,
-                reg_mins[0],
-                reg_mins[1],
-                reg_mins[2],
-                reg_maxs[0],
-                reg_maxs[1],
-                reg_maxs[2],
+                fill_arg,
                 PACKMOL_CONSTRAIN if rotate else "",
             )
 
-        _run_packmol(input_text, filled_xyz, temp_file)
+        _run_packmol(input_text, filled_xyz, temp_file, packmol_file)
 
         # Create the topology and update the coordinates.
         filled = Compound()
@@ -600,6 +626,7 @@ def fill_sphere(
     compound_ratio=None,
     fix_orientation=False,
     temp_file=None,
+    packmol_file=None,
     update_port_locations=False,
     packmol_args=None,
 ):
@@ -644,6 +671,8 @@ def fill_sphere(
         default=False.
     temp_file : str, default=None
         File name to write PACKMOL raw output to.
+    packmol_file : str, default=None,
+        Provide a filepath to save the PACKMOL input file generated.
     update_port_locations : bool, default=False
         After packing, port locations can be updated, but since compounds
         can be rotated, port orientation may be incorrect.
@@ -779,7 +808,7 @@ def fill_sphere(
     compound_xyz_list = list()
     try:
         input_text = PACKMOL_HEADER.format(
-            overlap, filled_xyz.name, seed, sidemax * 10, packmol_commands
+            overlap, filled_xyz.name, seed, sidemax * 10, packmol_commands, ""
         )
         for comp, m_compounds, rotate in zip(compound, n_compounds, fix_orientation):
             m_compounds = int(m_compounds)
@@ -797,7 +826,7 @@ def fill_sphere(
                 radius,
                 PACKMOL_CONSTRAIN if rotate else "",
             )
-        _run_packmol(input_text, filled_xyz, temp_file)
+        _run_packmol(input_text, filled_xyz, temp_file, packmol_file)
 
         # Create the topology and update the coordinates.
         filled = Compound()
@@ -819,12 +848,14 @@ def solvate(
     solvent,
     n_solvent,
     box,
+    use_pbc=False,
     overlap=0.2,
     seed=12345,
     sidemax=100.0,
     edge=0.2,
     fix_orientation=False,
     temp_file=None,
+    packmol_file=None,
     update_port_locations=False,
     center_solute=True,
     packmol_args=None,
@@ -841,6 +872,10 @@ def solvate(
         Number of solvents to be put in box.
     box : mb.Box
         Box to be filled by compounds.
+    use_pbc : bool, default=False
+        If True, applies periodic boundary conditions
+        when placing molecules.
+        `edge` must be zero when use_pbc is True.
     overlap : float, units nm, default=0.2
         Minimum separation between atoms of different molecules.
     seed : int, default=12345
@@ -858,6 +893,8 @@ def solvate(
         default=False.
     temp_file : str, default=None
         File name to write PACKMOL raw output to.
+    packmol_file : str, default=None,
+        Provide a filepath to save the PACKMOL input file generated.
     update_port_locations : bool, default=False
         After packing, port locations can be updated, but since compounds
         can be rotated, port orientation may be incorrect.
@@ -924,6 +961,8 @@ def solvate(
     box_mins = np.asarray(min_tmp) * 10
     box_maxs = np.asarray(max_tmp) * 10
     overlap *= 10
+    if use_pbc and edge != 0:
+        raise ValueError("edge must be 0 if use_pbc is set to True")
     if center_solute:
         center_solute = (box_maxs + box_mins) / 2
     else:
@@ -931,7 +970,7 @@ def solvate(
     # Apply edge buffer
     box_maxs = np.subtract(box_maxs, edge * 10)
     box_mins = np.add(box_mins, edge * 10)
-
+    box_arg = list(box_mins) + list(box_maxs)
     # generate string of addl. packmol inputs given in packmol_args
     packmol_commands = ""
     if packmol_args:
@@ -946,9 +985,23 @@ def solvate(
     # generate list of temp files for the solvents
     solvent_xyz_list = list()
     try:
+        if use_pbc:
+            pbc_arg = "pbc {0:.3f} {1:.3f} {2:.3f} {3:.3f} {4:.3f} {5:.3f}".format(
+                *box_arg
+            )
+            fill_arg = ""
+            periodicity = (True, True, True)
+        else:
+            fill_arg = (
+                "inside box {0:.3f} {1:.3f} {2:.3f} {3:.3f} {4:.3f} {5:.3f}".format(
+                    *box_arg
+                )
+            )
+            pbc_arg = ""
+            periodicity = (False, False, False)
         solute.save(solute_xyz.name, overwrite=True)
         input_text = PACKMOL_HEADER.format(
-            overlap, solvated_xyz.name, seed, sidemax * 10, packmol_commands
+            overlap, solvated_xyz.name, seed, sidemax * 10, packmol_commands, pbc_arg
         ) + PACKMOL_SOLUTE.format(solute_xyz.name, *center_solute.tolist())
 
         for solv, m_solvent, rotate in zip(solvent, n_solvent, fix_orientation):
@@ -960,18 +1013,13 @@ def solvate(
             input_text += PACKMOL_BOX.format(
                 solvent_xyz.name,
                 m_solvent,
-                box_mins[0],
-                box_mins[1],
-                box_mins[2],
-                box_maxs[0],
-                box_maxs[1],
-                box_maxs[2],
+                fill_arg,
                 PACKMOL_CONSTRAIN if rotate else "",
             )
-        _run_packmol(input_text, solvated_xyz, temp_file)
+        _run_packmol(input_text, solvated_xyz, temp_file, packmol_file)
 
         # Create the topology and update the coordinates.
-        solvated = Compound()
+        solvated = Compound(periodicity=periodicity)
         solvated.add(clone(solute))
         solvated = _create_topology(solvated, solvent, n_solvent)
         solvated.update_coordinates(
@@ -1016,7 +1064,7 @@ def _validate_mass(compound, n_compounds):
             "on how mass is handled."
         )
     if found_zero_mass:
-        warnings.warn(
+        logger.info(
             "Some of the compounds or subcompounds in `compound` "
             "have a mass of zero/None. This may have an effect on "
             "density calculations"
@@ -1114,7 +1162,7 @@ def _packmol_error(out, err):
     raise RuntimeError("PACKMOL failed. See 'log.txt'")
 
 
-def _run_packmol(input_text, filled_xyz, temp_file):
+def _run_packmol(input_text, filled_xyz, temp_file, packmol_file):
     """Call PACKMOL to pack system based on the input text.
 
     Parameters
@@ -1125,6 +1173,8 @@ def _run_packmol(input_text, filled_xyz, temp_file):
         Tempfile that will store the results of PACKMOL packing.
     temp_file : `tempfile` object, required
         Where to copy the filled tempfile.
+    packmol_file : str, required
+        Path to save the generated PACKMOL input file if desired.
     """
     # Create input file
     packmol_inp = tempfile.NamedTemporaryFile(
@@ -1132,6 +1182,13 @@ def _run_packmol(input_text, filled_xyz, temp_file):
     )
     packmol_inp.write(input_text)
     packmol_inp.close()
+    # Save PACKMOL file to cwd
+    if packmol_file:
+        with (
+            open(packmol_inp.name, "r") as inp_file,
+            open(packmol_file, "w") as new_file,
+        ):
+            shutil.copyfileobj(inp_file, new_file)
 
     proc = Popen(
         f"{PACKMOL} < {packmol_inp.name}",
@@ -1144,7 +1201,7 @@ def _run_packmol(input_text, filled_xyz, temp_file):
     out, err = proc.communicate()
 
     if "WITHOUT PERFECT PACKING" in out:
-        warnings.warn(
+        logger.warning(
             "Packmol finished with imperfect packing. Using the .xyz_FORCED "
             "file instead. This may not be a sufficient packing result."
         )

@@ -172,7 +172,7 @@ class TestLattice(BaseTest):
             (-1, 1, 1),
             (1, -1, 1),
             (1, 1, -1),
-            (1, 1, np.NaN),
+            (1, 1, np.nan),
         ],
     )
     def test_incorrect_populate_inputs(self, x, y, z):
