@@ -1,3 +1,4 @@
+import logging
 import os
 import sys
 
@@ -40,9 +41,14 @@ class TestCompound(BaseTest):
         compound = Compound([ethane, h2o])
         parm = compound.to_parmed()
         traj = compound.to_trajectory()
-        belmol = compound.to_pybel()
+        if has_openbabel:
+            belmol = compound.to_pybel()
+        else:
+            belmol = None
 
         for topo in [compound, parm, traj, belmol]:
+            if topo is None:
+                continue
             topo_converted = mb.load(topo)
             assert isinstance(topo_converted, Compound)
             assert topo_converted.n_particles == 11
@@ -74,6 +80,20 @@ class TestCompound(BaseTest):
         test_converted2.xyz = np.random.random(test_converted2.xyz.shape)
         test_converted2.from_parmed(test, coords_only=True)
         assert np.allclose(test_converted1.xyz, test_converted2.xyz)
+
+    def test_save_ports(self):
+        # ensure that setting include_ports=True works
+        mol = mb.Compound()
+
+        carbon = mb.Particle(pos=[0, 0, 0], name="C")
+        mol.add(carbon)
+        port1 = mb.Port(anchor=carbon, orientation=[1, 0, 0], separation=0.1)
+        mol.add(port1)
+
+        mol.save("test_ports.mol2", overwrite=True, include_ports=True)
+        mol_in = mb.load("test_ports.mol2")
+
+        assert mol_in.n_particles == 9
 
     def test_load_xyz(self):
         myethane = mb.load(get_fn("ethane.xyz"))
@@ -120,27 +140,24 @@ class TestCompound(BaseTest):
     def test_bond_order(self, methane):
         # test the default behavior
         bonds = [bond for bond in methane.bonds(return_bond_order=True)]
-        assert bonds[0][2]["bond_order"] == "default"
+        assert bonds[0][2]["bond_order"] == 1.0
 
         # test setting bond order when adding a bond
         carbon = mb.Compound(pos=[0, 0, 0], name="C")
         carbon_clone = mb.clone(carbon)
         C2 = mb.Compound([carbon, carbon_clone])
-        C2.add_bond([carbon, carbon_clone], bond_order="double")
+        C2.add_bond([carbon, carbon_clone], bond_order=2.0)
         bonds = [bond for bond in C2.bonds(return_bond_order=True)]
 
-        assert bonds[0][2]["bond_order"] == "double"
+        assert bonds[0][2]["bond_order"] == 2
 
         # ensure we propagate bond order information when we clone a compound
         C2_clone = mb.clone(C2)
         bonds = [bond for bond in C2_clone.bonds(return_bond_order=True)]
 
-        assert bonds[0][2]["bond_order"] == "double"
+        assert bonds[0][2]["bond_order"] == 2
 
-    @pytest.mark.parametrize(
-        "bond_order",
-        ["single", "double", "triple", "aromatic"],
-    )
+    @pytest.mark.parametrize("bond_order", [1, 2, 3, 1.5])
     def test_add_bond_order(self, bond_order):
         A_bead = mb.Compound(name="A", pos=[0, 0, 0])
         B_bead = mb.Compound(name="B", pos=[0.5, 0.5, 0])
@@ -154,9 +171,7 @@ class TestCompound(BaseTest):
         B_bead = mb.Compound(name="B", pos=[0.5, 0.5, 0])
         comp = mb.Compound([A_bead, B_bead])
         with pytest.raises(ValueError):
-            comp.add_bond([A_bead, B_bead], bond_order=1.0)
-        with pytest.raises(ValueError):
-            comp.add_bond([A_bead, B_bead], bond_order="quadruple")
+            comp.add_bond([A_bead, B_bead], bond_order=4)
 
     @pytest.mark.skipif(not has_rdkit, reason="RDKit is not installed")
     def test_to_rdkit(self, methane):
@@ -389,6 +404,8 @@ class TestCompound(BaseTest):
         # Can't save gsd files with Windows
         if extension == ".gsd" and not has_hoomd:
             return True
+        elif extension == ".sdf" and not has_openbabel:
+            return True
         outfile = "methyl_out" + extension
         ch3.save(filename=outfile)
         assert os.path.exists(outfile)
@@ -419,6 +436,8 @@ class TestCompound(BaseTest):
         box_attributes = ["lengths"]
         custom_box = Box(lengths=[0.8, 0.8, 0.8], angles=[90, 90, 90])
         for ext in extensions:
+            if ext == ".sdf" and not has_openbabel:
+                continue
             outfile_padded = "padded_methyl" + ext
             outfile_custom = "custom_methyl" + ext
             ch3.save(filename=outfile_padded, box=None, overwrite=True)
@@ -637,21 +656,23 @@ class TestCompound(BaseTest):
         A.add(mb.Port())
         assert A.mass == 2.0
 
-    def test_none_mass(self):
+    def test_none_mass(self, caplog):
         A = mb.Compound()
         assert A.mass is None
 
         container = mb.Compound(subcompounds=[A])
-        with pytest.warns(UserWarning):
+        with caplog.at_level(logging.INFO, logger="mbuild"):
             container_mass = container.mass
             assert container_mass is None
+        assert "Some particle of <Compound 1 particles, 0 bonds" in caplog.text
 
         A.mass = 1
         B = mb.Compound()
         container.add(B)
-        with pytest.warns(UserWarning):
+        with caplog.at_level(logging.WARNING, logger="mbuild"):
             container_mass = container.mass
             assert container_mass == A.mass == 1
+        assert "Some particle of <Compound 1 particles, 0 bonds" in caplog.text
 
     def test_add_existing_parent(self, ethane, h2o):
         water_in_water = mb.clone(h2o)
@@ -914,12 +935,11 @@ class TestCompound(BaseTest):
         compound.remove(particle)
         assert particle not in compound.particles()
 
-    def test_remove_bond(self, ch3):
+    def test_remove_bond(self, ch3, caplog):
         ch_bond = list(ch3.bonds())[0]
         ch3.remove_bond(ch_bond)
         assert ch3.n_bonds == 2
-
-        with pytest.warns(UserWarning):
+        with pytest.raises(MBuildError):
             ch3.remove_bond(ch_bond)
 
     def test_port_does_not_exist(self, ethane):
@@ -1598,14 +1618,22 @@ class TestCompound(BaseTest):
             + 2 * len(hexane.children)
         )
 
-    def test_parmed_element_guess(self):
+    def test_parmed_element_guess(self, caplog):
         compound = Particle(name="foobar")
-        with pytest.warns(UserWarning):
+        with caplog.at_level(logging.WARNING, logger="mbuild"):
             _ = compound.to_parmed()
+        assert (
+            "No element attribute associated with '<foobar pos=([0. 0. 0.]), 0 bonds"
+            in caplog.text
+        )
 
         compound = Particle(name="XXXXXX")
-        with pytest.warns(UserWarning):
+        with caplog.at_level(logging.WARNING, logger="mbuild"):
             _ = compound.to_parmed()
+        assert (
+            "No element attribute associated with '<foobar pos=([0. 0. 0.]), 0 bonds"
+            in caplog.text
+        )
 
     def test_parmed_box(self, h2o):
         compound = Compound()
@@ -1770,12 +1798,13 @@ class TestCompound(BaseTest):
         with pytest.raises(MBuildError):
             compound = Compound(subcompounds=ch3, charge=1.0)
 
-    def test_charge_neutrality_warn(self, benzene):
+    def test_charge_neutrality_warn(self, benzene, caplog):
         benzene[0].charge = 0.25
-        with pytest.warns(UserWarning):
+        with caplog.at_level(logging.INFO, logger="mbuild"):
             benzene.save("charge-test.mol2")
+        assert "System is not charge neutral. Total charge is 0.3118." in caplog.text
 
-    def test_none_charge(self):
+    def test_none_charge(self, caplog):
         A = mb.Compound()
         assert A.charge is None
 
@@ -1784,9 +1813,13 @@ class TestCompound(BaseTest):
         container = mb.Compound(subcompounds=[A, B])
         assert A.charge == 1
         assert B.charge is None
-        with pytest.warns(UserWarning):
+        with caplog.at_level(logging.INFO, logger="mbuild"):
             container_charge = container.charge
             assert container_charge == 1
+        assert (
+            "does not have a charge. They will not be accounted for during this calculation"
+            in caplog.text
+        )
 
     @pytest.mark.skipif(not has_openbabel, reason="Open Babel not installed")
     @pytest.mark.skipif(
@@ -1991,18 +2024,7 @@ class TestCompound(BaseTest):
                 distance_constraints=[(methyl_end0, methyl_end1), 0.7]
             )
 
-    @pytest.mark.skipif(has_openbabel, reason="Open Babel package is installed")
-    @pytest.mark.skipif(
-        "win" in sys.platform, reason="Unknown issue with Window's Open Babel "
-    )
-    def test_energy_minimize_openbabel_warn(self, octane):
-        with pytest.raises(MBuildError):
-            octane.energy_minimize()
-
     @pytest.mark.skipif(not has_openbabel, reason="Open Babel not installed")
-    @pytest.mark.skipif(
-        "win" in sys.platform, reason="Unknown issue with Window's Open Babel "
-    )
     def test_energy_minimize_ff(self, octane):
         for ff in ["UFF", "GAFF", "MMFF94", "MMFF94s", "Ghemical"]:
             octane.energy_minimize(forcefield=ff)
@@ -2010,9 +2032,6 @@ class TestCompound(BaseTest):
             octane.energy_minimize(forcefield="fakeFF")
 
     @pytest.mark.skipif(not has_openbabel, reason="Open Babel not installed")
-    @pytest.mark.skipif(
-        "win" in sys.platform, reason="Unknown issue with Window's Open Babel "
-    )
     def test_energy_minimize_algorithm(self, octane):
         for algorithm in ["cg", "steep", "md"]:
             octane.energy_minimize(algorithm=algorithm)
@@ -2020,9 +2039,6 @@ class TestCompound(BaseTest):
             octane.energy_minimize(algorithm="fakeAlg")
 
     @pytest.mark.skipif(not has_openbabel, reason="Open Babel not installed")
-    @pytest.mark.skipif(
-        "win" in sys.platform, reason="Unknown issue with Window's Open Babel "
-    )
     def test_energy_minimize_non_element(self, octane):
         for particle in octane.particles():
             particle.element = None
@@ -2037,9 +2053,6 @@ class TestCompound(BaseTest):
             octane.energy_minimize()
 
     @pytest.mark.skipif(not has_openbabel, reason="Open Babel not installed")
-    @pytest.mark.skipif(
-        "win" in sys.platform, reason="Unknown issue with Window's Open Babel "
-    )
     def test_energy_minimize_ports(self, octane):
         distances = np.round(
             [
@@ -2163,11 +2176,13 @@ class TestCompound(BaseTest):
             angle1, angle2 = connect_and_reconnect(chf, bond_vector)
             assert np.isclose(angle1, angle2, atol=1e-6)
 
+    @pytest.mark.skipif(not has_openbabel, reason="Open Babel not installed")
     def test_smarts_from_string(self):
         p3ht = mb.load("CCCCCCC1=C(SC(=C1)C)C", smiles=True, backend="pybel")
         assert p3ht.n_bonds == 33
         assert p3ht.n_particles == 33
 
+    @pytest.mark.skipif(not has_openbabel, reason="Open Babel not installed")
     def test_smarts_from_file(self):
         p3ht = mb.load(get_fn("p3ht.smi"), smiles=True, backend="pybel")
         assert p3ht.n_bonds == 33
@@ -2241,6 +2256,9 @@ class TestCompound(BaseTest):
         struc = pmd.load_file(get_fn("spc.pdb"))
         comp.from_parmed(struc)
         assert comp.children[0].name == "SPC"
+        comp.save("test.pdb", residues=["SPC"])
+        struc2 = pmd.load_file("test.pdb")
+        assert struc2.residues[0].name == struc.residues[0].name
 
     @pytest.mark.skipif(not has_mdtraj, reason="MDTraj not installed")
     def test_complex_from_trajectory(self):
@@ -2373,23 +2391,26 @@ class TestCompound(BaseTest):
             else:
                 assert my_cmp.get_smiles() == test_string
 
+    @pytest.mark.skipif(not has_openbabel, reason="Pybel is not installed")
     def test_sdf(self, methane):
         methane.save("methane.sdf")
         sdf_string = mb.load("methane.sdf")
         assert np.allclose(methane.xyz, sdf_string.xyz, atol=1e-5)
 
+    @pytest.mark.skipif(not has_openbabel, reason="Pybel is not installed")
     def test_load_multiple_sdf(self, methane):
         filled = mb.fill_box(methane, n_compounds=10, box=Box([4, 4, 4]))
         filled.save("methane.sdf")
         mb.load("methane.sdf")
 
+    @pytest.mark.skipif(not has_openbabel, reason="Pybel is not installed")
     def test_save_multiple_sdf(self, methane):
         filled = mb.fill_box(methane, n_compounds=10, box=[0, 0, 0, 4, 4, 4])
         filled.save("methane.sdf")
         sdf_string = mb.load("methane.sdf")
         assert np.allclose(filled.xyz, sdf_string.xyz, atol=1e-5)
 
-    def test_box(self):
+    def test_box(self, caplog):
         angles = [90.0, 90.0, 90.0]
         lengths = [3.0, 3.0, 3.0]
         compound = Compound()
@@ -2413,8 +2434,12 @@ class TestCompound(BaseTest):
         assert np.allclose(compound.box.angles, angles)
         compound = Compound(box=Box([3.0, 3.0, 3.0]))
         subcomp = Compound(box=Box([6.0, 6.0, 6.0], angles=[90.0, 90.0, 120.0]))
-        with pytest.warns(UserWarning):
+        with caplog.at_level(logging.INFO, logger="mbuild"):
             compound.add(subcomp)
+        assert (
+            "The Compound you are adding has a box. The box of the parent"
+            in caplog.text
+        )
         assert np.allclose(compound.box.lengths, [3.0, 3.0, 3.0])
         assert np.allclose(compound.box.angles, [90.0, 90.0, 90.0])
         compound = Compound(box=Box(lengths=lengths, angles=angles))
@@ -2424,8 +2449,12 @@ class TestCompound(BaseTest):
         assert np.allclose(compound.box.angles, [90.0, 90.0, 120.0])
         compound = Compound(box=Box(lengths=lengths, angles=angles))
         subcomp = Compound()
-        with pytest.warns(UserWarning):
+        with caplog.at_level(logging.INFO, logger="mbuild"):
             compound.add(subcomp, inherit_box=True)
+        assert (
+            "The Compound you are adding has a box. The box of the parent compound"
+            in caplog.text
+        )
         assert np.allclose(compound.box.lengths, [3.0, 3.0, 3.0])
         assert np.allclose(compound.box.angles, [90.0, 90.0, 90.0])
         compound = Compound()
@@ -2433,11 +2462,19 @@ class TestCompound(BaseTest):
         compound.add(carbon)
         compound.box = Box(lengths=lengths, angles=angles)
         nitrogen = Compound(name="N", pos=[4, 3, 3])
-        with pytest.warns(UserWarning):
+        with caplog.at_level(logging.INFO, logger="mbuild"):
             compound.add(nitrogen)
+        assert (
+            "The Compound you are adding has a box. The box of the parent compound"
+            in caplog.text
+        )
         compound.box = Box(lengths=[5.0, 4.0, 4.0], angles=angles)
-        with pytest.warns(UserWarning):
+        with caplog.at_level(logging.INFO, logger="mbuild"):
             compound.box = Box(lengths=[1.0, 1.0, 1.0], angles=angles)
+        assert (
+            "The Compound you are adding has a box. The box of the parent compound"
+            in caplog.text
+        )
 
     def test_get_boundingbox_extrema(self):
         h1 = mb.Compound()
@@ -2542,6 +2579,8 @@ class TestCompound(BaseTest):
 
     @pytest.mark.parametrize("backend", ["pybel", "rdkit"])
     def test_elements_from_smiles(self, backend):
+        if backend == "pybel" and not has_openbabel:
+            return True
         mol = mb.load("COC", smiles=True, backend=backend)
         for particle in mol.particles():
             assert particle.element is not None

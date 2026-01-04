@@ -1,6 +1,7 @@
 """JSON format."""
 
 import json
+import logging
 from collections import OrderedDict
 
 import ele
@@ -8,6 +9,8 @@ import ele
 import mbuild as mb
 from mbuild.bond_graph import BondGraph
 from mbuild.exceptions import MBuildError
+
+logger = logging.getLogger(__name__)
 
 
 def compound_from_json(json_file):
@@ -264,7 +267,6 @@ def _add_bonds(compound_dict, parent, converted_dict):
 
 def _perform_sanity_check(json_dict):
     """Perform Sanity Check on the JSON File."""
-    from warnings import warn
 
     warning_msg = "This Json was written using {0}, current mbuild version is {1}."
     this_version = mb.__version__
@@ -285,4 +287,6 @@ def _perform_sanity_check(json_dict):
             + " Cannot Convert JSON to compound"
         )
     if minor != this_minor:
-        warn(warning_msg.format(json_mbuild_version, this_version) + " Will Proceed.")
+        logging.warning(
+            warning_msg.format(json_mbuild_version, this_version) + " Will Proceed."
+        )

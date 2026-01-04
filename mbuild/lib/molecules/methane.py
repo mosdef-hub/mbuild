@@ -14,12 +14,12 @@ class Methane(mb.Compound):
         hydrogen = mb.Particle(name="H", pos=[0.1, 0, -0.07], element="H")
         self.add(hydrogen)
 
-        self.add_bond((self[0], self[1]))
+        self.add_bond((self[0], self[1]), bond_order=1.0)
 
         self.add(mb.Particle(name="H", pos=[-0.1, 0, -0.07], element="H"))
         self.add(mb.Particle(name="H", pos=[0, 0.1, 0.07], element="H"))
         self.add(mb.Particle(name="H", pos=[0, -0.1, 0.07], element="H"))
 
-        self.add_bond((self[0], self[2]))
-        self.add_bond((self[0], self[3]))
-        self.add_bond((self[0], self[4]))
+        self.add_bond((self[0], self[2]), bond_order=1.0)
+        self.add_bond((self[0], self[3]), bond_order=1.0)
+        self.add_bond((self[0], self[4]), bond_order=1.0)

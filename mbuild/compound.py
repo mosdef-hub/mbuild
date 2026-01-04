@@ -1,15 +1,13 @@
 """Module for working with mBuild Compounds."""
 
-__all__ = ["clone", "Compound", "Particle"]
-
 import itertools
+import logging
 import os
 import tempfile
 from collections import OrderedDict
 from collections.abc import Iterable
 from copy import deepcopy
 from typing import Sequence
-from warnings import warn
 
 import ele
 import networkx as nx
@@ -25,9 +23,21 @@ from mbuild.box import Box
 from mbuild.coordinate_transform import _rotate, _translate
 from mbuild.exceptions import MBuildError
 from mbuild.periodic_kdtree import PeriodicKDTree
-from mbuild.utils.decorators import experimental_feature
 from mbuild.utils.io import import_, run_from_ipython
 from mbuild.utils.jsutils import overwrite_nglview_default
+
+__all__ = ["clone", "Compound", "Particle"]
+
+logger = logging.getLogger(__name__)
+
+bond_orderDict = {
+    "single": 1.0,
+    "double": 2.0,
+    "triple": 3.0,
+    "aromatic": 1.0,
+    "unspecified": 0.0,
+    "default": 1.0,
+}
 
 
 def clone(existing_compound, clone_of=None, root_container=None):
@@ -500,7 +510,7 @@ class Compound(object):
         else:
             particle_masses = [self._particle_mass(p) for p in self.particles()]
             if None in particle_masses:
-                warn(
+                logger.info(
                     f"Some particle of {self} does not have mass."
                     "They will not be accounted for during this calculation."
                 )
@@ -544,8 +554,8 @@ class Compound(object):
             return self._particle_charge(self)
         charges = [p._charge for p in self.particles()]
         if None in charges:
-            warn(
-                f"Some particle of {self} does not have a charge."
+            logger.info(
+                f"Some particle of {self} does not have a charge. "
                 "They will not be accounted for during this calculation."
             )
         filtered_charges = [charge for charge in charges if charge is not None]
@@ -660,7 +670,7 @@ class Compound(object):
                 f"to Compounds. You tried to add '{new_child}'."
             )
         if self._mass is not None and not isinstance(new_child, Port):
-            warn(
+            logger.info(
                 f"{self} has a pre-defined mass of {self._mass}, "
                 "which will be reset to zero now that it contains children "
                 "compounds."
@@ -727,7 +737,7 @@ class Compound(object):
         else:
             if inherit_box:
                 if new_child.box is None:
-                    warn(
+                    logger.info(
                         "The Compound you are adding has no box but "
                         "inherit_box=True. The box of the original "
                         "Compound will remain unchanged."
@@ -736,7 +746,7 @@ class Compound(object):
                     self.box = new_child.box
             else:
                 if new_child.box is not None:
-                    warn(
+                    logger.info(
                         "The Compound you are adding has a box. "
                         "The box of the parent compound will be used. Use "
                         "inherit_box = True if you wish to replace the parent "
@@ -748,7 +758,7 @@ class Compound(object):
             if (
                 np.array(self.box.lengths) < np.array(self.get_boundingbox().lengths)
             ).any():
-                warn(
+                logger.warning(
                     "After adding new Compound, Compound.box.lengths < "
                     "Compound.boundingbox.lengths. There may be particles "
                     "outside of the defined simulation box"
@@ -802,7 +812,7 @@ class Compound(object):
                     to_remove.append(child)
                     _check_if_empty(child.parent)
                 else:
-                    warn(f"This will remove all particles in {self}")
+                    logger.warning(f"This will remove all particles in {self}")
             return
 
         for particle in particles_to_remove:
@@ -1085,28 +1095,23 @@ class Compound(object):
             The pair of Particles to add a bond between
         bond_order : float, optional, default=None
             Bond order of the bond.
-            Available options include "default", "single", "double",
-            "triple", "aromatic" or "unspecified"
+            Available options include "None", 1.0, 2.0,
+            3.0, 1.5 or 0.0. The previous string options include "default", "single", "double",
+            "triple", "aromatic" or "unspecified", are supported but will be deprecated.
         """
         if self.root.bond_graph is None:
             self.root.bond_graph = BondGraph()
         if bond_order is None:
-            bond_order = "default"
+            bond_order = 0.0
+        elif isinstance(bond_order, str):
+            logger.warning(
+                "Bond order as a string will be deprecated and replaced with floats."
+            )
+            bond_order = bond_orderDict.get(bond_order, 0.0)
         else:
-            if not isinstance(bond_order, str) or bond_order.lower() not in [
-                "default",
-                "single",
-                "double",
-                "triple",
-                "aromatic",
-                "unspecified",
-            ]:
+            if bond_order not in [0.0, 1.0, 2.0, 3.0, 1.5]:
                 raise ValueError(
-                    "Invalid bond_order given. Available bond orders are: single",
-                    "double",
-                    "triple",
-                    "aromatic",
-                    "unspecified",
+                    f"Invalid bond_order given {bond_order=}. Available bond orders are: 0.0, 1.0, 2.0, 3.0, 1.5"
                 )
         self.root.bond_graph.add_edge(
             particle_pair[0], particle_pair[1], bond_order=bond_order
@@ -1150,7 +1155,6 @@ class Compound(object):
                     self.add_bond((p1, p2))
                     added_bonds.append(bond_tuple)
 
-    @experimental_feature()
     def freud_generate_bonds(self, name_a, name_b, dmin, dmax):
         """Add Bonds between all pairs of types a/b within [dmin, dmax].
 
@@ -1164,11 +1168,6 @@ class Compound(object):
             The minimum distance (in nm) between Particles for considering a bond
         dmax : float
             The maximum distance (in nm) between Particles for considering a bond
-
-        Notes
-        -----
-        This is an experimental feature and some behavior might change out of step of a standard development release.
-
         """
         freud = import_("freud")
         moved_positions, freud_box = self.to_freud()
@@ -1218,12 +1217,14 @@ class Compound(object):
         if self.root.bond_graph is None or not self.root.bond_graph.has_edge(
             *particle_pair
         ):
-            warn("Bond between {} and {} doesn't exist!".format(*particle_pair))
+            raise MBuildError(
+                "Bond between {} and {} doesn't exist!".format(*particle_pair)
+            )
             return
         self.root.bond_graph.remove_edge(*particle_pair)
         bond_vector = particle_pair[0].pos - particle_pair[1].pos
         if np.allclose(bond_vector, np.zeros(3)):
-            warn(
+            logger.warning(
                 "Particles {} and {} overlap! Ports will not be added.".format(
                     *particle_pair
                 )
@@ -1300,7 +1301,7 @@ class Compound(object):
         # Make sure the box is bigger than the bounding box
         if box is not None:
             if np.asarray((box.lengths < self.get_boundingbox().lengths)).any():
-                warn(
+                logger.warning(
                     "Compound.box.lengths < Compound.boundingbox.lengths. "
                     "There may be particles outside of the defined "
                     "simulation box."
@@ -1627,7 +1628,9 @@ class Compound(object):
             raise MBuildError(f'Cannot calculate minimum periodic distance. '
                               f'No Box set for {self}')
             """
-            warn(f"No Box object set for {self}, using rectangular bounding box")
+            logger.warning(
+                f"No Box object set for {self}, using rectangular bounding box"
+            )
             self.box = self.get_boundingbox()
             if np.allclose(self.box.angles, 90.0):
                 d = np.where(
@@ -1759,6 +1762,9 @@ class Compound(object):
         py3Dmol = import_("py3Dmol")
 
         cloned = clone(self)
+        for edge in cloned.bond_graph.edges(data=True):
+            if edge[2]["bond_order"] == 0.0:
+                edge[2]["bond_order"] = 1.0
 
         modified_color_scheme = {}
         for name, color in color_scheme.items():
@@ -2393,7 +2399,7 @@ class Compound(object):
                 pass
 
             else:
-                warn(
+                logger.warning(
                     f"OpenMM Force {type(force).__name__} is "
                     "not currently supported in _energy_minimize_openmm. "
                     "This Force will not be updated!"
@@ -2688,7 +2694,7 @@ class Compound(object):
                 "'MMFF94s', 'UFF', 'GAFF', and 'Ghemical'."
                 ""
             )
-        warn(
+        logger.info(
             "Performing energy minimization using the Open Babel package. "
             "Please refer to the documentation to find the appropriate "
             f"citations for Open Babel and the {forcefield} force field"

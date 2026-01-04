@@ -1,8 +1,8 @@
 """mBuild lattice module for working with crystalline systems."""
 
 import itertools as it
+import logging
 import pathlib
-import warnings
 from collections import defaultdict
 
 import numpy as np
@@ -13,6 +13,8 @@ import mbuild as mb
 from mbuild.utils.io import import_
 
 __all__ = ["load_cif", "Lattice"]
+
+logger = logging.getLogger(__name__)
 
 
 def load_cif(file_or_path=None, wrap_coords=False):
@@ -654,9 +656,7 @@ class Lattice(object):
                     )
         # Raise warnings about assumed elements
         for element in elementsSet:
-            warnings.warn(
-                f"Element assumed from cif file to be {element}.", UserWarning
-            )
+            logger.info(f"Element assumed from cif file to be {element}.")
         ret_lattice.add(compoundsList)
         # Create mbuild.box
         ret_lattice.box = mb.Box(lengths=[a * x, b * y, c * z], angles=self.angles)
