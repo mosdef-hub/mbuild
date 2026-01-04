@@ -32,7 +32,7 @@ class WaterTIP3P(Water3Site):
     """A TIP3P water molecule.
 
     Paper: https://doi.org/10.1063/1.445869
-    Additional reference: https://lammps.sandia.gov/doc/Howto_tip3p.html
+    Additional reference: https://docs.lammps.org/Howto_tip3p.html
     """
 
     def __init__(self):
@@ -45,7 +45,7 @@ class WaterSPC(Water3Site):
     """An SPC water molecule.
 
     Paper: https://doi.org/10.1021/j100308a038
-    Additional reference: https://lammps.sandia.gov/doc/Howto_spc.html
+    Additional reference: https://docs.lammps.org/Howto_spc.html
     """
 
     def __init__(self):
@@ -53,6 +53,20 @@ class WaterSPC(Water3Site):
         hoh_angle = 109.47  # deg
         super().__init__(oh_bond_length, hoh_angle)
 
+class WaterOPC3(Water3Site):
+    """An OPC3 water molecule.
+
+    A 3-point Optimal Point Charge (OPC3) model for water.
+    The geometry is very close to the SPC water model, with a slightly reduced OH bond length
+    but the same HOH angle.
+
+    Paper: https://doi.org/10.1063/1.4960175
+    """
+
+    def __init__(self):
+        oh_bond_length = 0.09789  # nm
+        hoh_angle = 109.47  # deg
+        super().__init__(oh_bond_length, hoh_angle)
 
 class Water4Site(mb.Compound):
     """A generic 4-site water model."""
@@ -125,4 +139,17 @@ class WaterTIP4P2005(Water4Site):
         oh_bond_length = 0.09572  # nm
         om_bond_length = 0.01546  # nm
         hoh_angle = 104.52  # deg
+        super().__init__(oh_bond_length, hoh_angle, om_bond_length)
+
+class WaterOPC(Water4Site):
+    """An OPC (4 site) water molecule.
+
+    Paper: https://doi.org/10.1021/jz501780a
+    Additional reference: https://docs.lammps.org/Howto_tip4p.html#
+    """
+
+    def __init__(self):
+        oh_bond_length = 0.08724  # nm
+        om_bond_length = 0.01594  # nm
+        hoh_angle = 103.6  # deg
         super().__init__(oh_bond_length, hoh_angle, om_bond_length)
