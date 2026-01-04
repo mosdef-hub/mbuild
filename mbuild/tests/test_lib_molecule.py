@@ -14,7 +14,11 @@ from mbuild.tests.base_test import BaseTest
 class TestWater(BaseTest):
     @pytest.mark.parametrize(
         "model, bond_length, angle",
-        [(WaterTIP3P, 0.09572, 104.52), (WaterSPC, 0.1, 109.47), (WaterOPC3, 0.09789, 109.47)],
+        [
+            (WaterTIP3P, 0.09572, 104.52),
+            (WaterSPC, 0.1, 109.47),
+            (WaterOPC3, 0.09789, 109.47),
+        ],
     )
     def test_water_3site(self, model, bond_length, angle):
         water = model()

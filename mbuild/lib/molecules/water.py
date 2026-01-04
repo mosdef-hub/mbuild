@@ -53,6 +53,7 @@ class WaterSPC(Water3Site):
         hoh_angle = 109.47  # deg
         super().__init__(oh_bond_length, hoh_angle)
 
+
 class WaterOPC3(Water3Site):
     """An OPC3 water molecule.
 
@@ -67,6 +68,7 @@ class WaterOPC3(Water3Site):
         oh_bond_length = 0.09789  # nm
         hoh_angle = 109.47  # deg
         super().__init__(oh_bond_length, hoh_angle)
+
 
 class Water4Site(mb.Compound):
     """A generic 4-site water model."""
@@ -140,6 +142,7 @@ class WaterTIP4P2005(Water4Site):
         om_bond_length = 0.01546  # nm
         hoh_angle = 104.52  # deg
         super().__init__(oh_bond_length, hoh_angle, om_bond_length)
+
 
 class WaterOPC(Water4Site):
     """An OPC (4 site) water molecule.
