@@ -9,4 +9,6 @@ from mbuild.lib.molecules.water import (
     WaterTIP4P,
     WaterTIP4P2005,
     WaterTIP4PIce,
+    WaterOPC,
+    WaterOPC3,
 )
