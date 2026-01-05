@@ -119,10 +119,10 @@ class PairDistance(Terminator):
 
 
 class RadiusOfGyration(Terminator):
-    def __init__(self, radius_of_gyration, tolerance=1e-2, required_to_end=True):
+    def __init__(self, radius_of_gyration, tolerance=0.01, required_to_end=True):
         self.radius_of_gyration = float(radius_of_gyration)
         self.tolerance = tolerance
-        self.max_rg2 = (radius_of_gyration + tolerance) ** 2
+        self.rg2 = (radius_of_gyration + tolerance) ** 2
         super().__init__(required_to_end)
 
     def is_met(self):
@@ -134,11 +134,11 @@ class RadiusOfGyration(Terminator):
         center = coords.mean(axis=0)
         diffs = coords - center
         rg2 = np.mean(np.sum(diffs * diffs, axis=1))
-        return rg2 >= self.max_rg2
+        return self.rg2 - self.tolerance <= rg2 <= self.rg2 + self.tolerance
 
 
 class EndToEndDistance(Terminator):
-    def __init__(self, distance, tolerance=1e-2, required_to_end=True):
+    def __init__(self, distance, tolerance=0.01, required_to_end=True):
         self.distance = float(distance)
         self.tolerance = tolerance
         super().__init__(required_to_end)
@@ -150,4 +150,8 @@ class EndToEndDistance(Terminator):
             return False
         first_site = self.path.coordinates[self.path._init_count]
         last_site = self.path.coordinates[self.path.count]
-        return np.linalg.norm(last_site - first_site) >= self.distance - self.tolerance
+        return (
+            self.distance - self.tolerance
+            <= np.linalg.norm(last_site - first_site)
+            <= self.distance + self.tolerance
+        )
