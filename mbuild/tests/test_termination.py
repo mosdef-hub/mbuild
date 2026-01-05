@@ -65,22 +65,24 @@ class TestTermination(BaseTest):
 
     def test_rg_termination(self):
         num_sites = NumSites(20)
-        rg = RadiusOfGyration(3)
-        max_attempts = NumAttempts(1e4)
+        rg = RadiusOfGyration(2)
+        max_attempts = NumAttempts(2e4)
         termination = Termination([num_sites, rg, max_attempts])
         rw_path = HardSphereRandomWalk(
             termination=termination,
-            bond_length=0.25,
+            initial_point=(0, 0, 0),
+            bond_length=0.24,
             radius=0.22,
-            min_angle=np.pi / 4,
+            min_angle=np.pi / 2,
             max_angle=np.pi,
-            seed=14,
+            seed=10,
         )
-        assert np.allclose(radius_of_gyration(rw_path.coordinates), 3, atol=1e-1)
+        assert len(rw_path.coordinates) >= 20
+        assert np.allclose(radius_of_gyration(rw_path.coordinates), 2, atol=1e-1)
 
     def test_re_termination(self):
         num_sites = NumSites(20)
-        re = EndToEndDistance(2)
+        re = EndToEndDistance(2, tolerance=0.1)
         max_attempts = NumAttempts(1e4)
         termination = Termination([num_sites, re, max_attempts])
         rw_path = HardSphereRandomWalk(
@@ -92,7 +94,7 @@ class TestTermination(BaseTest):
             seed=14,
         )
         dist = np.linalg.norm(rw_path.coordinates[-1] - rw_path.coordinates[0])
-        assert np.allclose(dist, 2, atol=1e-1)
+        assert np.allclose(dist, 2, atol=0.1)
 
     def test_within_coord_termination(self):
         bias = TargetCoordinate(target_coordinate=(2, 2, 2), weight=0.8)
