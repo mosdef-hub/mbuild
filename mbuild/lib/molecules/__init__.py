@@ -4,6 +4,8 @@
 from mbuild.lib.molecules.ethane import Ethane
 from mbuild.lib.molecules.methane import Methane
 from mbuild.lib.molecules.water import (
+    WaterOPC,
+    WaterOPC3,
     WaterSPC,
     WaterTIP3P,
     WaterTIP4P,
