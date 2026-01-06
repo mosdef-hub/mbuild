@@ -242,14 +242,14 @@ class PairDistance(Terminator):
 
 
 class RadiusOfGyration(Terminator):
-    """A terminator that triggers after reaching a target radius of gyration.
+    """A terminator that triggers after reaching a target square radius of gyration.
 
     Parameters
     ----------
     radius_of_gyration : float, required
-        The target radius of gyration in units of nm.
+        The target square radius of gyration (Rg^2) in units of nm^2.
     tolerance : float, default 0.01
-        The allowable tolerance relative to the target. In units of nm.
+        The allowable tolerance relative to the target. In units of nm^2.
     is_target : bool, default True
         If `True`, this terminator represents a target condition that the walk
         is attempting to reach. Triggering a target condition indicates
@@ -261,9 +261,8 @@ class RadiusOfGyration(Terminator):
     """
 
     def __init__(self, radius_of_gyration, tolerance=0.01, is_target=True):
-        self.radius_of_gyration = float(radius_of_gyration)
+        self.rg = float(radius_of_gyration)
         self.tolerance = tolerance
-        self.rg2 = (radius_of_gyration + tolerance) ** 2
         super().__init__(is_target)
 
     def is_met(self):
@@ -275,7 +274,7 @@ class RadiusOfGyration(Terminator):
         center = coords.mean(axis=0)
         diffs = coords - center
         rg2 = np.mean(np.sum(diffs * diffs, axis=1))
-        return self.rg2 - self.tolerance <= rg2 <= self.rg2 + self.tolerance
+        return self.rg - self.tolerance <= rg2 <= self.rg + self.tolerance
 
 
 class EndToEndDistance(Terminator):

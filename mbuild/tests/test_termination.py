@@ -65,7 +65,7 @@ class TestTermination(BaseTest):
 
     def test_rg_termination(self):
         num_sites = NumSites(20)
-        rg = RadiusOfGyration(2)
+        rg = RadiusOfGyration(4)
         max_attempts = NumAttempts(2e4)
         termination = Termination([num_sites, rg, max_attempts])
         rw_path = HardSphereRandomWalk(
@@ -78,7 +78,7 @@ class TestTermination(BaseTest):
             seed=10,
         )
         assert len(rw_path.coordinates) >= 20
-        assert np.allclose(radius_of_gyration(rw_path.coordinates), 2, atol=1e-1)
+        assert np.allclose(radius_of_gyration(rw_path.coordinates), 4, atol=1e-1)
 
     def test_re_termination(self):
         num_sites = NumSites(20)
