@@ -7,12 +7,12 @@ from mbuild.utils.io import get_fn
 
 
 def radius_of_gyration(coordinates):
-    """Calculate the radius of gyration for a set of coordinates using the geometric center."""
+    """Calculate the square radius of gyration for a set of coordinates using the geometric center."""
     coordinates = np.array(coordinates)
     geometric_center = np.mean(coordinates, axis=0)
     squared_distances = np.sum((coordinates - geometric_center) ** 2, axis=1)
-    rg = np.sqrt(np.mean(squared_distances))
-    return rg
+    rg2 = np.mean(squared_distances)
+    return rg2
 
 
 class BaseTest:

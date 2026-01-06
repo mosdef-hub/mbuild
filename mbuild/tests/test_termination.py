@@ -13,6 +13,7 @@ from mbuild.path.termination import (
     NumSites,
     RadiusOfGyration,
     Termination,
+    Terminator,
     WallTime,
     WithinCoordinate,
 )
@@ -33,6 +34,17 @@ class TestTermination(BaseTest):
                 max_angle=np.pi,
                 seed=14,
             )
+
+    def test_terminator_base_class(self):
+        with pytest.raises(NotImplementedError):
+            termination = Termination(Terminator(is_target=True))
+            termination.is_met()
+
+    def test_single_terminator(self):
+        num_sites = NumSites(5000)
+        termination = Termination(num_sites)
+        assert isinstance(termination.terminators, list)
+        assert termination.terminators[0] is num_sites
 
     def test_wall_time_termination(self):
         cube = CuboidConstraint(Lx=1, Ly=1, Lz=1)
@@ -65,7 +77,7 @@ class TestTermination(BaseTest):
 
     def test_rg_termination(self):
         num_sites = NumSites(20)
-        rg = RadiusOfGyration(2)
+        rg = RadiusOfGyration(4)
         max_attempts = NumAttempts(2e4)
         termination = Termination([num_sites, rg, max_attempts])
         rw_path = HardSphereRandomWalk(
@@ -78,7 +90,7 @@ class TestTermination(BaseTest):
             seed=10,
         )
         assert len(rw_path.coordinates) >= 20
-        assert np.allclose(radius_of_gyration(rw_path.coordinates), 2, atol=1e-1)
+        assert np.allclose(radius_of_gyration(rw_path.coordinates), 4, atol=1e-1)
 
     def test_re_termination(self):
         num_sites = NumSites(20)
