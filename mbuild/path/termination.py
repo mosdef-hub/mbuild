@@ -1,20 +1,42 @@
+"""Modular and composable rules for termination an mbuild.path.HardSphereRandomWalk."""
+
 import time
 
 import numpy as np
 
 
 class Termination:
+    """A modular and composable container for individual Terminator instances.
+    This class should be passed to mbuild.path.HardSphereRandomWalk to provide
+    instructions on when to end a random walk.
+
+    Parameters
+    ----------
+    terminators : list, required
+        A list-like object of mbuild.path.Terminator subclasses.
+        Each are checked after each step of a random walk.
+
+    Methods
+    -------
+    is_met(): Called internally in HardSphereRandomWalk.
+        Returns `True` in two cases:
+
+        1) Every `Terminator` instance with `is_target=True` is met.
+        2) Any `Terminator` instance with `is_target=False` is met.
+
+    summarize(): Prints a summary of all `Terminator` instances and thier status
+
+    """
+
     def __init__(self, terminators):
         if isinstance(terminators, Terminator):
             self.terminators = [terminators]
         else:
             self.terminators = list(terminators)
         # These must all be True to trigger termination
-        self.required_to_end = [i for i in self.terminators if i.required_to_end]
+        self.is_target = [i for i in self.terminators if i.is_target]
         # Don't need to be True, but are used as safe-guards (WallTime, NumAttempts)
-        self.not_required_to_end = [
-            i for i in self.terminators if not i.required_to_end
-        ]
+        self.not_is_target = [i for i in self.terminators if not i.is_target]
         # TODO, keep a list of triggered critera, add to logging when walk ends
         self.triggered = []
         self.success = False
@@ -26,10 +48,10 @@ class Termination:
 
     def is_met(self):
         # Check required criteria first
-        if all([i.is_met() for i in self.required_to_end]):
+        if all([i.is_met() for i in self.is_target]):
             self.success = True
             return True
-        if any([i.is_met() for i in self.not_required_to_end]):
+        if any([i.is_met() for i in self.not_is_target]):
             return True
         return False
 
@@ -43,17 +65,36 @@ class Termination:
         for term in self.terminators:
             name = term.__class__.__name__
             met = term.is_met()
-            role = "required" if term.required_to_end else "safeguard"
+            role = "required" if term.is_target else "safeguard"
             flag = "✓" if met else "✗"
             lines.append(f"[{flag}] {name} ({role})")
         return "\n".join(lines)
 
 
 class Terminator:
-    """"""
+    """Defines a single condition that can trigger a termination of a HardSphereRandomWalk.
 
-    def __init__(self, required_to_end):
-        self.required_to_end = required_to_end
+    Parameters
+    ----------
+    is_target : bool, required
+        If `True`, this terminator represents a target condition that the walk
+        is attempting to reach. Triggering a target condition indicates
+        successful completion of the walk. If `False`, the terminator represents
+        a safeguard that limits execution (e.g., maximum attempts or wall time);
+        triggering a safeguard causes the walk to stop without being considered
+        successful.
+
+    Notes
+    -----
+    Multiple instances of `Terminator` can be passed to `Termination`. Target
+    terminators define completion goals (e.g., placing a fixed number of sites),
+    while non-target terminators act as safety limits when convergence is
+    unlikely (e.g., maximum attempts or total wall time).
+
+    """
+
+    def __init__(self, is_target):
+        self.is_target = is_target
 
     def _attach_path(self, path):
         self.path = path
@@ -65,27 +106,75 @@ class Terminator:
 
 
 class NumSites(Terminator):
-    def __init__(self, num_sites, required_to_end=True):
+    """A terminator that triggers after a certain number of successful steps.
+
+    Parameters
+    ----------
+    num_sites : int, required
+        The number of successful sites before triggering.
+    is_target : bool, default True
+        If `True`, this terminator represents a target condition that the walk
+        is attempting to reach. Triggering a target condition indicates
+        successful completion of the walk. If `False`, the terminator represents
+        a safeguard that limits execution (e.g., maximum attempts or wall time);
+        triggering a safeguard causes the walk to stop without being considered
+        successful.
+
+    """
+
+    def __init__(self, num_sites, is_target=True):
         self.num_sites = num_sites
-        super().__init__(required_to_end)
+        super().__init__(is_target)
 
     def is_met(self):
         return self.path.count - self.path._init_count >= self.num_sites - 1
 
 
 class NumAttempts(Terminator):
-    def __init__(self, max_attempts, required_to_end=False):
+    """A terminator that triggers after a certain number of total attempts.
+
+    Parameters
+    ----------
+    max_attempts : int, required
+        The number of attempts (successful or not) before triggering.
+    is_target : bool, default False
+        If `True`, this terminator represents a target condition that the walk
+        is attempting to reach. Triggering a target condition indicates
+        successful completion of the walk. If `False`, the terminator represents
+        a safeguard that limits execution (e.g., maximum attempts or wall time);
+        triggering a safeguard causes the walk to stop without being considered
+        successful.
+
+    """
+
+    def __init__(self, max_attempts, is_target=False):
         self.max_attempts = int(max_attempts)
-        super().__init__(required_to_end)
+        super().__init__(is_target)
 
     def is_met(self):
         return self.path.attempts >= self.max_attempts
 
 
 class WallTime(Terminator):
-    def __init__(self, max_time, required_to_end=False):
+    """A terminator that triggers after a certain total time (seconds) as ellapsed.
+
+    Parameters
+    ----------
+    max_time : int, required
+        The total amount of time (seconds) allowed to ellapse before triggering.
+    is_target : bool, default False
+        If `True`, this terminator represents a target condition that the walk
+        is attempting to reach. Triggering a target condition indicates
+        successful completion of the walk. If `False`, the terminator represents
+        a safeguard that limits execution (e.g., maximum attempts or wall time);
+        triggering a safeguard causes the walk to stop without being considered
+        successful.
+
+    """
+
+    def __init__(self, max_time, is_target=False):
         self.max_time = max_time
-        super().__init__(required_to_end)
+        super().__init__(is_target)
 
     def is_met(self):
         current_time = time.time()
@@ -94,13 +183,29 @@ class WallTime(Terminator):
 
 
 class WithinCoordinate(Terminator):
-    def __init__(
-        self, target_coordinate, distance, tolerance=1e-3, required_to_end=True
-    ):
+    """A terminator that triggers after a successful step is within a cutoff distance to a target coordinate.
+
+    Parameters
+    ----------
+    target_coordinate : array-like (n,3), required
+        The target coordinate in units of nm.
+    distance : float, required
+        A cutoff distance (nm) from the target coordinate.
+    is_target : bool, default True
+        If `True`, this terminator represents a target condition that the walk
+        is attempting to reach. Triggering a target condition indicates
+        successful completion of the walk. If `False`, the terminator represents
+        a safeguard that limits execution (e.g., maximum attempts or wall time);
+        triggering a safeguard causes the walk to stop without being considered
+        successful.
+
+    """
+
+    def __init__(self, target_coordinate, distance, tolerance=1e-3, is_target=True):
         self.distance = float(distance)
         self.target_coordinate = np.asarray(target_coordinate)
         self.tolerance = tolerance
-        super().__init__(required_to_end)
+        super().__init__(is_target)
 
     def is_met(self):
         last_site = self.path.coordinates[self.path.count]
@@ -109,21 +214,57 @@ class WithinCoordinate(Terminator):
 
 
 class PairDistance(Terminator):
-    def __init__(self, distance, pair_type=None, required_to_end=True):
+    """A terminator that triggers after a successful step is within a cutoff distance to a certain site type.
+
+    Parameters
+    ----------
+    pair_type : str or list of str, required
+        The name of the site type(s) to consider in distance calculations
+    distance : float, required
+        A cutoff distance (nm) from the target sites.
+    is_target : bool, default True
+        If `True`, this terminator represents a target condition that the walk
+        is attempting to reach. Triggering a target condition indicates
+        successful completion of the walk. If `False`, the terminator represents
+        a safeguard that limits execution (e.g., maximum attempts or wall time);
+        triggering a safeguard causes the walk to stop without being considered
+        successful.
+
+    """
+
+    def __init__(self, distance, pair_type=None, is_target=True):
         self.distance = float(distance)
         self.pair_type = pair_type
-        super().__init__(required_to_end)
+        super().__init__(is_target)
 
     def is_met(self):
         raise NotImplementedError
 
 
 class RadiusOfGyration(Terminator):
-    def __init__(self, radius_of_gyration, tolerance=0.01, required_to_end=True):
+    """A terminator that triggers after reaching a target radius of gyration.
+
+    Parameters
+    ----------
+    radius_of_gyration : float, required
+        The target radius of gyration in units of nm.
+    tolerance : float, default 0.01
+        The allowable tolerance relative to the target. In units of nm.
+    is_target : bool, default True
+        If `True`, this terminator represents a target condition that the walk
+        is attempting to reach. Triggering a target condition indicates
+        successful completion of the walk. If `False`, the terminator represents
+        a safeguard that limits execution (e.g., maximum attempts or wall time);
+        triggering a safeguard causes the walk to stop without being considered
+        successful.
+
+    """
+
+    def __init__(self, radius_of_gyration, tolerance=0.01, is_target=True):
         self.radius_of_gyration = float(radius_of_gyration)
         self.tolerance = tolerance
         self.rg2 = (radius_of_gyration + tolerance) ** 2
-        super().__init__(required_to_end)
+        super().__init__(is_target)
 
     def is_met(self):
         # Enforce at least 3 sites
@@ -138,10 +279,28 @@ class RadiusOfGyration(Terminator):
 
 
 class EndToEndDistance(Terminator):
-    def __init__(self, distance, tolerance=0.01, required_to_end=True):
+    """A terminator that triggers after reaching a target end-to-end distance.
+
+    Parameters
+    ----------
+    distance : float, required
+        The target end-to-end distance in units of nm.
+    tolerance : float, default 0.01
+        The allowable tolerance relative to the target. In units of nm.
+    is_target : bool, default True
+        If `True`, this terminator represents a target condition that the walk
+        is attempting to reach. Triggering a target condition indicates
+        successful completion of the walk. If `False`, the terminator represents
+        a safeguard that limits execution (e.g., maximum attempts or wall time);
+        triggering a safeguard causes the walk to stop without being considered
+        successful.
+
+    """
+
+    def __init__(self, distance, tolerance=0.01, is_target=True):
         self.distance = float(distance)
         self.tolerance = tolerance
-        super().__init__(required_to_end)
+        super().__init__(is_target)
 
     def is_met(self):
         # Enforce at least 3 sites
