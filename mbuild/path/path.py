@@ -1,6 +1,8 @@
 """Classes to generate intra-molecular paths and configurations."""
 
+import logging
 import math
+import time
 from abc import abstractmethod
 from copy import deepcopy
 
@@ -11,6 +13,8 @@ from scipy.interpolate import interp1d
 from mbuild import Compound
 from mbuild.path.path_utils import check_path, random_coordinate
 from mbuild.utils.volumes import CuboidConstraint, CylinderConstraint
+
+logger = logging.getLogger(__name__)
 
 
 class Path:
@@ -87,8 +91,8 @@ class Path:
         return path
 
     def _extend_coordinates(self, N):
-        zeros = np.zeros((N, 3))
-        new_array = np.concatenate(self.coordinates, zeros)
+        zeros = np.zeros((N, 3), dtype=self.coordinates.dtype)
+        new_array = np.concatenate([self.coordinates, zeros])
         self.coordinates = new_array
         self.N += N
 
@@ -157,8 +161,10 @@ class Path:
     def to_compound(self):
         """Convert a path and its bond graph to an mBuild Compound."""
         compound = Compound()
+        compounds = []
         for node_id, attrs in self.bond_graph.nodes(data=True):
-            compound.add(Compound(name=attrs["name"], pos=attrs["xyz"]))
+            compounds.append(Compound(name=attrs["name"], pos=attrs["xyz"]))
+        compound.add(compounds)
         compound.set_bond_graph(self.bond_graph)
         return compound
 
@@ -196,11 +202,11 @@ class Path:
 class HardSphereRandomWalk(Path):
     def __init__(
         self,
-        N,
         bond_length,
         radius,
         min_angle,
         max_angle,
+        termination,
         bead_name="_A",
         volume_constraint=None,
         bias=None,
@@ -209,10 +215,10 @@ class HardSphereRandomWalk(Path):
         attach_paths=False,
         initial_point=None,
         include_compound=None,
-        max_attempts=1e5,
         seed=42,
         trial_batch_size=20,
         tolerance=1e-5,
+        chunk_size=512,
     ):
         """Generates coordinates from a self avoiding random walk using
         fixed bond lengths, hard spheres, and minimum and maximum angles
@@ -256,9 +262,6 @@ class HardSphereRandomWalk(Path):
             The number of trial moves to attempt in parallel for each step.
             Using larger values can improve success rates for more dense
             random walks.
-        max_attempts : int, default = 1e5
-            The maximum number of trial moves to attempt before quiting.
-            for the random walk.
         tolerance : float, default = 1e-4
             Tolerance used for rounding and checking for overlaps.
 
@@ -290,12 +293,12 @@ class HardSphereRandomWalk(Path):
         self.volume_constraint = volume_constraint
         self.tolerance = tolerance
         self.trial_batch_size = int(trial_batch_size)
-        self.max_attempts = int(max_attempts)
         self.attempts = 0
         self.start_from_path_index = start_from_path_index
         self.start_from_path = start_from_path
         self.attach_paths = attach_paths
         self._particle_pairs = {}
+        self.chunk_size = chunk_size
 
         # Create RNG state.
         self.rng = np.random.default_rng(seed)
@@ -317,10 +320,16 @@ class HardSphereRandomWalk(Path):
             self.pbc = (None, None, None)
             self.box_lengths = (None, None, None)
 
-        # Set up and attach path to bias
+        # Set up bias conditions
         self.bias = bias
         if self.bias:
             self.bias._attach_path(self)
+
+        # Set up termination conditions
+        if termination is None:
+            raise RuntimeError("No terminaiton conditions have been passed in.")
+        self.termination = termination
+        self.termination._attach_path(self)
 
         # This random walk is including a previous path
         # Inherit coordinates, bond graph, and count from previous path
@@ -328,12 +337,11 @@ class HardSphereRandomWalk(Path):
             coordinates = np.concatenate(
                 (
                     start_from_path.get_coordinates().astype(np.float32),
-                    np.zeros((N, 3), dtype=np.float32),
+                    np.zeros((self.chunk_size, 3), dtype=np.float32),
                 ),
                 axis=0,
             )
             self.count = len(start_from_path.coordinates)
-            N = None
             bond_graph = deepcopy(start_from_path.bond_graph)
             if start_from_path_index is not None and start_from_path_index < 0:
                 self.start_from_path_index = self.count + start_from_path_index
@@ -342,8 +350,7 @@ class HardSphereRandomWalk(Path):
         # Set default values for coordinates, bond graph and count
         else:
             bond_graph = nx.Graph()
-            coordinates = np.zeros((N, 3), dtype=np.float32)
-            N = None
+            coordinates = np.zeros((self.chunk_size, 3), dtype=np.float32)
             self.count = 0
             self.start_index = 0
 
@@ -355,11 +362,16 @@ class HardSphereRandomWalk(Path):
         self.next_step = random_coordinate
         self.check_path = check_path
 
-        super(HardSphereRandomWalk, self).__init__(
-            coordinates=coordinates, N=N, bond_graph=bond_graph, bead_name=bead_name
+        # Needed for WallTime stop criterion
+        self.start_time = None
+
+        super().__init__(
+            coordinates=coordinates, bond_graph=bond_graph, bead_name=bead_name
         )
 
     def generate(self):
+        # start time is needed for path.termination.WallTime
+        self.start_time = time.time()
         # Set the first coordinate using method _initial_points()
         initial_xyz = self._initial_points()
         self.coordinates[self.count] = initial_xyz
@@ -424,13 +436,10 @@ class HardSphereRandomWalk(Path):
                     next_point_found = True
                 # 2nd point failed, continue while loop
                 self.attempts += 1
-
-                if self.attempts == self.max_attempts and self.count < self.N:
-                    raise RuntimeError(
-                        "The maximum number attempts allowed have passed, and only ",
-                        f"{self.count - self._init_count} sucsessful attempts were completed.",
-                        "Try changing the parameters or seed and running again.",
-                    )
+                # TODO Use termination here
+                if self.termination.is_met() and not self.termination.sucsessful:
+                    logger.warning("Random walk not successful.")
+                    logger.warning(self.termination.summarize())
 
         # Starting random walk from a previous set of coordinates (another path)
         # First point was accepted in self._initial_point with these conditions
@@ -441,7 +450,8 @@ class HardSphereRandomWalk(Path):
             self.attempts += 1
 
         #### Initial conditions set, now start RW ####
-        while self.count < self.N - 1:
+        walk_finished = False
+        while not walk_finished:
             # Generate a batch of angles and vectors to create a set of candidate next coordinates
             batch_angles, batch_vectors = self._generate_random_trials()
             candidates = self.next_step(
@@ -496,13 +506,30 @@ class HardSphereRandomWalk(Path):
                     break
             # candidates didn't produce a single valid next point
             self.attempts += 1
+            # Check if we've filled up the current chunk size, if so, extend.
+            if (self.count - self._init_count + 1) % self.chunk_size == 0:
+                self._extend_coordinates(N=self.chunk_size)
+            walk_finished = self.termination.is_met()
 
-            if self.attempts == self.max_attempts and self.count < self.N:
-                raise RuntimeError(
-                    "The maximum number attempts allowed have passed, and only ",
-                    f"{self.count - self._init_count} sucsessful attempts were completed.",
-                    "Try changing the parameters or seed and running again.",
-                )
+        # Trim the final coordinates, removing any used in last chunk
+        self.coordinates = self.coordinates[: self.count + 1]
+        if self.termination.success:
+            logger.info("Random walk successful.")
+        else:
+            logger.warning("Random walk not successful.")
+            logger.warning(self.termination.summarize())
+
+        # Perform some object clean up once a RW finishes
+        self.termination._clean()
+        if self.bias:
+            self.bias._clean()
+        self.start_from_path = None
+
+    def current_walk_coordinates(self):
+        """Return the coordinates from the current random walk only.
+        This ignores any coordinates from previous paths used to start this path.
+        """
+        return self.coordinates[self._init_count : self.count + 1]
 
     def _generate_random_trials(self):
         """Generate a batch of random angles and vectors using the RNG state."""
@@ -531,7 +558,7 @@ class HardSphereRandomWalk(Path):
                 self.include_compound,
             ]
         ):
-            max_dist = (self.N * self.radius) - self.radius
+            max_dist = (5 * self.radius) - self.radius
             xyz = self.rng.uniform(low=-max_dist / 2, high=max_dist / 2, size=3)
             return xyz
 
@@ -602,8 +629,7 @@ class HardSphereRandomWalk(Path):
                     ):
                         return xyz
                 self.attempts += 1
-
-                if self.attempts == self.max_attempts and self.count < self.N:
+                if self.termination.is_met():
                     raise RuntimeError(
                         "The maximum number attempts allowed have passed, and only ",
                         f"{self.count - self._init_count} sucsessful attempts were completed.",
