@@ -519,8 +519,10 @@ class HardSphereRandomWalk(Path):
             logger.warning("Random walk not successful.")
             logger.warning(self.termination.summarize())
 
-        # Perform some object clean up that is not needed once a RW finishes
+        # Perform some object clean up once a RW finishes
         self.termination._clean()
+        if self.bias:
+            self.bias._clean()
         self.start_from_path = None
 
     def current_walk_coordinates(self):
