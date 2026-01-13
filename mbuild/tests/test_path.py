@@ -226,7 +226,7 @@ class TestRandomWalk(BaseTest):
         )
         assert len(rw_path.coordinates) == 20
         assert len(rw_path2.coordinates) == 40
-        for coord1, coord2 in zip(rw_path.coordinates[:10], rw_path2.coordinates[:10]):
+        for coord1, coord2 in zip(rw_path.coordinates[:20], rw_path2.coordinates[:20]):
             assert np.allclose(coord1, coord2, atol=1e-6)
 
     def test_walk_inside_cube(self):

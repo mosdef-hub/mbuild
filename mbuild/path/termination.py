@@ -46,6 +46,11 @@ class Termination:
         for i in self.terminators:
             i._attach_path(path)
 
+    def _clean(self):
+        """This is automatically called within HardSphereRandomWalk."""
+        for i in self.terminators:
+            i.path = None
+
     def is_met(self):
         # Check required criteria first
         if all([i.is_met() for i in self.is_target]):

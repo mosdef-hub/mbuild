@@ -21,6 +21,10 @@ class Bias:
         # Inherit rng from the path for use in Bias classes
         self.rng = self.path.rng
 
+    def _clean(self):
+        self.path = None
+        self.rng = None
+
     def __call__(self, candidates):
         """Implemented in sub classes of Bias."""
         raise NotImplementedError

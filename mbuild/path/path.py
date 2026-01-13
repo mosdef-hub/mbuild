@@ -165,8 +165,10 @@ class Path:
     def to_compound(self):
         """Convert a path and its bond graph to an mBuild Compound."""
         compound = Compound()
+        compounds = []
         for node_id, attrs in self.bond_graph.nodes(data=True):
-            compound.add(Compound(name=attrs["name"], pos=attrs["xyz"]))
+            compounds.append(Compound(name=attrs["name"], pos=attrs["xyz"]))
+        compound.add(compounds)
         compound.set_bond_graph(self.bond_graph)
         return compound
 
@@ -520,6 +522,12 @@ class HardSphereRandomWalk(Path):
         else:
             logger.warning("Random walk not successful.")
             logger.warning(self.termination.summarize())
+
+        # Perform some object clean up once a RW finishes
+        self.termination._clean()
+        if self.bias:
+            self.bias._clean()
+        self.start_from_path = None
 
     def current_walk_coordinates(self):
         """Return the coordinates from the current random walk only.
