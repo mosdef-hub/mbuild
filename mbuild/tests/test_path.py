@@ -119,6 +119,19 @@ class TestPaths(BaseTest):
         assert Lx == Lz  # stacking and layering directions
         assert Ly > Lx
 
+    def test_lamellar_initial_point(self):
+        path = Lamellar(
+            bond_length=0.25,
+            num_layers=3,
+            layer_separation=1.0,
+            layer_length=3.0,
+            num_stacks=3,
+            stack_separation=1.0,
+            initial_point=(1, 1, 1),
+        )
+        assert np.array_equal(path.coordinates[0], np.array([1, 1, 1]))
+        assert path.coordinates[-1][2] == 3.0
+
 
 class TestRandomWalk(BaseTest):
     def test_extend_coordinates(self):

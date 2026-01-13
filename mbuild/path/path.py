@@ -30,6 +30,10 @@ class Path:
         Creates a path from a pre-defined set of coordinates
     bond_graph : networkx.Graph, optional
        The graph defining the edges between coordinates
+    bead_name : str, default '_A'
+        The name assigned to each site. This is helpful when using
+        multiple `Path` instances to build heterogeneous systems.
+
     """
 
     def __init__(self, N=None, coordinates=None, bond_graph=None, bead_name="_A"):
@@ -634,18 +638,24 @@ class Lamellar(Path):
 
     Parameters
     ----------
-    spacing : float (nm), required
-        The distance between two adjacent sites in the path.
     num_layers : int, required
         The number of times the lamellar path curves around
         creating another layer.
     layer_separation : float (nm), required
         The distance between any two layers.
+    layer_length : float (nm), required
+        The distance of a lamellar layer before curving to the next.
+    bond_length : float (nm), required
+        The distance between two adjacent sites in the path.
+    initial_point : nd.array (1,3), default (0,0,0)
+        The cooridnate of the first site of the lamellar path.
     num_stacks : int, required
         The number of times to repeat each layer in the Z direction.
         Setting this to 1 creates a single, 2D lamellar-like path.
-    stack_separation : float (nm), required
+    stack_separation : float (nm), optional
         The distance between two stacked layers.
+        This is required if `num_stacks` is >= 2.
+    bead_name : str, default
     """
 
     def __init__(
@@ -654,14 +664,16 @@ class Lamellar(Path):
         layer_separation,
         layer_length,
         bond_length,
+        initial_point=(0, 0, 0),
         num_stacks=1,
-        bead_name="_A",
         stack_separation=None,
+        bead_name="_A",
     ):
         self.num_layers = num_layers
         self.layer_separation = layer_separation
         self.layer_length = layer_length
         self.bond_length = bond_length
+        self.initial_point = np.asarray(initial_point)
         self.num_stacks = num_stacks
         self.stack_separation = stack_separation
         bond_graph = nx.Graph()
@@ -670,8 +682,15 @@ class Lamellar(Path):
         )
 
     def generate(self):
+        # layer_spacing = np.arange(
+        #    0, self.layer_length, self.bond_length, dtype=np.float64
+        # )
+        # Coordinates in the y-direction of the lamellar layer
         layer_spacing = np.arange(
-            0, self.layer_length, self.bond_length, dtype=np.float64
+            self.initial_point[1],
+            self.initial_point[1] + self.layer_length,
+            self.bond_length,
+            dtype=np.float64,
         )
         # Info needed for generating coords of the arc curves between layers
         r = self.layer_separation / 2
@@ -681,9 +700,8 @@ class Lamellar(Path):
         arc_angles = np.linspace(arc_angle, np.pi, arc_num_points, endpoint=False)
         for i in range(self.num_layers):
             if i % 2 == 0:  # Even layer; build from left to right
-                layer = [
-                    np.array([self.layer_separation * i, y, 0]) for y in layer_spacing
-                ]
+                x = self.initial_point[0] + (self.layer_separation * i)
+                layer = [np.array([x, y, self.initial_point[2]]) for y in layer_spacing]
                 # Mid-point between this and next layer; use to get curve coords.
                 origin = layer[-1] + np.array([r, 0, 0])
                 arc = [
@@ -691,9 +709,9 @@ class Lamellar(Path):
                     for theta in arc_angles
                 ]
             else:  # Odd layer; build from right to left
+                x = self.initial_point[0] + (self.layer_separation * i)
                 layer = [
-                    np.array([self.layer_separation * i, y, 0])
-                    for y in layer_spacing[::-1]
+                    np.array([x, y, self.initial_point[2]]) for y in layer_spacing[::-1]
                 ]
                 # Mid-point between this and next layer; use to get curve coords.
                 origin = layer[-1] + np.array([r, 0, 0])
