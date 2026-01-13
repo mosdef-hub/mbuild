@@ -663,7 +663,11 @@ class Lamellar(Path):
     stack_separation : float (nm), optional
         The distance between two stacked layers.
         This is required if `num_stacks` is >= 2.
-    bead_name : str, default
+    left_to_right : boolean, default True
+        If `True`, the first layer is built with increasing y-coordinates.
+        Ff `False`, the first layer is built with decreasing y-coordinates.
+    bead_name : str, default '_A'
+        The name assigned to each node in this path.
     """
 
     def __init__(
@@ -675,6 +679,7 @@ class Lamellar(Path):
         initial_point=(0, 0, 0),
         num_stacks=1,
         stack_separation=None,
+        left_to_right=True,
         bead_name="_A",
     ):
         self.num_layers = num_layers
@@ -684,53 +689,82 @@ class Lamellar(Path):
         self.initial_point = np.asarray(initial_point)
         self.num_stacks = num_stacks
         self.stack_separation = stack_separation
+        self.left_to_right = left_to_right
         bond_graph = nx.Graph()
         super(Lamellar, self).__init__(
             N=None, bond_graph=bond_graph, bead_name=bead_name
         )
 
     def generate(self):
-        # layer_spacing = np.arange(
-        #    0, self.layer_length, self.bond_length, dtype=np.float64
-        # )
         # Coordinates in the y-direction of the lamellar layer
+        # layer_spacing = np.arange(
+        #    self.initial_point[1],
+        #    self.initial_point[1] + self.layer_length,
+        #    self.bond_length,
+        #    dtype=np.float64,
+        # )
         layer_spacing = np.arange(
-            self.initial_point[1],
-            self.initial_point[1] + self.layer_length,
+            0,
+            self.layer_length,
             self.bond_length,
             dtype=np.float64,
         )
+        if not self.left_to_right:
+            layer_spacing *= -1
+
+        layer_spacing += self.initial_point[1]
+
         # Info needed for generating coords of the arc curves between layers
         r = self.layer_separation / 2
         arc_length = r * np.pi
         arc_num_points = math.floor(arc_length / self.bond_length)
         arc_angle = np.pi / (arc_num_points + 1)  # incremental angle
         arc_angles = np.linspace(arc_angle, np.pi, arc_num_points, endpoint=False)
+
+        # Iterate and build up layers
         for i in range(self.num_layers):
-            if i % 2 == 0:  # Even layer; build from left to right
+            if i % 2 == 0:  # Even layer
                 x = self.initial_point[0] + (self.layer_separation * i)
                 layer = [np.array([x, y, self.initial_point[2]]) for y in layer_spacing]
                 # Mid-point between this and next layer; use to get curve coords.
                 origin = layer[-1] + np.array([r, 0, 0])
-                arc = [
-                    origin + np.array([-np.cos(theta), np.sin(theta), 0]) * r
-                    for theta in arc_angles
-                ]
-            else:  # Odd layer; build from right to left
+                # Building left-to-right, use a counter clockwise arc
+                if self.left_to_right:
+                    arc = [
+                        origin + np.array([-np.cos(theta), np.sin(theta), 0]) * r
+                        for theta in arc_angles
+                    ]
+                # Building from right-to-left, use a clockwise arc
+                else:
+                    arc = [
+                        origin + np.array([-np.cos(theta), -np.sin(theta), 0]) * r
+                        for theta in arc_angles
+                    ]
+            else:  # Odd layer
                 x = self.initial_point[0] + (self.layer_separation * i)
                 layer = [
                     np.array([x, y, self.initial_point[2]]) for y in layer_spacing[::-1]
                 ]
                 # Mid-point between this and next layer; use to get curve coords.
                 origin = layer[-1] + np.array([r, 0, 0])
-                arc = [
-                    origin + np.array([-np.cos(theta), -np.sin(theta), 0]) * r
-                    for theta in arc_angles
-                ]
+                # Odd layer is building from right-to-left, use a clockwise arc
+                if self.left_to_right:
+                    arc = [
+                        origin + np.array([-np.cos(theta), -np.sin(theta), 0]) * r
+                        for theta in arc_angles
+                    ]
+                # Odd layher is building from left-to-right, use a counter clockwise arc
+                else:
+                    arc = [
+                        origin + np.array([-np.cos(theta), np.sin(theta), 0]) * r
+                        for theta in arc_angles
+                    ]
+
             if i != self.num_layers - 1:
                 self.coordinates.extend(layer + arc)
-            else:  # Last layer, don't include another arc set of coordinates
+            else:  # Last layer, don't include another set of arc coordinates
                 self.coordinates.extend(layer)
+
         if self.num_stacks > 1:
             first_stack_coordinates = np.copy(np.array(self.coordinates))
             # Get info for curves between stacked layers
@@ -740,9 +774,20 @@ class Lamellar(Path):
             arc_angle = np.pi / (arc_num_points + 1)  # incremental angle
             arc_angles = np.linspace(arc_angle, np.pi, arc_num_points, endpoint=False)
             if self.num_layers % 2 == 0:
-                odd_stack_mult = -1
+                if self.left_to_right:
+                    odd_stack_mult = -1
+                    even_stack_mult = -1
+                else:
+                    odd_stack_mult = 1
+                    even_stack_mult = -1
             else:
-                odd_stack_mult = 1
+                if self.left_to_right:
+                    odd_stack_mult = 1
+                    even_stack_mult = -1
+                else:
+                    odd_stack_mult = -1
+                    even_stack_mult = 1
+
             for i in range(1, self.num_stacks):
                 if i % 2 != 0:  # Odd stack
                     this_stack = np.copy(first_stack_coordinates[::-1]) + np.array(
@@ -763,7 +808,9 @@ class Lamellar(Path):
                     )
                     origin = self.coordinates[-1] + np.array([0, 0, r])
                     arc = [
-                        origin + np.array([0, -np.sin(theta), np.cos(theta)]) * r
+                        origin
+                        + np.array([0, even_stack_mult * np.sin(theta), np.cos(theta)])
+                        * r
                         for theta in arc_angles
                     ]
                     self.coordinates.extend(arc[::-1])

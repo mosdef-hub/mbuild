@@ -119,6 +119,34 @@ class TestPaths(BaseTest):
         assert Lx == Lz  # stacking and layering directions
         assert Ly > Lx
 
+    def test_lamellar_direction(self):
+        path_left_to_right = Lamellar(
+            bond_length=0.25,
+            num_layers=3,
+            layer_separation=1.0,
+            layer_length=3.0,
+            num_stacks=3,
+            stack_separation=1.0,
+            initial_point=(0, 0, 0),
+        )
+
+        path_right_to_left = Lamellar(
+            bond_length=0.25,
+            num_layers=3,
+            layer_separation=1.0,
+            layer_length=3.0,
+            num_stacks=3,
+            stack_separation=1.0,
+            initial_point=(0, 0, 0),
+            left_to_right=False,
+        )
+
+        assert np.array_equal(
+            path_left_to_right.coordinates[0], path_right_to_left.coordinates[0]
+        )
+        assert path_right_to_left.coordinates[1][1] < 0
+        assert path_left_to_right.coordinates[1][1] > 0
+
     def test_lamellar_initial_point(self):
         path = Lamellar(
             bond_length=0.25,
