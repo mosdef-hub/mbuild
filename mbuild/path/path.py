@@ -664,10 +664,19 @@ class Lamellar(Path):
         The distance between two stacked layers.
         This is required if `num_stacks` is >= 2.
     left_to_right : boolean, default True
-        If `True`, the first layer is built with increasing y-coordinates.
-        Ff `False`, the first layer is built with decreasing y-coordinates.
+        If `True`, the first layer is built with increasing y-coordinates from the origin.
+        If `False`, the first layer is built with decreasing y-coordinates from the origin.
     bead_name : str, default '_A'
         The name assigned to each node in this path.
+
+    Notes
+    -----
+    This builds a lamellar structure such that each layer's length
+    runs along the y-axis, adjacent layers are repeated along the x-axis
+    and stacking layers are repeated along the z-axis.
+
+    Use `left_to_right` to toggle the direction which affects
+    the orientation of the initial and terminal points of the lamellar path.
     """
 
     def __init__(
@@ -696,22 +705,10 @@ class Lamellar(Path):
         )
 
     def generate(self):
-        # Coordinates in the y-direction of the lamellar layer
-        # layer_spacing = np.arange(
-        #    self.initial_point[1],
-        #    self.initial_point[1] + self.layer_length,
-        #    self.bond_length,
-        #    dtype=np.float64,
-        # )
-        layer_spacing = np.arange(
-            0,
-            self.layer_length,
-            self.bond_length,
-            dtype=np.float64,
-        )
+        # Coordinates in the y-direction (layer-length) of the lamellar layer
+        layer_spacing = np.arange(0, self.layer_length, self.bond_length)
         if not self.left_to_right:
             layer_spacing *= -1
-
         layer_spacing += self.initial_point[1]
 
         # Info needed for generating coords of the arc curves between layers
@@ -723,8 +720,8 @@ class Lamellar(Path):
 
         # Iterate and build up layers
         for i in range(self.num_layers):
+            x = self.initial_point[0] + (self.layer_separation * i)
             if i % 2 == 0:  # Even layer
-                x = self.initial_point[0] + (self.layer_separation * i)
                 layer = [np.array([x, y, self.initial_point[2]]) for y in layer_spacing]
                 # Mid-point between this and next layer; use to get curve coords.
                 origin = layer[-1] + np.array([r, 0, 0])
@@ -741,19 +738,18 @@ class Lamellar(Path):
                         for theta in arc_angles
                     ]
             else:  # Odd layer
-                x = self.initial_point[0] + (self.layer_separation * i)
                 layer = [
                     np.array([x, y, self.initial_point[2]]) for y in layer_spacing[::-1]
                 ]
                 # Mid-point between this and next layer; use to get curve coords.
                 origin = layer[-1] + np.array([r, 0, 0])
-                # Odd layer is building from right-to-left, use a clockwise arc
+                # Odd layer is building from left-to-right, use a clockwise arc
                 if self.left_to_right:
                     arc = [
                         origin + np.array([-np.cos(theta), -np.sin(theta), 0]) * r
                         for theta in arc_angles
                     ]
-                # Odd layher is building from left-to-right, use a counter clockwise arc
+                # Odd layher is building from right-to-left, use a counter clockwise arc
                 else:
                     arc = [
                         origin + np.array([-np.cos(theta), np.sin(theta), 0]) * r
@@ -765,6 +761,7 @@ class Lamellar(Path):
             else:  # Last layer, don't include another set of arc coordinates
                 self.coordinates.extend(layer)
 
+        # Build up lamellar structure in 3rd dimension (Z) by stacking layers.
         if self.num_stacks > 1:
             first_stack_coordinates = np.copy(np.array(self.coordinates))
             # Get info for curves between stacked layers
@@ -773,6 +770,9 @@ class Lamellar(Path):
             arc_num_points = math.floor(arc_length / self.bond_length)
             arc_angle = np.pi / (arc_num_points + 1)  # incremental angle
             arc_angles = np.linspace(arc_angle, np.pi, arc_num_points, endpoint=False)
+
+            # Rotation direction of Z arcs depends on number of layers and build direction
+            # These set the correct clockwise/counter clockwise for each scenario
             if self.num_layers % 2 == 0:
                 if self.left_to_right:
                     odd_stack_mult = -1
@@ -815,7 +815,8 @@ class Lamellar(Path):
                     ]
                     self.coordinates.extend(arc[::-1])
                     self.coordinates.extend(list(this_stack))
-        # Create linear (path) bond graph
+
+        # Create linear (nx.graph.path) bond graph
         self.create_linear_bond_graph(bond_head_tail=False)
 
 
@@ -957,6 +958,7 @@ class Knot(Path):
             z = r * np.sin(5 * t_dense)
         else:
             raise ValueError("Only m=3, m=4 and m=5 are currently supported.")
+
         # Compute arc length of a base curve
         coords_dense = np.stack((x, y, z), axis=1)
         deltas = np.diff(coords_dense, axis=0)
@@ -964,16 +966,19 @@ class Knot(Path):
         arc_lengths = np.concatenate([[0], np.cumsum(dists)])
         base_length = arc_lengths[-1]
         L_target = (self.N - 1) * self.spacing
+
         # Scale to match target contour length
         scale = L_target / base_length
         coords_dense *= scale
         arc_lengths *= scale
+
         # Resample uniformly along arc length based on target separation and N sites
         desired_arcs = np.linspace(0, L_target, self.N, endpoint=False)
         x_interp = interp1d(arc_lengths, coords_dense[:, 0])(desired_arcs)
         y_interp = interp1d(arc_lengths, coords_dense[:, 1])(desired_arcs)
         z_interp = interp1d(arc_lengths, coords_dense[:, 2])(desired_arcs)
         self.coordinates = np.stack((x_interp, y_interp, z_interp), axis=1)
+
         # Create linear (path) bond graph
         self.create_linear_bond_graph(bond_head_tail=self.closed)
 
