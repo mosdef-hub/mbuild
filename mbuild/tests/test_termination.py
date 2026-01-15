@@ -57,6 +57,7 @@ class TestTermination(BaseTest):
             initial_point=(0, 0, 0),
         )
         assert len(rw.coordinates) == 100
+        rw.termination.summarize()
 
     def test_wall_time_termination(self):
         cube = CuboidConstraint(Lx=1, Ly=1, Lz=1)

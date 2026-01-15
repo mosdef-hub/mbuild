@@ -69,9 +69,8 @@ class Termination:
 
         for term in self.terminators:
             name = term.__class__.__name__
-            met = term.is_met()
             role = "required" if term.is_target else "safeguard"
-            flag = "✓" if met else "✗"
+            flag = "✓" if term._is_met else "✗"
             lines.append(f"[{flag}] {name} ({role})")
         return "\n".join(lines)
 
@@ -100,6 +99,7 @@ class Terminator:
 
     def __init__(self, is_target):
         self.is_target = is_target
+        self._is_met = False
 
     def _attach_path(self, path):
         self.path = path
@@ -157,7 +157,10 @@ class NumAttempts(Terminator):
         super().__init__(is_target)
 
     def is_met(self):
-        return self.path.attempts >= self.max_attempts
+        if self.path.attempts >= self.max_attempts:
+            self._is_met = True
+            return True
+        return False
 
 
 class WallTime(Terminator):
@@ -184,7 +187,10 @@ class WallTime(Terminator):
     def is_met(self):
         current_time = time.time()
         total_time = current_time - self.path.start_time
-        return total_time >= self.max_time
+        if total_time >= self.max_time:
+            self._is_met = True
+            return True
+        return False
 
 
 class WithinCoordinate(Terminator):
@@ -215,7 +221,10 @@ class WithinCoordinate(Terminator):
     def is_met(self):
         last_site = self.path.coordinates[self.path.count]
         current_distance = np.linalg.norm(self.target_coordinate - last_site)
-        return current_distance <= self.distance + self.tolerance
+        if current_distance <= self.distance + self.tolerance:
+            self._is_met = True
+            return True
+        return False
 
 
 class PairDistance(Terminator):
@@ -279,7 +288,10 @@ class RadiusOfGyration(Terminator):
         center = coords.mean(axis=0)
         diffs = coords - center
         rg2 = np.mean(np.sum(diffs * diffs, axis=1))
-        return self.rg - self.tolerance <= rg2 <= self.rg + self.tolerance
+        if self.rg - self.tolerance <= rg2 <= self.rg + self.tolerance:
+            self._is_met = True
+            return True
+        return False
 
 
 class ContourLength(Terminator):
@@ -309,11 +321,14 @@ class ContourLength(Terminator):
     def is_met(self):
         # Enforce at least 3 sites
         n = self.path.count - self.path._init_count + 1
-        return (
+        if (
             self.length - self.tolerance
             <= n * self.path.bond_length
             <= self.length + self.tolerance
-        )
+        ):
+            self._is_met = True
+            return True
+        return False
 
 
 class EndToEndDistance(Terminator):
@@ -347,8 +362,11 @@ class EndToEndDistance(Terminator):
             return False
         first_site = self.path.coordinates[self.path._init_count]
         last_site = self.path.coordinates[self.path.count]
-        return (
+        if (
             self.distance - self.tolerance
             <= np.linalg.norm(last_site - first_site)
             <= self.distance + self.tolerance
-        )
+        ):
+            self._is_met = True
+            return True
+        return False

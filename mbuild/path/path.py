@@ -366,7 +366,7 @@ class HardSphereRandomWalk(Path):
         self.next_step = random_coordinate
         self.check_path = check_path
 
-        # Needed for WallTime stop criterion
+        # Needed for mbuild.path.termination.WallTime stop terminator
         self.start_time = None
 
         super().__init__(
@@ -374,7 +374,7 @@ class HardSphereRandomWalk(Path):
         )
 
     def generate(self):
-        # start time is needed for path.termination.WallTime
+        # start time is needed for mbuild.path.termination.WallTime
         self.start_time = time.time()
         # Set the first coordinate using method _initial_points()
         initial_xyz = self._initial_points()
@@ -440,7 +440,6 @@ class HardSphereRandomWalk(Path):
                     next_point_found = True
                 # 2nd point failed, continue while loop
                 self.attempts += 1
-                # TODO Use termination here
                 if self.termination.is_met() and not self.termination.sucsessful:
                     logger.warning("Random walk not successful.")
                     logger.warning(self.termination.summarize())
@@ -508,7 +507,7 @@ class HardSphereRandomWalk(Path):
                     self.bond_graph.add_node(self.count, name=self.bead_name, xyz=xyz)
                     self.add_edge(u=self.count - 1, v=self.count)
                     break
-            # candidates didn't produce a single valid next point
+            # Candidates didn't produce a single valid next point
             self.attempts += 1
             # Check if we've filled up the current chunk size, if so, extend.
             if (self.count - self._init_count + 1) % self.chunk_size == 0:
