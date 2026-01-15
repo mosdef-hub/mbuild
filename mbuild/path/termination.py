@@ -282,6 +282,40 @@ class RadiusOfGyration(Terminator):
         return self.rg - self.tolerance <= rg2 <= self.rg + self.tolerance
 
 
+class ContourLength(Terminator):
+    """A terminator that triggers after reaching a maximum contour length.
+
+    Parameters
+    ----------
+    length : float, required
+        The target contour length in units of nm.
+    tolerance : float, default 0.01
+        The allowable tolerance relative to the target. In units of nm.
+    is_target : bool, default True
+        If `True`, this terminator represents a target condition that the walk
+        is attempting to reach. Triggering a target condition indicates
+        successful completion of the walk. If `False`, the terminator represents
+        a safeguard that limits execution (e.g., maximum attempts or wall time);
+        triggering a safeguard causes the walk to stop without being considered
+        successful.
+
+    """
+
+    def __init__(self, length, tolerance=0.01, is_target=True):
+        self.length = float(length)
+        self.tolerance = tolerance
+        super().__init__(is_target)
+
+    def is_met(self):
+        # Enforce at least 3 sites
+        n = self.path.count - self.path._init_count + 1
+        return (
+            self.length - self.tolerance
+            <= n * self.path.bond_length
+            <= self.length + self.tolerance
+        )
+
+
 class EndToEndDistance(Terminator):
     """A terminator that triggers after reaching a target end-to-end distance.
 

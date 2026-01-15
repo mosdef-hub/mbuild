@@ -8,6 +8,7 @@ from mbuild.path import (
 )
 from mbuild.path.bias import TargetCoordinate
 from mbuild.path.termination import (
+    ContourLength,
     EndToEndDistance,
     NumAttempts,
     NumSites,
@@ -45,6 +46,17 @@ class TestTermination(BaseTest):
         termination = Termination(num_sites)
         assert isinstance(termination.terminators, list)
         assert termination.terminators[0] is num_sites
+
+    def test_contour_length_termination(self):
+        rw = HardSphereRandomWalk(
+            radius=0.20,
+            bond_length=0.22,
+            min_angle=1.5,
+            max_angle=3.14,
+            termination=Termination([ContourLength(22), NumAttempts(1e4)]),
+            initial_point=(0, 0, 0),
+        )
+        assert len(rw.coordinates) == 100
 
     def test_wall_time_termination(self):
         cube = CuboidConstraint(Lx=1, Ly=1, Lz=1)
