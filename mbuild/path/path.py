@@ -1,6 +1,8 @@
 """Classes to generate intra-molecular paths and configurations."""
 
+import logging
 import math
+import time
 from abc import abstractmethod
 from copy import deepcopy
 
@@ -11,6 +13,8 @@ from scipy.interpolate import interp1d
 from mbuild import Compound
 from mbuild.path.path_utils import check_path, random_coordinate
 from mbuild.utils.volumes import CuboidConstraint, CylinderConstraint
+
+logger = logging.getLogger(__name__)
 
 
 class Path:
@@ -26,6 +30,10 @@ class Path:
         Creates a path from a pre-defined set of coordinates
     bond_graph : networkx.Graph, optional
        The graph defining the edges between coordinates
+    bead_name : str, default '_A'
+        The name assigned to each site. This is helpful when using
+        multiple `Path` instances to build heterogeneous systems.
+
     """
 
     def __init__(self, N=None, coordinates=None, bond_graph=None, bead_name="_A"):
@@ -87,8 +95,8 @@ class Path:
         return path
 
     def _extend_coordinates(self, N):
-        zeros = np.zeros((N, 3))
-        new_array = np.concatenate(self.coordinates, zeros)
+        zeros = np.zeros((N, 3), dtype=self.coordinates.dtype)
+        new_array = np.concatenate([self.coordinates, zeros])
         self.coordinates = new_array
         self.N += N
 
@@ -157,8 +165,10 @@ class Path:
     def to_compound(self):
         """Convert a path and its bond graph to an mBuild Compound."""
         compound = Compound()
+        compounds = []
         for node_id, attrs in self.bond_graph.nodes(data=True):
-            compound.add(Compound(name=attrs["name"], pos=attrs["xyz"]))
+            compounds.append(Compound(name=attrs["name"], pos=attrs["xyz"]))
+        compound.add(compounds)
         compound.set_bond_graph(self.bond_graph)
         return compound
 
@@ -196,11 +206,11 @@ class Path:
 class HardSphereRandomWalk(Path):
     def __init__(
         self,
-        N,
         bond_length,
         radius,
         min_angle,
         max_angle,
+        termination,
         bead_name="_A",
         volume_constraint=None,
         bias=None,
@@ -209,10 +219,10 @@ class HardSphereRandomWalk(Path):
         attach_paths=False,
         initial_point=None,
         include_compound=None,
-        max_attempts=1e5,
         seed=42,
         trial_batch_size=20,
         tolerance=1e-5,
+        chunk_size=512,
     ):
         """Generates coordinates from a self avoiding random walk using
         fixed bond lengths, hard spheres, and minimum and maximum angles
@@ -256,9 +266,6 @@ class HardSphereRandomWalk(Path):
             The number of trial moves to attempt in parallel for each step.
             Using larger values can improve success rates for more dense
             random walks.
-        max_attempts : int, default = 1e5
-            The maximum number of trial moves to attempt before quiting.
-            for the random walk.
         tolerance : float, default = 1e-4
             Tolerance used for rounding and checking for overlaps.
 
@@ -290,12 +297,12 @@ class HardSphereRandomWalk(Path):
         self.volume_constraint = volume_constraint
         self.tolerance = tolerance
         self.trial_batch_size = int(trial_batch_size)
-        self.max_attempts = int(max_attempts)
         self.attempts = 0
         self.start_from_path_index = start_from_path_index
         self.start_from_path = start_from_path
         self.attach_paths = attach_paths
         self._particle_pairs = {}
+        self.chunk_size = chunk_size
 
         # Create RNG state.
         self.rng = np.random.default_rng(seed)
@@ -317,10 +324,16 @@ class HardSphereRandomWalk(Path):
             self.pbc = (None, None, None)
             self.box_lengths = (None, None, None)
 
-        # Set up and attach path to bias
+        # Set up bias conditions
         self.bias = bias
         if self.bias:
             self.bias._attach_path(self)
+
+        # Set up termination conditions
+        if termination is None:
+            raise RuntimeError("No terminaiton conditions have been passed in.")
+        self.termination = termination
+        self.termination._attach_path(self)
 
         # This random walk is including a previous path
         # Inherit coordinates, bond graph, and count from previous path
@@ -328,12 +341,11 @@ class HardSphereRandomWalk(Path):
             coordinates = np.concatenate(
                 (
                     start_from_path.get_coordinates().astype(np.float32),
-                    np.zeros((N, 3), dtype=np.float32),
+                    np.zeros((self.chunk_size, 3), dtype=np.float32),
                 ),
                 axis=0,
             )
             self.count = len(start_from_path.coordinates)
-            N = None
             bond_graph = deepcopy(start_from_path.bond_graph)
             if start_from_path_index is not None and start_from_path_index < 0:
                 self.start_from_path_index = self.count + start_from_path_index
@@ -342,8 +354,7 @@ class HardSphereRandomWalk(Path):
         # Set default values for coordinates, bond graph and count
         else:
             bond_graph = nx.Graph()
-            coordinates = np.zeros((N, 3), dtype=np.float32)
-            N = None
+            coordinates = np.zeros((self.chunk_size, 3), dtype=np.float32)
             self.count = 0
             self.start_index = 0
 
@@ -355,11 +366,16 @@ class HardSphereRandomWalk(Path):
         self.next_step = random_coordinate
         self.check_path = check_path
 
-        super(HardSphereRandomWalk, self).__init__(
-            coordinates=coordinates, N=N, bond_graph=bond_graph, bead_name=bead_name
+        # Needed for mbuild.path.termination.WallTime stop terminator
+        self.start_time = None
+
+        super().__init__(
+            coordinates=coordinates, bond_graph=bond_graph, bead_name=bead_name
         )
 
     def generate(self):
+        # start time is needed for mbuild.path.termination.WallTime
+        self.start_time = time.time()
         # Set the first coordinate using method _initial_points()
         initial_xyz = self._initial_points()
         self.coordinates[self.count] = initial_xyz
@@ -424,13 +440,9 @@ class HardSphereRandomWalk(Path):
                     next_point_found = True
                 # 2nd point failed, continue while loop
                 self.attempts += 1
-
-                if self.attempts == self.max_attempts and self.count < self.N:
-                    raise RuntimeError(
-                        "The maximum number attempts allowed have passed, and only ",
-                        f"{self.count - self._init_count} sucsessful attempts were completed.",
-                        "Try changing the parameters or seed and running again.",
-                    )
+                if self.termination.is_met() and not self.termination.sucsessful:
+                    logger.warning("Random walk not successful.")
+                    logger.warning(self.termination.summarize())
 
         # Starting random walk from a previous set of coordinates (another path)
         # First point was accepted in self._initial_point with these conditions
@@ -441,7 +453,8 @@ class HardSphereRandomWalk(Path):
             self.attempts += 1
 
         #### Initial conditions set, now start RW ####
-        while self.count < self.N - 1:
+        walk_finished = False
+        while not walk_finished:
             # Generate a batch of angles and vectors to create a set of candidate next coordinates
             batch_angles, batch_vectors = self._generate_random_trials()
             candidates = self.next_step(
@@ -494,15 +507,32 @@ class HardSphereRandomWalk(Path):
                     self.bond_graph.add_node(self.count, name=self.bead_name, xyz=xyz)
                     self.add_edge(u=self.count - 1, v=self.count)
                     break
-            # candidates didn't produce a single valid next point
+            # Candidates didn't produce a single valid next point
             self.attempts += 1
+            # Check if we've filled up the current chunk size, if so, extend.
+            if (self.count - self._init_count + 1) % self.chunk_size == 0:
+                self._extend_coordinates(N=self.chunk_size)
+            walk_finished = self.termination.is_met()
 
-            if self.attempts == self.max_attempts and self.count < self.N:
-                raise RuntimeError(
-                    "The maximum number attempts allowed have passed, and only ",
-                    f"{self.count - self._init_count} sucsessful attempts were completed.",
-                    "Try changing the parameters or seed and running again.",
-                )
+        # Trim the final coordinates, removing any used in last chunk
+        self.coordinates = self.coordinates[: self.count + 1]
+        if self.termination.success:
+            logger.info("Random walk successful.")
+        else:
+            logger.warning("Random walk not successful.")
+            logger.warning(self.termination.summarize())
+
+        # Perform some object clean up once a RW finishes
+        self.termination._clean()
+        if self.bias:
+            self.bias._clean()
+        self.start_from_path = None
+
+    def current_walk_coordinates(self):
+        """Return the coordinates from the current random walk only.
+        This ignores any coordinates from previous paths used to start this path.
+        """
+        return self.coordinates[self._init_count : self.count + 1]
 
     def _generate_random_trials(self):
         """Generate a batch of random angles and vectors using the RNG state."""
@@ -531,7 +561,7 @@ class HardSphereRandomWalk(Path):
                 self.include_compound,
             ]
         ):
-            max_dist = (self.N * self.radius) - self.radius
+            max_dist = (5 * self.radius) - self.radius
             xyz = self.rng.uniform(low=-max_dist / 2, high=max_dist / 2, size=3)
             return xyz
 
@@ -602,8 +632,7 @@ class HardSphereRandomWalk(Path):
                     ):
                         return xyz
                 self.attempts += 1
-
-                if self.attempts == self.max_attempts and self.count < self.N:
+                if self.termination.is_met():
                     raise RuntimeError(
                         "The maximum number attempts allowed have passed, and only ",
                         f"{self.count - self._init_count} sucsessful attempts were completed.",
@@ -616,18 +645,37 @@ class Lamellar(Path):
 
     Parameters
     ----------
-    spacing : float (nm), required
-        The distance between two adjacent sites in the path.
     num_layers : int, required
         The number of times the lamellar path curves around
         creating another layer.
     layer_separation : float (nm), required
         The distance between any two layers.
+    layer_length : float (nm), required
+        The distance of a lamellar layer before curving to the next.
+    bond_length : float (nm), required
+        The distance between two adjacent sites in the path.
+    initial_point : nd.array (1,3), default (0,0,0)
+        The cooridnate of the first site of the lamellar path.
     num_stacks : int, required
         The number of times to repeat each layer in the Z direction.
         Setting this to 1 creates a single, 2D lamellar-like path.
-    stack_separation : float (nm), required
+    stack_separation : float (nm), optional
         The distance between two stacked layers.
+        This is required if `num_stacks` is >= 2.
+    left_to_right : boolean, default True
+        If `True`, the first layer is built with increasing y-coordinates from the origin.
+        If `False`, the first layer is built with decreasing y-coordinates from the origin.
+    bead_name : str, default '_A'
+        The name assigned to each node in this path.
+
+    Notes
+    -----
+    This builds a lamellar structure such that each layer's length
+    runs along the y-axis, adjacent layers are repeated along the x-axis
+    and stacking layers are repeated along the z-axis.
+
+    Use `left_to_right` to toggle the direction which affects
+    the orientation of the initial and terminal points of the lamellar path.
     """
 
     def __init__(
@@ -636,57 +684,83 @@ class Lamellar(Path):
         layer_separation,
         layer_length,
         bond_length,
+        initial_point=(0, 0, 0),
         num_stacks=1,
-        bead_name="_A",
         stack_separation=None,
+        left_to_right=True,
+        bead_name="_A",
     ):
         self.num_layers = num_layers
         self.layer_separation = layer_separation
         self.layer_length = layer_length
         self.bond_length = bond_length
+        self.initial_point = np.asarray(initial_point)
         self.num_stacks = num_stacks
         self.stack_separation = stack_separation
+        self.left_to_right = left_to_right
         bond_graph = nx.Graph()
         super(Lamellar, self).__init__(
             N=None, bond_graph=bond_graph, bead_name=bead_name
         )
 
     def generate(self):
-        layer_spacing = np.arange(
-            0, self.layer_length, self.bond_length, dtype=np.float64
-        )
+        # Coordinates in the y-direction (layer-length) of the lamellar layer
+        layer_spacing = np.arange(0, self.layer_length, self.bond_length)
+        if not self.left_to_right:
+            layer_spacing *= -1
+        layer_spacing += self.initial_point[1]
+
         # Info needed for generating coords of the arc curves between layers
         r = self.layer_separation / 2
         arc_length = r * np.pi
         arc_num_points = math.floor(arc_length / self.bond_length)
         arc_angle = np.pi / (arc_num_points + 1)  # incremental angle
         arc_angles = np.linspace(arc_angle, np.pi, arc_num_points, endpoint=False)
+
+        # Iterate and build up layers
         for i in range(self.num_layers):
-            if i % 2 == 0:  # Even layer; build from left to right
+            x = self.initial_point[0] + (self.layer_separation * i)
+            if i % 2 == 0:  # Even layer
+                layer = [np.array([x, y, self.initial_point[2]]) for y in layer_spacing]
+                # Mid-point between this and next layer; use to get curve coords.
+                origin = layer[-1] + np.array([r, 0, 0])
+                # Building left-to-right, use a counter clockwise arc
+                if self.left_to_right:
+                    arc = [
+                        origin + np.array([-np.cos(theta), np.sin(theta), 0]) * r
+                        for theta in arc_angles
+                    ]
+                # Building from right-to-left, use a clockwise arc
+                else:
+                    arc = [
+                        origin + np.array([-np.cos(theta), -np.sin(theta), 0]) * r
+                        for theta in arc_angles
+                    ]
+            else:  # Odd layer
                 layer = [
-                    np.array([self.layer_separation * i, y, 0]) for y in layer_spacing
+                    np.array([x, y, self.initial_point[2]]) for y in layer_spacing[::-1]
                 ]
                 # Mid-point between this and next layer; use to get curve coords.
                 origin = layer[-1] + np.array([r, 0, 0])
-                arc = [
-                    origin + np.array([-np.cos(theta), np.sin(theta), 0]) * r
-                    for theta in arc_angles
-                ]
-            else:  # Odd layer; build from right to left
-                layer = [
-                    np.array([self.layer_separation * i, y, 0])
-                    for y in layer_spacing[::-1]
-                ]
-                # Mid-point between this and next layer; use to get curve coords.
-                origin = layer[-1] + np.array([r, 0, 0])
-                arc = [
-                    origin + np.array([-np.cos(theta), -np.sin(theta), 0]) * r
-                    for theta in arc_angles
-                ]
+                # Odd layer is building from left-to-right, use a clockwise arc
+                if self.left_to_right:
+                    arc = [
+                        origin + np.array([-np.cos(theta), -np.sin(theta), 0]) * r
+                        for theta in arc_angles
+                    ]
+                # Odd layher is building from right-to-left, use a counter clockwise arc
+                else:
+                    arc = [
+                        origin + np.array([-np.cos(theta), np.sin(theta), 0]) * r
+                        for theta in arc_angles
+                    ]
+
             if i != self.num_layers - 1:
                 self.coordinates.extend(layer + arc)
-            else:  # Last layer, don't include another arc set of coordinates
+            else:  # Last layer, don't include another set of arc coordinates
                 self.coordinates.extend(layer)
+
+        # Build up lamellar structure in 3rd dimension (Z) by stacking layers.
         if self.num_stacks > 1:
             first_stack_coordinates = np.copy(np.array(self.coordinates))
             # Get info for curves between stacked layers
@@ -695,10 +769,24 @@ class Lamellar(Path):
             arc_num_points = math.floor(arc_length / self.bond_length)
             arc_angle = np.pi / (arc_num_points + 1)  # incremental angle
             arc_angles = np.linspace(arc_angle, np.pi, arc_num_points, endpoint=False)
+
+            # Rotation direction of Z arcs depends on number of layers and build direction
+            # These set the correct clockwise/counter clockwise for each scenario
             if self.num_layers % 2 == 0:
-                odd_stack_mult = -1
+                if self.left_to_right:
+                    odd_stack_mult = -1
+                    even_stack_mult = -1
+                else:
+                    odd_stack_mult = 1
+                    even_stack_mult = -1
             else:
-                odd_stack_mult = 1
+                if self.left_to_right:
+                    odd_stack_mult = 1
+                    even_stack_mult = -1
+                else:
+                    odd_stack_mult = -1
+                    even_stack_mult = 1
+
             for i in range(1, self.num_stacks):
                 if i % 2 != 0:  # Odd stack
                     this_stack = np.copy(first_stack_coordinates[::-1]) + np.array(
@@ -719,12 +807,15 @@ class Lamellar(Path):
                     )
                     origin = self.coordinates[-1] + np.array([0, 0, r])
                     arc = [
-                        origin + np.array([0, -np.sin(theta), np.cos(theta)]) * r
+                        origin
+                        + np.array([0, even_stack_mult * np.sin(theta), np.cos(theta)])
+                        * r
                         for theta in arc_angles
                     ]
                     self.coordinates.extend(arc[::-1])
                     self.coordinates.extend(list(this_stack))
-        # Create linear (path) bond graph
+
+        # Create linear (nx.graph.path) bond graph
         self.create_linear_bond_graph(bond_head_tail=False)
 
 
@@ -866,6 +957,7 @@ class Knot(Path):
             z = r * np.sin(5 * t_dense)
         else:
             raise ValueError("Only m=3, m=4 and m=5 are currently supported.")
+
         # Compute arc length of a base curve
         coords_dense = np.stack((x, y, z), axis=1)
         deltas = np.diff(coords_dense, axis=0)
@@ -873,16 +965,19 @@ class Knot(Path):
         arc_lengths = np.concatenate([[0], np.cumsum(dists)])
         base_length = arc_lengths[-1]
         L_target = (self.N - 1) * self.spacing
+
         # Scale to match target contour length
         scale = L_target / base_length
         coords_dense *= scale
         arc_lengths *= scale
+
         # Resample uniformly along arc length based on target separation and N sites
         desired_arcs = np.linspace(0, L_target, self.N, endpoint=False)
         x_interp = interp1d(arc_lengths, coords_dense[:, 0])(desired_arcs)
         y_interp = interp1d(arc_lengths, coords_dense[:, 1])(desired_arcs)
         z_interp = interp1d(arc_lengths, coords_dense[:, 2])(desired_arcs)
         self.coordinates = np.stack((x_interp, y_interp, z_interp), axis=1)
+
         # Create linear (path) bond graph
         self.create_linear_bond_graph(bond_head_tail=self.closed)
 

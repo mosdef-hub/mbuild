@@ -17,6 +17,11 @@ from mbuild.path.path_utils import (
     target_density,
     target_sq_distances,
 )
+from mbuild.path.termination import (
+    NumAttempts,
+    NumSites,
+    Termination,
+)
 from mbuild.tests.base_test import BaseTest
 from mbuild.utils.geometry import bounding_box
 from mbuild.utils.volumes import (
@@ -114,16 +119,72 @@ class TestPaths(BaseTest):
         assert Lx == Lz  # stacking and layering directions
         assert Ly > Lx
 
+    def test_lamellar_direction(self):
+        path_left_to_right = Lamellar(
+            bond_length=0.25,
+            num_layers=3,
+            layer_separation=1.0,
+            layer_length=3.0,
+            num_stacks=3,
+            stack_separation=1.0,
+            initial_point=(0, 0, 0),
+        )
+
+        path_right_to_left = Lamellar(
+            bond_length=0.25,
+            num_layers=3,
+            layer_separation=1.0,
+            layer_length=3.0,
+            num_stacks=3,
+            stack_separation=1.0,
+            initial_point=(0, 0, 0),
+            left_to_right=False,
+        )
+
+        assert np.array_equal(
+            path_left_to_right.coordinates[0], path_right_to_left.coordinates[0]
+        )
+        assert path_right_to_left.coordinates[1][1] < 0
+        assert path_left_to_right.coordinates[1][1] > 0
+
+    def test_lamellar_initial_point(self):
+        path = Lamellar(
+            bond_length=0.25,
+            num_layers=3,
+            layer_separation=1.0,
+            layer_length=3.0,
+            num_stacks=3,
+            stack_separation=1.0,
+            initial_point=(1, 1, 1),
+        )
+        assert np.array_equal(path.coordinates[0], np.array([1, 1, 1]))
+        assert path.coordinates[-1][2] == 3.0
+
 
 class TestRandomWalk(BaseTest):
-    def test_random_walk(self):
+    def test_extend_coordinates(self):
+        num_sites = NumSites(80)
+        max_attempts = NumAttempts(1e4)
         rw_path = HardSphereRandomWalk(
-            N=20,
+            termination=Termination([num_sites, max_attempts]),
             bond_length=0.25,
             radius=0.22,
             min_angle=np.pi / 4,
             max_angle=np.pi,
-            max_attempts=1e4,
+            seed=14,
+            chunk_size=50,
+        )
+        assert len(rw_path.coordinates) == 80
+
+    def test_random_walk(self):
+        num_sites = NumSites(20)
+        max_attempts = NumAttempts(1e4)
+        rw_path = HardSphereRandomWalk(
+            termination=Termination([num_sites, max_attempts]),
+            bond_length=0.25,
+            radius=0.22,
+            min_angle=np.pi / 4,
+            max_angle=np.pi,
             seed=14,
         )
         assert len(rw_path.coordinates) == 20
@@ -136,75 +197,75 @@ class TestRandomWalk(BaseTest):
         assert np.all(rw_path.coordinates[0]) < 20 * 0.22
 
     def test_set_initial_point(self):
+        num_sites = NumSites(20)
+        max_attempts = NumAttempts(1e4)
         rw_path = HardSphereRandomWalk(
-            N=20,
+            termination=Termination([num_sites, max_attempts]),
             bond_length=0.25,
             radius=0.22,
             min_angle=np.pi / 4,
             max_angle=np.pi,
-            max_attempts=1e4,
             initial_point=(1, 2, 3),
             seed=14,
         )
         assert np.array_equal(rw_path.coordinates[0], np.array([1, 2, 3]))
 
     def test_seeds(self):
+        num_sites = NumSites(20)
+        max_attempts = NumAttempts(1e4)
         rw_path_1 = HardSphereRandomWalk(
-            N=20,
+            termination=Termination([num_sites, max_attempts]),
             bond_length=0.25,
             radius=0.22,
             min_angle=np.pi / 4,
             max_angle=np.pi,
-            max_attempts=1e4,
             seed=14,
         )
         rw_path_2 = HardSphereRandomWalk(
-            N=20,
+            termination=Termination([num_sites, max_attempts]),
             bond_length=0.25,
             radius=0.22,
             min_angle=np.pi / 4,
             max_angle=np.pi,
-            max_attempts=1e4,
             seed=14,
         )
         assert np.allclose(rw_path_1.coordinates, rw_path_2.coordinates, atol=1e-7)
 
     def test_from_path(self):
+        num_sites = NumSites(20)
+        max_attempts = NumAttempts(1e4)
         rw_path = HardSphereRandomWalk(
-            N=20,
+            termination=Termination([num_sites, max_attempts]),
             bond_length=0.25,
             radius=0.22,
             min_angle=np.pi / 4,
             max_angle=np.pi,
-            max_attempts=1e4,
             seed=14,
         )
         rw_path2 = HardSphereRandomWalk(
-            N=20,
+            termination=Termination([num_sites, max_attempts]),
             bond_length=0.25,
             radius=0.22,
             min_angle=np.pi / 4,
             max_angle=np.pi,
-            max_attempts=1e4,
             seed=24,
             start_from_path=rw_path,
             start_from_path_index=-1,
         )
         assert len(rw_path.coordinates) == 20
         assert len(rw_path2.coordinates) == 40
-        for coord1, coord2 in zip(rw_path.coordinates[:10], rw_path2.coordinates[:10]):
+        for coord1, coord2 in zip(rw_path.coordinates[:20], rw_path2.coordinates[:20]):
             assert np.allclose(coord1, coord2, atol=1e-6)
 
     def test_walk_inside_cube(self):
         cube = CuboidConstraint(Lx=5, Ly=5, Lz=5)
         rw_path = HardSphereRandomWalk(
-            N=500,
+            termination=Termination([NumSites(500), NumAttempts(1e4)]),
             bond_length=0.25,
             radius=0.22,
             volume_constraint=cube,
             min_angle=np.pi / 4,
             max_angle=np.pi,
-            max_attempts=1e4,
             seed=14,
         )
         bounds = bounding_box(rw_path.coordinates)
@@ -213,14 +274,13 @@ class TestRandomWalk(BaseTest):
     def test_walk_inside_cube_with_pbc(self):
         # First make sure this seed gives a path outside these bounds without PBC
         rw_path = HardSphereRandomWalk(
-            N=500,
+            termination=Termination([NumSites(500), NumAttempts(1e4)]),
             bond_length=0.25,
             radius=0.22,
             initial_point=(0, 0, 0),
             volume_constraint=None,
             min_angle=np.pi / 4,
             max_angle=np.pi,
-            max_attempts=1e4,
             seed=14,
         )
         comp = rw_path.to_compound()
@@ -228,14 +288,13 @@ class TestRandomWalk(BaseTest):
 
         cube = CuboidConstraint(Lx=5, Ly=5, Lz=5, pbc=(True, True, True))
         rw_path = HardSphereRandomWalk(
-            N=500,
+            termination=Termination([NumSites(500), NumAttempts(1e4)]),
             bond_length=0.25,
             radius=0.22,
             initial_point=(0, 0, 0),
             volume_constraint=cube,
             min_angle=np.pi / 4,
             max_angle=np.pi,
-            max_attempts=1e4,
             seed=14,
         )
         comp = rw_path.to_compound()
@@ -244,14 +303,13 @@ class TestRandomWalk(BaseTest):
     def test_walk_inside_sphere(self):
         sphere = SphereConstraint(radius=4, center=(2, 2, 2))
         rw_path = HardSphereRandomWalk(
-            N=200,
+            termination=Termination([NumSites(200), NumAttempts(1e4)]),
             bond_length=0.25,
             radius=0.22,
             volume_constraint=sphere,
             initial_point=(0, 0, 0),
             min_angle=np.pi / 4,
             max_angle=np.pi,
-            max_attempts=1e4,
             seed=90,
         )
         bounds = bounding_box(rw_path.coordinates)
@@ -260,13 +318,12 @@ class TestRandomWalk(BaseTest):
     def test_walk_inside_cylinder(self):
         cylinder = CylinderConstraint(radius=3, height=6, center=(0, 0, 0))
         rw_path = HardSphereRandomWalk(
-            N=200,
+            termination=Termination([NumSites(200), NumAttempts(1e4)]),
             bond_length=0.25,
             radius=0.22,
             volume_constraint=cylinder,
             min_angle=np.pi / 4,
             max_angle=np.pi,
-            max_attempts=1e4,
             seed=14,
         )
         bounds = bounding_box(rw_path.coordinates)
