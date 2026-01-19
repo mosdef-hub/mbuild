@@ -78,8 +78,6 @@ class HoomdSimulation(hoomd.simulation.Simulation):
         self.fixed_compounds = fixed_compounds
         self.automatic_box = automatic_box
         self.box_buffer = box_buffer
-        # TODO
-        # self.set_box
         # Check if a hoomd sim method has been used on this compound already
         if compound._hoomd_data:
             last_snapshot, last_forces, last_forcefield = compound._get_sim_data()
@@ -110,6 +108,7 @@ class HoomdSimulation(hoomd.simulation.Simulation):
         # Convret to GMSO, apply forcefield
         top = self.compound.to_gmso()
         top.identify_connections()
+        # TODO: Make a parameter for ignoring dihedrals?
         apply(top, forcefields=self.forcefield, ignore_params=["dihedral", "improper"])
         # Get hoomd snapshot and force objects
         forces, ref = gmso.external.to_hoomd_forcefield(top, r_cut=self.r_cut)
@@ -120,15 +119,23 @@ class HoomdSimulation(hoomd.simulation.Simulation):
     def get_integrate_group(self):
         # Get indices of compounds to include in integration
         if self.integrate_compounds and not self.fixed_compounds:
-            integrate_indices = []
-            for comp in self.integrate_compounds:
-                integrate_indices.extend(list(self.compound.get_child_indices(comp)))
+            if all([isinstance(i, Compound) for i in self.integrate_compounds]):
+                integrate_indices = []
+                for comp in self.integrate_compounds:
+                    integrate_indices.extend(
+                        list(self.compound.get_child_indices(comp))
+                    )
+            elif all([isinstance(i, int) for i in self.integrate_compounds]):
+                integrate_indices = self.integrate_compounds
             return hoomd.filter.Tags(integrate_indices)
         # Get indices of compounds to NOT include in integration
         elif self.fixed_compounds and not self.integrate_compounds:
-            fix_indices = []
-            for comp in self.fixed_compounds:
-                fix_indices.extend(list(self.compound.get_child_indices(comp)))
+            if all([isinstance(i, Compound) for i in self.fixed_compounds]):
+                fix_indices = []
+                for comp in self.fixed_compounds:
+                    fix_indices.extend(list(self.compound.get_child_indices(comp)))
+            elif all([isinstance(i, int) for i in self.fixed_compounds]):
+                fix_indices = self.fixed_compounds
             return hoomd.filter.SetDifference(
                 hoomd.filter.All(), hoomd.filter.Tags(fix_indices)
             )
