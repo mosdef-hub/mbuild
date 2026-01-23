@@ -2013,14 +2013,10 @@ def load_tagged_smiles(
         SMILES string or file of SMILES string to load
     compound : mb.Compound
         The host mbuild Compound
-    include_hydrogens : bool, default False
+    tag_hydrogens : bool, default False
         If True, all hydrogens directly bonded to the tagged atom
         are tagged as well.
     infer_hierarchy : bool, optional, default=True
-    ignore_box_warn : bool, optional, default=False
-        If True, ignore warning if no box is present.
-    coords_only : bool, optional, default=False
-        Only load the coordinates into a provided compound.
 
     Returns
     -------
@@ -2063,7 +2059,7 @@ def load_tagged_smiles(
             pos = atom_match.end()
             continue
 
-        # Otherwise, it's a SMILES symbol (bonds, branches, ring digits, etc.)
+        # Otherwise it's a SMILES symbol (bonds, branches, ring digits, etc...)
         clean_smiles_parts.append(ch)
         pos += 1
 
