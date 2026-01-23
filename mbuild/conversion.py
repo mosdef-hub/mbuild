@@ -113,6 +113,7 @@ def load(
             backend=backend.lower() if backend else "rdkit",
             infer_hierarchy=infer_hierarchy,
             compound=compound,
+            **kwargs,
         )
     # No tags, go straight to SMILES loaders
     elif smiles and (backend is None or backend.lower() == "rdkit"):
@@ -2000,6 +2001,7 @@ def load_tagged_smiles(
     seed=0,
     backend="rdkit",
     compound=None,
+    tag_hydrogens=False,
     infer_hierarchy=True,
     name="Compound",
 ):
@@ -2011,6 +2013,9 @@ def load_tagged_smiles(
         SMILES string or file of SMILES string to load
     compound : mb.Compound
         The host mbuild Compound
+    include_hydrogens : bool, default False
+        If True, all hydrogens directly bonded to the tagged atom
+        are tagged as well.
     infer_hierarchy : bool, optional, default=True
     ignore_box_warn : bool, optional, default=False
         If True, ignore warning if no box is present.
@@ -2086,6 +2091,10 @@ def load_tagged_smiles(
     for idx, tag_value in tags:
         p = list(tagged_comp.particles())[idx]
         p.particle_tag = tag_value
+        if tag_hydrogens:
+            for p2 in p.direct_bonds():
+                if p2.name == "H":
+                    p2.particle_tag = tag_value
     tagged_comp.name = name
     return tagged_comp
 

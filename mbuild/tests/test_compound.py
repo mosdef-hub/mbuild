@@ -2508,3 +2508,12 @@ class TestCompound(BaseTest):
                 assert p.particle_tag == "tag"
             else:
                 assert p.particle_tag is None
+
+    def test_tag_hydrogens(self):
+        comp = mb.load("C{head}CC", smiles=True, tag_hydrogens=True)
+        assert comp[0].particle_tag == "head"
+        for p in comp[0].direct_bonds():
+            if p.name == "H":
+                assert p.particle_tag == "head"
+            else:
+                assert p.particle_tag is None
