@@ -653,7 +653,7 @@ class Compound(object):
             self._tag = tag
         else:
             raise AttributeError(
-                "charge is immutable for Compounds that are "
+                "tags are immutable for Compounds that are "
                 "not at the bottom of the containment hierarchy."
             )
 

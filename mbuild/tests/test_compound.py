@@ -2517,3 +2517,8 @@ class TestCompound(BaseTest):
                 assert p.particle_tag == "head"
             else:
                 assert p.particle_tag is None
+
+    def test_tags_in_clone(self):
+        comp = mb.load("C{head}CC", smiles=True, tag_hydrogens=True)
+        comp2 = mb.clone(comp)
+        assert comp[0].particle_tag == comp2.particle_tag == "head"
