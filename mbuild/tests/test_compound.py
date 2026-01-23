@@ -6,6 +6,7 @@ import networkx as nx
 import numpy as np
 import parmed as pmd
 import pytest
+from networkx.algorithms import isomorphism
 
 import mbuild as mb
 from mbuild import Box, Compound, Particle, Port
@@ -2493,6 +2494,9 @@ class TestCompound(BaseTest):
     def test_load_tagged_smiles(self, smiles_group):
         untagged = mb.load(smiles_group[0], smiles=True)
         tagged = mb.load(smiles_group[1], smiles=True)
+        GM = isomorphism.GraphMatcher(untagged.bond_graph, tagged.bond_graph)
+        assert GM.is_isomorphic()
+
         assert untagged.n_particles == tagged.n_particles
         for p1, p2 in zip(
             [p for p in untagged.particles()], [p for p in tagged.particles()]
