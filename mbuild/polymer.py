@@ -512,14 +512,14 @@ class Polymer(Compound):
             will have ports added, and no particles are removed from
             the monomer compound.
         """
-        comppound = clone(compound)
+        remove_hydrogens = []
 
         head_particle = [p for p in compound.particles() if p.particle_tag == head_tag][
             0
         ]
-        head_hydrogens = [p for p in head_particle.direct_bonds if p.name == "H"]
-        h_vectors = [h.xyz - head_particle.xyz for h in head_hydrogens[:bond_order]]
-        head_orientation = np.sum(vectors, axis=0)
+        head_hydrogens = [p for p in head_particle.direct_bonds() if p.name == "H"]
+        bond_vectors = [h.pos - head_particle.pos for h in head_hydrogens[:bond_order]]
+        head_orientation = np.sum(bond_vectors, axis=0)
         head_orientation /= np.linalg.norm(head_orientation)
         head_port = Port(
             anchor=head_particle,
@@ -527,24 +527,29 @@ class Polymer(Compound):
             separation=separation / 2,
         )
         compound.add(head_port, label="up")
+        for p in head_hydrogens[:bond_order]:
+            remove_hydrogens.append(p)
 
         tail_particle = [p for p in compound.particles() if p.particle_tag == tail_tag][
             0
         ]
-        tail_hydrogens = [p for p in tail_particle.direct_bonds if p.name == "H"]
-        h_vectors = [h.xyz - tail_particle.xyz for h in tail_hydrogens]
-        tail_orientation = np.sum(vectors, axis=0)
+        tail_hydrogens = [p for p in tail_particle.direct_bonds() if p.name == "H"]
+        bond_vectors = [h.pos - tail_particle.pos for h in tail_hydrogens]
+        tail_orientation = np.sum(bond_vectors, axis=0)
         tail_orientation /= np.linalg.norm(tail_orientation)
         tail_port = Port(
             anchor=tail_particle,
             orientation=tail_orientation,
             separation=separation / 2,
         )
-        compound.add(tail_port, label="down")
+        compound.add(tail_port, label="down") 
+        for p in tail_hydrogens[:bond_order]:
+            remove_hydrogens.append(p)
+        
+        for p in remove_hydrogens:
+            compound.remove(p)
 
-        compound.remove()
-
-        self._monomers.append(comp)
+        self._monomers.append(compound)
 
     def add_end_groups(
         self,
