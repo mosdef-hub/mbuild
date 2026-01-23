@@ -542,10 +542,10 @@ class Polymer(Compound):
             orientation=tail_orientation,
             separation=separation / 2,
         )
-        compound.add(tail_port, label="down") 
+        compound.add(tail_port, label="down")
         for p in tail_hydrogens[:bond_order]:
             remove_hydrogens.append(p)
-        
+
         for p in remove_hydrogens:
             compound.remove(p)
 
