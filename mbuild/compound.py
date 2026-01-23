@@ -1728,7 +1728,7 @@ class Compound(object):
         backend="py3dmol",
         color_scheme={},
         bead_size=0.3,
-        transparent_periodic_bonds=False,
+        periodic_bond_opacity=False,
     ):  # pragma: no cover
         """Visualize the Compound using py3dmol (default) or nglview.
 
@@ -1748,6 +1748,9 @@ class Compound(object):
             i.e. {'_CGBEAD': 'blue'}
         bead_size : float, Optional, default=0.3
             Size of beads in visualization
+        periodic_bond_opacity : bool, float, Optional, default=False
+            Specify as a float from 0 to 1 to set the bond opacity
+            for bonds that cross periodic boundaries.
         """
         viz_pkg = {
             "nglview": self._visualize_nglview,
@@ -1755,12 +1758,15 @@ class Compound(object):
         }
         if run_from_ipython():
             if backend.lower() in viz_pkg:
-                return viz_pkg[backend.lower()](
-                    show_ports=show_ports,
-                    color_scheme=color_scheme,
-                    bead_size=bead_size,
-                    transparent_periodic_bonds=transparent_periodic_bonds,
-                )
+                if backend.lower == "nglview":
+                    return viz_pkg[backend.lower()](show_ports=show_ports)
+                else:
+                    return viz_pkg[backend.lower()](
+                        show_ports=show_ports,
+                        color_scheme=color_scheme,
+                        bead_size=bead_size,
+                        periodic_bond_opacity=periodic_bond_opacity,
+                    )
             else:
                 raise RuntimeError(
                     f"Unsupported visualization backend ({backend}). "
@@ -1775,7 +1781,7 @@ class Compound(object):
         show_ports=False,
         color_scheme={},
         bead_size=0.3,
-        transparent_periodic_bonds=False,
+        periodic_bond_opacity=False,
     ):
         """Visualize the Compound using py3Dmol.
 
@@ -1792,6 +1798,9 @@ class Compound(object):
             i.e. {'_CGBEAD': 'blue'}
         bead_size : float, Optional, default=0.3
             Size of beads in visualization
+        periodic_bond_opacity : bool, float, Optional, default=False
+            Specify as a float from 0 to 1 to set the bond opacity
+            for bonds that cross periodic boundaries.
 
         Returns
         -------
@@ -1817,7 +1826,7 @@ class Compound(object):
                 particle.name = "UNK"
         tmp_dir = tempfile.mkdtemp()
         # bin bonds into periodic and aperiodic bonds
-        if transparent_periodic_bonds:
+        if isinstance(periodic_bond_opacity, float):
             # save into two mol2 files, one with periodic bonds and one without
             periodic_bonds, aperiodic_bonds = cloned._classify_periodic_bonds()
             periodicGraph = nx.subgraph_view(
@@ -1852,7 +1861,7 @@ class Compound(object):
                     "stick": {
                         "radius": bead_size * 0.3,
                         "color": "grey",
-                        "opacity": 0.5,
+                        "opacity": periodic_bond_opacity,
                     },
                     "sphere": {
                         "scale": bead_size,
@@ -1896,14 +1905,14 @@ class Compound(object):
 
         return view
 
-    def _visualize_nglview(self, show_ports=False, color_scheme={}, bead_size=0.3):
+    def _visualize_nglview(self, show_ports=False):
         """Visualize the Compound using nglview.
 
         Allows for visualization of a Compound within a Jupyter Notebook.
 
         Parameters
         ----------
-        include_ports : bool, optional, default=False
+        show_ports : bool, optional, default=False
             Visualize Ports in addition to Particles
         """
         nglview = import_("nglview")
