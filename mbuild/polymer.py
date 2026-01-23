@@ -446,10 +446,12 @@ class Polymer(Compound):
     def add_monomer(
         self,
         compound,
-        indices,
+        head_tag=None,
+        tail_tag=None,
         separation=None,
         orientation=[None, None],
-        replace=True,
+        bond_order=1,
+        remove_hydrogens=True,
     ):
         """Add a Compound to self.monomers.
 
@@ -510,16 +512,38 @@ class Polymer(Compound):
             will have ports added, and no particles are removed from
             the monomer compound.
         """
-        port_labels = ["up", "down"]
-        comp = clone(compound)
+        comppound = clone(compound)
 
-        for idx, label, orientation in zip(indices, port_labels, orientation):
-            _add_port(comp, label, idx, separation, orientation, replace)
-        if replace:
-            remove_atom1 = comp[indices[0]]
-            remove_atom2 = comp[indices[1]]
-            comp.remove(remove_atom1)
-            comp.remove(remove_atom2)
+        head_particle = [p for p in compound.particles() if p.particle_tag == head_tag][
+            0
+        ]
+        head_hydrogens = [p for p in head_particle.direct_bonds if p.name == "H"]
+        h_vectors = [h.xyz - head_particle.xyz for h in head_hydrogens[:bond_order]]
+        head_orientation = np.sum(vectors, axis=0)
+        head_orientation /= np.linalg.norm(head_orientation)
+        head_port = Port(
+            anchor=head_particle,
+            orientation=head_orientation,
+            separation=separation / 2,
+        )
+        compound.add(head_port, label="up")
+
+        tail_particle = [p for p in compound.particles() if p.particle_tag == tail_tag][
+            0
+        ]
+        tail_hydrogens = [p for p in tail_particle.direct_bonds if p.name == "H"]
+        h_vectors = [h.xyz - tail_particle.xyz for h in tail_hydrogens]
+        tail_orientation = np.sum(vectors, axis=0)
+        tail_orientation /= np.linalg.norm(tail_orientation)
+        tail_port = Port(
+            anchor=tail_particle,
+            orientation=tail_orientation,
+            separation=separation / 2,
+        )
+        compound.add(tail_port, label="down")
+
+        compound.remove()
+
         self._monomers.append(comp)
 
     def add_end_groups(
@@ -636,27 +660,3 @@ class Polymer(Compound):
             raise ValueError("axis must be either: 'x', 'y', or 'z'")
 
         force_overlap(self, self.head_port, self.tail_port)
-
-
-def _add_port(compound, label, idx, separation, orientation=None, replace=True):
-    """Add the ports to the compound at the specified particle index.
-
-    The port will either use that particle as an anchor or replace it entirely.
-    """
-    if replace:
-        atom_bonds = [b for b in compound.bonds() if compound[idx] in b][0]
-        anchor = [p for p in atom_bonds if p != compound[idx]][0]
-        if orientation is None:
-            orientation = compound[idx].pos - anchor.pos
-        if separation is None:
-            separation = np.linalg.norm(compound[idx].pos - anchor.pos)
-    else:
-        anchor = compound[idx]
-
-    port = Port(
-        anchor=anchor,
-        orientation=orientation,
-        separation=separation / 2,
-    )
-    compound.add(port, label=label)
-    return separation
