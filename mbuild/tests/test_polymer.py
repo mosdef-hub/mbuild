@@ -12,7 +12,7 @@ from mbuild.tests.base_test import BaseTest
 
 
 class TestPolymer(BaseTest):
-    def test_build_from_path(self):
+    def test_build_from_path(self, ethane_chain):
         path = HardSphereRandomWalk(
             termination=Termination([NumSites(20), NumAttempts(1e4)]),
             bond_length=0.25,
@@ -21,16 +21,13 @@ class TestPolymer(BaseTest):
             max_angle=np.pi,
             seed=14,
         )
-        chain = Polymer()
-        ethane = mb.load("CC", smiles=True)
-        chain.add_monomer(ethane, indices=[4, 7], replace=True)
-        chain.build_from_path(path=path, energy_minimize=False)
-        monomer_centers = [child.center for child in chain.children]
-        assert len(chain.children) == 20
+        ethane_chain.build_from_path(path=path, energy_minimize=False)
+        monomer_centers = [child.center for child in ethane_chain.children]
+        assert len(ethane_chain.children) == 20
         for pos1, pos2 in zip(monomer_centers, path.coordinates):
             assert np.allclose(pos1, pos2, atol=0.1)
 
-    def test_build_from_path_with_end_groups(self, ch2, ester):
+    def test_build_from_path_with_end_groups(self, ethane_chain):
         path = HardSphereRandomWalk(
             termination=Termination([NumSites(20), NumAttempts(1e4)]),
             bond_length=0.25,
@@ -39,21 +36,19 @@ class TestPolymer(BaseTest):
             max_angle=np.pi,
             seed=14,
         )
-        ethane = mb.load("CC", smiles=True)
-        chain = Polymer()
-        chain.add_monomer(ethane, indices=[4, 7], separation=0.145)
         acid = mb.load("C(=O)O", smiles=True)
-        chain.add_end_groups(acid, index=3, separation=0.15)
-        chain.build_from_path(path=path, add_hydrogens=False, energy_minimize=False)
-        monomer_centers = [child.center for child in chain.children]
-        assert len(chain.children) == 20
+        ethane_chain.add_end_groups(acid, index=3, separation=0.15)
+        ethane_chain.build_from_path(
+            path=path, add_hydrogens=False, energy_minimize=False
+        )
+        monomer_centers = [child.center for child in ethane_chain.children]
+        assert len(ethane_chain.children) == 20
         for pos1, pos2 in zip(monomer_centers, path.coordinates):
             assert np.allclose(pos1, pos2, atol=0.1)
 
-    def test_polymer_from_smiles(self):
+    def test_polymer_from_smiles(self, ethane_monomer):
         chain = Polymer()
-        ethane = mb.load("CC", smiles=True)
-        chain.add_monomer(ethane, indices=[2, -2], separation=0.15, replace=True)
+        chain.add_monomer(ethane_monomer, head_tag=">", tail_tag="<", separation=0.145)
         chain.build(n=5, add_hydrogens=True)
         assert len([p for p in chain.particles() if p.name == "C"]) == 10
         assert len([p for p in chain.particles() if p.name == "H"]) == 22
@@ -94,13 +89,10 @@ class TestPolymer(BaseTest):
                 acid, index=3, separation=0.15, duplicate=False, label="front"
             )
 
-    def test_no_end_groups(self):
-        chain = Polymer()
-        ethane = mb.load("CC", smiles=True)
-        chain.add_monomer(ethane, indices=[2, -2], separation=0.15, replace=True)
-        chain.build(n=5, add_hydrogens=False)
-        assert len([p for p in chain.particles() if p.name == "H"]) == 20
-        assert len(chain.available_ports()) == 2
+    def test_no_end_groups(self, ethane_chain):
+        ethane_chain.build(n=5, add_hydrogens=False)
+        assert len([p for p in ethane_chain.particles() if p.name == "H"]) == 20
+        assert len(ethane_chain.available_ports()) == 2
 
     def test_replace_is_false(self):
         n = 6
@@ -111,7 +103,6 @@ class TestPolymer(BaseTest):
             indices=[0, 0],
             orientation=[[0, 1, 0], [0, -1, 0]],
             separation=0.15,
-            replace=False,
         )
         chain.build(n=n, add_hydrogens=False)
         assert chain.n_particles == n * 3

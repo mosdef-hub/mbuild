@@ -449,7 +449,8 @@ class Polymer(Compound):
         head_tag=None,
         tail_tag=None,
         separation=None,
-        orientation=[None, None],
+        head_orientation=None,
+        tail_orientation=None,
         bond_order=1,
         remove_hydrogens=True,
     ):
@@ -514,15 +515,15 @@ class Polymer(Compound):
         """
         remove_hydrogens = []
 
-        head_particle = [p for p in compound.particles() if p.particle_tag == head_tag][
-            0
-        ]
-        head_hydrogens = [p for p in head_particle.direct_bonds() if p.name == "H"]
-        bond_vectors = [h.pos - head_particle.pos for h in head_hydrogens[:bond_order]]
-        head_orientation = np.sum(bond_vectors, axis=0)
-        head_orientation /= np.linalg.norm(head_orientation)
+        head = [p for p in compound.particles() if p.particle_tag == head_tag][0]
+        head_hydrogens = [p for p in head.direct_bonds() if p.name == "H"]
+        if len(head_hydrogens) != 0 and head_orientation is None:
+            bond_vectors = [h.pos - head.pos for h in head_hydrogens[:bond_order]]
+            head_orientation = np.sum(bond_vectors, axis=0)
+            head_orientation /= np.linalg.norm(head_orientation)
+
         head_port = Port(
-            anchor=head_particle,
+            anchor=head,
             orientation=head_orientation,
             separation=separation / 2,
         )
@@ -530,15 +531,15 @@ class Polymer(Compound):
         for p in head_hydrogens[:bond_order]:
             remove_hydrogens.append(p)
 
-        tail_particle = [p for p in compound.particles() if p.particle_tag == tail_tag][
-            0
-        ]
-        tail_hydrogens = [p for p in tail_particle.direct_bonds() if p.name == "H"]
-        bond_vectors = [h.pos - tail_particle.pos for h in tail_hydrogens]
-        tail_orientation = np.sum(bond_vectors, axis=0)
-        tail_orientation /= np.linalg.norm(tail_orientation)
+        tail = [p for p in compound.particles() if p.particle_tag == tail_tag][0]
+        tail_hydrogens = [p for p in tail.direct_bonds() if p.name == "H"]
+        if len(tail_hydrogens) != 0 and tail_orientation is None:
+            bond_vectors = [h.pos - tail.pos for h in tail_hydrogens]
+            tail_orientation = np.sum(bond_vectors, axis=0)
+            tail_orientation /= np.linalg.norm(tail_orientation)
+
         tail_port = Port(
-            anchor=tail_particle,
+            anchor=tail,
             orientation=tail_orientation,
             separation=separation / 2,
         )
