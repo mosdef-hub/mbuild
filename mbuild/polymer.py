@@ -513,9 +513,10 @@ class Polymer(Compound):
             will have ports added, and no particles are removed from
             the monomer compound.
         """
+        comp = clone(compound)
         remove_hydrogens = []
 
-        head = [p for p in compound.particles() if p.particle_tag == head_tag][0]
+        head = [p for p in comp.particles() if p.particle_tag == head_tag][0]
         head_hydrogens = [p for p in head.direct_bonds() if p.name == "H"]
         if len(head_hydrogens) != 0 and head_orientation is None:
             bond_vectors = [h.pos - head.pos for h in head_hydrogens[:bond_order]]
@@ -527,11 +528,11 @@ class Polymer(Compound):
             orientation=head_orientation,
             separation=separation / 2,
         )
-        compound.add(head_port, label="up")
+        comp.add(head_port, label="up")
         for p in head_hydrogens[:bond_order]:
             remove_hydrogens.append(p)
 
-        tail = [p for p in compound.particles() if p.particle_tag == tail_tag][0]
+        tail = [p for p in comp.particles() if p.particle_tag == tail_tag][0]
         tail_hydrogens = [p for p in tail.direct_bonds() if p.name == "H"]
         if len(tail_hydrogens) != 0 and tail_orientation is None:
             bond_vectors = [h.pos - tail.pos for h in tail_hydrogens]
@@ -543,22 +544,22 @@ class Polymer(Compound):
             orientation=tail_orientation,
             separation=separation / 2,
         )
-        compound.add(tail_port, label="down")
+        comp.add(tail_port, label="down")
         for p in tail_hydrogens[:bond_order]:
             remove_hydrogens.append(p)
 
         for p in remove_hydrogens:
-            compound.remove(p)
+            comp.remove(p)
 
-        self._monomers.append(compound)
+        self._monomers.append(comp)
 
     def add_end_groups(
         self,
         compound,
-        index,
+        bond_tag=None,
         separation=None,
         orientation=None,
-        replace=True,
+        bond_order=1,
         label="head",
         duplicate=True,
     ):
@@ -593,13 +594,6 @@ class Polymer(Compound):
             used.
             Recommended behavior is to leave orientation set to None if you
             are using `replace=True`.
-        replace : Bool, default True
-            If True, then the particle identified by `index` will be removed
-            and ports are added to the particle it was initially bonded to.
-            Only use `replace=True` in the case that index points to a hydrogen
-            atom bonded to the desired bonding site particle.
-            If False, then the particle identified by `index` will have a port
-            added and no particle is removed from the end group compound.
         label : str, default 'head'
             Whether to add the end group to the 'head or 'tail' of the polymer.
             If `duplicate=True`, `label` is ignored.
@@ -613,9 +607,24 @@ class Polymer(Compound):
             `add_end_groups()` a second time to add another end group.
         """
         comp = clone(compound)
-        separation = _add_port(comp, "up", index, separation, orientation, replace)
-        if replace:
-            comp.remove(comp[index])
+        remove_hydrogens = []
+
+        head = [p for p in comp.particles() if p.particle_tag == bond_tag][0]
+        head_hydrogens = [p for p in head.direct_bonds() if p.name == "H"]
+        if len(head_hydrogens) != 0 and orientation is None:
+            bond_vectors = [h.pos - head.pos for h in head_hydrogens[:bond_order]]
+            orientation = np.sum(bond_vectors, axis=0)
+            orientation /= np.linalg.norm(orientation)
+
+        head_port = Port(
+            anchor=head,
+            orientation=orientation,
+            separation=separation / 2,
+        )
+        comp.add(head_port, label="up")
+        for p in head_hydrogens[:bond_order]:
+            remove_hydrogens.append(p)
+
         if duplicate:
             self._end_groups = [comp, clone(comp)]
             self._headtail = [separation / 2, separation / 2]

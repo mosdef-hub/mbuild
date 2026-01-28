@@ -207,6 +207,7 @@ class Compound(object):
         else:
             self._charge = charge
             self._mass = mass
+
         self._bond_tag = None
         self._tag = None
         self._hoomd_data = {}
@@ -2723,6 +2724,7 @@ class Compound(object):
         newone._periodicity = deepcopy(self._periodicity)
         newone._charge = deepcopy(self._charge)
         newone._mass = deepcopy(self._mass)
+        newone._tag = deepcopy(self._tag)
         newone._hoomd_data = {}
         if hasattr(self, "index"):
             newone.index = deepcopy(self.index)

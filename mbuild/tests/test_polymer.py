@@ -36,8 +36,8 @@ class TestPolymer(BaseTest):
             max_angle=np.pi,
             seed=14,
         )
-        acid = mb.load("C(=O)O", smiles=True)
-        ethane_chain.add_end_groups(acid, index=3, separation=0.15)
+        acid = mb.load("C{*}(=O)O", smiles=True)
+        ethane_chain.add_end_groups(acid, bond_tag="*", separation=0.15)
         ethane_chain.build_from_path(
             path=path, add_hydrogens=False, energy_minimize=False
         )
