@@ -207,7 +207,9 @@ class Compound(object):
         else:
             self._charge = charge
             self._mass = mass
+
         self._bond_tag = None
+        self._tag = None
         self._hoomd_data = {}
 
     def particles(self, include_ports=False):
@@ -639,6 +641,20 @@ class Compound(object):
         else:
             raise AttributeError(
                 "charge is immutable for Compounds that are "
+                "not at the bottom of the containment hierarchy."
+            )
+
+    @property
+    def particle_tag(self):
+        return self._tag
+
+    @particle_tag.setter
+    def particle_tag(self, tag):
+        if self._contains_only_ports():
+            self._tag = tag
+        else:
+            raise AttributeError(
+                "Particle tags are immutable for Compounds that are "
                 "not at the bottom of the containment hierarchy."
             )
 
@@ -2708,6 +2724,7 @@ class Compound(object):
         newone._periodicity = deepcopy(self._periodicity)
         newone._charge = deepcopy(self._charge)
         newone._mass = deepcopy(self._mass)
+        newone._tag = deepcopy(self._tag)
         newone._hoomd_data = {}
         if hasattr(self, "index"):
             newone.index = deepcopy(self.index)
