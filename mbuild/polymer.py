@@ -94,6 +94,9 @@ class Polymer(Compound):
         super(Polymer, self).__init__()
         self._monomers = monomers or []
         self._end_groups = end_groups or [None, None]
+        # Set default of single bond order for all monomer-monomer and monomer-group bonds
+        self._monomer_bond_orders = [1 for i in self._monomers]
+        self._end_group_bond_orders = [1 for i in self._end_groups]
         if not isinstance(self._end_groups, list):
             raise ValueError(
                 "Please provide two end groups in a list; "
@@ -516,7 +519,14 @@ class Polymer(Compound):
         comp = clone(compound)
         _remove_hydrogens = []
 
-        head = [p for p in comp.particles() if p.particle_tag == head_tag][0]
+        head = [p for p in comp.particles() if p.particle_tag == head_tag]
+        if len(head) == 0:
+            raise RuntimeError(
+                f"Particle tag {head_tag} was not found in the compound's particles."
+            )
+        if len(head) > 1:
+            raise RuntimeError(f"Multiple particles with tag {head_tag} were found.")
+        head = head[0]
         head_hydrogens = [p for p in head.direct_bonds() if p.name == "H"]
         if len(head_hydrogens) != 0 and head_orientation is None:
             bond_vectors = [h.pos - head.pos for h in head_hydrogens]
@@ -536,7 +546,14 @@ class Polymer(Compound):
             for p in head_hydrogens[:bond_order]:
                 _remove_hydrogens.append(p)
 
-        tail = [p for p in comp.particles() if p.particle_tag == tail_tag][0]
+        tail = [p for p in comp.particles() if p.particle_tag == tail_tag]
+        if len(tail) == 0:
+            raise RuntimeError(
+                f"Particle tag {tail_tag} was not found in the compound's particles."
+            )
+        if len(tail) > 1:
+            raise RuntimeError(f"Multiple particles with tag {tail_tag} were found.")
+        tail = tail[0]
         tail_hydrogens = [p for p in tail.direct_bonds() if p.name == "H"]
         if len(tail_hydrogens) != 0 and tail_orientation is None:
             if tail == head:
@@ -563,6 +580,7 @@ class Polymer(Compound):
             comp.remove(p)
 
         self._monomers.append(comp)
+        self._monomer_bond_orders.append(bond_order)
 
     def add_end_groups(
         self,
@@ -621,7 +639,14 @@ class Polymer(Compound):
         comp = clone(compound)
         remove_hydrogens = []
 
-        head = [p for p in comp.particles() if p.particle_tag == bond_tag][0]
+        head = [p for p in comp.particles() if p.particle_tag == bond_tag]
+        if len(head) == 0:
+            raise RuntimeError(
+                f"Particle tag {bond_tag} was not found in the compound's particles."
+            )
+        if len(head) > 1:
+            raise RuntimeError(f"Multiple particles with tag {bond_tag} were found.")
+        head = head[0]
         head_hydrogens = [p for p in head.direct_bonds() if p.name == "H"]
         if len(head_hydrogens) != 0 and orientation is None:
             bond_vectors = [h.pos - head.pos for h in head_hydrogens[:bond_order]]
@@ -639,13 +664,16 @@ class Polymer(Compound):
 
         if duplicate:
             self._end_groups = [comp, clone(comp)]
+            self._end_group_bond_orders = [bond_order, bond_order]
             self._headtail = [separation / 2, separation / 2]
         else:
             if label.lower() == "head":
                 self._end_groups[0] = comp
+                self._end_group_bond_orders[0] = bond_order
                 self._headtail[0] = separation / 2
             elif label.lower() == "tail":
                 self._end_groups[1] = comp
+                self._end_group_bond_orders[1] = bond_order
                 self._headtail[1] = separation / 2
             else:
                 raise ValueError("Label must be 'head' or 'tail'")

@@ -654,7 +654,7 @@ class Compound(object):
             self._tag = tag
         else:
             raise AttributeError(
-                "tags are immutable for Compounds that are "
+                "Particle tags are immutable for Compounds that are "
                 "not at the bottom of the containment hierarchy."
             )
 

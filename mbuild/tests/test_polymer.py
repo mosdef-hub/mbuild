@@ -89,6 +89,37 @@ class TestPolymer(BaseTest):
                 acid, bond_tag="*", separation=0.15, duplicate=False, label="front"
             )
 
+    def test_tags_not_found(self, ethane_monomer):
+        chain = mb.Polymer()
+        with pytest.raises(RuntimeError):
+            chain.add_monomer(
+                ethane_monomer, head_tag=")", tail_tag="<", separation=0.145
+            )
+        with pytest.raises(RuntimeError):
+            chain.add_monomer(
+                ethane_monomer, head_tag=">", tail_tag="(", separation=0.145
+            )
+
+        acid = mb.load("C{*}(=O)O", smiles=True)
+        with pytest.raises(RuntimeError):
+            chain.add_end_groups(
+                acid, bond_tag=">", separation=0.15, duplicate=False, label="front"
+            )
+
+    def test_multiple_tags_found(self):
+        chain = mb.Polymer()
+        monomer = mb.load("C{*}C{*}", smiles=True)
+        with pytest.raises(RuntimeError):
+            chain.add_monomer(monomer, head_tag="*", tail_tag="*", separation=0.145)
+        with pytest.raises(RuntimeError):
+            chain.add_monomer(monomer, head_tag="*", tail_tag="*", separation=0.145)
+
+        acid = mb.load("C{*}(=O)O{*}", smiles=True)
+        with pytest.raises(RuntimeError):
+            chain.add_end_groups(
+                acid, bond_tag="*", separation=0.15, duplicate=False, label="front"
+            )
+
     def test_no_end_groups(self, ethane_chain):
         ethane_chain.build(n=5, add_hydrogens=False)
         assert len([p for p in ethane_chain.particles() if p.name == "H"]) == 20
