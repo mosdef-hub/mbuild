@@ -525,7 +525,9 @@ class Polymer(Compound):
                 f"Particle tag {head_tag} was not found in the compound's particles."
             )
         if len(head) > 1:
-            raise RuntimeError(f"Multiple particles with tag {head_tag} were found.")
+            raise RuntimeError(
+                f"Multiple particles with tag {head_tag} were found. Only one particle can be designated as the head particle."
+            )
         head = head[0]
         head_hydrogens = [p for p in head.direct_bonds() if p.name == "H"]
         if len(head_hydrogens) != 0 and head_orientation is None:
@@ -552,7 +554,9 @@ class Polymer(Compound):
                 f"Particle tag {tail_tag} was not found in the compound's particles."
             )
         if len(tail) > 1:
-            raise RuntimeError(f"Multiple particles with tag {tail_tag} were found.")
+            raise RuntimeError(
+                f"Multiple particles with tag {tail_tag} were found. Only one particle can be designated as the tail particle."
+            )
         tail = tail[0]
         tail_hydrogens = [p for p in tail.direct_bonds() if p.name == "H"]
         if len(tail_hydrogens) != 0 and tail_orientation is None:
@@ -645,7 +649,9 @@ class Polymer(Compound):
                 f"Particle tag {bond_tag} was not found in the compound's particles."
             )
         if len(head) > 1:
-            raise RuntimeError(f"Multiple particles with tag {bond_tag} were found.")
+            raise RuntimeError(
+                f"Multiple particles with tag {bond_tag} were found. Only one particle can be designated as the bond-forming particle."
+            )
         head = head[0]
         head_hydrogens = [p for p in head.direct_bonds() if p.name == "H"]
         if len(head_hydrogens) != 0 and orientation is None:
