@@ -58,8 +58,8 @@ class TestPolymer(BaseTest):
     def test_add_end_groups(self, ch2, ester):
         n = 6
         c6 = Polymer(monomers=[ch2])
-        acid = mb.load("C(=O)O", smiles=True)
-        c6.add_end_groups(acid, index=3, separation=0.15)
+        acid = mb.load("C{*}(=O)O", smiles=True)
+        c6.add_end_groups(acid, bond_tag="*", separation=0.15)
         c6.build(n=n, add_hydrogens=False)
         assert len([p for p in c6.particles() if p.name == "O"]) == 4
 
@@ -84,9 +84,9 @@ class TestPolymer(BaseTest):
 
         with pytest.raises(ValueError):  # Bad end group label
             chain = Polymer(monomers=[ch2])
-            acid = mb.load("C(=O)O", smiles=True)
+            acid = mb.load("C{*}(=O)O", smiles=True)
             chain.add_end_groups(
-                acid, index=3, separation=0.15, duplicate=False, label="front"
+                acid, bond_tag="*", separation=0.15, duplicate=False, label="front"
             )
 
     def test_no_end_groups(self, ethane_chain):
@@ -94,15 +94,20 @@ class TestPolymer(BaseTest):
         assert len([p for p in ethane_chain.particles() if p.name == "H"]) == 20
         assert len(ethane_chain.available_ports()) == 2
 
-    def test_replace_is_false(self):
+    def test_dont_remove_hydrogens(self):
         n = 6
         ch2 = mb.load(os.path.join(mb.__path__[0], "lib/moieties/ch2.pdb"))
+        for p in ch2.particles():
+            p.particle_tag = p.name
         chain = Polymer()
         chain.add_monomer(
             ch2,
-            indices=[0, 0],
-            orientation=[[0, 1, 0], [0, -1, 0]],
+            head_tag="C",
+            tail_tag="C",
+            head_orientation=[0, 1, 0],
+            tail_orientation=[0, -1, 0],
             separation=0.15,
+            remove_hydrogens=False,
         )
         chain.build(n=n, add_hydrogens=False)
         assert chain.n_particles == n * 3

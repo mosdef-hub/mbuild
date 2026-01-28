@@ -514,13 +514,15 @@ class Polymer(Compound):
             the monomer compound.
         """
         comp = clone(compound)
-        remove_hydrogens = []
+        _remove_hydrogens = []
 
         head = [p for p in comp.particles() if p.particle_tag == head_tag][0]
         head_hydrogens = [p for p in head.direct_bonds() if p.name == "H"]
         if len(head_hydrogens) != 0 and head_orientation is None:
-            bond_vectors = [h.pos - head.pos for h in head_hydrogens[:bond_order]]
+            bond_vectors = [h.pos - head.pos for h in head_hydrogens]
             head_orientation = np.sum(bond_vectors, axis=0)
+            if np.allclose(head_orientation, 0, atol=1e-10):
+                head_orientation = np.cross(np.random.randn(3), bond_vectors[0])
             head_orientation /= np.linalg.norm(head_orientation)
 
         head_port = Port(
@@ -529,15 +531,22 @@ class Polymer(Compound):
             separation=separation / 2,
         )
         comp.add(head_port, label="up")
-        for p in head_hydrogens[:bond_order]:
-            remove_hydrogens.append(p)
+
+        if remove_hydrogens:
+            for p in head_hydrogens[:bond_order]:
+                _remove_hydrogens.append(p)
 
         tail = [p for p in comp.particles() if p.particle_tag == tail_tag][0]
         tail_hydrogens = [p for p in tail.direct_bonds() if p.name == "H"]
         if len(tail_hydrogens) != 0 and tail_orientation is None:
-            bond_vectors = [h.pos - tail.pos for h in tail_hydrogens]
-            tail_orientation = np.sum(bond_vectors, axis=0)
-            tail_orientation /= np.linalg.norm(tail_orientation)
+            if tail == head:
+                tail_orientation = -head_orientation
+            else:
+                bond_vectors = [h.pos - tail.pos for h in tail_hydrogens]
+                tail_orientation = np.sum(bond_vectors, axis=0)
+                if np.allclose(tail_orientation, 0, atol=1e-10):
+                    tail_orientation = np.cross(np.random.randn(3), bond_vectors[0])
+                tail_orientation /= np.linalg.norm(tail_orientation)
 
         tail_port = Port(
             anchor=tail,
@@ -545,10 +554,12 @@ class Polymer(Compound):
             separation=separation / 2,
         )
         comp.add(tail_port, label="down")
-        for p in tail_hydrogens[:bond_order]:
-            remove_hydrogens.append(p)
 
-        for p in remove_hydrogens:
+        if remove_hydrogens:
+            for p in tail_hydrogens[:bond_order]:
+                _remove_hydrogens.append(p)
+
+        for p in _remove_hydrogens:
             comp.remove(p)
 
         self._monomers.append(comp)
@@ -562,6 +573,7 @@ class Polymer(Compound):
         bond_order=1,
         label="head",
         duplicate=True,
+        remove_hydrogens=True,
     ):
         """Add an mBuild compound to self.end_groups.
 
