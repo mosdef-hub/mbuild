@@ -118,6 +118,7 @@ def fill_box(
     packmol_file=None,
     update_port_locations=False,
     packmol_args=None,
+    decimals=3,
 ):
     """Fill a box with an `mbuild.compound` or `Compound` s using PACKMOL.
 
@@ -196,6 +197,11 @@ def fill_box(
         seed and overlap.
         Other command options can be found in the PACKMOL userguide:
         http://www.ime.unicamp.br/~martinez/packmol/userguide.shtml
+    decimals : int, default 3
+        The number of decimals to write atomic coordinates to in xyz file
+        when processing molecules packed by packmol. Higher precision, such as 
+        5 decimals may be necessary with constrained molecules to keep precise
+        bond lengths and angles.
 
     Notes
     -----
@@ -357,7 +363,7 @@ def fill_box(
             compound_xyz = _new_xyz_file()
             compound_xyz_list.append(compound_xyz)
 
-            comp.save(compound_xyz.name, overwrite=True)
+            comp.save(compound_xyz.name, decimals=decimals, overwrite=True)
             input_text += PACKMOL_BOX.format(
                 compound_xyz.name,
                 m_compounds,
