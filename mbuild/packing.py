@@ -199,7 +199,7 @@ def fill_box(
         http://www.ime.unicamp.br/~martinez/packmol/userguide.shtml
     decimals : int, default 3
         The number of decimals to write atomic coordinates to in xyz file
-        when processing molecules packed by packmol. Higher precision, such as 
+        when processing molecules packed by packmol. Higher precision, such as
         5 decimals may be necessary with constrained molecules to keep precise
         bond lengths and angles.
 
