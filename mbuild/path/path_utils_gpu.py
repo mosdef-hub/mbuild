@@ -23,7 +23,7 @@ from numba import cuda
 
 # -----------------------------------------------------------------------------
 # Device functions (callable only from GPU kernels or other device code)
------------------------------------------------------------------------------
+# -----------------------------------------------------------------------------
 
 
 @cuda.jit(device=True)
@@ -56,22 +56,17 @@ def _rotate_vector(v, axis, theta, out):
 
 @cuda.jit
 def _random_coordinate_kernel(
-    pos1, pos2, bond_length, thetas, r_vectors, next_positions
+    pos1, v1_norm, bond_length, thetas, r_vectors, next_positions
 ):
-    """One thread per batch row: compute next_position from pos1, pos2, thetas, r_vectors."""
+    """One thread per batch row: compute next_position from pos1, v1_norm, thetas, r_vectors."""
     i = cuda.grid(1)
     n = next_positions.shape[0]
     if i >= n:
         return
 
-    # v1 and v1_norm (same for all threads in this batch)
-    v1_0 = pos2[0] - pos1[0]
-    v1_1 = pos2[1] - pos1[1]
-    v1_2 = pos2[2] - pos1[2]
-    nv = np.sqrt(v1_0 * v1_0 + v1_1 * v1_1 + v1_2 * v1_2)
-    v1_norm_0 = v1_0 / nv
-    v1_norm_1 = v1_1 / nv
-    v1_norm_2 = v1_2 / nv
+    v1_norm_0 = v1_norm[0]
+    v1_norm_1 = v1_norm[1]
+    v1_norm_2 = v1_norm[2]
 
     # dot product for this row
     dot = (
@@ -192,19 +187,25 @@ def random_coordinate(
     bond_length,
     thetas,
     r_vectors,
-    batch_size,
 ):
-    """GPU version of path_utils.random_coordinate. Same signature and return type."""
+    """GPU version of path_utils.random_coordinate. Same signature and return type.
+
+    All internal math and outputs use float32 for speed and memory efficiency.
+    """
     pos1 = np.asarray(pos1, dtype=np.float32)
     pos2 = np.asarray(pos2, dtype=np.float32)
-    thetas = np.asarray(thetas, dtype=np.float64)
-    r_vectors = np.asarray(r_vectors, dtype=np.float64)
+    bond_length = np.float32(bond_length)
+    v1 = pos2 - pos1  # float32
+    v1_norm = v1 / np.linalg.norm(v1).astype(np.float32)
+    v1_norm = v1_norm.astype(np.float32)
+    thetas = np.asarray(thetas, dtype=np.float32)
+    r_vectors = np.asarray(r_vectors, dtype=np.float32)
 
     n = r_vectors.shape[0]
     next_positions = np.empty((n, 3), dtype=np.float32)
 
     d_pos1 = cuda.to_device(pos1)
-    d_pos2 = cuda.to_device(pos2)
+    d_v1_norm = cuda.to_device(v1_norm)
     d_thetas = cuda.to_device(thetas)
     d_r_vectors = cuda.to_device(r_vectors)
     d_next = cuda.device_array((n, 3), dtype=np.float32)
@@ -212,7 +213,7 @@ def random_coordinate(
     threads_per_block = 256
     blocks = (n + threads_per_block - 1) // threads_per_block
     _random_coordinate_kernel[blocks, threads_per_block](
-        d_pos1, d_pos2, bond_length, d_thetas, d_r_vectors, d_next
+        d_pos1, d_v1_norm, bond_length, d_thetas, d_r_vectors, d_next
     )
     d_next.copy_to_host(next_positions)
     return next_positions
@@ -220,9 +221,9 @@ def random_coordinate(
 
 def check_path(existing_points, new_point, radius, tolerance):
     """GPU version of path_utils.check_path. Returns True if path is valid (no overlaps)."""
-    existing_points = np.asarray(existing_points, dtype=np.float64)
-    new_point = np.asarray(new_point, dtype=np.float64)
-    min_sq_dist = (radius - tolerance) ** 2
+    existing_points = np.asarray(existing_points, dtype=np.float32)
+    new_point = np.asarray(new_point, dtype=np.float32)
+    min_sq_dist = np.float32(radius - tolerance) ** np.float32(2.0)
 
     n = existing_points.shape[0]
     collision_out = np.zeros(1, dtype=np.int32)
@@ -279,7 +280,7 @@ def local_density(candidate, target_coords, r_cut):
     """GPU version of path_utils.local_density. Returns count of targets within r_cut."""
     candidate = np.asarray(candidate, dtype=np.float32)
     target_coords = np.asarray(target_coords, dtype=np.float32)
-    r2_cut = r_cut * r_cut
+    r2_cut = np.float32(r_cut) * np.float32(r_cut)
 
     density_out = np.zeros(1, dtype=np.int32)
     n = target_coords.shape[0]
@@ -301,17 +302,16 @@ def target_density(candidates, target_coords, r_cut):
     """GPU version of path_utils.target_density. One block per candidate."""
     candidates = np.asarray(candidates, dtype=np.float32)
     target_coords = np.asarray(target_coords, dtype=np.float32)
-    r2_cut = r_cut * r_cut
+    r2_cut = np.float32(r_cut) * np.float32(r_cut)
 
     n = candidates.shape[0]
     out = np.empty(n, dtype=np.float32)
-    n_targets = target_coords.shape[0]
 
     d_candidates = cuda.to_device(candidates)
     d_targets = cuda.to_device(target_coords)
     d_out = cuda.device_array(n, dtype=np.float32)
 
-    threads_per_block = min(256, n_targets) if n_targets else 1
+    threads_per_block = 256
     _target_density_kernel[n, threads_per_block](d_candidates, d_targets, r2_cut, d_out)
     d_out.copy_to_host(out)
     return out
@@ -319,16 +319,22 @@ def target_density(candidates, target_coords, r_cut):
 
 def norm(vec):
     """Not launched from host; provided for API parity. Use on CPU or call from device code.
-    For host-side use this runs on CPU (numpy). For device-side use, use _norm in kernels."""
-    return float(np.linalg.norm(vec))
+    For host-side use this runs on CPU (numpy). For device-side use, use _norm in kernels.
+    All math is done in float32.
+    """
+    vec = np.asarray(vec, dtype=np.float32)
+    return float(np.linalg.norm(vec).astype(np.float32))
 
 
 def rotate_vector(v, axis, theta):
     """GPU-capable only when called from device. Host version using numpy for API parity."""
-    v = np.asarray(v, dtype=np.float64)
-    axis = np.asarray(axis, dtype=np.float64)
+    v = np.asarray(v, dtype=np.float32)
+    axis = np.asarray(axis, dtype=np.float32)
+    theta = np.float32(theta)
     c = np.cos(theta)
     s = np.sin(theta)
     k_dot_v = np.dot(axis, v)
     cross = np.cross(axis, v)
-    return v * c + cross * s + axis * k_dot_v * (1.0 - c)
+    return (v * c + cross * s + axis * k_dot_v * (np.float32(1.0) - c)).astype(
+        np.float32
+    )

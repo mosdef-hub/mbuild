@@ -11,7 +11,6 @@ def random_coordinate(
     bond_length,
     thetas,
     r_vectors,
-    batch_size,
 ):
     """Default next_step method for HardSphereRandomWalk."""
     v1 = pos2 - pos1

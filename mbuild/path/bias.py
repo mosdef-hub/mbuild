@@ -2,7 +2,31 @@
 
 import numpy as np
 
-from mbuild.path.path_utils import target_density, target_sq_distances
+from mbuild.path.path_utils import target_density as _target_density_cpu
+from mbuild.path.path_utils import (
+    target_sq_distances as _target_sq_distances_cpu,
+)
+
+# Optional GPU-accelerated equivalents of path_utils functions. We follow the
+# same logic as in path.py: only enable them if cuda reports a usable device.
+try:
+    from numba import cuda
+
+    _CUDA_AVAILABLE = cuda.is_available()
+    if _CUDA_AVAILABLE:
+        from mbuild.path.path_utils_gpu import (
+            target_density as _target_density_gpu,
+        )
+        from mbuild.path.path_utils_gpu import (
+            target_sq_distances as _target_sq_distances_gpu,
+        )
+    else:
+        _target_density_gpu = None
+        _target_sq_distances_gpu = None
+except Exception:  # pragma: no cover - CUDA stack not importable or GPU utils failed
+    _CUDA_AVAILABLE = False
+    _target_density_gpu = None
+    _target_sq_distances_gpu = None
 
 
 class Bias:
@@ -20,10 +44,20 @@ class Bias:
         self.path = path
         # Inherit rng from the path for use in Bias classes
         self.rng = self.path.rng
+        # Decide which path_utils implementations to use based on the path's device.
+        use_gpu = getattr(path, "run_on_gpu", False)
+        if use_gpu and _CUDA_AVAILABLE and _target_sq_distances_gpu is not None:
+            self._target_sq_distances = _target_sq_distances_gpu
+            self._target_density = _target_density_gpu
+        else:
+            self._target_sq_distances = _target_sq_distances_cpu
+            self._target_density = _target_density_cpu
 
     def _clean(self):
         self.path = None
         self.rng = None
+        self._target_sq_distances = None
+        self._target_density = None
 
     def __call__(self, candidates):
         """Implemented in sub classes of Bias."""
@@ -38,7 +72,7 @@ class TargetCoordinate(Bias):
         super(TargetCoordinate, self).__init__(weight=weight)
 
     def __call__(self, candidates):
-        sq_distances = target_sq_distances(self.target_coordinate, candidates)
+        sq_distances = self._target_sq_distances(self.target_coordinate, candidates)
         noise = self.rng.normal(0, self.noise_scale, size=sq_distances.shape)
         scores = self.beta * sq_distances + noise
         # Target coordinate should favor short distances, sort in ascending order (np default)
@@ -54,7 +88,7 @@ class AvoidCoordinate(Bias):
         super(AvoidCoordinate, self).__init__(weight=weight)
 
     def __call__(self, candidates):
-        sq_distances = target_sq_distances(self.avoid_coordinate, candidates)
+        sq_distances = self._target_sq_distances(self.avoid_coordinate, candidates)
         noise = self.rng.normal(0, self.noise_scale, size=sq_distances.shape)
         scores = self.beta * sq_distances + noise
         # Avoid cooardinate should favor larger distances, sort in descending order
@@ -79,7 +113,7 @@ class TargetType(Bias):
         target_coords = self.path.coordinates[: len(types)][
             types == self.target_type
         ].astype(np.float32)
-        densities = target_density(
+        densities = self._target_density(
             candidates=candidates, target_coords=target_coords, r_cut=self.r_cut
         )
         noise = self.rng.normal(0, self.noise_scale, size=densities.shape)
@@ -106,7 +140,7 @@ class AvoidType(Bias):
         target_coords = self.path.coordinates[: len(types)][
             types == self.avoid_type
         ].astype(np.float32)
-        densities = target_density(
+        densities = self._target_density(
             candidates=candidates, target_coords=target_coords, r_cut=self.r_cut
         )
         noise = self.rng.normal(0, self.noise_scale, size=densities.shape)

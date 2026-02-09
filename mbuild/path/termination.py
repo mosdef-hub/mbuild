@@ -104,6 +104,8 @@ class Terminator:
     def _attach_path(self, path):
         self.path = path
         self.rng = getattr(path, "rng", None)
+        # Cache device preference from the attached path for future GPU-aware terminators.
+        self._use_gpu = getattr(path, "run_on_gpu", False)
 
     def is_met(self):
         """Implemented in sub classes of Terminator."""

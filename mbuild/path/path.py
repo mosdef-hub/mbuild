@@ -14,6 +14,25 @@ from mbuild import Compound
 from mbuild.path.path_utils import check_path, random_coordinate
 from mbuild.utils.volumes import CuboidConstraint, CylinderConstraint
 
+# Optional GPU-accelerated equivalents of path_utils functions. We only enable them
+# when the CUDA runtime reports that a compatible device is actually available.
+try:
+    from numba import cuda
+
+    _CUDA_AVAILABLE = cuda.is_available()
+    if _CUDA_AVAILABLE:
+        from mbuild.path.path_utils_gpu import check_path as check_path_gpu
+        from mbuild.path.path_utils_gpu import (
+            random_coordinate as random_coordinate_gpu,
+        )
+    else:
+        check_path_gpu = None
+        random_coordinate_gpu = None
+except Exception:  # pragma: no cover - CUDA stack not importable or GPU utils failed
+    _CUDA_AVAILABLE = False
+    check_path_gpu = None
+    random_coordinate_gpu = None
+
 logger = logging.getLogger(__name__)
 
 
@@ -223,6 +242,7 @@ class HardSphereRandomWalk(Path):
         trial_batch_size=20,
         tolerance=1e-5,
         chunk_size=512,
+        run_on_gpu=False,
     ):
         """Generates coordinates from a self avoiding random walk using
         fixed bond lengths, hard spheres, and minimum and maximum angles
@@ -268,6 +288,9 @@ class HardSphereRandomWalk(Path):
             random walks.
         tolerance : float, default = 1e-4
             Tolerance used for rounding and checking for overlaps.
+        run_on_gpu : bool, default = False
+            If True and CUDA path utilities are available, use GPU-accelerated
+            implementations of ``random_coordinate`` and ``check_path``.
 
         Notes
         -----
@@ -303,6 +326,13 @@ class HardSphereRandomWalk(Path):
         self.attach_paths = attach_paths
         self._particle_pairs = {}
         self.chunk_size = chunk_size
+        self.run_on_gpu = bool(run_on_gpu) and _CUDA_AVAILABLE
+
+        if run_on_gpu and not _CUDA_AVAILABLE:
+            logger.warning(
+                "HardSphereRandomWalk initialized with run_on_gpu=True, but "
+                "no CUDA-capable device is available. Falling back to CPU."
+            )
 
         # Create RNG state.
         self.rng = np.random.default_rng(seed)
@@ -362,9 +392,13 @@ class HardSphereRandomWalk(Path):
         self._init_count = self.count
 
         # Select methods to use for random walk
-        # Hard-coded for now, possible to make other RW methods and pass them in
-        self.next_step = random_coordinate
-        self.check_path = check_path
+        # CPU by default; optionally use GPU-accelerated versions.
+        if self.run_on_gpu:
+            self.next_step = random_coordinate_gpu
+            self.check_path = check_path_gpu
+        else:
+            self.next_step = random_coordinate
+            self.check_path = check_path
 
         # Needed for mbuild.path.termination.WallTime stop terminator
         self.start_time = None
@@ -463,7 +497,6 @@ class HardSphereRandomWalk(Path):
                 bond_length=self.bond_length,
                 thetas=batch_angles,
                 r_vectors=batch_vectors,
-                batch_size=self.trial_batch_size,
             )
 
             # Create mask of bools where True = inside the volume constraint
