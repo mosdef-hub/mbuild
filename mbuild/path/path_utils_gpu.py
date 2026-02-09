@@ -58,7 +58,7 @@ def _rotate_vector(v, axis, theta, out):
 def _random_coordinate_kernel(
     pos1, v1_norm, bond_length, thetas, r_vectors, next_positions
 ):
-    """One thread per batch row: compute next_position from pos1, v1_norm, thetas, r_vectors."""
+    """Compute next_position from pos1, v1_norm, thetas, r_vectors."""
     i = cuda.grid(1)
     n = next_positions.shape[0]
     if i >= n:
@@ -197,7 +197,6 @@ def random_coordinate(
     bond_length = np.float32(bond_length)
     v1 = pos2 - pos1  # float32
     v1_norm = v1 / np.linalg.norm(v1).astype(np.float32)
-    v1_norm = v1_norm.astype(np.float32)
     thetas = np.asarray(thetas, dtype=np.float32)
     r_vectors = np.asarray(r_vectors, dtype=np.float32)
 
