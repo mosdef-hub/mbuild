@@ -632,7 +632,6 @@ class HardSphereRandomWalk(Path):
                     bond_length=self.bond_length,
                     thetas=batch_angles,
                     r_vectors=batch_vectors,
-                    batch_size=self.trial_batch_size,
                 )
                 if self.volume_constraint:
                     is_inside_mask = self.volume_constraint.is_inside(
