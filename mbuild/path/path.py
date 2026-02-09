@@ -21,7 +21,7 @@ try:
 
     _CUDA_AVAILABLE = cuda.is_available()
     if _CUDA_AVAILABLE:
-        from mbuild.path.path_utils_gpu import check_path as check_path_gpu
+        from mbuild.path.path_utils_gpu import check_path_batch as check_path_gpu
         from mbuild.path.path_utils_gpu import (
             random_coordinate as random_coordinate_gpu,
         )
@@ -519,28 +519,37 @@ class HardSphereRandomWalk(Path):
             else:  # No compounds included, only use path's existing coordinates
                 existing_points = self.coordinates[: self.count + 1]
 
-            # Iterate through current state of candidate points
-            # Accept first one that satisfies check_path
-            for xyz in candidates:
-                if any(
-                    self.pbc
-                ):  # PBCs exist, wrap this point inside volume constraint
-                    xyz = self.volume_constraint.mins + np.mod(
-                        xyz - self.volume_constraint.mins, self.box_lengths
-                    )
-                if self.check_path(
-                    existing_points=existing_points,
-                    new_point=xyz,
-                    radius=self.radius,
-                    tolerance=self.tolerance,
-                ):
-                    # Accept this next step, update path's coordinates, add node and edge
-                    self.coordinates[self.count + 1] = xyz
-                    self.count += 1
-                    self.bond_graph.add_node(self.count, name=self.bead_name, xyz=xyz)
-                    self.add_edge(u=self.count - 1, v=self.count)
-                    break
-            # Candidates didn't produce a single valid next point
+            if any(self.pbc):
+                candidates = self.volume_constraint.mins + np.mod(
+                    candidates - self.volume_constraint.mins, self.box_lengths
+                )
+            
+            accept_xyz = None
+            if self.run_on_gpu:
+                valid_mask = self.check_path(existing_points, candidates, self.radius, self.tolerance)
+                valid_candidates = candidates[valid_mask]
+                if len(valid_candidates) > 0:
+                    accept_xyz = valid_candidates[0]
+            else:
+                # Iterate through current state of candidate points
+                # Accept first one that satisfies check_path
+                for xyz in candidates:
+                    if self.check_path(
+                        existing_points=existing_points,
+                        new_point=xyz,
+                        radius=self.radius,
+                        tolerance=self.tolerance,
+                    ):
+                        accept_xyz = xyz
+                        break
+
+            # Accept this next step, update path's coordinates, add node and edge
+            if accept_xyz is not None:
+                self.coordinates[self.count + 1] = accept_xyz 
+                self.count += 1
+                self.bond_graph.add_node(self.count, name=self.bead_name, xyz=accept_xyz)
+                self.add_edge(u=self.count - 1, v=self.count)
+
             self.attempts += 1
             # Check if we've filled up the current chunk size, if so, extend.
             if (self.count - self._init_count + 1) % self.chunk_size == 0:

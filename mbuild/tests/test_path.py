@@ -186,6 +186,7 @@ class TestRandomWalk(BaseTest):
             min_angle=np.pi / 4,
             max_angle=np.pi,
             seed=14,
+            run_on_gpu=True
         )
         assert len(rw_path.coordinates) == 20
         diffs = rw_path.coordinates[0:-2] - rw_path.coordinates[1:-1]

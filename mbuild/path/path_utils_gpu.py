@@ -17,6 +17,7 @@ Design notes:
 - random_coordinate: one thread per batch row; each thread replicates the
   same v1_norm / r_perp_norm math for its row (redundant but simple and correct).
 """
+import math
 
 import numpy as np
 from numba import cuda
@@ -32,14 +33,14 @@ def _norm(vec):
     s = 0.0
     for i in range(vec.shape[0]):
         s += vec[i] * vec[i]
-    return np.sqrt(s)
+    return math.sqrt(s)
 
 
 @cuda.jit(device=True)
 def _rotate_vector(v, axis, theta, out):
     """Rodrigues rotation: rotate v around normalized axis by theta. Writes to out."""
-    c = np.cos(theta)
-    s = np.sin(theta)
+    c = math.cos(theta)
+    s = math.sin(theta)
     k_dot_v = axis[0] * v[0] + axis[1] * v[1] + axis[2] * v[2]
     cross_0 = axis[1] * v[2] - axis[2] * v[1]
     cross_1 = axis[2] * v[0] - axis[0] * v[2]
@@ -78,7 +79,7 @@ def _random_coordinate_kernel(
     r_perp_1 = r_vectors[i, 1] - dot * v1_norm_1
     r_perp_2 = r_vectors[i, 2] - dot * v1_norm_2
 
-    norm_r_perp = np.sqrt(
+    norm_r_perp = math.sqrt(
         r_perp_0 * r_perp_0 + r_perp_1 * r_perp_1 + r_perp_2 * r_perp_2
     )
     if norm_r_perp < 1e-6:
@@ -87,8 +88,8 @@ def _random_coordinate_kernel(
     r_perp_norm_1 = r_perp_1 / norm_r_perp
     r_perp_norm_2 = r_perp_2 / norm_r_perp
 
-    cos_t = np.cos(thetas[i])
-    sin_t = np.sin(thetas[i])
+    cos_t = math.cos(thetas[i])
+    sin_t = math.sin(thetas[i])
     v2_0 = cos_t * v1_norm_0 + sin_t * r_perp_norm_0
     v2_1 = cos_t * v1_norm_1 + sin_t * r_perp_norm_1
     v2_2 = cos_t * v1_norm_2 + sin_t * r_perp_norm_2
@@ -96,6 +97,26 @@ def _random_coordinate_kernel(
     next_positions[i, 0] = pos1[0] + v2_0 * bond_length
     next_positions[i, 1] = pos1[1] + v2_1 * bond_length
     next_positions[i, 2] = pos1[2] + v2_2 * bond_length
+
+
+@cuda.jit
+def _check_path_batch_kernel(existing_points, candidates, min_sq_dist, valid):
+    """Check grid: each thread checks one candidate against one existing point."""
+    cand_i, exist_i = cuda.grid(2)
+    
+    if cand_i >= candidates.shape[0] or exist_i >= existing_points.shape[0]:
+        return
+    
+    if valid[cand_i] == 0:  # Already found collision
+        return
+        
+    dx = existing_points[exist_i, 0] - candidates[cand_i, 0]
+    dy = existing_points[exist_i, 1] - candidates[cand_i, 1]
+    dz = existing_points[exist_i, 2] - candidates[cand_i, 2]
+    dist_sq = dx * dx + dy * dy + dz * dz
+    
+    if dist_sq < min_sq_dist:
+        cuda.atomic.min(valid, cand_i, 0)  # Mark as invalid
 
 
 @cuda.jit
@@ -216,6 +237,34 @@ def random_coordinate(
     )
     d_next.copy_to_host(next_positions)
     return next_positions
+
+
+def check_path_batch(existing_points, candidates, radius, tolerance):
+    """Check multiple candidates at once. Returns bool array of valid candidates."""
+    existing_points = np.asarray(existing_points, dtype=np.float32)
+    candidates = np.asarray(candidates, dtype=np.float32)
+    min_sq_dist = np.float32(radius - tolerance) ** np.float32(2.0)
+    
+    n_candidates = candidates.shape[0]
+    n_existing = existing_points.shape[0]
+    valid = np.ones(n_candidates, dtype=np.int32)  # 1 = valid, 0 = collision
+    
+    # Transfer ONCE
+    d_existing = cuda.to_device(existing_points)
+    d_candidates = cuda.to_device(candidates)
+    d_valid = cuda.to_device(valid)
+    
+    # Check all candidates in parallel
+    threads_per_block = (16, 16)  # 2D grid
+    blocks_x = (n_candidates + threads_per_block[0] - 1) // threads_per_block[0]
+    blocks_y = (n_existing + threads_per_block[1] - 1) // threads_per_block[1]
+    blocks = (blocks_x, blocks_y)
+    
+    _check_path_batch_kernel[blocks, threads_per_block](
+        d_existing, d_candidates, min_sq_dist, d_valid
+    )
+    d_valid.copy_to_host(valid)
+    return valid.astype(bool)
 
 
 def check_path(existing_points, new_point, radius, tolerance):
