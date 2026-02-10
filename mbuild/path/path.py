@@ -21,7 +21,10 @@ try:
 
     _CUDA_AVAILABLE = cuda.is_available()
     if _CUDA_AVAILABLE:
-        from mbuild.path.path_utils_gpu import check_path_batch as check_path_gpu
+        from mbuild.path.path_utils_gpu import check_path as check_path_gpu
+        from mbuild.path.path_utils_gpu import (
+            check_path_split as check_path_split,
+        )
         from mbuild.path.path_utils_gpu import (
             random_coordinate as random_coordinate_gpu,
         )
@@ -327,6 +330,7 @@ class HardSphereRandomWalk(Path):
         self._particle_pairs = {}
         self.chunk_size = chunk_size
         self.run_on_gpu = bool(run_on_gpu) and _CUDA_AVAILABLE
+        self._gpu_static_points = None
 
         if run_on_gpu and not _CUDA_AVAILABLE:
             logger.warning(
@@ -487,6 +491,7 @@ class HardSphereRandomWalk(Path):
             self.attempts += 1
 
         #### Initial conditions set, now start RW ####
+        self._prepare_gpu_static_points()
         walk_finished = False
         while not walk_finished:
             # Generate a batch of angles and vectors to create a set of candidate next coordinates
@@ -523,10 +528,17 @@ class HardSphereRandomWalk(Path):
                 candidates = self.volume_constraint.mins + np.mod(
                     candidates - self.volume_constraint.mins, self.box_lengths
                 )
-            
+
             accept_xyz = None
             if self.run_on_gpu:
-                valid_mask = self.check_path(existing_points, candidates, self.radius, self.tolerance)
+                dynamic_points = self.coordinates[self._init_count : self.count + 1]
+                valid_mask = check_path_split(
+                    self._gpu_static_points,
+                    dynamic_points,
+                    candidates,
+                    self.radius,
+                    self.tolerance,
+                )
                 valid_candidates = candidates[valid_mask]
                 if len(valid_candidates) > 0:
                     accept_xyz = valid_candidates[0]
@@ -545,9 +557,11 @@ class HardSphereRandomWalk(Path):
 
             # Accept this next step, update path's coordinates, add node and edge
             if accept_xyz is not None:
-                self.coordinates[self.count + 1] = accept_xyz 
+                self.coordinates[self.count + 1] = accept_xyz
                 self.count += 1
-                self.bond_graph.add_node(self.count, name=self.bead_name, xyz=accept_xyz)
+                self.bond_graph.add_node(
+                    self.count, name=self.bead_name, xyz=accept_xyz
+                )
                 self.add_edge(u=self.count - 1, v=self.count)
 
             self.attempts += 1
@@ -679,6 +693,30 @@ class HardSphereRandomWalk(Path):
                         f"{self.count - self._init_count} sucsessful attempts were completed.",
                         "Try changing the parameters or seed and running again.",
                     )
+
+    def _prepare_gpu_static_points(self):
+        """Transfer static points to GPU once at the start of generation."""
+        if not self.run_on_gpu:
+            return
+
+        from numba import cuda
+
+        static_parts = []
+
+        # Previous path coordinates (from start_from_path)
+        if self._init_count > 0:
+            static_parts.append(self.coordinates[: self._init_count])
+
+        # Include compound coordinates
+        if self.include_compound is not None:
+            static_parts.append(self.include_compound.xyz)
+
+        # Combine and transfer to GPU
+        if static_parts:
+            static_points = np.concatenate(static_parts).astype(np.float32)
+            self._gpu_static_points = cuda.to_device(static_points)
+        else:
+            self._gpu_static_points = None
 
 
 class Lamellar(Path):

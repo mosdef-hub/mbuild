@@ -17,6 +17,7 @@ Design notes:
 - random_coordinate: one thread per batch row; each thread replicates the
   same v1_norm / r_perp_norm math for its row (redundant but simple and correct).
 """
+
 import math
 
 import numpy as np
@@ -53,6 +54,30 @@ def _rotate_vector(v, axis, theta, out):
 # -----------------------------------------------------------------------------
 # Kernels
 # -----------------------------------------------------------------------------
+
+
+@cuda.jit
+def _check_path_split_kernel(points, candidates, min_sq_dist, valid):
+    """Check candidates against points. Sets valid[i]=0 if candidate i collides."""
+    cand_i = cuda.blockIdx.x
+    point_i = cuda.threadIdx.x + cuda.blockIdx.y * cuda.blockDim.x
+
+    if cand_i >= candidates.shape[0]:
+        return
+    if point_i >= points.shape[0]:
+        return
+
+    # Skip if already marked invalid
+    if valid[cand_i] == 0:
+        return
+
+    dx = points[point_i, 0] - candidates[cand_i, 0]
+    dy = points[point_i, 1] - candidates[cand_i, 1]
+    dz = points[point_i, 2] - candidates[cand_i, 2]
+    dist_sq = dx * dx + dy * dy + dz * dz
+
+    if dist_sq < min_sq_dist:
+        cuda.atomic.min(valid, cand_i, 0)
 
 
 @cuda.jit
@@ -97,26 +122,6 @@ def _random_coordinate_kernel(
     next_positions[i, 0] = pos1[0] + v2_0 * bond_length
     next_positions[i, 1] = pos1[1] + v2_1 * bond_length
     next_positions[i, 2] = pos1[2] + v2_2 * bond_length
-
-
-@cuda.jit
-def _check_path_batch_kernel(existing_points, candidates, min_sq_dist, valid):
-    """Check grid: each thread checks one candidate against one existing point."""
-    cand_i, exist_i = cuda.grid(2)
-    
-    if cand_i >= candidates.shape[0] or exist_i >= existing_points.shape[0]:
-        return
-    
-    if valid[cand_i] == 0:  # Already found collision
-        return
-        
-    dx = existing_points[exist_i, 0] - candidates[cand_i, 0]
-    dy = existing_points[exist_i, 1] - candidates[cand_i, 1]
-    dz = existing_points[exist_i, 2] - candidates[cand_i, 2]
-    dist_sq = dx * dx + dy * dy + dz * dz
-    
-    if dist_sq < min_sq_dist:
-        cuda.atomic.min(valid, cand_i, 0)  # Mark as invalid
 
 
 @cuda.jit
@@ -202,6 +207,65 @@ def _target_density_kernel(candidates, target_coords, r2_cut, out):
 # -----------------------------------------------------------------------------
 
 
+def check_path_split(d_static_points, dynamic_points, candidates, radius, tolerance):
+    """
+    Check candidates against both static (already on GPU) and dynamic points.
+
+    Parameters
+    ----------
+    d_static_points : cuda device array
+        Static points already on GPU (e.g., previous chains). Do NOT transfer.
+    dynamic_points : numpy array
+        Dynamic points on CPU (e.g., current chain so far). Will be transferred.
+    candidates : numpy array
+        Candidate points to check (Nx3).
+    radius : float
+        Collision radius.
+    tolerance : float
+        Tolerance for collision detection.
+
+    Returns
+    -------
+    numpy array of bool
+        Mask where True = candidate is valid (no collision).
+    """
+    candidates = np.asarray(candidates, dtype=np.float32)
+    dynamic_points = np.asarray(dynamic_points, dtype=np.float32)
+    min_sq_dist = np.float32(radius - tolerance) ** np.float32(2.0)
+
+    n_candidates = candidates.shape[0]
+    n_static = d_static_points.shape[0] if d_static_points is not None else 0
+    n_dynamic = dynamic_points.shape[0]
+
+    # Initialize all as valid
+    valid = np.ones(n_candidates, dtype=np.int32)
+    d_valid = cuda.to_device(valid)
+    d_candidates = cuda.to_device(candidates)
+
+    threads_per_block = 256
+
+    # Check against static points (already on GPU)
+    if n_static > 0:
+        blocks_y = (n_static + threads_per_block - 1) // threads_per_block
+        blocks = (n_candidates, blocks_y)
+        _check_path_split_kernel[blocks, threads_per_block](
+            d_static_points, d_candidates, min_sq_dist, d_valid
+        )
+
+    # Check against dynamic points (transfer to GPU)
+    if n_dynamic > 0:
+        d_dynamic = cuda.to_device(dynamic_points)
+        blocks_y = (n_dynamic + threads_per_block - 1) // threads_per_block
+        blocks = (n_candidates, blocks_y)
+        _check_path_split_kernel[blocks, threads_per_block](
+            d_dynamic, d_candidates, min_sq_dist, d_valid
+        )
+
+    # Copy result back
+    d_valid.copy_to_host(valid)
+    return valid.astype(bool)
+
+
 def random_coordinate(
     pos1,
     pos2,
@@ -237,34 +301,6 @@ def random_coordinate(
     )
     d_next.copy_to_host(next_positions)
     return next_positions
-
-
-def check_path_batch(existing_points, candidates, radius, tolerance):
-    """Check multiple candidates at once. Returns bool array of valid candidates."""
-    existing_points = np.asarray(existing_points, dtype=np.float32)
-    candidates = np.asarray(candidates, dtype=np.float32)
-    min_sq_dist = np.float32(radius - tolerance) ** np.float32(2.0)
-    
-    n_candidates = candidates.shape[0]
-    n_existing = existing_points.shape[0]
-    valid = np.ones(n_candidates, dtype=np.int32)  # 1 = valid, 0 = collision
-    
-    # Transfer ONCE
-    d_existing = cuda.to_device(existing_points)
-    d_candidates = cuda.to_device(candidates)
-    d_valid = cuda.to_device(valid)
-    
-    # Check all candidates in parallel
-    threads_per_block = (16, 16)  # 2D grid
-    blocks_x = (n_candidates + threads_per_block[0] - 1) // threads_per_block[0]
-    blocks_y = (n_existing + threads_per_block[1] - 1) // threads_per_block[1]
-    blocks = (blocks_x, blocks_y)
-    
-    _check_path_batch_kernel[blocks, threads_per_block](
-        d_existing, d_candidates, min_sq_dist, d_valid
-    )
-    d_valid.copy_to_host(valid)
-    return valid.astype(bool)
 
 
 def check_path(existing_points, new_point, radius, tolerance):
@@ -386,3 +422,28 @@ def rotate_vector(v, axis, theta):
     return (v * c + cross * s + axis * k_dot_v * (np.float32(1.0) - c)).astype(
         np.float32
     )
+
+
+def _prepare_gpu_static_points(self):
+    """Transfer static points to GPU once at the start of generation."""
+    if not self.run_on_gpu:
+        return
+
+    from numba import cuda
+
+    static_parts = []
+
+    # Previous path coordinates (from start_from_path)
+    if self._init_count > 0:
+        static_parts.append(self.coordinates[: self._init_count])
+
+    # Include compound coordinates
+    if self.include_compound is not None:
+        static_parts.append(self.include_compound.xyz)
+
+    # Combine and transfer to GPU
+    if static_parts:
+        static_points = np.concatenate(static_parts).astype(np.float32)
+        self._gpu_static_points = cuda.to_device(static_points)
+    else:
+        self._gpu_static_points = None
