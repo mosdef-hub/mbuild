@@ -94,6 +94,9 @@ class Polymer(Compound):
         super(Polymer, self).__init__()
         self._monomers = monomers or []
         self._end_groups = end_groups or [None, None]
+        # Set default of single bond order for all monomer-monomer and monomer-group bonds
+        self._monomer_bond_orders = [1 for i in self._monomers]
+        self._end_group_bond_orders = [1 for i in self._end_groups]
         if not isinstance(self._end_groups, list):
             raise ValueError(
                 "Please provide two end groups in a list; "
@@ -446,10 +449,13 @@ class Polymer(Compound):
     def add_monomer(
         self,
         compound,
-        indices,
+        head_tag=None,
+        tail_tag=None,
         separation=None,
-        orientation=[None, None],
-        replace=True,
+        head_orientation=None,
+        tail_orientation=None,
+        bond_order=1,
+        remove_hydrogens=True,
     ):
         """Add a Compound to self.monomers.
 
@@ -510,27 +516,86 @@ class Polymer(Compound):
             will have ports added, and no particles are removed from
             the monomer compound.
         """
-        port_labels = ["up", "down"]
         comp = clone(compound)
+        _remove_hydrogens = []
 
-        for idx, label, orientation in zip(indices, port_labels, orientation):
-            _add_port(comp, label, idx, separation, orientation, replace)
-        if replace:
-            remove_atom1 = comp[indices[0]]
-            remove_atom2 = comp[indices[1]]
-            comp.remove(remove_atom1)
-            comp.remove(remove_atom2)
+        head = [p for p in comp.particles() if p.particle_tag == head_tag]
+        if len(head) == 0:
+            raise RuntimeError(
+                f"Particle tag {head_tag} was not found in the compound's particles."
+            )
+        if len(head) > 1:
+            raise RuntimeError(
+                f"Multiple particles with tag {head_tag} were found. Only one particle can be designated as the head particle."
+            )
+        head = head[0]
+        head_hydrogens = [p for p in head.direct_bonds() if p.name == "H"]
+        if len(head_hydrogens) != 0 and head_orientation is None:
+            bond_vectors = [h.pos - head.pos for h in head_hydrogens]
+            head_orientation = np.sum(bond_vectors, axis=0)
+            if np.allclose(head_orientation, 0, atol=1e-10):
+                head_orientation = np.cross(np.random.randn(3), bond_vectors[0])
+            head_orientation /= np.linalg.norm(head_orientation)
+
+        head_port = Port(
+            anchor=head,
+            orientation=head_orientation,
+            separation=separation / 2,
+        )
+        comp.add(head_port, label="up")
+
+        if remove_hydrogens:
+            for p in head_hydrogens[:bond_order]:
+                _remove_hydrogens.append(p)
+
+        tail = [p for p in comp.particles() if p.particle_tag == tail_tag]
+        if len(tail) == 0:
+            raise RuntimeError(
+                f"Particle tag {tail_tag} was not found in the compound's particles."
+            )
+        if len(tail) > 1:
+            raise RuntimeError(
+                f"Multiple particles with tag {tail_tag} were found. Only one particle can be designated as the tail particle."
+            )
+        tail = tail[0]
+        tail_hydrogens = [p for p in tail.direct_bonds() if p.name == "H"]
+        if len(tail_hydrogens) != 0 and tail_orientation is None:
+            if tail == head:
+                tail_orientation = -head_orientation
+            else:
+                bond_vectors = [h.pos - tail.pos for h in tail_hydrogens]
+                tail_orientation = np.sum(bond_vectors, axis=0)
+                if np.allclose(tail_orientation, 0, atol=1e-10):
+                    tail_orientation = np.cross(np.random.randn(3), bond_vectors[0])
+                tail_orientation /= np.linalg.norm(tail_orientation)
+
+        tail_port = Port(
+            anchor=tail,
+            orientation=tail_orientation,
+            separation=separation / 2,
+        )
+        comp.add(tail_port, label="down")
+
+        if remove_hydrogens:
+            for p in tail_hydrogens[:bond_order]:
+                _remove_hydrogens.append(p)
+
+        for p in _remove_hydrogens:
+            comp.remove(p)
+
         self._monomers.append(comp)
+        self._monomer_bond_orders.append(bond_order)
 
     def add_end_groups(
         self,
         compound,
-        index,
+        bond_tag=None,
         separation=None,
         orientation=None,
-        replace=True,
+        bond_order=1,
         label="head",
         duplicate=True,
+        remove_hydrogens=True,
     ):
         """Add an mBuild compound to self.end_groups.
 
@@ -563,13 +628,6 @@ class Polymer(Compound):
             used.
             Recommended behavior is to leave orientation set to None if you
             are using `replace=True`.
-        replace : Bool, default True
-            If True, then the particle identified by `index` will be removed
-            and ports are added to the particle it was initially bonded to.
-            Only use `replace=True` in the case that index points to a hydrogen
-            atom bonded to the desired bonding site particle.
-            If False, then the particle identified by `index` will have a port
-            added and no particle is removed from the end group compound.
         label : str, default 'head'
             Whether to add the end group to the 'head or 'tail' of the polymer.
             If `duplicate=True`, `label` is ignored.
@@ -583,18 +641,45 @@ class Polymer(Compound):
             `add_end_groups()` a second time to add another end group.
         """
         comp = clone(compound)
-        separation = _add_port(comp, "up", index, separation, orientation, replace)
-        if replace:
-            comp.remove(comp[index])
+        remove_hydrogens = []
+
+        head = [p for p in comp.particles() if p.particle_tag == bond_tag]
+        if len(head) == 0:
+            raise RuntimeError(
+                f"Particle tag {bond_tag} was not found in the compound's particles."
+            )
+        if len(head) > 1:
+            raise RuntimeError(
+                f"Multiple particles with tag {bond_tag} were found. Only one particle can be designated as the bond-forming particle."
+            )
+        head = head[0]
+        head_hydrogens = [p for p in head.direct_bonds() if p.name == "H"]
+        if len(head_hydrogens) != 0 and orientation is None:
+            bond_vectors = [h.pos - head.pos for h in head_hydrogens[:bond_order]]
+            orientation = np.sum(bond_vectors, axis=0)
+            orientation /= np.linalg.norm(orientation)
+
+        head_port = Port(
+            anchor=head,
+            orientation=orientation,
+            separation=separation / 2,
+        )
+        comp.add(head_port, label="up")
+        for p in head_hydrogens[:bond_order]:
+            remove_hydrogens.append(p)
+
         if duplicate:
             self._end_groups = [comp, clone(comp)]
+            self._end_group_bond_orders = [bond_order, bond_order]
             self._headtail = [separation / 2, separation / 2]
         else:
             if label.lower() == "head":
                 self._end_groups[0] = comp
+                self._end_group_bond_orders[0] = bond_order
                 self._headtail[0] = separation / 2
             elif label.lower() == "tail":
                 self._end_groups[1] = comp
+                self._end_group_bond_orders[1] = bond_order
                 self._headtail[1] = separation / 2
             else:
                 raise ValueError("Label must be 'head' or 'tail'")
@@ -636,27 +721,3 @@ class Polymer(Compound):
             raise ValueError("axis must be either: 'x', 'y', or 'z'")
 
         force_overlap(self, self.head_port, self.tail_port)
-
-
-def _add_port(compound, label, idx, separation, orientation=None, replace=True):
-    """Add the ports to the compound at the specified particle index.
-
-    The port will either use that particle as an anchor or replace it entirely.
-    """
-    if replace:
-        atom_bonds = [b for b in compound.bonds() if compound[idx] in b][0]
-        anchor = [p for p in atom_bonds if p != compound[idx]][0]
-        if orientation is None:
-            orientation = compound[idx].pos - anchor.pos
-        if separation is None:
-            separation = np.linalg.norm(compound[idx].pos - anchor.pos)
-    else:
-        anchor = compound[idx]
-
-    port = Port(
-        anchor=anchor,
-        orientation=orientation,
-        separation=separation / 2,
-    )
-    compound.add(port, label=label)
-    return separation
