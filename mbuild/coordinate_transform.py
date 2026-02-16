@@ -16,7 +16,12 @@ logger = logging.getLogger(__name__)
 
 
 def force_overlap(
-    move_this, from_positions, to_positions, add_bond=True, reset_labels=False
+    move_this,
+    from_positions,
+    to_positions,
+    add_bond=True,
+    bond_order=None,
+    reset_labels=False,
 ):
     """Move a Compound such that a position overlaps with another.
 
@@ -63,10 +68,10 @@ def force_overlap(
                 logger.warning("Attempting to form bond from port that has no anchor")
             else:
                 from_positions.anchor.parent.add_bond(
-                    (from_positions.anchor, to_positions.anchor)
+                    (from_positions.anchor, to_positions.anchor), bond_order=bond_order
                 )
                 to_positions.anchor.parent.add_bond(
-                    (from_positions.anchor, to_positions.anchor)
+                    (from_positions.anchor, to_positions.anchor), bond_order=bond_order
                 )
                 from_positions.anchor.parent.remove(
                     from_positions, reset_labels=reset_labels

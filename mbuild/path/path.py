@@ -90,7 +90,7 @@ class Path:
             self.N = len(self.coordinates)
 
     @classmethod
-    def from_coordinates(cls, coordinates, bond_graph=None):
+    def from_coordinates(cls, coordinates, bead_name="_A", bond_graph=nx.Graph()):
         """Generate a Path instance from a pre-defined set of coordinates and bond graph.
 
         Parameters
@@ -100,7 +100,9 @@ class Path:
         bond_graph : networkx.graph.Graph, optional
             Defines bonding between sites in the Path.
         """
-        return cls(coordinates=coordinates, bond_graph=bond_graph, N=None)
+        return cls(
+            coordinates=coordinates, bond_graph=bond_graph, N=None, bead_name=bead_name
+        )
 
     @classmethod
     def from_compound(cls, compound):
@@ -565,6 +567,7 @@ class HardSphereRandomWalk(Path):
                 self.add_edge(u=self.count - 1, v=self.count)
 
             self.attempts += 1
+
             # Check if we've filled up the current chunk size, if so, extend.
             if (self.count - self._init_count + 1) % self.chunk_size == 0:
                 self._extend_coordinates(N=self.chunk_size)
@@ -687,12 +690,7 @@ class HardSphereRandomWalk(Path):
                     ):
                         return xyz
                 self.attempts += 1
-                if self.termination.is_met():
-                    raise RuntimeError(
-                        "The maximum number attempts allowed have passed, and only ",
-                        f"{self.count - self._init_count} sucsessful attempts were completed.",
-                        "Try changing the parameters or seed and running again.",
-                    )
+                started_next_path = self.termination.is_met()
 
     def _prepare_gpu_static_points(self):
         """Transfer static points to GPU once at the start of generation."""
