@@ -1831,13 +1831,15 @@ class Compound(object):
             periodic_bonds, aperiodic_bonds = cloned._classify_periodic_bonds()
             periodicGraph = nx.subgraph_view(
                 cloned.bond_graph,
-                filter_edge=lambda n1, n2: (n1, n2) in periodic_bonds
-                or (n2, n1) in periodic_bonds,
+                filter_edge=lambda n1, n2: (
+                    (n1, n2) in periodic_bonds or (n2, n1) in periodic_bonds
+                ),
             )
             aperiodicGraph = nx.subgraph_view(
                 cloned.bond_graph,
-                filter_edge=lambda n1, n2: (n1, n2) in aperiodic_bonds
-                or (n2, n1) in aperiodic_bonds,
+                filter_edge=lambda n1, n2: (
+                    (n1, n2) in aperiodic_bonds or (n2, n1) in aperiodic_bonds
+                ),
             )
             cpd1 = Compound.from_bondgraph(periodicGraph)
             cpd2 = Compound.from_bondgraph(aperiodicGraph)
