@@ -2530,11 +2530,11 @@ class TestCompound(BaseTest):
         # position at left x wall
         Ls = cpd.get_boundingbox()
         cpd.box = mb.Box([Ls.Lx, Ls.Ly, Ls.Lz])
-        cpd.rotate(np.pi/8, around=[0,0,1])
-        cpd.translate([Ls.Lx/2.5, 0, 0])
+        cpd.rotate(np.pi / 8, around=[0, 0, 1])
+        cpd.translate([Ls.Lx / 2.5, 0, 0])
         for particle in cpd.particles():
             if particle.xyz[0][0] > cpd.box.Lz:
-                particle.translate([-1*cpd.box.Lx,0,0])
+                particle.translate([-1 * cpd.box.Lx, 0, 0])
         vis_object = cpd._visualize_py3dmol(periodic_bond_opacity=0.2)
         assert isinstance(vis_object, py3Dmol.view)
 
