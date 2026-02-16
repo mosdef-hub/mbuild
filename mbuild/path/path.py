@@ -68,7 +68,7 @@ class Path:
             self.N = len(self.coordinates)
 
     @classmethod
-    def from_coordinates(cls, coordinates, bond_graph=None):
+    def from_coordinates(cls, coordinates, bead_name="_A", bond_graph=nx.Graph()):
         """Generate a Path instance from a pre-defined set of coordinates and bond graph.
 
         Parameters
@@ -78,7 +78,9 @@ class Path:
         bond_graph : networkx.graph.Graph, optional
             Defines bonding between sites in the Path.
         """
-        return cls(coordinates=coordinates, bond_graph=bond_graph, N=None)
+        return cls(
+            coordinates=coordinates, bond_graph=bond_graph, N=None, bead_name=bead_name
+        )
 
     @classmethod
     def from_compound(cls, compound):
