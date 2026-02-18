@@ -2,6 +2,7 @@
 
 import logging
 import os
+import re
 import sys
 from collections import defaultdict
 from copy import deepcopy
@@ -103,6 +104,18 @@ def load(
             **kwargs,
         )
     # Second check if we are loading SMILES strings
+    # The SMILES string has { } indicating it is "tagged"
+    elif smiles and "{" in filename_or_object and "}" in filename_or_object:
+        seed = kwargs.get("seed", 0)
+        return load_tagged_smiles(
+            smiles=filename_or_object,
+            seed=seed,
+            backend=backend.lower() if backend else "rdkit",
+            infer_hierarchy=infer_hierarchy,
+            compound=compound,
+            **kwargs,
+        )
+    # No tags, go straight to SMILES loaders
     elif smiles and (backend is None or backend.lower() == "rdkit"):
         # Ignore the box info for SMILES (its never there)
         seed = kwargs.get("seed", 0)
@@ -1981,6 +1994,105 @@ def to_intermol(compound, molecule_types=None):  # pragma: no cover
         intermol_atom.position = atom.pos * u.nanometers
         last_molecule.add_atom(intermol_atom)
     return intermol_system
+
+
+def load_tagged_smiles(
+    smiles,
+    seed=0,
+    backend="rdkit",
+    compound=None,
+    tag_hydrogens=False,
+    infer_hierarchy=True,
+    name="Compound",
+):
+    """Parse and load a SMILES string containing { } tag indicators.
+
+    Parameters
+    ----------
+    smiles_or_filename : str
+        SMILES string or file of SMILES string to load
+    compound : mb.Compound
+        The host mbuild Compound
+    tag_hydrogens : bool, default False
+        If True, all hydrogens directly bonded to the tagged atom
+        are tagged as well.
+    infer_hierarchy : bool, optional, default=True
+
+    Returns
+    -------
+    compound : mb.Compound
+    """
+    # Atom regex: bracketed atoms, aromatic, normal, two-letter halogens
+    atom_pattern = re.compile(
+        r"""
+        \[[^\]]+\] |   # bracketed items like [CH3], [O-]
+        Cl|Br|         # two-letter atoms
+        [A-Z][a-z]? |  # normal atoms
+        [cnops]        # aromatic atoms
+        """,
+        re.VERBOSE,
+    )
+
+    tags = []
+    clean_smiles_parts = []
+    last_atom_index = -1
+    pos = 0
+
+    while pos < len(smiles):
+        ch = smiles[pos]
+
+        if ch == "{":
+            # extract tag content
+            end = smiles.index("}", pos)
+            tag_value = smiles[pos + 1 : end]
+            if last_atom_index >= 0:
+                tags.append((last_atom_index, tag_value))
+            pos = end + 1
+            continue
+
+        # Try to match an atom at the current position
+        atom_match = atom_pattern.match(smiles, pos)
+        if atom_match:
+            token = atom_match.group(0)
+            clean_smiles_parts.append(token)
+            last_atom_index += 1
+            pos = atom_match.end()
+            continue
+
+        # Otherwise it's a SMILES symbol (bonds, branches, ring digits, etc...)
+        clean_smiles_parts.append(ch)
+        pos += 1
+
+    clean_smiles = "".join(clean_smiles_parts)
+    # Initialize an mb.Compound if none is provided
+    if not compound:
+        compound = mb.Compound()
+
+    if backend == "rdkit":
+        tagged_comp = load_rdkit_smiles(
+            smiles_or_filename=clean_smiles,
+            compound=compound,
+            infer_hierarchy=infer_hierarchy,
+            ignore_box_warn=True,
+            seed=seed,
+        )
+    elif backend == "pybel":
+        tagged_comp = load_pybel_smiles(
+            smiles_or_filename=clean_smiles,
+            compound=compound,
+            infer_hierarchy=infer_hierarchy,
+            ignore_box_warn=True,
+        )
+    # Apply tags
+    for idx, tag_value in tags:
+        p = list(tagged_comp.particles())[idx]
+        p.particle_tag = tag_value
+        if tag_hydrogens:
+            for p2 in p.direct_bonds():
+                if p2.name == "H":
+                    p2.particle_tag = tag_value
+    tagged_comp.name = name
+    return tagged_comp
 
 
 def _add_intermol_molecule_type(intermol_system, parent):  # pragma: no cover
