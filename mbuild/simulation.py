@@ -226,6 +226,7 @@ def hoomd_cap_displacement(
     n_steps,
     dt,
     r_cut,
+    box_buffer=5,
     max_displacement=1e-3,
     fixed_compounds=None,
     integrate_compounds=None,
@@ -317,6 +318,7 @@ def hoomd_cap_displacement(
         seed=seed,
         integrate_compounds=integrate_compounds,
         fixed_compounds=fixed_compounds,
+        box_buffer=box_buffer,
     )
     bond = sim.get_force(hoomd.md.bond.Harmonic)
     angle = sim.get_force(hoomd.md.angle.Harmonic)
@@ -370,6 +372,7 @@ def hoomd_fire(
     forcefield,
     run_on_gpu,
     fire_iteration_steps,
+    box_buffer=5,
     num_fire_iterations=1,
     n_relax_steps=1000,
     fixed_compounds=None,
@@ -429,6 +432,7 @@ def hoomd_fire(
         compound=compound,
         forcefield=forcefield,
         r_cut=r_cut,
+        box_buffer=box_buffer,
         run_on_gpu=run_on_gpu,
         seed=seed,
         integrate_compounds=integrate_compounds,
