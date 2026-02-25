@@ -388,8 +388,8 @@ def hoomd_fire(
     energy_tol=1e-6,
     seed=42,
     r_cut=1.0,
-    bond_k_scale=100,
-    angle_k_scale=100,
+    bond_k_scale=1,
+    angle_k_scale=1,
     gsd_file=None,
 ):
     """Run a short HOOMD-Blue simulation with the FIRE integrator.
