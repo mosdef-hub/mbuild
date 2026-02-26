@@ -2,6 +2,8 @@ import numpy as np
 import pytest
 
 from mbuild.lib.molecules import (
+    WaterOPC,
+    WaterOPC3,
     WaterSPC,
     WaterTIP3P,
     WaterTIP4P,
@@ -14,7 +16,11 @@ from mbuild.tests.base_test import BaseTest
 class TestWater(BaseTest):
     @pytest.mark.parametrize(
         "model, bond_length, angle",
-        [(WaterTIP3P, 0.09572, 104.52), (WaterSPC, 0.1, 109.47)],
+        [
+            (WaterTIP3P, 0.09572, 104.52),
+            (WaterSPC, 0.1, 109.47),
+            (WaterOPC3, 0.09789, 109.47),
+        ],
     )
     def test_water_3site(self, model, bond_length, angle):
         water = model()
@@ -44,6 +50,7 @@ class TestWater(BaseTest):
             (WaterTIP4P, 0.09572, 0.015, 104.52),
             (WaterTIP4PIce, 0.09572, 0.01577, 104.52),
             (WaterTIP4P2005, 0.09572, 0.01546, 104.52),
+            (WaterOPC, 0.08724, 0.01594, 103.6),
         ],
     )
     def test_water_4site(self, model, bond_length, vsite_length, angle):

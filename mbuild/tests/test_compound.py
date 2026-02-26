@@ -1,6 +1,5 @@
 import logging
 import os
-import sys
 
 import networkx as nx
 import numpy as np
@@ -43,9 +42,14 @@ class TestCompound(BaseTest):
         compound = Compound([ethane, h2o])
         parm = compound.to_parmed()
         traj = compound.to_trajectory()
-        belmol = compound.to_pybel()
+        if has_openbabel:
+            belmol = compound.to_pybel()
+        else:
+            belmol = None
 
         for topo in [compound, parm, traj, belmol]:
+            if topo is None:
+                continue
             topo_converted = mb.load(topo)
             assert isinstance(topo_converted, Compound)
             assert topo_converted.n_particles == 11
@@ -415,6 +419,8 @@ class TestCompound(BaseTest):
         # Can't save gsd files with Windows
         if extension == ".gsd" and not has_hoomd:
             return True
+        elif extension == ".sdf" and not has_openbabel:
+            return True
         outfile = "methyl_out" + extension
         ch3.save(filename=outfile)
         assert os.path.exists(outfile)
@@ -445,6 +451,8 @@ class TestCompound(BaseTest):
         box_attributes = ["lengths"]
         custom_box = Box(lengths=[0.8, 0.8, 0.8], angles=[90, 90, 90])
         for ext in extensions:
+            if ext == ".sdf" and not has_openbabel:
+                continue
             outfile_padded = "padded_methyl" + ext
             outfile_custom = "custom_methyl" + ext
             ch3.save(filename=outfile_padded, box=None, overwrite=True)
@@ -1848,10 +1856,6 @@ class TestCompound(BaseTest):
             in caplog.text
         )
 
-    @pytest.mark.skipif(not has_openbabel, reason="Open Babel not installed")
-    @pytest.mark.skipif(
-        "win" in sys.platform, reason="Unknown issue with Window's Open Babel "
-    )
     def test_clone_outside_containment(self, ch2, ch3):
         compound = Compound()
         compound.add(ch2)
@@ -1930,11 +1934,13 @@ class TestCompound(BaseTest):
             angle1, angle2 = connect_and_reconnect(chf, bond_vector)
             assert np.isclose(angle1, angle2, atol=1e-6)
 
+    @pytest.mark.skipif(not has_openbabel, reason="Open Babel not installed")
     def test_smarts_from_string(self):
         p3ht = mb.load("CCCCCCC1=C(SC(=C1)C)C", smiles=True, backend="pybel")
         assert p3ht.n_bonds == 33
         assert p3ht.n_particles == 33
 
+    @pytest.mark.skipif(not has_openbabel, reason="Open Babel not installed")
     def test_smarts_from_file(self):
         p3ht = mb.load(get_fn("p3ht.smi"), smiles=True, backend="pybel")
         assert p3ht.n_bonds == 33
@@ -2008,6 +2014,9 @@ class TestCompound(BaseTest):
         struc = pmd.load_file(get_fn("spc.pdb"))
         comp.from_parmed(struc)
         assert comp.children[0].name == "SPC"
+        comp.save("test.pdb", residues=["SPC"])
+        struc2 = pmd.load_file("test.pdb")
+        assert struc2.residues[0].name == struc.residues[0].name
 
     @pytest.mark.skipif(not has_mdtraj, reason="MDTraj not installed")
     def test_complex_from_trajectory(self):
@@ -2140,16 +2149,19 @@ class TestCompound(BaseTest):
             else:
                 assert my_cmp.get_smiles() == test_string
 
+    @pytest.mark.skipif(not has_openbabel, reason="Pybel is not installed")
     def test_sdf(self, methane):
         methane.save("methane.sdf")
         sdf_string = mb.load("methane.sdf")
         assert np.allclose(methane.xyz, sdf_string.xyz, atol=1e-5)
 
+    @pytest.mark.skipif(not has_openbabel, reason="Pybel is not installed")
     def test_load_multiple_sdf(self, methane):
         filled = mb.fill_box(methane, n_compounds=10, box=Box([4, 4, 4]))
         filled.save("methane.sdf")
         mb.load("methane.sdf")
 
+    @pytest.mark.skipif(not has_openbabel, reason="Pybel is not installed")
     def test_save_multiple_sdf(self, methane):
         filled = mb.fill_box(methane, n_compounds=10, box=[0, 0, 0, 4, 4, 4])
         filled.save("methane.sdf")
@@ -2268,6 +2280,22 @@ class TestCompound(BaseTest):
         vis_object = ethane._visualize_py3dmol()
         assert isinstance(vis_object, py3Dmol.view)
 
+    @pytest.mark.skipif(not has_py3Dmol, reason="Py3Dmol is not installed")
+    def test_visualize_periodic_bonds_py3dmol(self):
+        py3Dmol = import_("py3Dmol")
+        # create a periodic structure to test
+        cpd = mb.load("CCCCCCCCCCCC", smiles=True)
+        # position at left x wall
+        Ls = cpd.get_boundingbox()
+        cpd.box = mb.Box([Ls.Lx, Ls.Ly, Ls.Lz])
+        cpd.rotate(np.pi / 8, around=[0, 0, 1])
+        cpd.translate([Ls.Lx / 2.5, 0, 0])
+        for particle in cpd.particles():
+            if particle.xyz[0][0] > cpd.box.Lz:
+                particle.translate([-1 * cpd.box.Lx, 0, 0])
+        vis_object = cpd._visualize_py3dmol(periodic_bond_opacity=0.2)
+        assert isinstance(vis_object, py3Dmol.view)
+
     @pytest.mark.skipif(not has_nglview, reason="NGLView is not installed")
     def test_visualize_nglview(self, ethane):
         nglview = import_("nglview")
@@ -2325,6 +2353,8 @@ class TestCompound(BaseTest):
 
     @pytest.mark.parametrize("backend", ["pybel", "rdkit"])
     def test_elements_from_smiles(self, backend):
+        if backend == "pybel" and not has_openbabel:
+            return True
         mol = mb.load("COC", smiles=True, backend=backend)
         for particle in mol.particles():
             assert particle.element is not None
