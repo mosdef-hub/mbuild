@@ -1,21 +1,14 @@
 """GPU (CUDA) equivalents of path_utils numba functions.
 
 This module provides drop-in replacements for the @njit functions in path_utils.py,
-using numba's cuda.jit so that work runs on the GPU. Each public function has the
-same signature and return behavior as the CPU version; host–device transfer is
-handled inside the wrapper.
+using numba's cuda.jit so that work runs on the GPU.
 
-Design notes:
+Notes:
 - Device functions (norm, rotate_vector) are compiled with device=True and run
   only on the device; they are used by kernels or other device code.
-- Kernels do not return values; they write results into device arrays. The
+- Kernels write results into device arrays. The
   public API functions allocate device arrays, launch the kernel, and copy
   results back to the host so the interface matches path_utils.
-- For reduction patterns (e.g. check_path: "any collision?"), we use one block
-  and either a small shared-memory reduction or a single global cell with
-  atomic max to avoid a separate reduction kernel.
-- random_coordinate: one thread per batch row; each thread replicates the
-  same v1_norm / r_perp_norm math for its row (redundant but simple and correct).
 """
 
 import math
@@ -23,42 +16,19 @@ import math
 import numpy as np
 from numba import cuda
 
-# -----------------------------------------------------------------------------
-# Device functions (callable only from GPU kernels or other device code)
-# -----------------------------------------------------------------------------
-
 
 @cuda.jit(device=True)
 def _norm(vec):
-    """Vector 2-norm. Device-only replacement for path_utils.norm."""
+    """Vector 2-norm. Replacement for path_utils.norm."""
     s = 0.0
     for i in range(vec.shape[0]):
         s += vec[i] * vec[i]
     return math.sqrt(s)
 
 
-@cuda.jit(device=True)
-def _rotate_vector(v, axis, theta, out):
-    """Rodrigues rotation: rotate v around normalized axis by theta. Writes to out."""
-    c = math.cos(theta)
-    s = math.sin(theta)
-    k_dot_v = axis[0] * v[0] + axis[1] * v[1] + axis[2] * v[2]
-    cross_0 = axis[1] * v[2] - axis[2] * v[1]
-    cross_1 = axis[2] * v[0] - axis[0] * v[2]
-    cross_2 = axis[0] * v[1] - axis[1] * v[0]
-    out[0] = v[0] * c + cross_0 * s + axis[0] * k_dot_v * (1.0 - c)
-    out[1] = v[1] * c + cross_1 * s + axis[1] * k_dot_v * (1.0 - c)
-    out[2] = v[2] * c + cross_2 * s + axis[2] * k_dot_v * (1.0 - c)
-
-
-# -----------------------------------------------------------------------------
-# Kernels
-# -----------------------------------------------------------------------------
-
-
 @cuda.jit
 def _check_path_split_kernel(points, candidates, min_sq_dist, valid):
-    """Check candidates against points. Sets valid[i]=0 if candidate i collides."""
+    """Check candidates against points. Sets valid[i]=0 if candidate i contains overlaps."""
     cand_i = cuda.blockIdx.x
     point_i = cuda.threadIdx.x + cuda.blockIdx.y * cuda.blockDim.x
 
@@ -81,52 +51,8 @@ def _check_path_split_kernel(points, candidates, min_sq_dist, valid):
 
 
 @cuda.jit
-def _random_coordinate_kernel(
-    pos1, v1_norm, bond_length, thetas, r_vectors, next_positions
-):
-    """Compute next_position from pos1, v1_norm, thetas, r_vectors."""
-    i = cuda.grid(1)
-    n = next_positions.shape[0]
-    if i >= n:
-        return
-
-    v1_norm_0 = v1_norm[0]
-    v1_norm_1 = v1_norm[1]
-    v1_norm_2 = v1_norm[2]
-
-    # dot product for this row
-    dot = (
-        r_vectors[i, 0] * v1_norm_0
-        + r_vectors[i, 1] * v1_norm_1
-        + r_vectors[i, 2] * v1_norm_2
-    )
-    r_perp_0 = r_vectors[i, 0] - dot * v1_norm_0
-    r_perp_1 = r_vectors[i, 1] - dot * v1_norm_1
-    r_perp_2 = r_vectors[i, 2] - dot * v1_norm_2
-
-    norm_r_perp = math.sqrt(
-        r_perp_0 * r_perp_0 + r_perp_1 * r_perp_1 + r_perp_2 * r_perp_2
-    )
-    if norm_r_perp < 1e-6:
-        norm_r_perp = 1.0
-    r_perp_norm_0 = r_perp_0 / norm_r_perp
-    r_perp_norm_1 = r_perp_1 / norm_r_perp
-    r_perp_norm_2 = r_perp_2 / norm_r_perp
-
-    cos_t = math.cos(thetas[i])
-    sin_t = math.sin(thetas[i])
-    v2_0 = cos_t * v1_norm_0 + sin_t * r_perp_norm_0
-    v2_1 = cos_t * v1_norm_1 + sin_t * r_perp_norm_1
-    v2_2 = cos_t * v1_norm_2 + sin_t * r_perp_norm_2
-
-    next_positions[i, 0] = pos1[0] + v2_0 * bond_length
-    next_positions[i, 1] = pos1[1] + v2_1 * bond_length
-    next_positions[i, 2] = pos1[2] + v2_2 * bond_length
-
-
-@cuda.jit
 def _check_path_kernel(existing_points, new_point, min_sq_dist, collision_out):
-    """One thread per existing point. If any dist_sq < min_sq_dist, set collision_out[0] = 1 (atomic max)."""
+    """One thread per existing point. If any dist_sq < min_sq_dist, set collision_out[0] = 1."""
     i = cuda.grid(1)
     n = existing_points.shape[0]
     if i >= n:
@@ -202,11 +128,6 @@ def _target_density_kernel(candidates, target_coords, r2_cut, out):
         out[cand_i] = np.float32(total)
 
 
-# -----------------------------------------------------------------------------
-# Public API (same signatures as path_utils, with host–device transfer)
-# -----------------------------------------------------------------------------
-
-
 def check_path_split(d_static_points, dynamic_points, candidates, radius, tolerance):
     """
     Check candidates against both static (already on GPU) and dynamic points.
@@ -267,43 +188,6 @@ def check_path_split(d_static_points, dynamic_points, candidates, radius, tolera
     # Copy result back
     d_valid.copy_to_host(valid)
     return valid.astype(bool)
-
-
-def random_coordinate(
-    pos1,
-    pos2,
-    bond_length,
-    thetas,
-    r_vectors,
-):
-    """GPU version of path_utils.random_coordinate. Same signature and return type.
-
-    All internal math and outputs use float32 for speed and memory efficiency.
-    """
-    pos1 = np.asarray(pos1, dtype=np.float32)
-    pos2 = np.asarray(pos2, dtype=np.float32)
-    bond_length = np.float32(bond_length)
-    v1 = pos2 - pos1  # float32
-    v1_norm = v1 / np.linalg.norm(v1).astype(np.float32)
-    thetas = np.asarray(thetas, dtype=np.float32)
-    r_vectors = np.asarray(r_vectors, dtype=np.float32)
-
-    n = r_vectors.shape[0]
-    next_positions = np.empty((n, 3), dtype=np.float32)
-
-    d_pos1 = cuda.to_device(pos1)
-    d_v1_norm = cuda.to_device(v1_norm)
-    d_thetas = cuda.to_device(thetas)
-    d_r_vectors = cuda.to_device(r_vectors)
-    d_next = cuda.device_array((n, 3), dtype=np.float32)
-
-    threads_per_block = 256
-    blocks = (n + threads_per_block - 1) // threads_per_block
-    _random_coordinate_kernel[blocks, threads_per_block](
-        d_pos1, d_v1_norm, bond_length, d_thetas, d_r_vectors, d_next
-    )
-    d_next.copy_to_host(next_positions)
-    return next_positions
 
 
 def check_path(existing_points, new_point, radius, tolerance):

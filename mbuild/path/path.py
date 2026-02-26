@@ -21,20 +21,9 @@ try:
 
     _CUDA_AVAILABLE = cuda.is_available()
     if _CUDA_AVAILABLE:
-        from mbuild.path.path_utils_gpu import check_path as check_path_gpu
-        from mbuild.path.path_utils_gpu import (
-            check_path_split as check_path_split,
-        )
-        from mbuild.path.path_utils_gpu import (
-            random_coordinate as random_coordinate_gpu,
-        )
-    else:
-        check_path_gpu = None
-        random_coordinate_gpu = None
+        from mbuild.path.path_utils_gpu import check_path_split
 except Exception:  # pragma: no cover - CUDA stack not importable or GPU utils failed
     _CUDA_AVAILABLE = False
-    check_path_gpu = None
-    random_coordinate_gpu = None
 
 logger = logging.getLogger(__name__)
 
@@ -398,12 +387,11 @@ class HardSphereRandomWalk(Path):
         self._init_count = self.count
 
         # Select methods to use for random walk
-        # CPU by default; optionally use GPU-accelerated versions.
+        # CPU by default; optionally use GPU-accelerated version.
+        self.next_step = random_coordinate
         if self.run_on_gpu:
-            self.next_step = random_coordinate_gpu
-            self.check_path = check_path_gpu
+            self.check_path = check_path_split
         else:
-            self.next_step = random_coordinate
             self.check_path = check_path
 
         # Needed for mbuild.path.termination.WallTime stop terminator
@@ -611,7 +599,8 @@ class HardSphereRandomWalk(Path):
         if self.initial_point is not None:
             return self.initial_point
 
-        # Random initial point, no constraints: Bounds set by radius and N steps
+        # Random initial point, no constraints, so create random coordinate.
+        # Set bounds as within 10x the particle radius as a heuristic.
         elif not any(
             [
                 self.volume_constraint,
@@ -620,24 +609,62 @@ class HardSphereRandomWalk(Path):
                 self.include_compound,
             ]
         ):
-            max_dist = (5 * self.radius) - self.radius
+            max_dist = 10 * self.radius
             xyz = self.rng.uniform(low=-max_dist / 2, high=max_dist / 2, size=3)
             return xyz
 
-        # Random point inside volume constraint, not starting from another path
-        elif (
-            self.volume_constraint
-            and not self.start_from_path_index
-            and not self.include_compound
-        ):
-            xyz = self.rng.uniform(
-                low=np.min(self.volume_constraint.mins) + self.radius,
-                high=np.max(self.volume_constraint.maxs) - self.radius,
-                size=3,
-            )
-            return xyz
+        # Random point inside volume constraint, find a good starting site
+        # If no other sites exist, randomly pick coordinate inside volume constraint bounds
+        # If other sites exist, try to find a good (low density) starting point
+        elif self.volume_constraint and not self.start_from_path_index:
+            # Sample free sites using both previous path coordinates and compounds coordinates
+            if self.start_from_path and self.include_compound:
+                existing_points = np.concatenate(
+                    self.start_from_path.coordinates, self.include_compound.xyz
+                )
 
-        # Starting from another path, run Monte Carlo
+            # Sample free sites from just previous path coordinates
+            elif self.start_from_path and not self.include_compound:
+                existing_points = self.start_from_path.coordinates
+
+            # Sample free sites from just included compound coordinates
+            elif self.include_compound and not self.start_from_path:
+                existing_points = self.include_compound.xyz
+
+            # No other coordinates to consider, sample any site within bounds of volume
+            else:
+                existing_points = None
+
+            new_xyzs = self.volume_constraint.sample_candidates(
+                points=existing_points, n_candidates=100, buffer=self.radius + 0.1
+            )
+
+            # We don't need to check for overlaps
+            if existing_points is None:
+                return new_xyzs[0]
+
+            # Possible to have overlaps resulting from sample_candiates(). Iterate and check.
+            accepted_xyz = None
+            for xyz in new_xyzs:
+                if self.check_path(
+                    existing_points=existing_points,
+                    new_point=xyz,
+                    radius=self.radius,
+                    tolerance=self.tolerance,
+                ):
+                    accepted_xyz = xyz
+                    break
+
+            if accepted_xyz:
+                return accepted_xyz
+
+            else:
+                raise RuntimeError(
+                    "Unable to find a starting point without overlapping particles. "
+                    "The density of the volume constraint may be too high."
+                )
+
+        # Starting from another path and from a specifc site on the path. Run Monte Carlo
         # Accepted next move is first point of this random walk
         elif self.start_from_path and self.start_from_path_index is not None:
             # TODO: handle start_from_path index of negative values
@@ -664,6 +691,7 @@ class HardSphereRandomWalk(Path):
                         points=new_xyzs, buffer=self.radius
                     )
                     new_xyzs = new_xyzs[is_inside_mask]
+
                 # Set up coordinates to check against
                 if self.include_compound:
                     existing_points = np.concatenate(
