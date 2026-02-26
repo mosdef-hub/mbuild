@@ -532,7 +532,7 @@ class HardSphereRandomWalk(Path):
                 )
 
             accept_xyz = None
-            if self.run_on_gpu:
+            if self.run_on_gpu and len(candidates) > 0:
                 dynamic_points = self.coordinates[self._init_count : self.count + 1]
                 valid_mask = check_path_split(
                     self._gpu_static_points,

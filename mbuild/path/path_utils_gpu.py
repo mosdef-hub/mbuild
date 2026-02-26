@@ -234,6 +234,9 @@ def check_path_split(d_static_points, dynamic_points, candidates, radius, tolera
     min_sq_dist = np.float32(radius - tolerance) ** np.float32(2.0)
 
     n_candidates = candidates.shape[0]
+    if n_candidates == 0:
+        return np.zeros(0, dtype=bool)
+
     n_static = d_static_points.shape[0] if d_static_points is not None else 0
     n_dynamic = dynamic_points.shape[0]
 
