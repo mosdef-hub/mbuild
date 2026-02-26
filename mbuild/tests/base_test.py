@@ -2,6 +2,7 @@ import numpy as np
 import pytest
 
 import mbuild as mb
+from mbuild import Polymer
 from mbuild.utils.geometry import calc_dihedral
 from mbuild.utils.io import get_fn
 
@@ -25,6 +26,18 @@ class BaseTest:
         from mbuild.lib.molecules import Ethane
 
         return Ethane()
+
+    @pytest.fixture
+    def ethane_monomer(self):
+        ethane = mb.load("C{<}C{>}", smiles=True)
+        return ethane
+
+    @pytest.fixture
+    def ethane_chain(self):
+        chain = Polymer()
+        ethane = mb.load("C{<}C{>}", smiles=True)
+        chain.add_monomer(ethane, head_tag=">", tail_tag="<", separation=0.145)
+        return chain
 
     @pytest.fixture
     def methane(self):
