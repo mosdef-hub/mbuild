@@ -211,6 +211,7 @@ class Compound(object):
         self._bond_tag = None
         self._tag = None
         self._hoomd_data = {}
+
     @classmethod
     def from_bondgraph(cls, bondgraph):
         """Create an mb.Compound from some mb.BondGraph."""
