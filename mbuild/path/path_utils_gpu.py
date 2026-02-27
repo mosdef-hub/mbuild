@@ -88,7 +88,7 @@ def _local_density_kernel(candidate, target_coords, r2_cut, density_out):
 
 @cuda.jit
 def _target_density_kernel(candidates, target_coords, r2_cut, out):
-    """One block per candidate. Each block runs _local_density logic and writes to out[blockIdx.x]."""
+    """One block per candidate. Each block runs _local_density logic and writes to out[block_idx.x]."""
     cand_i = cuda.blockIdx.x
     t = cuda.threadIdx.x
     n_targets = target_coords.shape[0]
@@ -105,7 +105,6 @@ def _target_density_kernel(candidates, target_coords, r2_cut, out):
     tid = cuda.threadIdx.x
     shared[tid] = count
     cuda.syncthreads()
-    # Single-thread reduction over shared[0 : n_threads]
     if tid == 0:
         total = 0
         for k in range(n_threads):

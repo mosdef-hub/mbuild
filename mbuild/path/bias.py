@@ -7,8 +7,6 @@ from mbuild.path.path_utils import (
     target_sq_distances as _target_sq_distances_cpu,
 )
 
-# Optional GPU-accelerated equivalents of path_utils functions. We follow the
-# same logic as in path.py: only enable them if cuda reports a usable device.
 try:
     from numba import cuda
 
@@ -23,6 +21,7 @@ try:
     else:
         _target_density_gpu = None
         _target_sq_distances_gpu = None
+
 except Exception:  # pragma: no cover - CUDA stack not importable or GPU utils failed
     _CUDA_AVAILABLE = False
     _target_density_gpu = None
