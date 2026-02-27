@@ -2,6 +2,8 @@
 
 import logging
 import math
+import os
+import tempfile
 import time
 from abc import abstractmethod
 from copy import deepcopy
@@ -12,6 +14,7 @@ from scipy.interpolate import interp1d
 
 from mbuild import Compound
 from mbuild.path.path_utils import check_path, random_coordinate
+from mbuild.utils.io import import_
 from mbuild.utils.volumes import CuboidConstraint, CylinderConstraint
 
 logger = logging.getLogger(__name__)
@@ -203,6 +206,48 @@ class Path:
         raise NotImplementedError(
             "This feature of mBuild 2.0 has not been implemented yet."
         )
+
+    def visualize(self, bead_color="#5d8aa8", bead_radius=0.5, styleDict=None):
+        """Visualize in 3D space using py3Dmol of the Path as a Compound.
+
+        Parameters
+        ----------
+        bead_color : str, default #5d8aa8
+            A blue bead color to view your path.
+        bead_radius : float, default 0.5
+        styleDict : dict, default Non
+            Passable dictionary to py3Dmol setStyle
+        """
+        py3Dmol = import_("py3Dmol")
+        compound = self.to_compound()
+        color_scheme = {"C": bead_color}  # just use default Carbon element to set color
+        for particle in compound.particles():
+            particle.name = "C"
+        tmp_dir = tempfile.mkdtemp()
+        compound.save(
+            os.path.join(tmp_dir, "tmp.mol2"),
+            include_ports=False,
+            overwrite=True,
+        )
+
+        view = py3Dmol.view()
+        with open(os.path.join(tmp_dir, "tmp.mol2"), "r") as f:
+            view.addModel(f.read(), "mol2", keepH=True)
+        if styleDict is None:
+            view.setStyle(
+                {
+                    "stick": {"radius": bead_radius, "color": "grey"},
+                    "sphere": {
+                        "radius": bead_radius / 5,
+                        "colorscheme": color_scheme,
+                    },
+                }
+            )
+        else:
+            view.setStyle(styleDict)
+        view.zoomTo()
+
+        return view
 
 
 class HardSphereRandomWalk(Path):
