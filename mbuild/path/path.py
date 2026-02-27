@@ -373,6 +373,8 @@ class HardSphereRandomWalk(Path):
         # Needed for mbuild.path.termination.WallTime stop terminator
         self.start_time = None
 
+        # Select methods to use for random walk
+        # CPU by default; optionally use GPU-accelerated version.
         if run_on_gpu:
             cuda_available = _get_cuda_available()
             if cuda_available:
@@ -380,21 +382,17 @@ class HardSphereRandomWalk(Path):
                 from mbuild.path.path_utils_gpu import check_path_split
 
                 logger.info("Running HardSphereRandomWalk on a CUDA device.")
+                self.check_path_gpu = check_path_split
             else:
                 logger.warning(
                     "HardSphereRandomWalk was initialized with run_on_gpu=True, but "
                     "no CUDA-capable device is available. Falling back to CPU."
                 )
                 self.run_on_gpu = False
+                self.check_path_gpu = None
 
-        # Select methods to use for random walk
-        # CPU by default; optionally use GPU-accelerated version.
-        self.next_step = random_coordinate
-        if self.run_on_gpu:
-            self.check_path_gpu = check_path_split
-        else:
-            self.check_path_gpu = None
         self.check_path_cpu = check_path
+        self.next_step = random_coordinate
 
         super().__init__(
             coordinates=coordinates, bond_graph=bond_graph, bead_name=bead_name
