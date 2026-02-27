@@ -43,9 +43,14 @@ class TestCompound(BaseTest):
         compound = Compound([ethane, h2o])
         parm = compound.to_parmed()
         traj = compound.to_trajectory()
-        belmol = compound.to_pybel()
+        if has_openbabel:
+            belmol = compound.to_pybel()
+        else:
+            belmol = None
 
         for topo in [compound, parm, traj, belmol]:
+            if topo is None:
+                continue
             topo_converted = mb.load(topo)
             assert isinstance(topo_converted, Compound)
             assert topo_converted.n_particles == 11
@@ -415,6 +420,8 @@ class TestCompound(BaseTest):
         # Can't save gsd files with Windows
         if extension == ".gsd" and not has_hoomd:
             return True
+        elif extension == ".sdf" and not has_openbabel:
+            return True
         outfile = "methyl_out" + extension
         ch3.save(filename=outfile)
         assert os.path.exists(outfile)
@@ -445,6 +452,8 @@ class TestCompound(BaseTest):
         box_attributes = ["lengths"]
         custom_box = Box(lengths=[0.8, 0.8, 0.8], angles=[90, 90, 90])
         for ext in extensions:
+            if ext == ".sdf" and not has_openbabel:
+                continue
             outfile_padded = "padded_methyl" + ext
             outfile_custom = "custom_methyl" + ext
             ch3.save(filename=outfile_padded, box=None, overwrite=True)
@@ -1852,6 +1861,279 @@ class TestCompound(BaseTest):
     @pytest.mark.skipif(
         "win" in sys.platform, reason="Unknown issue with Window's Open Babel "
     )
+    def test_energy_minimize(self, octane):
+        octane.energy_minimize()
+
+    @pytest.mark.skipif(not has_openbabel, reason="Open Babel not installed")
+    @pytest.mark.skipif(
+        "win" in sys.platform, reason="Unknown issue with Window's Open Babel "
+    )
+    def test_energy_minimize_shift_com(self, octane):
+        com_old = octane.pos
+        octane.energy_minimize()
+        # check to see if COM of energy minimized Compound
+        # has been shifted back to the original COM
+        assert np.allclose(com_old, octane.pos)
+
+    @pytest.mark.skipif(not has_openbabel, reason="Open Babel not installed")
+    @pytest.mark.skipif(
+        "win" in sys.platform, reason="Unknown issue with Window's Open Babel "
+    )
+    def test_energy_minimize_shift_anchor(self, octane):
+        anchor_compound = octane.labels["chain"].labels["CH3[0]"]
+        pos_old = anchor_compound.pos
+        octane.energy_minimize(anchor=anchor_compound)
+        # check to see if COM of the anchor Compound
+        # has been shifted back to the original COM
+        assert np.allclose(pos_old, anchor_compound.pos)
+
+    @pytest.mark.skipif(not has_openbabel, reason="Open Babel not installed")
+    @pytest.mark.skipif(
+        "win" in sys.platform, reason="Unknown issue with Window's Open Babel "
+    )
+    def test_energy_minimize_fix_compounds(self, octane):
+        methyl_end0 = octane.labels["chain"].labels["CH3[0]"]
+        methyl_end1 = octane.labels["chain"].labels["CH3[0]"]
+        carbon_end = octane.labels["chain"].labels["CH3[0]"].labels["C[0]"]
+        not_in_compound = mb.Compound(name="H")
+
+        # fix the whole molecule and make sure positions are close
+        # given stochastic nature and use of restraining springs
+        # we need to have a pretty loose tolerance for checking
+        old_com = octane.pos
+        octane.energy_minimize(
+            fixed_compounds=octane, shift_com=False, constraint_factor=1e6
+        )
+        assert np.allclose(octane.pos, old_com, rtol=1e-2, atol=1e-2)
+
+        # primarily focus on checking inputs are parsed correctly
+        octane.energy_minimize(fixed_compounds=[octane])
+        octane.energy_minimize(fixed_compounds=carbon_end)
+        octane.energy_minimize(fixed_compounds=methyl_end0)
+        octane.energy_minimize(fixed_compounds=[methyl_end0])
+        octane.energy_minimize(fixed_compounds=[methyl_end0, (True, True, True)])
+
+        octane.energy_minimize(fixed_compounds=[methyl_end0, (True, True, False)])
+        octane.energy_minimize(fixed_compounds=[methyl_end0, [True, True, False]])
+        octane.energy_minimize(fixed_compounds=[methyl_end0, (True, False, False)])
+        octane.energy_minimize(fixed_compounds=[methyl_end0, (False, False, False)])
+
+        octane.energy_minimize(fixed_compounds=[methyl_end0, methyl_end1])
+        octane.energy_minimize(fixed_compounds=[[methyl_end0], [methyl_end1]])
+        octane.energy_minimize(
+            fixed_compounds=[
+                [methyl_end0, (True, True, True)],
+                [methyl_end1, (True, True, True)],
+            ]
+        )
+
+        with pytest.raises(MBuildError):
+            octane.energy_minimize(fixed_compounds=not_in_compound)
+        with pytest.raises(MBuildError):
+            octane.energy_minimize(fixed_compounds=[not_in_compound])
+        with pytest.raises(MBuildError):
+            octane.energy_minimize(fixed_compounds=[12323.3, (True, False, False)])
+        with pytest.raises(Exception):
+            octane.energy_minimize(
+                fixed_compounds=[methyl_end0, (True, False, False, False)]
+            )
+        with pytest.raises(Exception):
+            octane.energy_minimize(fixed_compounds=[methyl_end0, True, False, False])
+        with pytest.raises(Exception):
+            octane.energy_minimize(fixed_compounds=[methyl_end0, True])
+        with pytest.raises(Exception):
+            octane.energy_minimize(
+                fixed_compounds=[methyl_end0, [True, False, False, False]]
+            )
+        with pytest.raises(Exception):
+            octane.energy_minimize(fixed_compounds=[methyl_end0, (True, False)])
+
+        with pytest.raises(Exception):
+            octane.energy_minimize(fixed_compounds=[methyl_end0, (True)])
+
+        with pytest.raises(Exception):
+            octane.energy_minimize(fixed_compounds=[methyl_end0, ("True", True, True)])
+        with pytest.raises(Exception):
+            octane.energy_minimize(fixed_compounds=[methyl_end0, (True, "True", True)])
+        with pytest.raises(Exception):
+            octane.energy_minimize(fixed_compounds=[methyl_end0, (True, True, "True")])
+        with pytest.raises(Exception):
+            octane.energy_minimize(
+                fixed_compounds=[methyl_end0, ("True", True, "True")]
+            )
+        with pytest.raises(Exception):
+            octane.energy_minimize(
+                fixed_compounds=[methyl_end0, (True, "True", "True")]
+            )
+        with pytest.raises(Exception):
+            octane.energy_minimize(
+                fixed_compounds=[methyl_end0, ("True", "True", True)]
+            )
+        with pytest.raises(Exception):
+            octane.energy_minimize(
+                fixed_compounds=[methyl_end0, ("True", "True", "True")]
+            )
+        with pytest.raises(Exception):
+            octane.energy_minimize(fixed_compounds=[methyl_end0, (123.0, 231, "True")])
+
+    @pytest.mark.skipif(not has_openbabel, reason="Open Babel not installed")
+    @pytest.mark.skipif(
+        "win" in sys.platform, reason="Unknown issue with Window's Open Babel "
+    )
+    def test_energy_minimize_ignore_compounds(self, octane):
+        methyl_end0 = octane.labels["chain"].labels["CH3[0]"]
+        methyl_end1 = octane.labels["chain"].labels["CH3[1]"]
+        carbon_end = octane.labels["chain"].labels["CH3[0]"].labels["C[0]"]
+        not_in_compound = mb.Compound(name="H")
+
+        # fix the whole molecule and make sure positions are close
+        # given stochastic nature and use of restraining springs
+        # we need to have a pretty loose tolerance for checking
+        old_com = octane.pos
+        octane.energy_minimize(
+            ignore_compounds=octane, shift_com=False, constraint_factor=1e6
+        )
+        assert np.allclose(octane.pos, old_com, rtol=1e-2, atol=1e-2)
+
+        # primarily focus on checking inputs are parsed correctly
+        octane.energy_minimize(ignore_compounds=[octane])
+        octane.energy_minimize(ignore_compounds=carbon_end)
+        octane.energy_minimize(ignore_compounds=methyl_end0)
+        octane.energy_minimize(ignore_compounds=[methyl_end0])
+        octane.energy_minimize(ignore_compounds=[methyl_end0, methyl_end1])
+        octane.energy_minimize(ignore_compounds=[[methyl_end0], [methyl_end1]])
+
+        with pytest.raises(MBuildError):
+            octane.energy_minimize(ignore_compounds=not_in_compound)
+        with pytest.raises(MBuildError):
+            octane.energy_minimize(ignore_compounds=[1231, 123124])
+
+    @pytest.mark.skipif(not has_openbabel, reason="Open Babel not installed")
+    @pytest.mark.skipif(
+        "win" in sys.platform, reason="Unknown issue with Window's Open Babel "
+    )
+    def test_energy_minimize_distance_constraints(self, octane):
+        methyl_end0 = octane.labels["chain"].labels["CH3[0]"]
+        methyl_end1 = octane.labels["chain"].labels["CH3[1]"]
+
+        carbon_end0 = octane.labels["chain"].labels["CH3[0]"].labels["C[0]"]
+        carbon_end1 = octane.labels["chain"].labels["CH3[1]"].labels["C[0]"]
+        h_end0 = octane.labels["chain"].labels["CH3[0]"].labels["H[0]"]
+
+        not_in_compound = mb.Compound(name="H")
+
+        # given stochastic nature and use of restraining springs
+        # we need to have a pretty loose tolerance for checking
+        octane.energy_minimize(
+            distance_constraints=[(carbon_end0, carbon_end1), 0.7],
+            constraint_factor=1e20,
+        )
+        assert np.allclose(
+            np.linalg.norm(carbon_end0.pos - carbon_end1.pos),
+            0.7,
+            rtol=1e-2,
+            atol=1e-2,
+        )
+
+        octane.energy_minimize(distance_constraints=[[(carbon_end0, carbon_end1), 0.7]])
+        octane.energy_minimize(
+            distance_constraints=[
+                [(carbon_end0, carbon_end1), 0.7],
+                [(carbon_end0, h_end0), 0.1],
+            ]
+        )
+
+        with pytest.raises(MBuildError):
+            octane.energy_minimize(
+                distance_constraints=[(carbon_end0, not_in_compound), 0.7]
+            )
+        with pytest.raises(MBuildError):
+            octane.energy_minimize(
+                distance_constraints=[(carbon_end0, carbon_end0), 0.7]
+            )
+        with pytest.raises(MBuildError):
+            octane.energy_minimize(
+                distance_constraints=[(methyl_end0, carbon_end1), 0.7]
+            )
+        with pytest.raises(MBuildError):
+            octane.energy_minimize(
+                distance_constraints=[(methyl_end0, methyl_end1), 0.7]
+            )
+
+    @pytest.mark.skipif(not has_openbabel, reason="Open Babel not installed")
+    def test_energy_minimize_ff(self, octane):
+        for ff in ["UFF", "GAFF", "MMFF94", "MMFF94s", "Ghemical"]:
+            octane.energy_minimize(forcefield=ff)
+        with pytest.raises(IOError):
+            octane.energy_minimize(forcefield="fakeFF")
+
+    @pytest.mark.skipif(not has_openbabel, reason="Open Babel not installed")
+    def test_energy_minimize_algorithm(self, octane):
+        for algorithm in ["cg", "steep", "md"]:
+            octane.energy_minimize(algorithm=algorithm)
+        with pytest.raises(MBuildError):
+            octane.energy_minimize(algorithm="fakeAlg")
+
+    @pytest.mark.skipif(not has_openbabel, reason="Open Babel not installed")
+    def test_energy_minimize_non_element(self, octane):
+        for particle in octane.particles():
+            particle.element = None
+        # Pass with element inference from names
+        octane.energy_minimize()
+        for particle in octane.particles():
+            particle.name = "Q"
+            particle.element = None
+
+        # Fail once names cannot be set as elements
+        with pytest.raises(MBuildError):
+            octane.energy_minimize()
+
+    @pytest.mark.skipif(not has_openbabel, reason="Open Babel not installed")
+    def test_energy_minimize_ports(self, octane):
+        distances = np.round(
+            [
+                octane.min_periodic_distance(port.pos, port.anchor.pos)
+                for port in octane.all_ports()
+            ],
+            5,
+        )
+        orientations = np.round(
+            [port.pos - port.anchor.pos for port in octane.all_ports()], 5
+        )
+
+        octane.energy_minimize()
+
+        updated_distances = np.round(
+            [
+                octane.min_periodic_distance(port.pos, port.anchor.pos)
+                for port in octane.all_ports()
+            ],
+            5,
+        )
+        updated_orientations = np.round(
+            [port.pos - port.anchor.pos for port in octane.all_ports()], 5
+        )
+
+        assert np.array_equal(distances, updated_distances)
+        assert np.array_equal(orientations, updated_orientations)
+
+    @pytest.mark.skipif(not has_foyer, reason="Foyer is not installed")
+    def test_energy_minimize_openmm(self, octane):
+        octane.energy_minimize(forcefield="oplsaa")
+
+    @pytest.mark.skipif(not has_foyer, reason="Foyer is not installed")
+    @pytest.mark.parametrize("constraints", ["AllBonds", "HBonds", "HAngles", None])
+    def test_energy_minimize_openmm_constraints(self, octane, constraints):
+        octane.energy_minimize(forcefield="oplsaa", constraints=constraints)
+
+    def test_energy_minimize_openmm_invalid_constraints(self, octane):
+        with pytest.raises(ValueError):
+            octane.energy_minimize(forcefield="oplsaa", constraints="boo")
+
+    @pytest.mark.skipif(not has_foyer, reason="Foyer is not installed")
+    def test_energy_minimize_openmm_xml(self, octane):
+        octane.energy_minimize(forcefield=get_fn("small_oplsaa.xml"))
+
     def test_clone_outside_containment(self, ch2, ch3):
         compound = Compound()
         compound.add(ch2)
@@ -1930,11 +2212,13 @@ class TestCompound(BaseTest):
             angle1, angle2 = connect_and_reconnect(chf, bond_vector)
             assert np.isclose(angle1, angle2, atol=1e-6)
 
+    @pytest.mark.skipif(not has_openbabel, reason="Open Babel not installed")
     def test_smarts_from_string(self):
         p3ht = mb.load("CCCCCCC1=C(SC(=C1)C)C", smiles=True, backend="pybel")
         assert p3ht.n_bonds == 33
         assert p3ht.n_particles == 33
 
+    @pytest.mark.skipif(not has_openbabel, reason="Open Babel not installed")
     def test_smarts_from_file(self):
         p3ht = mb.load(get_fn("p3ht.smi"), smiles=True, backend="pybel")
         assert p3ht.n_bonds == 33
@@ -2008,6 +2292,9 @@ class TestCompound(BaseTest):
         struc = pmd.load_file(get_fn("spc.pdb"))
         comp.from_parmed(struc)
         assert comp.children[0].name == "SPC"
+        comp.save("test.pdb", residues=["SPC"])
+        struc2 = pmd.load_file("test.pdb")
+        assert struc2.residues[0].name == struc.residues[0].name
 
     @pytest.mark.skipif(not has_mdtraj, reason="MDTraj not installed")
     def test_complex_from_trajectory(self):
@@ -2140,16 +2427,19 @@ class TestCompound(BaseTest):
             else:
                 assert my_cmp.get_smiles() == test_string
 
+    @pytest.mark.skipif(not has_openbabel, reason="Pybel is not installed")
     def test_sdf(self, methane):
         methane.save("methane.sdf")
         sdf_string = mb.load("methane.sdf")
         assert np.allclose(methane.xyz, sdf_string.xyz, atol=1e-5)
 
+    @pytest.mark.skipif(not has_openbabel, reason="Pybel is not installed")
     def test_load_multiple_sdf(self, methane):
         filled = mb.fill_box(methane, n_compounds=10, box=Box([4, 4, 4]))
         filled.save("methane.sdf")
         mb.load("methane.sdf")
 
+    @pytest.mark.skipif(not has_openbabel, reason="Pybel is not installed")
     def test_save_multiple_sdf(self, methane):
         filled = mb.fill_box(methane, n_compounds=10, box=[0, 0, 0, 4, 4, 4])
         filled.save("methane.sdf")
@@ -2268,6 +2558,22 @@ class TestCompound(BaseTest):
         vis_object = ethane._visualize_py3dmol()
         assert isinstance(vis_object, py3Dmol.view)
 
+    @pytest.mark.skipif(not has_py3Dmol, reason="Py3Dmol is not installed")
+    def test_visualize_periodic_bonds_py3dmol(self):
+        py3Dmol = import_("py3Dmol")
+        # create a periodic structure to test
+        cpd = mb.load("CCCCCCCCCCCC", smiles=True)
+        # position at left x wall
+        Ls = cpd.get_boundingbox()
+        cpd.box = mb.Box([Ls.Lx, Ls.Ly, Ls.Lz])
+        cpd.rotate(np.pi / 8, around=[0, 0, 1])
+        cpd.translate([Ls.Lx / 2.5, 0, 0])
+        for particle in cpd.particles():
+            if particle.xyz[0][0] > cpd.box.Lz:
+                particle.translate([-1 * cpd.box.Lx, 0, 0])
+        vis_object = cpd._visualize_py3dmol(periodic_bond_opacity=0.2)
+        assert isinstance(vis_object, py3Dmol.view)
+
     @pytest.mark.skipif(not has_nglview, reason="NGLView is not installed")
     def test_visualize_nglview(self, ethane):
         nglview = import_("nglview")
@@ -2325,6 +2631,8 @@ class TestCompound(BaseTest):
 
     @pytest.mark.parametrize("backend", ["pybel", "rdkit"])
     def test_elements_from_smiles(self, backend):
+        if backend == "pybel" and not has_openbabel:
+            return True
         mol = mb.load("COC", smiles=True, backend=backend)
         for particle in mol.particles():
             assert particle.element is not None

@@ -18,8 +18,8 @@ from mbuild.polymer import Polymer
 from mbuild.port import Port
 from mbuild.recipes import recipes
 
-__version__ = "1.3.0"
-__date__ = "2025-01-23"
+__version__ = "1.3.1"
+__date__ = "2025-11-10"
 
 
 class DeduplicationFilter(logging.Filter):
