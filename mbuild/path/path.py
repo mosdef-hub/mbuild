@@ -225,6 +225,7 @@ class HardSphereRandomWalk(Path):
         trial_batch_size=20,
         tolerance=1e-5,
         chunk_size=512,
+        run_on_gpu=False,
     ):
         """Generates coordinates from a self avoiding random walk using
         fixed bond lengths, hard spheres, and minimum and maximum angles
@@ -270,6 +271,9 @@ class HardSphereRandomWalk(Path):
             random walks.
         tolerance : float, default = 1e-4
             Tolerance used for rounding and checking for overlaps.
+        run_on_gpu : bool, default = False
+            If True and CUDA path utilities are available, use GPU-accelerated
+            implementations of ``random_coordinate`` and ``check_path``.
 
         Notes
         -----
@@ -305,6 +309,8 @@ class HardSphereRandomWalk(Path):
         self.attach_paths = attach_paths
         self._particle_pairs = {}
         self.chunk_size = chunk_size
+        self.run_on_gpu = bool(run_on_gpu) and _CUDA_AVAILABLE
+        self._gpu_static_points = None
 
         # Create RNG state.
         self.rng = np.random.default_rng(seed)
@@ -334,6 +340,7 @@ class HardSphereRandomWalk(Path):
         # Set up termination conditions
         if termination is None:
             raise RuntimeError("No terminaiton conditions have been passed in.")
+
         self.termination = termination
         self.termination._attach_path(self)
 
@@ -363,13 +370,29 @@ class HardSphereRandomWalk(Path):
         # Need this for error message about reaching max tries
         self._init_count = self.count
 
-        # Select methods to use for random walk
-        # Hard-coded for now, possible to make other RW methods and pass them in
-        self.next_step = random_coordinate
-        self.check_path = check_path
-
         # Needed for mbuild.path.termination.WallTime stop terminator
         self.start_time = None
+
+        # Select methods to use for random walk
+        # CPU by default; optionally use GPU-accelerated version.
+        if run_on_gpu:
+            cuda_available = _get_cuda_available()
+            if cuda_available:
+                self.run_on_gpu = True
+                from mbuild.path.path_utils_gpu import check_path_split
+
+                logger.info("Running HardSphereRandomWalk on a CUDA device.")
+                self.check_path_gpu = check_path_split
+            else:
+                logger.warning(
+                    "HardSphereRandomWalk was initialized with run_on_gpu=True, but "
+                    "no CUDA-capable device is available. Falling back to CPU."
+                )
+                self.run_on_gpu = False
+                self.check_path_gpu = None
+
+        self.check_path_cpu = check_path
+        self.next_step = random_coordinate
 
         super().__init__(
             coordinates=coordinates, bond_graph=bond_graph, bead_name=bead_name
@@ -455,6 +478,7 @@ class HardSphereRandomWalk(Path):
             self.attempts += 1
 
         #### Initial conditions set, now start RW ####
+        self._prepare_gpu_static_points()
         walk_finished = False
         while not walk_finished:
             # Generate a batch of angles and vectors to create a set of candidate next coordinates
@@ -465,7 +489,6 @@ class HardSphereRandomWalk(Path):
                 bond_length=self.bond_length,
                 thetas=batch_angles,
                 r_vectors=batch_vectors,
-                batch_size=self.trial_batch_size,
             )
 
             # Create mask of bools where True = inside the volume constraint
@@ -488,28 +511,46 @@ class HardSphereRandomWalk(Path):
             else:  # No compounds included, only use path's existing coordinates
                 existing_points = self.coordinates[: self.count + 1]
 
-            # Iterate through current state of candidate points
-            # Accept first one that satisfies check_path
-            for xyz in candidates:
-                if any(
-                    self.pbc
-                ):  # PBCs exist, wrap this point inside volume constraint
-                    xyz = self.volume_constraint.mins + np.mod(
-                        xyz - self.volume_constraint.mins, self.box_lengths
-                    )
-                if self.check_path(
-                    existing_points=existing_points,
-                    new_point=xyz,
-                    radius=self.radius,
-                    tolerance=self.tolerance,
-                ):
-                    # Accept this next step, update path's coordinates, add node and edge
-                    self.coordinates[self.count + 1] = xyz
-                    self.count += 1
-                    self.bond_graph.add_node(self.count, name=self.bead_name, xyz=xyz)
-                    self.add_edge(u=self.count - 1, v=self.count)
-                    break
-            # Candidates didn't produce a single valid next point
+            if any(self.pbc):
+                candidates = self.volume_constraint.mins + np.mod(
+                    candidates - self.volume_constraint.mins, self.box_lengths
+                )
+
+            accept_xyz = None
+            if self.run_on_gpu and len(candidates) > 0:
+                dynamic_points = self.coordinates[self._init_count : self.count + 1]
+                valid_mask = self.check_path_gpu(
+                    self._gpu_static_points,
+                    dynamic_points,
+                    candidates,
+                    self.radius,
+                    self.tolerance,
+                )
+                valid_candidates = candidates[valid_mask]
+                if len(valid_candidates) > 0:
+                    accept_xyz = valid_candidates[0]
+            else:
+                # Iterate through current state of candidate points
+                # Accept first one that satisfies check_path
+                for xyz in candidates:
+                    if self.check_path_cpu(
+                        existing_points=existing_points,
+                        new_point=xyz,
+                        radius=self.radius,
+                        tolerance=self.tolerance,
+                    ):
+                        accept_xyz = xyz
+                        break
+
+            # Accept this next step, update path's coordinates, add node and edge
+            if accept_xyz is not None:
+                self.coordinates[self.count + 1] = accept_xyz
+                self.count += 1
+                self.bond_graph.add_node(
+                    self.count, name=self.bead_name, xyz=accept_xyz
+                )
+                self.add_edge(u=self.count - 1, v=self.count)
+
             self.attempts += 1
 
             # Check if we've filled up the current chunk size, if so, extend.
@@ -555,7 +596,8 @@ class HardSphereRandomWalk(Path):
         if self.initial_point is not None:
             return self.initial_point
 
-        # Random initial point, no constraints: Bounds set by radius and N steps
+        # Random initial point, no constraints, so create random coordinate.
+        # Set bounds as within 10x the particle radius as a heuristic.
         elif not any(
             [
                 self.volume_constraint,
@@ -564,24 +606,62 @@ class HardSphereRandomWalk(Path):
                 self.include_compound,
             ]
         ):
-            max_dist = (5 * self.radius) - self.radius
+            max_dist = 10 * self.radius
             xyz = self.rng.uniform(low=-max_dist / 2, high=max_dist / 2, size=3)
             return xyz
 
-        # Random point inside volume constraint, not starting from another path
-        elif (
-            self.volume_constraint
-            and not self.start_from_path_index
-            and not self.include_compound
-        ):
-            xyz = self.rng.uniform(
-                low=np.min(self.volume_constraint.mins) + self.radius,
-                high=np.max(self.volume_constraint.maxs) - self.radius,
-                size=3,
-            )
-            return xyz
+        # Random point inside volume constraint, find a good starting site
+        # If no other sites exist, randomly pick coordinate inside volume constraint bounds
+        # If other sites exist, try to find a good (low density) starting point
+        elif self.volume_constraint and not self.start_from_path_index:
+            # Sample free sites using both previous path coordinates and compounds coordinates
+            if self.start_from_path and self.include_compound:
+                existing_points = np.concatenate(
+                    self.start_from_path.coordinates, self.include_compound.xyz
+                )
 
-        # Starting from another path, run Monte Carlo
+            # Sample free sites from just previous path coordinates
+            elif self.start_from_path and not self.include_compound:
+                existing_points = self.start_from_path.coordinates
+
+            # Sample free sites from just included compound coordinates
+            elif self.include_compound and not self.start_from_path:
+                existing_points = self.include_compound.xyz
+
+            # No other coordinates to consider, sample any site within bounds of volume
+            else:
+                existing_points = None
+
+            new_xyzs = self.volume_constraint.sample_candidates(
+                points=existing_points, n_candidates=100, buffer=self.radius + 0.1
+            )
+
+            # We don't need to check for overlaps
+            if existing_points is None:
+                return new_xyzs[0]
+
+            # Possible to have overlaps resulting from sample_candiates(). Iterate and check.
+            accepted_xyz = None
+            for xyz in new_xyzs:
+                if self.check_path_cpu(
+                    existing_points=existing_points,
+                    new_point=xyz,
+                    radius=self.radius,
+                    tolerance=self.tolerance,
+                ):
+                    accepted_xyz = xyz
+                    break
+
+            if accepted_xyz:
+                return accepted_xyz
+
+            else:
+                raise RuntimeError(
+                    "Unable to find a starting point without overlapping particles. "
+                    "The density of the volume constraint may be too high."
+                )
+
+        # Starting from another path and from a specifc site on the path. Run Monte Carlo
         # Accepted next move is first point of this random walk
         elif self.start_from_path and self.start_from_path_index is not None:
             # TODO: handle start_from_path index of negative values
@@ -602,13 +682,13 @@ class HardSphereRandomWalk(Path):
                     bond_length=self.bond_length,
                     thetas=batch_angles,
                     r_vectors=batch_vectors,
-                    batch_size=self.trial_batch_size,
                 )
                 if self.volume_constraint:
                     is_inside_mask = self.volume_constraint.is_inside(
                         points=new_xyzs, buffer=self.radius
                     )
                     new_xyzs = new_xyzs[is_inside_mask]
+
                 # Set up coordinates to check against
                 if self.include_compound:
                     existing_points = np.concatenate(
@@ -627,7 +707,7 @@ class HardSphereRandomWalk(Path):
                         xyz = self.volume_constraint.mins + np.mod(
                             xyz - self.volume_constraint.mins, self.box_lengths
                         )
-                    if self.check_path(
+                    if self.check_path_cpu(
                         existing_points=existing_points,
                         new_point=xyz,
                         radius=self.radius,
@@ -636,6 +716,30 @@ class HardSphereRandomWalk(Path):
                         return xyz
                 self.attempts += 1
                 started_next_path = self.termination.is_met()
+
+    def _prepare_gpu_static_points(self):
+        """Transfer static points to GPU once at the start of generation."""
+        if not self.run_on_gpu:
+            return
+
+        from numba import cuda
+
+        static_parts = []
+
+        # Previous path coordinates (from start_from_path)
+        if self._init_count > 0:
+            static_parts.append(self.coordinates[: self._init_count])
+
+        # Include compound coordinates
+        if self.include_compound is not None:
+            static_parts.append(self.include_compound.xyz)
+
+        # Combine and transfer to GPU
+        if static_parts:
+            static_points = np.concatenate(static_parts).astype(np.float32)
+            self._gpu_static_points = cuda.to_device(static_points)
+        else:
+            self._gpu_static_points = None
 
 
 class Lamellar(Path):
@@ -1143,3 +1247,19 @@ class ZigZag(Path):
                 self.coordinates[i] = (0, x2d, y2d)
         # Create linear (path) bond graph
         self.create_linear_bond_graph(bond_head_tail=False)
+
+
+_CUDA_AVAILABLE = None
+
+
+def _get_cuda_available():
+    """Check if numba can access CUDA runtime. Used by HardSphereRandomWalk."""
+    global _CUDA_AVAILABLE
+    if _CUDA_AVAILABLE is None:
+        try:
+            from numba import cuda
+
+            _CUDA_AVAILABLE = cuda.is_available()
+        except Exception:
+            _CUDA_AVAILABLE = False
+    return _CUDA_AVAILABLE
