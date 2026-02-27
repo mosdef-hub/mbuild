@@ -14,17 +14,6 @@ from mbuild import Compound
 from mbuild.path.path_utils import check_path, random_coordinate
 from mbuild.utils.volumes import CuboidConstraint, CylinderConstraint
 
-# Optional GPU-accelerated equivalents of path_utils functions. We only enable them
-# when the CUDA runtime reports that a compatible device is actually available.
-try:
-    from numba import cuda
-
-    _CUDA_AVAILABLE = cuda.is_available()
-    if _CUDA_AVAILABLE:
-        from mbuild.path.path_utils_gpu import check_path_split
-except Exception:  # pragma: no cover - CUDA stack not importable or GPU utils failed
-    _CUDA_AVAILABLE = False
-
 logger = logging.getLogger(__name__)
 
 
@@ -323,12 +312,6 @@ class HardSphereRandomWalk(Path):
         self.run_on_gpu = bool(run_on_gpu) and _CUDA_AVAILABLE
         self._gpu_static_points = None
 
-        if run_on_gpu and not _CUDA_AVAILABLE:
-            logger.warning(
-                "HardSphereRandomWalk initialized with run_on_gpu=True, but "
-                "no CUDA-capable device is available. Falling back to CPU."
-            )
-
         # Create RNG state.
         self.rng = np.random.default_rng(seed)
 
@@ -357,6 +340,7 @@ class HardSphereRandomWalk(Path):
         # Set up termination conditions
         if termination is None:
             raise RuntimeError("No terminaiton conditions have been passed in.")
+
         self.termination = termination
         self.termination._attach_path(self)
 
@@ -386,16 +370,31 @@ class HardSphereRandomWalk(Path):
         # Need this for error message about reaching max tries
         self._init_count = self.count
 
+        # Needed for mbuild.path.termination.WallTime stop terminator
+        self.start_time = None
+
+        if run_on_gpu:
+            cuda_available = _get_cuda_available()
+            if cuda_available:
+                self.run_on_gpu = True
+                from mbuild.path.path_utils_gpu import check_path_split
+
+                logger.info("Running HardSphereRandomWalk on a CUDA device.")
+            else:
+                logger.warning(
+                    "HardSphereRandomWalk was initialized with run_on_gpu=True, but "
+                    "no CUDA-capable device is available. Falling back to CPU."
+                )
+                self.run_on_gpu = False
+
         # Select methods to use for random walk
         # CPU by default; optionally use GPU-accelerated version.
         self.next_step = random_coordinate
         if self.run_on_gpu:
-            self.check_path = check_path_split
+            self.check_path_gpu = check_path_split
         else:
-            self.check_path = check_path
-
-        # Needed for mbuild.path.termination.WallTime stop terminator
-        self.start_time = None
+            self.check_path_gpu = None
+        self.check_path_cpu = check_path
 
         super().__init__(
             coordinates=coordinates, bond_graph=bond_graph, bead_name=bead_name
@@ -522,7 +521,7 @@ class HardSphereRandomWalk(Path):
             accept_xyz = None
             if self.run_on_gpu and len(candidates) > 0:
                 dynamic_points = self.coordinates[self._init_count : self.count + 1]
-                valid_mask = check_path_split(
+                valid_mask = self.check_path_gpu(
                     self._gpu_static_points,
                     dynamic_points,
                     candidates,
@@ -536,7 +535,7 @@ class HardSphereRandomWalk(Path):
                 # Iterate through current state of candidate points
                 # Accept first one that satisfies check_path
                 for xyz in candidates:
-                    if self.check_path(
+                    if self.check_path_cpu(
                         existing_points=existing_points,
                         new_point=xyz,
                         radius=self.radius,
@@ -646,7 +645,7 @@ class HardSphereRandomWalk(Path):
             # Possible to have overlaps resulting from sample_candiates(). Iterate and check.
             accepted_xyz = None
             for xyz in new_xyzs:
-                if self.check_path(
+                if self.check_path_cpu(
                     existing_points=existing_points,
                     new_point=xyz,
                     radius=self.radius,
@@ -710,7 +709,7 @@ class HardSphereRandomWalk(Path):
                         xyz = self.volume_constraint.mins + np.mod(
                             xyz - self.volume_constraint.mins, self.box_lengths
                         )
-                    if self.check_path(
+                    if self.check_path_cpu(
                         existing_points=existing_points,
                         new_point=xyz,
                         radius=self.radius,
@@ -1250,3 +1249,19 @@ class ZigZag(Path):
                 self.coordinates[i] = (0, x2d, y2d)
         # Create linear (path) bond graph
         self.create_linear_bond_graph(bond_head_tail=False)
+
+
+_CUDA_AVAILABLE = None
+
+
+def _get_cuda_available():
+    """Check if numba can access CUDA runtime. Used by HardSphereRandomWalk."""
+    global _CUDA_AVAILABLE
+    if _CUDA_AVAILABLE is None:
+        try:
+            from numba import cuda
+
+            _CUDA_AVAILABLE = cuda.is_available()
+        except Exception:
+            _CUDA_AVAILABLE = False
+    return _CUDA_AVAILABLE
