@@ -1,4 +1,5 @@
 ignore:
   - "mbuild/examples"
+  - "mbuild/path/path_utils_gpu.py"
   - "mbuild/tests"
   - "mbuild/__init__.py"

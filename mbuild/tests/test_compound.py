@@ -1856,6 +1856,13 @@ class TestCompound(BaseTest):
             in caplog.text
         )
 
+    def test_clone_outside_containment(self, ch2, ch3):
+        compound = Compound()
+        compound.add(ch2)
+        mb.force_overlap(ch3, ch3["up"], ch2["up"])
+        with pytest.raises(MBuildError):
+            mb.clone(ch3)
+
     def test_load_nonelement_mol2(self):
         mb.load(get_fn("benzene-nonelement.mol2"), backend="mdtraj")
         mb.load(get_fn("benzene-nonelement.mol2"), backend="parmed")

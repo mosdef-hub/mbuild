@@ -69,6 +69,7 @@ class HoomdSimulation(hoomd.simulation.Simulation):
                     "set `run_on_gpu = False` or see HOOMD documentation "
                     "for further information about GPU support.",
                 )
+                device = hoomd.device.CPU()
         else:
             device = hoomd.device.CPU()
         self.compound = compound
