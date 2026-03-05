@@ -243,13 +243,7 @@ class ForcesHandler:
         This should be used for highly unstable configurations.
     """
 
-    def __init__(
-        self,
-        forcefield,
-        dpd=0.0,
-        scale_lj=1,
-        scale_charge=0
-    ):
+    def __init__(self, forcefield, dpd=0.0, scale_lj=1, scale_charge=0):
         self.dpd = dpd
         self.forcefield = forcefield
         default_forcescalarDict = {
