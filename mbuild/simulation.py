@@ -243,14 +243,20 @@ class ForcesHandler:
         This should be used for highly unstable configurations.
     """
 
-    def __init__(self, forcefield, scale_forces=None, dpd=0.0):
+    def __init__(
+        self,
+        forcefield,
+        dpd=0.0,
+        scale_lj=1,
+        scale_charge=0
+    ):
         self.dpd = dpd
         self.forcefield = forcefield
         default_forcescalarDict = {
             "lj": 1,
             "charge": 0,
-            "bond": 0.01,
-            "angle": 0.01,
+            "bond": 1,
+            "angle": 1,
             "opls": 0,
             "periodic": 0,
             "improper": 0,
@@ -263,10 +269,10 @@ class ForcesHandler:
     def scale_sim(self, sim):
         "bondkhoomd.md.bond.Harmonic"
         forcesDict = {
-            "lj": (hoomd.md.pair.LJ, ("epsilon",)),
-            "charge": (hoomd.md.pair.Coulomb, ("alpha",)),
-            "bond": (hoomd.md.bond.Harmonic, ("k",)),
-            "angle": (hoomd.md.angle.Harmonic, ("k",)),
+            "lj": (hoomd.md.pair.LJ, ("epsilon")),
+            "charge": (hoomd.md.special_pair.Coulomb, ("alpha")),
+            "bond": (hoomd.md.bond.Harmonic, ("k")),
+            "angle": (hoomd.md.angle.Harmonic, ("k")),
             "opls": (
                 hoomd.md.dihedral.OPLS,
                 (
@@ -280,7 +286,7 @@ class ForcesHandler:
             "improper": (hoomd.md.improper.Periodic, ("k",)),
         }
 
-        for key, scalar in self.scale_forces:
+        for key, scalar in self.scale_forces.items():
             if not scalar:  # skip scalars of 0
                 continue
             if key == "lj" and self.dpd:
@@ -291,9 +297,9 @@ class ForcesHandler:
                 continue
 
             force = sim.get_force(forcesDict[key][0])
-            for param in force:
+            for param in force.params:
                 for term in forcesDict[key][1:]:
-                    force[param][term] *= scalar
+                    force.params[param][term] *= scalar
             sim.active_forces.append(force)
             self.forcesDict[key] = force  # store for usage elsewhere
 
@@ -376,7 +382,7 @@ def hoomd_cap_displacement(
 def hoomd_fire(
     compound,
     sim,
-    force_handler,
+    forces_handler,
     n_steps,
     n_iterations=1,
     dt=1e-5,
@@ -439,7 +445,7 @@ def hoomd_fire(
     ```
     """
     compound._kick()
-    force_handler.scale_sim(sim)
+    forces_handler.scale_sim(sim)
     # Set up and run
     nvt = hoomd.md.methods.ConstantVolume(filter=sim.get_integrate_group())
     sim.set_fire_integrator(
