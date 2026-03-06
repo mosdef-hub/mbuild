@@ -231,42 +231,67 @@ class HoomdSimulation(hoomd.simulation.Simulation):
 
 
 class ForcesHandler:
-    """
+    """Provides a quick method for tuning HOOMD forces to better handle
+    high-energy configurations.
+
     Parameters
     ----------
-    forcefield : gmso.ForceField object to use on the simulation.
-    scale_forces : dict, default None
-        The scalar values to use, which scale relevant forces in the simulation.
     dpd : float, default 0.0
         If greater than 0.0, then replaces the LJ 12-6 pair potential
         with the softer hoomd.md.pair.DPDConservative pair force from HOOMD.
         This should be used for highly unstable configurations.
+        The value passed to `dpd` is used as the the repulsion force constant.
+    scale_bonds : float, default 1.0
+    scale_angles : float, default 1.0
+    scale_lj : float, default 0.0
+    scale_periodic : float, default 0.0
+    scale_opls : float, default 0.0
+    scale_improper : float, default 0.0
+    scale_charge : float, default 0.0
+        Scaling factors multiplied against each energy term
+        in the forcefield. A value of 0.0 will exclude that interaction
+        during the simulation, a value of 1.0 includes the interaction
+        as described by the forcefield.
+
+    Notes
+    -----
+    The default behavior uses only non-bonded pairs, bond-stretching
+    and bond-bending potentials. Excluding electrostatics, dihedrals, and
+    impropers favors efficient relaxation to quickly remove high energy configurations.
+    See examples in `hoomd_cap_displacement` and `hoomd_fire` for tips about using
+    multiple instances of ForcesHandler in series.
     """
 
-    def __init__(self, forcefield, scale_forces=None, dpd=0.0):
+    def __init__(
+        self,
+        dpd=0.0,
+        scale_angle=1,
+        scale_bond=1,
+        scale_lj=1,
+        scale_periodic=0,
+        scale_opls=0,
+        scale_improper=0,
+        scale_charge=0,
+    ):
         self.dpd = dpd
-        self.forcefield = forcefield
-        default_forcescalarDict = {
-            "lj": 1,
-            "charge": 0,
-            "bond": 0.01,
-            "angle": 0.01,
-            "opls": 0,
-            "periodic": 0,
-            "improper": 0,
+        self.scale_forces = {
+            "lj": scale_lj,
+            "charge": scale_charge,
+            "bond": scale_bond,
+            "angle": scale_angle,
+            "opls": scale_opls,
+            "periodic": scale_periodic,
+            "improper": scale_improper,
         }
-        self.scale_forces = default_forcescalarDict
-        if scale_forces is not None:
-            self.scale_forces.update(scale_forces)
         self.forcesDict = {}
 
     def scale_sim(self, sim):
-        "bondkhoomd.md.bond.Harmonic"
+        "Iterate through HOOMD force objects and apply scaling factors."
         forcesDict = {
-            "lj": (hoomd.md.pair.LJ, ("epsilon",)),
-            "charge": (hoomd.md.pair.Coulomb, ("alpha",)),
-            "bond": (hoomd.md.bond.Harmonic, ("k",)),
-            "angle": (hoomd.md.angle.Harmonic, ("k",)),
+            "lj": (hoomd.md.pair.LJ, ("epsilon")),
+            "charge": (hoomd.md.special_pair.Coulomb, ("alpha")),
+            "bond": (hoomd.md.bond.Harmonic, ("k")),
+            "angle": (hoomd.md.angle.Harmonic, ("k")),
             "opls": (
                 hoomd.md.dihedral.OPLS,
                 (
@@ -276,11 +301,10 @@ class ForcesHandler:
                     "k4",
                 ),
             ),
-            "periodic": (hoomd.md.dihedral.Periodic, ("k",)),
-            "improper": (hoomd.md.improper.Periodic, ("k",)),
+            "periodic": (hoomd.md.dihedral.Periodic, ("k")),
+            "improper": (hoomd.md.improper.Periodic, ("k")),
         }
-
-        for key, scalar in self.scale_forces:
+        for key, scalar in self.scale_forces.items():
             if not scalar:  # skip scalars of 0
                 continue
             if key == "lj" and self.dpd:
@@ -291,9 +315,9 @@ class ForcesHandler:
                 continue
 
             force = sim.get_force(forcesDict[key][0])
-            for param in force:
+            for param in force.params:
                 for term in forcesDict[key][1:]:
-                    force[param][term] *= scalar
+                    force.params[param][term] *= scalar
             sim.active_forces.append(force)
             self.forcesDict[key] = force  # store for usage elsewhere
 
@@ -313,8 +337,9 @@ def hoomd_cap_displacement(
     ----------
     compound : mb.Compound
         The compound to use in the simulation
-    sim : mb.simulation.HOOMDSimulation object
-    forces_handler : mb.simulation.ForceHander object
+    sim : mb.simulation.HOOMDSimulation
+        The simulation context used during the simulation.
+    forces_handler : mb.simulation.ForceHander
         The way to handle forces for this simulation method. Will apply specified forces,
         scaling as needed.
     n_steps : int
@@ -339,23 +364,41 @@ def hoomd_cap_displacement(
 
     Running multiple simulations:
         The information needed to run the HOOMD simulation is saved after the first simulation.
-        Therefore, calling hoomd-based simulation methods multiple times (e.g, in a for loop or while loop)
+        Therefore, calling hoomd-based simulation methods multiple times (e.g., in a for loop or while loop)
         does not require re-running performing atom-typing, applying the forcefield, or running hoomd
         format writers again.
 
+    Examples
+    --------
+
     ```python
     ff = gmso.ForceField("path_to_ff")
-    fhandler = ForcesHandler(ff,scale_forces=None, dpd=4)
-    sim = HOOMDSimulation(
-        compound, # compound you're minimizing
-        ff,
-        r_cut=0.6,
-        box_buffer=5,
-    )
+
+    # Scale bonds and angles, replace 12-6 LJ pair force with DPDConservative
+    fhandler = ForcesHandler(scale_bonds=0.1, scale_angles=0.2, dpd=4)
+
+    # Pass in the mBuild Compound you are removing overlaps from
+    sim = HOOMDSimulation(compound, ff, r_cut=0.6, box_buffer=5,)
+
     hoomd_cap_displacement(compound, sim, fhandler, n_steps=1000)
-    forcesDict = {"lj":1, "charge":0.1, "bond":0.5, "angle":0.1}
-    fhandler = ForcesHandler(ff,scale_forces=forcesDict) # no dpd force
+
+    # Re-run with without DPD and bond and angle scaling:
+    fhandler = ForcesHandler(scale_bonds=1, scale_angles=1, dpd=None)
     hoomd_cap_displacement(compound, sim, fhandler, n_steps=1000)
+    ```
+
+    Use in a while loop along with Compound.check_for_overlap()
+    to run capped-displacement simulations in small increments.
+
+    ```python
+    ff = gmso.ForceField("path_to_ff")
+    fhandler = ForcesHandler(scale_bonds=0.1, scale_angles=0.2, dpd=4)
+
+    # Pass in the mBuild Compound you are removing overlaps from
+    sim = HOOMDSimulation(compound, ff, r_cut=0.6, box_buffer=5,)
+
+    while len(compound.check_for_overlap(exlcuded_bond_depth=1, minimum_distance=0.12)) > 0:
+        hoomd_cap_displacement(compound, sim, fhandler, n_steps=200)
     ```
     """
     compound._kick()
@@ -376,7 +419,7 @@ def hoomd_cap_displacement(
 def hoomd_fire(
     compound,
     sim,
-    force_handler,
+    forces_handler,
     n_steps,
     n_iterations=1,
     dt=1e-5,
@@ -391,22 +434,42 @@ def hoomd_fire(
     energy_tol=1e-6,
 ):
     """Run a short HOOMD-Blue simulation with the FIRE integrator.
-    This method can be helpful for relaxing poor molecular
-    geometries or for removing overlapping particles.
+    This method can be helpful for relaxing high-energy
+    configurations or for removing overlapping particles.
 
     Parameters:
     -----------
-    compound : mbuild.compound.Compound; required
-        The compound to perform the displacement capped simulation with.
-    forcefield : foyer.focefield.ForceField or gmso.core.Forcefield; required
-        The forcefield used for the simulation.
+    compound : mb.Compound
+        The compound to use in the simulation
+    sim : mb.simulation.HOOMDSimulation
+        The simulation context used during the simulation.
+    forces_handler : mb.simulation.ForceHander
+        The way to handle forces for this simulation method. Will apply specified forces,
+        scaling as needed.
     steps : int; required
         The number of simulation steps to run
-    max_displacement : float, default 1e-3
-        The value of the maximum displacement (nm)
-    run_on_gpu : bool, default True
-        If true, attempts to run HOOMD-Blue on a GPU.
-        If a GPU device isn't found, then it will run on the CPU
+    dt : float, default 1e-5
+        Simulation step size. Consider system stability when setting.
+    min_steps_adapt : int, default 5
+        Minimum number of steps with negative energy change before `dt`
+        and ``alpha`` are allowed to adapt.
+    min_steps_conv : int, default 100
+        Minimum number of steps taken before convergence criteria are
+        evaluated.
+    finc_dt : float, default 1.1
+        Multiplicative factor by which ``dt`` is increased on successful steps.
+    fdec_dt : float, default 0.5
+        Multiplicative factor by which ``dt`` is decreased on unsuccessful steps.
+    alpha_start : float, default 0.1
+        Initial and maximum value of the velocity mixing parameter ``alpha``.
+    fdec_alpha : float, default 0.95
+        Multiplicative factor by which ``alpha`` is decreased each adapting step.
+    force_tol : float, default 1e-2
+        Convergence threshold for the per-particle force magnitude.
+    angmom_tol : float, default 1e-2
+        Convergence threshold for the per-particle angular momentum magnitude.
+    energy_tol : float, default 1e-6
+        Convergence threshold for the fractional change in system energy.
 
     Notes
     -----
@@ -422,24 +485,28 @@ def hoomd_fire(
         does not require re-running performing atom-typing, applying the forcefield, or running hoomd
         format writers again.
 
-    For best performance on unstable systems
+    Examples
+    --------
+
+    For best performance on unstable systems, use ForcesHandler to scale forces.
     ```python
     ff = gmso.ForceField("path_to_ff")
-    fhandler = ForcesHandler(ff,scale_forces=None, dpd=4)
-    sim = HOOMDSimulation(
-        compound, # compound you're minimizing
-        ff,
-        r_cut=0.6,
-        box_buffer=5,
-    )
+
+    # Scale bonds and angles, replace 12-6 LJ pair forces with DPDConservative
+    fhandler = ForcesHandler(scale_bonds=0.1, scale_angles=0.2, dpd=4)
+
+    # Pass in the mBuild Compound you are minimizing
+    sim = HOOMDSimulation(compound, ff, r_cut=0.6, box_buffer=5,)
+
     hoomd_fire(compound, sim, fhandler, n_steps=1000)
-    forcesDict = {"lj":1, "charge":0.1, "bond":0.5, "angle":0.1}
-    fhandler = ForcesHandler(ff,scale_forces=forcesDict) # no dpd force
+
+    # Run FIRE one more time with the un-scaled forcefield
+    fhandler = ForcesHandler()
     hoomd_fire(compound, sim, fhandler, n_steps=1000)
     ```
     """
     compound._kick()
-    force_handler.scale_sim(sim)
+    forces_handler.scale_sim(sim)
     # Set up and run
     nvt = hoomd.md.methods.ConstantVolume(filter=sim.get_integrate_group())
     sim.set_fire_integrator(
