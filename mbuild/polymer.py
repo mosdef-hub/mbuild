@@ -320,19 +320,23 @@ class Polymer(Compound):
                     this_part.translate_to(coordinates[site_count])
                     this_part_head = this_part.labels[self._port_labels[1]].anchor
                     this_part_tail = this_part.labels[self._port_labels[0]].anchor
-                    v1 = this_part_head.pos - this_part_tail.pos
-                    v1 /= np.linalg.norm(v1)
-                    v2 = coordinates[site_count + 1] - coordinates[site_count]
-                    v2 /= np.linalg.norm(v2)
-                    normal = np.cross(v1, v2)
-                    angle = np.arccos(
-                        v1.dot(v2) / (np.linalg.norm(v1) * np.linalg.norm(v2))
-                    )
-                    if angle > np.pi / 2:
-                        angle = np.pi - angle
-                    # Center of mass needs to be at origin for rotation
-                    this_part.translate_to((0, 0, 0))
-                    this_part.rotate(around=normal, theta=angle)
+                    if this_part_tail == this_part_head:
+                        # no need for any rotation
+                        pass
+                    else:
+                        v1 = this_part_head.pos - this_part_tail.pos
+                        v1 /= np.linalg.norm(v1)
+                        v2 = coordinates[site_count + 1] - coordinates[site_count]
+                        v2 /= np.linalg.norm(v2)
+                        normal = np.cross(v1, v2)
+                        angle = np.arccos(
+                            v1.dot(v2) / (np.linalg.norm(v1) * np.linalg.norm(v2))
+                        )
+                        if angle > np.pi / 2:
+                            angle = np.pi - angle
+                        # Center of mass needs to be at origin for rotation
+                        this_part.translate_to((0, 0, 0))
+                        this_part.rotate(around=normal, theta=angle)
                     this_part.translate_to(coordinates[site_count])
             else:
                 # Transform this part, such that its bottom port is rotated
@@ -348,20 +352,23 @@ class Polymer(Compound):
                         this_part_head = this_part.labels[self._port_labels[1]].anchor
                         this_part_tail = this_part.labels[self._port_labels[0]].anchor
                         # Get this parts head-tail vector (head port pos - tail port pos)
-                        v1 = this_part_head.pos - this_part_tail.pos
-                        v1 /= np.linalg.norm(v1)
-                        # v2 is the vector between the previous site pos and next site pos
-                        v2 = coordinates[site_count + 1] - coordinates[site_count - 1]
-                        v2 /= np.linalg.norm(v2)
-                        normal = np.cross(v1, v2)
-                        angle = np.arccos(
-                            v1.dot(v2) / (np.linalg.norm(v1) * np.linalg.norm(v2))
-                        )
-                        if angle > np.pi / 2:
-                            angle = np.pi - angle
-                        # Center of mass needs to be at origin for rotation
-                        this_part.translate_to((0, 0, 0))
-                        this_part.rotate(around=normal, theta=angle)
+                        if this_part_tail == this_part_head:
+                            pass
+                        else:
+                            v1 = this_part_head.pos - this_part_tail.pos
+                            v1 /= np.linalg.norm(v1)
+                            # v2 is the vector between the previous site pos and next site pos
+                            v2 = coordinates[site_count + 1] - coordinates[site_count - 1]
+                            v2 /= np.linalg.norm(v2)
+                            normal = np.cross(v1, v2)
+                            angle = np.arccos(
+                                v1.dot(v2) / (np.linalg.norm(v1) * np.linalg.norm(v2))
+                            )
+                            if angle > np.pi / 2:
+                                angle = np.pi - angle
+                            # Center of mass needs to be at origin for rotation
+                            this_part.translate_to((0, 0, 0))
+                            this_part.rotate(around=normal, theta=angle)
                         this_part.translate_to(coordinates[site_count])
                     except IndexError:
                         pass
