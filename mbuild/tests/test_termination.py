@@ -7,6 +7,7 @@ from mbuild.path import (
     HardSphereRandomWalk,
 )
 from mbuild.path.bias import TargetCoordinate
+from mbuild.path.constraints import CuboidConstraint
 from mbuild.path.termination import (
     ContourLength,
     EndToEndDistance,
@@ -19,9 +20,6 @@ from mbuild.path.termination import (
     WithinCoordinate,
 )
 from mbuild.tests.base_test import BaseTest, radius_of_gyration
-from mbuild.utils.volumes import (
-    CuboidConstraint,
-)
 
 
 class TestTermination(BaseTest):

@@ -27,13 +27,20 @@ class Constraint:
         """Return True if point satisfies constraint (inside), else False."""
         raise NotImplementedError("Must be implemented in subclasses")
 
-    def sample_candidates(self, points, n_candiates, buffer):
+    def sample_candidates(self, points, n_candiates, buffer, region_mins, region_maxs):
         """Sample the volume for canidate points sorted by lowest local density."""
         raise NotImplementedError("Must be implemented in subclasses")
 
-    def find_low_density_points(self, points, n_candidates, buffer, k=10):
+    def find_low_density_points(
+        self, points, n_candidates, buffer, k=10, region_mins=None, region_maxs=None
+    ):
         low_density_points = self.sample_candidates(
-            points=points, n_candidates=n_candidates, buffer=buffer, k=k
+            points=points,
+            n_candidates=n_candidates,
+            buffer=buffer,
+            region_mins=region_mins,
+            region_maxs=region_maxs,
+            k=k,
         )
         return low_density_points
 
@@ -89,7 +96,9 @@ class CuboidConstraint(Constraint):
             pbc=self.pbc,
         )
 
-    def sample_candidates(self, points, n_candidates, buffer, k=10):
+    def sample_candidates(
+        self, points, n_candidates, buffer, k=10, region_mins=None, region_maxs=None
+    ):
         """Generate candidate points uniformly distributed inside the box,
         optionally ranked by lowest local density around existing points.
 
@@ -116,8 +125,10 @@ class CuboidConstraint(Constraint):
             the nearest neighbor (lowest local density) appear first.
         """
         # Create random candidates inside the box to test and sample from
+        sample_mins = np.asarray(region_mins) if region_mins else self.mins
+        sample_maxs = np.asarray(region_maxs) if region_maxs else self.maxs
         candidates = np.random.uniform(
-            self.mins + buffer, self.maxs - buffer, size=(n_candidates, 3)
+            sample_mins + buffer, sample_maxs - buffer, size=(n_candidates, 3)
         )
         if points is None or len(points) == 0:
             return candidates
