@@ -1,6 +1,7 @@
 import numpy as np
 
 from mbuild.utils.volumes import CuboidConstraint, CylinderConstraint
+from mbuild.exceptions import MBuildError
 
 import logging
 
@@ -58,7 +59,7 @@ def get_second_point(state, existing_points, check_path, first_point):
                 found_valid_point=True
                 break
     if not found_valid_point:
-        raise ValueError(f"No viable second point found within constraint and next to {state.initial_point=}. Try using a smaller radius than {state.radius=}")
+        raise MBuildError(f"No viable second point found within constraint and next to {state.initial_point=}. Try using a smaller radius than {state.radius=}")
     return first_point + offset
     
 def get_initial_point(state, existing_points, check_path, next_step):
@@ -121,7 +122,7 @@ def get_initial_point(state, existing_points, check_path, next_step):
                 tolerance=state.tolerance,
             ):
                 return xyz
-        raise RuntimeError(
+        raise MBuildError(
             f"Unable to find a starting point at {starting_xyz}" 
             "without overlapping particles. "
             "Check your `initial_point` argument."
@@ -138,7 +139,7 @@ def get_initial_point(state, existing_points, check_path, next_step):
                 tolerance=state.tolerance,
             ):
                 return xyz
-        raise RuntimeError(
+        raise MBuildError(
             "Unable to find a starting point without overlapping particles. "
             "The density of the volume constraint may be too high."
         )
