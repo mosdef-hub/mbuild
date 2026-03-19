@@ -957,7 +957,11 @@ class RandomWalkState:
             return True
         return False
 
+def crosslink_random_walk(path):
+    pass
 
+class CrosslinkWalkState:
+    pass
 
 _CUDA_AVAILABLE = None
 
