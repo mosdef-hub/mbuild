@@ -67,6 +67,11 @@ class CuboidConstraint(Constraint):
         self.box_lengths = np.array([Lx, Ly, Lz]).astype(np.float32)
         self.pbc = np.asarray(pbc, dtype=np.bool_)
 
+    @classmethod
+    def from_array(cls, box, center=(0,0,0), pbc=(False, False, False)):
+        """Create a cuboid box from a 3D array."""
+        return cls(box[0], box[1], box[2], center=center, pbc=pbc)
+
     def is_inside(self, points, buffer):
         """Check a set of coordinates against the volume constraint.
 

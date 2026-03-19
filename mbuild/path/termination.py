@@ -1,4 +1,4 @@
-"""Modular and composable rules for termination an mbuild.path.HardSphereRandomWalk."""
+"""Modular and composable rules for termination an mbuild.path.hard_sphere_random_walk."""
 
 import time
 
@@ -7,7 +7,7 @@ import numpy as np
 
 class Termination:
     """A modular and composable container for individual Terminator instances.
-    This class should be passed to mbuild.path.HardSphereRandomWalk to provide
+    This class should be passed to mbuild.path.hard_sphere_random_walk to provide
     instructions on when to end a random walk.
 
     Parameters
@@ -18,13 +18,13 @@ class Termination:
 
     Methods
     -------
-    is_met(): Called internally in HardSphereRandomWalk.
+    is_met(): Called internally in hard_sphere_random_walk.
         Returns `True` in two cases:
 
         1) Every `Terminator` instance with `is_target=True` is met.
         2) Any `Terminator` instance with `is_target=False` is met.
 
-    summarize(): Prints a summary of all `Terminator` instances and thier status
+    summarize(): Prints a summary of all `Terminator` instances and their status
 
     """
 
@@ -37,19 +37,19 @@ class Termination:
         self.is_target = [i for i in self.terminators if i.is_target]
         # Don't need to be True, but are used as safe-guards (WallTime, NumAttempts)
         self.not_is_target = [i for i in self.terminators if not i.is_target]
-        # TODO, keep a list of triggered critera, add to logging when walk ends
         self.triggered = []
         self.success = False
 
-    def _attach_path(self, path):
-        """This is automatically called within HardSphereRandomWalk."""
+    def _attach_path(self, path, state):
+        """This is automatically called within hard_sphere_random_walk."""
         for i in self.terminators:
-            i._attach_path(path)
+            i._attach_path(path, state)
 
     def _clean(self):
-        """This is automatically called within HardSphereRandomWalk."""
+        """This is automatically called within hard_sphere_random_walk."""
         for i in self.terminators:
             i.path = None
+            i.state = None
 
     def is_met(self):
         # Check required criteria first
@@ -76,7 +76,7 @@ class Termination:
 
 
 class Terminator:
-    """Defines a single condition that can trigger a termination of a HardSphereRandomWalk.
+    """Defines a single condition that can trigger a termination of a hard_sphere_random_walk.
 
     Parameters
     ----------
@@ -100,12 +100,13 @@ class Terminator:
     def __init__(self, is_target):
         self.is_target = is_target
         self._is_met = False
+        self.path = None
+        self.state = None
 
-    def _attach_path(self, path):
+    def _attach_path(self, path, state):
+        """Attach both the path and state objects for access in is_met()."""
         self.path = path
-        self.rng = getattr(path, "rng", None)
-        # Cache device preference from the attached path for future GPU-aware terminators.
-        self._use_gpu = getattr(path, "run_on_gpu", False)
+        self.state = state
 
     def is_met(self):
         """Implemented in sub classes of Terminator."""
@@ -134,7 +135,9 @@ class NumSites(Terminator):
         super().__init__(is_target)
 
     def is_met(self):
-        return self.path.count - self.path._init_count >= self.num_sites - 1
+        if self.state is None:
+            return False
+        return self.state.count - self.state.init_count >= self.num_sites - 1
 
 
 class NumAttempts(Terminator):
@@ -159,19 +162,21 @@ class NumAttempts(Terminator):
         super().__init__(is_target)
 
     def is_met(self):
-        if self.path.attempts >= self.max_attempts:
+        if self.state is None:
+            return False
+        if self.state.attempts >= self.max_attempts:
             self._is_met = True
             return True
         return False
 
 
 class WallTime(Terminator):
-    """A terminator that triggers after a certain total time (seconds) as ellapsed.
+    """A terminator that triggers after a certain total time (seconds) has elapsed.
 
     Parameters
     ----------
     max_time : int, required
-        The total amount of time (seconds) allowed to ellapse before triggering.
+        The total amount of time (seconds) allowed to elapse before triggering.
     is_target : bool, default False
         If `True`, this terminator represents a target condition that the walk
         is attempting to reach. Triggering a target condition indicates
@@ -187,8 +192,10 @@ class WallTime(Terminator):
         super().__init__(is_target)
 
     def is_met(self):
+        if self.state is None or self.state.start_time is None:
+            return False
         current_time = time.time()
-        total_time = current_time - self.path.start_time
+        total_time = current_time - self.state.start_time
         if total_time >= self.max_time:
             self._is_met = True
             return True
@@ -204,6 +211,8 @@ class WithinCoordinate(Terminator):
         The target coordinate in units of nm.
     distance : float, required
         A cutoff distance (nm) from the target coordinate.
+    tolerance : float, default 1e-3
+        Additional tolerance for the distance check.
     is_target : bool, default True
         If `True`, this terminator represents a target condition that the walk
         is attempting to reach. Triggering a target condition indicates
@@ -221,7 +230,11 @@ class WithinCoordinate(Terminator):
         super().__init__(is_target)
 
     def is_met(self):
-        last_site = self.path.coordinates[self.path.count]
+        if self.state is None or self.path is None:
+            return False
+        if self.state.count < 0 or self.state.count >= len(self.path.coordinates):
+            return False
+        last_site = self.path.coordinates[self.state.count]
         current_distance = np.linalg.norm(self.target_coordinate - last_site)
         if current_distance <= self.distance + self.tolerance:
             self._is_met = True
@@ -234,10 +247,10 @@ class PairDistance(Terminator):
 
     Parameters
     ----------
-    pair_type : str or list of str, required
-        The name of the site type(s) to consider in distance calculations
     distance : float, required
         A cutoff distance (nm) from the target sites.
+    pair_type : str or list of str, optional
+        The name of the site type(s) to consider in distance calculations
     is_target : bool, default True
         If `True`, this terminator represents a target condition that the walk
         is attempting to reach. Triggering a target condition indicates
@@ -282,11 +295,13 @@ class RadiusOfGyration(Terminator):
         super().__init__(is_target)
 
     def is_met(self):
-        # Enforce at least 3 sites
-        n = self.path.count - self.path._init_count + 1
+        if self.state is None or self.path is None:
+            return False
+        # Enforce at least 2 sites
+        n = self.state.count - self.state.init_count + 1
         if n < 2:
             return False
-        coords = self.path.coordinates[self.path._init_count : self.path.count + 1]
+        coords = self.path.coordinates[self.state.init_count : self.state.count + 1]
         center = coords.mean(axis=0)
         diffs = coords - center
         rg2 = np.mean(np.sum(diffs * diffs, axis=1))
@@ -321,11 +336,13 @@ class ContourLength(Terminator):
         super().__init__(is_target)
 
     def is_met(self):
-        # Enforce at least 3 sites
-        n = self.path.count - self.path._init_count + 1
+        if self.state is None:
+            return False
+        # Enforce at least 2 sites
+        n = self.state.count - self.state.init_count + 1
         if (
             self.length - self.tolerance
-            <= n * self.path.bond_length
+            <= n * self.state.bond_length
             <= self.length + self.tolerance
         ):
             self._is_met = True
@@ -358,12 +375,14 @@ class EndToEndDistance(Terminator):
         super().__init__(is_target)
 
     def is_met(self):
-        # Enforce at least 3 sites
-        n = self.path.count - self.path._init_count + 1
+        if self.state is None or self.path is None:
+            return False
+        # Enforce at least 2 sites
+        n = self.state.count - self.state.init_count + 1
         if n < 2:
             return False
-        first_site = self.path.coordinates[self.path._init_count]
-        last_site = self.path.coordinates[self.path.count]
+        first_site = self.path.coordinates[self.state.init_count]
+        last_site = self.path.coordinates[self.state.count]
         if (
             self.distance - self.tolerance
             <= np.linalg.norm(last_site - first_site)

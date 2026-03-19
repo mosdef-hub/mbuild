@@ -13,6 +13,9 @@ def random_coordinate(
     r_vectors,
 ):
     """Default next_step method for HardSphereRandomWalk."""
+    if pos1 is None: # pick random point in sphere.
+        r_norm = compute_norms(r_vectors)
+        return (pos2 + r_vectors / r_norm * bond_length).astype(np.float32)
     v1 = pos2 - pos1
     v1_norm = v1 / norm(v1)
     dot_products = (r_vectors * v1_norm).sum(axis=1)
@@ -33,6 +36,8 @@ def random_coordinate(
 @njit(cache=True, fastmath=True)
 def check_path(existing_points, new_point, radius, tolerance):
     """Default check path method for HardSphereRandomWalk."""
+    if existing_points is None or existing_points.size == 0:
+        return True
     min_sq_dist = (radius - tolerance) ** 2
     for i in range(existing_points.shape[0]):
         dist_sq = 0.0
@@ -101,6 +106,15 @@ def norm(vec):
     for i in range(vec.shape[0]):
         s += vec[i] * vec[i]
     return np.sqrt(s)
+
+@njit
+def compute_norms(vec):
+    """Compute norms for multiple vectors."""
+    n = vec.shape[0]
+    r_norm = np.zeros((n, 1))
+    for i in range(n):
+        r_norm[i, 0] = norm(vec[i])  # Call your norm function
+    return r_norm
 
 
 @njit(cache=True, fastmath=True)
