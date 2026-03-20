@@ -4,17 +4,19 @@ import logging
 import math
 import time
 from copy import deepcopy
+import os 
+import tempfile
 
 import networkx as nx
 import numpy as np
 from scipy.interpolate import interp1d
 
 from mbuild import Compound
-from mbuild.bond_graph import BondGraph
 from mbuild.path.path_utils import check_path, random_coordinate
 from mbuild.path.termination import NumSites, Termination, Terminator
 from mbuild.path.points import get_second_point, get_initial_point, generate_random_trials
-from mbuild.utils.volumes import CuboidConstraint, CylinderConstraint
+from mbuild.path.constraints import CuboidConstraint, CylinderConstraint
+from mbuild.utils.io import import_
 
 logger = logging.getLogger(__name__)
 
@@ -174,6 +176,42 @@ class Path:
             compound.bond_graph.add_edge(compounds[edge1], compounds[edge2])
         return compound
 
+    def visualize(self, styleDict=None):
+        """Visualize in 3D space using py3Dmol of the Path as a Compound.
+
+        Parameters
+        ----------
+        bead_color : str, default #5d8aa8
+            A blue bead color to view your path.
+        bead_radius : float, default 0.5
+        styleDict : dict, default Non
+            Passable dictionary to py3Dmol setStyle
+        """
+        py3Dmol = import_("py3Dmol")
+        compound = self.to_compound()
+        if styleDict is None:
+            colors = ["#FC0C04", "#150D0D", "#F5BF0F", "#F2720C", "#DAD5D0", "#10EDF5", "#9AC6C6", "#2D11E9"]
+            color_pointer = 0
+            # do defaults visualization
+            for bead in self.beads:
+                if bead not in styleDict:
+                    styleDict[bead] = {{"name":bead}, {"sphere":{"bead_color":colors[color_pointer], "scale":0.5}}}
+                    color_pointer+=1
+        tmp_dir = tempfile.mkdtemp()
+        compound.save(
+            os.path.join(tmp_dir, "tmp.mol2"),
+            include_ports=False,
+            overwrite=True,
+        )
+
+        view = py3Dmol.view()
+        with open(os.path.join(tmp_dir, "tmp.mol2"), "r") as f:
+            view.addModel(f.read(), "mol2", keepH=True)
+        view.setStyle(styleDict)
+        view.setBackgroundColor('white')
+        view.zoomTo()
+
+        return view
 
 def lamellar(
     path,
@@ -634,9 +672,9 @@ def hard_sphere_random_walk(
         Termination condition for the random walk. If an integer is passed,
         will terminate after reaching that number of sites. Can also pass a tuple of 
         termination conditions, or a mbuild.path.termination.Termination object.
-    volume_constraint : mbuild.utils.volumes.Constraint, optional
+    volume_constraint : mbuild.path.constraints.Constraint, optional
         Used to reject moves which are outside of the volume constraint. 
-        See mbuild.utils.volumes.Constraint objects.
+        See mbuild.utils.Constraint objects.
     bias : mbuild.path.bias.Bias class, 
         Causes the selected points to be biased towards some criterion.
     connectivity : str, default "linear"
