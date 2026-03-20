@@ -3,17 +3,19 @@
 import logging
 import math
 import time
-from copy import deepcopy
 
 import networkx as nx
 import numpy as np
 from scipy.interpolate import interp1d
 
 from mbuild import Compound
-from mbuild.bond_graph import BondGraph
 from mbuild.path.path_utils import check_path, random_coordinate
+from mbuild.path.points import (
+    generate_random_trials,
+    get_initial_point,
+    get_second_point,
+)
 from mbuild.path.termination import NumSites, Termination, Terminator
-from mbuild.path.points import get_second_point, get_initial_point, generate_random_trials
 from mbuild.utils.volumes import CuboidConstraint, CylinderConstraint
 
 logger = logging.getLogger(__name__)
@@ -38,7 +40,9 @@ class Path:
     def __init__(self, coordinates=None, bond_graph=None, bead_name="_A"):
         if coordinates is None and bond_graph is not None:
             self.bond_graph = bond_graph
-            self.coordinates = np.array([node["xyz"] for node in bond_graph.nodes(data=True)])
+            self.coordinates = np.array(
+                [node["xyz"] for node in bond_graph.nodes(data=True)]
+            )
             self.beads = [node["name"] for node in bond_graph.nodes(data=True)]
         elif coordinates is not None and bond_graph is None:
             self.coordinates = np.asarray(coordinates)
@@ -54,11 +58,11 @@ class Path:
     @classmethod
     def from_compound(cls, compound):
         coordinates = compound.xyz
-        
+
         # Create the path with coordinates and bond graph
         path = cls(coordinates=coordinates, bead_name=compound.name)
         path.bond_graph = nx.Graph()
-    
+
         # Ensure all nodes have xyz and name attributes
         partDict = {}
         for idx, part in enumerate(compound.particles()):
@@ -80,13 +84,13 @@ class Path:
         zeros = np.zeros((N, 3), dtype=self.coordinates.dtype)
         new_array = np.concatenate([self.coordinates, zeros])
         self.coordinates = new_array
-    
+
     def _extend_bond_graph(self, bead_name):
         """Make sure all coordinates are properly added to the bondgraph."""
         if len(self.bond_graph) == len(self.coordinates):
             return
         index = len(self.bond_graph)
-        for coord in self.coordinates[len(self.bond_graph):]:
+        for coord in self.coordinates[len(self.bond_graph) :]:
             self.bond_graph.add_node(index, name=bead_name, xyz=coord)
             index += 1
 
@@ -95,8 +99,8 @@ class Path:
         diff = len(self.coordinates) - len(self.beads)
         if not diff:
             return
-        self.beads.extend([bead_name]*diff)
-        
+        self.beads.extend([bead_name] * diff)
+
     def _connect_edges(self, connectivity, indices, attach_index=-1):
         """Adds edges to self.bond_graph matching a given style `connectivity`."""
         if connectivity is None:
@@ -122,22 +126,30 @@ class Path:
         ----------
         indices : list, default None
             iterate through the bond_graph by indices and form edges between nodes.
-            
+
         Notes
         -----
         This assumes site i is always bonded to site i + 1 and i - 1 (i.e., linear graph).
         """
         n_coords = len(self.coordinates)
-        if indices is None: # assume all coords
+        if indices is None:  # assume all coords
             indices = list(range(n_coords))
         if indices[0] not in self.bond_graph:
-            self.bond_graph.add_node(indices[0], name=self.beads[indices[0]], xyz=self.coordinates[indices[0]])
+            self.bond_graph.add_node(
+                indices[0],
+                name=self.beads[indices[0]],
+                xyz=self.coordinates[indices[0]],
+            )
 
         for idx1, idx in zip(indices, indices[1:]):
             if idx >= n_coords:
-                raise ValueError(f"Index {idx=} is out of bounds for Path with {n_coords}")
+                raise ValueError(
+                    f"Index {idx=} is out of bounds for Path with {n_coords}"
+                )
             if idx not in self.bond_graph:
-                self.bond_graph.add_node(idx, name=self.beads[idx], xyz=self.coordinates[idx])
+                self.bond_graph.add_node(
+                    idx, name=self.beads[idx], xyz=self.coordinates[idx]
+                )
             self.add_edge(idx1, idx)
 
     def add_edge(self, u, v):
@@ -211,7 +223,7 @@ def lamellar(
         If `True`, the first layer is built with increasing y-coordinates from the origin.
     """
     initial_point = np.asarray(initial_point)
-    
+
     # Coordinates in the y-direction (layer-length) of the lamellar layer
     layer_spacing = np.arange(0, layer_length, bond_length)
     if not left_to_right:
@@ -226,7 +238,7 @@ def lamellar(
     arc_angles = np.linspace(arc_angle, np.pi, arc_num_points, endpoint=False)
 
     coordinates = []
-    
+
     # Iterate and build up layers
     for i in range(num_layers):
         x = initial_point[0] + (layer_separation * i)
@@ -293,7 +305,8 @@ def lamellar(
                 )
                 origin = coordinates[-1] + np.array([0, 0, r])
                 arc = [
-                    origin + np.array([0, odd_stack_mult * np.sin(theta), np.cos(theta)]) * r
+                    origin
+                    + np.array([0, odd_stack_mult * np.sin(theta), np.cos(theta)]) * r
                     for theta in arc_angles
                 ]
                 coordinates.extend(arc[::-1])
@@ -304,7 +317,8 @@ def lamellar(
                 )
                 origin = coordinates[-1] + np.array([0, 0, r])
                 arc = [
-                    origin + np.array([0, even_stack_mult * np.sin(theta), np.cos(theta)]) * r
+                    origin
+                    + np.array([0, even_stack_mult * np.sin(theta), np.cos(theta)]) * r
                     for theta in arc_angles
                 ]
                 coordinates.extend(arc[::-1])
@@ -376,7 +390,7 @@ def cyclic(path, spacing=None, N=None, radius=None, closed=True, bead_name="_A")
     path.beads = [bead_name] * N
     path.form_linear_bond_graph()
     if closed:
-        path.bond_graph.add_edge(0, N-1)
+        path.bond_graph.add_edge(0, N - 1)
 
 
 def knot(path, spacing, N, m, closed=True, bead_name="_A"):
@@ -398,7 +412,7 @@ def knot(path, spacing, N, m, closed=True, bead_name="_A"):
     """
     # Generate dense sites first, sample actual ones later from spacing
     t_dense = np.linspace(0, 2 * np.pi, 5000)
-    
+
     # Trefoil knot
     if m == 3:
         R, r = 1.0, 0.3
@@ -442,18 +456,11 @@ def knot(path, spacing, N, m, closed=True, bead_name="_A"):
     path.beads = [bead_name] * N
     path.form_linear_bond_graph()
     if closed:
-        path.bond_graph.add_edge(0, len(path.coordinates)-1)
+        path.bond_graph.add_edge(0, len(path.coordinates) - 1)
 
 
 def helix(
-    path,
-    N,
-    radius,
-    rise,
-    twist,
-    right_handed=True,
-    bottom_up=True,
-    bead_name="_A"
+    path, N, radius, rise, twist, right_handed=True, bottom_up=True, bead_name="_A"
 ):
     """Generate helical path.
 
@@ -476,7 +483,7 @@ def helix(
     """
     coordinates = np.zeros((N, 3))
     indices = reversed(range(N)) if not bottom_up else range(N)
-    
+
     for i in indices:
         angle = np.deg2rad(i * twist)
         if not right_handed:
@@ -485,7 +492,7 @@ def helix(
         y = radius * np.sin(angle)
         z = i * rise if bottom_up else -i * rise
         coordinates[i] = (x, y, z)
-    
+
     path.coordinates = coordinates
     path.beads = [bead_name] * N
     path.form_linear_bond_graph()
@@ -509,7 +516,7 @@ def spiral_2D(path, N, a, b, spacing, bead_name="_A"):
     """
     coordinates = np.zeros((N, 3))
     theta = 0.0
-    
+
     for i in range(N):
         r = a + b * theta
         x = r * np.cos(theta)
@@ -520,7 +527,7 @@ def spiral_2D(path, N, a, b, spacing, bead_name="_A"):
         ds_dtheta = np.sqrt((r) ** 2 + b**2)
         dtheta = spacing / ds_dtheta
         theta += dtheta
-    
+
     path.coordinates = coordinates
     path.beads = [bead_name] * N
     path.form_linear_bond_graph()
@@ -570,13 +577,15 @@ def zigzag(
         if step_count == sites_per_segment:
             step_count = 0
             sign = -1 if segment_count % 2 == 0 else 1
-            rot_matrix = np.array([
-                [np.cos(sign * angle_rad), -np.sin(sign * angle_rad)],
-                [np.sin(sign * angle_rad), np.cos(sign * angle_rad)],
-            ])
+            rot_matrix = np.array(
+                [
+                    [np.cos(sign * angle_rad), -np.sin(sign * angle_rad)],
+                    [np.sin(sign * angle_rad), np.cos(sign * angle_rad)],
+                ]
+            )
             direction = rot_matrix @ direction
             segment_count += 1
-    
+
     # Map into 3D space based on chosen plane
     coordinates = np.zeros((N, 3))
     for i, (x2d, y2d) in enumerate(coords_2d):
@@ -586,9 +595,9 @@ def zigzag(
             coordinates[i] = (x2d, 0, y2d)
         elif plane == "yz":
             coordinates[i] = (0, x2d, y2d)
-    
+
     path.coordinates = coordinates
-    path.beads = [bead_name] * N # TODO: Should extend this, not assign it
+    path.beads = [bead_name] * N  # TODO: Should extend this, not assign it
     path.form_linear_bond_graph()
 
 
@@ -632,18 +641,18 @@ def hard_sphere_random_walk(
         for the next step.
     termination : termination condition, required
         Termination condition for the random walk. If an integer is passed,
-        will terminate after reaching that number of sites. Can also pass a tuple of 
+        will terminate after reaching that number of sites. Can also pass a tuple of
         termination conditions, or a mbuild.path.termination.Termination object.
     volume_constraint : mbuild.utils.volumes.Constraint, optional
-        Used to reject moves which are outside of the volume constraint. 
+        Used to reject moves which are outside of the volume constraint.
         See mbuild.utils.volumes.Constraint objects.
-    bias : mbuild.path.bias.Bias class, 
+    bias : mbuild.path.bias.Bias class,
         Causes the selected points to be biased towards some criterion.
     connectivity : str, default "linear"
         Will be used to connect the bond_graph of the walk post generation based on a specified method.
         See path._connect_edges for different options.
     initial_point : array-like or int, optional
-        Used as the coordinate for the first site in this random walk path. If an integer is 
+        Used as the coordinate for the first site in this random walk path. If an integer is
         passed, look in coordinates of passed path object, and grab the starting coordiantes from there.
     seed : int, default = 42
         Random seed
@@ -675,11 +684,13 @@ def hard_sphere_random_walk(
         run_on_gpu=bool(run_on_gpu) and _get_cuda_available(),
     )
 
-    if path is None: # Create empty path
+    if path is None:  # Create empty path
         path = Path()
 
-    if termination is None: # handle default termination args
-        raise ValueError("Please pass viable termination to hard_sphere_random_walk from `mbuild.path.termination.Termination`")
+    if termination is None:  # handle default termination args
+        raise ValueError(
+            "Please pass viable termination to hard_sphere_random_walk from `mbuild.path.termination.Termination`"
+        )
     elif isinstance(termination, int):
         termination = Termination(NumSites(termination))
     elif isinstance(termination, (tuple, list)):
@@ -689,7 +700,6 @@ def hard_sphere_random_walk(
     elif not isinstance(termination, Termination):
         raise ValueError(f"Bad input {termination=} to hard_sphere_random_walk")
     state.termination = termination
-
 
     # Create RNG state
     rng = np.random.default_rng(seed)
@@ -731,7 +741,7 @@ def hard_sphere_random_walk(
             ),
             axis=0,
         )
-        state.count = len(path.coordinates) # starting index
+        state.count = len(path.coordinates)  # starting index
     else:
         coordinates = np.zeros((chunk_size, 3), dtype=np.float32)
         state.count = 0
@@ -744,6 +754,7 @@ def hard_sphere_random_walk(
     # Select methods for random walk
     if state.run_on_gpu:
         from mbuild.path.path_utils_gpu import check_path_split
+
         logger.info("Running hard_sphere_random_walk on a CUDA device.")
         check_path_gpu = check_path_split
     else:
@@ -760,7 +771,7 @@ def hard_sphere_random_walk(
         return path
 
     # Get the second coordinate
-    state.count+=1
+    state.count += 1
     second_xyz = get_second_point(state, coordinates, check_path_cpu, initial_xyz)
     coordinates[state.count] = second_xyz
 
@@ -770,9 +781,10 @@ def hard_sphere_random_walk(
     # Prepare GPU static points if using GPU
     if state.run_on_gpu:
         from numba import cuda
+
         static_parts = []
         if state.init_count > 0:
-            static_parts.append(coordinates[:state.init_count])
+            static_parts.append(coordinates[: state.init_count])
         if static_parts:
             static_points = np.concatenate(static_parts).astype(np.float32)
             state.gpu_static_points = cuda.to_device(static_points)
@@ -790,13 +802,15 @@ def hard_sphere_random_walk(
         )
 
         if state.volume_constraint:
-            is_inside_mask = volume_constraint.is_inside(points=candidates, buffer=radius)
+            is_inside_mask = volume_constraint.is_inside(
+                points=candidates, buffer=radius
+            )
             candidates = candidates[is_inside_mask]
 
         if state.bias:
             candidates = bias(candidates=candidates)
 
-        existing_points = coordinates[:state.count + 1]
+        existing_points = coordinates[: state.count + 1]
 
         if any(pbc):
             candidates = volume_constraint.mins + np.mod(
@@ -805,7 +819,7 @@ def hard_sphere_random_walk(
 
         accept_xyz = None
         if state.run_on_gpu and len(candidates) > 0:
-            dynamic_points = coordinates[state.init_count:state.count + 1]
+            dynamic_points = coordinates[state.init_count : state.count + 1]
             valid_mask = check_path_gpu(
                 state.gpu_static_points,
                 dynamic_points,
@@ -848,10 +862,10 @@ def hard_sphere_random_walk(
 
 class RandomWalkState:
     """Tracks state and configuration for a hard_sphere_random_walk.
-    
+
     This class encapsulates all the bookkeeping information needed during
     a random walk, keeping the Path object clean of implementation details.
-    
+
     Attributes
     ----------
     bond_length : float
@@ -887,7 +901,7 @@ class RandomWalkState:
     gpu_static_points : device array or None
         GPU array of static points for overlap checking
     """
-    
+
     def __init__(
         self,
         bond_length,
@@ -910,7 +924,9 @@ class RandomWalkState:
         self.bond_length = bond_length
         self.radius = radius
         if bond_length < radius:
-            raise ValueError("Bond length should be greater than radius to prevent overlaps.")
+            raise ValueError(
+                "Bond length should be greater than radius to prevent overlaps."
+            )
         self.min_angle = min_angle
         self.max_angle = max_angle
         self.bead_name = bead_name
@@ -928,7 +944,7 @@ class RandomWalkState:
         self.trial_batch_size = trial_batch_size
         self.chunk_size = chunk_size
         self.run_on_gpu = run_on_gpu
-        
+
         # State tracking
         self.count = 0
         self.init_count = 0
@@ -944,24 +960,37 @@ class RandomWalkState:
             else:
                 logger.warning("Random walk not successful.")
                 logger.warning(self.termination.summarize())
-            path.coordinates = coordinates[:self.count+1]
+            path.coordinates = coordinates[: self.count + 1]
             self.termination._clean()
             if self.bias:
                 self.bias._clean()
             path._extend_bond_graph(self.bead_name)
-            if isinstance(self.initial_point, int): # make sure to build from previous point instead of last point
-                path._connect_edges(self.connectivity, np.arange(self.previous_count, self.count+1), self.initial_point)
-            else: # build bond graph, and connect to last index in previous path coordinates
-                path._connect_edges(self.connectivity, np.arange(self.previous_count, self.count+1), self.previous_count)
+            if isinstance(
+                self.initial_point, int
+            ):  # make sure to build from previous point instead of last point
+                path._connect_edges(
+                    self.connectivity,
+                    np.arange(self.previous_count, self.count + 1),
+                    self.initial_point,
+                )
+            else:  # build bond graph, and connect to last index in previous path coordinates
+                path._connect_edges(
+                    self.connectivity,
+                    np.arange(self.previous_count, self.count + 1),
+                    self.previous_count,
+                )
             path._extend_beads(self.bead_name)
             return True
         return False
 
+
 def crosslink_random_walk(path):
     pass
 
+
 class CrosslinkWalkState:
     pass
+
 
 _CUDA_AVAILABLE = None
 
@@ -972,6 +1001,7 @@ def _get_cuda_available():
     if _CUDA_AVAILABLE is None:
         try:
             from numba import cuda
+
             _CUDA_AVAILABLE = cuda.is_available()
         except Exception:
             _CUDA_AVAILABLE = False

@@ -13,7 +13,7 @@ def random_coordinate(
     r_vectors,
 ):
     """Default next_step method for HardSphereRandomWalk."""
-    if pos1 is None: # pick random point in sphere.
+    if pos1 is None:  # pick random point in sphere.
         r_norm = compute_norms(r_vectors)
         return (pos2 + r_vectors / r_norm * bond_length).astype(np.float32)
     v1 = pos2 - pos1
@@ -106,6 +106,7 @@ def norm(vec):
     for i in range(vec.shape[0]):
         s += vec[i] * vec[i]
     return np.sqrt(s)
+
 
 @njit
 def compute_norms(vec):
