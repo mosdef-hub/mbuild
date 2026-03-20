@@ -8,4 +8,5 @@ from .path import (
     Path,
     Spiral2D,
     StraightLine,
+    ZigZag,
 )
