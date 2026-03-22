@@ -1,17 +1,16 @@
-import networkx as nx
 import numpy as np
 import pytest
 
 import mbuild as mb
 from mbuild.path.build import (
+    Path,
     cyclic,
     hard_sphere_random_walk,
+    helix,
     knot,
     lamellar,
-    Path,
     spiral_2D,
     straight_line,
-    helix,
     zigzag,
 )
 from mbuild.path.path_utils import (
@@ -67,7 +66,9 @@ class TestPaths(BaseTest):
         assert len(path.coordinates) == 5
         assert path.bond_graph.number_of_edges() == 4
         # 5 sites = 4 bonds at 0.20 each
-        assert np.allclose(np.linalg.norm(path.coordinates[-1] - path.coordinates[0]), 0.80)
+        assert np.allclose(
+            np.linalg.norm(path.coordinates[-1] - path.coordinates[0]), 0.80
+        )
         for edge in path.bond_graph.edges(data=True):
             assert np.allclose(edge[2]["direction"], np.array([1, 0, 0]))
 
@@ -188,7 +189,7 @@ class TestPaths(BaseTest):
         assert len(path.coordinates) == 50
         assert path.bond_graph.number_of_edges() == 49
         # Check that all points are roughly at radius distance from z-axis
-        radii = np.sqrt(path.coordinates[:, 0]**2 + path.coordinates[:, 1]**2)
+        radii = np.sqrt(path.coordinates[:, 0] ** 2 + path.coordinates[:, 1] ** 2)
         assert np.allclose(radii, 2.0, atol=1e-5)
 
     def test_zigzag(self):
@@ -216,9 +217,7 @@ class TestRandomWalk(BaseTest):
         assert len(path.coordinates) == 80
 
     def test_default_args(self):
-        path = hard_sphere_random_walk(
-            termination=5
-        )
+        path = hard_sphere_random_walk(termination=5)
         assert len(path.coordinates) == 5
         diffs = path.coordinates[0:-2] - path.coordinates[1:-1]
         assert np.allclose(0.15, np.linalg.norm(diffs, axis=1), atol=1e-4)
@@ -401,12 +400,12 @@ class TestRandomWalk(BaseTest):
         assert extents[1] < 6 - 0.22 * 2  # y extent
         assert extents[2] < 6 - 0.22 * 2  # z extent
 
-    @pytest.mark.parametrize("a_len, b_len", [(1,2), (1,5), (4,4)])
+    @pytest.mark.parametrize("a_len, b_len", [(1, 2), (1, 5), (4, 4)])
     def test_multiple_paths(self, a_len, b_len):
         # Initialize two random walks
         chainDict = {
-            "_A": {"bond_length": 0.15, "n_mers":a_len},
-            "_B": {"bond_length": 0.13, "n_mers":b_len}
+            "_A": {"bond_length": 0.15, "n_mers": a_len},
+            "_B": {"bond_length": 0.13, "n_mers": b_len},
         }
         aPath = Path()
 
@@ -421,7 +420,7 @@ class TestRandomWalk(BaseTest):
             # Run a random walk
             hard_sphere_random_walk(
                 path=aPath,
-                radius=chainDict[chain]["bond_length"]*0.95,
+                radius=chainDict[chain]["bond_length"] * 0.95,
                 bond_length=chainDict[chain]["bond_length"],
                 termination=(num_sites),
                 bead_name=chain,
@@ -431,14 +430,10 @@ class TestRandomWalk(BaseTest):
         for chain in chainsList:
             assert data[site_idx]["name"] == chain
             site_idx += chainDict[chain]["n_mers"]
- 
 
     def test_random_walk_bonds(self):
         path = hard_sphere_random_walk(
-            radius=0.2,
-            bond_length=0.25,
-            termination=5,
-            connectivity="linear"
+            radius=0.2, bond_length=0.25, termination=5, connectivity="linear"
         )
         assert len(path.bond_graph.edges) == 4
         hard_sphere_random_walk(
@@ -446,22 +441,15 @@ class TestRandomWalk(BaseTest):
             radius=0.2,
             bond_length=0.25,
             termination=5,
-            connectivity="link-linear"
+            connectivity="link-linear",
         )
         assert len(path.bond_graph.edges) == 9
         path = hard_sphere_random_walk(
-            radius=0.2,
-            bond_length=0.25,
-            termination=5,
-            connectivity="disconnected"
+            radius=0.2, bond_length=0.25, termination=5, connectivity="disconnected"
         )
         assert len(path.bond_graph.edges) == 0
         hard_sphere_random_walk(
-            path,
-            radius=0.2,
-            bond_length=0.25,
-            termination=5,
-            connectivity="cycle"
+            path, radius=0.2, bond_length=0.25, termination=5, connectivity="cycle"
         )
         assert len(path.bond_graph.edges) == 5
 
@@ -491,16 +479,16 @@ class TestRandomWalk(BaseTest):
             bond_length=1.5,
             termination=1,
         )
-        assert all([np.abs(coord) < 1*10/2 for coord in path.coordinates[0]])
+        assert all([np.abs(coord) < 1 * 10 / 2 for coord in path.coordinates[0]])
 
         # specific starting point
         path = hard_sphere_random_walk(
             radius=1.0,
             bond_length=1.5,
-            initial_point=(0,0,0),
+            initial_point=(0, 0, 0),
             termination=3,
         )
-        assert np.allclose(path.coordinates[0], (0,0,0))
+        assert np.allclose(path.coordinates[0], (0, 0, 0))
         assert len(path.coordinates == 3)
 
         # build from a previous path
@@ -516,7 +504,7 @@ class TestRandomWalk(BaseTest):
         assert len(path.coordinates[0] == 4)
 
         # generate within a constraint
-        constraint = CuboidConstraint.from_array([1,1,1])
+        constraint = CuboidConstraint.from_array([1, 1, 1])
         path = hard_sphere_random_walk(
             radius=0.1,
             bond_length=bond_length,
@@ -524,22 +512,21 @@ class TestRandomWalk(BaseTest):
             termination=1,
         )
         assert constraint.is_inside(points=path.coordinates, buffer=0.1)
-        assert all([np.abs(coord) < 1/2 for coord in path.coordinates[0]])
+        assert all([np.abs(coord) < 1 / 2 for coord in path.coordinates[0]])
 
-        constraint = CuboidConstraint.from_array([1,1,1], center=(-0.5,-0.5,-0.5))
+        constraint = CuboidConstraint.from_array([1, 1, 1], center=(-0.5, -0.5, -0.5))
         path = hard_sphere_random_walk(
-            radius=0.1, # need a smaller buffer
+            radius=0.1,  # need a smaller buffer
             bond_length=0.2,
             volume_constraint=constraint,
-            initial_point=(0,0,0),
+            initial_point=(0, 0, 0),
             termination=3,
-            seed=100
+            seed=100,
         )
-        assert np.allclose(path.coordinates[0], np.array([0,0,0]))
+        assert np.allclose(path.coordinates[0], np.array([0, 0, 0]))
         assert all(constraint.is_inside(points=path.coordinates[1:], buffer=0.1))
         for coord in path.coordinates[1:]:
             assert all([x < 0 for x in coord])
-
 
 
 class TestPathUtils(BaseTest):

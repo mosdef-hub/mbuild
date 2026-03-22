@@ -412,7 +412,7 @@ def hoomd_cap_displacement(
     )
     sim.set_integrator(method=displacement_capped, dt=dt)
     sim.run(n_steps)
-    sim.operations.integrator = None 
+    sim.operations.integrator = None
     sim.update_positions()
     sim._update_snapshot()
 
@@ -528,7 +528,7 @@ def hoomd_fire(
         sim.operations.integrator.reset()
 
     # Update particle positions, save latest state point snapshot
-    sim.operations.integrator = None 
+    sim.operations.integrator = None
     sim._update_snapshot()
     sim.update_positions()
 
