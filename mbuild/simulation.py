@@ -1249,3 +1249,90 @@ def _energy_minimize_openbabel(
         y = obatom.GetY() / 10.0
         z = obatom.GetZ() / 10.0
         compound[i].pos = np.array([x, y, z])
+
+def energy_minimize_path(
+    path,
+    bead_size=0.3,
+    bond_length=None,
+    steps=1000,
+):
+    # TODO: Set equilibrium or constrained angle
+    positions = path.coordinates
+    n_particles = len(positions)
+
+    import openmm
+    import openmm.unit as u
+    from openmm.app import AllBonds, Topology
+    from openmm.app.simulation import Simulation
+    from openmm.openmm import LangevinIntegrator
+
+    # system = to_parmed.createSystem(
+    #     constraints=AllBonds
+    # )  # Create an OpenMM System
+
+    system = openmm.System()
+    for i in range(n_particles):
+        system.addParticle(1.0 * u.amu)
+
+    # Create a Langenvin Integrator in OpenMM
+    integrator = LangevinIntegrator(
+        298 * u.kelvin, 1 / u.picosecond, 0.001 * u.picoseconds
+    )
+    # Create Simulation object in OpenMM
+    # simulation = Simulation(to_parmed.topology, system, integrator)
+
+    # # Loop through forces in OpenMM System and set parameters
+    # for force in system.getForces():
+    #     if type(force).__name__ == "NonbondedForce":
+    #         for nb_index in range(force.getNumParticles()):
+    #             charge, sigma, epsilon = force.getParticleParameters(nb_index)
+    #             force.setParticleParameters(
+    #                 nb_index, charge, sigma, epsilon * scale_nonbonded
+    #             )
+    #         force.updateParametersInContext(simulation.context)
+
+    # Set nonbonded force for each particle
+    nonbonded_force = openmm.NonbondedForce()
+    nonbonded_force.setNonbondedMethod(openmm.NonbondedForce.NoCutoff)
+    sigma  = bead_size * u.nanometer
+    epsilon = 0.1 * u.kilocalories_per_mole
+    for i in range(n_particles):
+        nonbonded_force.addParticle(0.0, sigma, epsilon)
+    system.addForce(nonbonded_force)
+
+    if not bond_length:
+        for i, j in path.bond_graph.edges():
+            bond_length = np.linalg.norm(positions[j] - positions[i])
+            system.addConstraint(i, j, bond_length * u.nanometer)
+    else:
+        # Use HarmonicBondForce instead of constraints
+        harmonic_force = openmm.HarmonicBondForce()
+        for i, j in path.bond_graph.edges():
+            harmonic_force.addBond(
+                i, j, 
+                bond_length * u.nanometer,
+                300 * u.kilocalories_per_mole / u.nanometer**2
+            )
+        system.addForce(harmonic_force)
+
+
+    topology = Topology()
+    chain = topology.addChain()
+    for i in range(n_particles):
+        residue = topology.addResidue(f"LJ{i}", chain)
+        topology.addAtom(f"P{i}", openmm.app.Element.getByMass(1), residue)
+    # Add bonds to topology
+    atomsList = list(topology.atoms())
+    for i, j in path.bond_graph.edges():
+        topology.addBond(atomsList[i], atomsList[j])
+
+    simulation = Simulation(topology, system, integrator)
+    simulation.context.setPositions(positions)
+
+    # Run energy minimization through OpenMM
+    simulation.minimizeEnergy(maxIterations=steps)
+
+    # Get positions directly
+    state = simulation.context.getState(getPositions=True)
+    path.coordinates  = np.array(state.getPositions(asNumpy=True))
+

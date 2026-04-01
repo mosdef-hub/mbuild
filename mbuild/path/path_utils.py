@@ -133,3 +133,115 @@ def rotate_vector(v, axis, theta):
     for i in range(3):
         rotated[i] = v[i] * c + cross[i] * s + k[i] * k_dot_v * (1 - c)
     return rotated
+
+@njit(cache=True, fastmath=True)
+def calculate_sq_distances(
+    target_coordinate,
+    new_points,
+    pbc=np.array([False, False, False], dtype=bool),
+    box_lengths=np.array([np.inf, np.inf, np.inf], dtype=np.float32),
+):
+    """
+    Return squared distances from target_coordinate to new_points.
+    
+    Parameters
+    ----------
+    target_coordinate : np.ndarray
+        Single coordinate [x, y, z]
+    new_points : np.ndarray
+        Array of coordinates with shape (n, 3)
+    pbc : np.ndarray
+        Boolean array indicating periodic boundary conditions for each axis
+    box_lengths : np.ndarray
+        Box lengths for periodic boundary conditions
+        
+    Returns
+    -------
+    np.ndarray
+        Squared distances from target to each point in new_points
+    """
+    n_points = new_points.shape[0]
+    sq_distances = np.empty(n_points, dtype=np.float32)
+    for i in range(n_points):
+        dx = target_coordinate[0] - new_points[i, 0]
+        dy = target_coordinate[1] - new_points[i, 1]
+        dz = target_coordinate[2] - new_points[i, 2]
+        # Apply PBC per-axis
+        if pbc[0]:
+            dx -= np.round(dx / box_lengths[0]) * box_lengths[0]
+        if pbc[1]:
+            dy -= np.round(dy / box_lengths[1]) * box_lengths[1]
+        if pbc[2]:
+            dz -= np.round(dz / box_lengths[2]) * box_lengths[2]
+        sq_distances[i] = dx * dx + dy * dy + dz * dz
+    return sq_distances
+
+
+@njit(cache=True, fastmath=True)
+def find_candidates_within_radius(
+    target_coordinate,
+    candidate_points,
+    radius,
+    pbc=np.array([False, False, False], dtype=bool),
+    box_lengths=np.array([np.inf, np.inf, np.inf], dtype=np.float32),
+):
+    """
+    Find indices of candidate points within radius of target coordinate.
+    
+    Parameters
+    ----------
+    target_coordinate : np.ndarray
+        Single coordinate [x, y, z]
+    candidate_points : np.ndarray
+        Array of coordinates with shape (n, 3)
+    radius : float
+        Search radius
+    pbc : np.ndarray
+        Boolean array indicating periodic boundary conditions for each axis
+    box_lengths : np.ndarray
+        Box lengths for periodic boundary conditions
+        
+    Returns
+    -------
+    np.ndarray
+        Boolean mask of points within radius
+    """
+    n_points = candidate_points.shape[0]
+    r2_cut = radius * radius
+    within_radius = np.empty(n_points, dtype=np.bool_)
+    
+    for i in range(n_points):
+        dx = target_coordinate[0] - candidate_points[i, 0]
+        dy = target_coordinate[1] - candidate_points[i, 1]
+        dz = target_coordinate[2] - candidate_points[i, 2]
+        # Apply PBC per-axis
+        if pbc[0]:
+            dx -= np.round(dx / box_lengths[0]) * box_lengths[0]
+        if pbc[1]:
+            dy -= np.round(dy / box_lengths[1]) * box_lengths[1]
+        if pbc[2]:
+            dz -= np.round(dz / box_lengths[2]) * box_lengths[2]
+        
+        dist2 = dx * dx + dy * dy + dz * dz
+        within_radius[i] = dist2 <= r2_cut
+    
+    return within_radius
+
+
+@njit(cache=True, fastmath=True)
+def norm(vec):
+    """Use in place of np.linalg.norm inside of numba functions."""
+    s = 0.0
+    for i in range(vec.shape[0]):
+        s += vec[i] * vec[i]
+    return np.sqrt(s)
+
+
+@njit
+def compute_norms(vec):
+    """Compute norms for multiple vectors."""
+    n = vec.shape[0]
+    r_norm = np.zeros((n, 1))
+    for i in range(n):
+        r_norm[i, 0] = norm(vec[i])
+    return r_norm

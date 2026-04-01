@@ -15,23 +15,12 @@ def get_second_point(state, existing_points, check_path, first_point):
     """Generate a secound point from the given first point using RandomWalkState."""
     # Find 2nd point
     found_valid_point = False
-    found_valid_point = False
     if not state.volume_constraint:
-        found_valid_point = False
         found_valid_point = False
         phiList = state.rng.uniform(0, 2 * np.pi, 10000)
         cos_thetaList = state.rng.uniform(-1, 1, 10000)
         thetaList = np.arccos(cos_thetaList)  # use to evenly sample sphereical space
-        thetaList = np.arccos(cos_thetaList)  # use to evenly sample sphereical space
         for phi, theta in zip(phiList, thetaList):
-            offset = np.array(
-                [
-                    state.bond_length * np.sin(theta) * np.cos(phi),
-                    state.bond_length * np.sin(theta) * np.sin(phi),
-                    state.bond_length * np.cos(theta),
-                ]
-            )
-            if check_path(  # check for overlaps
             offset = np.array(
                 [
                     state.bond_length * np.sin(theta) * np.cos(phi),
@@ -42,11 +31,9 @@ def get_second_point(state, existing_points, check_path, first_point):
             if check_path(  # check for overlaps
                 existing_points=existing_points,
                 new_point=offset + first_point,
-                new_point=offset + first_point,
                 radius=state.radius,
                 tolerance=state.tolerance,
             ):
-                found_valid_point = True
                 found_valid_point = True
                 break
 
@@ -54,17 +41,7 @@ def get_second_point(state, existing_points, check_path, first_point):
         phiList = state.rng.uniform(0, 2 * np.pi, 10000)
         cos_thetaList = state.rng.uniform(-1, 1, 10000)
         thetaList = np.arccos(cos_thetaList)  # use to evenly sample sphereical space
-        thetaList = np.arccos(cos_thetaList)  # use to evenly sample sphereical space
         for phi, theta in zip(phiList, thetaList):
-            # import pdb; pdb.set_trace()
-
-            offset = np.array(
-                [
-                    state.bond_length * np.sin(theta) * np.cos(phi),
-                    state.bond_length * np.sin(theta) * np.sin(phi),
-                    state.bond_length * np.cos(theta),
-                ]
-            )
             offset = np.array(
                 [
                     state.bond_length * np.sin(theta) * np.cos(phi),
@@ -81,24 +58,14 @@ def get_second_point(state, existing_points, check_path, first_point):
                 points=np.array([first_point + offset]), buffer=state.radius
             )
             if np.all(is_inside_mask) and check_path(  # check for overlaps
-            is_inside_mask = state.volume_constraint.is_inside(
-                points=np.array([first_point + offset]), buffer=state.radius
-            )
-            if np.all(is_inside_mask) and check_path(  # check for overlaps
                 existing_points=existing_points,
-                new_point=offset + first_point,
                 new_point=offset + first_point,
                 radius=state.radius,
                 tolerance=state.tolerance,
-                tolerance=state.tolerance,
             ):
-                found_valid_point = True
                 found_valid_point = True
                 break
     if not found_valid_point:
-        raise MBuildError(
-            f"No viable second point found within constraint and next to {state.initial_point=}. Try using a smaller radius than {state.radius=}"
-        )
         raise MBuildError(
             f"No viable second point found within constraint and next to {state.initial_point=}. Try using a smaller radius than {state.radius=}"
         )
@@ -120,13 +87,7 @@ def get_initial_point(state, existing_points, check_path, next_step):
     if isinstance(state.initial_point, np.ndarray) and state.initial_point.shape == (
         3,
     ):
-    if isinstance(state.initial_point, np.ndarray) and state.initial_point.shape == (
-        3,
-    ):
         return state.initial_point
-    elif isinstance(state.initial_point, int) and state.initial_point < len(
-        existing_points
-    ):
     elif isinstance(state.initial_point, int) and state.initial_point < len(
         existing_points
     ):
@@ -134,8 +95,6 @@ def get_initial_point(state, existing_points, check_path, next_step):
         starting_xyz = existing_points[state.initial_point]
         batch_angles, batch_vectors = generate_random_trials(state)
         xyzs = next_step(
-            pos1=None,  # will generate sphere of points around pos2
-            pos2=starting_xyz,
             pos1=None,  # will generate sphere of points around pos2
             pos2=starting_xyz,
             bond_length=state.bond_length,
@@ -178,7 +137,6 @@ def get_initial_point(state, existing_points, check_path, next_step):
                     xyz - state.volume_constraint.mins, box_lengths
                 )
             if check_path(  # check for overlaps
-            if check_path(  # check for overlaps
                 existing_points=existing_points,
                 new_point=xyz,
                 radius=state.radius,
@@ -191,7 +149,6 @@ def get_initial_point(state, existing_points, check_path, next_step):
             "without overlapping particles. "
             "Check your `initial_point` argument."
         )
-    elif state.volume_constraint:  # no initial point, but stay inside volume constraint
     elif state.volume_constraint:  # no initial point, but stay inside volume constraint
         xyzs = state.volume_constraint.sample_candidates(
             points=existing_points, n_candidates=100, buffer=state.radius + 0.1
@@ -208,7 +165,6 @@ def get_initial_point(state, existing_points, check_path, next_step):
             "Unable to find a starting point without overlapping particles. "
             "The density of the volume constraint may be too high."
         )
-    else:  # completely random point
     else:  # completely random point
         max_dist = 10 * state.radius
         xyz = state.rng.uniform(low=-max_dist / 2, high=max_dist / 2, size=3)
@@ -230,4 +186,6 @@ def generate_random_trials(state):
         np.float32
     )
     return thetas, r
+
+
 

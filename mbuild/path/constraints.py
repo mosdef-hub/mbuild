@@ -128,6 +128,7 @@ class CuboidConstraint(Constraint):
             return candidates
         # Existing points given, sort candidates by local density
         points = np.asarray(points)
+        points = points[np.isfinite(points).all(axis=1)] # Filter out np.inf values
         tree = cKDTree(points)
         dists, _ = tree.query(candidates, k=k)
         if dists.ndim == 1:

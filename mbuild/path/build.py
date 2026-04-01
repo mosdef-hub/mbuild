@@ -10,12 +10,7 @@ from scipy.interpolate import interp1d
 
 from mbuild import Compound
 from mbuild.path.constraints import CuboidConstraint, CylinderConstraint
-from mbuild.path.path_utils import check_path, random_coordinate
-from mbuild.path.points import (
-    generate_random_trials,
-    get_initial_point,
-    get_second_point,
-)
+from mbuild.path.path_utils import check_path, random_coordinate, calculate_sq_distances
 from mbuild.path.points import (
     generate_random_trials,
     get_initial_point,
@@ -90,7 +85,7 @@ class Path:
     def append_coordinates(self, points, bead_name="_A"):
         """Create new coordinates for appending values to."""
         if hasattr(points, "__len__") and len(points) == 3 and points.ndim == 1:
-            points = np.ndarray([points])
+            points = np.asarray([points])
         if not isinstance(points, np.ndarray):
             try:
                 points = np.ndarray(points)
@@ -124,7 +119,6 @@ class Path:
         if len(self.bond_graph) == len(self.coordinates):
             return
         index = len(self.bond_graph)
-        for coord in self.coordinates[len(self.bond_graph) :]:
         for coord in self.coordinates[len(self.bond_graph) :]:
             self.bond_graph.add_node(index, name=bead_name, xyz=coord)
             index += 1
@@ -170,7 +164,6 @@ class Path:
         This assumes site i is always bonded to site i + 1 and i - 1 (i.e., linear graph).
         """
         n_coords = len(self.coordinates)
-        if indices is None:  # assume all coords
         if indices is None:  # assume all coords
             indices = list(range(n_coords))
         if indices[0] not in self.bond_graph:
@@ -218,6 +211,11 @@ class Path:
             bond_type=(u_name, v_name),
         )
 
+    def find_neighbors(self, u, min_bond_length, max_bond_length, excluded_bond_depth=0):
+        """Don't add a new particle."""
+        pass
+        return candidate_neighbors 
+
     def get_bonded_sites(self):
         """Get all bonded pairs and their bond-vector orientations."""
         raise NotImplementedError(
@@ -235,113 +233,222 @@ class Path:
             compound.bond_graph.add_edge(compounds[edge1], compounds[edge2])
         return compound
 
-    def to_pdb(self):
+    def to_mol2(self):
+        """Convert NetworkX graph with xyz attribute to MOL2 format including bonds"""
         G = self.bond_graph
-        """Convert NetworkX graph with xyz attribute to PDB including bonds"""
-
-        pdb_lines = ["HEADER    NETWORKX GRAPH"]
+        
+        mol2_lines = []
+        
+        # Get unique names and create mapping
         unique_names = list(set(G.nodes[node]["name"] for node in G.nodes()))
-
-        # Create mapping from node to atom number (1-indexed)
         node_to_atom = {
             node: atom_num for atom_num, node in enumerate(G.nodes(), start=1)
         }
-
-        # ATOM records
+        
+        n_atoms = len(G.nodes())
+        n_bonds = len(G.edges())
+        
+        # @<TRIPOS>MOLECULE section
+        mol2_lines.append("@<TRIPOS>MOLECULE")
+        mol2_lines.append("NETWORKX_GRAPH")
+        mol2_lines.append(f"{n_atoms} {n_bonds} 0 0 0")
+        mol2_lines.append("SMALL")
+        mol2_lines.append("NO_CHARGES")
+        mol2_lines.append("")
+        
+        # @<TRIPOS>ATOM section
+        mol2_lines.append("@<TRIPOS>ATOM")
         for atom_num, node in enumerate(G.nodes(), start=1):
             x, y, z = G.nodes[node]["xyz"]
             name = G.nodes[node]["name"]
-            resi = unique_names.index(name)
-            pdb_lines.append(
-                f"ATOM  {atom_num:5d}  CA  ALA {resi:5d}    {x:8.3f}{y:8.3f}{z:8.3f}  1.00  0.00           C"
+            subst_id = unique_names.index(name) + 1
+            subst_name = "RES"
+            atom_type = "CG.A"  # Generic carbon atom type
+            charge = 0.0
+            
+            mol2_lines.append(
+                f"{atom_num:7d} {name:4s} {x:10.4f} {y:10.4f} {z:10.4f} "
+                f"{atom_type:5s} {subst_id:5d} {name:4s} {charge:10.4f}"
             )
+        
+        mol2_lines.append("")
+        
+        # @<TRIPOS>BOND section
+        mol2_lines.append("@<TRIPOS>BOND")
+        for bond_num, (node1, node2) in enumerate(G.edges(), start=1):
+            atom1 = node_to_atom[node1]
+            atom2 = node_to_atom[node2]
+            bond_type = "1"  # Single bond
+            
+            mol2_lines.append(
+                f"{bond_num:6d} {atom1:5d} {atom2:5d} {bond_type:>4s}"
+            )
+        
+        return "\n".join(mol2_lines)
+    
+    def to_mol(self):
+        """
+        Convert mBuild Path to SDF/MOL format
+        
+        Parameters:
+        -----------
+        path : mbuild.Path
+        mol_name : str
+            Name of the molecule
+        atom_types : dict
+            Mapping of atom indices to atom type symbols (e.g., {0: 'A', 5: 'B'})
+            If None, all atoms will be 'A'
+        """
+        lines = []
+        
+        # Header
+        lines.append(f"PATH GRAPH\n")
+        lines.append("     RDKit          3D\n")
+        lines.append("\n")
+        
+        # Counts line: natoms nbonds nlist 3D chiral stext nrxn nreac nproduct v2000
+        n_atoms = len(self.coordinates)
+        n_bonds = len(self.bond_graph.edges())
+        lines.append(f"{n_atoms:4d} {n_bonds:4d}  0  0  0  0  0  0  0  0999 V3000\n")
+        
+        # Atom block
+        for i, (coord,bead_name) in enumerate(zip(self.coordinates, self.beads)):
+            
+            lines.append(
+                f"{coord[0]:10.4f}{coord[1]:10.4f}{coord[2]:10.4f} {bead_name.strip("_"):<3s} 0  0  0  0  0  0  0  0  0  0  0  0\n"
+            )
+        
+        # Bond block
+        for edge in self.bond_graph.edges():
+            # atom1, atom2, bond_type (1=single), stereo
+            lines.append(f"{edge[0]+1:4d} {edge[1]+1:4d}  1  0\n")
+        
+        # End
+        lines.append("M  END\n")
+        lines.append("$$\n")
+        
+        return "".join(lines)
+    
+    def to_mol3000(self):
+        """
+        Convert mBuild Path to SDF/MOL V3000 format
+        
+        Parameters:
+        -----------
+        path : mbuild.Path
+        mol_name : str
+            Name of the molecule
+        atom_types : dict
+            Mapping of atom indices to atom type symbols (e.g., {0: 'A', 5: 'B'})
+            If None, all atoms will be 'A'
+        """
+        lines = []
+        
+        # Header block (3 lines)
+        lines.append("PATH GRAPH\n")
+        lines.append("     RDKit          3D\n")
+        lines.append("\n")
+        
+        # Counts line for V3000
+        n_atoms = len(self.coordinates)
+        n_bonds = len(self.bond_graph.edges())
+        lines.append(f"  0  0  0     0  0            999 V3000\n")
+        
+        # Begin CTAB
+        lines.append("M  V30 BEGIN CTAB\n")
+        lines.append(f"M  V30 COUNTS {n_atoms} {n_bonds} 0 0 0\n")
+        
+        # Atom block
+        lines.append("M  V30 BEGIN ATOM\n")
+        for i, (coord, bead_name) in enumerate(zip(self.coordinates, self.beads), start=1):
+            atom_type = bead_name.strip("_")
+            lines.append(
+                f"M  V30 {i} {atom_type} {coord[0]:.4f} {coord[1]:.4f} {coord[2]:.4f} 0\n"
+            )
+        lines.append("M  V30 END ATOM\n")
+        
+        # Bond block
+        lines.append("M  V30 BEGIN BOND\n")
+        for bond_idx, edge in enumerate(self.bond_graph.edges(), start=1):
+            # V3000: bond_index bond_type atom1 atom2
+            lines.append(f"M  V30 {bond_idx} 1 {edge[0]+1} {edge[1]+1}\n")
+        lines.append("M  V30 END BOND\n")
+        
+        # End CTAB
+        lines.append("M  V30 END CTAB\n")
+        
+        # End of record
+        lines.append("M  END\n")
+        
+        return "".join(lines)
 
-        # CONECT records for bonds
-        for node in G.nodes():
-            atom_num = node_to_atom[node]
-            neighbors = list(G.neighbors(node))
 
-            if neighbors:
-                # PDB CONECT records can have up to 4 connections per line
-                neighbor_atoms = [node_to_atom[n] for n in neighbors]
-
-                # Group neighbors in chunks of 4
-                for i in range(0, len(neighbor_atoms), 4):
-                    chunk = neighbor_atoms[i : i + 4]
-                    conect_line = f"CONECT{atom_num:5d}"
-                    for neighbor_atom in chunk:
-                        conect_line += f"{neighbor_atom:5d}"
-                    pdb_lines.append(conect_line)
-
-        pdb_lines.append("END")
-        return "\n".join(pdb_lines)
-
-    def visualize(self, radius=0.6):
+    def visualize(self, radius=0.1):
         """Visualize in 3D space using py3Dmol of the Path as a Compound.
 
         Parameters
         ----------
-        bead_color : str, default #5d8aa8
-            A blue bead color to view your path.
-        radius : float, default 0.6
+        radius : float, default 0.06
+            Radius for sphere and stick representation
         """
         py3Dmol = import_("py3Dmol")
 
         G = self.bond_graph
 
-        # Usage
-        pdb_string = self.to_pdb()
+        # Generate MOL2 string
+        # mol2_string = self.to_mol2()
 
         view = py3Dmol.view(width=600, height=600)
-        view.addModel(pdb_string, "pdb")
+        # view.addModel(mol2_string, "mol2", keepH=True)
 
         # Get unique bead names
         unique_names = list(set(G.nodes[node]["name"] for node in G.nodes()))
 
         # Color palette
         colors = [
-            "#FF0000",
-            "#00FF00",
-            "#0000FF",
-            "#FFFF00",
-            "#FF00FF",
-            "#00FFFF",
-            "#FFA500",
-            "#800080",
-            "#008080",
-            "#FFC0CB",
-            "#808000",
-            "#000080",
-            "#8B4513",
-            "#32CD32",
-            "#FF1493",
-            "#00CED1",
-            "#FFD700",
-            "#4169E1",
-            "#FF69B4",
-            "#DC143C",
+            '#e6194b', '#3cb44b', '#ffe119', '#4363d8', '#f58231', '#911eb4', '#46f0f0', '#f032e6', 
+            '#bcf60c', '#fabebe', '#008080', '#e6beff', '#9a6324', '#fffac8', '#800000', '#aaffc3', 
+            '#808000', '#ffd8b1', '#000075', '#808080', '#ffffff', '#000000'
         ]
 
-        # Create custom colorscheme
-        custom_colorscheme = {
-            i: colors[i % len(colors)] for i, name in enumerate(unique_names)
-        }
-
-        # Apply styles
-        for resid, color in custom_colorscheme.items():
-            view.setStyle(
-                {"resi": f"{resid}"},
+        data = self.to_mol3000()
+        view = py3Dmol.view(data=data)
+        for i, name in enumerate(unique_names):
+            color = colors[i % len(colors)]
+            view.addStyle(
+                {"elem": name.strip("_")},  # Select all atoms with this name
                 {
-                    "sphere": {"color": color, "scale": radius},
-                    "stick": {"radius": radius / 5, "color": "grey"},
+                    "sphere": {"color": color, "radius": radius},
+                    "stick": {"radius": radius/3, "color": "grey"},
                 },
             )
-
         view.setBackgroundColor("white")
         view.zoomTo()
 
         return view
 
+    def relax(self, bead_radius, bond_length=None, steps=1000):
+        """Perform a dpd simulation to relax the current path."""
+        # from mbuild.simulation import hoomd_cap_displacement, hoomd_fire, ForcesHandler, HoomdSimulation
+        from mbuild.simulation import energy_minimize_path
+        # ffhandler = ForcesHandler(scale_bond=1, scale_angle=0.00, dpd=2)
+        energy_minimize_path(self, bead_radius, bond_length, steps)
+        # sim = HoomdSimulation(
+        #     self, # compound you're minimizing
+        #     ff,
+        #     r_cut=0.8,
+        #     box_buffer=0.2,
+        #     run_on_gpu=False,
+        #     seed=32,
+        # )
+        # hoomd_fire(
+        #     sim=sim,
+        #     compound=self,
+        #     forces_handler=ffhandler,
+        #     n_steps=100,
+        #     dt=0.001,
+        # )
+        return
 
 def lamellar(
     path,
@@ -465,8 +572,6 @@ def lamellar(
                 arc = [
                     origin
                     + np.array([0, odd_stack_mult * np.sin(theta), np.cos(theta)]) * r
-                    origin
-                    + np.array([0, odd_stack_mult * np.sin(theta), np.cos(theta)]) * r
                     for theta in arc_angles
                 ]
                 coordinates.extend(arc[::-1])
@@ -477,8 +582,6 @@ def lamellar(
                 )
                 origin = coordinates[-1] + np.array([0, 0, r])
                 arc = [
-                    origin
-                    + np.array([0, even_stack_mult * np.sin(theta), np.cos(theta)]) * r
                     origin
                     + np.array([0, even_stack_mult * np.sin(theta), np.cos(theta)]) * r
                     for theta in arc_angles
@@ -625,7 +728,6 @@ def knot(path, spacing, N, m, closed=True, bead_name="_A"):
 
 
 def helix(
-    path, N, radius, rise, twist, right_handed=True, bottom_up=True, bead_name="_A"
     path, N, radius, rise, twist, right_handed=True, bottom_up=True, bead_name="_A"
 ):
     """Generate helical path.
@@ -866,7 +968,6 @@ def hard_sphere_random_walk(
     )
 
     if path is None:  # Create empty path
-    if path is None:  # Create empty path
         path = Path()
 
     if termination is None:  # handle default termination args
@@ -959,7 +1060,6 @@ def hard_sphere_random_walk(
         return path
 
     # Get the second coordinate
-    state.count += 1
     state.count += 1
     second_xyz = get_second_point(state, coordinates, check_path_cpu, initial_xyz)
     coordinates[state.count] = second_xyz
@@ -1203,10 +1303,202 @@ class RandomWalkState:
 
 
 
-def crosslink_random_walk(path):
-    pass
+def crosslink(
+    path,
+    bead_name="_R",
+    backbone_name="_A",
+    radius=0.1,
+    pad=0.1,
+    n_connection_sites=2,
+    volume_constraint=None,
+    initial_point=None,
+    seed=42,
+    chunk_size=512,
+    run_on_gpu=False,
+):
+    """
+    Create a crosslink node that bonds to n_connection_sites backbone beads.
 
+    Adds a new node with bead_name to path.bond_graph, positioned near 
+    and bonded to n_connection_sites backbone beads within the specified radius.
 
+    Parameters
+    ----------
+    path : Path
+        The Path object containing coordinates and bond_graph
+    bead_name : str, default "_R"
+        Name for the crosslink bead
+    backbone_name : str, default "_A"
+        Name for backbone beads to search for
+    radius : float, default 0.1
+        Search radius for finding nearby backbone beads
+    n_connection_sites : int, default 2
+        Number of backbone beads to bond to
+    initial_point : int or array-like, optional
+        Starting point (node index or xyz coordinate) to search around
+    seed : int, default 42
+        Random seed for reproducibility
+    chunk_size : int, default 512
+        Chunk size for batch processing (used if extending coordinates)
+    run_on_gpu : bool, default False
+        Whether to use GPU acceleration via numba
+        
+    Returns
+    -------
+    Path
+        The modified path object with the new crosslink node
+    """
+    rng = np.random.default_rng(seed+len(path.coordinates))
+    
+    # Find all backbone beads
+    backbone_nodes = [
+        node for node, attrs in path.bond_graph.nodes(data=True)
+        if (
+            attrs.get("name") == backbone_name 
+            # and path.bond_graph.degree[node] <= 2
+        ) # TODO: Multiple crosslink sites on one backbone too
+    ]
+    
+    if len(backbone_nodes) == 0:
+        raise ValueError(f"No backbone beads with name '{backbone_name}' found in path")
+    
+    if len(backbone_nodes) < n_connection_sites:
+        raise ValueError(
+            f"Not enough backbone beads ({len(backbone_nodes)}) for "
+            f"{n_connection_sites} connection sites"
+        )
+    
+        # Set up PBC info from volume constraints
+    if isinstance(volume_constraint, CuboidConstraint):
+        pbc = volume_constraint.pbc
+        box_lengths = volume_constraint.box_lengths.astype(np.float32)
+    elif isinstance(volume_constraint, CylinderConstraint):
+        pbc = (False, False, volume_constraint.periodic_height)
+        box_lengths = np.array(
+            [
+                volume_constraint.radius * 2,
+                volume_constraint.radius * 2,
+                volume_constraint.height,
+            ]
+        ).astype(np.float32)
+    else:
+        pbc = np.array([False, False, False], dtype=bool)
+        box_lengths = np.array([np.inf, np.inf, np.inf], dtype=np.float32)
+
+    # Get coordinates of all backbone nodes
+    candidate_nodes = [node for node in backbone_nodes if path.bond_graph.degree[node] <= 2]
+    candidate_coords = np.array(
+        [path.bond_graph.nodes[node]["xyz"] for node in candidate_nodes],
+        dtype=np.float32
+    )
+    
+    # Determine the reference point for finding candidates
+    if initial_point is not None:
+        if isinstance(initial_point, (int, np.integer)):
+            # Use coordinate of specified node
+            if initial_point not in path.bond_graph.nodes:
+                raise ValueError(f"Node {initial_point} not found in bond_graph")
+            ref_coord = path.bond_graph.nodes[initial_point]["xyz"]
+        else:
+            # Use provided coordinate
+            ref_coord = np.asarray(initial_point, dtype=np.float32)
+        # GPU-accelerated distance calculation
+        sq_distances = calculate_sq_distances(
+            ref_coord,
+            candidate_coords,
+            pbc=pbc,
+            box_lengths=box_lengths
+        )
+        distances = np.sqrt(sq_distances)
+        
+        # Find candidates within radius
+        within_radius_mask = distances <= (radius + pad) * 2 # twice radius + pad
+        candidate_indices = np.where(within_radius_mask)[0]
+        
+    else:
+        # Randomly select a backbone node as reference
+        ref_nodes = rng.choice(candidate_nodes, size=len(candidate_nodes), replace=False)
+        for ref_node in ref_nodes:
+            ref_coord = path.bond_graph.nodes[ref_node]["xyz"]
+        
+            # GPU-accelerated distance calculation
+            sq_distances = calculate_sq_distances(
+                ref_coord,
+                candidate_coords,
+                pbc=pbc,
+                box_lengths=box_lengths
+            )
+            distances = np.sqrt(sq_distances)
+            
+            # Find candidates within radius
+            within_radius_mask = distances <= (radius + pad) * 2 # twice radius + pad
+            candidate_indices = np.where(within_radius_mask)[0]
+            
+            if len(candidate_indices) >= n_connection_sites - 1:
+                # select as starting node
+                break
+
+    # Verify starting point or return early
+    if len(candidate_indices) < n_connection_sites - 1:
+        print(f"No viable starting indices")
+        return path
+    
+    # Sort by distance and select closest n_connection_sites
+    sorted_indices = candidate_indices[np.argsort(distances[candidate_indices])]
+
+    # Select beads that are not neighbors of each other
+    selected_nodes = []
+    selected_indices = []
+    
+    # candidate_subgraph = nx.induced_subgraph(path.bond_graph, {bead_name})
+    backbone_subgraph = path.bond_graph.subgraph(backbone_nodes).copy()
+    chains = list(nx.connected_components(backbone_subgraph))
+    node_to_chain = {}
+    for chain_id, chain_nodes in enumerate(chains):
+        for node in chain_nodes:
+            node_to_chain[node] = chain_id
+
+    selected_chains = set()
+    for idx in sorted_indices:
+        node = backbone_nodes[idx]
+        node_chain = node_to_chain[node]
+        if node_chain in selected_chains:
+            continue
+
+        selected_nodes.append(node)
+        selected_indices.append(idx)
+        selected_chains.add(node_chain)
+            
+        # Stop if we have enough connection sites
+        if len(selected_nodes) >= n_connection_sites:
+            break
+    
+    # Check if we found enough non-neighboring beads
+    if len(selected_nodes) < n_connection_sites:
+        raise ValueError(
+            f"Only found {len(selected_nodes)} non-neighboring backbone beads "
+            f"within radius {radius}, need {n_connection_sites}"
+        )
+    
+    # Calculate position for new crosslink node (centroid of selected beads)
+    selected_coords = candidate_coords[selected_indices]
+    crosslink_position = np.mean(selected_coords, axis=0)
+    
+    # Add new node to path
+    path.append_coordinates(
+        crosslink_position, bead_name
+    )
+    new_node_idx = len(path.coordinates) - 1
+    
+    # Add edges from crosslink node to selected backbone nodes
+    for backbone_node in selected_nodes:
+        path.bond_graph.add_edge(
+            new_node_idx,
+            backbone_node,
+            bond_type=(bead_name, backbone_name),
+        )
+    
+    return path
 
 class CrosslinkWalkState:
     pass
