@@ -1309,6 +1309,7 @@ def crosslink(
     backbone_name="_A",
     radius=0.1,
     pad=0.1,
+    excluded_bond_depth=2,
     n_connection_sites=2,
     volume_constraint=None,
     initial_point=None,
@@ -1398,10 +1399,12 @@ def crosslink(
             # Use coordinate of specified node
             if initial_point not in path.bond_graph.nodes:
                 raise ValueError(f"Node {initial_point} not found in bond_graph")
+            ref_node = path.bond_graph.nodes[initial_point]
             ref_coord = path.bond_graph.nodes[initial_point]["xyz"]
         else:
             # Use provided coordinate
             ref_coord = np.asarray(initial_point, dtype=np.float32)
+            ref_node = None # TODO: Find nearest backbone node
         # GPU-accelerated distance calculation
         sq_distances = calculate_sq_distances(
             ref_coord,
@@ -1452,22 +1455,17 @@ def crosslink(
     
     # candidate_subgraph = nx.induced_subgraph(path.bond_graph, {bead_name})
     backbone_subgraph = path.bond_graph.subgraph(backbone_nodes).copy()
-    chains = list(nx.connected_components(backbone_subgraph))
-    node_to_chain = {}
-    for chain_id, chain_nodes in enumerate(chains):
-        for node in chain_nodes:
-            node_to_chain[node] = chain_id
+    excluded_nodes = set(
+        nx.single_source_shortest_path_length(backbone_subgraph, ref_node, cutoff=excluded_bond_depth).keys()
+    )
 
-    selected_chains = set()
     for idx in sorted_indices:
         node = backbone_nodes[idx]
-        node_chain = node_to_chain[node]
-        if node_chain in selected_chains:
+        if node in excluded_nodes:
             continue
 
         selected_nodes.append(node)
         selected_indices.append(idx)
-        selected_chains.add(node_chain)
             
         # Stop if we have enough connection sites
         if len(selected_nodes) >= n_connection_sites:
@@ -1501,6 +1499,7 @@ def crosslink(
     return path
 
 class CrosslinkWalkState:
+    # TODO
     pass
 
 
