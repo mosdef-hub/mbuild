@@ -93,7 +93,7 @@ def get_initial_point(state, existing_points, check_path, next_step):
     ):
         # generate point off of current path coordinates
         starting_xyz = existing_points[state.initial_point]
-        batch_angles, batch_vectors = generate_random_trials(state)
+        batch_angles, batch_vectors = generate_trials(state)
         xyzs = next_step(
             pos1=None,  # will generate sphere of points around pos2
             pos2=starting_xyz,
@@ -170,17 +170,41 @@ def get_initial_point(state, existing_points, check_path, next_step):
         xyz = state.rng.uniform(low=-max_dist / 2, high=max_dist / 2, size=3)
         return xyz
 
+class AnglesSampler:
+    """
+    TODO:Allow for passing a specific 2D weighted pre-defined sample, as opposed to a numpy distribution. 
+    This would use np.random.choice instead as the sample method.
+    NOTES
+    -----
+    "uniform" distribution should use 'low' and 'high' as kwargs.
+    "normal" distribution should use 'loc' and 'scale' as kwargs.
+    """
+    def __init__(self, distributionStr, kwargs, seed):
+        # Create a generator object for high-quality random numbers [9]
+        self.rng = np.random.default_rng(seed)
+        if distributionStr.lower() == "uniform":
+            self.sampler = self.rng.uniform
+            assert 'low' in kwargs
+            assert 'high' in kwargs
+        elif distributionStr.lower() == "normal":
+            self.sampler = self.rng.normal
+            assert 'loc' in kwargs
+            assert 'scale' in kwargs
+        elif distributionStr == "choice":
+            self.sampler = self.rng.choice
+            assert 'a' in kwargs # p is not required
+        else:
+            raise NotImplementedError(f"Sample Distribution {distributionStr} not supported.")
+        self.kwargs = kwargs
+
+    def sample(self, size=None):
+        return self.sampler(size=size, **self.kwargs)
 
 
-def generate_random_trials(state):
-    thetas = state.rng.uniform(
-        state.min_angle, state.max_angle, size=state.trial_batch_size
-    ).astype(np.float32)
-    r = state.rng.uniform(-0.5, 0.5, size=(state.trial_batch_size, 3)).astype(
-        np.float32
-    )
-    thetas = state.rng.uniform(
-        state.min_angle, state.max_angle, size=state.trial_batch_size
+def generate_trials(state):
+    """Use normal or uniform sampling on angles, uniform sampling on radius."""
+    thetas = state.angles.sample(
+        size=state.trial_batch_size
     ).astype(np.float32)
     r = state.rng.uniform(-0.5, 0.5, size=(state.trial_batch_size, 3)).astype(
         np.float32

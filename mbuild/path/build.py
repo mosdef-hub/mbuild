@@ -12,9 +12,10 @@ from mbuild import Compound
 from mbuild.path.constraints import CuboidConstraint, CylinderConstraint
 from mbuild.path.path_utils import check_path, random_coordinate, calculate_sq_distances
 from mbuild.path.points import (
-    generate_random_trials,
+    generate_trials,
     get_initial_point,
     get_second_point,
+    AnglesSampler
 )
 from mbuild.path.termination import NumSites, Termination, Terminator
 from mbuild.utils.io import import_
@@ -112,7 +113,6 @@ class Path:
         zeros = np.zeros((N, 3), dtype=self.coordinates.dtype)
         new_array = np.concatenate([self.coordinates, zeros])
         self.coordinates = new_array
-
 
     def _extend_bond_graph(self, bead_name):
         """Make sure all coordinates are properly added to the bondgraph."""
@@ -214,7 +214,7 @@ class Path:
     def find_neighbors(self, u, min_bond_length, max_bond_length, excluded_bond_depth=0):
         """Don't add a new particle."""
         pass
-        return candidate_neighbors 
+        # return candidate_neighbors 
 
     def get_bonded_sites(self):
         """Get all bonded pairs and their bond-vector orientations."""
@@ -381,7 +381,6 @@ class Path:
         lines.append("M  END\n")
         
         return "".join(lines)
-
 
     def visualize(self, radius=0.1):
         """Visualize in 3D space using py3Dmol of the Path as a Compound.
@@ -887,8 +886,7 @@ def hard_sphere_random_walk(
     bead_name="_A",
     bond_length=0.15,
     radius=0.1,
-    min_angle=0,
-    max_angle=np.pi,
+    rw_angles=None,
     termination=None,
     volume_constraint=None,
     bias=None,
@@ -914,12 +912,12 @@ def hard_sphere_random_walk(
         Fixed bond length between 2 coordinates.
     radius : float, default 0.1 nm
         Radius of sites used in checking for overlaps.
-    min_angle : float, default 0
-        Minimum angle (radians) used when randomly selecting angle
-        for the next step.
-    max_angle : float, default np.pi
-        Maximum angle (radians) used when randomly selecting angle
-        for the next step.
+    rw_angles : tuple or dict or np.array or AnglesSampler, default None
+        Set the angle sampling method. A tuple of (min_val, max_val) sets the uniform distribution. 
+        The default value of None sets the uniform angle sampling from (np.pi/2, np.pi). Can also
+        use a Gaussian distribution by passing a dict with keys {'loc':mean, 'scale':std}.
+        Finally, a numpy array of 1D or 2D array of numpy values can be passed, which will be sampled 
+        via numpy.random.choice method. The 2D case provides a set of weights.
     termination : termination condition, required
         Termination condition for the random walk. If an integer is passed,
         will terminate after reaching that number of sites. Can also pass a tuple of
@@ -953,8 +951,7 @@ def hard_sphere_random_walk(
     state = RandomWalkState(
         bond_length=bond_length,
         radius=radius,
-        min_angle=min_angle,
-        max_angle=max_angle,
+        angles_sampler=rw_angles,
         bead_name=bead_name,
         initial_point=initial_point,
         previous_count=len(path.coordinates) if path else 0,
@@ -974,10 +971,6 @@ def hard_sphere_random_walk(
         raise ValueError(
             "Please pass viable termination to hard_sphere_random_walk from `mbuild.path.termination.Termination`"
         )
-    if termination is None:  # handle default termination args
-        raise ValueError(
-            "Please pass viable termination to hard_sphere_random_walk from `mbuild.path.termination.Termination`"
-        )
     elif isinstance(termination, int):
         termination = Termination(NumSites(termination))
     elif isinstance(termination, (tuple, list)):
@@ -987,6 +980,7 @@ def hard_sphere_random_walk(
     elif not isinstance(termination, Termination):
         raise ValueError(f"Bad input {termination=} to hard_sphere_random_walk")
     state.termination = termination
+    state.termination._attach_path(path, state)
 
     # Create RNG state
     rng = np.random.default_rng(seed)
@@ -1013,11 +1007,6 @@ def hard_sphere_random_walk(
     if bias:
         bias._attach_path(path, state)
         state.bias = bias
-
-    # Set up termination conditions
-    if termination is None:
-        raise RuntimeError("No termination conditions have been passed in.")
-    termination._attach_path(path, state)
 
     # Initialize coordinates based on starting conditions
     if not path.coordinates.size == 0:
@@ -1083,7 +1072,7 @@ def hard_sphere_random_walk(
     # Main random walk loop
     walk_finished = False
     while not walk_finished:
-        batch_angles, batch_vectors = generate_random_trials(state)
+        batch_angles, batch_vectors = generate_trials(state)
         candidates = next_step(
             pos1=coordinates[state.count],
             pos2=coordinates[state.count - 1],
@@ -1205,8 +1194,7 @@ class RandomWalkState:
         self,
         bond_length,
         radius,
-        min_angle,
-        max_angle,
+        angles_sampler,
         bead_name,
         initial_point=None,
         previous_count=0,
@@ -1229,8 +1217,22 @@ class RandomWalkState:
             raise ValueError(
                 "Bond length should be greater than radius to prevent overlaps."
             )
-        self.min_angle = min_angle
-        self.max_angle = max_angle
+        if angles_sampler is None:
+            self.angles = AnglesSampler("uniform", {'low':np.pi/2, 'high':np.pi}, seed)
+        elif isinstance(angles_sampler, tuple):
+            self.angles = AnglesSampler("uniform", {'low':angles_sampler[0], 'high':angles_sampler[1]}, seed)
+        elif isinstance(angles_sampler, dict) and angles_sampler.get("loc") and angles_sampler.get('scale'):
+            self.angles = AnglesSampler("normal", angles_sampler, seed)
+        elif isinstance(angles_sampler, np.ndarray):
+            if (angles_sampler.ndim == 1):
+                kwargs = {"a": angles_sampler}
+            elif angles_sampler.ndim == 2:
+                kwargs = {"a": angles_sampler[0], "p": angles_sampler[1]}
+            self.angles = AnglesSampler("choice", kwargs, seed)
+        elif isinstance(angles_sampler, AnglesSampler):
+            self.angles = angles_sampler
+        else:
+            raise ValueError(f"Please provide a reasonable value to set the rw_angles. Passed {rw_angles}")
         self.bead_name = bead_name
         if hasattr(initial_point, "__len__") and len(initial_point) == 3:
             self.initial_point = np.asarray(initial_point)
@@ -1308,7 +1310,6 @@ def crosslink(
     bead_name="_R",
     backbone_name="_A",
     radius=0.1,
-    pad=0.1,
     excluded_bond_depth=2,
     n_connection_sites=2,
     volume_constraint=None,
@@ -1399,7 +1400,7 @@ def crosslink(
             # Use coordinate of specified node
             if initial_point not in path.bond_graph.nodes:
                 raise ValueError(f"Node {initial_point} not found in bond_graph")
-            ref_node = path.bond_graph.nodes[initial_point]
+            ref_node = initial_point
             ref_coord = path.bond_graph.nodes[initial_point]["xyz"]
         else:
             # Use provided coordinate
@@ -1415,7 +1416,7 @@ def crosslink(
         distances = np.sqrt(sq_distances)
         
         # Find candidates within radius
-        within_radius_mask = distances <= (radius + pad) * 2 # twice radius + pad
+        within_radius_mask = distances <= (radius) * 2 # twice radiu
         candidate_indices = np.where(within_radius_mask)[0]
         
     else:
@@ -1434,10 +1435,10 @@ def crosslink(
             distances = np.sqrt(sq_distances)
             
             # Find candidates within radius
-            within_radius_mask = distances <= (radius + pad) * 2 # twice radius + pad
+            within_radius_mask = distances <= (radius) * 2 # twice radius + pad
             candidate_indices = np.where(within_radius_mask)[0]
             
-            if len(candidate_indices) >= n_connection_sites - 1:
+            if len(candidate_indices) >= n_connection_sites:
                 # select as starting node
                 break
 
@@ -1450,22 +1451,20 @@ def crosslink(
     sorted_indices = candidate_indices[np.argsort(distances[candidate_indices])]
 
     # Select beads that are not neighbors of each other
-    selected_nodes = []
-    selected_indices = []
+    selected_nodes = [ref_node]
     
     # candidate_subgraph = nx.induced_subgraph(path.bond_graph, {bead_name})
-    backbone_subgraph = path.bond_graph.subgraph(backbone_nodes).copy()
+    backbone_subgraph = path.bond_graph.subgraph(backbone_nodes)
     excluded_nodes = set(
         nx.single_source_shortest_path_length(backbone_subgraph, ref_node, cutoff=excluded_bond_depth).keys()
     )
 
     for idx in sorted_indices:
-        node = backbone_nodes[idx]
+        node = candidate_nodes[idx]
         if node in excluded_nodes:
             continue
 
-        selected_nodes.append(node)
-        selected_indices.append(idx)
+        selected_nodes.append(int(node))
             
         # Stop if we have enough connection sites
         if len(selected_nodes) >= n_connection_sites:
@@ -1479,7 +1478,7 @@ def crosslink(
         )
     
     # Calculate position for new crosslink node (centroid of selected beads)
-    selected_coords = candidate_coords[selected_indices]
+    selected_coords = np.array([path.bond_graph.nodes[node]["xyz"] for node in selected_nodes])
     crosslink_position = np.mean(selected_coords, axis=0)
     
     # Add new node to path
@@ -1490,7 +1489,7 @@ def crosslink(
     
     # Add edges from crosslink node to selected backbone nodes
     for backbone_node in selected_nodes:
-        path.bond_graph.add_edge(
+        path.bond_graph.add_edge( # edges are formed with wrong indexes
             new_node_idx,
             backbone_node,
             bond_type=(bead_name, backbone_name),
