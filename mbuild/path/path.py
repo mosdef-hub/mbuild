@@ -652,7 +652,7 @@ class HardSphereRandomWalk(Path):
                     accepted_xyz = xyz
                     break
 
-            if accepted_xyz:
+            if accepted_xyz is not None:
                 return accepted_xyz
 
             else:
