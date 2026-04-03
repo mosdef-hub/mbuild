@@ -40,26 +40,45 @@ class Path:
     """
 
     def __init__(self, coordinates=None, bond_graph=None, bead_name="_A"):
-        if coordinates is None and bond_graph is not None:
+        if coordinates is not None and bond_graph is not None and isinstance(bead_name, np.ndarray):
+            assert len(coordinates) == len(bond_graph)
+            assert len(coordinates) == len(bead_name)
             self.bond_graph = bond_graph
-            self.coordinates = np.array(
-                [node["xyz"] for node in bond_graph.nodes(data=True)]
+            self.coordinates = coordinates
+            self.beads = bead_name
+        elif coordinates is not None and bond_graph is not None: 
+            assert len(coordinates) == len(bond_graph)
+            self.bond_graph = bond_graph
+            self.coordinates = coordinates
+            self.beads = np.array([bead_name for _ in range(len(coordinates))])
+        elif coordinates is None and bond_graph is not None:
+            self.bond_graph = bond_graph
+            self.coordinates = np.array( # might not have a bond_graph xyz
+                [node.get("xyz") for node in bond_graph.nodes(data=True)]
             )
-            self.coordinates = np.array(
-                [node["xyz"] for node in bond_graph.nodes(data=True)]
-            )
-            self.beads = [node["name"] for node in bond_graph.nodes(data=True)]
+            self.beads = np.array([node.get("name") for node in bond_graph.nodes(data=True)])
         elif coordinates is not None and bond_graph is None:
             self.coordinates = np.asarray(coordinates)
             self.bond_graph = nx.Graph()
-            self.beads = [bead_name] * (len(self.coordinates) - 1)
-            for idx, coord in enumerate(self.coordinates):
-                self.bond_graph.add_node(idx, name=bead_name, xyz=coord)
+            self.beads = [bead_name] * (len(self.coordinates))
+            for idx in range(len((self.coordinates))):
+                self.bond_graph.add_node(idx)
         else:
             self.coordinates = np.array([], dtype=np.float32)
             self.bond_graph = nx.Graph()
-            self.beads = []
+            self.beads = np.array([], dtype='U10')
 
+    def __eq__(self, other):
+        return (
+            np.all(self.coordinates == other.coordinates) and
+            np.all(self.beads == other.beads) and
+            nx.is_isomorphic(self.bond_graph, other.bond_graph)
+        )
+    def __add__(self, other):
+        coordinates = np.append((self.coordinates, other.coordinates), axis=1)
+        beads = np.append((self.beads, other.beads))
+        bond_graph = nx.compose(self.bond_graph, other.bond_graph)
+        return Path(coordinates, bond_graph, beads)
     @classmethod
     def from_compound(cls, compound):
         coordinates = compound.xyz
@@ -100,13 +119,12 @@ class Path:
             self.beads = [bead_name] * len(points)
             self._extend_bond_graph(bead_name)
             return
-        new_array = np.concatenate([self.coordinates, points])
-        self.coordinates = new_array
-        self.beads.extend([bead_name] * len(points))
-        self._extend_bond_graph(bead_name)
+        self.coordinates = np.concatenate((self.coordinates, points))
+        self.beads = np.concatenate((self.beads, [bead_name] * len(points)))
+        self._extend_bond_graph(bead_name) # TODO: This won't need a bead name
 
     def _extend_coordinates(self, N):
-        """Create new coordinates for appending values to."""
+        """Create new coordinates for setting values."""
         if self.coordinates.size == 0:
             self.coordinates = np.zeros((N, 3), dtype=np.float32)
             return
@@ -128,7 +146,7 @@ class Path:
         diff = len(self.coordinates) - len(self.beads)
         if not diff:
             return
-        self.beads.extend([bead_name] * diff)
+        self.beads = np.concatenate((self.beads, [bead_name] * diff))
 
     def _connect_edges(self, connectivity, indices=None, attach_index=-1):
         """Adds edges to self.bond_graph matching a given style `connectivity`."""
@@ -227,7 +245,7 @@ class Path:
         compound = Compound()
         compounds = []
         for node_id, attrs in self.bond_graph.nodes(data=True):
-            compounds.append(Compound(name=attrs["name"], pos=attrs["xyz"]))
+            compounds.append(Compound(name=attrs["name"], pos=self.coordinates[node_id]))
         compound.add(compounds)
         for edge1, edge2 in self.bond_graph.edges():
             compound.bond_graph.add_edge(compounds[edge1], compounds[edge2])
@@ -259,10 +277,9 @@ class Path:
         # @<TRIPOS>ATOM section
         mol2_lines.append("@<TRIPOS>ATOM")
         for atom_num, node in enumerate(G.nodes(), start=1):
-            x, y, z = G.nodes[node]["xyz"]
-            name = G.nodes[node]["name"]
+            x, y, z = self.coordinates[node]
+            name = self.beads[node]
             subst_id = unique_names.index(name) + 1
-            subst_name = "RES"
             atom_type = "CG.A"  # Generic carbon atom type
             charge = 0.0
             
@@ -1354,12 +1371,13 @@ def crosslink(
     
     # Find all backbone beads
     backbone_nodes = [
-        node for node, attrs in path.bond_graph.nodes(data=True)
+        node for node in path.bond_graph.nodes()
         if (
-            attrs.get("name") == backbone_name 
+            path.beads[node] == backbone_name 
             # and path.bond_graph.degree[node] <= 2
         ) # TODO: Multiple crosslink sites on one backbone too
-    ]
+    ] # value references global node index
+    backbone_subgraph = path.bond_graph.subgraph(backbone_nodes) # TODO: make a path function?
     
     if len(backbone_nodes) == 0:
         raise ValueError(f"No backbone beads with name '{backbone_name}' found in path")
@@ -1389,23 +1407,50 @@ def crosslink(
 
     # Get coordinates of all backbone nodes
     candidate_nodes = [node for node in backbone_nodes if path.bond_graph.degree[node] <= 2]
-    candidate_coords = np.array(
-        [path.bond_graph.nodes[node]["xyz"] for node in candidate_nodes],
+    candidate_coords = np.array(path.coordinates[candidate_nodes],    
         dtype=np.float32
     )
     
-    # Determine the reference point for finding candidates
-    if initial_point is not None:
-        if isinstance(initial_point, (int, np.integer)):
-            # Use coordinate of specified node
-            if initial_point not in path.bond_graph.nodes:
-                raise ValueError(f"Node {initial_point} not found in bond_graph")
-            ref_node = initial_point
-            ref_coord = path.bond_graph.nodes[initial_point]["xyz"]
+    # get reference points
+    def get_reference_points(path, initial_point):
+        """Create reference points for finding candidates.
+
+        Returns
+        -------
+        nodesArray: np.array
+            index of global bond_graph nodes that are viable starting points -> [0,2,10...]
+        coordsArray: np.array
+            each value matches path.coordinates[nodesList]
+        """
+        if initial_point is not None:
+            if isinstance(initial_point, (int, np.integer)):
+                # Use coordinate of specified node
+                if initial_point not in path.bond_graph.nodes:
+                    raise ValueError(f"Node {initial_point} not found in bond_graph")
+                nodesArray = np.array([initial_point])
+                coordsArray = np.array([path.coordinates[initial_point]])
+            else:
+                # Use provided coordinate
+                initial_point32 = np.asarray(initial_point, dtype=np.float32)
+                sq_distances = calculate_sq_distances(
+                    initial_point32,
+                    candidate_coords,
+                    pbc=pbc,
+                    box_lengths=box_lengths
+                )
+                nodesArray = np.argsort(sq_distances)
+                coordsArray = path.coordinates[nodesArray]
         else:
-            # Use provided coordinate
-            ref_coord = np.asarray(initial_point, dtype=np.float32)
-            ref_node = None # TODO: Find nearest backbone node
+            # Randomly select a backbone node as reference
+            nodesArray = rng.choice(candidate_nodes, size=len(candidate_nodes), replace=False)
+            coordsArray = path.coordinates[nodesArray]
+
+        return nodesArray, coordsArray
+    ref_nodes, ref_coords = get_reference_points(path, initial_point)
+
+    found_ref = False # flag to check all ref_nodes
+    for ref_node, ref_coord in zip(ref_nodes, ref_coords):
+        selected_nodes = [ref_node] # first choice is ref
         # GPU-accelerated distance calculation
         sq_distances = calculate_sq_distances(
             ref_coord,
@@ -1414,84 +1459,60 @@ def crosslink(
             box_lengths=box_lengths
         )
         distances = np.sqrt(sq_distances)
-        
+
         # Find candidates within radius
         within_radius_mask = distances <= (radius) * 2 # twice radiu
-        candidate_indices = np.where(within_radius_mask)[0]
-        
-    else:
-        # Randomly select a backbone node as reference
-        ref_nodes = rng.choice(candidate_nodes, size=len(candidate_nodes), replace=False)
-        for ref_node in ref_nodes:
-            ref_coord = path.bond_graph.nodes[ref_node]["xyz"]
-        
-            # GPU-accelerated distance calculation
-            sq_distances = calculate_sq_distances(
-                ref_coord,
-                candidate_coords,
-                pbc=pbc,
-                box_lengths=box_lengths
-            )
-            distances = np.sqrt(sq_distances)
-            
-            # Find candidates within radius
-            within_radius_mask = distances <= (radius) * 2 # twice radius + pad
-            candidate_indices = np.where(within_radius_mask)[0]
-            
-            if len(candidate_indices) >= n_connection_sites:
-                # select as starting node
-                break
-
-    # Verify starting point or return early
-    if len(candidate_indices) < n_connection_sites - 1:
-        print(f"No viable starting indices")
-        return path
-    
-    # Sort by distance and select closest n_connection_sites
-    sorted_indices = candidate_indices[np.argsort(distances[candidate_indices])]
-
-    # Select beads that are not neighbors of each other
-    selected_nodes = [ref_node]
-    
-    # candidate_subgraph = nx.induced_subgraph(path.bond_graph, {bead_name})
-    backbone_subgraph = path.bond_graph.subgraph(backbone_nodes)
-    excluded_nodes = set(
-        nx.single_source_shortest_path_length(backbone_subgraph, ref_node, cutoff=excluded_bond_depth).keys()
-    )
-
-    for idx in sorted_indices:
-        node = candidate_nodes[idx]
-        if node in excluded_nodes:
+        possible_pairs = np.where(within_radius_mask)[0]
+        # Verify starting point or return early
+        if len(possible_pairs) < n_connection_sites - 1:
             continue
+        
+        closest_paired_nodes = possible_pairs[np.argsort(distances[possible_pairs])]
+        excluded_nodes = set(
+            nx.single_source_shortest_path_length(backbone_subgraph, ref_node, cutoff=excluded_bond_depth).keys()
+        )
+        # import pdb; pdb.set_trace()
+        for idx in closest_paired_nodes:
+            node = candidate_nodes[idx] # temp replace
+            # node = possible_pairs[idx] # is index == value ??
+            if node in excluded_nodes:
+                continue
 
-        selected_nodes.append(int(node))
-            
-        # Stop if we have enough connection sites
-        if len(selected_nodes) >= n_connection_sites:
+            selected_nodes.append(int(node))
+                
+            # Stop if we have enough connection sites
+            if len(selected_nodes) >= n_connection_sites:
+                found_ref = True
+                break # break twice
+        if found_ref:
             break
-    
-    # Check if we found enough non-neighboring beads
-    if len(selected_nodes) < n_connection_sites:
+
+    # Verify enough final viable crosslink
+    if not found_ref:
+        n_clinks = sum([bead == bead_name for bead in path.beads])
         raise ValueError(
             f"Only found {len(selected_nodes)} non-neighboring backbone beads "
-            f"within radius {radius}, need {n_connection_sites}"
+            f"within radius {radius}, need {n_connection_sites}."
+            f"\nMaximum crossinks found are {n_clinks}. "
+            "Ways to increase crosslinking:\nIncrease radius"
+            "\nPack at higher density\nRelax structure."
         )
     
     # Calculate position for new crosslink node (centroid of selected beads)
-    selected_coords = np.array([path.bond_graph.nodes[node]["xyz"] for node in selected_nodes])
+    selected_coords = np.array(path.coordinates[selected_nodes])
     crosslink_position = np.mean(selected_coords, axis=0)
     
     # Add new node to path
     path.append_coordinates(
         crosslink_position, bead_name
     )
-    new_node_idx = len(path.coordinates) - 1
+    new_node_idx = len(path.coordinates) - 1 # add as last index
     
     # Add edges from crosslink node to selected backbone nodes
     for backbone_node in selected_nodes:
-        path.bond_graph.add_edge( # edges are formed with wrong indexes
-            new_node_idx,
-            backbone_node,
+        path.bond_graph.add_edge(
+            int(new_node_idx),
+            int(backbone_node),
             bond_type=(bead_name, backbone_name),
         )
     

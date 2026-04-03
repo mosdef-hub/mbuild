@@ -3,6 +3,7 @@
 import os
 import tempfile
 from warnings import warn
+import logging
 
 import gmso
 import hoomd
@@ -14,6 +15,9 @@ from gmso.parameterization import apply
 from mbuild import Compound
 from mbuild.exceptions import MBuildError
 from mbuild.utils.io import import_
+
+logger = logging.getLogger(__name__)
+
 
 
 class HoomdSimulation(hoomd.simulation.Simulation):
@@ -1255,6 +1259,8 @@ def energy_minimize_path(
     bead_size=0.3,
     bond_length=None,
     steps=1000,
+    seed=1,
+    nthreads=1
 ):
     # TODO: Set equilibrium or constrained angle
     positions = path.coordinates
@@ -1265,10 +1271,11 @@ def energy_minimize_path(
     from openmm.app import AllBonds, Topology
     from openmm.app.simulation import Simulation
     from openmm.openmm import LangevinIntegrator
+    from openmm import Platform
 
-    # system = to_parmed.createSystem(
-    #     constraints=AllBonds
-    # )  # Create an OpenMM System
+    # Create platform without parallelization
+    platform = Platform.getPlatformByName('CPU')
+    platform.setPropertyDefaultValue('Threads', str(nthreads))
 
     system = openmm.System()
     for i in range(n_particles):
@@ -1276,20 +1283,9 @@ def energy_minimize_path(
 
     # Create a Langenvin Integrator in OpenMM
     integrator = LangevinIntegrator(
-        298 * u.kelvin, 1 / u.picosecond, 0.001 * u.picoseconds
+        298 * u.kelvin, 1 / u.picosecond, 0.001 * u.picoseconds,
     )
-    # Create Simulation object in OpenMM
-    # simulation = Simulation(to_parmed.topology, system, integrator)
-
-    # # Loop through forces in OpenMM System and set parameters
-    # for force in system.getForces():
-    #     if type(force).__name__ == "NonbondedForce":
-    #         for nb_index in range(force.getNumParticles()):
-    #             charge, sigma, epsilon = force.getParticleParameters(nb_index)
-    #             force.setParticleParameters(
-    #                 nb_index, charge, sigma, epsilon * scale_nonbonded
-    #             )
-    #         force.updateParametersInContext(simulation.context)
+    integrator.setRandomNumberSeed(seed) # set seed
 
     # Set nonbonded force for each particle
     nonbonded_force = openmm.NonbondedForce()
@@ -1326,7 +1322,7 @@ def energy_minimize_path(
     for i, j in path.bond_graph.edges():
         topology.addBond(atomsList[i], atomsList[j])
 
-    simulation = Simulation(topology, system, integrator)
+    simulation = Simulation(topology, system, integrator, platform)
     simulation.context.setPositions(positions)
 
     # Run energy minimization through OpenMM
@@ -1334,5 +1330,9 @@ def energy_minimize_path(
 
     # Get positions directly
     state = simulation.context.getState(getPositions=True)
-    path.coordinates  = np.array(state.getPositions(asNumpy=True))
+    pos = np.array(state.getPositions(asNumpy=True))
+    if np.any(np.isnan(pos)):
+        logger.warning("Unable to energy minimize. Nan values detected.")
+    else:
+        path.coordinates  = np.array(state.getPositions(asNumpy=True))
 

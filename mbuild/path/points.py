@@ -211,5 +211,6 @@ def generate_trials(state):
     )
     return thetas, r
 
-
+def generate_crosslink_init_points():
+    pass
 

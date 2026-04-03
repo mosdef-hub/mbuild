@@ -12,6 +12,7 @@ from mbuild.path.build import (
     spiral_2D,
     straight_line,
     zigzag,
+    crosslink
 )
 from mbuild.path.path_utils import (
     local_density,
@@ -726,7 +727,6 @@ class TestPathUtils(BaseTest):
 
 class TestCrossLinks(BaseTest):
     def test_find_links_line(self):
-        from mbuild.path.build import crosslink
         path = Path()
         pos1 = np.zeros((10, 3))
         pos1[:,1] = np.arange(10) 
@@ -749,3 +749,39 @@ class TestCrossLinks(BaseTest):
         for i in range(10):
             assert (i, i+20) in path.bond_graph.edges
             assert (i+10, i+20) in path.bond_graph.edges
+    
+    def test_deterministic_rw(self):
+        path1 = hard_sphere_random_walk( # TODO: hsrw cuts off some chains early
+            radius=1,
+            bond_length=2,
+            termination=20,
+            rw_angles=(np.pi/2, np.pi),
+            seed=1
+        )
+        path2 = hard_sphere_random_walk( # TODO: hsrw cuts off some chains early
+            radius=1,
+            bond_length=2,
+            termination=20,
+            rw_angles=(np.pi/2, np.pi),
+            seed=1
+        ) 
+        assert path1 == path2
+
+    def test_deterministic_crosslink(self):
+        """Test set coordinates, relax seed as well"""
+        rng = np.random.default_rng(1)
+
+        points = rng.random((100, 3))
+        path1 = Path(coordinates=points)
+        path2 = Path(coordinates=points)
+        assert path1 == path2
+
+        crosslink(path1, radius=1, excluded_bond_depth=2)
+        crosslink(path2, radius=1, excluded_bond_depth=2)
+        assert path1 == path2
+
+        path1.relax(0.2, None, steps=10)
+        path2.relax(0.2, None, steps=10)
+        print(path1.coordinates - path2.coordinates)
+        assert np.allclose(path1, path2, atol=1e-6)
+

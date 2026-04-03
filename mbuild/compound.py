@@ -1555,13 +1555,13 @@ class Compound(object):
             return True
 
     def check_for_overlap(
-        self, excluded_bond_depth, minimum_distance=0.10, return_indices=True
+        self, excluded_bond_depth=0, minimum_distance=0.10, return_indices=True
     ):
         """Check if a compound contains overlapping particles.
 
         Parameters:
         -----------
-        excluded_bond_depth : int, required
+        excluded_bond_depth : int, default 0
             The depth of bonded neighbors to exclude from overlap check.
             see Compound.direct_bonds()
         minimum_distance : float, default=0.10

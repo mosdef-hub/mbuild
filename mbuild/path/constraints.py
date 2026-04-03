@@ -60,8 +60,10 @@ class CuboidConstraint(Constraint):
         ``(False, False, False)``, meaning no periodic boundaries.
     """
 
-    def __init__(self, Lx, Ly, Lz, center=(0, 0, 0), pbc=(False, False, False)):
+    def __init__(self, Lx, Ly=None, Lz=None, center=(0, 0, 0), pbc=(False, False, False)):
         self.center = np.asarray(center)
+        if Ly is None and Lz is None and Lx:
+            Ly = Lz = Lx
         self.mins = self.center - np.array([Lx / 2, Ly / 2, Lz / 2])
         self.maxs = self.center + np.array([Lx / 2, Ly / 2, Lz / 2])
         self.box_lengths = np.array([Lx, Ly, Lz]).astype(np.float32)
