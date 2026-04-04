@@ -4,6 +4,7 @@ import pytest
 import mbuild as mb
 from mbuild.path.build import (
     Path,
+    crosslink,
     cyclic,
     hard_sphere_random_walk,
     helix,
@@ -12,7 +13,11 @@ from mbuild.path.build import (
     spiral_2D,
     straight_line,
     zigzag,
-    crosslink
+)
+from mbuild.path.constraints import (
+    CuboidConstraint,
+    CylinderConstraint,
+    SphereConstraint,
 )
 from mbuild.path.path_utils import (
     local_density,
@@ -26,11 +31,6 @@ from mbuild.path.termination import (
 )
 from mbuild.tests.base_test import BaseTest
 from mbuild.utils.geometry import bounding_box
-from mbuild.path.constraints import (
-    CuboidConstraint,
-    CylinderConstraint,
-    SphereConstraint,
-)
 
 
 class TestPaths(BaseTest):
@@ -531,18 +531,20 @@ class TestRandomWalk(BaseTest):
 
     def test_rw_normal_angles(self):
         from scipy.stats import normaltest
+
         num_sites = NumSites(1000)
-        path = hard_sphere_random_walk( # TODO: Map Angles into 0 to np.pi domain
+        path = hard_sphere_random_walk(  # TODO: Map Angles into 0 to np.pi domain
             termination=num_sites,
             radius=0.0001,
             bond_length=1,
-            rw_angles={'loc':np.pi/2, 'scale':0.001} # larger scale doesn't center at mean
+            rw_angles={
+                "loc": np.pi / 2,
+                "scale": 0.001,
+            },  # larger scale doesn't center at mean
         )
         angles = []
         for i, j, k in zip(
-            path.coordinates, 
-            path.coordinates[1:],
-            path.coordinates[2:]
+            path.coordinates, path.coordinates[1:], path.coordinates[2:]
         ):
             BA = i - j
             BC = k - j
@@ -550,24 +552,23 @@ class TestRandomWalk(BaseTest):
             norm_BC = np.linalg.norm(BC)
             angles.append(np.arccos(np.dot(BA, BC) / (norm_BA * norm_BC)))
         _, p_value = normaltest(angles)
-        assert np.isclose(np.mean(angles), np.pi/2, atol=1e-1)
+        assert np.isclose(np.mean(angles), np.pi / 2, atol=1e-1)
         assert p_value > 0.05
 
     def test_rw_normal_angles_large_std(self):
         from scipy.stats import normaltest
+
         num_sites = NumSites(100)
         path = hard_sphere_random_walk(
             termination=num_sites,
-            radius=0.001, # point particle so radius doesn't influence selection
+            radius=0.001,  # point particle so radius doesn't influence selection
             bond_length=1,
-            rw_angles={'loc':np.pi/2, 'scale':0.5},
-            trial_batch_size=8
+            rw_angles={"loc": np.pi / 2, "scale": 0.5},
+            trial_batch_size=8,
         )
         angles = []
         for i, j, k in zip(
-            path.coordinates, 
-            path.coordinates[1:],
-            path.coordinates[2:]
+            path.coordinates, path.coordinates[1:], path.coordinates[2:]
         ):
             BA = i - j
             BC = k - j
@@ -575,36 +576,34 @@ class TestRandomWalk(BaseTest):
             norm_BC = np.linalg.norm(BC)
             angles.append(np.arccos(np.dot(BA, BC) / (norm_BA * norm_BC)))
         _, p_value = normaltest(angles)
-        assert np.isclose(np.mean(angles), np.pi/2, atol=1e-1)
+        assert np.isclose(np.mean(angles), np.pi / 2, atol=1e-1)
         assert p_value > 0.05
 
     def test_rw_uniform_angles(self):
         import scipy.stats
+
         num_sites = NumSites(1000)
-        min_max_angles = (np.pi/3, np.pi/2)
+        min_max_angles = (np.pi / 3, np.pi / 2)
         path = hard_sphere_random_walk(
             termination=num_sites,
-            radius=0.001, # choose a point particle 
+            radius=0.001,  # choose a point particle
             bond_length=1,
             rw_angles=min_max_angles,
             trial_batch_size=1,
         )
         angles = []
         for i, j, k in zip(
-            path.coordinates, 
-            path.coordinates[1:],
-            path.coordinates[2:]
+            path.coordinates, path.coordinates[1:], path.coordinates[2:]
         ):
             BA = i - j
             BC = k - j
             norm_BA = np.linalg.norm(BA)
             norm_BC = np.linalg.norm(BC)
             angles.append(np.arccos(np.dot(BA, BC) / (norm_BA * norm_BC)))
-        uniform_loc_scale = (min_max_angles[0], min_max_angles[1]-min_max_angles[0])
-        _, p_val = scipy.stats.kstest(angles, 'uniform', args=uniform_loc_scale)
+        uniform_loc_scale = (min_max_angles[0], min_max_angles[1] - min_max_angles[0])
+        _, p_val = scipy.stats.kstest(angles, "uniform", args=uniform_loc_scale)
         assert p_val > 0.05
-        assert np.isclose(np.mean(angles), np.pi*5/12, atol=1e-1)
-
+        assert np.isclose(np.mean(angles), np.pi * 5 / 12, atol=1e-1)
 
 
 class TestPathUtils(BaseTest):
@@ -707,64 +706,69 @@ class TestPathUtils(BaseTest):
         assert densities.dtype == np.float32
 
     @pytest.mark.parametrize(
-            "distribution, kwargs, reference",
-            [("uniform", {'low':0, 'high':1}, ("kstest", {"args":(0,1)})),
-            ("normal", {'loc':0, 'scale':1}, ("normaltest", {})),
-             ]
+        "distribution, kwargs, reference",
+        [
+            ("uniform", {"low": 0, "high": 1}, ("kstest", {"args": (0, 1)})),
+            ("normal", {"loc": 0, "scale": 1}, ("normaltest", {})),
+        ],
     )
     def test_angles_sampler(self, distribution, kwargs, reference):
-        from mbuild.path.points import AnglesSampler
         import scipy.stats
+
+        from mbuild.path.points import AnglesSampler
 
         sampler = AnglesSampler(distribution, kwargs, seed=0)
         points = sampler.sample(1000)
         if reference[0] == "kstest":
-            _, p_value = scipy.stats.kstest(points, 'uniform', **reference[1])
+            _, p_value = scipy.stats.kstest(points, "uniform", **reference[1])
         elif reference[0] == "normaltest":
             _, p_value = scipy.stats.normaltest(points)
 
         assert p_value > 0.05
 
+
 class TestCrossLinks(BaseTest):
     def test_find_links_line(self):
         path = Path()
         pos1 = np.zeros((10, 3))
-        pos1[:,1] = np.arange(10) 
+        pos1[:, 1] = np.arange(10)
         path.append_coordinates(pos1)
         path.form_linear_bond_graph()
 
-        pos2 = np.zeros((10,3))
-        pos2[:,0] += 1
-        pos2[:,1] = np.arange(10)
+        pos2 = np.zeros((10, 3))
+        pos2[:, 0] += 1
+        pos2[:, 1] = np.arange(10)
         path.append_coordinates(pos2)
-        path.form_linear_bond_graph(indices=np.arange(10,20))
+        path.form_linear_bond_graph(indices=np.arange(10, 20))
 
         for i in range(10):
-            crosslink(path, initial_point=i, radius=1.1, excluded_bond_depth=10, seed=42) 
+            crosslink(
+                path, initial_point=i, radius=1.1, excluded_bond_depth=10, seed=42
+            )
 
         clinks = sum([b == "_R" for b in path.beads])
         bbones = sum([b == "_A" for b in path.beads])
         assert clinks == 10
         assert bbones == 20
         for i in range(10):
-            assert (i, i+20) in path.bond_graph.edges
-            assert (i+10, i+20) in path.bond_graph.edges
-    
+            assert (i, i + 20) in path.bond_graph.edges
+            assert (i + 10, i + 20) in path.bond_graph.edges
+
     def test_deterministic_rw(self):
-        path1 = hard_sphere_random_walk( # TODO: hsrw cuts off some chains early
+        path1 = hard_sphere_random_walk(  # TODO: hsrw cuts off some chains early
             radius=1,
             bond_length=2,
             termination=20,
-            rw_angles=(np.pi/2, np.pi),
-            seed=1
+            rw_angles=(np.pi / 2, np.pi),
+            seed=1,
         )
-        path2 = hard_sphere_random_walk( # TODO: hsrw cuts off some chains early
+        path2 = hard_sphere_random_walk(  # TODO: hsrw cuts off some chains early
             radius=1,
             bond_length=2,
             termination=20,
-            rw_angles=(np.pi/2, np.pi),
-            seed=1
-        ) 
+            rw_angles=(np.pi / 2, np.pi),
+            seed=1,
+        )
         assert path1 == path2
 
     def test_deterministic_crosslink(self):
@@ -784,4 +788,3 @@ class TestCrossLinks(BaseTest):
         path2.relax(0.2, None, steps=10)
         print(path1.coordinates - path2.coordinates)
         assert np.allclose(path1, path2, atol=1e-6)
-

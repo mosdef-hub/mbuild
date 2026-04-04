@@ -1,9 +1,9 @@
 """Simulation methods that operate on mBuild compounds."""
 
+import logging
 import os
 import tempfile
 from warnings import warn
-import logging
 
 import gmso
 import hoomd
@@ -17,7 +17,6 @@ from mbuild.exceptions import MBuildError
 from mbuild.utils.io import import_
 
 logger = logging.getLogger(__name__)
-
 
 
 class HoomdSimulation(hoomd.simulation.Simulation):
@@ -1254,13 +1253,9 @@ def _energy_minimize_openbabel(
         z = obatom.GetZ() / 10.0
         compound[i].pos = np.array([x, y, z])
 
+
 def energy_minimize_path(
-    path,
-    bead_size=0.3,
-    bond_length=None,
-    steps=1000,
-    seed=1,
-    nthreads=1
+    path, bead_size=0.3, bond_length=None, steps=1000, seed=1, nthreads=1
 ):
     # TODO: Set equilibrium or constrained angle
     positions = path.coordinates
@@ -1268,14 +1263,14 @@ def energy_minimize_path(
 
     import openmm
     import openmm.unit as u
-    from openmm.app import AllBonds, Topology
+    from openmm import Platform
+    from openmm.app import Topology
     from openmm.app.simulation import Simulation
     from openmm.openmm import LangevinIntegrator
-    from openmm import Platform
 
     # Create platform without parallelization
-    platform = Platform.getPlatformByName('CPU')
-    platform.setPropertyDefaultValue('Threads', str(nthreads))
+    platform = Platform.getPlatformByName("CPU")
+    platform.setPropertyDefaultValue("Threads", str(nthreads))
 
     system = openmm.System()
     for i in range(n_particles):
@@ -1283,14 +1278,16 @@ def energy_minimize_path(
 
     # Create a Langenvin Integrator in OpenMM
     integrator = LangevinIntegrator(
-        298 * u.kelvin, 1 / u.picosecond, 0.001 * u.picoseconds,
+        298 * u.kelvin,
+        1 / u.picosecond,
+        0.001 * u.picoseconds,
     )
-    integrator.setRandomNumberSeed(seed) # set seed
+    integrator.setRandomNumberSeed(seed)  # set seed
 
     # Set nonbonded force for each particle
     nonbonded_force = openmm.NonbondedForce()
     nonbonded_force.setNonbondedMethod(openmm.NonbondedForce.NoCutoff)
-    sigma  = bead_size * u.nanometer
+    sigma = bead_size * u.nanometer
     epsilon = 0.1 * u.kilocalories_per_mole
     for i in range(n_particles):
         nonbonded_force.addParticle(0.0, sigma, epsilon)
@@ -1305,12 +1302,12 @@ def energy_minimize_path(
         harmonic_force = openmm.HarmonicBondForce()
         for i, j in path.bond_graph.edges():
             harmonic_force.addBond(
-                i, j, 
+                i,
+                j,
                 bond_length * u.nanometer,
-                300 * u.kilocalories_per_mole / u.nanometer**2
+                300 * u.kilocalories_per_mole / u.nanometer**2,
             )
         system.addForce(harmonic_force)
-
 
     topology = Topology()
     chain = topology.addChain()
@@ -1334,5 +1331,4 @@ def energy_minimize_path(
     if np.any(np.isnan(pos)):
         logger.warning("Unable to energy minimize. Nan values detected.")
     else:
-        path.coordinates  = np.array(state.getPositions(asNumpy=True))
-
+        path.coordinates = np.array(state.getPositions(asNumpy=True))
