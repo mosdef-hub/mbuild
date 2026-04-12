@@ -19,6 +19,7 @@ from mbuild.path.points import (
 )
 from mbuild.path.termination import NumSites, Termination, Terminator
 from mbuild.utils.io import import_
+from mbuild.exceptions import PathConvergenceError
 
 logger = logging.getLogger(__name__)
 
@@ -1074,9 +1075,9 @@ def hard_sphere_random_walk(
         if second_xyz is not None:
             break
         elif num_tries == 99:
-            raise ValueError(f"Failed after {num_tries+1} to generate a starting point. System is probably too densely packed.")
+            raise PathConvergenceError(f"Failed after {num_tries+1} to generate a starting point. System is probably too densely packed.")
         elif state.initial_point is not None:
-            raise ValueError(f"Failed to initiate random walk with {initial_point=}. Try a different initial_point.")
+            raise PathConvergenceError(f"Failed to initiate random walk with {initial_point=}. Try a different initial_point.")
 
     # print(f"{initial_xyz=}, {second_xyz=}")
     coordinates[state.count] = initial_xyz
@@ -1241,9 +1242,6 @@ class RandomWalkState:
         self.bond_length = bond_length
         self.radius = radius
         if bond_length < radius:
-            raise ValueError(
-                "Bond length should be greater than radius to prevent overlaps."
-            )
             raise ValueError(
                 "Bond length should be greater than radius to prevent overlaps."
             )
@@ -1503,7 +1501,7 @@ def crosslink(
     # Verify enough final viable crosslink
     if not found_ref:
         n_clinks = sum([bead == bead_name for bead in path.beads])
-        raise ValueError(
+        raise PathConvergenceError(
             f"Only found {len(selected_nodes)} non-neighboring backbone beads "
             f"within radius {radius}, need {n_connection_sites}."
             f"\nMaximum crossinks found are {n_clinks}. "
