@@ -3,6 +3,7 @@
 import logging
 import math
 import time
+from copy import deepcopy
 
 import networkx as nx
 import numpy as np
@@ -349,7 +350,7 @@ class Path:
         
         return "".join(lines)
     
-    def to_mol3000(self):
+    def to_mol3000(self, G=None):
         """
         Convert mBuild Path to SDF/MOL V3000 format
         
@@ -362,6 +363,8 @@ class Path:
             Mapping of atom indices to atom type symbols (e.g., {0: 'A', 5: 'B'})
             If None, all atoms will be 'A'
         """
+        if G is None:
+            G = self.bond_graph
         lines = []
         
         # Header block (3 lines)
@@ -371,7 +374,7 @@ class Path:
         
         # Counts line for V3000
         n_atoms = len(self.coordinates)
-        n_bonds = len(self.bond_graph.edges())
+        n_bonds = len(G.edges())
         lines.append(f"  0  0  0     0  0            999 V3000\n")
         
         # Begin CTAB
@@ -389,7 +392,7 @@ class Path:
         
         # Bond block
         lines.append("M  V30 BEGIN BOND\n")
-        for bond_idx, edge in enumerate(self.bond_graph.edges(), start=1):
+        for bond_idx, edge in enumerate(G.edges(), start=1):
             # V3000: bond_index bond_type atom1 atom2
             lines.append(f"M  V30 {bond_idx} 1 {edge[0]+1} {edge[1]+1}\n")
         lines.append("M  V30 END BOND\n")
@@ -400,9 +403,10 @@ class Path:
         # End of record
         lines.append("M  END\n")
         
-        return "".join(lines)
+        x =  "".join(lines)
+        return x
 
-    def visualize(self, radius=0.1):
+    def visualize(self, radius=0.1, hide_periodic_bonds=False):
         """Visualize in 3D space using py3Dmol of the Path as a Compound.
 
         Parameters
@@ -412,10 +416,19 @@ class Path:
         """
         py3Dmol = import_("py3Dmol")
 
-        G = self.bond_graph
-
-        # Generate MOL2 string
-        # mol2_string = self.to_mol2()
+        G = deepcopy(self.bond_graph)
+        if hide_periodic_bonds:
+            max_pos = np.max(self.coordinates, axis=0)
+            min_pos = np.min(self.coordinates, axis=0)
+            half_box_l = np.max(max_pos - min_pos) / 2
+            remove_edges = []
+            for n1, n2 in G.edges():
+                if np.linalg.norm(
+                    self.coordinates[n1]-self.coordinates[n2]
+                    ) > half_box_l:
+                    remove_edges.append((int(n1), int(n2)))
+            print(f"Hiding {len(remove_edges)} periodic edges")
+            G.remove_edges_from(remove_edges)
 
         view = py3Dmol.view(width=600, height=600)
         # view.addModel(mol2_string, "mol2", keepH=True)
@@ -430,7 +443,7 @@ class Path:
             '#808000', '#ffd8b1', '#000075', '#808080', '#ffffff', '#000000'
         ]
 
-        data = self.to_mol3000()
+        data = self.to_mol3000(G)
         view = py3Dmol.view(data=data)
         for i, name in enumerate(unique_names):
             color = colors[i % len(colors)]
@@ -1112,10 +1125,7 @@ def hard_sphere_random_walk(
             r_vectors=batch_vectors,
         )
 
-        if state.volume_constraint:
-            is_inside_mask = volume_constraint.is_inside(
-                points=candidates, buffer=radius
-            )
+        if state.volume_constraint: # should allow for pbc
             is_inside_mask = volume_constraint.is_inside(
                 points=candidates, buffer=radius
             )
@@ -1124,8 +1134,7 @@ def hard_sphere_random_walk(
         if state.bias:
             candidates = bias(candidates=candidates)
 
-        existing_points = coordinates[: state.count + 1]
-        existing_points = coordinates[: state.count + 1]
+        existing_points = coordinates[:state.count + 1]
 
         if any(pbc):
             candidates = volume_constraint.mins + np.mod(
@@ -1134,7 +1143,6 @@ def hard_sphere_random_walk(
 
         accept_xyz = None
         if state.run_on_gpu and len(candidates) > 0:
-            dynamic_points = coordinates[state.init_count : state.count + 1]
             dynamic_points = coordinates[state.init_count : state.count + 1]
             valid_mask = check_path_gpu(
                 state.gpu_static_points,
