@@ -29,7 +29,7 @@ def get_second_point(state, existing_points, check_path, first_point):
                 ]
             )
             if check_path(  # check for overlaps
-                existing_points=existing_points,
+                existing_points=np.vstack((existing_points, first_point)),
                 new_point=offset + first_point,
                 radius=state.radius,
                 tolerance=state.tolerance,
@@ -58,7 +58,7 @@ def get_second_point(state, existing_points, check_path, first_point):
                 points=np.array([first_point + offset]), buffer=state.radius
             )
             if np.all(is_inside_mask) and check_path(  # check for overlaps
-                existing_points=existing_points,
+                existing_points=np.vstack((existing_points, first_point)),
                 new_point=offset + first_point,
                 radius=state.radius,
                 tolerance=state.tolerance,
@@ -70,8 +70,6 @@ def get_second_point(state, existing_points, check_path, first_point):
             f"No viable second point found within constraint and next to {state.initial_point=}. Try using a smaller radius than {state.radius=}"
         )
     return first_point + offset
-
-
 
 
 def get_initial_point(state, existing_points, check_path, next_step):
@@ -166,9 +164,25 @@ def get_initial_point(state, existing_points, check_path, next_step):
             "The density of the volume constraint may be too high."
         )
     else:  # completely random point
-        max_dist = 10 * state.radius
-        xyz = state.rng.uniform(low=-max_dist / 2, high=max_dist / 2, size=3)
-        return xyz
+        if len(existing_points) == 0:
+            max_dist = state.radius
+            min_dist = -1*state.radius
+        else:
+            max_dist = np.max(existing_points, axis=0) 
+            min_dist = np.min(existing_points, axis=0) # TODO: Update seed based on initial_point
+        xyzs = state.rng.uniform(low=min_dist, high=max_dist, size=(100,3))
+        for xyz in xyzs:
+            if check_path(
+                existing_points=existing_points,
+                new_point=xyz,
+                radius=state.radius,
+                tolerance=state.tolerance,
+            ):
+                return xyz
+        raise MBuildError(
+            "Unable to find a starting point without overlapping particles. "
+            "The density of the volume constraint may be too high."
+        )
 
 class AnglesSampler:
     """

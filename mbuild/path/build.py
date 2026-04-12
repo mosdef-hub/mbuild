@@ -41,8 +41,8 @@ class Path:
 
     def __init__(self, coordinates=None, bond_graph=None, bead_name="_A"):
         if coordinates is not None and bond_graph is not None and isinstance(bead_name, np.ndarray):
-            assert len(coordinates) == len(bond_graph)
-            assert len(coordinates) == len(bead_name)
+            assert len(coordinates) == len(bond_graph), (len(coordinates), len(bond_graph))
+            assert len(coordinates) == len(bead_name), (len(coordinates), len(bead_name))
             self.bond_graph = bond_graph
             self.coordinates = coordinates
             self.beads = bead_name
@@ -75,9 +75,9 @@ class Path:
             nx.is_isomorphic(self.bond_graph, other.bond_graph)
         )
     def __add__(self, other):
-        coordinates = np.append((self.coordinates, other.coordinates), axis=1)
-        beads = np.append((self.beads, other.beads))
-        bond_graph = nx.compose(self.bond_graph, other.bond_graph)
+        coordinates = np.concat((self.coordinates, other.coordinates))
+        beads = np.concat((self.beads, other.beads))
+        bond_graph = nx.compose(self.bond_graph, other.bond_graph) # TODO: Don't overwrite nodes in bg
         return Path(coordinates, bond_graph, beads)
     @classmethod
     def from_compound(cls, compound):
@@ -167,6 +167,8 @@ class Path:
             for idx1, idx in zip(indices, indices[1:]):
                 self.add_edge(idx1, idx)
             self.add_edge(indices[0], indices[-1])
+        else:
+            raise ValueError(f"Argument {connectivity=} is incorrect. Pass one of `linear`, `link-linear`, `cycle`")
 
     def form_linear_bond_graph(self, indices=None):
         """Iterates through the Path's bond_graph by indices to build a linearly connected graph.
@@ -418,7 +420,7 @@ class Path:
         # view.addModel(mol2_string, "mol2", keepH=True)
 
         # Get unique bead names
-        unique_names = list(set(G.nodes[node]["name"] for node in G.nodes()))
+        unique_names = list(dict.fromkeys(G.nodes[node]["name"] for node in G.nodes()))
 
         # Color palette
         colors = [
@@ -434,21 +436,23 @@ class Path:
             view.addStyle(
                 {"elem": name.strip("_")},  # Select all atoms with this name
                 {
-                    "sphere": {"color": color, "radius": radius},
-                    "stick": {"radius": radius/3, "color": "grey"},
+                    "sphere": {"color": color, "radius": radius, "scale":0.5},
+                    "stick": {"radius": radius/4, "color": "grey"},
                 },
             )
         view.setBackgroundColor("white")
         view.zoomTo()
+        scale_factor = max(1, 5 - int(np.log10(len(self.coordinates))))
+        view.zoom(scale_factor) # helps zoom on smaller systems
 
         return view
 
-    def relax(self, bead_radius, bond_length=None, steps=1000):
+    def relax(self, bead_radius, bond_length=None, steps=1000, seed=1, nthreads=1):
         """Perform a dpd simulation to relax the current path."""
         # from mbuild.simulation import hoomd_cap_displacement, hoomd_fire, ForcesHandler, HoomdSimulation
         from mbuild.simulation import energy_minimize_path
         # ffhandler = ForcesHandler(scale_bond=1, scale_angle=0.00, dpd=2)
-        energy_minimize_path(self, bead_radius, bond_length, steps)
+        energy_minimize_path(self, bead_radius, bond_length, steps, seed, nthreads)
         # sim = HoomdSimulation(
         #     self, # compound you're minimizing
         #     ff,
@@ -1000,7 +1004,7 @@ def hard_sphere_random_walk(
     state.termination._attach_path(path, state)
 
     # Create RNG state
-    rng = np.random.default_rng(seed)
+    rng = np.random.default_rng(seed + len(path.coordinates))
     state.rng = rng
 
     # Set up PBC info from volume constraints
@@ -1058,16 +1062,25 @@ def hard_sphere_random_walk(
     check_path_cpu = check_path
     next_step = random_coordinate
 
-    # Set the first coordinate
-    initial_xyz = get_initial_point(state, coordinates, check_path_cpu, next_step)
+    # Set the first two coordinates
+    for num_tries in range(100):
+        initial_xyz = get_initial_point(state, coordinates[:state.count], check_path_cpu, next_step)
+
+        if state.check_termination(path, coordinates):
+            return path
+
+        # Get the second coordinate
+        second_xyz = get_second_point(state, coordinates[:state.count], check_path_cpu, initial_xyz)
+        if second_xyz is not None:
+            break
+        elif num_tries == 99:
+            raise ValueError(f"Failed after {num_tries+1} to generate a starting point. System is probably too densely packed.")
+        elif state.initial_point is not None:
+            raise ValueError(f"Failed to initiate random walk with {initial_point=}. Try a different initial_point.")
+
+    # print(f"{initial_xyz=}, {second_xyz=}")
     coordinates[state.count] = initial_xyz
-
-    if state.check_termination(path, coordinates):
-        return path
-
-    # Get the second coordinate
-    state.count += 1
-    second_xyz = get_second_point(state, coordinates, check_path_cpu, initial_xyz)
+    state.count+=1
     coordinates[state.count] = second_xyz
 
     if state.check_termination(path, coordinates):
@@ -1249,7 +1262,7 @@ class RandomWalkState:
         elif isinstance(angles_sampler, AnglesSampler):
             self.angles = angles_sampler
         else:
-            raise ValueError(f"Please provide a reasonable value to set the rw_angles. Passed {rw_angles}")
+            raise ValueError(f"Please provide a reasonable value to set the rw_angles. Passed {angles_sampler}")
         self.bead_name = bead_name
         if hasattr(initial_point, "__len__") and len(initial_point) == 3:
             self.initial_point = np.asarray(initial_point)
