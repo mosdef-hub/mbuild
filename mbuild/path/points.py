@@ -163,11 +163,13 @@ def get_initial_point(state, existing_points, check_path, next_step):
     else:  # completely random point
         if len(existing_points) == 0:
             max_dist = state.radius
-            min_dist = -1*state.radius
+            min_dist = -1 * state.radius
         else:
-            max_dist = np.max(existing_points, axis=0) 
-            min_dist = np.min(existing_points, axis=0) # TODO: Update seed based on initial_point
-        xyzs = state.rng.uniform(low=min_dist, high=max_dist, size=(100,3))
+            max_dist = np.max(existing_points, axis=0)
+            min_dist = np.min(
+                existing_points, axis=0
+            )  # TODO: Update seed based on initial_point
+        xyzs = state.rng.uniform(low=min_dist, high=max_dist, size=(100, 3))
         for xyz in xyzs:
             if check_path(
                 existing_points=existing_points,

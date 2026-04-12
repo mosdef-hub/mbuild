@@ -10,6 +10,7 @@ import numpy as np
 from scipy.interpolate import interp1d
 
 from mbuild import Compound
+from mbuild.exceptions import PathConvergenceError
 from mbuild.path.constraints import CuboidConstraint, CylinderConstraint
 from mbuild.path.path_utils import (
     calculate_sq_distances,
@@ -24,7 +25,6 @@ from mbuild.path.points import (
 )
 from mbuild.path.termination import NumSites, Termination, Terminator
 from mbuild.utils.io import import_
-from mbuild.exceptions import PathConvergenceError
 
 logger = logging.getLogger(__name__)
 
@@ -46,9 +46,19 @@ class Path:
     """
 
     def __init__(self, coordinates=None, bond_graph=None, bead_name="_A"):
-        if coordinates is not None and bond_graph is not None and isinstance(bead_name, np.ndarray):
-            assert len(coordinates) == len(bond_graph), (len(coordinates), len(bond_graph))
-            assert len(coordinates) == len(bead_name), (len(coordinates), len(bead_name))
+        if (
+            coordinates is not None
+            and bond_graph is not None
+            and isinstance(bead_name, np.ndarray)
+        ):
+            assert len(coordinates) == len(bond_graph), (
+                len(coordinates),
+                len(bond_graph),
+            )
+            assert len(coordinates) == len(bead_name), (
+                len(coordinates),
+                len(bead_name),
+            )
             self.bond_graph = bond_graph
             self.coordinates = coordinates
             self.beads = bead_name
@@ -86,7 +96,9 @@ class Path:
     def __add__(self, other):
         coordinates = np.concat((self.coordinates, other.coordinates))
         beads = np.concat((self.beads, other.beads))
-        bond_graph = nx.compose(self.bond_graph, other.bond_graph) # TODO: Don't overwrite nodes in bg
+        bond_graph = nx.compose(
+            self.bond_graph, other.bond_graph
+        )  # TODO: Don't overwrite nodes in bg
         return Path(coordinates, bond_graph, beads)
 
     @classmethod
@@ -176,7 +188,9 @@ class Path:
                 self.add_edge(idx1, idx)
             self.add_edge(indices[0], indices[-1])
         else:
-            raise ValueError(f"Argument {connectivity=} is incorrect. Pass one of `linear`, `link-linear`, `cycle`")
+            raise ValueError(
+                f"Argument {connectivity=} is incorrect. Pass one of `linear`, `link-linear`, `cycle`"
+            )
 
     def form_linear_bond_graph(self, indices=None):
         """Iterates through the Path's bond_graph by indices to build a linearly connected graph.
@@ -356,7 +370,7 @@ class Path:
         lines.append("$$\n")
 
         return "".join(lines)
-    
+
     def to_mol3000(self, G=None):
         """
         Convert mBuild Path to SDF/MOL V3000 format
@@ -378,8 +392,8 @@ class Path:
         # Counts line for V3000
         n_atoms = len(self.coordinates)
         n_bonds = len(G.edges())
-        lines.append(f"  0  0  0     0  0            999 V3000\n")
-        
+        lines.append("  0  0  0     0  0            999 V3000\n")
+
         # Begin CTAB
         lines.append("M  V30 BEGIN CTAB\n")
         lines.append(f"M  V30 COUNTS {n_atoms} {n_bonds} 0 0 0\n")
@@ -427,9 +441,10 @@ class Path:
             half_box_l = np.max(max_pos - min_pos) / 2
             remove_edges = []
             for n1, n2 in G.edges():
-                if np.linalg.norm(
-                    self.coordinates[n1]-self.coordinates[n2]
-                    ) > half_box_l:
+                if (
+                    np.linalg.norm(self.coordinates[n1] - self.coordinates[n2])
+                    > half_box_l
+                ):
                     remove_edges.append((int(n1), int(n2)))
             print(f"Hiding {len(remove_edges)} periodic edges")
             G.remove_edges_from(remove_edges)
@@ -473,14 +488,14 @@ class Path:
             view.addStyle(
                 {"elem": name.strip("_")},  # Select all atoms with this name
                 {
-                    "sphere": {"color": color, "radius": radius, "scale":0.5},
-                    "stick": {"radius": radius/4, "color": "grey"},
+                    "sphere": {"color": color, "radius": radius, "scale": 0.5},
+                    "stick": {"radius": radius / 4, "color": "grey"},
                 },
             )
         view.setBackgroundColor("white")
         view.zoomTo()
         scale_factor = max(1, 5 - int(np.log10(len(self.coordinates))))
-        view.zoom(scale_factor) # helps zoom on smaller systems
+        view.zoom(scale_factor)  # helps zoom on smaller systems
 
         return view
 
@@ -1077,23 +1092,31 @@ def hard_sphere_random_walk(
 
     # Set the first two coordinates
     for num_tries in range(100):
-        initial_xyz = get_initial_point(state, coordinates[:state.count], check_path_cpu, next_step)
+        initial_xyz = get_initial_point(
+            state, coordinates[: state.count], check_path_cpu, next_step
+        )
 
         if state.check_termination(path, coordinates):
             return path
 
         # Get the second coordinate
-        second_xyz = get_second_point(state, coordinates[:state.count], check_path_cpu, initial_xyz)
+        second_xyz = get_second_point(
+            state, coordinates[: state.count], check_path_cpu, initial_xyz
+        )
         if second_xyz is not None:
             break
         elif num_tries == 99:
-            raise PathConvergenceError(f"Failed after {num_tries+1} to generate a starting point. System is probably too densely packed.")
+            raise PathConvergenceError(
+                f"Failed after {num_tries + 1} to generate a starting point. System is probably too densely packed."
+            )
         elif state.initial_point is not None:
-            raise PathConvergenceError(f"Failed to initiate random walk with {initial_point=}. Try a different initial_point.")
+            raise PathConvergenceError(
+                f"Failed to initiate random walk with {initial_point=}. Try a different initial_point."
+            )
 
     # print(f"{initial_xyz=}, {second_xyz=}")
     coordinates[state.count] = initial_xyz
-    state.count+=1
+    state.count += 1
     coordinates[state.count] = second_xyz
 
     if state.check_termination(path, coordinates):
@@ -1122,7 +1145,7 @@ def hard_sphere_random_walk(
             r_vectors=batch_vectors,
         )
 
-        if state.volume_constraint: # should allow for pbc
+        if state.volume_constraint:  # should allow for pbc
             is_inside_mask = volume_constraint.is_inside(
                 points=candidates, buffer=radius
             )
@@ -1131,7 +1154,7 @@ def hard_sphere_random_walk(
         if state.bias:
             candidates = bias(candidates=candidates)
 
-        existing_points = coordinates[:state.count + 1]
+        existing_points = coordinates[: state.count + 1]
 
         if any(pbc):
             candidates = volume_constraint.mins + np.mod(
@@ -1272,7 +1295,9 @@ class RandomWalkState:
         elif isinstance(angles_sampler, AnglesSampler):
             self.angles = angles_sampler
         else:
-            raise ValueError(f"Please provide a reasonable value to set the rw_angles. Passed {angles_sampler}")
+            raise ValueError(
+                f"Please provide a reasonable value to set the rw_angles. Passed {angles_sampler}"
+            )
         self.bead_name = bead_name
         if hasattr(initial_point, "__len__") and len(initial_point) == 3:
             self.initial_point = np.asarray(initial_point)
