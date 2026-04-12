@@ -1,14 +1,11 @@
 import logging
 
-import logging
-
 import numpy as np
 
 from mbuild.exceptions import PathConvergenceError
 from mbuild.path.constraints import CuboidConstraint, CylinderConstraint
 
 logger = logging.getLogger(__name__)
-
 
 
 def get_second_point(state, existing_points, check_path, first_point):
@@ -184,31 +181,35 @@ def get_initial_point(state, existing_points, check_path, next_step):
             "The density of the volume constraint may be too high."
         )
 
+
 class AnglesSampler:
     """
-    TODO:Allow for passing a specific 2D weighted pre-defined sample, as opposed to a numpy distribution. 
+    TODO:Allow for passing a specific 2D weighted pre-defined sample, as opposed to a numpy distribution.
     This would use np.random.choice instead as the sample method.
     NOTES
     -----
     "uniform" distribution should use 'low' and 'high' as kwargs.
     "normal" distribution should use 'loc' and 'scale' as kwargs.
     """
+
     def __init__(self, distributionStr, kwargs, seed):
         # Create a generator object for high-quality random numbers [9]
         self.rng = np.random.default_rng(seed)
         if distributionStr.lower() == "uniform":
             self.sampler = self.rng.uniform
-            assert 'low' in kwargs
-            assert 'high' in kwargs
+            assert "low" in kwargs
+            assert "high" in kwargs
         elif distributionStr.lower() == "normal":
             self.sampler = self.rng.normal
-            assert 'loc' in kwargs
-            assert 'scale' in kwargs
+            assert "loc" in kwargs
+            assert "scale" in kwargs
         elif distributionStr == "choice":
             self.sampler = self.rng.choice
-            assert 'a' in kwargs # p is not required
+            assert "a" in kwargs  # p is not required
         else:
-            raise NotImplementedError(f"Sample Distribution {distributionStr} not supported.")
+            raise NotImplementedError(
+                f"Sample Distribution {distributionStr} not supported."
+            )
         self.kwargs = kwargs
 
     def sample(self, size=None):
@@ -217,14 +218,12 @@ class AnglesSampler:
 
 def generate_trials(state):
     """Use normal or uniform sampling on angles, uniform sampling on radius."""
-    thetas = state.angles.sample(
-        size=state.trial_batch_size
-    ).astype(np.float32)
+    thetas = state.angles.sample(size=state.trial_batch_size).astype(np.float32)
     r = state.rng.uniform(-0.5, 0.5, size=(state.trial_batch_size, 3)).astype(
         np.float32
     )
     return thetas, r
 
+
 def generate_crosslink_init_points():
     pass
-
