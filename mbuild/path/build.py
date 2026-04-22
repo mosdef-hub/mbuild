@@ -214,17 +214,9 @@ class Path:
                 name=self.beads[indices[0]],
                 xyz=self.coordinates[indices[0]],
             )
-            self.bond_graph.add_node(
-                indices[0],
-                name=self.beads[indices[0]],
-                xyz=self.coordinates[indices[0]],
-            )
 
         for idx1, idx in zip(indices, indices[1:]):
             if idx >= n_coords:
-                raise ValueError(
-                    f"Index {idx=} is out of bounds for Path with {n_coords}"
-                )
                 raise ValueError(
                     f"Index {idx=} is out of bounds for Path with {n_coords}"
                 )
@@ -1326,11 +1318,10 @@ class RandomWalkState:
         if self.termination.is_met():
             if self.termination.success:
                 logger.info("Random walk successful.")
+                path.coordinates = coordinates[: self.count + 1]
             else:
                 logger.warning("Random walk not successful.")
                 logger.warning(self.termination.summarize())
-            path.coordinates = coordinates[: self.count + 1]
-            path.coordinates = coordinates[: self.count + 1]
             self.termination._clean()
             if self.bias:
                 self.bias._clean()
