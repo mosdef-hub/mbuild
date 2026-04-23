@@ -243,14 +243,12 @@ class TestRandomWalk(BaseTest):
         assert np.all(np.abs(path.coordinates[0])) < 20 * 0.22
 
     def test_include_compound(self):
-        L = 3 
+        L = 3
         box = mb.fill_box(
-            compound=mb.load("C", smiles=True),
-            n_compounds=20,
-            box=[L,L,L]
-        ) 
-        box.translate_to((0,0,0))
-        vol_constraint = CuboidConstraint(Lx=L, center=(0,0,0))
+            compound=mb.load("C", smiles=True), n_compounds=20, box=[L, L, L]
+        )
+        box.translate_to((0, 0, 0))
+        vol_constraint = CuboidConstraint(Lx=L, center=(0, 0, 0))
         path = Path()
         num_sites = NumSites(20)
         max_attempts = NumAttempts(1e4)
@@ -265,7 +263,10 @@ class TestRandomWalk(BaseTest):
             run_on_gpu=True,
         )
         box.add(chain.to_compound())
-        assert len(box.check_for_overlap(excluded_bond_depth=2, minimum_distance=0.22)) == 0
+        assert (
+            len(box.check_for_overlap(excluded_bond_depth=2, minimum_distance=0.22))
+            == 0
+        )
 
     def test_set_initial_point(self):
         path = Path()
