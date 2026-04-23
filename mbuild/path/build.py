@@ -44,6 +44,7 @@ class Path:
         multiple `Path` instances to build heterogeneous systems.
 
     """
+
     # TODO, allow a sequence of bead_names
     def __init__(self, coordinates=None, bond_graph=None, bead_name="_A"):
         if (

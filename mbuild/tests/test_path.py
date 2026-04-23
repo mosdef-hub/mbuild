@@ -39,7 +39,7 @@ class TestPaths(BaseTest):
         path = Path(coordinates=coords, bead_name="X")
         assert np.array_equal(coords, path.coordinates)
         assert path.bond_graph.number_of_nodes() == len(coords)
-        assert len(path.beads) == len(coords) 
+        assert len(path.beads) == len(coords)
 
     def test_from_compound(self):
         compound = mb.Compound()
@@ -399,7 +399,7 @@ class TestRandomWalk(BaseTest):
                 bond_length=chainDict[chain]["bond_length"],
                 termination=num_sites,
                 bead_name=chain,
-                seed=14
+                seed=14,
             )
 
         data = aPath.bond_graph.nodes(data=True)
