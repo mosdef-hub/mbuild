@@ -44,7 +44,7 @@ class Path:
         multiple `Path` instances to build heterogeneous systems.
 
     """
-
+    # TODO, allow a sequence of bead_names
     def __init__(self, coordinates=None, bond_graph=None, bead_name="_A"):
         if (
             coordinates is not None
@@ -172,7 +172,8 @@ class Path:
         """Adds edges to self.bond_graph matching a given style `connectivity`."""
         if indices is None:
             indices = np.arange(0, len(self.coordinates))
-        if connectivity is None:
+
+        if connectivity == "disconnected":
             return
         elif connectivity == "linear":
             for idx1, idx in zip(indices, indices[1:]):

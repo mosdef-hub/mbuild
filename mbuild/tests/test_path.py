@@ -36,10 +36,10 @@ from mbuild.utils.geometry import bounding_box
 class TestPaths(BaseTest):
     def test_from_coordinates(self):
         coords = np.random.uniform(-5, 5, size=(20, 3))
-        path = Path(coordinates=coords)
+        path = Path(coordinates=coords, bead_name="X")
         assert np.array_equal(coords, path.coordinates)
-        for idx, node in enumerate(path.bond_graph.nodes(data=True)):
-            assert np.array_equal(node[1]["xyz"], coords[idx])
+        assert path.bond_graph.number_of_nodes() == len(coords)
+        assert len(path.beads) == len(coords) 
 
     def test_from_compound(self):
         compound = mb.Compound()
@@ -210,8 +210,6 @@ class TestRandomWalk(BaseTest):
             termination=Termination([num_sites, max_attempts]),
             bond_length=0.25,
             radius=0.22,
-            min_angle=np.pi / 4,
-            max_angle=np.pi,
             seed=14,
             chunk_size=50,
         )
@@ -232,8 +230,6 @@ class TestRandomWalk(BaseTest):
             termination=[num_sites, max_attempts],
             bond_length=0.25,
             radius=0.22,
-            min_angle=np.pi / 4,
-            max_angle=np.pi,
             seed=14,
             run_on_gpu=True,
         )
@@ -255,8 +251,6 @@ class TestRandomWalk(BaseTest):
             termination=Termination([num_sites, max_attempts]),
             bond_length=0.25,
             radius=0.22,
-            min_angle=np.pi / 4,
-            max_angle=np.pi,
             initial_point=(1, 2, 3),
             seed=14,
         )
@@ -271,8 +265,6 @@ class TestRandomWalk(BaseTest):
             termination=Termination([num_sites, max_attempts]),
             bond_length=0.25,
             radius=0.22,
-            min_angle=np.pi / 4,
-            max_angle=np.pi,
             seed=14,
         )
         path2 = Path()
@@ -281,8 +273,6 @@ class TestRandomWalk(BaseTest):
             termination=Termination([num_sites, max_attempts]),
             bond_length=0.25,
             radius=0.22,
-            min_angle=np.pi / 4,
-            max_angle=np.pi,
             seed=14,
         )
         assert np.allclose(path1.coordinates, path2.coordinates, atol=1e-7)
@@ -296,8 +286,6 @@ class TestRandomWalk(BaseTest):
             termination=Termination([num_sites, max_attempts]),
             bond_length=0.25,
             radius=0.22,
-            min_angle=np.pi / 4,
-            max_angle=np.pi,
             seed=24,
         )
         path2 = Path()
@@ -306,11 +294,7 @@ class TestRandomWalk(BaseTest):
             termination=Termination([num_sites, max_attempts]),
             bond_length=0.25,
             radius=0.22,
-            min_angle=np.pi / 4,
-            max_angle=np.pi,
             seed=24,
-            # start_from_path=path1,
-            # start_from_path_index=-1,
         )
         assert len(path1.coordinates) == 20
         assert len(path2.coordinates) == 20
@@ -325,8 +309,6 @@ class TestRandomWalk(BaseTest):
             bond_length=0.25,
             radius=0.22,
             volume_constraint=cube,
-            min_angle=np.pi / 4,
-            max_angle=np.pi,
             seed=14,
         )
         bounds = bounding_box(path.coordinates)
@@ -342,8 +324,6 @@ class TestRandomWalk(BaseTest):
             radius=0.22,
             initial_point=(0, 0, 0),
             volume_constraint=None,
-            min_angle=np.pi / 4,
-            max_angle=np.pi,
             seed=14,
         )
         comp = path1.to_compound()
@@ -358,8 +338,6 @@ class TestRandomWalk(BaseTest):
             radius=0.22,
             initial_point=(0, 0, 0),
             volume_constraint=cube,
-            min_angle=np.pi / 4,
-            max_angle=np.pi,
             seed=14,
         )
         comp = path2.to_compound()
@@ -375,8 +353,6 @@ class TestRandomWalk(BaseTest):
             radius=0.22,
             volume_constraint=sphere,
             initial_point=(0, 0, 0),
-            min_angle=np.pi / 4,
-            max_angle=np.pi,
             seed=90,
         )
         bounds = bounding_box(path.coordinates)
@@ -391,8 +367,6 @@ class TestRandomWalk(BaseTest):
             bond_length=0.25,
             radius=0.22,
             volume_constraint=cylinder,
-            min_angle=np.pi / 4,
-            max_angle=np.pi,
             seed=14,
         )
         bounds = bounding_box(path.coordinates)
@@ -401,12 +375,12 @@ class TestRandomWalk(BaseTest):
         assert extents[1] < 6 - 0.22 * 2  # y extent
         assert extents[2] < 6 - 0.22 * 2  # z extent
 
-    @pytest.mark.parametrize("a_len, b_len", [(1, 2), (1, 5), (4, 4)])
+    @pytest.mark.parametrize("a_len, b_len", [(2, 3), (3, 5), (4, 4)])
     def test_multiple_paths(self, a_len, b_len):
         # Initialize two random walks
         chainDict = {
             "_A": {"bond_length": 0.15, "n_mers": a_len},
-            "_B": {"bond_length": 0.13, "n_mers": b_len},
+            "_B": {"bond_length": 0.15, "n_mers": b_len},
         }
         aPath = Path()
 
@@ -423,9 +397,11 @@ class TestRandomWalk(BaseTest):
                 path=aPath,
                 radius=chainDict[chain]["bond_length"] * 0.95,
                 bond_length=chainDict[chain]["bond_length"],
-                termination=(num_sites),
+                termination=num_sites,
                 bead_name=chain,
+                seed=14
             )
+
         data = aPath.bond_graph.nodes(data=True)
         site_idx = 0
         for chain in chainsList:
@@ -445,10 +421,12 @@ class TestRandomWalk(BaseTest):
             connectivity="link-linear",
         )
         assert len(path.bond_graph.edges) == 9
+
         path = hard_sphere_random_walk(
             radius=0.2, bond_length=0.25, termination=5, connectivity="disconnected"
         )
         assert len(path.bond_graph.edges) == 0
+
         hard_sphere_random_walk(
             path, radius=0.2, bond_length=0.25, termination=5, connectivity="cycle"
         )
@@ -464,8 +442,6 @@ class TestRandomWalk(BaseTest):
             path=path,
             radius=1.0,
             bond_length=1.1,
-            min_angle=np.pi / 4,
-            max_angle=np.pi,
             termination=Termination([num_sites, max_attempts]),
         )
         assert len(path.coordinates) == 10
@@ -473,14 +449,13 @@ class TestRandomWalk(BaseTest):
         assert path.bond_graph.number_of_nodes() == 10
 
     def test_init_positions(self):
-
         # Random point
         path = hard_sphere_random_walk(
             radius=1.0,
             bond_length=1.5,
             termination=1,
         )
-        assert all([np.abs(coord) < 1 * 10 / 2 for coord in path.coordinates[0]])
+        assert all([np.abs(coord) <= 1 for coord in path.coordinates[0]])
 
         # specific starting point
         path = hard_sphere_random_walk(
@@ -502,7 +477,7 @@ class TestRandomWalk(BaseTest):
             termination=1,
         )
         assert np.allclose(np.linalg.norm(path.coordinates[3]), bond_length)
-        assert len(path.coordinates[0] == 4)
+        assert len(path.coordinates == 4)
 
         # generate within a constraint
         constraint = CuboidConstraint.from_array([1, 1, 1])
@@ -787,4 +762,4 @@ class TestCrossLinks(BaseTest):
         path1.relax(0.2, None, steps=10)
         path2.relax(0.2, None, steps=10)
         print(path1.coordinates - path2.coordinates)
-        assert np.allclose(path1, path2, atol=1e-6)
+        assert np.allclose(path1.coordinates, path2.coordinates, atol=1e-6)

@@ -146,7 +146,7 @@ def get_initial_point(state, existing_points, check_path, next_step):
         )
     elif state.volume_constraint:  # no initial point, but stay inside volume constraint
         xyzs = state.volume_constraint.sample_candidates(
-            points=existing_points, n_candidates=100, buffer=state.radius + 0.1
+            points=existing_points, n_candidates=300, buffer=state.radius + 0.1
         )
         for xyz in xyzs:
             if check_path(
