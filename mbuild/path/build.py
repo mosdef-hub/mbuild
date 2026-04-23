@@ -3,7 +3,6 @@
 import logging
 import math
 import time
-from copy import deepcopy
 
 import networkx as nx
 import numpy as np
@@ -274,6 +273,7 @@ class Path:
 
     def to_mol2(self):
         from mbuild.path.formats import to_mol2 as _to_mol2
+
         return _to_mol2(self)
 
     def to_mol(self):
@@ -290,6 +290,7 @@ class Path:
             If None, all atoms will be 'A'
         """
         from mbuild.path.formats import to_mol as _to_mol
+
         return _to_mol(self)
 
     def to_mol3000(self, G=None):
@@ -302,10 +303,12 @@ class Path:
             Bondgraph to use for visualization.
         """
         from mbuild.path.formats import to_mol3000 as _to_mol3000
+
         return _to_mol3000(self)
 
     def visualize(self, radius, hide_periodic_bonds=False):
         from mbuild.utils.visualize import visualize_path
+
         return visualize_path(self, radius, hide_periodic_bonds)
 
     def relax(self, bead_radius, bond_length=None, steps=1000, seed=1, nthreads=1):

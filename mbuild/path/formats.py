@@ -6,9 +6,7 @@ def to_mol2(path):
 
     # Get unique names and create mapping
     unique_names = list(set(G.nodes[node]["name"] for node in G.nodes()))
-    node_to_atom = {
-        node: atom_num for atom_num, node in enumerate(G.nodes(), start=1)
-    }
+    node_to_atom = {node: atom_num for atom_num, node in enumerate(G.nodes(), start=1)}
 
     n_atoms = len(G.nodes())
     n_bonds = len(G.edges())
@@ -47,6 +45,7 @@ def to_mol2(path):
         mol2_lines.append(f"{bond_num:6d} {atom1:5d} {atom2:5d} {bond_type:>4s}")
 
     return "\n".join(mol2_lines)
+
 
 def to_mol(path):
     """
@@ -90,6 +89,7 @@ def to_mol(path):
 
     return "".join(lines)
 
+
 def to_mol3000(path, G=None):
     """
     Convert mBuild Path to SDF/MOL V3000 format
@@ -119,9 +119,7 @@ def to_mol3000(path, G=None):
 
     # Atom block
     lines.append("M  V30 BEGIN ATOM\n")
-    for i, (coord, bead_name) in enumerate(
-        zip(path.coordinates, path.beads), start=1
-    ):
+    for i, (coord, bead_name) in enumerate(zip(path.coordinates, path.beads), start=1):
         atom_type = bead_name.strip("_")
         lines.append(
             f"M  V30 {i} {atom_type} {coord[0]:.4f} {coord[1]:.4f} {coord[2]:.4f} 0\n"

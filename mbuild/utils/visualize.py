@@ -2,8 +2,9 @@
 
 from copy import deepcopy
 
-from mbuild.utils.io import import_
 import numpy as np
+
+from mbuild.utils.io import import_
 
 
 def visualize_path(path, radius=0.1, hide_periodic_bonds=False):
@@ -23,10 +24,7 @@ def visualize_path(path, radius=0.1, hide_periodic_bonds=False):
         half_box_l = np.max(max_pos - min_pos) / 2
         remove_edges = []
         for n1, n2 in G.edges():
-            if (
-                np.linalg.norm(path.coordinates[n1] - path.coordinates[n2])
-                > half_box_l
-            ):
+            if np.linalg.norm(path.coordinates[n1] - path.coordinates[n2]) > half_box_l:
                 remove_edges.append((int(n1), int(n2)))
         print(f"Hiding {len(remove_edges)} periodic edges")
         G.remove_edges_from(remove_edges)
