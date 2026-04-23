@@ -264,11 +264,11 @@ class Path:
         compounds = []
         for node_id, attrs in self.bond_graph.nodes(data=True):
             compounds.append(
-                Compound(name=attrs["name"], pos=self.coordinates[node_id])
+                Compound(name=attrs["name"], pos=self.coordinates[node_id], mass=1.0)
             )
         compound.add(compounds)
         for edge1, edge2 in self.bond_graph.edges():
-            compound.bond_graph.add_edge(compounds[edge1], compounds[edge2])
+            compound.bond_graph.add_edge(compounds[edge1], compounds[edge2], bond_order=1.0)
         return compound
 
     def to_mol2(self):
@@ -752,6 +752,7 @@ def hard_sphere_random_walk(
     termination=None,
     volume_constraint=None,
     bias=None,
+    include_compound=None,
     connectivity="linear",
     initial_point=None,
     seed=42,
@@ -790,6 +791,9 @@ def hard_sphere_random_walk(
         See mbuild.utils.Constraint objects.
     bias : mbuild.path.bias.Bias class,
         Causes the selected points to be biased towards some criterion.
+    include_compound : mbuild.compound.Compound, default None
+        If an mBuild Compound is given, the random walk with include its coordiantes
+        when checking for overlapping sites.
     connectivity : str, default "linear"
         Will be used to connect the bond_graph of the walk post generation based on a specified method.
         See path._connect_edges for different options.
@@ -817,6 +821,7 @@ def hard_sphere_random_walk(
         bead_name=bead_name,
         initial_point=initial_point,
         previous_count=len(path.coordinates) if path else 0,
+        include_compound=include_compound,
         connectivity=connectivity,
         seed=seed,
         volume_constraint=volume_constraint,
@@ -967,6 +972,8 @@ def hard_sphere_random_walk(
             candidates = bias(candidates=candidates)
 
         existing_points = coordinates[: state.count + 1]
+        if state.include_compound:
+            existing_points = np.concat((existing_points, include_compound.xyz))
 
         if any(pbc):
             candidates = volume_constraint.mins + np.mod(
@@ -1044,6 +1051,9 @@ class RandomWalkState:
         Time when the random walk started (for WallTime terminator)
     initial_point : np.ndarray or None
         Specified initial coordinate
+    include_compound : mbuild.compound.Compound, default None
+        If an mBuild Compound is given, the random walk with include its coordiantes
+        when checking for overlapping sites.
     seed : int
         Random seed
     volume_constraint : Constraint or None
@@ -1069,6 +1079,7 @@ class RandomWalkState:
         initial_point=None,
         previous_count=0,
         connectivity=None,
+        include_compound=None,
         seed=42,
         volume_constraint=None,
         termination=None,
@@ -1116,6 +1127,7 @@ class RandomWalkState:
         else:
             self.initial_point = initial_point
         self.previous_count = previous_count
+        self.include_compound = include_compound
         self.connectivity = connectivity
         self.seed = seed
         self.volume_constraint = volume_constraint
