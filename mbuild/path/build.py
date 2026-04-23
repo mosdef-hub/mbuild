@@ -268,7 +268,9 @@ class Path:
             )
         compound.add(compounds)
         for edge1, edge2 in self.bond_graph.edges():
-            compound.bond_graph.add_edge(compounds[edge1], compounds[edge2], bond_order=1.0)
+            compound.bond_graph.add_edge(
+                compounds[edge1], compounds[edge2], bond_order=1.0
+            )
         return compound
 
     def to_mol2(self):
