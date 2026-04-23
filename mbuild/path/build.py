@@ -24,7 +24,6 @@ from mbuild.path.points import (
     get_second_point,
 )
 from mbuild.path.termination import NumSites, Termination, Terminator
-from mbuild.utils.io import import_
 
 logger = logging.getLogger(__name__)
 
@@ -273,54 +272,8 @@ class Path:
         return compound
 
     def to_mol2(self):
-        """Convert NetworkX graph with xyz attribute to MOL2 format including bonds"""
-        G = self.bond_graph
-
-        mol2_lines = []
-
-        # Get unique names and create mapping
-        unique_names = list(set(G.nodes[node]["name"] for node in G.nodes()))
-        node_to_atom = {
-            node: atom_num for atom_num, node in enumerate(G.nodes(), start=1)
-        }
-
-        n_atoms = len(G.nodes())
-        n_bonds = len(G.edges())
-
-        # @<TRIPOS>MOLECULE section
-        mol2_lines.append("@<TRIPOS>MOLECULE")
-        mol2_lines.append("NETWORKX_GRAPH")
-        mol2_lines.append(f"{n_atoms} {n_bonds} 0 0 0")
-        mol2_lines.append("SMALL")
-        mol2_lines.append("NO_CHARGES")
-        mol2_lines.append("")
-
-        # @<TRIPOS>ATOM section
-        mol2_lines.append("@<TRIPOS>ATOM")
-        for atom_num, node in enumerate(G.nodes(), start=1):
-            x, y, z = self.coordinates[node]
-            name = self.beads[node]
-            subst_id = unique_names.index(name) + 1
-            atom_type = "CG.A"  # Generic carbon atom type
-            charge = 0.0
-
-            mol2_lines.append(
-                f"{atom_num:7d} {name:4s} {x:10.4f} {y:10.4f} {z:10.4f} "
-                f"{atom_type:5s} {subst_id:5d} {name:4s} {charge:10.4f}"
-            )
-
-        mol2_lines.append("")
-
-        # @<TRIPOS>BOND section
-        mol2_lines.append("@<TRIPOS>BOND")
-        for bond_num, (node1, node2) in enumerate(G.edges(), start=1):
-            atom1 = node_to_atom[node1]
-            atom2 = node_to_atom[node2]
-            bond_type = "1"  # Single bond
-
-            mol2_lines.append(f"{bond_num:6d} {atom1:5d} {atom2:5d} {bond_type:>4s}")
-
-        return "\n".join(mol2_lines)
+        from mbuild.path.formats import to_mol2 as _to_mol2
+        return _to_mol2(self)
 
     def to_mol(self):
         """
@@ -335,34 +288,8 @@ class Path:
             Mapping of atom indices to atom type symbols (e.g., {0: 'A', 5: 'B'})
             If None, all atoms will be 'A'
         """
-        lines = []
-
-        # Header
-        lines.append("PATH GRAPH\n")
-        lines.append("     RDKit          3D\n")
-        lines.append("\n")
-
-        # Counts line: natoms nbonds nlist 3D chiral stext nrxn nreac nproduct v2000
-        n_atoms = len(self.coordinates)
-        n_bonds = len(self.bond_graph.edges())
-        lines.append(f"{n_atoms:4d} {n_bonds:4d}  0  0  0  0  0  0  0  0999 V3000\n")
-
-        # Atom block
-        for i, (coord, bead_name) in enumerate(zip(self.coordinates, self.beads)):
-            lines.append(
-                f"{coord[0]:10.4f}{coord[1]:10.4f}{coord[2]:10.4f} {bead_name.strip('_'):<3s} 0  0  0  0  0  0  0  0  0  0  0  0\n"
-            )
-
-        # Bond block
-        for edge in self.bond_graph.edges():
-            # atom1, atom2, bond_type (1=single), stereo
-            lines.append(f"{edge[0] + 1:4d} {edge[1] + 1:4d}  1  0\n")
-
-        # End
-        lines.append("M  END\n")
-        lines.append("$$\n")
-
-        return "".join(lines)
+        from mbuild.path.formats import to_mol as _to_mol
+        return _to_mol(self)
 
     def to_mol3000(self, G=None):
         """
@@ -373,124 +300,12 @@ class Path:
         G : nx.Graph, default None
             Bondgraph to use for visualization.
         """
-        if G is None:
-            G = self.bond_graph
-        lines = []
+        from mbuild.path.formats import to_mol3000 as _to_mol3000
+        return _to_mol3000(self)
 
-        # Header block (3 lines)
-        lines.append("PATH GRAPH\n")
-        lines.append("     RDKit          3D\n")
-        lines.append("\n")
-
-        # Counts line for V3000
-        n_atoms = len(self.coordinates)
-        n_bonds = len(G.edges())
-        lines.append("  0  0  0     0  0            999 V3000\n")
-
-        # Begin CTAB
-        lines.append("M  V30 BEGIN CTAB\n")
-        lines.append(f"M  V30 COUNTS {n_atoms} {n_bonds} 0 0 0\n")
-
-        # Atom block
-        lines.append("M  V30 BEGIN ATOM\n")
-        for i, (coord, bead_name) in enumerate(
-            zip(self.coordinates, self.beads), start=1
-        ):
-            atom_type = bead_name.strip("_")
-            lines.append(
-                f"M  V30 {i} {atom_type} {coord[0]:.4f} {coord[1]:.4f} {coord[2]:.4f} 0\n"
-            )
-        lines.append("M  V30 END ATOM\n")
-
-        # Bond block
-        lines.append("M  V30 BEGIN BOND\n")
-        for bond_idx, edge in enumerate(G.edges(), start=1):
-            # V3000: bond_index bond_type atom1 atom2
-            lines.append(f"M  V30 {bond_idx} 1 {edge[0] + 1} {edge[1] + 1}\n")
-        lines.append("M  V30 END BOND\n")
-
-        # End CTAB
-        lines.append("M  V30 END CTAB\n")
-
-        # End of record
-        lines.append("M  END\n")
-
-        return "".join(lines)
-
-    def visualize(self, radius=0.1, hide_periodic_bonds=False):
-        """Visualize in 3D space using py3Dmol of the Path as a Compound.
-
-        Parameters
-        ----------
-        radius : float, default 0.06
-            Radius for sphere and stick representation
-        """
-        py3Dmol = import_("py3Dmol")
-
-        G = deepcopy(self.bond_graph)
-        if hide_periodic_bonds:
-            max_pos = np.max(self.coordinates, axis=0)
-            min_pos = np.min(self.coordinates, axis=0)
-            half_box_l = np.max(max_pos - min_pos) / 2
-            remove_edges = []
-            for n1, n2 in G.edges():
-                if (
-                    np.linalg.norm(self.coordinates[n1] - self.coordinates[n2])
-                    > half_box_l
-                ):
-                    remove_edges.append((int(n1), int(n2)))
-            print(f"Hiding {len(remove_edges)} periodic edges")
-            G.remove_edges_from(remove_edges)
-
-        view = py3Dmol.view(width=600, height=600)
-        # view.addModel(mol2_string, "mol2", keepH=True)
-
-        # Get unique bead names
-        unique_names = list(dict.fromkeys(G.nodes[node]["name"] for node in G.nodes()))
-
-        # Color palette
-        colors = [
-            "#e6194b",
-            "#3cb44b",
-            "#ffe119",
-            "#4363d8",
-            "#f58231",
-            "#911eb4",
-            "#46f0f0",
-            "#f032e6",
-            "#bcf60c",
-            "#fabebe",
-            "#008080",
-            "#e6beff",
-            "#9a6324",
-            "#fffac8",
-            "#800000",
-            "#aaffc3",
-            "#808000",
-            "#ffd8b1",
-            "#000075",
-            "#808080",
-            "#ffffff",
-            "#000000",
-        ]
-
-        data = self.to_mol3000(G)
-        view = py3Dmol.view(data=data)
-        for i, name in enumerate(unique_names):
-            color = colors[i % len(colors)]
-            view.addStyle(
-                {"elem": name.strip("_")},  # Select all atoms with this name
-                {
-                    "sphere": {"color": color, "radius": radius, "scale": 0.5},
-                    "stick": {"radius": radius / 4, "color": "grey"},
-                },
-            )
-        view.setBackgroundColor("white")
-        view.zoomTo()
-        scale_factor = max(1, 5 - int(np.log10(len(self.coordinates))))
-        view.zoom(scale_factor)  # helps zoom on smaller systems
-
-        return view
+    def visualize(self, radius, hide_periodic_bonds=False):
+        from mbuild.utils.visualize import visualize_path
+        return visualize_path(self, radius, hide_periodic_bonds)
 
     def relax(self, bead_radius, bond_length=None, steps=1000, seed=1, nthreads=1):
         """Perform a dpd simulation to relax the current path."""
