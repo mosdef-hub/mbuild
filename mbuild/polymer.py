@@ -620,12 +620,9 @@ class Polymer(Compound):
         ----------
         compound : mbuild.Compound
             A compound of the end group structure
-        index : int
-            The particle index in compound that represents the bonding
-            site between the end group and polymer.
-            You can specify the index of a particle that will
-            be replaced by the polymer bond or that acts as the bonding site.
-            See the `replace` parameter notes.
+        bond_tag: str 
+            The string indicator enclosed with "{}" representing the bond-tag for connection.
+            e.g. "*" if the compound is loaded from SMILES "CC{*}"
         separation : float
             The bond length (units nm) desired between monomer and end-group.
         orientation : array-like, shape=(3,), default None
@@ -646,9 +643,13 @@ class Polymer(Compound):
             If False, `compound` is not duplicated and only one instance of the
             end group structure is added to `Polymer.end_groups`. You can call
             `add_end_groups()` a second time to add another end group.
+        remove_hydrogens: Bool, default True
+            This argument allows deletion of the hydrogen bond where the new bond is formed
+            to connect the end group. This is recommended to maintain the chemistry of end-group
+            where the implicit hydrogen should be removed to allow the new bond with the chain.
         """
         comp = clone(compound)
-        remove_hydrogens = []
+        _remove_hydrogens = []
 
         head = [p for p in comp.particles() if p.particle_tag == bond_tag]
         if len(head) == 0:
@@ -672,8 +673,12 @@ class Polymer(Compound):
             separation=separation / 2,
         )
         comp.add(head_port, label="up")
-        for p in head_hydrogens[:bond_order]:
-            remove_hydrogens.append(p)
+        if remove_hydrogens:
+            for p in head_hydrogens[:bond_order]:
+                _remove_hydrogens.append(p)
+
+        for p in _remove_hydrogens:
+            comp.remove(p)
 
         if duplicate:
             self._end_groups = [comp, clone(comp)]
