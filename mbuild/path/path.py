@@ -11,8 +11,8 @@ import numpy as np
 from scipy.interpolate import interp1d
 
 from mbuild import Compound
+from mbuild.path.constraints import CuboidConstraint, CylinderConstraint
 from mbuild.path.path_utils import check_path, random_coordinate
-from mbuild.utils.volumes import CuboidConstraint, CylinderConstraint
 
 logger = logging.getLogger(__name__)
 
@@ -652,7 +652,7 @@ class HardSphereRandomWalk(Path):
                     accepted_xyz = xyz
                     break
 
-            if accepted_xyz:
+            if accepted_xyz is not None:
                 return accepted_xyz
 
             else:

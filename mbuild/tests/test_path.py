@@ -12,6 +12,11 @@ from mbuild.path import (
     Spiral2D,
     StraightLine,
 )
+from mbuild.path.constraints import (
+    CuboidConstraint,
+    CylinderConstraint,
+    SphereConstraint,
+)
 from mbuild.path.path_utils import (
     local_density,
     target_density,
@@ -24,11 +29,6 @@ from mbuild.path.termination import (
 )
 from mbuild.tests.base_test import BaseTest
 from mbuild.utils.geometry import bounding_box
-from mbuild.utils.volumes import (
-    CuboidConstraint,
-    CylinderConstraint,
-    SphereConstraint,
-)
 
 
 class TestPaths(BaseTest):
