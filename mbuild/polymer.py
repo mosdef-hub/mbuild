@@ -460,8 +460,8 @@ class Polymer(Compound):
     def add_monomer(
         self,
         compound,
-        head_tag=None,
-        tail_tag=None,
+        head_tag="head",
+        tail_tag="tail",
         separation=None,
         head_orientation=None,
         tail_orientation=None,
@@ -473,59 +473,32 @@ class Polymer(Compound):
         The monomers will be used to build the polymer. Call this function for
         each unique monomer to be used in the polymer.
 
-        Notes
-        -----
-        Using the 'replace' and 'indices' parameters:
-
-        The atoms in an mbuild compound can be identified by their index
-        numbers. For example, an ethane compound with the index number next to
-        each atom::
-
-                    H(4)    H(7)
-                     |      |
-             H(3) - C(0) - C(1) - H(6)
-                     |      |
-                    H(2)   H(5)
-
-        If replace=True, then this function removes the hydrogen atoms that are
-        occupying where the C-C bond should occur between monomers.
-        It is required that you specify which atoms should be removed which is
-        achieved by the `indices` parameter.
-
-        In this example, you would remove H(2) and H(7) by indicating indices
-        [2, 7]. The resulting structure of the polymer can vary wildly depending
-        on your choice for `indices`, so you will have to test out different
-        combinations to find the two that result in the desired structure.
-
         Parameters
         ----------
         compound : mbuild.Compound
             A compound of the individual monomer
-        indices : list of int of length 2
-            The particle indices of compound that represent the polymer
-            bonding sites. You can specify the indices of particles that will
-            be replaced by the polymer bond, or indices of particles that act
-            as the bonding sites. See the 'replace' parameter notes.
+        head_tag : str, default "head"
+            The string to look for in monomer.tags that decides which particle to attach as the head.
+        tail_tag : str, default "tail"
+            The string to look for in monomer.tags that decides which particle to attach as the head.
         separation : float, units nm
             The bond length desired at the monomer-monomer bonding site.
             (separation / 2) is used to set the length of each port
-        orientation : list of array-like, shape=(3,) of length 2,
-            default=[None, None]
+        head_orientation : array-like, shape=(3,),
+            default=None
             Vector along which to orient the port
             If replace = True, and orientation = None,
             the orientation of the bond between the particle being
             removed and the anchor particle is used.
-            Recommended behavior is to leave orientation set to None
-            if you are using replace=True.
-        replace : Bool, required, default=True
-            If True, then the particles identified by bonding_indices
-            will be removed and ports are added to the particles they
-            were initially bonded to. Only use replace=True in the case
-            that bonding_indices point to hydrogen atoms bonded to the
-            desired monomer-monomer bonding site particles.
-            If False, then the particles identified by bonding_indices
-            will have ports added, and no particles are removed from
-            the monomer compound.
+        tail_orientation : array-like, shape=(3,),
+            default=None
+            Vector along which to orient the port
+            If replace = True, and orientation = None,
+            the orientation of the bond between the particle being
+            removed and the anchor particle is used.
+        remove_hydrogens : bool, default True
+            Whether or not to remove hydrogens on the monomer site
+            that matches the specified `head_tag` or `tail_tag`
         """
         comp = clone(compound)
         _remove_hydrogens = []
