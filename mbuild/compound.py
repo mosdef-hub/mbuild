@@ -666,6 +666,17 @@ class Compound(object):
     def particle_tag(self):
         return self._tag
 
+    @property
+    def tags(self):
+        """Tags for tagged particles in Compound."""
+        tagsList = []
+        for p in self._particles():
+            if p.particle_tag:
+                tagsList.append((p, p.particle_tag))
+        if not tagsList:
+            return None
+        return tagsList
+
     @particle_tag.setter
     def particle_tag(self, tag):
         if self._contains_only_ports():
