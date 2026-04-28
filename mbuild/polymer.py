@@ -358,7 +358,10 @@ class Polymer(Compound):
                             v1 = this_part_head.pos - this_part_tail.pos
                             v1 /= np.linalg.norm(v1)
                             # v2 is the vector between the previous site pos and next site pos
-                            v2 = coordinates[site_count + 1] - coordinates[site_count - 1]
+                            v2 = (
+                                coordinates[site_count + 1]
+                                - coordinates[site_count - 1]
+                            )
                             v2 /= np.linalg.norm(v2)
                             normal = np.cross(v1, v2)
                             angle = np.arccos(
@@ -587,8 +590,7 @@ class Polymer(Compound):
             for p in tail_hydrogens[:bond_order]:
                 _remove_hydrogens.append(p)
 
-        for p in _remove_hydrogens:
-            comp.remove(p)
+        comp.remove(_remove_hydrogens)
 
         self._monomers.append(comp)
         self._monomer_bond_orders.append(bond_order)
@@ -620,12 +622,9 @@ class Polymer(Compound):
         ----------
         compound : mbuild.Compound
             A compound of the end group structure
-        index : int
-            The particle index in compound that represents the bonding
-            site between the end group and polymer.
-            You can specify the index of a particle that will
-            be replaced by the polymer bond or that acts as the bonding site.
-            See the `replace` parameter notes.
+        bond_tag: str
+            The string indicator enclosed with "{}" representing the bond-tag for connection.
+            e.g. "*" if the compound is loaded from SMILES "CC{*}"
         separation : float
             The bond length (units nm) desired between monomer and end-group.
         orientation : array-like, shape=(3,), default None
@@ -646,9 +645,13 @@ class Polymer(Compound):
             If False, `compound` is not duplicated and only one instance of the
             end group structure is added to `Polymer.end_groups`. You can call
             `add_end_groups()` a second time to add another end group.
+        remove_hydrogens: Bool, default True
+            This argument allows deletion of the hydrogen bond where the new bond is formed
+            to connect the end group. This is recommended to maintain the chemistry of end-group
+            where the implicit hydrogen should be removed to allow the new bond with the chain.
         """
         comp = clone(compound)
-        remove_hydrogens = []
+        _remove_hydrogens = []
 
         head = [p for p in comp.particles() if p.particle_tag == bond_tag]
         if len(head) == 0:
@@ -672,8 +675,11 @@ class Polymer(Compound):
             separation=separation / 2,
         )
         comp.add(head_port, label="up")
-        for p in head_hydrogens[:bond_order]:
-            remove_hydrogens.append(p)
+        if remove_hydrogens:
+            for p in head_hydrogens[:bond_order]:
+                _remove_hydrogens.append(p)
+
+        comp.remove(_remove_hydrogens)
 
         if duplicate:
             self._end_groups = [comp, clone(comp)]
