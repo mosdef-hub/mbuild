@@ -39,12 +39,14 @@ class Bias:
         self.beta = self.weight / max(1e-6, (1.0 - self.weight))
         self.noise_scale = 1 - self.weight
 
-    def _attach_path(self, path):
+    def _attach_path(self, path, state):
+        """Create access Path and RandomWalkState used by hard_sphere_random_walk."""
         self.path = path
+        self.state = state
         # Inherit rng from the path for use in Bias classes
-        self.rng = self.path.rng
+        self.rng = self.state.rng
         # Decide which path_utils implementations to use based on the path's device.
-        use_gpu = getattr(path, "run_on_gpu", False)
+        use_gpu = getattr(state, "run_on_gpu", False)
         if use_gpu and _CUDA_AVAILABLE and _target_sq_distances_gpu is not None:
             self._target_sq_distances = _target_sq_distances_gpu
             self._target_density = _target_density_gpu
@@ -54,11 +56,12 @@ class Bias:
 
     def _clean(self):
         self.path = None
+        self.state = None
         self.rng = None
         self._target_sq_distances = None
         self._target_density = None
 
-    def __call__(self, candidates):
+    def __call__(self, candidates, coordinates, names):
         """Implemented in sub classes of Bias."""
         raise NotImplementedError
 
@@ -70,7 +73,23 @@ class TargetCoordinate(Bias):
         self.target_coordinate = np.asarray(target_coordinate)
         super(TargetCoordinate, self).__init__(weight=weight)
 
-    def __call__(self, candidates):
+    def __call__(self, candidates, coordinates, names):
+        """Sorts a set of candidate coordinates according to the bias.
+
+        Parameters
+        ----------
+        candidates : np.ndarray (N,3), required
+            Array of coordinates candidate sites for the next site in a random walk.
+        coordinates : np.ndarray (N,3), required
+            Array of coordinates for all previously accepted sites in a random walk.
+        names : np.ndarray (N), required
+            Array of site names for all previously accepted sites in a random walk.
+
+        Returns
+        -------
+        candidates : np.ndarray (N,3)
+            Returns the original candidate array, sorted according to the bias.
+        """
         sq_distances = self._target_sq_distances(self.target_coordinate, candidates)
         noise = self.rng.normal(0, self.noise_scale, size=sq_distances.shape)
         scores = self.beta * sq_distances + noise
@@ -86,7 +105,23 @@ class AvoidCoordinate(Bias):
         self.avoid_coordinate = np.asarray(avoid_coordinate)
         super(AvoidCoordinate, self).__init__(weight=weight)
 
-    def __call__(self, candidates):
+    def __call__(self, candidates, coordinates, names):
+        """Sorts a set of candidate coordinates according to the bias.
+
+        Parameters
+        ----------
+        candidates : np.ndarray (N,3), required
+            Array of coordinates candidate sites for the next site in a random walk.
+        coordinates : np.ndarray (N,3), required
+            Array of coordinates for all previously accepted sites in a random walk.
+        names : np.ndarray (N), required
+            Array of site names for all previously accepted sites in a random walk.
+
+        Returns
+        -------
+        candidates : np.ndarray (N,3)
+            Returns the original candidate array, sorted according to the bias.
+        """
         sq_distances = self._target_sq_distances(self.avoid_coordinate, candidates)
         noise = self.rng.normal(0, self.noise_scale, size=sq_distances.shape)
         scores = self.beta * sq_distances + noise
@@ -100,18 +135,28 @@ class TargetType(Bias):
 
     def __init__(self, target_type, weight, r_cut):
         self.target_type = target_type
-        self.r_cut = r_cut
+        self.r_cut = float(r_cut)
         super().__init__(weight=weight)
 
-    def __call__(self, candidates):
-        types = np.array(
-            [node[1]["name"] for node in self.path.bond_graph.nodes(data=True)]
-        )
-        # path.coordinates is an array with place holder values for future sites
-        # Only check as far as types are defined (i.e., once a node is added from an accepted move.)
-        target_coords = self.path.coordinates[: len(types)][
-            types == self.target_type
-        ].astype(np.float32)
+    def __call__(self, candidates, coordinates, names):
+        """Sorts a set of candidate coordinates according to the bias.
+
+        Parameters
+        ----------
+        candidates : np.ndarray (N,3), required
+            Array of coordinates candidate sites for the next site in a random walk.
+        coordinates : np.ndarray (N,3), required
+            Array of coordinates for all previously accepted sites in a random walk.
+        names : np.ndarray (N), required
+            Array of site names for all previously accepted sites in a random walk.
+
+        Returns
+        -------
+        candidates : np.ndarray (N,3)
+            Returns the original candidate array, sorted according to the bias.
+        """
+        # Only get coordinates of sites where the site name == target type
+        target_coords = coordinates[names == self.target_type]
         densities = self._target_density(
             candidates=candidates, target_coords=target_coords, r_cut=self.r_cut
         )
@@ -130,15 +175,24 @@ class AvoidType(Bias):
         self.r_cut = r_cut
         super().__init__(weight=weight)
 
-    def __call__(self, candidates):
-        types = np.array(
-            [node[1]["name"] for node in self.path.bond_graph.nodes(data=True)]
-        )
-        # path.coordinates is an array with place holder values for future sites
-        # Only check as far as types are defined (i.e., once a node is added)
-        target_coords = self.path.coordinates[: len(types)][
-            types == self.avoid_type
-        ].astype(np.float32)
+    def __call__(self, candidates, coordinates, names):
+        """Sorts a set of candidate coordinates according to the bias.
+
+        Parameters
+        ----------
+        candidates : np.ndarray (N,3), required
+            Array of coordinates candidate sites for the next site in a random walk.
+        coordinates : np.ndarray (N,3), required
+            Array of coordinates for all previously accepted sites in a random walk.
+        names : np.ndarray (N), required
+            Array of site names for all previously accepted sites in a random walk.
+
+        Returns
+        -------
+        candidates : np.ndarray (N,3)
+            Returns the original candidate array, sorted according to the bias.
+        """
+        target_coords = coordinates[names == self.avoid_type]
         densities = self._target_density(
             candidates=candidates, target_coords=target_coords, r_cut=self.r_cut
         )
@@ -160,8 +214,24 @@ class TargetDirection(Bias):
         self.direction = direction / norm
         super().__init__(weight=weight)
 
-    def __call__(self, candidates):
-        last_step_pos = self.path.coordinates[self.path.count]
+    def __call__(self, candidates, coordinates, names):
+        """Sorts a set of candidate coordinates according to the bias.
+
+        Parameters
+        ----------
+        candidates : np.ndarray (N,3), required
+            Array of coordinates candidate sites for the next site in a random walk.
+        coordinates : np.ndarray (N,3), required
+            Array of coordinates for all previously accepted sites in a random walk.
+        names : np.ndarray (N), required
+            Array of site names for all previously accepted sites in a random walk.
+
+        Returns
+        -------
+        candidates : np.ndarray (N,3)
+            Returns the original candidate array, sorted according to the bias.
+        """
+        last_step_pos = coordinates[-1]
         next_step_vectors = candidates - last_step_pos
         norms = np.linalg.norm(next_step_vectors, axis=1, keepdims=True)
         # Avoid divisions by zero
@@ -183,8 +253,24 @@ class AvoidDirection(Bias):
         self.direction = direction
         super().__init__(weight=weight)
 
-    def __call__(self, candidates):
-        last_step_pos = self.path.coordinates[self.path.count]
+    def __call__(self, candidates, coordinates, names):
+        """Sorts a set of candidate coordinates according to the bias.
+
+        Parameters
+        ----------
+        candidates : np.ndarray (N,3), required
+            Array of coordinates candidate sites for the next site in a random walk.
+        coordinates : np.ndarray (N,3), required
+            Array of coordinates for all previously accepted sites in a random walk.
+        names : np.ndarray (N), required
+            Array of site names for all previously accepted sites in a random walk.
+
+        Returns
+        -------
+        candidates : np.ndarray (N,3)
+            Returns the original candidate array, sorted according to the bias.
+        """
+        last_step_pos = coordinates[-1]
         next_step_vectors = candidates - last_step_pos
         norms = np.linalg.norm(next_step_vectors, axis=1, keepdims=True)
         # Avoid divisions by zero
@@ -197,40 +283,3 @@ class AvoidDirection(Bias):
         # Larger dot product = better alignment with target, sort ascending (np default)
         sort_idx = np.argsort(scores)
         return candidates[sort_idx]
-
-
-class TargetEdge(Bias):
-    """Bias next-moves so that ones moving towards a surface are more likely to be accepted."""
-
-    def __init__(self, weight):
-        super().__init__(weight=weight)
-
-    def __call__(self):
-        raise NotImplementedError(
-            "This feature of mBuild 2.0 has not been implemented yet."
-        )
-
-
-class AvoidEdge(Bias):
-    """Bias next-moves so that ones away from a surface are more likely to be accepted."""
-
-    def __init__(self, weight):
-        super().__init__(weight=weight)
-
-    def __call__(self):
-        raise NotImplementedError(
-            "This feature of mBuild 2.0 has not been implemented yet."
-        )
-
-
-class TargetPath(Bias):
-    """Bias next-moves so that ones following a pre-defined path are more likely to be accepted."""
-
-    def __init__(self, target_path, weight):
-        self.target_path = target_path
-        super().__init__(weight=weight)
-
-    def __call__(self):
-        raise NotImplementedError(
-            "This feature of mBuild 2.0 has not been implemented yet."
-        )
