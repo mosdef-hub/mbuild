@@ -932,7 +932,7 @@ def hard_sphere_random_walk(
             raise PathConvergenceError(
                 f"Failed to initiate random walk with {initial_point=}. Try a different initial_point."
             )
-    
+
     # Set the first 2 coordinates and update count
     coordinates[state.count] = initial_xyz
     state.count += 1
@@ -975,7 +975,6 @@ def hard_sphere_random_walk(
 
         if state.bias:
             candidates = bias(candidates=candidates)
-
 
         if any(pbc):
             candidates = volume_constraint.mins + np.mod(
