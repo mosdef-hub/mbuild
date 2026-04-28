@@ -127,7 +127,7 @@ class Path:
             points = np.asarray([points])
         if not isinstance(points, np.ndarray):
             try:
-                points = np.ndarray(points)
+                points = np.asarray(points)
             except TypeError:
                 raise ValueError(f"{points=} must be an array of shape (N,3)")
         if points.ndim == 1:
@@ -136,11 +136,11 @@ class Path:
         if self.coordinates.size == 0:
             self.coordinates = points
             self.beads = [bead_name] * len(points)
-            self._extend_bond_graph(bead_name)
+            self._extend_bond_graph()
             return
         self.coordinates = np.concatenate((self.coordinates, points))
         self.beads = np.concatenate((self.beads, [bead_name] * len(points)))
-        self._extend_bond_graph(bead_name)  # TODO: This won't need a bead name
+        self._extend_bond_graph()
 
     def _extend_coordinates(self, N):
         """Create new coordinates for setting values."""
@@ -151,13 +151,13 @@ class Path:
         new_array = np.concatenate([self.coordinates, zeros])
         self.coordinates = new_array
 
-    def _extend_bond_graph(self, bead_name):
+    def _extend_bond_graph(self):
         """Make sure all coordinates are properly added to the bondgraph."""
         if len(self.bond_graph) == len(self.coordinates):
             return
         index = len(self.bond_graph)
-        for coord in self.coordinates[len(self.bond_graph) :]:
-            self.bond_graph.add_node(index, name=bead_name, xyz=coord)
+        for _ in self.coordinates[len(self.bond_graph) :]:
+            self.bond_graph.add_node(index)
             index += 1
 
     def _extend_beads(self, bead_name):
@@ -234,15 +234,11 @@ class Path:
         bond_vec = self.coordinates[v] - self.coordinates[u]
         bond_length = np.linalg.norm(bond_vec)
         bond_vec /= bond_length
-        # Get node names from previous step to current step
-        u_name = self.bond_graph.nodes[u]["name"]
-        v_name = self.bond_graph.nodes[v]["name"]
         self.bond_graph.add_edge(
             u_of_edge=u,
             v_of_edge=v,
             direction=bond_vec.tolist(),
             length=float(bond_length),
-            bond_type=(u_name, v_name),
         )
 
     def find_neighbors(
@@ -323,11 +319,11 @@ class Path:
 
 
 def lamellar(
-    path,
-    num_layers,
-    layer_separation,
-    layer_length,
-    bond_length,
+    path=None,
+    num_layers=1,
+    layer_separation=None,
+    layer_length=None,
+    bond_length=None,
     initial_point=(0, 0, 0),
     num_stacks=1,
     stack_separation=None,
@@ -357,6 +353,8 @@ def lamellar(
     left_to_right : boolean, default True
         If `True`, the first layer is built with increasing y-coordinates from the origin.
     """
+    if path is None:
+        path = Path()
     initial_point = np.asarray(initial_point)
 
     # Coordinates in the y-direction (layer-length) of the lamellar layer
@@ -458,10 +456,13 @@ def lamellar(
                 ]
                 coordinates.extend(arc[::-1])
                 coordinates.extend(list(this_stack))
-
-    path.coordinates = np.array(coordinates)
-    path.beads = [bead_name] * len(coordinates)
-    path.form_linear_bond_graph()
+    start_index = len(path.coordinates)
+    stop_index = start_index + len(coordinates)
+    path.append_coordinates(coordinates, bead_name)
+    path._connect_edges(
+        connectivity="linear", indices=np.arange(start_index, stop_index)
+    )
+    return path
 
 
 def straight_line(path, spacing, N, direction=(1, 0, 0), bead_name="_A"):
@@ -479,11 +480,14 @@ def straight_line(path, spacing, N, direction=(1, 0, 0), bead_name="_A"):
         The direction to align the straight path along.
     """
     direction = np.asarray(direction)
-    path.coordinates = np.array(
-        [np.zeros(3) + i * spacing * direction for i in range(N)]
+    coordinates = np.array([np.zeros(3) + i * spacing * direction for i in range(N)])
+    start_index = len(path.coordinates)
+    stop_index = start_index + N
+    path.append_coordinates(coordinates, bead_name)
+    path._connect_edges(
+        connectivity="linear", indices=np.arange(start_index, stop_index)
     )
-    path.beads = [bead_name] * N
-    path.form_linear_bond_graph()
+    return path
 
 
 def cyclic(path, spacing=None, N=None, radius=None, closed=True, bead_name="_A"):
@@ -519,14 +523,21 @@ def cyclic(path, spacing=None, N=None, radius=None, closed=True, bead_name="_A")
         spacing = (2 * np.pi * radius) / N
 
     angles = np.arange(0, 2 * np.pi, (2 * np.pi) / N)
-    path.coordinates = np.array(
+    coordinates = np.array(
         [(np.cos(a) * radius, np.sin(a) * radius, 0) for a in angles]
     )
-    path.beads = [bead_name] * N
-    path.form_linear_bond_graph()
+    start_index = len(path.coordinates)
+    stop_index = start_index + len(coordinates)
+    path.append_coordinates(coordinates, bead_name)
     if closed:
-        path.bond_graph.add_edge(0, N - 1)
-        path.bond_graph.add_edge(0, N - 1)
+        path._connect_edges(
+            connectivity="cycle", indices=np.arange(start_index, stop_index)
+        )
+    else:
+        path._connect_edges(
+            connectivity="linear", indices=np.arange(start_index, stop_index)
+        )
+    return path
 
 
 def knot(path, spacing, N, m, closed=True, bead_name="_A"):
@@ -587,13 +598,20 @@ def knot(path, spacing, N, m, closed=True, bead_name="_A"):
     x_interp = interp1d(arc_lengths, coords_dense[:, 0])(desired_arcs)
     y_interp = interp1d(arc_lengths, coords_dense[:, 1])(desired_arcs)
     z_interp = interp1d(arc_lengths, coords_dense[:, 2])(desired_arcs)
-    path.coordinates = np.stack((x_interp, y_interp, z_interp), axis=1)
+    coordinates = np.stack((x_interp, y_interp, z_interp), axis=1)
 
-    path.beads = [bead_name] * N
-    path.form_linear_bond_graph()
+    start_index = len(path.coordinates)
+    stop_index = start_index + len(coordinates)
+    path.append_coordinates(coordinates, bead_name)
     if closed:
-        path.bond_graph.add_edge(0, len(path.coordinates) - 1)
-        path.bond_graph.add_edge(0, len(path.coordinates) - 1)
+        path._connect_edges(
+            connectivity="cycle", indices=np.arange(start_index, stop_index)
+        )
+    else:
+        path._connect_edges(
+            connectivit="linear", indices=np.arange(start_index, stop_index)
+        )
+    return path
 
 
 def helix(
@@ -630,9 +648,13 @@ def helix(
         z = i * rise if bottom_up else -i * rise
         coordinates[i] = (x, y, z)
 
-    path.coordinates = coordinates
-    path.beads = [bead_name] * N
-    path.form_linear_bond_graph()
+    start_index = len(path.coordinates)
+    stop_index = start_index + len(coordinates)
+    path.append_coordinates(coordinates, bead_name)
+    path._connect_edges(
+        connectivity="cycle", indices=np.arange(start_index, stop_index)
+    )
+    return path
 
 
 def spiral_2D(path, N, a, b, spacing, bead_name="_A"):
@@ -665,9 +687,13 @@ def spiral_2D(path, N, a, b, spacing, bead_name="_A"):
         dtheta = spacing / ds_dtheta
         theta += dtheta
 
-    path.coordinates = coordinates
-    path.beads = [bead_name] * N
-    path.form_linear_bond_graph()
+    start_index = len(path.coordinates)
+    stop_index = start_index + len(coordinates)
+    path.append_coordinates(coordinates, bead_name)
+    path._connect_edges(
+        connectivity="cycle", indices=np.arange(start_index, stop_index)
+    )
+    return path
 
 
 def zigzag(
@@ -739,9 +765,13 @@ def zigzag(
         elif plane == "yz":
             coordinates[i] = (0, x2d, y2d)
 
-    path.coordinates = coordinates
-    path.beads = [bead_name] * N  # TODO: Should extend this, not assign it
-    path.form_linear_bond_graph()
+    start_index = len(path.coordinates)
+    stop_index = start_index + len(coordinates)
+    path.append_coordinates(coordinates, bead_name)
+    path._connect_edges(
+        connectivity="cycle", indices=np.arange(start_index, stop_index)
+    )
+    return path
 
 
 def hard_sphere_random_walk(

@@ -33,7 +33,7 @@ def visualize_path(path, radius=0.1, hide_periodic_bonds=False):
     # view.addModel(mol2_string, "mol2", keepH=True)
 
     # Get unique bead names
-    unique_names = list(dict.fromkeys(G.nodes[node]["name"] for node in G.nodes()))
+    unique_names = list(dict.fromkeys(node for node in path.beads))
 
     # Color palette
     colors = [
@@ -74,7 +74,7 @@ def visualize_path(path, radius=0.1, hide_periodic_bonds=False):
         )
     view.setBackgroundColor("white")
     view.zoomTo()
-    scale_factor = max(1, 5 - int(np.log10(len(path.coordinates))))
-    view.zoom(scale_factor)  # helps zoom on smaller systems
+    # scale_factor = max(1, 5 - int(np.log10(len(path.coordinates))))
+    # view.zoom(scale_factor)  # helps zoom on smaller systems
 
     return view
