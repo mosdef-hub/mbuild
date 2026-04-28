@@ -587,8 +587,7 @@ class Polymer(Compound):
             for p in tail_hydrogens[:bond_order]:
                 _remove_hydrogens.append(p)
 
-        for p in _remove_hydrogens:
-            comp.remove(p)
+        comp.remove(_remove_hydrogens)
 
         self._monomers.append(comp)
         self._monomer_bond_orders.append(bond_order)
@@ -677,8 +676,7 @@ class Polymer(Compound):
             for p in head_hydrogens[:bond_order]:
                 _remove_hydrogens.append(p)
 
-        for p in _remove_hydrogens:
-            comp.remove(p)
+        comp.remove(_remove_hydrogens)
 
         if duplicate:
             self._end_groups = [comp, clone(comp)]
