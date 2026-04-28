@@ -358,7 +358,10 @@ class Polymer(Compound):
                             v1 = this_part_head.pos - this_part_tail.pos
                             v1 /= np.linalg.norm(v1)
                             # v2 is the vector between the previous site pos and next site pos
-                            v2 = coordinates[site_count + 1] - coordinates[site_count - 1]
+                            v2 = (
+                                coordinates[site_count + 1]
+                                - coordinates[site_count - 1]
+                            )
                             v2 /= np.linalg.norm(v2)
                             normal = np.cross(v1, v2)
                             angle = np.arccos(
@@ -619,7 +622,7 @@ class Polymer(Compound):
         ----------
         compound : mbuild.Compound
             A compound of the end group structure
-        bond_tag: str 
+        bond_tag: str
             The string indicator enclosed with "{}" representing the bond-tag for connection.
             e.g. "*" if the compound is loaded from SMILES "CC{*}"
         separation : float
