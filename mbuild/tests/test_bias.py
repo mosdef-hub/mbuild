@@ -1,7 +1,6 @@
 import numpy as np
 import pytest
 
-from mbuild.path.build import Path, hard_sphere_random_walk
 from mbuild.path.bias import (
     AvoidCoordinate,
     AvoidDirection,
@@ -10,6 +9,7 @@ from mbuild.path.bias import (
     TargetDirection,
     TargetType,
 )
+from mbuild.path.build import hard_sphere_random_walk
 from mbuild.path.termination import NumAttempts, NumSites, Termination
 from mbuild.tests.base_test import BaseTest, radius_of_gyration
 
@@ -62,7 +62,7 @@ class TestBias(BaseTest):
             termination=Termination([NumSites(15), NumAttempts(1e4)]),
             bond_length=0.25,
             bias=bias,
-            initial_point=(0,0,0),
+            initial_point=(0, 0, 0),
             radius=0.22,
             seed=14,
         )
