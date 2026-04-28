@@ -741,7 +741,6 @@ def zigzag(
 
     path.coordinates = coordinates
     path.beads = [bead_name] * N  # TODO: Should extend this, not assign it
-    path.beads = [bead_name] * N  # TODO: Should extend this, not assign it
     path.form_linear_bond_graph()
 
 
