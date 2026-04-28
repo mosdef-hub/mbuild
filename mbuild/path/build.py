@@ -910,6 +910,7 @@ def hard_sphere_random_walk(
 
     # Set the first two coordinates
     for num_tries in range(100):
+        # Get the first coordinate
         initial_xyz = get_initial_point(
             state, coordinates[: state.count], check_path_cpu, next_step
         )
@@ -932,10 +933,11 @@ def hard_sphere_random_walk(
                 f"Failed to initiate random walk with {initial_point=}. Try a different initial_point."
             )
 
-    # print(f"{initial_xyz=}, {second_xyz=}")
+    # Set the first 2 coordinates and update count
     coordinates[state.count] = initial_xyz
     state.count += 1
     coordinates[state.count] = second_xyz
+    state.count += 1
 
     if state.check_termination(path, coordinates):
         return path
@@ -947,6 +949,8 @@ def hard_sphere_random_walk(
         static_parts = []
         if state.init_count > 0:
             static_parts.append(coordinates[: state.init_count])
+        if include_compound:
+            static_parts.append(include_compound.xyz)
         if static_parts:
             static_points = np.concatenate(static_parts).astype(np.float32)
             state.gpu_static_points = cuda.to_device(static_points)
@@ -972,10 +976,6 @@ def hard_sphere_random_walk(
         if state.bias:
             candidates = bias(candidates=candidates)
 
-        existing_points = coordinates[: state.count + 1]
-        if state.include_compound:
-            existing_points = np.concat((existing_points, include_compound.xyz))
-
         if any(pbc):
             candidates = volume_constraint.mins + np.mod(
                 candidates - volume_constraint.mins, box_lengths
@@ -995,6 +995,9 @@ def hard_sphere_random_walk(
             if len(valid_candidates) > 0:
                 accept_xyz = valid_candidates[0]
         else:
+            existing_points = coordinates[: state.count + 1]
+            if state.include_compound:
+                existing_points = np.concat((existing_points, include_compound.xyz))
             for xyz in candidates:
                 if check_path_cpu(
                     existing_points=existing_points,
