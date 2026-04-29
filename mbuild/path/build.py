@@ -43,7 +43,6 @@ class Path:
 
     """
 
-    # TODO, allow a sequence of bead_names
     def __init__(self, coordinates=None, bond_graph=None, bead_name="_A"):
         if (
             coordinates is not None
@@ -121,8 +120,16 @@ class Path:
 
         return path
 
-    def append_coordinates(self, points, bead_name="_A"):
-        """Create new coordinates for appending values to."""
+    def append_coordinates(self, points, bead_names):
+        """Create new coordinates for appending values to.
+
+        Parameters
+        ----------
+        points : array-like of float, shape (N, 3), required
+            A set of 3D coordinates to append to Path.coordinates.
+        names : array-like of str, shape (N, 3), required
+            The set of bead names that correspond to points, appends to Path.beads.
+        """
         if hasattr(points, "__len__") and len(points) == 3 and points.ndim == 1:
             points = np.asarray([points])
         if not isinstance(points, np.ndarray):
@@ -135,21 +142,26 @@ class Path:
 
         if self.coordinates.size == 0:
             self.coordinates = points
-            self.beads = [bead_name] * len(points)
+            self.beads = bead_names
             self._extend_bond_graph()
             return
+        # Append to previous set of coordinates and names
         self.coordinates = np.concatenate((self.coordinates, points))
-        self.beads = np.concatenate((self.beads, [bead_name] * len(points)))
+        self.beads = np.concatenate((self.beads, bead_names))
         self._extend_bond_graph()
 
     def _extend_coordinates(self, N):
-        """Create new coordinates for setting values."""
+        """Create new coordinate and bead name place holders for setting values."""
         if self.coordinates.size == 0:
             self.coordinates = np.zeros((N, 3), dtype=np.float32)
+            self.beads = np.zeros(N, dtype="U10")  # Place holder is empty str
             return
+        # Update coordinates array
         zeros = np.zeros((N, 3), dtype=self.coordinates.dtype)
-        new_array = np.concatenate([self.coordinates, zeros])
-        self.coordinates = new_array
+        self.coordinates = np.concatenate([self.coordinates, zeros])
+        # Update bead names array
+        empty = np.zeros(N, dtype="U10")
+        self.beads = np.concatenate([self.beads, empty])
 
     def _extend_bond_graph(self):
         """Make sure all coordinates are properly added to the bondgraph."""
@@ -907,6 +919,7 @@ def hard_sphere_random_walk(
         state.bias = bias
 
     # Initialize coordinates based on starting conditions
+    # The path used for this random walk contains previous sites
     if not path.coordinates.size == 0:
         coordinates = np.concatenate(
             (
@@ -915,16 +928,18 @@ def hard_sphere_random_walk(
             ),
             axis=0,
         )
+        beads = np.concatenate(
+            (path.beads, np.zeros(chunk_size, dtype="U10")),
+            axis=0,
+        )
         state.count = len(path.coordinates)  # starting index
-        state.count = len(path.coordinates)  # starting index
+    # The path used for this RW doesn't have previous sites
     else:
         coordinates = np.zeros((chunk_size, 3), dtype=np.float32)
+        beads = np.zeros(chunk_size, dtype="U10")
         state.count = 0
 
     state.init_count = state.count
-
-    # Set start time for wall time terminator
-    state.start_time = time.time()
 
     # Select methods for random walk
     if state.run_on_gpu:
@@ -938,6 +953,9 @@ def hard_sphere_random_walk(
     check_path_cpu = check_path
     next_step = random_coordinate
 
+    # Set start time for wall time terminator
+    state.start_time = time.time()
+
     # Set the first two coordinates
     for num_tries in range(100):
         # Get the first coordinate
@@ -945,7 +963,8 @@ def hard_sphere_random_walk(
             state, coordinates[: state.count], check_path_cpu, next_step
         )
 
-        if state.check_termination(path, coordinates):
+        if state.check_termination(path, coordinates, beads):
+            print("terminated.")
             return path
 
         # Get the second coordinate
@@ -965,11 +984,13 @@ def hard_sphere_random_walk(
 
     # Set the first 2 coordinates and update count
     coordinates[state.count] = initial_xyz
+    # TODO: Use a NameGenerator() call here instead of a static bead name
+    beads[state.count] = bead_name
     state.count += 1
     coordinates[state.count] = second_xyz
-    state.count += 1
+    beads[state.count] = bead_name
 
-    if state.check_termination(path, coordinates):
+    if state.check_termination(path, coordinates, beads):
         return path
 
     # Prepare GPU static points if using GPU
@@ -1040,6 +1061,8 @@ def hard_sphere_random_walk(
 
         if accept_xyz is not None:
             coordinates[state.count + 1] = accept_xyz
+            # TODO: Use a NameGenerator() class here
+            beads[state.count + 1] = bead_name
             state.count += 1
 
         state.attempts += 1
@@ -1047,12 +1070,13 @@ def hard_sphere_random_walk(
         # Extend coordinates array if we're running out of space
         if state.count + 2 >= len(coordinates):
             path.coordinates = coordinates  # Save progress first
+            path.beads = beads
             path._extend_coordinates(N=chunk_size)
             coordinates = path.coordinates
+            beads = path.beads
 
         walk_finished = termination.is_met()
-
-    state.check_termination(path, coordinates)
+    state.check_termination(path, coordinates, beads)
 
     return path
 
@@ -1179,19 +1203,30 @@ class RandomWalkState:
         self.start_time = None
         self.gpu_static_points = None
 
-    def check_termination(self, path, coordinates):
-        """Examine and process termination if we have reached."""
+    def check_termination(self, path, coordinates, beads):
+        """Examine and process termination if we have reached.
+
+        Parameters
+        ----------
+        path : mbuild.path.Path, required
+            The path used in the hard sphere random walk
+        coordinates : np.ndarray (N, 3), required
+            The up-to-date coordinates array from the last random walk chunk
+        beads : np.ndarray (N, 3), required
+            The up-to-date bead name array from the last random walk chunk
+        """
         if self.termination.is_met():
             if self.termination.success:
                 logger.info("Random walk successful.")
                 path.coordinates = coordinates[: self.count + 1]
+                path.beads = beads[: self.count + 1]
             else:
                 logger.warning("Random walk not successful.")
                 logger.warning(self.termination.summarize())
             self.termination._clean()
             if self.bias:
                 self.bias._clean()
-            path._extend_bond_graph(self.bead_name)
+            path._extend_bond_graph()
             if isinstance(
                 self.initial_point, int
             ):  # make sure to build from previous point instead of last point
