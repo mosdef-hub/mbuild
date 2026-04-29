@@ -1067,7 +1067,7 @@ def hard_sphere_random_walk(
         state.attempts += 1
 
         # Extend coordinates array if we're running out of space
-        if state.count + 1 >= chunk_size:
+        if state.count + 1 >= len(coordinates):
             path.coordinates = coordinates  # Save progress first
             path.beads = beads
             path._extend_coordinates(N=chunk_size)
