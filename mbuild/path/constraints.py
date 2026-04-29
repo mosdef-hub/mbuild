@@ -60,12 +60,21 @@ class CuboidConstraint(Constraint):
         ``(False, False, False)``, meaning no periodic boundaries.
     """
 
-    def __init__(self, Lx, Ly, Lz, center=(0, 0, 0), pbc=(False, False, False)):
+    def __init__(
+        self, Lx, Ly=None, Lz=None, center=(0, 0, 0), pbc=(False, False, False)
+    ):
         self.center = np.asarray(center)
+        if Ly is None and Lz is None and Lx:
+            Ly = Lz = Lx
         self.mins = self.center - np.array([Lx / 2, Ly / 2, Lz / 2])
         self.maxs = self.center + np.array([Lx / 2, Ly / 2, Lz / 2])
         self.box_lengths = np.array([Lx, Ly, Lz]).astype(np.float32)
         self.pbc = np.asarray(pbc, dtype=np.bool_)
+
+    @classmethod
+    def from_array(cls, box, center=(0, 0, 0), pbc=(False, False, False)):
+        """Create a cuboid box from a 3D array."""
+        return cls(box[0], box[1], box[2], center=center, pbc=pbc)
 
     def is_inside(self, points, buffer):
         """Check a set of coordinates against the volume constraint.
@@ -123,6 +132,7 @@ class CuboidConstraint(Constraint):
             return candidates
         # Existing points given, sort candidates by local density
         points = np.asarray(points)
+        points = points[np.isfinite(points).all(axis=1)]  # Filter out np.inf values
         tree = cKDTree(points)
         dists, _ = tree.query(candidates, k=k)
         if dists.ndim == 1:

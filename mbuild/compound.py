@@ -666,6 +666,17 @@ class Compound(object):
     def particle_tag(self):
         return self._tag
 
+    @property
+    def tags(self):
+        """Tags for tagged particles in Compound."""
+        tagsList = []
+        for p in self._particles():
+            if p.particle_tag:
+                tagsList.append((p, p.particle_tag))
+        if not tagsList:
+            return None
+        return tagsList
+
     @particle_tag.setter
     def particle_tag(self, tag):
         if self._contains_only_ports():
@@ -1555,13 +1566,13 @@ class Compound(object):
             return True
 
     def check_for_overlap(
-        self, excluded_bond_depth, minimum_distance=0.10, return_indices=True
+        self, excluded_bond_depth=0, minimum_distance=0.10, return_indices=True
     ):
         """Check if a compound contains overlapping particles.
 
         Parameters:
         -----------
-        excluded_bond_depth : int, required
+        excluded_bond_depth : int, default 0
             The depth of bonded neighbors to exclude from overlap check.
             see Compound.direct_bonds()
         minimum_distance : float, default=0.10

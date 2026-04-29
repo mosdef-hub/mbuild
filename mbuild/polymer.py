@@ -1,10 +1,11 @@
 """Recipe for an mBuild polymer."""
 
 import itertools as it
+import re
 
 import numpy as np
 
-from mbuild import clone
+from mbuild import clone, load
 from mbuild.compound import Compound
 from mbuild.coordinate_transform import (
     force_overlap,
@@ -459,8 +460,8 @@ class Polymer(Compound):
     def add_monomer(
         self,
         compound,
-        head_tag=None,
-        tail_tag=None,
+        head_tag="head",
+        tail_tag="tail",
         separation=None,
         head_orientation=None,
         tail_orientation=None,
@@ -472,59 +473,32 @@ class Polymer(Compound):
         The monomers will be used to build the polymer. Call this function for
         each unique monomer to be used in the polymer.
 
-        Notes
-        -----
-        Using the 'replace' and 'indices' parameters:
-
-        The atoms in an mbuild compound can be identified by their index
-        numbers. For example, an ethane compound with the index number next to
-        each atom::
-
-                    H(4)    H(7)
-                     |      |
-             H(3) - C(0) - C(1) - H(6)
-                     |      |
-                    H(2)   H(5)
-
-        If replace=True, then this function removes the hydrogen atoms that are
-        occupying where the C-C bond should occur between monomers.
-        It is required that you specify which atoms should be removed which is
-        achieved by the `indices` parameter.
-
-        In this example, you would remove H(2) and H(7) by indicating indices
-        [2, 7]. The resulting structure of the polymer can vary wildly depending
-        on your choice for `indices`, so you will have to test out different
-        combinations to find the two that result in the desired structure.
-
         Parameters
         ----------
         compound : mbuild.Compound
             A compound of the individual monomer
-        indices : list of int of length 2
-            The particle indices of compound that represent the polymer
-            bonding sites. You can specify the indices of particles that will
-            be replaced by the polymer bond, or indices of particles that act
-            as the bonding sites. See the 'replace' parameter notes.
+        head_tag : str, default "head"
+            The string to look for in monomer.tags that decides which particle to attach as the head.
+        tail_tag : str, default "tail"
+            The string to look for in monomer.tags that decides which particle to attach as the head.
         separation : float, units nm
             The bond length desired at the monomer-monomer bonding site.
             (separation / 2) is used to set the length of each port
-        orientation : list of array-like, shape=(3,) of length 2,
-            default=[None, None]
+        head_orientation : array-like, shape=(3,),
+            default=None
             Vector along which to orient the port
             If replace = True, and orientation = None,
             the orientation of the bond between the particle being
             removed and the anchor particle is used.
-            Recommended behavior is to leave orientation set to None
-            if you are using replace=True.
-        replace : Bool, required, default=True
-            If True, then the particles identified by bonding_indices
-            will be removed and ports are added to the particles they
-            were initially bonded to. Only use replace=True in the case
-            that bonding_indices point to hydrogen atoms bonded to the
-            desired monomer-monomer bonding site particles.
-            If False, then the particles identified by bonding_indices
-            will have ports added, and no particles are removed from
-            the monomer compound.
+        tail_orientation : array-like, shape=(3,),
+            default=None
+            Vector along which to orient the port
+            If replace = True, and orientation = None,
+            the orientation of the bond between the particle being
+            removed and the anchor particle is used.
+        remove_hydrogens : bool, default True
+            Whether or not to remove hydrogens on the monomer site
+            that matches the specified `head_tag` or `tail_tag`
         """
         comp = clone(compound)
         _remove_hydrogens = []
@@ -533,10 +507,6 @@ class Polymer(Compound):
         if len(head) == 0:
             raise RuntimeError(
                 f"Particle tag {head_tag} was not found in the compound's particles."
-            )
-        if len(head) > 1:
-            raise RuntimeError(
-                f"Multiple particles with tag {head_tag} were found. Only one particle can be designated as the head particle."
             )
         head = head[0]
         head_hydrogens = [p for p in head.direct_bonds() if p.name == "H"]
@@ -563,11 +533,11 @@ class Polymer(Compound):
             raise RuntimeError(
                 f"Particle tag {tail_tag} was not found in the compound's particles."
             )
-        if len(tail) > 1:
-            raise RuntimeError(
-                f"Multiple particles with tag {tail_tag} were found. Only one particle can be designated as the tail particle."
-            )
-        tail = tail[0]
+
+        if tail_tag == head_tag:
+            tail = tail[1]  # take second match
+        else:
+            tail = tail[0]  # take first match
         tail_hydrogens = [p for p in tail.direct_bonds() if p.name == "H"]
         if len(tail_hydrogens) != 0 and tail_orientation is None:
             if tail == head:
@@ -591,6 +561,14 @@ class Polymer(Compound):
                 _remove_hydrogens.append(p)
 
         comp.remove(_remove_hydrogens)
+        # remove excess hydrogen ports
+        # assume one head and one tail port
+        _remove_ports = []  # TODO: Might want to keep other ports in polymer, which means this should be
+        # handled when processing add_hydrogens argument
+        for port in comp.all_ports():
+            if not (port.access_labels & {"['up']", "['down']"}):
+                _remove_ports.append(port)
+        comp.remove(_remove_ports)
 
         self._monomers.append(comp)
         self._monomer_bond_orders.append(bond_order)
@@ -734,3 +712,169 @@ class Polymer(Compound):
             raise ValueError("axis must be either: 'x', 'y', or 'z'")
 
         force_overlap(self, self.head_port, self.tail_port)
+
+    @classmethod
+    def from_big_smiles(
+        cls,
+        big_smiles: str,
+        bond_separation: float = 0.145,
+    ):
+        """Create a :class:`Polymer` from a BigSMILES string.
+
+        This parses the stochastic object, loads each repeat unit via
+        ``mb.load(smiles, smiles=True)`` (backed by RDKit), and registers
+        them with :meth:`add_monomer`.
+
+        Parameters
+        ----------
+        big_smiles : str
+            A BigSMILES stochastic-object string.
+            Example: ``"{$CC$,$CC(OC(=O)C)$}"``
+        bond_separation : float, default 0.145
+            The separation (in nm) used for port placement, corresponding
+            roughly to a C–C bond length.
+
+        Returns
+        -------
+        Polymer
+            A :class:`Polymer` instance with monomers (and, optionally,
+            end groups) already added.  Call :meth:`build` to generate the
+            chain.
+
+        Examples
+        --------
+        >>> big_EVA = "{$CC$,$CC(OC(=O)C)$}"
+        >>> polymer = Polymer.from_big_smiles(big_EVA)
+        >>> polymer.build(n=20, sequence="AB")
+        >>> polymer.visualize()
+        """
+        inner = _strip_outer_braces(big_smiles)
+        bond_desc, raw_blocks = _split_monomers(inner)
+
+        # Separate repeat-unit blocks (2 bonding descriptors) from
+        # end-group blocks (1 bonding descriptor).
+        monomer_blocks = []
+        end_group_blocks = []
+        for b in raw_blocks:
+            n_desc = len(_BOND_DESC_RE.findall(b))
+            if n_desc >= 2:
+                monomer_blocks.append(b)
+            elif n_desc == 1:
+                end_group_blocks.append(b)
+            else:
+                raise ValueError(f"Block '{b}' contains no bonding descriptors.")
+
+        if not monomer_blocks:
+            raise ValueError(
+                "No repeat-unit (monomer) blocks found in the BigSMILES "
+                f"string: '{big_smiles}'"
+            )
+
+        polymer = cls()
+
+        # Add monomers
+        for block in monomer_blocks:
+            # smiles_with_star = _replace_bond_desc_with_star(block, bond_desc)
+            subbed_smiles, (head_tag, tail_tag) = _parse_tagged_smiles(block, bond_desc)
+            monomer_compound = load(subbed_smiles, smiles=True)
+            polymer.add_monomer(
+                compound=monomer_compound,
+                head_tag=head_tag,
+                tail_tag=tail_tag,
+                separation=bond_separation,
+            )
+
+        # Add end groups
+        if end_group_blocks:
+            for i, eg_block in enumerate(end_group_blocks[:2]):
+                smiles_with_star, (head_tag, tail_tag) = _parse_tagged_smiles(
+                    eg_block, bond_desc
+                )
+                eg_compound = load(smiles_with_star, smiles=True)
+                if head_tag is None:
+                    bond_tag = tail_tag
+                    label = "tail"
+                else:
+                    bond_tag = head_tag
+                    label = "head"
+                polymer.add_end_groups(
+                    compound=eg_compound,
+                    bond_tag=bond_tag,
+                    separation=bond_separation,
+                    label=label,
+                    duplicate=False,
+                )
+
+        return polymer
+
+
+# ---------------------------------------------------------------------------
+# Parsing helpers
+# ---------------------------------------------------------------------------
+
+# Supported bonding-descriptor tokens (BigSMILES §3)
+_BOND_DESC_RE = re.compile(r"(\[\$\]|\[\<\]|\[\>\]|\$\$|\<|\>|\$)")
+
+
+def _strip_outer_braces(big_smiles: str) -> str:
+    """Remove the outermost stochastic-object braces ``{ }``."""
+    s = big_smiles.strip()
+    if s.startswith("{") and s.endswith("}"):
+        s = s[1:-1]
+    return s
+
+
+def _split_monomers(inner: str):
+    """Split the content inside ``{ }`` into individual repeat-unit tokens.
+
+    Returns
+    -------
+    bond_descriptor : str
+        The bonding descriptor used (e.g. ``"$"``).
+    raw_monomer_blocks : list[str]
+        Each comma-separated block, still containing bonding descriptors.
+    """
+    # Determine the bonding descriptor (take the first match)
+    match = _BOND_DESC_RE.search(inner)
+    if match is None:
+        raise ValueError(f"No bonding descriptor found in BigSMILES string: {inner}")
+    bond_desc = match.group(0)
+
+    # Split on commas that are *outside* of square brackets / parentheses
+    # For most practical BigSMILES strings a simple split works.
+    blocks = inner.split(",")
+    return bond_desc, [b.strip() for b in blocks if b.strip()]
+
+
+def _parse_tagged_smiles(block: str, bond_desc: str) -> tuple[str, list]:
+    """Replace every bonding descriptor in *block* with ``{tag}``.
+
+    The result is valid SMILES that mBuild can parse, where the tag
+    marks each bonding site. The bonding tags are ordered
+    (head, tail) and specifically tags are identified as head or tail if that's
+    in the tag. Return the symbols for use as well in the add_monomer method.
+    """
+    bond_symbols = _BOND_DESC_RE.findall(block)
+    bonds = [None, None]  # Use list instead of tuple
+    unmatched = []
+
+    for b in bond_symbols:
+        if "<" == b or "[<]" == b:
+            bonds[0] = b
+        elif ">" == b or "[>]" == b:
+            bonds[1] = b
+        else:
+            unmatched.append(b)
+
+    # Fill in None values with unmatched bonds
+    if unmatched:
+        i = 0
+        for idx in range(len(bonds)):
+            if bonds[idx] is None and i < len(unmatched):
+                bonds[idx] = unmatched[i]
+                i += 1
+
+    # Replace bond descriptors with {tag}, keeping the original tag
+    result = _BOND_DESC_RE.sub(lambda m: "{" + m.group(1) + "}", block)
+
+    return result, bond_symbols

@@ -1,11 +1,12 @@
 # ruff: noqa: F401
 # ruff: noqa: F403
-from .path import (
-    Cyclic,
-    HardSphereRandomWalk,
-    Knot,
-    Lamellar,
+from .build import (
     Path,
-    Spiral2D,
-    StraightLine,
+    cyclic,
+    hard_sphere_random_walk,
+    knot,
+    lamellar,
+    spiral_2D,
+    straight_line,
+    zigzag,
 )

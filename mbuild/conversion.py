@@ -2047,6 +2047,8 @@ def load_tagged_smiles(
             tag_value = smiles[pos + 1 : end]
             if last_atom_index >= 0:
                 tags.append((last_atom_index, tag_value))
+            elif last_atom_index == -1:  # assume it goes with first atom
+                tags.append((0, tag_value))
             pos = end + 1
             continue
 
