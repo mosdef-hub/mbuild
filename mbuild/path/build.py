@@ -964,7 +964,6 @@ def hard_sphere_random_walk(
         )
 
         if state.check_termination(path, coordinates, beads):
-            print("terminated.")
             return path
 
         # Get the second coordinate
