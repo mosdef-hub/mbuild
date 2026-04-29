@@ -962,7 +962,6 @@ def hard_sphere_random_walk(
         initial_xyz = get_initial_point(
             state, coordinates[: state.count], check_path_cpu, next_step
         )
-        print("INITIAL", initial_xyz, state.count)
         coordinates[state.count] = initial_xyz
         # TODO: Use a NameGenerator() call here instead of a static bead name
         beads[state.count] = bead_name
@@ -975,7 +974,6 @@ def hard_sphere_random_walk(
             state, coordinates[: state.count], check_path_cpu, initial_xyz
         )
         if second_xyz is not None:
-            print("SECOND", second_xyz, state.count)
             coordinates[state.count] = second_xyz
             # TODO: Use a NameGenerator() call here instead of a static bead name
             beads[state.count] = bead_name
@@ -1058,7 +1056,6 @@ def hard_sphere_random_walk(
                     tolerance=tolerance,
                 ):
                     accept_xyz = xyz
-                    print("THIRD", accept_xyz, state.count)
                     break
 
         if accept_xyz is not None:
