@@ -137,7 +137,7 @@ class NumSites(Terminator):
     def is_met(self):
         if self.state is None:
             return False
-        return self.state.count - self.state.init_count >= self.num_sites - 1
+        return self.state.count - self.state.init_count >= self.num_sites
 
 
 class NumAttempts(Terminator):

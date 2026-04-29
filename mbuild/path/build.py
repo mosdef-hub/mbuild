@@ -962,7 +962,11 @@ def hard_sphere_random_walk(
         initial_xyz = get_initial_point(
             state, coordinates[: state.count], check_path_cpu, next_step
         )
-
+        print("INITIAL", initial_xyz, state.count)
+        coordinates[state.count] = initial_xyz
+        # TODO: Use a NameGenerator() call here instead of a static bead name
+        beads[state.count] = bead_name
+        state.count += 1
         if state.check_termination(path, coordinates, beads):
             return path
 
@@ -971,6 +975,11 @@ def hard_sphere_random_walk(
             state, coordinates[: state.count], check_path_cpu, initial_xyz
         )
         if second_xyz is not None:
+            print("SECOND", second_xyz, state.count)
+            coordinates[state.count] = second_xyz
+            # TODO: Use a NameGenerator() call here instead of a static bead name
+            beads[state.count] = bead_name
+            state.count += 1
             break
         elif num_tries == 99:
             raise PathConvergenceError(
@@ -980,14 +989,6 @@ def hard_sphere_random_walk(
             raise PathConvergenceError(
                 f"Failed to initiate random walk with {initial_point=}. Try a different initial_point."
             )
-
-    # Set the first 2 coordinates and update count
-    coordinates[state.count] = initial_xyz
-    # TODO: Use a NameGenerator() call here instead of a static bead name
-    beads[state.count] = bead_name
-    state.count += 1
-    coordinates[state.count] = second_xyz
-    beads[state.count] = bead_name
 
     if state.check_termination(path, coordinates, beads):
         return path
@@ -1010,8 +1011,8 @@ def hard_sphere_random_walk(
     while not walk_finished:
         batch_angles, batch_vectors = generate_trials(state)
         candidates = next_step(
-            pos1=coordinates[state.count],
-            pos2=coordinates[state.count - 1],
+            pos1=coordinates[state.count - 1],
+            pos2=coordinates[state.count - 2],
             bond_length=bond_length,
             thetas=batch_angles,
             r_vectors=batch_vectors,
@@ -1033,7 +1034,7 @@ def hard_sphere_random_walk(
 
         accept_xyz = None
         if state.run_on_gpu and len(candidates) > 0:
-            dynamic_points = coordinates[state.init_count : state.count + 1]
+            dynamic_points = coordinates[state.init_count : state.count]
             valid_mask = check_path_gpu(
                 state.gpu_static_points,
                 dynamic_points,
@@ -1045,9 +1046,10 @@ def hard_sphere_random_walk(
             if len(valid_candidates) > 0:
                 accept_xyz = valid_candidates[0]
         else:
-            existing_points = coordinates[: state.count + 1]
+            existing_points = coordinates[: state.count]
             if state.include_compound:
                 existing_points = np.concat((existing_points, include_compound.xyz))
+
             for xyz in candidates:
                 if check_path_cpu(
                     existing_points=existing_points,
@@ -1056,18 +1058,19 @@ def hard_sphere_random_walk(
                     tolerance=tolerance,
                 ):
                     accept_xyz = xyz
+                    print("THIRD", accept_xyz, state.count)
                     break
 
         if accept_xyz is not None:
-            coordinates[state.count + 1] = accept_xyz
+            coordinates[state.count] = accept_xyz
             # TODO: Use a NameGenerator() class here
-            beads[state.count + 1] = bead_name
+            beads[state.count] = bead_name
             state.count += 1
 
         state.attempts += 1
 
         # Extend coordinates array if we're running out of space
-        if state.count + 2 >= len(coordinates):
+        if state.count + 1 >= chunk_size:
             path.coordinates = coordinates  # Save progress first
             path.beads = beads
             path._extend_coordinates(N=chunk_size)
@@ -1217,8 +1220,8 @@ class RandomWalkState:
         if self.termination.is_met():
             if self.termination.success:
                 logger.info("Random walk successful.")
-                path.coordinates = coordinates[: self.count + 1]
-                path.beads = beads[: self.count + 1]
+                path.coordinates = coordinates[: self.count]
+                path.beads = beads[: self.count]
             else:
                 logger.warning("Random walk not successful.")
                 logger.warning(self.termination.summarize())
@@ -1231,13 +1234,13 @@ class RandomWalkState:
             ):  # make sure to build from previous point instead of last point
                 path._connect_edges(
                     self.connectivity,
-                    np.arange(self.previous_count, self.count + 1),
+                    np.arange(self.previous_count, self.count),
                     self.initial_point,
                 )
             else:  # build bond graph, and connect to last index in previous path coordinates
                 path._connect_edges(
                     self.connectivity,
-                    np.arange(self.previous_count, self.count + 1),
+                    np.arange(self.previous_count, self.count),
                     self.previous_count,
                 )
             if isinstance(
@@ -1245,13 +1248,13 @@ class RandomWalkState:
             ):  # make sure to build from previous point instead of last point
                 path._connect_edges(
                     self.connectivity,
-                    np.arange(self.previous_count, self.count + 1),
+                    np.arange(self.previous_count, self.count),
                     self.initial_point,
                 )
             else:  # build bond graph, and connect to last index in previous path coordinates
                 path._connect_edges(
                     self.connectivity,
-                    np.arange(self.previous_count, self.count + 1),
+                    np.arange(self.previous_count, self.count),
                     self.previous_count,
                 )
             path._extend_beads(self.bead_name)
