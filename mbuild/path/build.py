@@ -179,6 +179,7 @@ class Path:
             return
         self.beads = np.concatenate((self.beads, [bead_name] * diff))
 
+    # TODO: Can we accept negative attach indices?
     def _connect_edges(self, connectivity, indices=None, attach_index=-1):
         """Adds edges to self.bond_graph matching a given style `connectivity`."""
         if indices is None:
@@ -960,7 +961,10 @@ def hard_sphere_random_walk(
     for num_tries in range(100):
         # Get the first coordinate
         initial_xyz = get_initial_point(
-            state, coordinates[: state.count], check_path_cpu, next_step
+            state=state,
+            existing_points=coordinates[: state.count],
+            check_path=check_path_cpu,
+            next_step=next_step,
         )
         coordinates[state.count] = initial_xyz
         # TODO: Use a NameGenerator() call here instead of a static bead name
@@ -971,7 +975,10 @@ def hard_sphere_random_walk(
 
         # Get the second coordinate
         second_xyz = get_second_point(
-            state, coordinates[: state.count], check_path_cpu, initial_xyz
+            state=state,
+            existing_points=coordinates[: state.count],
+            check_path=check_path_cpu,
+            first_point=initial_xyz,
         )
         if second_xyz is not None:
             coordinates[state.count] = second_xyz
@@ -1023,7 +1030,9 @@ def hard_sphere_random_walk(
             candidates = candidates[is_inside_mask]
 
         if state.bias:
-            candidates = bias(candidates=candidates)
+            candidates = bias(
+                candidates=candidates, coordinates=coordinates, names=beads
+            )
 
         if any(pbc):
             candidates = volume_constraint.mins + np.mod(
@@ -1222,24 +1231,11 @@ class RandomWalkState:
             else:
                 logger.warning("Random walk not successful.")
                 logger.warning(self.termination.summarize())
+                return True
             self.termination._clean()
             if self.bias:
                 self.bias._clean()
             path._extend_bond_graph()
-            if isinstance(
-                self.initial_point, int
-            ):  # make sure to build from previous point instead of last point
-                path._connect_edges(
-                    self.connectivity,
-                    np.arange(self.previous_count, self.count),
-                    self.initial_point,
-                )
-            else:  # build bond graph, and connect to last index in previous path coordinates
-                path._connect_edges(
-                    self.connectivity,
-                    np.arange(self.previous_count, self.count),
-                    self.previous_count,
-                )
             if isinstance(
                 self.initial_point, int
             ):  # make sure to build from previous point instead of last point
