@@ -79,16 +79,23 @@ def get_initial_point(state, existing_points, check_path, next_step):
 
 
     """
+    # An initial point was manuallyl given in hard_sphere_random_walk, use that.
     if isinstance(state.initial_point, np.ndarray) and state.initial_point.shape == (
         3,
     ):
         return state.initial_point
-    elif isinstance(state.initial_point, int) and state.initial_point < len(
-        existing_points
-    ):
+
+    # Passing in an index to specify an initial point from already defined set of coordinates
+    elif isinstance(state.initial_point, int):
+        if state.initial_point >= len(existing_points):
+            raise ValueError(
+                f"You passed a starting index of {state.initial_point} ",
+                f"but there are only {len(existing_points)} existing points in the path.",
+            )
         # generate point off of current path coordinates
         starting_xyz = existing_points[state.initial_point]
         batch_angles, batch_vectors = generate_trials(state)
+        # TODO: If building from a path with coordinates, can we try to get both pos1 and pos2?
         xyzs = next_step(
             pos1=None,  # will generate sphere of points around pos2
             pos2=starting_xyz,
@@ -144,7 +151,9 @@ def get_initial_point(state, existing_points, check_path, next_step):
             "without overlapping particles. "
             "Check your `initial_point` argument."
         )
-    elif state.volume_constraint:  # no initial point, but stay inside volume constraint
+    # No initial point given, but there is a volume constraint to sample starting points from
+    # TODO: Use find_low_density_point here instead?
+    elif state.volume_constraint:
         xyzs = state.volume_constraint.sample_candidates(
             points=existing_points, n_candidates=300, buffer=state.radius + 0.1
         )
@@ -165,11 +174,10 @@ def get_initial_point(state, existing_points, check_path, next_step):
             max_dist = state.radius
             min_dist = -1 * state.radius
         else:
+            # TODO: Update seed based on initial_point
             max_dist = np.max(existing_points, axis=0)
-            min_dist = np.min(
-                existing_points, axis=0
-            )  # TODO: Update seed based on initial_point
-        xyzs = state.rng.uniform(low=min_dist, high=max_dist, size=(100, 3))
+            min_dist = np.min(existing_points, axis=0)
+        xyzs = state.rng.uniform(low=min_dist, high=max_dist, size=(300, 3))
         for xyz in xyzs:
             if check_path(
                 existing_points=existing_points,
