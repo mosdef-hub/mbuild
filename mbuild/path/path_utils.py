@@ -1,4 +1,7 @@
-"""Utility functions (mostly numba) for mbuild path generation"""
+"""Utility functions (mostly numba) for mbuild path generation.
+These methods are primarly used by other functions and classes in mbuild.Path and
+should rarely need to be called directly by users.
+"""
 
 import numpy as np
 from numba import njit
@@ -12,10 +15,29 @@ def random_coordinate(
     thetas,
     r_vectors,
 ):
-    """Default next_step method for HardSphereRandomWalk."""
+    """Default next_step method for HardSphereRandomWalk.
+    This method takes in a a batch of thetas and vectors
+    and creates a batch of random coordinates.
+
+    Parameters
+    ----------
+    pos1 : np.ndarray (1,3), required
+        The coordinate of the last accepted site.
+    pos2 : np.ndarray (1,3), required
+        The coordinate of the second to last accepted site.
+    bond_length : float, required
+        The fixed bond length between pos1 and the new coordinates.
+    thetas : array-like (N, 1), required
+        A set of possible angles used to determine new
+        coordinates relative to pos2-pos1-new angle
+    r_vectors : array-like (N, 3), required
+        A set of normal vectors used perform rotations around.
+    """
+
     if pos1 is None:  # pick random point in sphere.
         r_norm = compute_norms(r_vectors)
         return (pos2 + r_vectors / r_norm * bond_length).astype(np.float32)
+    # pos1 and pos2 are defined, use available angles to sample new coordinates
     v1 = pos2 - pos1
     v1_norm = v1 / norm(v1)
     dot_products = (r_vectors * v1_norm).sum(axis=1)
@@ -35,7 +57,21 @@ def random_coordinate(
 
 @njit(cache=True, fastmath=True)
 def check_path(existing_points, new_point, radius, tolerance):
-    """Default check path method for HardSphereRandomWalk."""
+    """Default check path method for HardSphereRandomWalk.
+
+    Parameters
+    ----------
+    existing_points : np.ndarray (N, 3), required
+        Array of all fixed points in the system.
+        This includes accepted sites from previous random walk steps
+        and coordinates from included compounds.
+    new_point : np.ndarray (1,3), required
+        A candidate point for the next step.
+    radius : float, required
+        The radius used for hard-sphere overlap checks.
+    tolerance : float, required
+        Tolerance in center-to-center distances, allowing for rounding errors.
+    """
     if existing_points is None or existing_points.size == 0:
         return True
     min_sq_dist = (radius - tolerance) ** 2
@@ -227,22 +263,3 @@ def find_candidates_within_radius(
         within_radius[i] = dist2 <= r2_cut
 
     return within_radius
-
-
-@njit(cache=True, fastmath=True)
-def norm(vec):
-    """Use in place of np.linalg.norm inside of numba functions."""
-    s = 0.0
-    for i in range(vec.shape[0]):
-        s += vec[i] * vec[i]
-    return np.sqrt(s)
-
-
-@njit
-def compute_norms(vec):
-    """Compute norms for multiple vectors."""
-    n = vec.shape[0]
-    r_norm = np.zeros((n, 1))
-    for i in range(n):
-        r_norm[i, 0] = norm(vec[i])
-    return r_norm
