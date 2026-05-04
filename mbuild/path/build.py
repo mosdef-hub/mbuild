@@ -1035,14 +1035,15 @@ def hard_sphere_random_walk(
         else:
             # Retrying first and second point, reduce count by 1
             state.count -= 1
-            if state.initial_point is not None:
-                raise PathConvergenceError(
-                    f"Failed to initiate random walk with {initial_point=}. Try a different initial_point."
-                )
             if num_tries == 99:
-                raise PathConvergenceError(
-                    f"Failed after {num_tries + 1} to generate a starting point. System is probably too densely packed."
-                )
+                if state.initial_point is not None:
+                    raise PathConvergenceError(
+                        f"Failed to initiate random walk with {initial_point=}. Try a different initial_point."
+                    )
+                else:
+                    raise PathConvergenceError(
+                        f"Failed after {num_tries + 1} to generate a starting point. System is probably too densely packed."
+                    )
 
     if state.check_termination(path, coordinates, beads):
         return path

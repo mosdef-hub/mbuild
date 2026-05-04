@@ -229,8 +229,9 @@ def get_initial_point(state, existing_points, beads, check_path, next_step):
             min_dist = -1 * state.radius
         else:
             # TODO: Update seed based on initial_point
-            max_dist = np.max(existing_points, axis=0)
-            min_dist = np.min(existing_points, axis=0)
+            padding = state.bond_length + state.tolerance
+            max_dist = np.max(existing_points, axis=0) + padding
+            min_dist = np.min(existing_points, axis=0) - padding
         xyzs = state.rng.uniform(low=min_dist, high=max_dist, size=(300, 3))
         for xyz in xyzs:
             if check_path(

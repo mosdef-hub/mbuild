@@ -491,7 +491,7 @@ class TestRandomWalk(BaseTest):
             termination=3,
         )
         assert np.allclose(path.coordinates[0], (0, 0, 0))
-        assert len(path.coordinates == 3)
+        assert len(path.coordinates) == 3
 
         # build from a previous path
         bond_length = 0.15
@@ -503,7 +503,7 @@ class TestRandomWalk(BaseTest):
             termination=1,
         )
         assert np.allclose(np.linalg.norm(path.coordinates[3]), bond_length)
-        assert len(path.coordinates == 4)
+        assert len(path.coordinates) == 4
 
         # generate within a constraint
         constraint = CuboidConstraint.from_array([1, 1, 1])
@@ -513,7 +513,7 @@ class TestRandomWalk(BaseTest):
             volume_constraint=constraint,
             termination=1,
         )
-        assert constraint.is_inside(points=path.coordinates, buffer=0.1)
+        assert all(constraint.is_inside(points=path.coordinates, buffer=0.1))
         assert all([np.abs(coord) < 1 / 2 for coord in path.coordinates[0]])
 
         constraint = CuboidConstraint.from_array([1, 1, 1], center=(-0.5, -0.5, -0.5))
@@ -521,11 +521,11 @@ class TestRandomWalk(BaseTest):
             radius=0.1,  # need a smaller buffer
             bond_length=0.2,
             volume_constraint=constraint,
-            initial_point=(0, 0, 0),
+            initial_point=(-0.25, -0.25, -0.25),
             termination=3,
             seed=100,
         )
-        assert np.allclose(path.coordinates[0], np.array([0, 0, 0]))
+        assert np.allclose(path.coordinates[0], np.array([-0.25, -0.25, -0.25]))
         assert all(constraint.is_inside(points=path.coordinates[1:], buffer=0.1))
         for coord in path.coordinates[1:]:
             assert all([x < 0 for x in coord])
