@@ -148,8 +148,6 @@ class Path:
         names : array-like of str, shape (N, 3), required
             The set of bead names that correspond to points, appends to Path.beads.
         """
-        if isinstance(bead_names, str):
-            bead_names = np.array([bead_names] * len(points), dtype="U10")
         if hasattr(points, "__len__") and len(points) == 3 and points.ndim == 1:
             points = np.asarray([points])
         if not isinstance(points, np.ndarray):
@@ -159,6 +157,9 @@ class Path:
                 raise ValueError(f"{points=} must be an array of shape (N,3)")
         if points.ndim == 1:
             points = np.array([points])  # make a 2d array
+        # Create sequence of bead names
+        if isinstance(bead_names, str):
+            bead_names = np.array([bead_names] * len(points), dtype="U10")
 
         if self.coordinates.size == 0:
             self.coordinates = points

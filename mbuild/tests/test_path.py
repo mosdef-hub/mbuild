@@ -329,14 +329,15 @@ class TestRandomWalk(BaseTest):
     def test_walk_inside_cube(self):
         path = Path()
         cube = CuboidConstraint(Lx=5, Ly=5, Lz=5)
-        hard_sphere_random_walk(
-            path,
-            termination=Termination([NumSites(500), NumAttempts(1e4)]),
-            bond_length=0.25,
-            radius=0.22,
-            volume_constraint=cube,
-            seed=14,
-        )
+        for i in range(100):
+            hard_sphere_random_walk(
+                path,
+                termination=Termination([NumSites(5), NumAttempts(100)]),
+                bond_length=0.25,
+                radius=0.22,
+                volume_constraint=cube,
+                seed=14,
+            )
         bounds = bounding_box(path.coordinates)
         assert np.all(bounds < np.array([5 - 0.44, 5 - 0.44, 5 - 0.44]))
 
@@ -733,13 +734,13 @@ class TestCrossLinks(BaseTest):
         path = Path()
         pos1 = np.zeros((10, 3))
         pos1[:, 1] = np.arange(10)
-        path.append_coordinates(pos1)
+        path.append_coordinates(pos1, "_A")
         path.form_linear_bond_graph()
 
         pos2 = np.zeros((10, 3))
         pos2[:, 0] += 1
         pos2[:, 1] = np.arange(10)
-        path.append_coordinates(pos2)
+        path.append_coordinates(pos2, "_A")
         path.form_linear_bond_graph(indices=np.arange(10, 20))
 
         for i in range(10):
