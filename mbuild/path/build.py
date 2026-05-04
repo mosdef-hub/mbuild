@@ -37,13 +37,19 @@ class Path:
         Creates a path from a pre-defined set of coordinates
     bond_graph : networkx.Graph, optional
        The graph defining the edges between coordinates
-    bead_name : str, default '_A'
+    bead_name : str or numpy.ndarray (N, 1), default '_A'
         The name assigned to each site. This is helpful when using
         multiple `Path` instances to build heterogeneous systems.
+        If an array of bead names is passed, it should be the same length
+        as ``coordinates`` or the number of nodes in ``bond_graph``
+        The array will be cast to a "U10" data type, so bead names
+        should not exceed 10 characters.
 
     """
 
     def __init__(self, coordinates=None, bond_graph=None, bead_name="_A"):
+        # Passing in an array of coordinates, bond graph and array of bead names
+        # TODO: Cast to fp32 here?
         if (
             coordinates is not None
             and bond_graph is not None
@@ -59,12 +65,17 @@ class Path:
             )
             self.bond_graph = bond_graph
             self.coordinates = coordinates
-            self.beads = bead_name
+            self.beads = bead_name.astype("U10")
+        # Passing in an array of coordinates, bond graph, and single bead name
         elif coordinates is not None and bond_graph is not None:
             assert len(coordinates) == len(bond_graph)
             self.bond_graph = bond_graph
             self.coordinates = coordinates
-            self.beads = np.array([bead_name for _ in range(len(coordinates))])
+            self.beads = np.array(
+                [str(bead_name) for _ in range(len(coordinates))], dtype="U10"
+            )
+        # Only passing in a bond graph with data defined for xyz and name
+        # TODO: Cast to fp32 here?
         elif coordinates is None and bond_graph is not None:
             self.bond_graph = bond_graph
             self.coordinates = np.array(  # might not have a bond_graph xyz
@@ -72,13 +83,20 @@ class Path:
             )
             self.beads = np.array(
                 [node.get("name") for node in bond_graph.nodes(data=True)]
-            )
+            ).astype("U10")
+        # Only passing in coordinates, need to create bond graph object.
         elif coordinates is not None and bond_graph is None:
             self.coordinates = np.asarray(coordinates)
             self.bond_graph = nx.Graph()
-            self.beads = [bead_name] * (len(self.coordinates))
+            # Only passed a single string for bead name, create array
+            if isinstance(bead_name, str):
+                self.beads = np.array([bead_name for _ in coordinates], dtype="U10")
+            # Passed array of bead names, cast to U10 dtype
+            elif isinstance(bead_name, np.ndarray):
+                self.beads = bead_name.astype("U10")
             for idx in range(len((self.coordinates))):
                 self.bond_graph.add_node(idx)
+        # Nothing is defined, create empty place holders for coords, bond graph and bead names
         else:
             self.coordinates = np.array([], dtype=np.float32)
             self.bond_graph = nx.Graph()
@@ -130,6 +148,8 @@ class Path:
         names : array-like of str, shape (N, 3), required
             The set of bead names that correspond to points, appends to Path.beads.
         """
+        if isinstance(bead_names, str):
+            bead_names = np.array([bead_names] * len(points), dtype="U10")
         if hasattr(points, "__len__") and len(points) == 3 and points.ndim == 1:
             points = np.asarray([points])
         if not isinstance(points, np.ndarray):
@@ -272,6 +292,8 @@ class Path:
         """Convert a path and its bond graph to an mBuild Compound."""
         compound = Compound()
         compounds = []
+        # TODO: Should name be pulled from self.beads[noe_id] as well?
+        # TODO: Should we have a mass parameter? Could be useful for density termination
         for node_id, attrs in self.bond_graph.nodes(data=True):
             compounds.append(
                 Compound(name=attrs["name"], pos=self.coordinates[node_id], mass=1.0)
@@ -284,48 +306,55 @@ class Path:
         return compound
 
     def to_mol2(self):
+        """Convert a path to a .mol2 file."""
         from mbuild.path.formats import to_mol2 as _to_mol2
 
         return _to_mol2(self)
 
     def to_mol(self):
-        """
-        Convert mBuild Path to SDF/MOL format
-
-        Parameters:
-        -----------
-        path : mbuild.Path
-        mol_name : str
-            Name of the molecule
-        atom_types : dict
-            Mapping of atom indices to atom type symbols (e.g., {0: 'A', 5: 'B'})
-            If None, all atoms will be 'A'
-        """
+        """Convert mBuild Path to SDF/MOL format."""
         from mbuild.path.formats import to_mol as _to_mol
 
         return _to_mol(self)
 
-    def to_mol3000(self, G=None):
-        """
-        Convert mBuild Path to SDF/MOL V3000 format
-
-        Parameters:
-        -----------
-        G : nx.Graph, default None
-            Bondgraph to use for visualization.
-        """
+    def to_mol3000(self):
+        """Convert mBuild Path to SDF/MOL V3000 format."""
         from mbuild.path.formats import to_mol3000 as _to_mol3000
 
         return _to_mol3000(self)
 
     def visualize(self, radius, hide_periodic_bonds=False):
+        """Visualize a path with py3Dmol.
+
+        Parameters
+        ----------
+        radius : float, required
+            Sets the bead size in py3Dmol.
+        hide_periodic_bonds : bool, default False
+            If ``True`` bonds crossing periodic boundaries aren't shown.
+        """
         from mbuild.utils.visualize import visualize_path
 
         return visualize_path(self, radius, hide_periodic_bonds)
 
     def relax(self, bead_radius, bond_length=None, steps=1000, seed=1, nthreads=1):
-        """Perform a dpd simulation to relax the current path."""
-        # from mbuild.simulation import hoomd_cap_displacement, hoomd_fire, ForcesHandler, HoomdSimulation
+        """Perform a dpd simulation to relax the current path.
+
+        Runs a short energy minimization simulation in OpenMM.
+
+        Parameters
+        ----------
+        bead_radius : float
+            Bead size set in the simulation.
+        bond_length : float, optional
+            Bond length used for all bonds.
+        steps : int, optional, default 1,000
+            Number of simulation steps to run.
+        seed : int, optional, default 1
+            Random seed for integrator.
+        nthreads : int, optional, default 1
+            Number of threads to use during OpenMM simulation.
+        """
         from mbuild.simulation import energy_minimize_path
 
         energy_minimize_path(self, bead_radius, bond_length, steps, seed, nthreads)
@@ -366,6 +395,8 @@ def lamellar(
         The distance between two stacked layers. Required if `num_stacks` >= 2.
     left_to_right : boolean, default True
         If `True`, the first layer is built with increasing y-coordinates from the origin.
+    bead_name : str or np.ndarray (N, 1), optional default _A
+        The bead names in the path.
     """
     if path is None:
         path = Path()
@@ -470,6 +501,7 @@ def lamellar(
                 ]
                 coordinates.extend(arc[::-1])
                 coordinates.extend(list(this_stack))
+    # Coordinates are set, update the Path object
     start_index = len(path.coordinates)
     stop_index = start_index + len(coordinates)
     path.append_coordinates(coordinates, bead_name)
@@ -486,12 +518,14 @@ def straight_line(path, spacing, N, direction=(1, 0, 0), bead_name="_A"):
     ----------
     path : mbuild.path.Path, required
         The Path object to populate with coordinates
-    spacing : float, required
-        The distance between sites along the path.
     N : int, required
         The number of sites in the path.
+    spacing : float, required
+        The distance between sites along the path.
     direction : array-like (1,3), default = (1,0,0)
         The direction to align the straight path along.
+    bead_name : str or np.ndarray (N, 1), optional default _A
+        The bead names in the path.
     """
     direction = np.asarray(direction)
     coordinates = np.array([np.zeros(3) + i * spacing * direction for i in range(N)])
@@ -519,6 +553,8 @@ def cyclic(path, spacing=None, N=None, radius=None, closed=True, bead_name="_A")
         The radius (nm) of the cyclic path.
     closed : bool, default True
         If `True` the cyclic path is closed by bonding the first and last sites together
+    bead_name : str or np.ndarray (N, 1), optional default _A
+        The bead names in the path.
 
     Notes
     -----
@@ -570,6 +606,8 @@ def knot(path, spacing, N, m, closed=True, bead_name="_A"):
         3 gives the trefoil knot, 4 gives the figure 8 knot and 5 gives the cinquefoil knot.
     closed : bool, default True
         If `True` the cyclic path is closed by bonding the first and last sites together
+    bead_name : str or np.ndarray (N, 1), optional default _A
+        The bead names in the path.
     """
     # Generate dense sites first, sample actual ones later from spacing
     t_dense = np.linspace(0, 2 * np.pi, 5000)
@@ -649,6 +687,8 @@ def helix(
         Set the handedness of the helical twist
     bottom_up : bool, default True
         If True, the twist is in the positive Z direction
+    bead_name : str or np.ndarray (N, 1), optional default _A
+        The bead names in the path.
     """
     coordinates = np.zeros((N, 3))
     indices = reversed(range(N)) if not bottom_up else range(N)
@@ -666,7 +706,7 @@ def helix(
     stop_index = start_index + len(coordinates)
     path.append_coordinates(coordinates, bead_name)
     path._connect_edges(
-        connectivity="cycle", indices=np.arange(start_index, stop_index)
+        connectivity="linear", indices=np.arange(start_index, stop_index)
     )
     return path
 
@@ -686,6 +726,8 @@ def spiral_2D(path, N, a, b, spacing, bead_name="_A"):
         Determines how fast radius grows per angle increment (r = a + bθ)
     spacing : float, required
         Distance between adjacent sites (nm)
+    bead_name : str or np.ndarray (N, 1), optional default _A
+        The bead names in the path.
     """
     coordinates = np.zeros((N, 3))
     theta = 0.0
@@ -705,7 +747,7 @@ def spiral_2D(path, N, a, b, spacing, bead_name="_A"):
     stop_index = start_index + len(coordinates)
     path.append_coordinates(coordinates, bead_name)
     path._connect_edges(
-        connectivity="cycle", indices=np.arange(start_index, stop_index)
+        connectivity="linear", indices=np.arange(start_index, stop_index)
     )
     return path
 
@@ -735,6 +777,8 @@ def zigzag(
         The number of sites before rotating and beginning next segment.
     plane : str, default = "xy"
         The plane that the sites in the path occupy
+    bead_name : str or np.ndarray (N, 1), optional default _A
+        The bead names in the path.
     """
     if N % sites_per_segment != 0:
         raise ValueError("N must be evenly divisible by sites_per_segment")
@@ -783,7 +827,7 @@ def zigzag(
     stop_index = start_index + len(coordinates)
     path.append_coordinates(coordinates, bead_name)
     path._connect_edges(
-        connectivity="cycle", indices=np.arange(start_index, stop_index)
+        connectivity="linear", indices=np.arange(start_index, stop_index)
     )
     return path
 
@@ -837,7 +881,7 @@ def hard_sphere_random_walk(
     bias : mbuild.path.bias.Bias class,
         Causes the selected points to be biased towards some criterion.
     include_compound : mbuild.compound.Compound, default None
-        If an mBuild Compound is given, the random walk with include its coordiantes
+        If an mBuild Compound is given, the random walk with include its coordinates
         when checking for overlapping sites.
     connectivity : str, default "linear"
         Will be used to connect the bond_graph of the walk post generation based on a specified method.
@@ -845,7 +889,7 @@ def hard_sphere_random_walk(
     initial_point : array-like or int, optional
         Used as the coordinate for the first site in this random walk path. If an integer is
         Used as the coordinate for the first site in this random walk path. If an integer is
-        passed, look in coordinates of passed path object, and grab the starting coordiantes from there.
+        passed, look in coordinates of passed path object, and grab the starting coordinates from there.
     seed : int, default = 42
         Random seed
     trial_batch_size : int, default = 20
@@ -1124,7 +1168,7 @@ class RandomWalkState:
     initial_point : np.ndarray or None
         Specified initial coordinate
     include_compound : mbuild.compound.Compound, default None
-        If an mBuild Compound is given, the random walk with include its coordiantes
+        If an mBuild Compound is given, the random walk with include its coordinates
         when checking for overlapping sites.
     seed : int
         Random seed
