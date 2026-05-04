@@ -8,77 +8,135 @@ from mbuild.path.constraints import CuboidConstraint, CylinderConstraint
 logger = logging.getLogger(__name__)
 
 
-def get_second_point(state, existing_points, check_path, first_point):
-    """Generate a secound point from the given first point using RandomWalkState."""
-    # Find 2nd point
-    found_valid_point = False
-    if not state.volume_constraint:
-        found_valid_point = False
-        phiList = state.rng.uniform(0, 2 * np.pi, 10000)
-        cos_thetaList = state.rng.uniform(-1, 1, 10000)
-        thetaList = np.arccos(cos_thetaList)  # use to evenly sample sphereical space
-        for phi, theta in zip(phiList, thetaList):
-            offset = np.array(
-                [
-                    state.bond_length * np.sin(theta) * np.cos(phi),
-                    state.bond_length * np.sin(theta) * np.sin(phi),
-                    state.bond_length * np.cos(theta),
-                ]
-            )
-            if check_path(  # check for overlaps
-                existing_points=np.vstack((existing_points, first_point)),
-                new_point=offset + first_point,
-                radius=state.radius,
-                tolerance=state.tolerance,
-            ):
-                found_valid_point = True
-                break
+def get_second_point(state, existing_points, beads, check_path, next_step):
+    """Generate a secound point from the given first point using RandomWalkState.
 
-    else:
-        phiList = state.rng.uniform(0, 2 * np.pi, 10000)
-        cos_thetaList = state.rng.uniform(-1, 1, 10000)
-        thetaList = np.arccos(cos_thetaList)  # use to evenly sample sphereical space
-        for phi, theta in zip(phiList, thetaList):
-            offset = np.array(
-                [
-                    state.bond_length * np.sin(theta) * np.cos(phi),
-                    state.bond_length * np.sin(theta) * np.sin(phi),
-                    state.bond_length * np.cos(theta),
-                ]
-            )
-            state.attempts += 1
-            if state.termination.is_met() and not state.termination.success:
-                logger.error("Random walk not successful.")
-                logger.error(state.termination.summarize())
-                return
-            is_inside_mask = state.volume_constraint.is_inside(
-                points=np.array([first_point + offset]), buffer=state.radius
-            )
-            if np.all(is_inside_mask) and check_path(  # check for overlaps
-                existing_points=np.vstack((existing_points, first_point)),
-                new_point=offset + first_point,
-                radius=state.radius,
-                tolerance=state.tolerance,
-            ):
-                found_valid_point = True
-                break
-    if not found_valid_point:
-        raise PathConvergenceError(
-            f"No viable second point found within constraint and next to {state.initial_point=}. Try using a smaller radius than {state.radius=}"
-        )
-    return first_point + offset
+    Candidates are generated around the chain tip using a batch of trial angles
+    and vectors. If the walk uses ``link-linear`` connectivity and a previous
+    direction is available, candidates are angle-constrained relative to that
+    direction; otherwise a sphere of candidates is generated around the tip.
 
+    Parameters
+    ----------
+    state : RandomWalkState
+        The current state of the random walk, containing radius, bond_length,
+        tolerance, connectivity, volume_constraint, bias, and include_compound.
+    existing_points : np.ndarray, shape (N, 3)
+        Live coordinates accepted so far, sliced to ``coordinates[:state.count]``.
+        Must contain at least one point (the initial point).
+    beads : np.ndarray of str, shape (N,)
+        Bead names corresponding to ``existing_points``, sliced to the same
+        live length.
+    check_path : callable
+        Overlap-check function with signature
+        ``check_path(existing_points, new_point, radius, tolerance) -> bool``.
+    next_step : callable
+        Coordinate-generation function with signature
+        ``next_step(pos1, pos2, bond_length, thetas, r_vectors) -> np.ndarray``.
+        Pass ``pos1=None`` to generate a sphere around ``pos2``.
 
-def get_initial_point(state, existing_points, check_path, next_step):
-    """Generate a starting pointt from a RandomWalkState.
-    Could initialize from:
-        Specific xyz point
-        Build off of an index in the current paths coordinates
-        Random point in volume constraint
-        Random point
-
+    Returns
+    -------
+    np.ndarray, shape (3,) or None
+        The accepted second coordinate, or ``None`` if no valid candidate was
+        found within the trial batch.
 
     """
+    batch_angles, batch_vectors = generate_trials(state)
+    # If this RW is using link linear, pos2 = last site of last
+    # Set pos1 and pos2 before checking include compound and combining coordinates
+    if state.connectivity == "link-linear" and len(existing_points) > 1:
+        pos1 = existing_points[-1]
+        pos2 = existing_points[-2]
+    else:
+        pos1 = None
+        pos2 = existing_points[-1]
+    # Update existing points to include those in the compound.
+    if state.include_compound:
+        existing_points = np.concat((existing_points, state.include_compound.xyz))
+    xyzs = next_step(
+        pos1=pos1,
+        pos2=pos2,
+        bond_length=state.bond_length,
+        thetas=batch_angles,
+        r_vectors=batch_vectors,
+    )
+    if state.volume_constraint:
+        is_inside_mask = state.volume_constraint.is_inside(
+            points=xyzs, buffer=state.radius
+        )
+        xyzs = xyzs[is_inside_mask]
+
+    if state.bias:
+        xyzs = state.bias(candidates=xyzs, coordinates=existing_points, names=beads)
+
+    for xyz in xyzs:
+        if check_path(
+            existing_points=existing_points,
+            new_point=xyz,
+            radius=state.radius,
+            tolerance=state.tolerance,
+        ):
+            return xyz
+    return None
+
+
+def get_initial_point(state, existing_points, beads, check_path, next_step):
+    """Generate a starting pointt from a RandomWalkState.
+
+    The strategy for choosing a starting point depends on ``state.initial_point``:
+
+    - **np.ndarray (3,)**: the array is used directly as the starting coordinate.
+    - **int**: treated as an index into ``existing_points``; a new point is
+      generated in a sphere around that coordinate, filtered by volume
+      constraint and bias, and checked for overlaps.
+    - **None with volume_constraint**: candidates are sampled from the volume
+      constraint's low-density regions and checked for overlaps.
+    - **None without volume_constraint**: candidates are drawn uniformly at
+      random within the bounding box of ``existing_points`` (or a unit sphere
+      around the origin if no points exist yet) and checked for overlaps.
+
+    If ``state.include_compound`` is set, its coordinates are appended to
+    ``existing_points`` before overlap checks so that the new point does not
+    clash with the included compound's atoms.
+
+    Parameters
+    ----------
+    state : RandomWalkState
+        The current state of the random walk, containing initial_point, radius,
+        bond_length, tolerance, connectivity, volume_constraint, bias,
+        include_compound, and the trial-generation parameters.
+    existing_points : np.ndarray, shape (N, 3)
+        Live coordinates accepted so far, sliced to ``coordinates[:state.count]``.
+        May be empty at the start of the first walk.
+    beads : np.ndarray of str, shape (N,)
+        Bead names corresponding to ``existing_points``, sliced to the same
+        live length. Passed to the bias for sequence-aware scoring.
+    check_path : callable
+        Overlap-check function with signature
+        ``check_path(existing_points, new_point, radius, tolerance) -> bool``.
+    next_step : callable
+        Coordinate-generation function with signature
+        ``next_step(pos1, pos2, bond_length, thetas, r_vectors) -> np.ndarray``.
+        Used only when ``state.initial_point`` is an int.
+
+    Returns
+    -------
+    np.ndarray, shape (3,)
+        The accepted starting coordinate.
+
+    Raises
+    ------
+    ValueError
+        If ``state.initial_point`` is an int that is out of bounds for
+        ``existing_points``.
+    PathConvergenceError
+        If no valid starting point can be found within the trial batch,
+        regardless of which strategy is used.
+    """
+    if state.include_compound:
+        existing_points = np.concat((existing_points, state.include_compound.xyz))
+
     # An initial point was manuallyl given in hard_sphere_random_walk, use that.
     if isinstance(state.initial_point, np.ndarray) and state.initial_point.shape == (
         3,
@@ -89,8 +147,8 @@ def get_initial_point(state, existing_points, check_path, next_step):
     elif isinstance(state.initial_point, int):
         if state.initial_point >= len(existing_points):
             raise ValueError(
-                f"You passed a starting index of {state.initial_point} ",
-                f"but there are only {len(existing_points)} existing points in the path.",
+                f"You passed a starting index of {state.initial_point} "
+                f"but there are only {len(existing_points)} existing points in the path."
             )
         # generate point off of current path coordinates
         starting_xyz = existing_points[state.initial_point]
@@ -107,13 +165,10 @@ def get_initial_point(state, existing_points, check_path, next_step):
             is_inside_mask = state.volume_constraint.is_inside(
                 points=xyzs, buffer=state.radius
             )
-            is_inside_mask = state.volume_constraint.is_inside(
-                points=xyzs, buffer=state.radius
-            )
             xyzs = xyzs[is_inside_mask]
 
         if state.bias:
-            xyzs = state.bias(candidates=xyzs)
+            xyzs = state.bias(candidates=xyzs, coordinates=existing_points, names=beads)
 
         # Set up PBC info from volume constraints
         if isinstance(state.volume_constraint, CuboidConstraint):
@@ -146,8 +201,7 @@ def get_initial_point(state, existing_points, check_path, next_step):
             ):
                 return xyz
         raise PathConvergenceError(
-            f"Unable to find a starting point at {starting_xyz}"
-            f"Unable to find a starting point at {starting_xyz}"
+            f"Unable to find a starting point at {starting_xyz} "
             "without overlapping particles. "
             "Check your `initial_point` argument."
         )

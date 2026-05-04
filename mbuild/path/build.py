@@ -169,7 +169,8 @@ class Path:
             return
         index = len(self.bond_graph)
         for _ in self.coordinates[len(self.bond_graph) :]:
-            self.bond_graph.add_node(index)
+            name = self.beads[index]
+            self.bond_graph.add_node(index, name=name)
             index += 1
 
     def _extend_beads(self, bead_name):
@@ -874,7 +875,6 @@ def hard_sphere_random_walk(
         chunk_size=chunk_size,
         run_on_gpu=bool(run_on_gpu) and _get_cuda_available(),
     )
-
     if path is None:  # Create empty path
         path = Path()
 
@@ -963,6 +963,7 @@ def hard_sphere_random_walk(
         initial_xyz = get_initial_point(
             state=state,
             existing_points=coordinates[: state.count],
+            beads=beads[: state.count],
             check_path=check_path_cpu,
             next_step=next_step,
         )
@@ -977,8 +978,9 @@ def hard_sphere_random_walk(
         second_xyz = get_second_point(
             state=state,
             existing_points=coordinates[: state.count],
+            beads=beads[: state.count],
             check_path=check_path_cpu,
-            first_point=initial_xyz,
+            next_step=next_step,
         )
         if second_xyz is not None:
             coordinates[state.count] = second_xyz
@@ -986,14 +988,17 @@ def hard_sphere_random_walk(
             beads[state.count] = bead_name
             state.count += 1
             break
-        elif num_tries == 99:
-            raise PathConvergenceError(
-                f"Failed after {num_tries + 1} to generate a starting point. System is probably too densely packed."
-            )
-        elif state.initial_point is not None:
-            raise PathConvergenceError(
-                f"Failed to initiate random walk with {initial_point=}. Try a different initial_point."
-            )
+        else:
+            # Retrying first and second point, reduce count by 1
+            state.count -= 1
+            if state.initial_point is not None:
+                raise PathConvergenceError(
+                    f"Failed to initiate random walk with {initial_point=}. Try a different initial_point."
+                )
+            if num_tries == 99:
+                raise PathConvergenceError(
+                    f"Failed after {num_tries + 1} to generate a starting point. System is probably too densely packed."
+                )
 
     if state.check_termination(path, coordinates, beads):
         return path
@@ -1022,25 +1027,26 @@ def hard_sphere_random_walk(
             thetas=batch_angles,
             r_vectors=batch_vectors,
         )
-
-        if state.volume_constraint:  # should allow for pbc
+        # Create mask for particles inside volume constraint, allows for PBC
+        if state.volume_constraint:
             is_inside_mask = volume_constraint.is_inside(
                 points=candidates, buffer=radius
             )
             candidates = candidates[is_inside_mask]
-
+        # If there is a bias, sort candidates according to the bias
         if state.bias:
             candidates = bias(
                 candidates=candidates, coordinates=coordinates, names=beads
             )
-
+        # Handle postion for PBCs
         if any(pbc):
             candidates = volume_constraint.mins + np.mod(
                 candidates - volume_constraint.mins, box_lengths
             )
-
+        # Check candidate sites
         accept_xyz = None
         if state.run_on_gpu and len(candidates) > 0:
+            # Run on GPU checks all candidates, choses the first accepted
             dynamic_points = coordinates[state.init_count : state.count]
             valid_mask = check_path_gpu(
                 state.gpu_static_points,
@@ -1054,9 +1060,9 @@ def hard_sphere_random_walk(
                 accept_xyz = valid_candidates[0]
         else:
             existing_points = coordinates[: state.count]
-            if state.include_compound:
+            if state.include_compound:  # Include compound's particle coordinates
                 existing_points = np.concat((existing_points, include_compound.xyz))
-
+            # Iterate through current state of candidates, break after first accept
             for xyz in candidates:
                 if check_path_cpu(
                     existing_points=existing_points,
@@ -1214,6 +1220,9 @@ class RandomWalkState:
     def check_termination(self, path, coordinates, beads):
         """Examine and process termination if we have reached.
 
+        This method also clears the path, state, and coordinate
+        data structures from RW objects like Termination and Bias.
+
         Parameters
         ----------
         path : mbuild.path.Path, required
@@ -1232,6 +1241,7 @@ class RandomWalkState:
                 logger.warning("Random walk not successful.")
                 logger.warning(self.termination.summarize())
                 return True
+            # RW is terminated and successful, update bond graph
             self.termination._clean()
             if self.bias:
                 self.bias._clean()
@@ -1250,7 +1260,7 @@ class RandomWalkState:
                     np.arange(self.previous_count, self.count),
                     self.previous_count,
                 )
-            path._extend_beads(self.bead_name)
+            # path._extend_beads(self.bead_name)
             return True
         return False
 
