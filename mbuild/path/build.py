@@ -1082,7 +1082,9 @@ def hard_sphere_random_walk(
         # If there is a bias, sort candidates according to the bias
         if state.bias:
             candidates = bias(
-                candidates=candidates, coordinates=coordinates, names=beads
+                candidates=candidates,
+                coordinates=coordinates[: state.count],
+                names=beads[: state.count],
             )
         # Handle postion for PBCs
         if any(pbc):
@@ -1135,7 +1137,9 @@ def hard_sphere_random_walk(
             coordinates = path.coordinates
             beads = path.beads
 
-        walk_finished = termination.is_met()
+        walk_finished = termination.is_met(
+            coordinates=coordinates[: state.count], names=beads[: state.count]
+        )
     state.check_termination(path, coordinates, beads)
 
     return path
@@ -1278,7 +1282,9 @@ class RandomWalkState:
         beads : np.ndarray (N, 3), required
             The up-to-date bead name array from the last random walk chunk
         """
-        if self.termination.is_met():
+        if self.termination.is_met(
+            coordinates=coordinates[: self.count], names=beads[: self.count]
+        ):
             if self.termination.success:
                 logger.info("Random walk successful.")
                 path.coordinates = coordinates[: self.count]

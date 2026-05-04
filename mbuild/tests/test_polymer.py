@@ -6,19 +6,17 @@ import pytest
 
 import mbuild as mb
 from mbuild import Polymer
-from mbuild.path import HardSphereRandomWalk
+from mbuild.path import hard_sphere_random_walk
 from mbuild.path.termination import NumAttempts, NumSites, Termination
 from mbuild.tests.base_test import BaseTest
 
 
 class TestPolymer(BaseTest):
     def test_build_from_path(self, ethane_chain):
-        path = HardSphereRandomWalk(
+        path = hard_sphere_random_walk(
             termination=Termination([NumSites(20), NumAttempts(1e4)]),
             bond_length=0.25,
             radius=0.22,
-            min_angle=np.pi / 2,
-            max_angle=np.pi,
             seed=14,
         )
         ethane_chain.build_from_path(path=path, energy_minimize=False)
@@ -28,12 +26,10 @@ class TestPolymer(BaseTest):
             assert np.allclose(pos1, pos2, atol=0.1)
 
     def test_build_from_path_with_end_groups(self, ethane_chain):
-        path = HardSphereRandomWalk(
+        path = hard_sphere_random_walk(
             termination=Termination([NumSites(20), NumAttempts(1e4)]),
             bond_length=0.25,
             radius=0.22,
-            min_angle=np.pi / 2,
-            max_angle=np.pi,
             seed=14,
         )
         acid = mb.load("C{*}(=O)O", smiles=True)

@@ -51,12 +51,12 @@ class Termination:
             i.path = None
             i.state = None
 
-    def is_met(self):
+    def is_met(self, coordinates, names):
         # Check required criteria first
-        if all([i.is_met() for i in self.is_target]):
+        if all([i.is_met(coordinates, names) for i in self.is_target]):
             self.success = True
             return True
-        if any([i.is_met() for i in self.not_is_target]):
+        if any([i.is_met(coordinates, names) for i in self.not_is_target]):
             return True
         return False
 
@@ -108,7 +108,7 @@ class Terminator:
         self.path = path
         self.state = state
 
-    def is_met(self):
+    def is_met(self, coordinates, names):
         """Implemented in sub classes of Terminator."""
         raise NotImplementedError
 
@@ -134,7 +134,7 @@ class NumSites(Terminator):
         self.num_sites = num_sites
         super().__init__(is_target)
 
-    def is_met(self):
+    def is_met(self, coordinates, names):
         if self.state is None:
             return False
         return self.state.count - self.state.init_count >= self.num_sites
@@ -161,7 +161,7 @@ class NumAttempts(Terminator):
         self.max_attempts = int(max_attempts)
         super().__init__(is_target)
 
-    def is_met(self):
+    def is_met(self, coordinates, names):
         if self.state is None:
             return False
         if self.state.attempts >= self.max_attempts:
@@ -191,7 +191,7 @@ class WallTime(Terminator):
         self.max_time = max_time
         super().__init__(is_target)
 
-    def is_met(self):
+    def is_met(self, coordinates, names):
         if self.state is None or self.state.start_time is None:
             return False
         current_time = time.time()
@@ -229,12 +229,8 @@ class WithinCoordinate(Terminator):
         self.tolerance = tolerance
         super().__init__(is_target)
 
-    def is_met(self):
-        if self.state is None or self.path is None:
-            return False
-        if self.state.count < 0 or self.state.count >= len(self.path.coordinates):
-            return False
-        last_site = self.path.coordinates[self.state.count]
+    def is_met(self, coordinates, names):
+        last_site = coordinates[-1]
         current_distance = np.linalg.norm(self.target_coordinate - last_site)
         if current_distance <= self.distance + self.tolerance:
             self._is_met = True
@@ -266,12 +262,12 @@ class PairDistance(Terminator):
         self.pair_type = pair_type
         super().__init__(is_target)
 
-    def is_met(self):
+    def is_met(self, coordinates, names):
         raise NotImplementedError
 
 
 class RadiusOfGyration(Terminator):
-    """A terminator that triggers after reaching a target square radius of gyration.
+    """A terminator that triggers after reaching a maximum target square radius of gyration.
 
     Parameters
     ----------
@@ -287,6 +283,12 @@ class RadiusOfGyration(Terminator):
         triggering a safeguard causes the walk to stop without being considered
         successful.
 
+    Notes
+    -----
+    This termination event will trigger once the coordinates Rg^2 is >= Rg^2 target.
+    It is possible that the final squared radius of gyration is larger than the
+    target.
+
     """
 
     def __init__(self, radius_of_gyration, tolerance=0.01, is_target=True):
@@ -294,18 +296,15 @@ class RadiusOfGyration(Terminator):
         self.tolerance = tolerance
         super().__init__(is_target)
 
-    def is_met(self):
-        if self.state is None or self.path is None:
-            return False
+    def is_met(self, coordinates, names):
         # Enforce at least 2 sites
-        n = self.state.count - self.state.init_count + 1
+        n = self.state.count - self.state.init_count
         if n < 2:
             return False
-        coords = self.path.coordinates[self.state.init_count : self.state.count + 1]
-        center = coords.mean(axis=0)
-        diffs = coords - center
+        center = coordinates.mean(axis=0)
+        diffs = coordinates - center
         rg2 = np.mean(np.sum(diffs * diffs, axis=1))
-        if self.rg - self.tolerance <= rg2 <= self.rg + self.tolerance:
+        if rg2 >= self.rg - self.tolerance:
             self._is_met = True
             return True
         return False
@@ -335,11 +334,9 @@ class ContourLength(Terminator):
         self.tolerance = tolerance
         super().__init__(is_target)
 
-    def is_met(self):
-        if self.state is None:
-            return False
+    def is_met(self, coordinates, names):
         # Enforce at least 2 sites
-        n = self.state.count - self.state.init_count + 1
+        n = self.state.count - self.state.init_count
         if (
             self.length - self.tolerance
             <= n * self.state.bond_length
@@ -351,7 +348,7 @@ class ContourLength(Terminator):
 
 
 class EndToEndDistance(Terminator):
-    """A terminator that triggers after reaching a target end-to-end distance.
+    """A terminator that triggers after reaching a target end-to-end distance (Re).
 
     Parameters
     ----------
@@ -367,6 +364,12 @@ class EndToEndDistance(Terminator):
         triggering a safeguard causes the walk to stop without being considered
         successful.
 
+    Notes
+    -----
+    This termination event will trigger once the coordinates Re is >= target Re.
+    It is possible that the final end-to-end distance is larger than the
+    target.
+
     """
 
     def __init__(self, distance, tolerance=0.01, is_target=True):
@@ -374,20 +377,14 @@ class EndToEndDistance(Terminator):
         self.tolerance = tolerance
         super().__init__(is_target)
 
-    def is_met(self):
-        if self.state is None or self.path is None:
-            return False
+    def is_met(self, coordinates, names):
         # Enforce at least 2 sites
-        n = self.state.count - self.state.init_count + 1
+        n = self.state.count - self.state.init_count
         if n < 2:
             return False
-        first_site = self.path.coordinates[self.state.init_count]
-        last_site = self.path.coordinates[self.state.count]
-        if (
-            self.distance - self.tolerance
-            <= np.linalg.norm(last_site - first_site)
-            <= self.distance + self.tolerance
-        ):
+        first_site = coordinates[0]
+        last_site = coordinates[-1]
+        if np.linalg.norm(last_site - first_site) >= self.distance - self.tolerance:
             self._is_met = True
             return True
         return False
