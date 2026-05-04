@@ -534,7 +534,7 @@ class Polymer(Compound):
                 f"Particle tag {tail_tag} was not found in the compound's particles."
             )
 
-        if tail_tag == head_tag:
+        if tail_tag == head_tag and len(tail) > 1:
             tail = tail[1]  # take second match
         else:
             tail = tail[0]  # take first match

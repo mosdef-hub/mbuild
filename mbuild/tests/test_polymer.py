@@ -105,11 +105,7 @@ class TestPolymer(BaseTest):
     def test_multiple_tags_found(self):
         chain = mb.Polymer()
         monomer = mb.load("C{*}C{*}", smiles=True)
-        with pytest.raises(RuntimeError):
-            chain.add_monomer(monomer, head_tag="*", tail_tag="*", separation=0.145)
-        with pytest.raises(RuntimeError):
-            chain.add_monomer(monomer, head_tag="*", tail_tag="*", separation=0.145)
-
+        chain.add_monomer(monomer, head_tag="*", tail_tag="*", separation=0.145)
         acid = mb.load("C{*}(=O)O{*}", smiles=True)
         with pytest.raises(RuntimeError):
             chain.add_end_groups(
