@@ -90,6 +90,31 @@ class TestRandomNamer:
         namer = RandomNamer(["_A"], seed=0)
         assert [next(namer) for _ in range(5)] == ["_A"] * 5
 
+    def test_weight_scaling_invariance(self):
+        # [0.5, 0.5], [1, 1], and [50, 50] all normalize to the same probabilities
+        r1 = [
+            next(RandomNamer(["_A", "_B"], weights=[0.5, 0.5], seed=7))
+            for _ in range(20)
+        ]
+        r2 = [
+            next(RandomNamer(["_A", "_B"], weights=[1, 1], seed=7)) for _ in range(20)
+        ]
+        r3 = [
+            next(RandomNamer(["_A", "_B"], weights=[50, 50], seed=7)) for _ in range(20)
+        ]
+        assert r1 == r2 == r3
+
+    def test_decimal_weights_unequal(self):
+        # [0.1, 1] normalizes to ~[0.09, 0.91] — same as [1, 10]
+        r1 = [
+            next(RandomNamer(["_A", "_B"], weights=[0.1, 1.0], seed=7))
+            for _ in range(20)
+        ]
+        r2 = [
+            next(RandomNamer(["_A", "_B"], weights=[1, 10], seed=7)) for _ in range(20)
+        ]
+        assert r1 == r2
+
 
 class TestCyclicNamer:
     def test_flat_sequence_alternating(self):
@@ -164,6 +189,18 @@ class TestRandomNamerStrict:
         with pytest.raises(ValueError, match="counts must be >= 1"):
             RandomNamer(["_A", "_B"], weights=[0, 1], strict=True)
 
+    def test_strict_decimal_weights_that_round_cleanly(self):
+        # [1.0, 3.0] rounds to [1, 3] — works fine
+        namer = RandomNamer(["_A", "_B"], weights=[1.0, 3.0], strict=True, seed=0)
+        result = [next(namer) for _ in range(40)]
+        assert result.count("_A") == 10
+        assert result.count("_B") == 30
+
+    def test_strict_small_decimal_raises(self):
+        # [0.5, 0.5] rounds to [0, 0] — strict mode needs integer counts >= 1
+        with pytest.raises(ValueError, match="counts must be >= 1"):
+            RandomNamer(["_A", "_B"], weights=[0.5, 0.5], strict=True)
+
     def test_strict_seeded_reproducibility(self):
         a = [
             next(RandomNamer(["_A", "_B"], weights=[1, 3], strict=True, seed=7))
@@ -202,6 +239,16 @@ class TestMarkovNamer:
         namer = MarkovNamer(["_A", "_B"], [[2, 2], [1, 3]], start="_A", seed=42)
         result = {next(namer) for _ in range(50)}
         assert result <= {"_A", "_B"}
+
+    def test_matrix_scaling_invariance(self):
+        # [[0.5, 0.5], ...], [[1, 1], ...], and [[50, 50], ...] all normalize identically
+        m1 = [[0.5, 0.5], [0.5, 0.5]]
+        m2 = [[1, 1], [1, 1]]
+        m3 = [[50, 50], [50, 50]]
+        r1 = [next(MarkovNamer(["_A", "_B"], m1, seed=7)) for _ in range(20)]
+        r2 = [next(MarkovNamer(["_A", "_B"], m2, seed=7)) for _ in range(20)]
+        r3 = [next(MarkovNamer(["_A", "_B"], m3, seed=7)) for _ in range(20)]
+        assert r1 == r2 == r3
 
     def test_start_by_name(self):
         namer = MarkovNamer(["_A", "_B"], [[0, 1], [1, 0]], start="_B", seed=0)

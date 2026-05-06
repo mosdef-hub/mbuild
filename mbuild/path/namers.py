@@ -1,4 +1,4 @@
-"""Bead name generators for use with hard_sphere_random_walk."""
+"""Bead name generators for methods in mbuild.path.build.py."""
 
 import itertools
 from abc import ABC, abstractmethod
@@ -28,7 +28,7 @@ class BeadNamer(ABC):
 
     @classmethod
     def coerce(cls, value):
-        """Return value unchanged if it is a BeadNamer; wrap strings in ConstantNamer."""
+        """Return value unchanged if it is a BeadNamer or wrap strings in ConstantNamer."""
         if isinstance(value, BeadNamer):
             return value
         if isinstance(value, str):
@@ -110,18 +110,6 @@ class RandomNamer(BeadNamer):
         if self.strict:
             return f"RandomNamer({self.names!r}, strict=True)"
         return f"RandomNamer({self.names!r}, weights={self._weights})"
-
-
-def _flatten_sequence(sequence):
-    """Expand a mixed list of names / (name, count) tuples into a flat list."""
-    result = []
-    for item in sequence:
-        if isinstance(item, tuple):
-            name, count = item
-            result.extend([name] * int(count))
-        else:
-            result.append(item)
-    return result
 
 
 class MarkovNamer(BeadNamer):
@@ -267,3 +255,15 @@ class CyclicNamer(BeadNamer):
 
     def __repr__(self):
         return f"CyclicNamer({self._flat!r})"
+
+
+def _flatten_sequence(sequence):
+    """Expand a mixed list of names / (name, count) tuples into a flat list."""
+    result = []
+    for item in sequence:
+        if isinstance(item, tuple):
+            name, count = item
+            result.extend([name] * int(count))
+        else:
+            result.append(item)
+    return result
