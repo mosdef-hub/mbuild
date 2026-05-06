@@ -1328,7 +1328,6 @@ def energy_minimize_path(
     nonbonded_force.setNonbondedMethod(openmm.NonbondedForce.CutoffPeriodic)
     nonbonded_force.setCutoffDistance(0.3 * u.nanometer)
     epsilon = 0.1 * u.kilocalories_per_mole
-    mass = 12 * u.amu
     if isinstance(radius, dict):
         # Per-bead-type sigma
         for i in range(n_particles):
@@ -1337,12 +1336,12 @@ def energy_minimize_path(
                 sigma = radius[bead_name] * u.nanometer
             else:
                 sigma = 0.1 * u.nanometer  # fallback default
-            nonbonded_force.addParticle(mass, sigma, epsilon)
+            nonbonded_force.addParticle(0.0, sigma, epsilon)
     else:
         # Single sigma for all particles
         sigma = radius * u.nanometer
         for i in range(n_particles):
-            nonbonded_force.addParticle(mass, sigma, epsilon)
+            nonbonded_force.addParticle(0.0, sigma, epsilon)
 
     system.addForce(nonbonded_force)
 
