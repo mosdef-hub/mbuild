@@ -9,7 +9,9 @@ import numpy as np
 class BeadNamer(ABC):
     """Abstract base class for bead name generators.
 
-    Subclasses must implement ``__next__``. Instances are iterators —
+    Subclasses must implement ``__next__``.
+
+    Instances are iterators:
     ``next(namer)`` returns the name for the next accepted bead.
 
     Pass a plain string anywhere a ``BeadNamer`` is expected and
@@ -126,8 +128,7 @@ class MarkovNamer(BeadNamer):
     """Generates bead names from a first-order Markov chain.
 
     Each bead name is drawn based on the transition probabilities from the
-    current state. This models real copolymer statistics — blocky, alternating,
-    and purely random sequences are all special cases of the transition matrix.
+    current state.
 
     Parameters
     ----------
@@ -145,7 +146,7 @@ class MarkovNamer(BeadNamer):
 
     Examples
     --------
-    Perfect alternation (syndiotactic-like):
+    Perfect alternation:
 
     >>> namer = MarkovNamer(["_A", "_B"], [[0, 1], [1, 0]], start="_A", seed=0)
     >>> [next(namer) for _ in range(6)]
@@ -266,5 +267,3 @@ class CyclicNamer(BeadNamer):
 
     def __repr__(self):
         return f"CyclicNamer({self._flat!r})"
-
-

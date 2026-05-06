@@ -156,7 +156,7 @@ class TestRandomNamerStrict:
         namer = RandomNamer(["_A", "_B"], weights=[1, 1], strict=True, seed=0)
         period_a = [next(namer) for _ in range(2)]
         period_b = [next(namer) for _ in range(2)]
-        # Both periods have exact composition; order may differ
+        # Both periods have exact composition but order may differ
         assert sorted(period_a) == ["_A", "_B"]
         assert sorted(period_b) == ["_A", "_B"]
 
@@ -165,8 +165,14 @@ class TestRandomNamerStrict:
             RandomNamer(["_A", "_B"], weights=[0, 1], strict=True)
 
     def test_strict_seeded_reproducibility(self):
-        a = [next(RandomNamer(["_A", "_B"], weights=[1, 3], strict=True, seed=7)) for _ in range(20)]
-        b = [next(RandomNamer(["_A", "_B"], weights=[1, 3], strict=True, seed=7)) for _ in range(20)]
+        a = [
+            next(RandomNamer(["_A", "_B"], weights=[1, 3], strict=True, seed=7))
+            for _ in range(20)
+        ]
+        b = [
+            next(RandomNamer(["_A", "_B"], weights=[1, 3], strict=True, seed=7))
+            for _ in range(20)
+        ]
         assert a == b
 
     def test_strict_repr(self):
@@ -192,7 +198,7 @@ class TestMarkovNamer:
         assert all(r == "_B" for r in result[1:])
 
     def test_row_normalization(self):
-        # Unnormalized rows (e.g. raw counts) should be normalized automatically
+        # Unnormalized rows (raw counts) should be normalized automatically
         namer = MarkovNamer(["_A", "_B"], [[2, 2], [1, 3]], start="_A", seed=42)
         result = {next(namer) for _ in range(50)}
         assert result <= {"_A", "_B"}
@@ -217,7 +223,9 @@ class TestMarkovNamer:
         assert [next(namer) for _ in range(6)] == ["_A", "_B", "_C", "_A", "_B", "_C"]
 
     def test_repr(self):
-        assert "MarkovNamer" in repr(MarkovNamer(["_A", "_B"], [[0.5, 0.5], [0.5, 0.5]]))
+        assert "MarkovNamer" in repr(
+            MarkovNamer(["_A", "_B"], [[0.5, 0.5], [0.5, 0.5]])
+        )
 
 
 class TestGradientNamer:
@@ -257,10 +265,17 @@ class TestGradientNamer:
             assert next(namer) in {"_A", "_B"}
 
     def test_seeded_reproducibility(self):
-        a = [next(GradientNamer(["_A", "_B"], [1, 0], [0, 1], n_steps=10, seed=5)) for _ in range(10)]
-        b = [next(GradientNamer(["_A", "_B"], [1, 0], [0, 1], n_steps=10, seed=5)) for _ in range(10)]
+        a = [
+            next(GradientNamer(["_A", "_B"], [1, 0], [0, 1], n_steps=10, seed=5))
+            for _ in range(10)
+        ]
+        b = [
+            next(GradientNamer(["_A", "_B"], [1, 0], [0, 1], n_steps=10, seed=5))
+            for _ in range(10)
+        ]
         assert a == b
 
     def test_repr(self):
-        assert "GradientNamer" in repr(GradientNamer(["_A", "_B"], [1, 0], [0, 1], n_steps=10))
-
+        assert "GradientNamer" in repr(
+            GradientNamer(["_A", "_B"], [1, 0], [0, 1], n_steps=10)
+        )

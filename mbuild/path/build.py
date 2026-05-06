@@ -11,6 +11,7 @@ from scipy.interpolate import interp1d
 from mbuild import Compound
 from mbuild.exceptions import PathConvergenceError
 from mbuild.path.constraints import CuboidConstraint, CylinderConstraint
+from mbuild.path.namers import BeadNamer
 from mbuild.path.path_utils import (
     calculate_sq_distances,
     check_path,
@@ -22,7 +23,6 @@ from mbuild.path.points import (
     get_initial_point,
     get_second_point,
 )
-from mbuild.path.namers import BeadNamer
 from mbuild.path.termination import NumSites, Termination, Terminator
 
 logger = logging.getLogger(__name__)
@@ -397,8 +397,10 @@ def lamellar(
         The distance between two stacked layers. Required if `num_stacks` >= 2.
     left_to_right : boolean, default True
         If `True`, the first layer is built with increasing y-coordinates from the origin.
-    bead_name : str or np.ndarray (N, 1), optional default _A
-        The bead names in the path.
+    bead_name : str or BeadNamer, optional, default '_A'
+        Name(s) to assign to beads. A plain string assigns the same name to
+        every bead. Pass a ``BeadNamer`` instance (e.g. ``CyclicNamer``,
+        ``RandomNamer``, ``MarkovNamer``) for heterogeneous sequences.
     """
     if path is None:
         path = Path()
@@ -528,8 +530,10 @@ def straight_line(path, spacing, N, direction=(1, 0, 0), bead_name="_A"):
         The distance between sites along the path.
     direction : array-like (1,3), default = (1,0,0)
         The direction to align the straight path along.
-    bead_name : str or np.ndarray (N, 1), optional default _A
-        The bead names in the path.
+    bead_name : str or BeadNamer, optional, default '_A'
+        Name(s) to assign to beads. A plain string assigns the same name to
+        every bead. Pass a ``BeadNamer`` instance for heterogeneous sequences.
+        See mbuild.path.namers.py
     """
     direction = np.asarray(direction)
     coordinates = np.array([np.zeros(3) + i * spacing * direction for i in range(N)])
@@ -559,8 +563,10 @@ def cyclic(path, spacing=None, N=None, radius=None, closed=True, bead_name="_A")
         The radius (nm) of the cyclic path.
     closed : bool, default True
         If `True` the cyclic path is closed by bonding the first and last sites together
-    bead_name : str or np.ndarray (N, 1), optional default _A
-        The bead names in the path.
+    bead_name : str or BeadNamer, optional, default '_A'
+        Name(s) to assign to beads. A plain string assigns the same name to
+        every bead. Pass a ``BeadNamer`` instance for heterogeneous sequences.
+        See mbuild.path.namers.py
 
     Notes
     -----
@@ -614,8 +620,10 @@ def knot(path, spacing, N, m, closed=True, bead_name="_A"):
         3 gives the trefoil knot, 4 gives the figure 8 knot and 5 gives the cinquefoil knot.
     closed : bool, default True
         If `True` the cyclic path is closed by bonding the first and last sites together
-    bead_name : str or np.ndarray (N, 1), optional default _A
-        The bead names in the path.
+    bead_name : str or BeadNamer, optional, default '_A'
+        Name(s) to assign to beads. A plain string assigns the same name to
+        every bead. Pass a ``BeadNamer`` instance for heterogeneous sequences.
+        See mbuild.path.namers.py
     """
     # Generate dense sites first, sample actual ones later from spacing
     t_dense = np.linspace(0, 2 * np.pi, 5000)
@@ -697,8 +705,10 @@ def helix(
         Set the handedness of the helical twist
     bottom_up : bool, default True
         If True, the twist is in the positive Z direction
-    bead_name : str or np.ndarray (N, 1), optional default _A
-        The bead names in the path.
+    bead_name : str or BeadNamer, optional, default '_A'
+        Name(s) to assign to beads. A plain string assigns the same name to
+        every bead. Pass a ``BeadNamer`` instance for heterogeneous sequences.
+        See mbuild.path.namers.py
     """
     coordinates = np.zeros((N, 3))
     indices = reversed(range(N)) if not bottom_up else range(N)
@@ -738,8 +748,10 @@ def spiral_2D(path, N, a, b, spacing, bead_name="_A"):
         Determines how fast radius grows per angle increment (r = a + bθ)
     spacing : float, required
         Distance between adjacent sites (nm)
-    bead_name : str or np.ndarray (N, 1), optional default _A
-        The bead names in the path.
+    bead_name : str or BeadNamer, optional, default '_A'
+        Name(s) to assign to beads. A plain string assigns the same name to
+        every bead. Pass a ``BeadNamer`` instance for heterogeneous sequences.
+        See mbuild.path.namers.py
     """
     coordinates = np.zeros((N, 3))
     theta = 0.0
@@ -791,8 +803,10 @@ def zigzag(
         The number of sites before rotating and beginning next segment.
     plane : str, default = "xy"
         The plane that the sites in the path occupy
-    bead_name : str or np.ndarray (N, 1), optional default _A
-        The bead names in the path.
+    bead_name : str or BeadNamer, optional, default '_A'
+        Name(s) to assign to beads. A plain string assigns the same name to
+        every bead. Pass a ``BeadNamer`` instance for heterogeneous sequences.
+        See mbuild.path.namers.py
     """
     if N % sites_per_segment != 0:
         raise ValueError("N must be evenly divisible by sites_per_segment")
@@ -874,11 +888,10 @@ def hard_sphere_random_walk(
     -----------
     path : mbuild.path.Path, default None.
         The Path object to populate with coordinates. Creates a new path object if not passed.
-    bead_name : str or BeadNamer, default `'_A'`
-        Name(s) to assign to nodes added during this walk. A plain string is
-        wrapped in ``ConstantNamer`` automatically. Pass a ``BeadNamer``
-        instance (e.g. ``CyclicNamer``, ``RandomNamer``) for heterogeneous
-        sequences. ``next(namer)`` is called once per *accepted* bead.
+    bead_name : str or BeadNamer, optional, default '_A'
+        Name(s) to assign to beads. A plain string assigns the same name to
+        every bead. Pass a ``BeadNamer`` instance for heterogeneous sequences.
+        See mbuild.path.namers.py
     bond_length : float, default 0.15 nm
         Fixed bond length between 2 coordinates.
     radius : float, default 0.1 nm
