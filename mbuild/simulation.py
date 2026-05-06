@@ -3,6 +3,7 @@
 import logging
 import os
 import tempfile
+from itertools import combinations
 from warnings import warn
 
 import gmso
@@ -1255,8 +1256,46 @@ def _energy_minimize_openbabel(
 
 
 def energy_minimize_path(
-    path, bead_size=0.3, bond_length=None, steps=1000, seed=1, nthreads=1
+    path,
+    radius=0.3,
+    bonds=None,
+    angles=None,
+    box=None,
+    steps=1000,
+    seed=1,
+    nthreads=1,
 ):
+    """Perform an OpenMM simulation to relax the current path.
+
+    Runs a short energy minimization simulation in OpenMM.
+
+    Parameters
+    ----------
+    radius : float
+        Bead sigma size set in the simulation.
+    bonds : float or dictionary or string, optional
+        Bond lengths used for all bonds.
+        If a dictionary is passed, key=(bead_name, bead_name) and
+        value is {'r': float, 'k': float}. r is in units of nm and k is in units of kcal/nm**2.
+        If a float is passed, that is set as r in nanometers for a harmonic bond.
+        If 'constrain' is passed, then bonds are constrained.
+        If None is passed, then no harmonic bond forces are applied..
+    angles : float or dictionary or string, optional
+        Harmonic angle forces used for all angles.
+        If a dictionary is passed, key=(bead_name, central_bead_name, bead_name) and
+        value is {'theta': float, 'k': float}. r is in units of nm and k is in units of degrees.
+        If a float is passed, that is set as theta in degress for a harmonic angle.
+        If 'constrain' is passed, then angles are constrained.
+        If None is passed, no angle force is used.
+    box : mb.Box, optional
+        Box to use for periodic boundaries.
+    steps : int, optional, default 1,000
+        Number of simulation steps to run.
+    seed : int, optional, default 1
+        Random seed for integrator.
+    nthreads : int, optional, default 1
+        Number of threads to use during OpenMM simulation.
+    """
     # TODO: Set equilibrium or constrained angle
     positions = path.coordinates
     n_particles = len(positions)
@@ -1274,7 +1313,7 @@ def energy_minimize_path(
 
     system = openmm.System()
     for i in range(n_particles):
-        system.addParticle(1.0 * u.amu)
+        system.addParticle(12.0 * u.amu)  # default mass of carbon
 
     # Create a Langenvin Integrator in OpenMM
     integrator = LangevinIntegrator(
@@ -1286,28 +1325,140 @@ def energy_minimize_path(
 
     # Set nonbonded force for each particle
     nonbonded_force = openmm.NonbondedForce()
-    nonbonded_force.setNonbondedMethod(openmm.NonbondedForce.NoCutoff)
-    sigma = bead_size * u.nanometer
+    nonbonded_force.setNonbondedMethod(openmm.NonbondedForce.CutoffPeriodic)
+    nonbonded_force.setCutoffDistance(0.3 * u.nanometer)
     epsilon = 0.1 * u.kilocalories_per_mole
-    for i in range(n_particles):
-        nonbonded_force.addParticle(0.0, sigma, epsilon)
+    if isinstance(radius, dict):
+        # Per-bead-type sigma
+        for i in range(n_particles):
+            bead_name = path.beads[i]
+            if bead_name in radius:
+                sigma = radius[bead_name] * u.nanometer
+            else:
+                sigma = 0.1 * u.nanometer  # fallback default
+            nonbonded_force.addParticle(0.0, sigma, epsilon)
+    else:
+        # Single sigma for all particles
+        sigma = radius * u.nanometer
+        for i in range(n_particles):
+            nonbonded_force.addParticle(0.0, sigma, epsilon)
+
     system.addForce(nonbonded_force)
 
-    if not bond_length:
+    # --- Bond forces ---
+    if bonds == "constrain":
+        # Constrain all bonds at current lengths
         for i, j in path.bond_graph.edges():
-            bond_length = np.linalg.norm(positions[j] - positions[i])
-            system.addConstraint(i, j, bond_length * u.nanometer)
-    else:
-        # Use HarmonicBondForce instead of constraints
+            delta = positions[j] - positions[i]
+            if box:
+                box_arr = np.array(box)
+                delta -= np.round(delta / box_arr) * box_arr
+            bl = np.linalg.norm(delta)
+            system.addConstraint(i, j, bl * u.nanometer)
+
+    elif isinstance(bonds, dict):
+        # Per-type harmonic bonds
         harmonic_force = openmm.HarmonicBondForce()
+        if box:
+            harmonic_force.setUsesPeriodicBoundaryConditions(True)
+
+        for i, j in path.bond_graph.edges():
+            i_bead = path.beads[i]
+            j_bead = path.beads[j]
+
+            bond_key = (i_bead, j_bead)
+            bond_key_rev = (j_bead, i_bead)
+
+            params = None
+            if bond_key in bonds:
+                params = bonds[bond_key]
+            elif bond_key_rev in bonds:
+                params = bonds[bond_key_rev]
+
+            if params is not None:
+                harmonic_force.addBond(
+                    i,
+                    j,
+                    params["r"] * u.nanometer,
+                    params["k"] * u.kilocalories_per_mole / u.nanometer**2,
+                )
+            else:
+                # Fallback: constrain at current distance
+                delta = positions[j] - positions[i]
+                if box:
+                    box_arr = np.array(box)
+                    delta -= np.round(delta / box_arr) * box_arr
+                bl = np.linalg.norm(delta)
+                system.addConstraint(i, j, bl * u.nanometer)
+
+        system.addForce(harmonic_force)
+
+    elif isinstance(bonds, (int, float)):
+        # Single float: same equilibrium length for all bonds
+        harmonic_force = openmm.HarmonicBondForce()
+        if box:
+            harmonic_force.setUsesPeriodicBoundaryConditions(True)
         for i, j in path.bond_graph.edges():
             harmonic_force.addBond(
                 i,
                 j,
-                bond_length * u.nanometer,
+                bonds * u.nanometer,
                 300 * u.kilocalories_per_mole / u.nanometer**2,
             )
         system.addForce(harmonic_force)
+
+    # --- Angle forces ---
+    if angles == "constrain":
+        # Constrain angles by fixing the 1-3 distance
+        for center_node in path.bond_graph.nodes():
+            neighbors = list(path.bond_graph.neighbors(center_node))
+            if len(neighbors) < 2:
+                continue
+            for i_node, k_node in combinations(neighbors, 2):
+                delta = positions[k_node] - positions[i_node]
+                if box:
+                    box_arr = np.array(box)
+                    delta -= np.round(delta / box_arr) * box_arr
+                dist_13 = np.linalg.norm(delta)
+                system.addConstraint(i_node, k_node, dist_13 * u.nanometer)
+
+    elif isinstance(angles, dict):
+        # Per-type harmonic angles
+        angle_force = openmm.HarmonicAngleForce()
+        if box:
+            angle_force.setUsesPeriodicBoundaryConditions(True)
+
+        for center_node in path.bond_graph.nodes():
+            neighbors = list(path.bond_graph.neighbors(center_node))
+            if len(neighbors) < 2:
+                continue
+
+            center_bead = path.beads[center_node]
+
+            for i_node, k_node in combinations(neighbors, 2):
+                i_bead = path.beads[i_node]
+                k_bead = path.beads[k_node]
+
+                angle_key = (i_bead, center_bead, k_bead)
+                angle_key_rev = (k_bead, center_bead, i_bead)
+
+                params = None
+                if angle_key in angles:
+                    params = angles[angle_key]
+                elif angle_key_rev in angles:
+                    params = angles[angle_key_rev]
+
+                if params is not None:
+                    theta_rad = np.radians(params["theta"])
+                    angle_force.addAngle(
+                        i_node,
+                        center_node,
+                        k_node,
+                        theta_rad * u.radians,
+                        params["k"] * u.kilocalories_per_mole / u.radian**2,
+                    )
+
+        system.addForce(angle_force)
 
     topology = Topology()
     chain = topology.addChain()
@@ -1320,14 +1471,23 @@ def energy_minimize_path(
         topology.addBond(atomsList[i], atomsList[j])
 
     simulation = Simulation(topology, system, integrator, platform)
-    simulation.context.setPositions(positions)
+    simulation.context.setPositions(positions * u.nanometer)
+    if box:
+        simulation.context.setPeriodicBoxVectors(
+            [box[0], 0, 0] * u.nanometer,
+            [0, box[1], 0] * u.nanometer,
+            [0, 0, box[2]] * u.nanometer,
+        )
 
     # Run energy minimization through OpenMM
-    simulation.minimizeEnergy(maxIterations=steps)
+    simulation.minimizeEnergy(
+        maxIterations=steps, tolerance=1e-4 * u.kilojoules_per_mole / u.nanometer
+    )
 
     # Get positions directly
     state = simulation.context.getState(getPositions=True)
     pos = np.array(state.getPositions(asNumpy=True))
+
     if np.any(np.isnan(pos)):
         logger.warning("Unable to energy minimize. Nan values detected.")
     else:
