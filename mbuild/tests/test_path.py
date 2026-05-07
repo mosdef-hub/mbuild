@@ -14,12 +14,12 @@ from mbuild.path.build import (
     straight_line,
     zigzag,
 )
-from mbuild.path.namers import CyclicNamer, RandomNamer
 from mbuild.path.constraints import (
     CuboidConstraint,
     CylinderConstraint,
     SphereConstraint,
 )
+from mbuild.path.namers import CyclicNamer, RandomNamer
 from mbuild.path.path_utils import (
     local_density,
     target_density,
@@ -219,12 +219,25 @@ class TestPaths(BaseTest):
 
     def test_helix_cyclic_namer(self):
         path = Path()
-        helix(path, N=4, radius=1.0, rise=0.5, twist=90, bead_name=CyclicNamer(["_A", "_B"]))
+        helix(
+            path,
+            N=4,
+            radius=1.0,
+            rise=0.5,
+            twist=90,
+            bead_name=CyclicNamer(["_A", "_B"]),
+        )
         assert list(path.beads) == ["_A", "_B", "_A", "_B"]
 
     def test_zigzag_cyclic_namer(self):
         path = Path()
-        zigzag(path, N=4, spacing=1.0, sites_per_segment=2, bead_name=CyclicNamer(["_A", "_B"]))
+        zigzag(
+            path,
+            N=4,
+            spacing=1.0,
+            sites_per_segment=2,
+            bead_name=CyclicNamer(["_A", "_B"]),
+        )
         assert list(path.beads) == ["_A", "_B", "_A", "_B"]
 
     def test_namer_beads_in_bond_graph(self):
