@@ -9,7 +9,7 @@ import networkx as nx
 import numpy as np
 from scipy.interpolate import interp1d
 
-from mbuild import Compound
+from mbuild import Box, Compound
 from mbuild.exceptions import PathConvergenceError
 from mbuild.path.constraints import CuboidConstraint, CylinderConstraint
 from mbuild.path.path_utils import (
@@ -118,6 +118,9 @@ class Path:
             self.bond_graph, other.bond_graph
         )  # TODO: Don't overwrite nodes in bg
         return Path(coordinates, bond_graph, beads)
+
+    def __len__(self):
+        return len(self.coordinates)
 
     @classmethod
     def from_compound(cls, compound):
@@ -268,7 +271,7 @@ class Path:
 
     def add_edge(self, u, v):
         """Add an edge to the Path's bond graph."""
-        bond_vec = self.coordinates[v] - self.coordinates[u]
+        bond_vec = (self.coordinates[v] - self.coordinates[u]).astype(float)
         bond_length = np.linalg.norm(bond_vec)
         bond_vec /= bond_length
         self.bond_graph.add_edge(
@@ -504,14 +507,112 @@ class Path:
 
         return angles, angle_typesDict
 
-    def freud_rdf(self, box, bins=50, r_max=1):
+    def freud_rdf(self, box=None, bins=50, r_max=1):
         freud = import_("freud")
-        if len(box) == 3:
+        if box is None:
+            box = np.array([np.inf, np.inf, np.inf, 0, 0, 0])  # infinite box
+        elif isinstance(box, Box):
+            box = np.array([*box.lengths, 0, 0, 0])
+        elif len(box) == 3:
             box = np.array([*box, 0, 0, 0])  # assume orthorhombic
 
         rdf = freud.density.RDF(bins=bins, r_max=r_max)
         rdf.compute(system=(box, self.coordinates))
         return rdf
+
+    def replace_sites(
+        self,
+        replacement,
+        sites=None,
+        bead_name=None,
+        bond_length=None,
+        tolerance=0.1,
+        volume_constraint=None,
+        n_rotation_samples=36,
+        overlap_radius=None,
+        seed=42,
+    ):
+        """Replace sites in this Path with a multi-site substructure, in place.
+
+        Uses rigid-body alignment to guarantee bond lengths from connection
+        sites to neighbors.
+
+        Parameters
+        ----------
+        replacement : CrosslinkerGeometry
+            The replacement structure.
+        sites : list of int, optional
+            Node indices to replace.
+        bead_name : str, optional
+            Replace all sites matching this name.
+        bond_length : float, optional
+            Desired bond length from connection sites to neighbors.
+            If None, preserves existing distances.
+        tolerance : float, default 0.1
+            Fractional tolerance on bond lengths.
+        volume_constraint : optional
+            For periodic boundary handling.
+        n_rotation_samples : int, default 36
+            Angular samples for overlap minimization.
+        overlap_radius : float, optional
+            Radius for overlap detection.
+        seed : int, default 42
+
+        Returns
+        -------
+        Path
+            self (modified in place).
+        """
+        from mbuild.path.crosslink import replace_sites
+
+        return replace_sites(
+            self,
+            replacement=replacement,
+            sites=sites,
+            bead_name=bead_name,
+            bond_length=bond_length,
+            tolerance=tolerance,
+            volume_constraint=volume_constraint,
+            n_rotation_samples=n_rotation_samples,
+            overlap_radius=overlap_radius,
+            seed=seed,
+        )
+
+    def crosslink(
+        self,
+        crosslinker=None,
+        bead_name="_R",
+        backbone_name="_A",
+        radius=0.1,
+        excluded_bond_depth=2,
+        n_connection_sites=2,
+        volume_constraint=None,
+        initial_point=None,
+        seed=42,
+        chunk_size=512,
+        run_on_gpu=False,
+        n_rotation_samples=36,
+        overlap_radius=None,
+    ):
+        """Add a crosslink to this path. See module-level crosslink() for details."""
+        from mbuild.path.crosslink import crosslink as crosslink2
+
+        return crosslink2(
+            self,
+            crosslinker=crosslinker,
+            bead_name=bead_name,
+            backbone_name=backbone_name,
+            radius=radius,
+            excluded_bond_depth=excluded_bond_depth,
+            n_connection_sites=n_connection_sites,
+            volume_constraint=volume_constraint,
+            initial_point=initial_point,
+            seed=seed,
+            chunk_size=chunk_size,
+            run_on_gpu=run_on_gpu,
+            n_rotation_samples=n_rotation_samples,
+            overlap_radius=overlap_radius,
+        )
 
 
 def lamellar(
@@ -1018,7 +1119,7 @@ def hard_sphere_random_walk(
     radius : float, default 0.1 nm
         Radius of sites used in checking for overlaps.
     rw_angles : tuple or dict or np.array or AnglesSampler, default None
-        Set the angle sampling method. A tuple of (min_val, max_val) sets the uniform distribution.
+        Set the angle sampling method in units of radians. A tuple of (min_val, max_val) sets the uniform distribution.
         The default value of None sets the uniform angle sampling from (np.pi/2, np.pi). Can also
         use a Gaussian distribution by passing a dict with keys {'loc':mean, 'scale':std}.
         Finally, a numpy array of 1D or 2D array of numpy values can be passed, which will be sampled

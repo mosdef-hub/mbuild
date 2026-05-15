@@ -13,7 +13,7 @@ from ele.element import element_from_name, element_from_symbol
 from ele.exceptions import ElementError
 from gmso.parameterization import apply
 
-from mbuild import Compound
+from mbuild import Box, Compound
 from mbuild.exceptions import MBuildError
 from mbuild.utils.io import import_
 
@@ -247,7 +247,7 @@ class ForcesHandler:
         The value passed to `dpd` is used as the the repulsion force constant.
     scale_bonds : float, default 1.0
     scale_angles : float, default 1.0
-    scale_lj : float, default 0.0
+    scale_lj : float, default 1.0
     scale_periodic : float, default 0.0
     scale_opls : float, default 0.0
     scale_improper : float, default 0.0
@@ -1287,7 +1287,7 @@ def energy_minimize_path(
         If a float is passed, that is set as theta in degress for a harmonic angle.
         If 'constrain' is passed, then angles are constrained.
         If None is passed, no angle force is used.
-    box : mb.Box, optional
+    box : mb.Box or list or numpy.ndarray, optional
         Box to use for periodic boundaries.
     steps : int, optional, default 1,000
         Number of simulation steps to run.
@@ -1299,6 +1299,9 @@ def energy_minimize_path(
     # TODO: Set equilibrium or constrained angle
     positions = path.coordinates
     n_particles = len(positions)
+
+    if isinstance(box, Box):
+        box = np.array([box.Lx, box.Ly, box.Lz])
 
     import openmm
     import openmm.unit as u
@@ -1350,7 +1353,7 @@ def energy_minimize_path(
         # Constrain all bonds at current lengths
         for i, j in path.bond_graph.edges():
             delta = positions[j] - positions[i]
-            if box:
+            if box is not None:
                 box_arr = np.array(box)
                 delta -= np.round(delta / box_arr) * box_arr
             bl = np.linalg.norm(delta)
@@ -1359,7 +1362,7 @@ def energy_minimize_path(
     elif isinstance(bonds, dict):
         # Per-type harmonic bonds
         harmonic_force = openmm.HarmonicBondForce()
-        if box:
+        if box is not None:
             harmonic_force.setUsesPeriodicBoundaryConditions(True)
 
         for i, j in path.bond_graph.edges():
@@ -1385,7 +1388,7 @@ def energy_minimize_path(
             else:
                 # Fallback: constrain at current distance
                 delta = positions[j] - positions[i]
-                if box:
+                if box is not None:
                     box_arr = np.array(box)
                     delta -= np.round(delta / box_arr) * box_arr
                 bl = np.linalg.norm(delta)
@@ -1396,7 +1399,7 @@ def energy_minimize_path(
     elif isinstance(bonds, (int, float)):
         # Single float: same equilibrium length for all bonds
         harmonic_force = openmm.HarmonicBondForce()
-        if box:
+        if box is not None:
             harmonic_force.setUsesPeriodicBoundaryConditions(True)
         for i, j in path.bond_graph.edges():
             harmonic_force.addBond(
@@ -1416,7 +1419,7 @@ def energy_minimize_path(
                 continue
             for i_node, k_node in combinations(neighbors, 2):
                 delta = positions[k_node] - positions[i_node]
-                if box:
+                if box is not None:
                     box_arr = np.array(box)
                     delta -= np.round(delta / box_arr) * box_arr
                 dist_13 = np.linalg.norm(delta)
@@ -1425,7 +1428,7 @@ def energy_minimize_path(
     elif isinstance(angles, dict):
         # Per-type harmonic angles
         angle_force = openmm.HarmonicAngleForce()
-        if box:
+        if box is not None:
             angle_force.setUsesPeriodicBoundaryConditions(True)
 
         for center_node in path.bond_graph.nodes():
@@ -1472,7 +1475,7 @@ def energy_minimize_path(
 
     simulation = Simulation(topology, system, integrator, platform)
     simulation.context.setPositions(positions * u.nanometer)
-    if box:
+    if box is not None:
         simulation.context.setPeriodicBoxVectors(
             [box[0], 0, 0] * u.nanometer,
             [0, box[1], 0] * u.nanometer,
