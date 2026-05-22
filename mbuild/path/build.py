@@ -888,7 +888,7 @@ def hard_sphere_random_walk(
     -----------
     path : mbuild.path.Path, default None.
         The Path object to populate with coordinates. Creates a new path object if not passed.
-    bead_name : str or BeadNamer, optional, default '_A'
+    bead_name : str or path.BeadNamer, optional, default '_A'
         Name(s) to assign to beads. A plain string assigns the same name to
         every bead. Pass a ``BeadNamer`` instance for heterogeneous sequences.
         See mbuild.path.namers.py
