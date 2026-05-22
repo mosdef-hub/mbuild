@@ -803,7 +803,7 @@ def zigzag(
         The number of sites before rotating and beginning next segment.
     plane : str, default = "xy"
         The plane that the sites in the path occupy
-    bead_name : str or BeadNamer, optional, default '_A'
+    bead_name : str or path.BeadNamer, optional, default '_A'
         Name(s) to assign to beads. A plain string assigns the same name to
         every bead. Pass a ``BeadNamer`` instance for heterogeneous sequences.
         See mbuild.path.namers.py
