@@ -705,7 +705,7 @@ def helix(
         Set the handedness of the helical twist
     bottom_up : bool, default True
         If True, the twist is in the positive Z direction
-    bead_name : str or BeadNamer, optional, default '_A'
+    bead_name : str or path.BeadNamer, optional, default '_A'
         Name(s) to assign to beads. A plain string assigns the same name to
         every bead. Pass a ``BeadNamer`` instance for heterogeneous sequences.
         See mbuild.path.namers.py
