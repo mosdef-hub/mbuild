@@ -748,7 +748,7 @@ def spiral_2D(path, N, a, b, spacing, bead_name="_A"):
         Determines how fast radius grows per angle increment (r = a + bθ)
     spacing : float, required
         Distance between adjacent sites (nm)
-    bead_name : str or BeadNamer, optional, default '_A'
+    bead_name : str or path.BeadNamer, optional, default '_A'
         Name(s) to assign to beads. A plain string assigns the same name to
         every bead. Pass a ``BeadNamer`` instance for heterogeneous sequences.
         See mbuild.path.namers.py
