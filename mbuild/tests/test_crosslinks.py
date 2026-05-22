@@ -1,3 +1,4 @@
+import networkx as nx
 import numpy as np
 import pytest
 
@@ -294,9 +295,157 @@ class TestCrosslink(BaseTest):
         triangle = CrosslinkerGeometry.equilateral_triangle(
             bond_length=0.27, connection_sites=[0, 1], bead_name="_U"
         )
-        crosslink(long_linear_path, triangle, crosslink_bond_length=1)
+        crosslink(long_linear_path, triangle, crosslink_bond_length=5)
         with pytest.raises(ValueError, match="degree"):
             replace_sites(long_linear_path, triangle, bead_name="_A")
+
+    def test_non_centroid_candidate(self, long_linear_path):
+        triangle = CrosslinkerGeometry.equilateral_triangle(
+            bond_length=0.27, connection_sites=[0, 1], bead_name="_U"
+        )
+        crosslink(long_linear_path, triangle, crosslink_bond_length=5)
+        assert long_linear_path
+
+    def test_high_density_crosslinking_overlaps_linear(self):
+        # Make a gridded bond graph
+        X, Y, Z = np.meshgrid(np.arange(5), np.arange(5), np.arange(5), indexing="ij")
+        coords = np.column_stack((X.ravel(), Y.ravel(), Z.ravel())).astype(np.float32)
+        path = Path(coordinates=coords)
+        G = path.bond_graph
+        for i in range(len(coords)):
+            for j in range(i + 1, len(coords)):
+                distance = np.linalg.norm(coords[i] - coords[j])
+                if distance < 1.01:
+                    G.add_edge(i, j)
+
+        bond_length = np.sqrt(3) / 2  # half the diagonal bond length
+        clink_coords = np.array([[0, 0, 0], [0, 0, bond_length / 2]], dtype=np.float32)
+        clinkG = nx.Graph()
+        clinkG.add_nodes_from([0, 1])
+        clinkG.add_edge(0, 1)
+        clink = CrosslinkerGeometry(
+            clink_coords, clinkG, bead_name="_CR", connection_sites=[0, 0]
+        )
+        min_sep = 0.99 * (bond_length / 2)
+        for i in range(4 * 4 * 4):
+            try:
+                crosslink(
+                    path,
+                    clink,
+                    excluded_bond_depth=2,
+                    min_separation=min_sep,
+                    crosslink_bond_length=bond_length,
+                    tolerance=0.01,
+                    max_backbone_degree=8,
+                )
+            except PathConvergenceError:
+                raise ValueError(f"Failed after {i} attempts to crosslink")
+
+        # Find the non-connection crosslinker sites (site index 1 in the geometry)
+        # These are "_CR" beads that are NOT the connection site (site 0)
+        clink_nodes = [n for n in path.bond_graph.nodes() if path.beads[n] == "_CR"]
+        # The connection site (index 0) has degree 2+1=3 (two backbone + one internal)
+        # The internal site (index 1) has degree 1 (just the internal bond)
+        internal_nodes = [n for n in clink_nodes if path.bond_graph.degree[n] == 1]
+
+        assert len(internal_nodes) > 0, "No internal crosslinker sites found"
+
+        # For each internal node, compute min distance to all non-bonded nodes
+        for node in internal_nodes:
+            bonded = set(path.bond_graph.neighbors(node)) | {node}
+            node_pos = path.coordinates[node]
+
+            other_positions = np.array(
+                [
+                    path.coordinates[i]
+                    for i in path.bond_graph.nodes()
+                    if i not in bonded
+                ],
+                dtype=np.float32,
+            )
+
+            distances = np.linalg.norm(other_positions - node_pos, axis=1)
+            min_dist = float(np.min(distances))
+
+            assert min_dist >= min_sep, (
+                f"Internal crosslinker node {node} has overlap: "
+                f"min distance {min_dist:.4f} < min_separation {min_sep}"
+            )
+
+    def test_high_density_crosslinking_overlaps_eqtriangle(self):
+        # Make a gridded bond graph
+        X, Y, Z = np.meshgrid(np.arange(5), np.arange(5), np.arange(5), indexing="ij")
+        coords = np.column_stack((X.ravel(), Y.ravel(), Z.ravel())).astype(np.float32)
+        path = Path(coordinates=coords)
+        G = path.bond_graph
+        for i in range(len(coords)):
+            for j in range(i + 1, len(coords)):
+                distance = np.linalg.norm(coords[i] - coords[j])
+                if distance < 1.01:
+                    G.add_edge(i, j)
+
+        bond_length = np.sqrt(3) / 3  # 1/3 the diagonal bond length
+        clink = CrosslinkerGeometry.equilateral_triangle(
+            bond_length=bond_length, connection_sites=[0, 1]
+        )
+        min_sep = 0.1
+        for i in range(4 * 4 * 4):
+            crosslink(
+                path,
+                clink,
+                excluded_bond_depth=2,
+                min_separation=min_sep,
+                crosslink_bond_length=bond_length,
+                tolerance=0.05,
+                max_backbone_degree=8,
+            )
+
+        # Find the non-connection crosslinker sites (site index 1 in the geometry)
+        # These are "_CR" beads that are NOT the connection site (site 0)
+        clink_nodes = [n for n in path.bond_graph.nodes() if path.beads[n] == "_R"]
+        # The connection site (index 0) has degree 2+1=3 (two backbone + one internal)
+        # The internal site (index 1) has degree 1 (just the internal bond)
+        internal_nodes = [n for n in clink_nodes if path.bond_graph.degree[n] == 2]
+
+        assert len(internal_nodes) > 0, "No internal crosslinker sites found"
+
+        # For each internal node, compute min distance to all non-bonded nodes
+        for node in internal_nodes:
+            bonded = set(path.bond_graph.neighbors(node)) | {node}
+            node_pos = path.coordinates[node]
+
+            other_positions = np.array(
+                [
+                    path.coordinates[i]
+                    for i in path.bond_graph.nodes()
+                    if i not in bonded
+                ],
+                dtype=np.float32,
+            )
+
+            distances = np.linalg.norm(other_positions - node_pos, axis=1)
+            min_dist = float(np.min(distances))
+
+            assert min_dist >= min_sep, (
+                f"Internal crosslinker node {node} has overlap: "
+                f"min distance {min_dist:.4f} < min_separation {min_sep}"
+            )
+
+    def test_failing_overlap_radius(self, long_linear_path):
+        clink_coords = np.array([[0, 0, 0], [0, 0, 0.5]], dtype=np.float32)
+        clinkG = nx.Graph()
+        clinkG.add_nodes_from([0, 1])
+        clinkG.add_edge(0, 1)
+        linear_clink = CrosslinkerGeometry(
+            clink_coords, clinkG, connection_sites=[0, 1]
+        )
+        with pytest.raises(PathConvergenceError):
+            crosslink(
+                long_linear_path,
+                linear_clink,
+                crosslink_bond_length=0.5,
+                min_separation=0.2,
+            )
 
 
 class TestReplaceSites(BaseTest):
