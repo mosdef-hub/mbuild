@@ -620,7 +620,7 @@ def knot(path, spacing, N, m, closed=True, bead_name="_A"):
         3 gives the trefoil knot, 4 gives the figure 8 knot and 5 gives the cinquefoil knot.
     closed : bool, default True
         If `True` the cyclic path is closed by bonding the first and last sites together
-    bead_name : str or BeadNamer, optional, default '_A'
+    bead_name : str or path.BeadNamer, optional, default '_A'
         Name(s) to assign to beads. A plain string assigns the same name to
         every bead. Pass a ``BeadNamer`` instance for heterogeneous sequences.
         See mbuild.path.namers.py
