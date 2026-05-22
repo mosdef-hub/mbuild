@@ -530,7 +530,7 @@ def straight_line(path, spacing, N, direction=(1, 0, 0), bead_name="_A"):
         The distance between sites along the path.
     direction : array-like (1,3), default = (1,0,0)
         The direction to align the straight path along.
-    bead_name : str or BeadNamer, optional, default '_A'
+    bead_name : str or path.BeadNamer, optional, default '_A'
         Name(s) to assign to beads. A plain string assigns the same name to
         every bead. Pass a ``BeadNamer`` instance for heterogeneous sequences.
         See mbuild.path.namers.py
