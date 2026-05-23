@@ -10,3 +10,11 @@ from .build import (
     straight_line,
     zigzag,
 )
+from .namers import (
+    BeadNamer,
+    ConstantNamer,
+    CyclicNamer,
+    GradientNamer,
+    MarkovNamer,
+    RandomNamer,
+)
