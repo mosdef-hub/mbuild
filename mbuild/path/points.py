@@ -138,7 +138,7 @@ def get_initial_point(state, existing_points, beads, check_path, next_step):
         existing_points = np.concat((existing_points, state.include_compound.xyz))
 
     # An initial point was manually given in hard_sphere_random_walk, use that.
-    # Check if this point causes any overlaps, if so, raise error.
+    # Check if this point causes any overlaps, if so, raise error.
     if isinstance(state.initial_point, np.ndarray) and state.initial_point.shape == (
         3,
     ):
