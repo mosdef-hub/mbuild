@@ -2,6 +2,7 @@ import numpy as np
 import pytest
 
 import mbuild as mb
+from mbuild.exceptions import PathConvergenceError
 from mbuild.path.build import (
     Path,
     crosslink,
@@ -25,6 +26,7 @@ from mbuild.path.path_utils import (
     target_density,
     target_sq_distances,
 )
+from mbuild.path.points import AnglesSampler
 from mbuild.path.termination import (
     NumAttempts,
     NumSites,
@@ -293,6 +295,54 @@ class TestRandomWalk(BaseTest):
         assert comp.n_bonds == 19
         # Test bounds of random initial point
         assert np.all(np.abs(path.coordinates[0])) < 20 * 0.22
+
+    def test_dense_random_walk(self):
+        rw_system = Path()
+        vol_constaint = CuboidConstraint(center=(0, 0, 0), Lx=8)
+        radius = 0.25
+        bond_L = radius + 0.001
+        num_chains = 200
+        chain_lengths = 40
+        tolerance = 0.01
+
+        for i in range(num_chains):
+            chain_passed = False
+            attempt = 0
+            while not chain_passed:
+                initial_point = vol_constaint.find_low_density_points(
+                    n_candidates=200 + attempt,
+                    points=rw_system.coordinates,
+                    buffer=radius,
+                )
+                term = Termination(
+                    [NumSites(chain_lengths), NumAttempts(chain_lengths)]
+                )
+                try:
+                    hard_sphere_random_walk(
+                        path=rw_system,
+                        bead_name="A",
+                        radius=radius,
+                        bond_length=bond_L,
+                        volume_constraint=vol_constaint,
+                        termination=term,
+                        seed=i,
+                        initial_point=initial_point[attempt],
+                        rw_angles=AnglesSampler(
+                            "normal", dict(loc=2.4, scale=1), seed=i
+                        ),
+                        tolerance=tolerance,
+                    )
+                    if term.success:
+                        attempt = 0
+                        chain_passed = True
+                    else:
+                        attempt += 1
+                except PathConvergenceError:
+                    attempt += 1  # try next initial_point candidate
+                except Exception:
+                    break  # only break on unexpected errors
+        comp = rw_system.to_compound()
+        assert len(comp.check_for_overlap(minimum_distance=radius - tolerance)) == 0
 
     def test_include_compound(self):
         L = 3
