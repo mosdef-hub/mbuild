@@ -137,11 +137,22 @@ def get_initial_point(state, existing_points, beads, check_path, next_step):
     if state.include_compound:
         existing_points = np.concat((existing_points, state.include_compound.xyz))
 
-    # An initial point was manuallyl given in hard_sphere_random_walk, use that.
+    # An initial point was manually given in hard_sphere_random_walk, use that.
+    # Check if this point causes any overlaps, if so, raise error.
     if isinstance(state.initial_point, np.ndarray) and state.initial_point.shape == (
         3,
     ):
-        return state.initial_point
+        if check_path(
+            existing_points=existing_points,
+            new_point=state.initial_point,
+            radius=state.radius,
+            tolerance=state.tolerance,
+        ):
+            return state.initial_point
+        raise PathConvergenceError(
+            f"The provided initial_point {state.initial_point} overlaps with "
+            "existing particles. Try a different starting point."
+        )
 
     # Passing in an index to specify an initial point from already defined set of coordinates
     elif isinstance(state.initial_point, int):

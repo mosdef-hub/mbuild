@@ -2,6 +2,7 @@ import numpy as np
 import pytest
 
 import mbuild as mb
+from mbuild.exceptions import PathConvergenceError
 from mbuild.path.build import (
     Path,
     crosslink,
@@ -19,11 +20,13 @@ from mbuild.path.constraints import (
     CylinderConstraint,
     SphereConstraint,
 )
+from mbuild.path.namers import CyclicNamer, RandomNamer
 from mbuild.path.path_utils import (
     local_density,
     target_density,
     target_sq_distances,
 )
+from mbuild.path.points import AnglesSampler
 from mbuild.path.termination import (
     NumAttempts,
     NumSites,
@@ -199,6 +202,57 @@ class TestPaths(BaseTest):
         assert len(path.coordinates) == 20
         assert path.bond_graph.number_of_edges() == 19
 
+    def test_straight_line_cyclic_namer_alternating(self):
+        path = Path()
+        straight_line(path, spacing=0.2, N=6, bead_name=CyclicNamer(["_A", "_B"]))
+        assert list(path.beads) == ["_A", "_B", "_A", "_B", "_A", "_B"]
+
+    def test_straight_line_cyclic_namer_blocks(self):
+        path = Path()
+        straight_line(
+            path, spacing=0.2, N=6, bead_name=CyclicNamer([("_A", 3), ("_B", 3)])
+        )
+        assert list(path.beads) == ["_A", "_A", "_A", "_B", "_B", "_B"]
+
+    def test_cyclic_path_cyclic_namer(self):
+        path = Path()
+        cyclic(path, spacing=1, N=6, bead_name=CyclicNamer(["_A", "_B"]))
+        assert list(path.beads) == ["_A", "_B", "_A", "_B", "_A", "_B"]
+
+    def test_helix_cyclic_namer(self):
+        path = Path()
+        helix(
+            path,
+            N=4,
+            radius=1.0,
+            rise=0.5,
+            twist=90,
+            bead_name=CyclicNamer(["_A", "_B"]),
+        )
+        assert list(path.beads) == ["_A", "_B", "_A", "_B"]
+
+    def test_zigzag_cyclic_namer(self):
+        path = Path()
+        zigzag(
+            path,
+            N=4,
+            spacing=1.0,
+            sites_per_segment=2,
+            bead_name=CyclicNamer(["_A", "_B"]),
+        )
+        assert list(path.beads) == ["_A", "_B", "_A", "_B"]
+
+    def test_namer_beads_in_bond_graph(self):
+        path = Path()
+        straight_line(path, spacing=0.2, N=4, bead_name=CyclicNamer(["_A", "_B"]))
+        node_names = [d["name"] for _, d in path.bond_graph.nodes(data=True)]
+        assert node_names == ["_A", "_B", "_A", "_B"]
+
+    def test_string_bead_name_still_works(self):
+        path = Path()
+        straight_line(path, spacing=0.2, N=4, bead_name="_X")
+        assert list(path.beads) == ["_X", "_X", "_X", "_X"]
+
 
 class TestRandomWalk(BaseTest):
     def test_extend_coordinates(self):
@@ -241,6 +295,54 @@ class TestRandomWalk(BaseTest):
         assert comp.n_bonds == 19
         # Test bounds of random initial point
         assert np.all(np.abs(path.coordinates[0])) < 20 * 0.22
+
+    def test_dense_random_walk(self):
+        rw_system = Path()
+        vol_constaint = CuboidConstraint(center=(0, 0, 0), Lx=8)
+        radius = 0.25
+        bond_L = radius + 0.001
+        num_chains = 200
+        chain_lengths = 40
+        tolerance = 0.01
+
+        for i in range(num_chains):
+            chain_passed = False
+            attempt = 0
+            while not chain_passed:
+                initial_point = vol_constaint.find_low_density_points(
+                    n_candidates=200 + attempt,
+                    points=rw_system.coordinates,
+                    buffer=radius,
+                )
+                term = Termination(
+                    [NumSites(chain_lengths), NumAttempts(chain_lengths)]
+                )
+                try:
+                    hard_sphere_random_walk(
+                        path=rw_system,
+                        bead_name="A",
+                        radius=radius,
+                        bond_length=bond_L,
+                        volume_constraint=vol_constaint,
+                        termination=term,
+                        seed=i,
+                        initial_point=initial_point[attempt],
+                        rw_angles=AnglesSampler(
+                            "normal", dict(loc=2.4, scale=1), seed=i
+                        ),
+                        tolerance=tolerance,
+                    )
+                    if term.success:
+                        attempt = 0
+                        chain_passed = True
+                    else:
+                        attempt += 1
+                except PathConvergenceError:
+                    attempt += 1  # try next initial_point candidate
+                except Exception:
+                    break  # only break on unexpected errors
+        comp = rw_system.to_compound()
+        assert len(comp.check_for_overlap(minimum_distance=radius - tolerance)) == 0
 
     def test_include_compound(self):
         L = 3
@@ -606,6 +708,48 @@ class TestRandomWalk(BaseTest):
         _, p_val = scipy.stats.kstest(angles, "uniform", args=uniform_loc_scale)
         assert p_val > 0.05
         assert np.isclose(np.mean(angles), np.pi * 5 / 12, atol=1e-1)
+
+    def test_rw_cyclic_namer_sequence(self):
+        path = hard_sphere_random_walk(
+            radius=0.1,
+            bond_length=0.15,
+            termination=6,
+            bead_name=CyclicNamer(["_A", "_B"]),
+            seed=42,
+        )
+        assert list(path.beads) == ["_A", "_B", "_A", "_B", "_A", "_B"]
+
+    def test_rw_cyclic_namer_blocks(self):
+        path = hard_sphere_random_walk(
+            radius=0.1,
+            bond_length=0.15,
+            termination=6,
+            bead_name=CyclicNamer([("_A", 3), ("_B", 3)]),
+            seed=42,
+        )
+        assert list(path.beads) == ["_A", "_A", "_A", "_B", "_B", "_B"]
+
+    def test_rw_random_namer_draws_from_pool(self):
+        path = hard_sphere_random_walk(
+            radius=0.1,
+            bond_length=0.15,
+            termination=20,
+            bead_name=RandomNamer(["_A", "_B"], seed=0),
+            seed=42,
+        )
+        assert set(path.beads) <= {"_A", "_B"}
+        assert len(path.beads) == 20
+
+    def test_rw_namer_beads_in_bond_graph(self):
+        path = hard_sphere_random_walk(
+            radius=0.1,
+            bond_length=0.15,
+            termination=4,
+            bead_name=CyclicNamer(["_A", "_B"]),
+            seed=42,
+        )
+        node_names = [d["name"] for _, d in path.bond_graph.nodes(data=True)]
+        assert node_names == ["_A", "_B", "_A", "_B"]
 
 
 class TestPathUtils(BaseTest):
