@@ -57,15 +57,17 @@ class HoomdSimulation(hoomd.simulation.Simulation):
         compound,
         forcefield,
         r_cut,
-        run_on_gpu,
-        seed,
+        run_on_gpu=None,
+        seed=1,
         automatic_box=False,
         box_buffer=10,
         integrate_compounds=None,
         fixed_compounds=None,
         gsd_file_name=None,
     ):
-        if run_on_gpu:
+        if run_on_gpu is None:
+            device = hoomd.device.auto_select()
+        elif run_on_gpu:
             try:
                 device = hoomd.device.GPU()
                 print(f"GPU found, running on device {device.device}")
@@ -85,6 +87,7 @@ class HoomdSimulation(hoomd.simulation.Simulation):
         self.fixed_compounds = fixed_compounds
         self.automatic_box = automatic_box
         self.box_buffer = box_buffer
+        self.energies = []  # append all energy values
         # Check if a hoomd sim method has been used on this compound already
         if compound._hoomd_data:
             last_snapshot, last_forces, last_forcefield = compound._get_sim_data()
@@ -162,8 +165,12 @@ class HoomdSimulation(hoomd.simulation.Simulation):
         else:
             return hoomd.filter.All()
 
-    def get_force(self, instance):
-        for force in set(self.forces + self.active_forces + self.inactive_forces):
+    def get_force(self, instance, active_only=False):
+        if active_only:
+            iterForcesSet = set(self.active_forces)
+        else:
+            iterForcesSet = set(self.forces)
+        for force in iterForcesSet:
             if isinstance(force, instance):
                 return force
         raise ValueError(f"No force of {instance} was found.")
@@ -232,6 +239,16 @@ class HoomdSimulation(hoomd.simulation.Simulation):
             pos = snap.particles.position[particles]
             self.compound.xyz = np.copy(pos)
 
+    def store_current_energies(self):
+        """Store energy simulations progress."""
+        new_energy = {}
+        for force in self.active_forces:
+            ffname = force.__class__.__name__ + "." + force.__class__.__module__
+            print(f"{ffname} Energy: {force.energy:.2e}")
+            new_energy[ffname] = force.energy
+        if new_energy:
+            self.energies.append(new_energy)
+
 
 class ForcesHandler:
     """Provides a quick method for tuning HOOMD forces to better handle
@@ -290,6 +307,7 @@ class ForcesHandler:
 
     def scale_sim(self, sim):
         "Iterate through HOOMD force objects and apply scaling factors."
+        sim.active_forces = []  # reset active forces
         forcesDict = {
             "lj": (hoomd.md.pair.LJ, ("epsilon")),
             "charge": (hoomd.md.special_pair.Coulomb, ("alpha")),
@@ -414,7 +432,13 @@ def hoomd_cap_displacement(
         maximum_displacement=max_displacement,
     )
     sim.set_integrator(method=displacement_capped, dt=dt)
+    if sim.energies == []:
+        print("Initial Energy States:")
+        sim.run(0)
+        sim.store_current_energies()
+        print("\n")
     sim.run(n_steps)
+    sim.store_current_energies()
     sim.operations.integrator = None
     sim.update_positions()
     sim._update_snapshot()
@@ -526,11 +550,17 @@ def hoomd_fire(
         min_steps_conv=min_steps_conv,
         methods=[nvt],
     )
+    if sim.energies == []:
+        print("Initial Energy States:")
+        sim.run(0)
+        sim.store_current_energies()
+        print("\n")
     for sim_num in range(n_iterations):
         sim.run(n_steps)
         sim.operations.integrator.reset()
 
     # Update particle positions, save latest state point snapshot
+    sim.store_current_energies()
     sim.operations.integrator = None
     sim._update_snapshot()
     sim.update_positions()
