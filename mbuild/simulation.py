@@ -258,7 +258,7 @@ class HoomdSimulation(hoomd.simulation.Simulation):
         """Return each energy by index for previously run energy breakdown."""
         if not self.energies:
             print(f"No energies currently stored in {self}")
-            return
+            return None
         returnDict = {}
         n_frames = len(self.energies)
         for frame, energyDict in enumerate(self.energies):
