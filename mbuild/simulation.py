@@ -117,13 +117,6 @@ class HoomdSimulation(hoomd.simulation.Simulation):
         # If a box isn't set, make one with the buffer
         if not self.compound.box:
             self.compound.box = self.compound.get_boundingbox(pad_box=self.box_buffer)
-        shift_coords = True
-        if all(
-            np.max(self.compound.xyz, axis=0) < np.array(self.compound.box.lengths)
-        ) and all(
-            -1 * np.min(self.compound.xyz, axis=0) < np.array(self.compound.box.lengths)
-        ):
-            shift_coords = False
         # Convert to GMSO, apply forcefield
         top = self.compound.to_gmso()
         top.identify_connections()
@@ -131,7 +124,7 @@ class HoomdSimulation(hoomd.simulation.Simulation):
         apply(top, forcefields=self.forcefield, ignore_params=["dihedral", "improper"])
         # Get hoomd snapshot and force objects
         forces, _ = gmso.external.to_hoomd_forcefield(top, r_cut=self.r_cut)
-        snap, _ = gmso.external.to_gsd_snapshot(top, shift_coords)
+        snap, _ = gmso.external.to_gsd_snapshot(top=top)
         forces = list(set().union(*forces.values()))
         return snap, forces
 
