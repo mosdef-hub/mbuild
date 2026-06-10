@@ -329,10 +329,10 @@ class ForcesHandler:
         "Iterate through HOOMD force objects and apply scaling factors."
         sim.active_forces = []  # reset active forces
         forcesDict = {
-            "lj": (hoomd.md.pair.LJ, ("epsilon")),
-            "charge": (hoomd.md.special_pair.Coulomb, ("alpha")),
-            "bond": (hoomd.md.bond.Harmonic, ("k")),
-            "angle": (hoomd.md.angle.Harmonic, ("k")),
+            "lj": (hoomd.md.pair.LJ, ("epsilon", "sigma")),
+            "charge": (hoomd.md.special_pair.Coulomb, ("alpha",)),
+            "bond": (hoomd.md.bond.Harmonic, ("k",)),
+            "angle": (hoomd.md.angle.Harmonic, ("k",)),
             "opls": (
                 hoomd.md.dihedral.OPLS,
                 (
@@ -342,8 +342,8 @@ class ForcesHandler:
                     "k4",
                 ),
             ),
-            "periodic": (hoomd.md.dihedral.Periodic, ("k")),
-            "improper": (hoomd.md.improper.Periodic, ("k")),
+            "periodic": (hoomd.md.dihedral.Periodic, ("k",)),
+            "improper": (hoomd.md.improper.Periodic, ("k",)),
         }
         for key, scalar in self.scale_forces.items():
             if not scalar:  # skip scalars of 0
@@ -358,10 +358,11 @@ class ForcesHandler:
             force = sim.get_force(forcesDict[key][0])
             orig_params = sim._orig_force_params.get(id(force), {})
             for param in force.params:
-                for term in forcesDict[key][1:]:
+                for term in forcesDict[key][1]:
                     if param in orig_params and term in orig_params[param]:
                         force.params[param][term] = orig_params[param][term] * scalar
                     else:
+                        import pdb; pdb.set_trace()
                         force.params[param][term] *= scalar
             sim.active_forces.append(force)
             self.forcesDict[key] = force  # store for usage elsewhere

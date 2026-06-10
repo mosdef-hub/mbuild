@@ -1496,10 +1496,6 @@ class RandomWalkState:
     ):
         self.bond_length = bond_length
         self.radius = radius
-        if bond_length < radius:
-            raise ValueError(
-                "Bond length should be greater than radius to prevent overlaps."
-            )
         if angles_sampler is None:
             self.angles = AnglesSampler(
                 "uniform", {"low": np.pi / 2, "high": np.pi}, seed
