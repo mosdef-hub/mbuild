@@ -1,17 +1,21 @@
 import sys
 
+import hoomd
 import numpy as np
 import pytest
+from gmso import ForceField
 
 import mbuild as mb
 from mbuild.exceptions import MBuildError
-from mbuild.simulation import energy_minimize
-from mbuild.tests.base_test import BaseTest
-from mbuild.utils.io import (
-    get_fn,
-    has_foyer,
-    has_openbabel,
+from mbuild.simulation import (
+    ForcesHandler,
+    HoomdSimulation,
+    energy_minimize,
+    hoomd_cap_displacement,
+    hoomd_fire,
 )
+from mbuild.tests.base_test import BaseTest
+from mbuild.utils.io import get_fn, has_foyer, has_hoomd, has_openbabel
 
 
 class TestSimulation(BaseTest):
@@ -347,3 +351,125 @@ class TestSimulation(BaseTest):
     @pytest.mark.skipif(not has_foyer, reason="Foyer is not installed")
     def test_energy_minimize_openmm_xml(self, octane):
         energy_minimize(compound=octane, forcefield=get_fn("small_oplsaa.xml"))
+
+
+class TestSimulationHoomd(BaseTest):
+    """Test minimization methods using hoomd-blue."""
+
+    @pytest.fixture
+    def oplsaa(self):
+        return ForceField("oplsaa")
+
+    @pytest.fixture
+    def sim(self, octane, oplsaa):
+        return HoomdSimulation(octane, oplsaa, r_cut=0.3, run_on_gpu=False)
+
+    @pytest.mark.skipif(not has_hoomd, reason="hoomd is not installed")
+    def test_forces_handler(self, sim):
+        force = sim.get_force(hoomd.md.pair.LJ)
+        assert len(force.params.keys()) == 6
+        force = sim.get_force(hoomd.md.pair.Ewald)
+        assert force
+        force = sim.get_force(hoomd.md.long_range.pppm.Coulomb)
+        assert force
+        force = sim.get_force(hoomd.md.special_pair.LJ)
+        assert len(force.params.keys()) == 5
+        force = sim.get_force(hoomd.md.special_pair.Coulomb)
+        assert force
+        force = sim.get_force(hoomd.md.bond.Harmonic)
+        assert len(force.params.keys()) == 2
+        force = sim.get_force(hoomd.md.angle.Harmonic)
+        assert len(force.params.keys()) == 3
+        force = sim.get_force(hoomd.md.dihedral.OPLS)
+        assert len(force.params.keys()) == 3
+
+    def test_scale_forces(self, sim):
+        A = 1
+        ffhandler = ForcesHandler(dpd=A, scale_bond=0, scale_angle=0)
+        ffhandler.scale_sim(sim)
+        lj_force = sim.get_force(hoomd.md.pair.LJ)
+        force = sim.get_force(hoomd.md.pair.DPDConservative, active_only=True)
+        for param in force.params:
+            assert force.params[param]["A"] == A
+            assert force.r_cut[param] == lj_force.params[param]["sigma"]
+        forceTypes = [type(force) for force in sim.active_forces]
+        allforceTypes = [type(force) for force in sim.forces]
+        assert hoomd.md.bond.Harmonic not in forceTypes
+        assert hoomd.md.bond.Harmonic in allforceTypes
+        assert hoomd.md.angle.Harmonic not in forceTypes
+        assert hoomd.md.angle.Harmonic in allforceTypes
+        assert hoomd.md.dihedral.OPLS not in forceTypes
+        assert hoomd.md.dihedral.OPLS in allforceTypes
+
+    @pytest.mark.skipif(not has_hoomd, reason="hoomd is not installed")
+    def test_fire(self, sim):
+        ffhandler = ForcesHandler(scale_lj=1, scale_bond=1, scale_angle=1)
+        cpd = sim.compound
+        old_coords = cpd.xyz.copy()
+        hoomd_fire(cpd, sim, ffhandler, n_steps=20)
+        new_coords = cpd.xyz
+        assert not np.allclose(old_coords, new_coords, atol=1e-5)
+        # TODO: Get and validate energies here
+
+    @pytest.mark.skipif(not has_hoomd, reason="hoomd is not installed")
+    def test_capped_displacement(self, sim):
+        bond = sim.get_force(hoomd.md.bond.Harmonic)
+        orig_bond_params = {p: dict(bond.params[p]) for p in bond.params}
+
+        ffhandler = ForcesHandler(dpd=1, scale_bond=0.1, scale_angle=0)
+        cpd = sim.compound
+        old_coords = cpd.xyz.copy()
+        hoomd_cap_displacement(
+            cpd, sim, ffhandler, dt=1, max_displacement=1, n_steps=10
+        )
+        new_coords = cpd.xyz
+        assert not np.allclose(old_coords, new_coords, atol=1e-5)
+        forcesTypesSet = set([type(force) for force in sim.active_forces])
+        assert forcesTypesSet == set(
+            (
+                hoomd.md.pair.DPDConservative,
+                hoomd.md.bond.Harmonic,
+            )
+        )
+        for p in bond.params:
+            assert np.isclose(bond.params[p]["k"], orig_bond_params[p]["k"] * 0.1)
+
+    @pytest.mark.skipif(not has_hoomd, reason="hoomd is not installed")
+    def test_scale_forces_restores_on_second_call(self, sim):
+        bond = sim.get_force(hoomd.md.bond.Harmonic)
+        angle = sim.get_force(hoomd.md.angle.Harmonic)
+        orig_bond_params = {p: dict(bond.params[p]) for p in bond.params}
+        orig_angle_params = {p: dict(angle.params[p]) for p in angle.params}
+
+        ForcesHandler(scale_bond=0.5, scale_angle=0.5).scale_sim(sim)
+        for p in bond.params:
+            assert np.isclose(bond.params[p]["k"], orig_bond_params[p]["k"] * 0.5)
+        for p in angle.params:
+            assert np.isclose(angle.params[p]["k"], orig_angle_params[p]["k"] * 0.5)
+
+        ForcesHandler(scale_bond=1, scale_angle=1).scale_sim(sim)
+        for p in bond.params:
+            assert np.isclose(bond.params[p]["k"], orig_bond_params[p]["k"])
+        for p in angle.params:
+            assert np.isclose(angle.params[p]["k"], orig_angle_params[p]["k"])
+
+    @pytest.mark.skipif(not has_hoomd, reason="hoomd is not installed")
+    def test_get_energy(self, sim):
+        cpd = sim.compound
+        ffhandler = ForcesHandler(scale_lj=1, scale_bond=1, scale_angle=1)
+        assert sim.get_energy() is None
+        hoomd_cap_displacement(
+            cpd, sim, ffhandler, dt=1, max_displacement=1, n_steps=10
+        )
+        energyDict = sim.get_energy()
+        assert np.allclose(
+            energyDict["hoomd.md.pair.pair.LJ"], np.array(([-1.25498152, 0.0]))
+        )
+        assert np.allclose(
+            energyDict["hoomd.md.bond.Harmonic"],
+            np.array(([1.35651551e02, 3.05080224e06])),
+        )
+        assert np.allclose(
+            energyDict["hoomd.md.angle.Harmonic"],
+            np.array(([3942.05658645, 19129.72619001])),
+        )
