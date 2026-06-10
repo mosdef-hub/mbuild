@@ -413,7 +413,6 @@ class TestSimulationHoomd(BaseTest):
 
     @pytest.mark.skipif(not has_hoomd, reason="hoomd is not installed")
     def test_capped_displacement(self, sim):
-        ffhandler = ForcesHandler(scale_lj=1, scale_bond=1, scale_angle=1)
         ffhandler = ForcesHandler(dpd=1, scale_bond=0.1, scale_angle=0)
         cpd = sim.compound
         old_coords = cpd.xyz.copy()
