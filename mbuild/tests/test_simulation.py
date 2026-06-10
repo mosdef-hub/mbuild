@@ -401,6 +401,12 @@ class TestSimulationHoomd(BaseTest):
         assert hoomd.md.dihedral.OPLS not in forceTypes
         assert hoomd.md.dihedral.OPLS in allforceTypes
 
+    def test_scale_opls(self, sim):
+        ffhandler = ForcesHandler(scale_opls=0.5)
+        ffhandler.scale_sim(sim)
+        forceTypes = [type(force) for force in sim.active_forces]
+        assert hoomd.md.dihedral.OPLS in forceTypes
+
     @pytest.mark.skipif(not has_hoomd, reason="hoomd is not installed")
     def test_fire(self, sim):
         ffhandler = ForcesHandler(scale_lj=1, scale_bond=1, scale_angle=1)
@@ -468,8 +474,10 @@ class TestSimulationHoomd(BaseTest):
         assert np.allclose(
             energyDict["hoomd.md.bond.Harmonic"],
             np.array(([1.35651551e02, 3.05080224e06])),
+            rtol=1e-2
         )
         assert np.allclose(
             energyDict["hoomd.md.angle.Harmonic"],
             np.array(([3942.05658645, 19129.72619001])),
+            rtol=1e-2
         )

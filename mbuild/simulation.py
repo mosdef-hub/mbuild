@@ -332,15 +332,7 @@ class ForcesHandler:
             "charge": (hoomd.md.special_pair.Coulomb, ("alpha")),
             "bond": (hoomd.md.bond.Harmonic, ("k")),
             "angle": (hoomd.md.angle.Harmonic, ("k")),
-            "opls": (
-                hoomd.md.dihedral.OPLS,
-                (
-                    "k1",
-                    "k2",
-                    "k3",
-                    "k4",
-                ),
-            ),
+            "opls": (hoomd.md.dihedral.OPLS, "k1", "k2", "k3", "k4"),
             "periodic": (hoomd.md.dihedral.Periodic, ("k")),
             "improper": (hoomd.md.improper.Periodic, ("k")),
         }
