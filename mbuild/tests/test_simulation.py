@@ -413,6 +413,9 @@ class TestSimulationHoomd(BaseTest):
 
     @pytest.mark.skipif(not has_hoomd, reason="hoomd is not installed")
     def test_capped_displacement(self, sim):
+        bond = sim.get_force(hoomd.md.bond.Harmonic)
+        orig_bond_params = {p: dict(bond.params[p]) for p in bond.params}
+
         ffhandler = ForcesHandler(dpd=1, scale_bond=0.1, scale_angle=0)
         cpd = sim.compound
         old_coords = cpd.xyz.copy()
@@ -428,6 +431,27 @@ class TestSimulationHoomd(BaseTest):
                 hoomd.md.bond.Harmonic,
             )
         )
+        for p in bond.params:
+            assert np.isclose(bond.params[p]["k"], orig_bond_params[p]["k"] * 0.1)
+
+    @pytest.mark.skipif(not has_hoomd, reason="hoomd is not installed")
+    def test_scale_forces_restores_on_second_call(self, sim):
+        bond = sim.get_force(hoomd.md.bond.Harmonic)
+        angle = sim.get_force(hoomd.md.angle.Harmonic)
+        orig_bond_params = {p: dict(bond.params[p]) for p in bond.params}
+        orig_angle_params = {p: dict(angle.params[p]) for p in angle.params}
+
+        ForcesHandler(scale_bond=0.5, scale_angle=0.5).scale_sim(sim)
+        for p in bond.params:
+            assert np.isclose(bond.params[p]["k"], orig_bond_params[p]["k"] * 0.5)
+        for p in angle.params:
+            assert np.isclose(angle.params[p]["k"], orig_angle_params[p]["k"] * 0.5)
+
+        ForcesHandler(scale_bond=1, scale_angle=1).scale_sim(sim)
+        for p in bond.params:
+            assert np.isclose(bond.params[p]["k"], orig_bond_params[p]["k"])
+        for p in angle.params:
+            assert np.isclose(angle.params[p]["k"], orig_angle_params[p]["k"])
 
     @pytest.mark.skipif(not has_hoomd, reason="hoomd is not installed")
     def test_reports_energy(self, octane):
