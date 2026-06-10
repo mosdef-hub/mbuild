@@ -454,9 +454,22 @@ class TestSimulationHoomd(BaseTest):
             assert np.isclose(angle.params[p]["k"], orig_angle_params[p]["k"])
 
     @pytest.mark.skipif(not has_hoomd, reason="hoomd is not installed")
-    def test_reports_energy(self, octane):
-        pass
-
-    @pytest.mark.skipif(not has_hoomd, reason="hoomd is not installed")
-    def test_plots_energy(self, octane):
-        pass
+    def test_get_energy(self, sim):
+        cpd = sim.compound
+        ffhandler = ForcesHandler(scale_lj=1, scale_bond=1, scale_angle=1)
+        assert sim.get_energy() is None
+        hoomd_cap_displacement(
+            cpd, sim, ffhandler, dt=1, max_displacement=1, n_steps=10
+        )
+        energyDict = sim.get_energy()
+        assert np.allclose(
+            energyDict["hoomd.md.pair.pair.LJ"], np.array(([-1.25498152, 0.0]))
+        )
+        assert np.allclose(
+            energyDict["hoomd.md.bond.Harmonic"],
+            np.array(([1.35651551e02, 3.05080224e06])),
+        )
+        assert np.allclose(
+            energyDict["hoomd.md.angle.Harmonic"],
+            np.array(([3942.05658645, 19129.72619001])),
+        )

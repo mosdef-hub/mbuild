@@ -87,7 +87,7 @@ class HoomdSimulation(hoomd.simulation.Simulation):
         self.fixed_compounds = fixed_compounds
         self.automatic_box = automatic_box
         self.box_buffer = box_buffer
-        self.energies = []  # append all energy values
+        self.energies = []  # each step of run energy values
         # Check if a hoomd sim method has been used on this compound already
         if compound._hoomd_data:
             last_snapshot, last_forces, last_forcefield = compound._get_sim_data()
@@ -249,11 +249,24 @@ class HoomdSimulation(hoomd.simulation.Simulation):
         """Store energy simulations progress."""
         new_energy = {}
         for force in self.active_forces:
-            ffname = force.__class__.__name__ + "." + force.__class__.__module__
-            print(f"{ffname} Energy: {force.energy:.2e}")
+            ffname = force.__class__.__module__ + "." + force.__class__.__name__
             new_energy[ffname] = force.energy
         if new_energy:
             self.energies.append(new_energy)
+
+    def get_energy(self):
+        """Return each energy by index for previously run energy breakdown."""
+        if not self.energies:
+            print(f"No energies currently stored in {self}")
+            return
+        returnDict = {}
+        n_frames = len(self.energies)
+        for frame, energyDict in enumerate(self.energies):
+            for ffkey in energyDict:
+                if ffkey not in returnDict:
+                    returnDict[ffkey] = np.zeros(n_frames)
+                returnDict[ffkey][frame] = energyDict[ffkey]
+        return returnDict
 
 
 class ForcesHandler:
@@ -561,10 +574,8 @@ def hoomd_fire(
         methods=[nvt],
     )
     if sim.energies == []:
-        print("Initial Energy States:")
         sim.run(0)
         sim.store_current_energies()
-        print("\n")
     for sim_num in range(n_iterations):
         sim.run(n_steps)
         sim.operations.integrator.reset()
