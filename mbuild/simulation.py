@@ -443,6 +443,23 @@ def hoomd_nvt(
         For shorter, equilibraiton runs, Berendsen is the most efficient choice.
         Other options include `hoomd.md.methods.thermostats.MTTK` (i.e., Nose-Hoover) and
         `hoomd.md.methods.thermostats.Bussi` (i.e., Stochastic velocity rescaling).
+
+    Notes
+    -----
+    kT is in units of energy rather than Kelvin or Celsius. Use the `unyt` package to
+    easily convert T to kT with the energy units used by your force field.
+
+    ```python
+        hoomd_nvt(
+            compound=compound,
+            sim=sim,
+            forces_handler=ForcesHandler(scale_angle=1, scale_bond=1, dpd=0),
+            kT=(300 * u.K).to_equivalent("kJ/mol", "thermal").value,
+            dt=1e-4,
+            tau=1e-2,
+            n_steps=10000
+        )
+    ````
     """
     forces_handler.scale_sim(sim)
 
