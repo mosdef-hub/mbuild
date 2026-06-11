@@ -451,6 +451,8 @@ def hoomd_nvt(
         filter=sim.get_integrate_group(), thermostat=thermostat(kT=kT, tau=tau)
     )
     sim.set_integrator(method=nvt, dt=dt)
+    # Create random initial velocities
+    sim.state.thermalize_particle_momenta(filter=hoomd.filter.All(), kT=kT)
     # Store the initial energy if this is the first simulation call.
     if sim.energies == []:
         sim.run(0)
