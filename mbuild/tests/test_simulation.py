@@ -13,6 +13,7 @@ from mbuild.simulation import (
     energy_minimize,
     hoomd_cap_displacement,
     hoomd_fire,
+    hoomd_nvt,
 )
 from mbuild.tests.base_test import BaseTest
 from mbuild.utils.io import get_fn, has_foyer, has_hoomd, has_openbabel
@@ -406,6 +407,23 @@ class TestSimulationHoomd(BaseTest):
         ffhandler.scale_sim(sim)
         forceTypes = [type(force) for force in sim.active_forces]
         assert hoomd.md.dihedral.OPLS in forceTypes
+
+    @pytest.mark.skipif(not has_hoomd, reason="hoomd is not installed")
+    def test_nvt(self, sim):
+        ffhandler = ForcesHandler(scale_lj=1, scale_bond=1, scale_angle=1)
+        cpd = sim.compound
+        old_coords = cpd.xyz.copy()
+        hoomd_nvt(
+            compound=cpd,
+            sim=sim,
+            forces_handler=ffhandler,
+            n_steps=20,
+            kT=2.0,
+            dt=1e-4,
+            tau=1e-2,
+        )
+        new_coords = cpd.xyz
+        assert not np.allclose(old_coords, new_coords, atol=1e-5)
 
     @pytest.mark.skipif(not has_hoomd, reason="hoomd is not installed")
     def test_fire(self, sim):
