@@ -50,6 +50,53 @@ class HoomdSimulation(hoomd.simulation.Simulation):
     gsd_filename : str, default None
         A filename to write out with.
         TODO: Not currently implemented.
+
+    Notes
+    -----
+    Running on GPU:
+        The hoomd-based methods in ``mbuild.simulation``
+        are able to utilize and run on GPUs to perform energy minimization for larger systems if needed.
+        Performance improvements of using GPU over CPU may not be significant until systems reach a
+        size of ~1,000 particles.
+
+    Running multiple simulations:
+        The information needed to run the HOOMD simulation is saved after the first simulation.
+        Therefore, calling hoomd-based simulation methods multiple times (e.g., in a for loop or while loop)
+        does not require re-running performing atom-typing, applying the forcefield, or running hoomd
+        format writers again.
+
+    Examples
+    --------
+
+    ```python
+    ff = gmso.ForceField("path_to_ff")
+
+    # Scale bonds and angles, replace 12-6 LJ pair force with DPDConservative
+    fhandler = ForcesHandler(scale_bonds=0.1, scale_angles=0.2, dpd=4)
+
+    # Pass in the mBuild Compound you are removing overlaps from
+    sim = HOOMDSimulation(compound, ff, r_cut=0.6, box_buffer=5,)
+
+    hoomd_cap_displacement(compound, sim, fhandler, n_steps=1000)
+
+    # Re-run with without DPD and bond and angle scaling:
+    fhandler = ForcesHandler(scale_bonds=1, scale_angles=1, dpd=None)
+    hoomd_cap_displacement(compound, sim, fhandler, n_steps=1000)
+    ```
+
+    Use in a while loop along with Compound.check_for_overlap()
+    to run capped-displacement simulations in small increments.
+
+    ```python
+    ff = gmso.ForceField("path_to_ff")
+    fhandler = ForcesHandler(scale_bonds=0.1, scale_angles=0.2, dpd=4)
+
+    # Pass in the mBuild Compound you are removing overlaps from
+    sim = HOOMDSimulation(compound, ff, r_cut=0.6, box_buffer=5,)
+
+    while len(compound.check_for_overlap(exlcuded_bond_depth=1, minimum_distance=0.12)) > 0:
+        hoomd_cap_displacement(compound, sim, fhandler, n_steps=200)
+    ```
     """
 
     def __init__(
@@ -358,7 +405,64 @@ class ForcesHandler:
             self.forcesDict[key] = force  # store for usage elsewhere
 
 
-## HOOMD METHODS ##
+## HOOMD RUN METHODS ##
+def hoomd_nvt(
+    compound,
+    sim,
+    forces_handler,
+    n_steps,
+    kT,
+    dt,
+    tau,
+    thermostat=hoomd.md.methods.thermostats.Berendsen,
+):
+    """Run a short NVT simulation on an mBuild Compound.
+
+    Parameters
+    ----------
+    compound : mb.Compound
+        The compound to use in the simulation
+    sim : mb.simulation.HOOMDSimulation
+        The simulation context used during the simulation.
+    forces_handler : mb.simulation.ForceHander
+        The way to handle forces for this simulation method. Will apply specified forces,
+        scaling as needed.
+        Set to `None` to use the force field as-is.
+    n_steps : int
+        The number of simulation time steps to run.
+    dt : float
+        The simulation timestep. Note that for running capped displacement on highly unstable
+        systems (e.g. overlapping particles), it is often more stable to use a larger
+        value of dt and let the displacement cap limit position updates.
+    kT : float
+        The temperature set point for the thermostat in units of energy.
+    tau : float
+        The thermostat time constant
+    thermostat : Instance of hoomd.md.methods.thermostats
+        The thermostat to use. Defaults to the Berendsen thermostat.
+        For shorter, equilibraiton runs, Berendsen is the most efficient choice.
+        Other options include `hoomd.md.methods.thermostats.MTTK` (i.e., Nose-Hoover) and
+        `hoomd.md.methods.thermostats.Bussi` (i.e., Stochastic velocity rescaling).
+    """
+    forces_handler.scale_sim(sim)
+
+    # Set up and run
+    nvt = hoomd.md.methods.ConstantVolume(
+        filter=sim.get_integrate_group(), thermostat=thermostat(kT=kT, tau=tau)
+    )
+    sim.set_integrator(method=nvt, dt=dt)
+    # Store the initial energy if this is the first simulation call.
+    if sim.energies == []:
+        sim.run(0)
+        sim.store_current_energies()
+    # Run and store resulting energies.
+    sim.run(n_steps)
+    sim.store_current_energies()
+    sim.operations.integrator = None
+    sim.update_positions()
+    sim._update_snapshot()
+
+
 def hoomd_cap_displacement(
     compound,
     sim,
@@ -390,52 +494,6 @@ def hoomd_cap_displacement(
         The maximum displacement (nm) allowed per timestep. Use smaller values for
         highly unstable systems.
 
-    Notes
-    -----
-    Running on GPU:
-        The hoomd-based methods in ``mbuild.simulation``
-        are able to utilize and run on GPUs to perform energy minimization for larger systems if needed.
-        Performance improvements of using GPU over CPU may not be significant until systems reach a
-        size of ~1,000 particles.
-
-    Running multiple simulations:
-        The information needed to run the HOOMD simulation is saved after the first simulation.
-        Therefore, calling hoomd-based simulation methods multiple times (e.g., in a for loop or while loop)
-        does not require re-running performing atom-typing, applying the forcefield, or running hoomd
-        format writers again.
-
-    Examples
-    --------
-
-    ```python
-    ff = gmso.ForceField("path_to_ff")
-
-    # Scale bonds and angles, replace 12-6 LJ pair force with DPDConservative
-    fhandler = ForcesHandler(scale_bonds=0.1, scale_angles=0.2, dpd=4)
-
-    # Pass in the mBuild Compound you are removing overlaps from
-    sim = HOOMDSimulation(compound, ff, r_cut=0.6, box_buffer=5,)
-
-    hoomd_cap_displacement(compound, sim, fhandler, n_steps=1000)
-
-    # Re-run with without DPD and bond and angle scaling:
-    fhandler = ForcesHandler(scale_bonds=1, scale_angles=1, dpd=None)
-    hoomd_cap_displacement(compound, sim, fhandler, n_steps=1000)
-    ```
-
-    Use in a while loop along with Compound.check_for_overlap()
-    to run capped-displacement simulations in small increments.
-
-    ```python
-    ff = gmso.ForceField("path_to_ff")
-    fhandler = ForcesHandler(scale_bonds=0.1, scale_angles=0.2, dpd=4)
-
-    # Pass in the mBuild Compound you are removing overlaps from
-    sim = HOOMDSimulation(compound, ff, r_cut=0.6, box_buffer=5,)
-
-    while len(compound.check_for_overlap(exlcuded_bond_depth=1, minimum_distance=0.12)) > 0:
-        hoomd_cap_displacement(compound, sim, fhandler, n_steps=200)
-    ```
     """
     compound._kick()
 
@@ -447,9 +505,11 @@ def hoomd_cap_displacement(
         maximum_displacement=max_displacement,
     )
     sim.set_integrator(method=displacement_capped, dt=dt)
+    # Store the initial energy if this is the first simulation call.
     if sim.energies == []:
         sim.run(0)
         sim.store_current_energies()
+    # Run and store resulting energies.
     sim.run(n_steps)
     sim.store_current_energies()
     sim.operations.integrator = None
@@ -511,40 +571,6 @@ def hoomd_fire(
         Convergence threshold for the per-particle angular momentum magnitude.
     energy_tol : float, default 1e-6
         Convergence threshold for the fractional change in system energy.
-
-    Notes
-    -----
-    Running on GPU:
-        The hoomd-based methods in ``mbuild.simulation``
-        are able to utilize and run on GPUs to perform energy minimization for larger systems if needed.
-        Performance improvements of using GPU over CPU may not be significant until systems reach a
-        size of ~1,000 particles.
-
-    Running multiple simulations:
-        The information needed to run the HOOMD simulation is saved after the first simulation.
-        Therefore, calling hoomd-based simulation methods multiple times (e.g, in a for loop or while loop)
-        does not require re-running performing atom-typing, applying the forcefield, or running hoomd
-        format writers again.
-
-    Examples
-    --------
-
-    For best performance on unstable systems, use ForcesHandler to scale forces.
-    ```python
-    ff = gmso.ForceField("path_to_ff")
-
-    # Scale bonds and angles, replace 12-6 LJ pair forces with DPDConservative
-    fhandler = ForcesHandler(scale_bonds=0.1, scale_angles=0.2, dpd=4)
-
-    # Pass in the mBuild Compound you are minimizing
-    sim = HOOMDSimulation(compound, ff, r_cut=0.6, box_buffer=5,)
-
-    hoomd_fire(compound, sim, fhandler, n_steps=1000)
-
-    # Run FIRE one more time with the un-scaled forcefield
-    fhandler = ForcesHandler()
-    hoomd_fire(compound, sim, fhandler, n_steps=1000)
-    ```
     """
     compound._kick()
     forces_handler.scale_sim(sim)
@@ -563,9 +589,11 @@ def hoomd_fire(
         min_steps_conv=min_steps_conv,
         methods=[nvt],
     )
+    # Store the initial energy if this is the first simulation call.
     if sim.energies == []:
         sim.run(0)
         sim.store_current_energies()
+    # Run and store resulting energies.
     for sim_num in range(n_iterations):
         sim.run(n_steps)
         sim.operations.integrator.reset()
