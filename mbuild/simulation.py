@@ -332,15 +332,7 @@ class ForcesHandler:
             "charge": (hoomd.md.special_pair.Coulomb, ("alpha")),
             "bond": (hoomd.md.bond.Harmonic, ("k")),
             "angle": (hoomd.md.angle.Harmonic, ("k")),
-            "opls": (
-                hoomd.md.dihedral.OPLS,
-                (
-                    "k1",
-                    "k2",
-                    "k3",
-                    "k4",
-                ),
-            ),
+            "opls": (hoomd.md.dihedral.OPLS, "k1", "k2", "k3", "k4"),
             "periodic": (hoomd.md.dihedral.Periodic, ("k")),
             "improper": (hoomd.md.improper.Periodic, ("k")),
         }
@@ -456,10 +448,8 @@ def hoomd_cap_displacement(
     )
     sim.set_integrator(method=displacement_capped, dt=dt)
     if sim.energies == []:
-        print("Initial Energy States:")
         sim.run(0)
         sim.store_current_energies()
-        print("\n")
     sim.run(n_steps)
     sim.store_current_energies()
     sim.operations.integrator = None
