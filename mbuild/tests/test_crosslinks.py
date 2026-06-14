@@ -447,6 +447,25 @@ class TestCrosslink(BaseTest):
                 min_separation=0.2,
             )
 
+    def test_multiple_connection_sites(self):
+        coordinates = np.array([[0,0,0],[1,1,0], [1,0,0], [0,1,0]])
+        path = Path(coordinates, bead_name="_B")
+        path.bond_graph.add_edges_from([[0,2], [1,3]])
+        cl = CrosslinkerGeometry(
+            bead_name="_CROSS",
+            connection_sites=[0, 0],
+            coordinates=np.array([[0,0,0]])
+        )
+        crosslink(
+            path, crosslinker=cl, backbone_name=(("_B","_B"),("_B","_B")), 
+            crosslink_bond_length=np.sqrt(2)/2, 
+            tolerance=0.01, seed=1
+            )
+        assert len(path) == 5 # 4 _B and one _CR
+        assert len(path.bond_graph.edges) == 6 # 4 _B-_CROSS bonds
+        assert np.allclose(path.coordinates[-1], np.array([0.5,0.5,0])) # CROSS Bead
+        assert np.linalg.norm(path.coordinates[-1] - path.coordinates[-2]) == np.sqrt(2)/2
+
 
 class TestReplaceSites(BaseTest):
     """Tests for the replace_sites function."""

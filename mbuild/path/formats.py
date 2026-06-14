@@ -119,10 +119,16 @@ def to_mol3000(path, G=None):
 
     # Atom block
     lines.append("M  V30 BEGIN ATOM\n")
+    atypesDict = dict()
     for i, (coord, bead_name) in enumerate(zip(path.coordinates, path.beads), start=1):
         atom_type = bead_name.strip("_")
+        if atom_type in atypesDict:
+            r_type = atypesDict[atom_type]
+        else:
+            r_type = len(atypesDict) + 1
+            atypesDict[atom_type] = r_type
         lines.append(
-            f"M  V30 {i} {atom_type} {coord[0]:.4f} {coord[1]:.4f} {coord[2]:.4f} 0\n"
+            f"M  V30 {i} R{r_type:.0f} {coord[0]:.4f} {coord[1]:.4f} {coord[2]:.4f} 0\n"
         )
     lines.append("M  V30 END ATOM\n")
 
@@ -139,4 +145,4 @@ def to_mol3000(path, G=None):
     # End of record
     lines.append("M  END\n")
 
-    return "".join(lines)
+    return "".join(lines), atypesDict

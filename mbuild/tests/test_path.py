@@ -751,6 +751,32 @@ class TestRandomWalk(BaseTest):
         node_names = [d["name"] for _, d in path.bond_graph.nodes(data=True)]
         assert node_names == ["_A", "_B", "_A", "_B"]
 
+    def test_consistent_behavior(self):
+        num_sites = NumSites(5)
+        conditions = Termination((num_sites, ))
+        constraint = CuboidConstraint(3.2,3.2,3.2, center=(0,0,0), pbc=(True, True, True))
+
+        path1 = hard_sphere_random_walk(
+            bead_name="_B",
+            radius=0.2,
+            bond_length=0.27,
+            termination=conditions,
+            volume_constraint=constraint,
+            rw_angles=(np.pi/2, np.pi),
+            seed=1
+        )
+
+        path2 = hard_sphere_random_walk(
+            bead_name="_B",
+            radius=0.2,
+            bond_length=0.27,
+            termination=conditions,
+            volume_constraint=constraint,
+            rw_angles=(np.pi/2, np.pi),
+            seed=1
+        )
+        assert path1 == path2
+
 
 class TestPathUtils(BaseTest):
     def test_target_sq_distances_no_pbc(self):

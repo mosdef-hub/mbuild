@@ -412,7 +412,13 @@ class Path:
 
         for i, j in self.bond_graph.edges():
             delta = positions[j] - positions[i]
-            if box is not None:
+            if isinstance(box, CuboidConstraint):
+                box_arr = box.box_lengths
+                delta -= np.round(delta / box_arr) * box_arr
+            elif isinstance(box, Box):
+                box_arr = box.lengths
+                delta -= np.round(delta / box_arr) * box_arr
+            elif isinstance(box, list):
                 box_arr = np.array(box)
                 delta -= np.round(delta / box_arr) * box_arr
             bl = np.linalg.norm(delta)
@@ -615,6 +621,37 @@ class Path:
             overlap_radius=overlap_radius,
         )
 
+    def wrap_inside_box(self, constraint):
+        """
+        Wrap coordinates inside a cubic box constraint with periodic boundary conditions.
+        
+        Args:
+            coordinates: ndarray of shape (N, 3) with 3D coordinates
+            box_length: length of the cubic box
+            center: center of the box as tuple (x, y, z)
+            pbc: tuple of booleans indicating PBC for each dimension (x, y, z)
+        
+        Returns:
+            ndarray of wrapped coordinates with same shape as input
+        """
+        coordinates = np.array(self.coordinates, dtype=float)
+        wrapped = coordinates.copy()
+        center = np.array(constraint.center)
+        pbc = constraint.pbc
+        
+        # Calculate box bounds relative to center
+        half_lengths = constraint.box_lengths / 2.0
+        box_min = center - half_lengths
+        box_max = center + half_lengths
+        
+        # Apply periodic boundary conditions to each dimension
+        for dim in range(3):
+            if pbc[dim]:
+                # Shift coordinates to box range and wrap using modulo
+                shifted = wrapped[:, dim] - box_min[dim]
+                wrapped[:, dim] = (shifted % constraint.box_lengths[dim]) + box_min[dim]
+        
+        self.coordinates = wrapped
 
 def lamellar(
     path=None,
@@ -1360,7 +1397,7 @@ def hard_sphere_random_walk(
         # Create mask for particles inside volume constraint, allows for PBC
         if state.volume_constraint:
             is_inside_mask = volume_constraint.is_inside(
-                points=candidates, buffer=radius
+                points=candidates, buffer=0.0
             )
             candidates = candidates[is_inside_mask]
         # If there is a bias, sort candidates according to the bias
@@ -1397,7 +1434,7 @@ def hard_sphere_random_walk(
             # Iterate through current state of candidates, break after first accept
             for xyz in candidates:
                 if check_path_cpu(
-                    existing_points=existing_points,
+                    existing_points=existing_points[:-1], # skip previously bonded to coordinate
                     new_point=xyz,
                     radius=radius,
                     tolerance=tolerance,

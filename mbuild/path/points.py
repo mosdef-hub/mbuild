@@ -63,7 +63,7 @@ def get_second_point(state, existing_points, beads, check_path, next_step):
     )
     if state.volume_constraint:
         is_inside_mask = state.volume_constraint.is_inside(
-            points=xyzs, buffer=state.radius
+            points=xyzs, buffer=0.0
         )
         xyzs = xyzs[is_inside_mask]
 
@@ -72,7 +72,7 @@ def get_second_point(state, existing_points, beads, check_path, next_step):
 
     for xyz in xyzs:
         if check_path(
-            existing_points=existing_points,
+            existing_points=existing_points[:-1],
             new_point=xyz,
             radius=state.radius,
             tolerance=state.tolerance,
@@ -174,7 +174,7 @@ def get_initial_point(state, existing_points, beads, check_path, next_step):
         )
         if state.volume_constraint:
             is_inside_mask = state.volume_constraint.is_inside(
-                points=xyzs, buffer=state.radius
+                points=xyzs, buffer=0.0
             )
             xyzs = xyzs[is_inside_mask]
 
@@ -220,7 +220,8 @@ def get_initial_point(state, existing_points, beads, check_path, next_step):
     # TODO: Use find_low_density_point here instead?
     elif state.volume_constraint:
         xyzs = state.volume_constraint.sample_candidates(
-            points=existing_points, n_candidates=300, buffer=state.radius + 0.1
+            points=existing_points, n_candidates=300, buffer=state.radius,
+            rng=state.rng
         )
         for xyz in xyzs:
             if check_path(

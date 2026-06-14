@@ -125,7 +125,7 @@ class HoomdSimulation(hoomd.simulation.Simulation):
         apply(top, forcefields=self.forcefield, ignore_params=["dihedral", "improper"])
         # Get hoomd snapshot and force objects
         forces, _ = gmso.external.to_hoomd_forcefield(top, r_cut=self.r_cut)
-        snap, _ = gmso.external.to_gsd_snapshot(top=top)
+        snap, _ = gmso.external.to_gsd_snapshot(top=top, shift_coords=True)
         forces = list(set().union(*forces.values()))
         return snap, forces
 
