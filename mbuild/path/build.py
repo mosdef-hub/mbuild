@@ -56,7 +56,7 @@ class Path:
         if (
             coordinates is not None
             and bond_graph is not None
-            and isinstance(bead_name, np.ndarray)
+            and isinstance(bead_name, (np.ndarray, list))
         ):
             assert len(coordinates) == len(bond_graph), (
                 len(coordinates),
@@ -68,7 +68,7 @@ class Path:
             )
             self.bond_graph = bond_graph
             self.coordinates = coordinates
-            self.beads = bead_name.astype("U10")
+            self.beads = np.array(bead_name, dtype="U10")
         # Passing in an array of coordinates, bond graph, and single bead name
         elif coordinates is not None and bond_graph is not None:
             assert len(coordinates) == len(bond_graph)
@@ -95,8 +95,8 @@ class Path:
             if isinstance(bead_name, str):
                 self.beads = np.array([bead_name for _ in coordinates], dtype="U10")
             # Passed array of bead names, cast to U10 dtype
-            elif isinstance(bead_name, np.ndarray):
-                self.beads = bead_name.astype("U10")
+            elif isinstance(bead_name, (np.ndarray, list)):
+                self.beads = np.array(bead_name, dtype="U10")
             for idx in range(len((self.coordinates))):
                 self.bond_graph.add_node(idx)
         # Nothing is defined, create empty place holders for coords, bond graph and bead names
@@ -115,7 +115,7 @@ class Path:
     def __add__(self, other):
         coordinates = np.concat((self.coordinates, other.coordinates))
         beads = np.concat((self.beads, other.beads))
-        bond_graph = nx.compose(
+        bond_graph = nx.disjoint_union(
             self.bond_graph, other.bond_graph
         )  # TODO: Don't overwrite nodes in bg
         return Path(coordinates, bond_graph, beads)
