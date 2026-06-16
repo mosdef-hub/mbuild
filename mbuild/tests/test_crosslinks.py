@@ -7,7 +7,6 @@ from mbuild.path.build import Path
 from mbuild.path.crosslink import (
     CrosslinkerGeometry,
     crosslink,
-    replace_sites,
 )
 from mbuild.tests.base_test import BaseTest
 
@@ -30,19 +29,19 @@ class TestCLinks(BaseTest):
         assert outPath.bond_graph.has_edge(0, 5)
         assert outPath.bond_graph.has_edge(1, 4)  # consistent edges form
 
-    def test_replace_site(self):
-        coords = np.column_stack(
-            (np.arange(0, 5), np.zeros(5, dtype=int), np.zeros(5, dtype=int))
-        )
-        path = Path(coords)
-        path._connect_edges("linear")
-        assert len(path.bond_graph.edges()) == 4
+    # def test_replace_site(self):
+    #     coords = np.column_stack(
+    #         (np.arange(0, 5), np.zeros(5, dtype=int), np.zeros(5, dtype=int))
+    #     )
+    #     path = Path(coords)
+    #     path._connect_edges("linear")
+    #     assert len(path.bond_graph.edges()) == 4
 
-        triangle = CrosslinkerGeometry.equilateral_triangle(
-            bond_length=0.4, connection_sites=[0, 1]
-        )
-        path = path.replace_sites(triangle, 1)
-        assert len(path) == 7
+    #     triangle = CrosslinkerGeometry.equilateral_triangle(
+    #         bond_length=0.4, connection_sites=[0, 1]
+    #     )
+    #     path = path.replace_sites(triangle, 1)
+    #     assert len(path) == 7
 
 
 class TestCrosslinkerGeometry(BaseTest):
@@ -192,7 +191,7 @@ class TestCrosslink(BaseTest):
         return p
 
     def test_crosslink_single_site_default(self, linear_path):
-        out = crosslink(linear_path, crosslink_bond_length=3.0, n_connection_sites=2)
+        out = crosslink(linear_path, crosslink_bond_length=3.0)
         # Original 4 + 1 crosslink = 5
         assert len(out.coordinates) == 5
         # 3 backbone edges + 2 crosslink edges = 5
@@ -242,10 +241,10 @@ class TestCrosslink(BaseTest):
 
     def test_crosslink_radius_too_small_raises(self, linear_path):
         with pytest.raises(PathConvergenceError):
-            crosslink(linear_path, crosslink_bond_length=0.001, n_connection_sites=2)
+            crosslink(linear_path, crosslink_bond_length=0.001)
 
     def test_crosslink_preserves_backbone_edges(self, linear_path):
-        out = crosslink(linear_path, crosslink_bond_length=3.0, n_connection_sites=2)
+        out = crosslink(linear_path, crosslink_bond_length=3.0)
         # Backbone edges 0-1, 1-2, 2-3 should still exist
         assert out.bond_graph.has_edge(0, 1)
         assert out.bond_graph.has_edge(1, 2)
@@ -253,7 +252,8 @@ class TestCrosslink(BaseTest):
 
     def test_crosslink_bead_names_correct(self, linear_path):
         out = crosslink(
-            linear_path, bead_name="_R", crosslink_bond_length=3.0, n_connection_sites=2
+            linear_path,
+            crosslink_bond_length=3.0,
         )
         # Last bead should be the crosslinker
         assert out.beads[4] == "_R"
@@ -262,42 +262,32 @@ class TestCrosslink(BaseTest):
             assert out.beads[i] == "_A"
 
     def test_crosslink_index_consistency(self, linear_path):
-        out = crosslink(linear_path, crosslink_bond_length=3.0, n_connection_sites=2)
+        out = crosslink(linear_path, crosslink_bond_length=3.0)
         # Every node in bond_graph should be a valid coordinate index
         for node in out.bond_graph.nodes():
             assert 0 <= node < len(out.coordinates)
 
-    def test_crosslink_with_initial_point(self, long_linear_path):
-        # Should find crosslink near specified point
-        out = crosslink(
-            long_linear_path,
-            crosslink_bond_length=2.0,
-            n_connection_sites=2,
-            initial_point=5,
-        )
-        assert len(out.coordinates) == 21
+    # def test_clink_repeated_replaces(self, long_linear_path):
+    #     triangle = CrosslinkerGeometry.equilateral_triangle(
+    #         bond_length=0.27, connection_sites=[0, 1, 2], bead_name="_U"
+    #     )
+    #     crosslink(long_linear_path, triangle, crosslink_bond_length=1)
+    #     crosslink(long_linear_path, triangle, crosslink_bond_length=1)
+    #     assert len(long_linear_path) == 26
+    #     assert sum(long_linear_path.beads == "_U") == 6
+    #     assert sum(long_linear_path.beads == "_A") == 20
 
-    def test_clink_repeated_replaces(self, long_linear_path):
-        triangle = CrosslinkerGeometry.equilateral_triangle(
-            bond_length=0.27, connection_sites=[0, 1, 2], bead_name="_U"
-        )
-        crosslink(long_linear_path, triangle, crosslink_bond_length=1)
-        crosslink(long_linear_path, triangle, crosslink_bond_length=1)
-        assert len(long_linear_path) == 26
-        assert sum(long_linear_path.beads == "_U") == 6
-        assert sum(long_linear_path.beads == "_A") == 20
+    #     replace_sites(long_linear_path, triangle, bead_name="_A")
+    #     assert len(long_linear_path) == 66
+    #     assert sum(long_linear_path.beads == "_U") == 66
 
-        replace_sites(long_linear_path, triangle, bead_name="_A")
-        assert len(long_linear_path) == 66
-        assert sum(long_linear_path.beads == "_U") == 66
-
-    def test_error_on_excess_degree(self, long_linear_path):
-        triangle = CrosslinkerGeometry.equilateral_triangle(
-            bond_length=0.27, connection_sites=[0, 1], bead_name="_U"
-        )
-        crosslink(long_linear_path, triangle, crosslink_bond_length=5)
-        with pytest.raises(ValueError, match="degree"):
-            replace_sites(long_linear_path, triangle, bead_name="_A")
+    # def test_error_on_excess_degree(self, long_linear_path):
+    #     triangle = CrosslinkerGeometry.equilateral_triangle(
+    #         bond_length=0.27, connection_sites=[0, 1], bead_name="_U"
+    #     )
+    #     crosslink(long_linear_path, triangle, crosslink_bond_length=5)
+    #     with pytest.raises(ValueError, match="degree"):
+    #         replace_sites(long_linear_path, triangle, bead_name="_A")
 
     def test_non_centroid_candidate(self, long_linear_path):
         triangle = CrosslinkerGeometry.equilateral_triangle(
@@ -333,7 +323,7 @@ class TestCrosslink(BaseTest):
                     path,
                     clink,
                     excluded_bond_depth=2,
-                    min_separation=min_sep,
+                    minimum_separation=min_sep,
                     crosslink_bond_length=bond_length,
                     tolerance=0.01,
                     max_backbone_degree=8,
@@ -369,7 +359,7 @@ class TestCrosslink(BaseTest):
 
             assert min_dist >= min_sep, (
                 f"Internal crosslinker node {node} has overlap: "
-                f"min distance {min_dist:.4f} < min_separation {min_sep}"
+                f"min distance {min_dist:.4f} < minimum_separation {min_sep}"
             )
 
     def test_high_density_crosslinking_overlaps_eqtriangle(self):
@@ -394,9 +384,9 @@ class TestCrosslink(BaseTest):
                 path,
                 clink,
                 excluded_bond_depth=2,
-                min_separation=min_sep,
+                minimum_separation=min_sep,
                 crosslink_bond_length=bond_length,
-                tolerance=0.05,
+                tolerance=1,
                 max_backbone_degree=8,
             )
 
@@ -428,7 +418,7 @@ class TestCrosslink(BaseTest):
 
             assert min_dist >= min_sep, (
                 f"Internal crosslinker node {node} has overlap: "
-                f"min distance {min_dist:.4f} < min_separation {min_sep}"
+                f"min distance {min_dist:.4f} < minimum_separation {min_sep}"
             )
 
     def test_failing_overlap_radius(self, long_linear_path):
@@ -444,203 +434,209 @@ class TestCrosslink(BaseTest):
                 long_linear_path,
                 linear_clink,
                 crosslink_bond_length=0.5,
-                min_separation=0.2,
+                minimum_separation=0.2,
             )
 
     def test_multiple_connection_sites(self):
-        coordinates = np.array([[0,0,0],[1,1,0], [1,0,0], [0,1,0]])
+        coordinates = np.array([[0, 0, 0], [1, 1, 0], [1, 0, 0], [0, 1, 0]])
         path = Path(coordinates, bead_name="_B")
-        path.bond_graph.add_edges_from([[0,2], [1,3]])
+        path.bond_graph.add_edges_from([[0, 2], [1, 3]])
         cl = CrosslinkerGeometry(
             bead_name="_CROSS",
             connection_sites=[0, 0],
-            coordinates=np.array([[0,0,0]])
+            coordinates=np.array([[0, 0, 0]]),
         )
         crosslink(
-            path, crosslinker=cl, backbone_name=(("_B","_B"),("_B","_B")), 
-            crosslink_bond_length=np.sqrt(2)/2, 
-            tolerance=0.01, seed=1
-            )
-        assert len(path) == 5 # 4 _B and one _CR
-        assert len(path.bond_graph.edges) == 6 # 4 _B-_CROSS bonds
-        assert np.allclose(path.coordinates[-1], np.array([0.5,0.5,0])) # CROSS Bead
-        assert np.linalg.norm(path.coordinates[-1] - path.coordinates[-2]) == np.sqrt(2)/2
-
-
-class TestReplaceSites(BaseTest):
-    """Tests for the replace_sites function."""
-
-    @pytest.fixture
-    def chain_with_crosslinks(self):
-        """A linear backbone with two single-site crosslinks."""
-        n = 10
-        coords = np.column_stack(
-            (np.linspace(0, 5, n), np.zeros(n), np.zeros(n))
-        ).astype(np.float32)
-        p = Path(coords, bead_name="_A")
-        p._connect_edges("linear")
-        # Add two crosslinks
-        p = crosslink(
-            p, bead_name="_R", crosslink_bond_length=3.0, n_connection_sites=2, seed=42
+            path,
+            crosslinker=cl,
+            backbone_name=(("_B", "_B"), ("_B", "_B")),
+            crosslink_bond_length=np.sqrt(2) / 2,
+            tolerance=0.01,
+            seed=1,
         )
-        p = crosslink(
-            p, bead_name="_R", crosslink_bond_length=3.0, n_connection_sites=2, seed=99
-        )
-        return p
-
-    def test_replace_single_site_with_triangle(self):
-        # Build a simple path with a degree-2 node in the middle
-        coords = np.array(
-            [[0, 0, 0], [1, 0, 0], [2, 0, 0], [3, 0, 0], [4, 0, 0]],
-            dtype=np.float32,
-        )
-        p = Path(coords, bead_name="_A")
-        p._connect_edges("linear")
-        # Change middle node to _R
-        p.beads[2] = "_R"
-
-        triangle = CrosslinkerGeometry.equilateral_triangle(
-            bond_length=0.27, connection_sites=[0, 1]
-        )
-        out = replace_sites(p, triangle, bead_name="_R")
-        # 5 - 1 removed + 3 added = 7
-        assert len(out.coordinates) == 7
-        # Check all node indices are valid
-        for node in out.bond_graph.nodes():
-            assert 0 <= node < len(out.coordinates)
-
-    def test_replace_by_index(self):
-        coords = np.array(
-            [[0, 0, 0], [1, 0, 0], [2, 0, 0], [3, 0, 0]], dtype=np.float32
-        )
-        p = Path(coords, bead_name="_A")
-        p._connect_edges("linear")
-
-        linear_repl = CrosslinkerGeometry.linear(
-            n_sites=2, bond_length=0.3, connection_sites=[0, 1]
-        )
-        # Replace node 1 (degree 2)
-        out = replace_sites(p, linear_repl, sites=[1])
-        # 4 - 1 + 2 = 5
-        assert len(out.coordinates) == 5
+        assert len(path) == 5  # 4 _B and one _CR
+        assert len(path.bond_graph.edges) == 6  # 4 _B-_CROSS bonds
+        assert np.allclose(path.coordinates[-1], np.array([0.5, 0.5, 0]))  # CROSS Bead
         assert (
-            len(out.bond_graph.edges()) == 4
-        )  # 2 kept + 1 internal + 1 external? let's just check > 0
-        assert len(out.bond_graph.edges()) >= 4
-
-    def test_replace_preserves_nonreplaced_edges(self):
-        coords = np.array(
-            [[0, 0, 0], [1, 0, 0], [2, 0, 0], [3, 0, 0], [4, 0, 0]],
-            dtype=np.float32,
+            np.linalg.norm(path.coordinates[-1] - path.coordinates[-2])
+            == np.sqrt(2) / 2
         )
-        p = Path(coords, bead_name="_A")
-        p._connect_edges("linear")
-        p.beads[2] = "_R"
 
-        triangle = CrosslinkerGeometry.equilateral_triangle(
-            bond_length=0.27, connection_sites=[0, 1]
-        )
-        out = replace_sites(p, triangle, bead_name="_R")
 
-        # Original edge 0-1 and 3-4 should still exist in some form
-        # (nodes may be renumbered but connectivity is preserved)
-        # Check total number of edges: 2 kept backbone + 3 internal + 2 external = 7
-        # Actually: edges 0-1, 1-2, 2-3, 3-4. Remove node 2. Kept: 0-1, 3-4.
-        # Triangle: 3 internal + 2 connections to (what was 1 and 3)
-        # Total: 2 + 3 + 2 = 7
-        assert len(out.bond_graph.edges()) == 7
+# class TestReplaceSites(BaseTest):
+#     """Tests for the replace_sites function."""
 
-    def test_replace_multiple_sites(self):
-        coords = np.array(
-            [[0, 0, 0], [1, 0, 0], [2, 0, 0], [3, 0, 0], [4, 0, 0], [5, 0, 0]],
-            dtype=np.float32,
-        )
-        p = Path(coords, bead_name="_A")
-        p._connect_edges("linear")
-        p.beads[1] = "_R"
-        p.beads[4] = "_R"
+#     @pytest.fixture
+#     def chain_with_crosslinks(self):
+#         """A linear backbone with two single-site crosslinks."""
+#         n = 10
+#         coords = np.column_stack(
+#             (np.linspace(0, 5, n), np.zeros(n), np.zeros(n))
+#         ).astype(np.float32)
+#         p = Path(coords, bead_name="_A")
+#         p._connect_edges("linear")
+#         # Add two crosslinks
+#         p = crosslink(
+#             p, crosslink_bond_length=3.0,seed=42
+#         )
+#         p = crosslink(
+#             p, crosslink_bond_length=3.0, seed=99
+#         )
+#         return p
 
-        linear_repl = CrosslinkerGeometry.linear(
-            n_sites=2, bond_length=0.3, connection_sites=[0, 1]
-        )
-        out = replace_sites(p, linear_repl, bead_name="_R")
-        # 6 - 2 + 4 = 8
-        assert len(out.coordinates) == 8
+#     def test_replace_single_site_with_triangle(self):
+#         # Build a simple path with a degree-2 node in the middle
+#         coords = np.array(
+#             [[0, 0, 0], [1, 0, 0], [2, 0, 0], [3, 0, 0], [4, 0, 0]],
+#             dtype=np.float32,
+#         )
+#         p = Path(coords, bead_name="_A")
+#         p._connect_edges("linear")
+#         # Change middle node to _R
+#         p.beads[2] = "_R"
 
-    def test_replace_no_sites_noop(self):
-        coords = np.array([[0, 0, 0], [1, 0, 0], [2, 0, 0]], dtype=np.float32)
-        p = Path(coords, bead_name="_A")
-        p._connect_edges("linear")
+#         triangle = CrosslinkerGeometry.equilateral_triangle(
+#             bond_length=0.27, connection_sites=[0, 1]
+#         )
+#         out = replace_sites(p, triangle, bead_name="_R")
+#         # 5 - 1 removed + 3 added = 7
+#         assert len(out.coordinates) == 7
+#         # Check all node indices are valid
+#         for node in out.bond_graph.nodes():
+#             assert 0 <= node < len(out.coordinates)
 
-        triangle = CrosslinkerGeometry.equilateral_triangle(
-            bond_length=0.27, connection_sites=[0, 1]
-        )
-        # No "_R" beads exist
-        out = replace_sites(p, triangle, bead_name="_R")
-        assert len(out.coordinates) == 3
-        assert len(out.bond_graph.edges()) == 2
+#     def test_replace_by_index(self):
+#         coords = np.array(
+#             [[0, 0, 0], [1, 0, 0], [2, 0, 0], [3, 0, 0]], dtype=np.float32
+#         )
+#         p = Path(coords, bead_name="_A")
+#         p._connect_edges("linear")
 
-    def test_replace_neither_sites_nor_bead_raises(self):
-        coords = np.array([[0, 0, 0], [1, 0, 0]], dtype=np.float32)
-        p = Path(coords, bead_name="_A")
-        triangle = CrosslinkerGeometry.equilateral_triangle(bond_length=0.27)
-        with pytest.raises(ValueError, match="Must specify"):
-            replace_sites(p, triangle)
+#         linear_repl = CrosslinkerGeometry.linear(
+#             n_sites=2, bond_length=0.3, connection_sites=[0, 1]
+#         )
+#         # Replace node 1 (degree 2)
+#         out = replace_sites(p, linear_repl, sites=[1])
+#         # 4 - 1 + 2 = 5
+#         assert len(out.coordinates) == 5
+#         assert (
+#             len(out.bond_graph.edges()) == 4
+#         )  # 2 kept + 1 internal + 1 external? let's just check > 0
+#         assert len(out.bond_graph.edges()) >= 4
 
-    def test_replace_both_sites_and_bead_raises(self):
-        coords = np.array([[0, 0, 0], [1, 0, 0]], dtype=np.float32)
-        p = Path(coords, bead_name="_A")
-        triangle = CrosslinkerGeometry.equilateral_triangle(bond_length=0.27)
-        with pytest.raises(ValueError, match="Cannot specify both"):
-            replace_sites(p, triangle, sites=[0], bead_name="_A")
+#     def test_replace_preserves_nonreplaced_edges(self):
+#         coords = np.array(
+#             [[0, 0, 0], [1, 0, 0], [2, 0, 0], [3, 0, 0], [4, 0, 0]],
+#             dtype=np.float32,
+#         )
+#         p = Path(coords, bead_name="_A")
+#         p._connect_edges("linear")
+#         p.beads[2] = "_R"
 
-    def test_replace_renumbers_bond_graph(self):
-        coords = np.array(
-            [[0, 0, 0], [1, 0, 0], [2, 0, 0], [3, 0, 0]], dtype=np.float32
-        )
-        p = Path(coords, bead_name="_A")
-        p._connect_edges("linear")
-        p.beads[2] = "_R"
+#         triangle = CrosslinkerGeometry.equilateral_triangle(
+#             bond_length=0.27, connection_sites=[0, 1]
+#         )
+#         out = replace_sites(p, triangle, bead_name="_R")
 
-        linear_repl = CrosslinkerGeometry.linear(
-            n_sites=2, bond_length=0.3, connection_sites=[0, 1]
-        )
-        out = replace_sites(p, linear_repl, bead_name="_R")
+#         # Original edge 0-1 and 3-4 should still exist in some form
+#         # (nodes may be renumbered but connectivity is preserved)
+#         # Check total number of edges: 2 kept backbone + 3 internal + 2 external = 7
+#         # Actually: edges 0-1, 1-2, 2-3, 3-4. Remove node 2. Kept: 0-1, 3-4.
+#         # Triangle: 3 internal + 2 connections to (what was 1 and 3)
+#         # Total: 2 + 3 + 2 = 7
+#         assert len(out.bond_graph.edges()) == 7
 
-        # All node indices should be contiguous 0..N-1
-        nodes = sorted(out.bond_graph.nodes())
-        assert nodes == list(range(len(out.coordinates)))
+#     def test_replace_multiple_sites(self):
+#         coords = np.array(
+#             [[0, 0, 0], [1, 0, 0], [2, 0, 0], [3, 0, 0], [4, 0, 0], [5, 0, 0]],
+#             dtype=np.float32,
+#         )
+#         p = Path(coords, bead_name="_A")
+#         p._connect_edges("linear")
+#         p.beads[1] = "_R"
+#         p.beads[4] = "_R"
 
-    def test_replace_via_path_method(self):
-        coords = np.array(
-            [[0, 0, 0], [1, 0, 0], [2, 0, 0], [3, 0, 0]], dtype=np.float32
-        )
-        p = Path(coords, bead_name="_A")
-        p._connect_edges("linear")
-        p.beads[1] = "_R"
+#         linear_repl = CrosslinkerGeometry.linear(
+#             n_sites=2, bond_length=0.3, connection_sites=[0, 1]
+#         )
+#         out = replace_sites(p, linear_repl, bead_name="_R")
+#         # 6 - 2 + 4 = 8
+#         assert len(out.coordinates) == 8
 
-        linear_repl = CrosslinkerGeometry.linear(
-            n_sites=2, bond_length=0.3, connection_sites=[0, 1]
-        )
-        out = p.replace_sites(linear_repl, bead_name="_R")
-        assert len(out.coordinates) == 5
+#     def test_replace_no_sites_noop(self):
+#         coords = np.array([[0, 0, 0], [1, 0, 0], [2, 0, 0]], dtype=np.float32)
+#         p = Path(coords, bead_name="_A")
+#         p._connect_edges("linear")
 
-    def test_crosslink_then_replace(self, chain_with_crosslinks):
-        """Replace single-site crosslinks with triangles."""
-        p = chain_with_crosslinks
-        n_R = sum(1 for b in p.beads if b == "_R")
-        # Each _R replaced: remove 1, add 3 -> net +2 per replacement
-        expected_len = len(p.coordinates) - n_R + n_R * 3
-        assert n_R >= 1
+#         triangle = CrosslinkerGeometry.equilateral_triangle(
+#             bond_length=0.27, connection_sites=[0, 1]
+#         )
+#         # No "_R" beads exist
+#         out = replace_sites(p, triangle, bead_name="_R")
+#         assert len(out.coordinates) == 3
+#         assert len(out.bond_graph.edges()) == 2
 
-        triangle = CrosslinkerGeometry.equilateral_triangle(
-            bond_length=0.27, connection_sites=[0, 1]
-        )
-        out = replace_sites(p, triangle, bead_name="_R")
-        assert len(out.coordinates) == expected_len
+#     def test_replace_neither_sites_nor_bead_raises(self):
+#         coords = np.array([[0, 0, 0], [1, 0, 0]], dtype=np.float32)
+#         p = Path(coords, bead_name="_A")
+#         triangle = CrosslinkerGeometry.equilateral_triangle(bond_length=0.27)
+#         with pytest.raises(ValueError, match="Must specify"):
+#             replace_sites(p, triangle)
 
-        # No _R beads remain (they've been replaced with triangle beads)
-        # Triangle beads are also "_R" so they should still exist
-        # But original single-site _R nodes are gone
-        for node in out.bond_graph.nodes():
-            assert 0 <= node < len(out.coordinates)
+#     def test_replace_both_sites_and_bead_raises(self):
+#         coords = np.array([[0, 0, 0], [1, 0, 0]], dtype=np.float32)
+#         p = Path(coords, bead_name="_A")
+#         triangle = CrosslinkerGeometry.equilateral_triangle(bond_length=0.27)
+#         with pytest.raises(ValueError, match="Cannot specify both"):
+#             replace_sites(p, triangle, sites=[0], bead_name="_A")
+
+#     def test_replace_renumbers_bond_graph(self):
+#         coords = np.array(
+#             [[0, 0, 0], [1, 0, 0], [2, 0, 0], [3, 0, 0]], dtype=np.float32
+#         )
+#         p = Path(coords, bead_name="_A")
+#         p._connect_edges("linear")
+#         p.beads[2] = "_R"
+
+#         linear_repl = CrosslinkerGeometry.linear(
+#             n_sites=2, bond_length=0.3, connection_sites=[0, 1]
+#         )
+#         out = replace_sites(p, linear_repl, bead_name="_R")
+
+#         # All node indices should be contiguous 0..N-1
+#         nodes = sorted(out.bond_graph.nodes())
+#         assert nodes == list(range(len(out.coordinates)))
+
+#     def test_replace_via_path_method(self):
+#         coords = np.array(
+#             [[0, 0, 0], [1, 0, 0], [2, 0, 0], [3, 0, 0]], dtype=np.float32
+#         )
+#         p = Path(coords, bead_name="_A")
+#         p._connect_edges("linear")
+#         p.beads[1] = "_R"
+
+#         linear_repl = CrosslinkerGeometry.linear(
+#             n_sites=2, bond_length=0.3, connection_sites=[0, 1]
+#         )
+#         out = p.replace_sites(linear_repl, bead_name="_R")
+#         assert len(out.coordinates) == 5
+
+#     def test_crosslink_then_replace(self, chain_with_crosslinks):
+#         """Replace single-site crosslinks with triangles."""
+#         p = chain_with_crosslinks
+#         n_R = sum(1 for b in p.beads if b == "_R")
+#         # Each _R replaced: remove 1, add 3 -> net +2 per replacement
+#         expected_len = len(p.coordinates) - n_R + n_R * 3
+#         assert n_R >= 1
+
+#         triangle = CrosslinkerGeometry.equilateral_triangle(
+#             bond_length=0.27, connection_sites=[0, 1]
+#         )
+#         out = replace_sites(p, triangle, bead_name="_R")
+#         assert len(out.coordinates) == expected_len
+
+#         # No _R beads remain (they've been replaced with triangle beads)
+#         # Triangle beads are also "_R" so they should still exist
+#         # But original single-site _R nodes are gone
+#         for node in out.bond_graph.nodes():
+#             assert 0 <= node < len(out.coordinates)

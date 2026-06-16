@@ -4,13 +4,12 @@ Handles placement of crosslinker geometries between backbone beads,
 with proper overlap avoidance and bond length enforcement under PBC.
 """
 
-import numpy as np
 import networkx as nx
+import numpy as np
 
 from mbuild.exceptions import PathConvergenceError
 from mbuild.path.build import Path
 from mbuild.path.constraints import CuboidConstraint, CylinderConstraint
-
 
 # =============================================================================
 # CrosslinkerGeometry
@@ -33,12 +32,12 @@ class CrosslinkerGeometry(Path):
         May contain duplicates (same node bonds to multiple groups).
     """
 
-    def __init__(self, coordinates, bond_graph=None, bead_name="_R", connection_sites=None):
+    def __init__(
+        self, coordinates, bond_graph=None, bead_name="_R", connection_sites=None
+    ):
         coordinates = np.asarray(coordinates, dtype=np.float32)
         centroid = coordinates.mean(axis=0)
         self.coordinates = coordinates - centroid
-
-        self.n_sites = len(self.coordinates)
 
         if bond_graph is None:
             bond_graph = nx.Graph()
@@ -56,11 +55,67 @@ class CrosslinkerGeometry(Path):
         self.connection_sites = list(connection_sites)
 
     @property
+    def n_sites(self):
+        return len(self.coordinates)
+
+    @property
     def n_connections(self):
         return len(self.connection_sites)
 
+    @property
+    def unique_connection_sites(self):
+        return list(dict.fromkeys(self.connection_sites))
+
+    @property
+    def internal_bonds(self):
+        return list(self.bond_graph.edges())
+
+    def copy(self):
+        """Return a deep copy of this crosslinker geometry."""
+        return CrosslinkerGeometry(
+            coordinates=self.coordinates.copy(),
+            bond_graph=self.bond_graph.copy(),
+            bead_name=self.beads.copy(),
+            connection_sites=list(self.connection_sites),
+        )
+
+    def recenter(self):
+        if len(self.coordinates) > 0:
+            centroid = np.mean(self.coordinates, axis=0)
+            self.coordinates = self.coordinates - centroid
+
     @classmethod
-    def equilateral_triangle(cls, bond_length=0.27, bead_name="_R", connection_sites=None):
+    def from_path(cls, path, connection_sites):
+        """Create from an existing Path.
+
+        Parameters
+        ----------
+        path : Path
+            An existing path defining the structure.
+        connection_sites : list of int
+            Which nodes bond to external beads.
+        """
+        return cls(
+            coordinates=path.coordinates.copy(),
+            bond_graph=path.bond_graph.copy(),
+            bead_name=path.beads.copy(),
+            connection_sites=connection_sites,
+        )
+
+    @classmethod
+    def single_site(cls, bead_name="_R", n_connections=2):
+        """Single-site (original crosslink behavior)."""
+        coords = np.array([[0.0, 0.0, 0.0]], dtype=np.float32)
+        return cls(
+            coordinates=coords,
+            bead_name=bead_name,
+            connection_sites=[0] * n_connections,
+        )
+
+    @classmethod
+    def equilateral_triangle(
+        cls, bond_length=0.27, bead_name="_R", connection_sites=None
+    ):
         """Three sites in a flat equilateral triangle with edge = bond_length."""
         R = bond_length / np.sqrt(3)
         angles = [0, 2 * np.pi / 3, 4 * np.pi / 3]
@@ -89,21 +144,192 @@ class CrosslinkerGeometry(Path):
         )
 
     @classmethod
-    def linear(cls, bond_length=0.27, bead_name="_R", connection_sites=None):
-        """Two sites separated by bond_length."""
-        positions = np.array(
-            [[-bond_length / 2, 0, 0], [bond_length / 2, 0, 0]],
-            dtype=np.float32,
+    def linear(cls, n_sites=2, bond_length=0.27, bead_name="_R", connection_sites=None):
+        """Linear chain of sites."""
+        positions = np.zeros((n_sites, 3), dtype=np.float32)
+        for i in range(n_sites):
+            positions[i, 0] = i * bond_length
+
+        bead_names = (
+            np.array([bead_name] * n_sites, dtype="U10")
+            if isinstance(bead_name, str)
+            else np.array(bead_name, dtype="U10")
         )
         if connection_sites is None:
-            connection_sites = [0, 1]
+            connection_sites = [0, n_sites - 1]
+
         G = nx.Graph()
-        G.add_node(0)
-        G.add_node(1)
-        G.add_edge(0, 1)
+        for i in range(n_sites):
+            G.add_node(i)
+        for i in range(n_sites - 1):
+            G.add_edge(i, i + 1)
+
         return cls(
-            coordinates=positions, bond_graph=G,
-            bead_name=bead_name, connection_sites=connection_sites,
+            coordinates=positions,
+            bond_graph=G,
+            bead_name=bead_names,
+            connection_sites=connection_sites,
+        )
+
+    @classmethod
+    def square(cls, bond_length=0.27, bead_name="_R", connection_sites=None):
+        """Four sites in a flat square."""
+        half = bond_length / 2.0
+        positions = np.array(
+            [[half, half, 0], [-half, half, 0], [-half, -half, 0], [half, -half, 0]],
+            dtype=np.float32,
+        )
+        bead_names = (
+            np.array([bead_name] * 4, dtype="U10")
+            if isinstance(bead_name, str)
+            else np.array(bead_name, dtype="U10")
+        )
+        if connection_sites is None:
+            connection_sites = [0, 1, 2, 3]
+
+        G = nx.Graph()
+        for i in range(4):
+            G.add_node(i)
+        for i in range(4):
+            G.add_edge(i, (i + 1) % 4)
+
+        return cls(
+            coordinates=positions,
+            bond_graph=G,
+            bead_name=bead_names,
+            connection_sites=connection_sites,
+        )
+
+    @classmethod
+    def tetrahedral(cls, bond_length=0.27, bead_name="_R", connection_sites=None):
+        """Four sites in a regular tetrahedron."""
+        positions = np.array(
+            [[1, 1, 1], [1, -1, -1], [-1, 1, -1], [-1, -1, 1]], dtype=np.float32
+        )
+        current_dist = np.linalg.norm(positions[0] - positions[1])
+        positions *= bond_length / current_dist
+
+        bead_names = (
+            np.array([bead_name] * 4, dtype="U10")
+            if isinstance(bead_name, str)
+            else np.array(bead_name, dtype="U10")
+        )
+        if connection_sites is None:
+            connection_sites = [0, 1, 2, 3]
+
+        G = nx.Graph()
+        for i in range(4):
+            G.add_node(i)
+        for i in range(4):
+            for j in range(i + 1, 4):
+                G.add_edge(i, j)
+
+        return cls(
+            coordinates=positions,
+            bond_graph=G,
+            bead_name=bead_names,
+            connection_sites=connection_sites,
+        )
+
+    @classmethod
+    def trigonal_bipyramidal(
+        cls, bond_length=0.27, bead_name="_R", connection_sites=None
+    ):
+        """Five sites in trigonal bipyramidal arrangement (0-2 equatorial, 3-4 axial)."""
+        R_eq = bond_length / np.sqrt(3)
+        eq_angles = [0, 2 * np.pi / 3, 4 * np.pi / 3]
+        equatorial = [[R_eq * np.cos(a), R_eq * np.sin(a), 0.0] for a in eq_angles]
+        axial_dist = bond_length * np.sqrt(2.0 / 3.0)
+        axial = [[0.0, 0.0, axial_dist], [0.0, 0.0, -axial_dist]]
+        positions = np.array(equatorial + axial, dtype=np.float32)
+
+        bead_names = (
+            np.array([bead_name] * 5, dtype="U10")
+            if isinstance(bead_name, str)
+            else np.array(bead_name, dtype="U10")
+        )
+        if connection_sites is None:
+            connection_sites = [0, 1, 2, 3, 4]
+
+        G = nx.Graph()
+        for i in range(5):
+            G.add_node(i)
+        G.add_edge(0, 1)
+        G.add_edge(1, 2)
+        G.add_edge(0, 2)
+        for eq in range(3):
+            G.add_edge(eq, 3)
+            G.add_edge(eq, 4)
+
+        return cls(
+            coordinates=positions,
+            bond_graph=G,
+            bead_name=bead_names,
+            connection_sites=connection_sites,
+        )
+
+    @classmethod
+    def pentagon(cls, bond_length=0.27, bead_name="_R", connection_sites=None):
+        """Five sites in a flat regular pentagon."""
+        R = bond_length / (2 * np.sin(np.pi / 5))
+        angles = [2 * np.pi * i / 5 for i in range(5)]
+        positions = np.array(
+            [[R * np.cos(a), R * np.sin(a), 0.0] for a in angles], dtype=np.float32
+        )
+
+        bead_names = (
+            np.array([bead_name] * 5, dtype="U10")
+            if isinstance(bead_name, str)
+            else np.array(bead_name, dtype="U10")
+        )
+        if connection_sites is None:
+            connection_sites = [0, 1, 2, 3, 4]
+
+        G = nx.Graph()
+        for i in range(5):
+            G.add_node(i)
+        for i in range(5):
+            G.add_edge(i, (i + 1) % 5)
+
+        return cls(
+            coordinates=positions,
+            bond_graph=G,
+            bead_name=bead_names,
+            connection_sites=connection_sites,
+        )
+
+    @classmethod
+    def from_edges(cls, coordinates, edges, bead_name="_R", connection_sites=None):
+        """Create from explicit positions and edge list.
+
+        Parameters
+        ----------
+        coordinates : array-like, shape (N, 3)
+        edges : list of tuple(int, int)
+        bead_name : str or list of str
+        connection_sites : list of int, optional
+        """
+        coordinates = np.asarray(coordinates, dtype=np.float32)
+        n = len(coordinates)
+        bead_names = (
+            np.array([bead_name] * n, dtype="U10")
+            if isinstance(bead_name, str)
+            else np.array(bead_name, dtype="U10")
+        )
+        if connection_sites is None:
+            connection_sites = list(range(n))
+
+        G = nx.Graph()
+        for i in range(n):
+            G.add_node(i)
+        for i, j in edges:
+            G.add_edge(i, j)
+
+        return cls(
+            coordinates=coordinates,
+            bond_graph=G,
+            bead_name=bead_names,
+            connection_sites=connection_sites,
         )
 
 
@@ -166,7 +392,9 @@ def _parse_backbone_spec(backbone_name, connection_sites):
         return [[backbone_name]] * n_conn
 
     if not isinstance(backbone_name, (tuple, list)):
-        raise ValueError(f"backbone_name must be str or tuple, got {type(backbone_name)}")
+        raise ValueError(
+            f"backbone_name must be str or tuple, got {type(backbone_name)}"
+        )
 
     if len(backbone_name) != n_conn:
         raise ValueError(
@@ -255,11 +483,15 @@ def _find_neighbor_groups(path, target_names, max_backbone_degree):
                 if key in seen:
                     continue
                 seen.add(key)
-                if (path.beads[i] == target_names[0]
-                        and path.beads[j] == target_names[1]):
+                if (
+                    path.beads[i] == target_names[0]
+                    and path.beads[j] == target_names[1]
+                ):
                     groups.append([i, j])
-                elif (path.beads[i] == target_names[1]
-                      and path.beads[j] == target_names[0]):
+                elif (
+                    path.beads[i] == target_names[1]
+                    and path.beads[j] == target_names[0]
+                ):
                     groups.append([j, i])
         return groups
 
@@ -267,8 +499,9 @@ def _find_neighbor_groups(path, target_names, max_backbone_degree):
     groups = []
     found_keys = set()
     for start in all_eligible:
-        _dfs_groups(path, start, all_eligible, target_names, n_needed,
-                    groups, found_keys)
+        _dfs_groups(
+            path, start, all_eligible, target_names, n_needed, groups, found_keys
+        )
     return groups
 
 
@@ -300,62 +533,110 @@ def _all_beads_from_groups(candidate_group):
 
 
 def _can_reach_all_beads(
-    bead_positions, crosslink_bond_length, tolerance, pbc, box_lengths,
+    bead_positions, crosslink_bond_length, tolerance, pbc, box_lengths
 ):
-    """Check if there exists a point at crosslink_bond_length from all beads.
-
-    Uses the circumcenter/equidistant-point approach. A necessary condition
-    is that all pairwise distances are <= 2 * crosslink_bond_length.
-
-    For exact checking, computes the geometric median constraint.
-
-    Returns
-    -------
-    feasible : bool
-    candidate_point : np.ndarray or None
-        An approximate valid point if feasible.
-    """
+    """Check if a point exists within tolerance of crosslink_bond_length from all beads."""
     n = len(bead_positions)
-    r = crosslink_bond_length
-    tol = tolerance
+    bead_positions = np.asarray(bead_positions, dtype=np.float64)
 
-    # Necessary condition: all pairwise distances <= 2*r*(1+tol)
-    max_pair = 2 * r * (1 + tol)
-    for i in range(n):
-        for j in range(i + 1, n):
-            d = float(_pbc_distance(bead_positions[i], bead_positions[j],
-                                    box_lengths, pbc))
-            if d > max_pair:
-                return False, None
+    if n == 0:
+        return True, np.zeros(3, dtype=np.float32)
 
-    # Find the point equidistant from all beads via iterative projection
-    # Start from centroid
-    centroid = np.mean(bead_positions, axis=0)
-    point = centroid.copy().astype(np.float64)
+    if n == 1:
+        offset = np.array([0.0, 0.0, crosslink_bond_length], dtype=np.float64)
+        return True, (bead_positions[0] + offset).astype(np.float32)
 
-    for _ in range(50):
-        shift = np.zeros(3, dtype=np.float64)
-        for i in range(n):
-            delta = _pbc_delta(bead_positions[i], point, box_lengths, pbc).astype(np.float64)
-            dist = np.linalg.norm(delta)
-            if dist > 1e-10:
-                # Project point onto sphere of radius r around bead i
-                target_on_sphere = point + delta * (1 - r / dist)
-                shift += (target_on_sphere - point)
-        shift /= n
-        point += shift * 0.8  # damped
+    centroid = bead_positions.mean(axis=0)
+    spread = bead_positions - centroid
+    principal = (
+        spread[0] if np.linalg.norm(spread[0]) > 1e-10 else np.array([1.0, 0.0, 0.0])
+    )
+    perp = _get_perpendicular(principal).astype(np.float64)
 
-        if np.linalg.norm(shift) < r * 0.001:
-            break
+    # Multiple starting points — centroid FIRST (finds minimum-radius in-plane solution)
+    starts = [
+        centroid.copy(),
+        centroid + perp * crosslink_bond_length,
+        centroid - perp * crosslink_bond_length,
+        centroid + perp * crosslink_bond_length * 0.1,
+    ]
 
-    # Validate
-    max_error = 0.0
-    for i in range(n):
-        d = float(_pbc_distance(point, bead_positions[i], box_lengths, pbc))
-        max_error = max(max_error, abs(d - r) / r)
+    best_point = None
+    best_radius_error = float("inf")
 
-    if max_error <= tol:
-        return True, point.astype(np.float32)
+    for start in starts:
+        point = start.copy()
+
+        # Equidistant solver: converge to point with equal distances to all beads
+        for iteration in range(300):
+            distances = np.array(
+                [np.linalg.norm(point - bead_positions[i]) for i in range(n)]
+            )
+            mean_dist = distances.mean()
+            if mean_dist < 1e-12:
+                point += perp * 0.01
+                continue
+            shift = np.zeros(3, dtype=np.float64)
+            for i in range(n):
+                delta = point - bead_positions[i]
+                dist = distances[i]
+                if dist < 1e-12:
+                    delta = perp * 0.001
+                    dist = np.linalg.norm(delta)
+                desired = bead_positions[i] + delta * (mean_dist / dist)
+                shift += desired - point
+            shift /= n
+            point += shift
+            if np.linalg.norm(shift) < 1e-10:
+                break
+
+        # Check quality
+        distances = np.array(
+            [np.linalg.norm(point - bead_positions[i]) for i in range(n)]
+        )
+        natural_radius = distances.mean()
+        max_spread = np.max(np.abs(distances - natural_radius))
+
+        if max_spread / max(natural_radius, 1e-10) > 0.05:
+            continue  # didn't converge to equidistant point
+
+        radius_error = (
+            abs(natural_radius - crosslink_bond_length) / crosslink_bond_length
+        )
+        if radius_error < best_radius_error:
+            best_radius_error = radius_error
+            best_point = point.copy()
+
+    # Also try fixed-radius solver from centroid
+    for start in starts[:2]:
+        point = start.copy()
+        for iteration in range(300):
+            shift = np.zeros(3, dtype=np.float64)
+            for i in range(n):
+                delta = point - bead_positions[i]
+                dist = np.linalg.norm(delta)
+                if dist < 1e-12:
+                    delta = perp * 0.001
+                    dist = np.linalg.norm(delta)
+                desired = bead_positions[i] + delta * (crosslink_bond_length / dist)
+                shift += desired - point
+            shift /= n
+            point += shift
+            if np.linalg.norm(shift) < crosslink_bond_length * 1e-8:
+                break
+
+        distances = np.array(
+            [np.linalg.norm(point - bead_positions[i]) for i in range(n)]
+        )
+        max_err = (
+            np.max(np.abs(distances - crosslink_bond_length)) / crosslink_bond_length
+        )
+        if max_err < best_radius_error:
+            best_radius_error = max_err
+            best_point = point.copy()
+
+    if best_point is not None and best_radius_error <= tolerance:
+        return True, best_point.astype(np.float32)
 
     return False, None
 
@@ -408,22 +689,43 @@ def _find_candidate_groups(
     # --- Search for valid combinations ---
     if n_conn == 2:
         return _pairwise_candidate_search(
-            path, crosslinker, eligible_per_site, node_to_conn_indices,
-            crosslink_bond_length, tolerance, excluded_bond_depth,
-            pbc, box_lengths, rng,
+            path,
+            crosslinker,
+            eligible_per_site,
+            node_to_conn_indices,
+            crosslink_bond_length,
+            tolerance,
+            excluded_bond_depth,
+            pbc,
+            box_lengths,
+            rng,
         )
 
     return _general_candidate_search(
-        path, crosslinker, eligible_per_site, node_to_conn_indices,
-        crosslink_bond_length, tolerance, excluded_bond_depth,
-        pbc, box_lengths, rng,
+        path,
+        crosslinker,
+        eligible_per_site,
+        node_to_conn_indices,
+        crosslink_bond_length,
+        tolerance,
+        excluded_bond_depth,
+        pbc,
+        box_lengths,
+        rng,
     )
 
 
 def _pairwise_candidate_search(
-    path, crosslinker, eligible_per_site, node_to_conn_indices,
-    crosslink_bond_length, tolerance, excluded_bond_depth,
-    pbc, box_lengths, rng,
+    path,
+    crosslinker,
+    eligible_per_site,
+    node_to_conn_indices,
+    crosslink_bond_length,
+    tolerance,
+    excluded_bond_depth,
+    pbc,
+    box_lengths,
+    rng,
 ):
     """Search for valid 2-connection-site candidates.
 
@@ -439,7 +741,7 @@ def _pairwise_candidate_search(
 
     # Are both connection sites the same physical node?
     conn_sites = crosslinker.connection_sites
-    same_node = (conn_sites[0] == conn_sites[1])
+    same_node = conn_sites[0] == conn_sites[1]
 
     for group_a in eligible_per_site[0]:
         excluded_a = _get_excluded_indices(path, group_a, excluded_bond_depth)
@@ -461,15 +763,24 @@ def _pairwise_candidate_search(
                 all_bead_indices = list(group_a) + list(group_b)
                 all_bead_positions = coords[all_bead_indices].copy()
                 feasible, _ = _can_reach_all_beads(
-                    all_bead_positions, crosslink_bond_length, tolerance,
-                    pbc, box_lengths,
+                    all_bead_positions,
+                    crosslink_bond_length,
+                    tolerance,
+                    pbc,
+                    box_lengths,
                 )
             else:
                 # Different physical nodes. Each group independently checked,
                 # plus pairwise distance between connection sites must match geometry.
                 feasible = _check_separate_sites_feasibility(
-                    crosslinker, coords, group_a, group_b,
-                    crosslink_bond_length, tolerance, pbc, box_lengths,
+                    crosslinker,
+                    coords,
+                    group_a,
+                    group_b,
+                    crosslink_bond_length,
+                    tolerance,
+                    pbc,
+                    box_lengths,
                 )
 
             if feasible:
@@ -482,8 +793,14 @@ def _pairwise_candidate_search(
 
 
 def _check_separate_sites_feasibility(
-    crosslinker, coords, group_a, group_b,
-    crosslink_bond_length, tolerance, pbc, box_lengths,
+    crosslinker,
+    coords,
+    group_a,
+    group_b,
+    crosslink_bond_length,
+    tolerance,
+    pbc,
+    box_lengths,
 ):
     """Check feasibility when connection sites are different physical nodes.
 
@@ -512,24 +829,38 @@ def _check_separate_sites_feasibility(
     if not ok_b:
         return False
 
-    # Check that the reach-points are at the correct internal distance apart
-    dist_ab = float(_pbc_distance(point_a, point_b, box_lengths, pbc))
-    if abs(dist_ab - internal_distance) > internal_distance * tolerance + crosslink_bond_length * tolerance:
+    # Check geometric feasibility via triangle inequality.
+    # A rigid rod of length d (internal distance) must have one end on
+    # sphere(centroid_a, r) and the other on sphere(centroid_b, r).
+    # This is feasible when: (D-d)/2 <= r, i.e., h² = r² - ((D-d)/2)² >= 0
+    centroid_a = np.mean(coords[group_a], axis=0).astype(np.float64)
+    centroid_b = np.mean(coords[group_b], axis=0).astype(np.float64)
+    D = float(_pbc_distance(centroid_a, centroid_b, box_lengths, pbc))
+    r = crosslink_bond_length * (1 + tolerance)
+
+    half_diff = abs(D - internal_distance) / 2.0
+    if half_diff > r:
         return False
 
     return True
 
 
 def _general_candidate_search(
-    path, crosslinker, eligible_per_site, node_to_conn_indices,
-    crosslink_bond_length, tolerance, excluded_bond_depth,
-    pbc, box_lengths, rng,
+    path,
+    crosslinker,
+    eligible_per_site,
+    node_to_conn_indices,
+    crosslink_bond_length,
+    tolerance,
+    excluded_bond_depth,
+    pbc,
+    box_lengths,
+    rng,
 ):
     """General search for n-connection-site crosslinkers."""
     coords = path.coordinates
     candidates = []
-    max_tries = 5000
-
+    max_tries = 1000
     n_conn = len(crosslinker.connection_sites)
 
     for _ in range(max_tries):
@@ -537,57 +868,77 @@ def _general_candidate_search(
         group_0 = eligible_per_site[0][idx_0]
         excluded = _get_excluded_indices(path, group_0, excluded_bond_depth)
         selected = [group_0]
+
+        # Track accumulated beads per physical node
+        node_to_beads = {}  # phys_node_id -> list of bead indices
+        phys_0 = crosslinker.connection_sites[0]
+        node_to_beads[phys_0] = list(group_0)
+
         all_nodes = set(group_0)
         valid = True
 
         for site_idx in range(1, n_conn):
+            phys_node = crosslinker.connection_sites[site_idx]
             found = False
-            for group in eligible_per_site[site_idx]:
+
+            iterGroups = list(rng.permutation(eligible_per_site[site_idx]))
+            for group in iterGroups:
                 if set(group) & (all_nodes | excluded):
                     continue
 
-                # Check feasibility of adding this group
-                # Collect all beads assigned to same physical node
-                phys_node = crosslinker.connection_sites[site_idx]
-                sibling_indices = [
-                    ci for ci in range(site_idx)
-                    if crosslinker.connection_sites[ci] == phys_node
-                ]
+                # --- Accumulate ALL beads for this physical node ---
+                accumulated = node_to_beads.get(phys_node, []) + list(group)
+                accumulated_positions = coords[accumulated].copy()
 
-                if sibling_indices:
-                    # Same physical node as a previous connection site
-                    all_beads = list(group)
-                    for ci in sibling_indices:
-                        all_beads.extend(selected[ci])
-                    all_positions = coords[all_beads].copy()
-                    feasible, _ = _can_reach_all_beads(
-                        all_positions, crosslink_bond_length, tolerance,
-                        pbc, box_lengths,
-                    )
-                else:
-                    positions = coords[group].copy()
-                    feasible, _ = _can_reach_all_beads(
-                        positions, crosslink_bond_length, tolerance,
-                        pbc, box_lengths,
-                    )
+                # --- Check if ALL accumulated beads are reachable from ONE point ---
+                feasible, _ = _can_reach_all_beads(
+                    accumulated_positions,
+                    crosslink_bond_length,
+                    tolerance,
+                    pbc,
+                    box_lengths,
+                )
+                if not feasible:
+                    continue
 
-                if feasible:
-                    selected.append(group)
-                    all_nodes |= set(group)
-                    excluded |= _get_excluded_indices(path, group, excluded_bond_depth)
-                    found = True
-                    break
+                # --- Passed: update state ---
+                selected.append(group)
+                all_nodes.update(group)
+                node_to_beads.setdefault(phys_node, []).extend(group)
+                excluded |= _get_excluded_indices(path, group, excluded_bond_depth)
+                found = True
+                break
 
             if not found:
                 valid = False
+                # print(f"Bad Candidate: {idx_0=}\t{group_0=}\t{selected=}")
                 break
 
         if valid:
             candidates.append(selected)
+            # print(f"Good Candidate: {idx_0=}\t{group_0=}\t{selected=}")
             if len(candidates) >= 50:
                 break
 
-    return candidates
+    # --- Deduplicate candidates ---
+    # Group indices by physical node, sort within each group, then use as hashable key
+    unique_candidates = []
+    seen = set()
+    for candidate in candidates:
+        # Build normalized key: for each physical node, collect and sort all bead indices
+        node_to_sorted_beads = {}
+        for site_idx, group in enumerate(candidate):
+            phys_node = crosslinker.connection_sites[site_idx]
+            node_to_sorted_beads.setdefault(phys_node, []).extend(int(x) for x in group)
+        # Sort beads within each physical node, then sort by physical node
+        key = tuple(
+            tuple(sorted(beads)) for _, beads in sorted(node_to_sorted_beads.items())
+        )
+        if key not in seen:
+            seen.add(key)
+            unique_candidates.append(candidate)
+
+    return unique_candidates
 
 
 # =============================================================================
@@ -596,8 +947,13 @@ def _general_candidate_search(
 
 
 def _compute_optimal_placement(
-    crosslinker, candidate_group, path_coords,
-    crosslink_bond_length, pbc, box_lengths,
+    crosslinker,
+    candidate_group,
+    path_coords,
+    crosslink_bond_length,
+    pbc,
+    box_lengths,
+    tolerance,
 ):
     """Compute optimal crosslinker placement satisfying bond length constraints.
 
@@ -636,9 +992,14 @@ def _compute_optimal_placement(
         bead_positions = np.array(bead_positions, dtype=np.float64)
 
         # Find point equidistant (at crosslink_bond_length) from all beads
-        target = _find_equidistant_point(
-            bead_positions, crosslink_bond_length, pbc, box_lengths
+        # If impossible, find natural equidistant point within tolerance
+        _, target = _can_reach_all_beads(
+            bead_positions, crosslink_bond_length, tolerance, pbc, box_lengths
         )
+        if target is None:
+            target = _find_equidistant_point(
+                bead_positions, crosslink_bond_length, pbc, box_lengths
+            )
         target_node_positions[phys_node] = target
 
     # --- Place the crosslinker based on computed node positions ---
@@ -650,33 +1011,80 @@ def _compute_optimal_placement(
         node_offset = crosslinker.coordinates[node]
         centroid_shift = target_node_positions[node] - node_offset
         placed_coords = crosslinker.coordinates.astype(np.float64) + centroid_shift
-
     elif len(unique_nodes) >= 2:
-        # Multiple physical nodes: use Kabsch alignment
-        # Source: crosslinker node positions (relative coords)
-        source_points = np.array(
-            [crosslinker.coordinates[n] for n in unique_nodes], dtype=np.float64
-        )
-        # Target: computed positions (relative to their centroid, for alignment)
-        target_points = np.array(
-            [target_node_positions[n] for n in unique_nodes], dtype=np.float64
-        )
+        # Get unwrapped bead centroids for each physical node
+        node_bead_centroids = {}
+        for phys_node, bead_indices in node_to_beads.items():
+            bead_positions = []
+            for idx in bead_indices:
+                delta = _pbc_delta(path_coords[idx], reference, box_lengths, pbc)
+                bead_positions.append(reference + delta)
+            node_bead_centroids[phys_node] = np.mean(bead_positions, axis=0).astype(
+                np.float64
+            )
 
-        # Align via Kabsch: find R, t such that R @ source + t ≈ target
-        source_centroid = source_points.mean(axis=0)
-        target_centroid = target_points.mean(axis=0)
+        if len(unique_nodes) == 2:
+            n0, n1 = unique_nodes[0], unique_nodes[1]
+            bead_a = node_bead_centroids[n0]
+            bead_b = node_bead_centroids[n1]
 
-        P = source_points - source_centroid
-        Q = target_points - target_centroid
+            # Internal distance between connection sites (rigid)
+            conn_0_local = crosslinker.coordinates[n0].astype(np.float64)
+            conn_1_local = crosslinker.coordinates[n1].astype(np.float64)
+            d = float(np.linalg.norm(conn_1_local - conn_0_local))
 
-        if len(unique_nodes) >= 2 and np.linalg.norm(P) > 1e-10:
-            R = _kabsch_rotation(P, Q)
+            # Backbone distance
+            D = float(np.linalg.norm(bead_b - bead_a))
+            r = float(crosslink_bond_length)
+
+            # Geometric solution: midpoint of targets is at midpoint of beads,
+            # offset perpendicular by h = sqrt(r² - ((D-d)/2)²)
+            half_diff = (D - d) / 2.0
+            h_sq = r * r - half_diff * half_diff
+            h = np.sqrt(max(h_sq, 0.0))
+
+            # Coordinate frame
+            midpoint_bb = (bead_a + bead_b) / 2.0
+            bb_axis = (bead_b - bead_a) / max(D, 1e-10)
+            perp = _get_perpendicular(bb_axis).astype(np.float64)
+
+            # Target positions for the two connection sites
+            target_0 = midpoint_bb - (d / 2.0) * bb_axis + h * perp
+            target_1 = midpoint_bb + (d / 2.0) * bb_axis + h * perp
+
+            target_node_positions[n0] = target_0.astype(np.float32)
+            target_node_positions[n1] = target_1.astype(np.float32)
+
         else:
-            R = np.eye(3, dtype=np.float64)
+            # 3+ nodes: use independently computed targets (best effort)
+            pass  # target_node_positions already computed above
 
-        # Apply to all crosslinker coordinates
-        all_coords_centered = crosslinker.coordinates.astype(np.float64) - source_centroid
-        placed_coords = (R @ all_coords_centered.T).T + target_centroid
+        # Kabsch alignment: map crosslinker node positions → target positions
+        source_points = np.array(
+            [crosslinker.coordinates[n].astype(np.float64) for n in unique_nodes]
+        )
+        target_points = np.array(
+            [target_node_positions[n].astype(np.float64) for n in unique_nodes]
+        )
+
+        src_centroid = source_points.mean(axis=0)
+        tgt_centroid = target_points.mean(axis=0)
+
+        src_centered = source_points - src_centroid
+        tgt_centered = target_points - tgt_centroid
+
+        H = src_centered.T @ tgt_centered
+        U, S, Vt = np.linalg.svd(H)
+        det = np.linalg.det(Vt.T @ U.T)
+        sign_matrix = np.diag([1.0, 1.0, np.sign(det) if abs(det) > 1e-10 else 1.0])
+        R = Vt.T @ sign_matrix @ U.T
+
+        all_centered = crosslinker.coordinates.astype(np.float64) - src_centroid
+        placed_coords = (all_centered @ R.T) + tgt_centroid
+
+        # Update target_node_positions to actual placed positions
+        for n in unique_nodes:
+            target_node_positions[n] = placed_coords[n].astype(np.float32)
     else:
         # No connections (shouldn't happen, but be safe)
         placed_coords = crosslinker.coordinates.astype(np.float64)
@@ -705,15 +1113,16 @@ def _find_equidistant_point(bead_positions, target_distance, pbc, box_lengths):
     bead_positions = np.asarray(bead_positions, dtype=np.float64)
 
     if n == 1:
-        # Any point at target_distance works; pick one perpendicular to z
-        return bead_positions[0] + np.array([target_distance, 0, 0], dtype=np.float64)
+        offset = np.array([0.0, 0.0, target_distance], dtype=np.float64)
+        return (bead_positions[0] + offset).astype(np.float32)
 
-    # Start from centroid of beads
     centroid = bead_positions.mean(axis=0)
-
-    # If centroid is equidistant from all beads, project outward to correct radius
-    # Otherwise, iterate
-    point = centroid.copy()
+    spread = bead_positions - centroid
+    principal = (
+        spread[0] if np.linalg.norm(spread[0]) > 1e-10 else np.array([1.0, 0.0, 0.0])
+    )
+    perp = _get_perpendicular(principal).astype(np.float64)
+    point = centroid + perp * target_distance
 
     for iteration in range(100):
         # Compute gradient: move toward the surface of each sphere
@@ -727,7 +1136,7 @@ def _find_equidistant_point(bead_positions, target_distance, pbc, box_lengths):
                 dist = np.linalg.norm(delta)
             # Project point onto sphere i: move to radius target_distance
             desired = bead_positions[i] + delta * (target_distance / dist)
-            shift += (desired - point)
+            shift += desired - point
 
         shift /= n
         point += shift
@@ -784,11 +1193,13 @@ def _rotate_around_axis(points, axis, angle):
     axis = axis / norm
     cos_a = np.cos(angle)
     sin_a = np.sin(angle)
-    K = np.array([
-        [0, -axis[2], axis[1]],
-        [axis[2], 0, -axis[0]],
-        [-axis[1], axis[0], 0],
-    ])
+    K = np.array(
+        [
+            [0, -axis[2], axis[1]],
+            [axis[2], 0, -axis[0]],
+            [-axis[1], axis[0], 0],
+        ]
+    )
     R = np.eye(3) * cos_a + sin_a * K + (1 - cos_a) * np.outer(axis, axis)
     return (R @ np.asarray(points, dtype=np.float64).T).T.astype(np.float32)
 
@@ -798,8 +1209,9 @@ def _rotate_around_axis(points, axis, angle):
 # =============================================================================
 
 
-def _has_overlaps(placed_coords, all_coords, excluded_indices, min_separation,
-                  pbc, box_lengths):
+def _has_overlaps(
+    placed_coords, all_coords, excluded_indices, minimum_separation, pbc, box_lengths
+):
     """Check if any placed bead overlaps with non-excluded existing beads."""
     if len(all_coords) == 0:
         return False
@@ -815,8 +1227,8 @@ def _has_overlaps(placed_coords, all_coords, excluded_indices, min_separation,
 
     for point in placed_coords:
         deltas = _pbc_delta(point[np.newaxis, :], active_coords, box_lengths, pbc)
-        distances_sq = np.sum(deltas ** 2, axis=1)
-        if np.any(distances_sq < min_separation ** 2):
+        distances_sq = np.sum(deltas**2, axis=1)
+        if np.any(distances_sq < minimum_separation**2):
             return True
 
     return False
@@ -828,8 +1240,13 @@ def _has_overlaps(placed_coords, all_coords, excluded_indices, min_separation,
 
 
 def _compute_max_bond_error(
-    placed_coords, crosslinker, candidate_group, path_coords,
-    crosslink_bond_length, pbc, box_lengths,
+    placed_coords,
+    crosslinker,
+    candidate_group,
+    path_coords,
+    crosslink_bond_length,
+    pbc,
+    box_lengths,
 ):
     """Compute the maximum fractional bond length error for a placement.
 
@@ -846,8 +1263,7 @@ def _compute_max_bond_error(
     for conn_idx, phys_node in enumerate(conn_sites):
         site_pos = placed_coords[phys_node]
         for bb_idx in candidate_group[conn_idx]:
-            dist = float(_pbc_distance(site_pos, path_coords[bb_idx],
-                                       box_lengths, pbc))
+            dist = float(_pbc_distance(site_pos, path_coords[bb_idx], box_lengths, pbc))
             error = abs(dist - crosslink_bond_length) / crosslink_bond_length
             max_error = max(max_error, error)
 
@@ -860,9 +1276,17 @@ def _compute_max_bond_error(
 
 
 def _try_placement_with_rotations(
-    crosslinker, candidate_group, path_coords,
-    crosslink_bond_length, excluded_indices, pbc, box_lengths,
-    tolerance, min_separation, n_rotation_samples, rng,
+    crosslinker,
+    candidate_group,
+    path_coords,
+    crosslink_bond_length,
+    excluded_indices,
+    pbc,
+    box_lengths,
+    tolerance,
+    minimum_separation,
+    n_rotation_samples,
+    rng,
 ):
     """Attempt to place crosslinker with rotation search for overlap avoidance.
 
@@ -877,14 +1301,24 @@ def _try_placement_with_rotations(
     """
     # Compute base placement
     base_coords, target_node_positions = _compute_optimal_placement(
-        crosslinker, candidate_group, path_coords,
-        crosslink_bond_length, pbc, box_lengths,
+        crosslinker,
+        candidate_group,
+        path_coords,
+        crosslink_bond_length,
+        pbc,
+        box_lengths,
+        tolerance,
     )
 
     # Check bond lengths on base placement
     base_error = _compute_max_bond_error(
-        base_coords, crosslinker, candidate_group, path_coords,
-        crosslink_bond_length, pbc, box_lengths,
+        base_coords,
+        crosslinker,
+        candidate_group,
+        path_coords,
+        crosslink_bond_length,
+        pbc,
+        box_lengths,
     )
 
     if base_error > tolerance:
@@ -892,8 +1326,9 @@ def _try_placement_with_rotations(
         return None
 
     # Check overlaps on base placement
-    if not _has_overlaps(base_coords, path_coords, excluded_indices,
-                         min_separation, pbc, box_lengths):
+    if not _has_overlaps(
+        base_coords, path_coords, excluded_indices, minimum_separation, pbc, box_lengths
+    ):
         return base_coords
 
     # --- Need rotational search to avoid overlaps ---
@@ -924,9 +1359,7 @@ def _try_placement_with_rotations(
     # Rotation pivot: the physical node(s) must stay fixed
     # Rotate around the axis through the centroid of physical nodes
     if len(unique_nodes) >= 1:
-        pivot = np.mean(
-            [target_node_positions[n] for n in unique_nodes], axis=0
-        )
+        pivot = np.mean([target_node_positions[n] for n in unique_nodes], axis=0)
     else:
         pivot = centroid
 
@@ -943,15 +1376,21 @@ def _try_placement_with_rotations(
 
         # Verify bond lengths still valid after rotation
         error = _compute_max_bond_error(
-            rotated, crosslinker, candidate_group, path_coords,
-            crosslink_bond_length, pbc, box_lengths,
+            rotated,
+            crosslinker,
+            candidate_group,
+            path_coords,
+            crosslink_bond_length,
+            pbc,
+            box_lengths,
         )
         if error > tolerance:
             continue
 
         # Check overlaps
-        if not _has_overlaps(rotated, path_coords, excluded_indices,
-                             min_separation, pbc, box_lengths):
+        if not _has_overlaps(
+            rotated, path_coords, excluded_indices, minimum_separation, pbc, box_lengths
+        ):
             if error < best_error:
                 best_error = error
                 best_coords = rotated.copy()
@@ -1020,19 +1459,15 @@ def _insert_crosslinker(path, crosslinker, placed_coords, candidate_group):
 def crosslink(
     path,
     crosslinker=None,
-    bead_name="_R",
-    backbone_name="_B",
+    backbone_name="_A",
     crosslink_bond_length=0.2,
     max_backbone_degree=4,
     tolerance=0.1,
     excluded_bond_depth=2,
-    n_connection_sites=2,
     volume_constraint=None,
-    initial_point=None,
     seed=42,
     n_rotation_samples=36,
-    overlap_radius=None,
-    min_separation=None,
+    minimum_separation=None,
 ):
     """Place a crosslinker bonded to backbone beads, modifying path in place.
 
@@ -1042,8 +1477,6 @@ def crosslink(
         The Path object to modify in place.
     crosslinker : CrosslinkerGeometry, optional
         If None, auto-generated from bead_name and n_connection_sites.
-    bead_name : str, default "_R"
-        Name for auto-generated crosslinker beads.
     backbone_name : str or tuple
         Specifies what each connection site bonds to:
         - String: every connection site bonds to one bead of that type.
@@ -1074,35 +1507,28 @@ def crosslink(
     excluded_bond_depth : int, default 2
         Beads within this many bonds of selected nodes are excluded from
         being selected as additional connection points.
-    n_connection_sites : int, default 2
-        Used only when crosslinker is None.
     volume_constraint : optional
         Provides PBC information.
     seed : int, default 42
     n_rotation_samples : int, default 36
-    min_separation : float, optional
-        Minimum distance to existing beads. Defaults to crosslink_bond_length * 0.5.
+    minimum_separation : float, optional
+        Minimum distance to existing beads.
+        Defaults to crosslink_bond_length / 4.
+        This will only apply to non-bonded beads,
+        i.e. you can set a separation larger than
+        1/2 the crosslink_bond_length and still
+        achieve valid placements.
 
     Returns
     -------
     path : Path (modified in place)
+        Path object with a single added crosslink.
     """
     rng = np.random.default_rng(seed + len(path.coordinates))
 
     # --- Default crosslinker ---
-    if crosslinker is None:
-        if n_connection_sites == 2:
-            crosslinker = CrosslinkerGeometry.linear(
-                bond_length=crosslink_bond_length, bead_name=bead_name
-            )
-        elif n_connection_sites == 3:
-            crosslinker = CrosslinkerGeometry.equilateral_triangle(
-                bond_length=crosslink_bond_length, bead_name=bead_name
-            )
-        else:
-            raise ValueError(
-                f"No default crosslinker for n_connection_sites={n_connection_sites}"
-            )
+    if crosslinker is None:  # Single two site crosslinker
+        crosslinker = CrosslinkerGeometry.single_site()
 
     # --- Parse backbone specification ---
     backbone_specs = _parse_backbone_spec(backbone_name, crosslinker.connection_sites)
@@ -1111,21 +1537,30 @@ def crosslink(
     pbc, box_lengths = _get_pbc_info(volume_constraint)
 
     # --- Min separation ---
-    if min_separation is None:
-        if overlap_radius is not None:
-            min_separation = overlap_radius
-        else:
-            min_separation = crosslink_bond_length * 0.5
+    if minimum_separation is None:
+        minimum_separation = crosslink_bond_length * 0.25
 
     # --- Find candidate backbone groups ---
     candidate_groups = _find_candidate_groups(
-        path, crosslinker, backbone_specs,
-        crosslink_bond_length, tolerance, excluded_bond_depth,
-        max_backbone_degree, pbc, box_lengths, rng,
+        path,
+        crosslinker,
+        backbone_specs,
+        crosslink_bond_length,
+        tolerance,
+        excluded_bond_depth,
+        max_backbone_degree,
+        pbc,
+        box_lengths,
+        rng,
     )
 
     if not candidate_groups:
-        n_clinks = sum(1 for b in path.beads if b in set(crosslinker.beads))
+        n_beads_in_cl = len(
+            crosslinker.coordinates
+        )  # divisor to approx previous number of crosslinks
+        n_clinks = (
+            sum(1 for b in path.beads if b in set(crosslinker.beads)) // n_beads_in_cl
+        )
         raise PathConvergenceError(
             f"Could not find backbone beads matching crosslinker geometry with "
             f"bond_length={crosslink_bond_length} (tolerance=±{tolerance * 100:.0f}%).\n"
@@ -1156,9 +1591,17 @@ def crosslink(
 
         # Attempt placement
         placed_coords = _try_placement_with_rotations(
-            crosslinker, candidate_group, path.coordinates,
-            crosslink_bond_length, excluded_indices, pbc, box_lengths,
-            tolerance, min_separation, n_rotation_samples, rng,
+            crosslinker,
+            candidate_group,
+            path.coordinates,
+            crosslink_bond_length,
+            excluded_indices,
+            pbc,
+            box_lengths,
+            tolerance,
+            minimum_separation,
+            n_rotation_samples,
+            rng,
         )
 
         if placed_coords is None:
@@ -1179,7 +1622,7 @@ def crosslink(
             f"Could not place crosslinker without overlaps. "
             f"Tried {len(candidate_groups)} candidate groups.\n"
             f"Current crosslinks: {n_clinks}.\n"
-            "Consider increasing tolerance, n_rotation_samples, or decreasing min_separation."
+            "Consider increasing tolerance, n_rotation_samples, or decreasing minimum_separation."
         )
 
     return path
@@ -1199,21 +1642,30 @@ def _get_pbc_info(volume_constraint):
     box_lengths : np.ndarray, shape (3,), dtype float32
     """
     if volume_constraint is None:
-        return np.array([False, False, False], dtype=bool), np.zeros(3, dtype=np.float32)
+        return np.array([False, False, False], dtype=bool), np.zeros(
+            3, dtype=np.float32
+        )
 
     if isinstance(volume_constraint, CuboidConstraint):
         pbc = np.array(volume_constraint.pbc, dtype=bool)
         box_lengths = np.array(volume_constraint.box_lengths, dtype=np.float32)
     elif isinstance(volume_constraint, CylinderConstraint):
-        pbc = np.array([False, False, getattr(volume_constraint, 'pbc_z', False)], dtype=bool)
-        box_lengths = np.array([0.0, 0.0, getattr(volume_constraint, 'length', 0.0)], dtype=np.float32)
-    elif hasattr(volume_constraint, 'pbc'):
+        pbc = np.array(
+            [False, False, getattr(volume_constraint, "pbc_z", False)], dtype=bool
+        )
+        box_lengths = np.array(
+            [0.0, 0.0, getattr(volume_constraint, "length", 0.0)], dtype=np.float32
+        )
+    elif hasattr(volume_constraint, "pbc"):
         pbc = np.array(volume_constraint.pbc, dtype=bool)
-        box_lengths = np.array([
-            getattr(volume_constraint, 'Lx', 0),
-            getattr(volume_constraint, 'Ly', 0),
-            getattr(volume_constraint, 'Lz', 0),
-        ], dtype=np.float32)
+        box_lengths = np.array(
+            [
+                getattr(volume_constraint, "Lx", 0),
+                getattr(volume_constraint, "Ly", 0),
+                getattr(volume_constraint, "Lz", 0),
+            ],
+            dtype=np.float32,
+        )
     else:
         pbc = np.array([False, False, False], dtype=bool)
         box_lengths = np.zeros(3, dtype=np.float32)

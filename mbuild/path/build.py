@@ -128,7 +128,8 @@ class Path:
         coordinates = compound.xyz
 
         # Create the path with coordinates and bond graph
-        path = cls(coordinates=coordinates, bead_name=compound.name)
+        bead_names = ["_" + part.name for part in compound.particles()]
+        path = cls(coordinates=coordinates, bead_name=bead_names)
         path.bond_graph = nx.Graph()
 
         # Ensure all nodes have xyz and name attributes
@@ -624,13 +625,13 @@ class Path:
     def wrap_inside_box(self, constraint):
         """
         Wrap coordinates inside a cubic box constraint with periodic boundary conditions.
-        
+
         Args:
             coordinates: ndarray of shape (N, 3) with 3D coordinates
             box_length: length of the cubic box
             center: center of the box as tuple (x, y, z)
             pbc: tuple of booleans indicating PBC for each dimension (x, y, z)
-        
+
         Returns:
             ndarray of wrapped coordinates with same shape as input
         """
@@ -638,20 +639,21 @@ class Path:
         wrapped = coordinates.copy()
         center = np.array(constraint.center)
         pbc = constraint.pbc
-        
+
         # Calculate box bounds relative to center
         half_lengths = constraint.box_lengths / 2.0
         box_min = center - half_lengths
         box_max = center + half_lengths
-        
+
         # Apply periodic boundary conditions to each dimension
         for dim in range(3):
             if pbc[dim]:
                 # Shift coordinates to box range and wrap using modulo
                 shifted = wrapped[:, dim] - box_min[dim]
                 wrapped[:, dim] = (shifted % constraint.box_lengths[dim]) + box_min[dim]
-        
+
         self.coordinates = wrapped
+
 
 def lamellar(
     path=None,
@@ -1396,9 +1398,7 @@ def hard_sphere_random_walk(
         )
         # Create mask for particles inside volume constraint, allows for PBC
         if state.volume_constraint:
-            is_inside_mask = volume_constraint.is_inside(
-                points=candidates, buffer=0.0
-            )
+            is_inside_mask = volume_constraint.is_inside(points=candidates, buffer=0.0)
             candidates = candidates[is_inside_mask]
         # If there is a bias, sort candidates according to the bias
         if state.bias:
@@ -1434,7 +1434,9 @@ def hard_sphere_random_walk(
             # Iterate through current state of candidates, break after first accept
             for xyz in candidates:
                 if check_path_cpu(
-                    existing_points=existing_points[:-1], # skip previously bonded to coordinate
+                    existing_points=existing_points[
+                        :-1
+                    ],  # skip previously bonded to coordinate
                     new_point=xyz,
                     radius=radius,
                     tolerance=tolerance,
