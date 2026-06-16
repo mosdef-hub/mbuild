@@ -7,7 +7,7 @@ import numpy as np
 from mbuild.utils.io import import_
 
 
-def visualize_path(path, radius=0.1, hide_periodic_bonds=False):
+def visualize_path(path, radius=0.1, hide_periodic_bonds=False, width=600, height=600):
     """Visualize in 3D space using py3Dmol of the Path as a Compound.
 
     Parameters
@@ -29,7 +29,7 @@ def visualize_path(path, radius=0.1, hide_periodic_bonds=False):
         print(f"Hiding {len(remove_edges)} periodic edges")
         G.remove_edges_from(remove_edges)
 
-    view = py3Dmol.view(width=600, height=600)
+    view = py3Dmol.view(width=width, height=height)
 
     # Color palette
     colors = [

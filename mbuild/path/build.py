@@ -334,7 +334,7 @@ class Path:
 
         return _to_mol3000(self, G)
 
-    def visualize(self, radius, hide_periodic_bonds=False):
+    def visualize(self, radius, hide_periodic_bonds=False, width=600, height=600):
         """Visualize a path with py3Dmol.
 
         Parameters
@@ -346,7 +346,7 @@ class Path:
         """
         from mbuild.utils.visualize import visualize_path
 
-        return visualize_path(self, radius, hide_periodic_bonds)
+        return visualize_path(self, radius, hide_periodic_bonds, width, height)
 
     def relax(
         self, radius, bonds=None, angles=None, box=None, steps=1000, seed=1, nthreads=1
