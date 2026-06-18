@@ -204,7 +204,7 @@ class TestPaths(BaseTest):
 
     def test_straight_line_cyclic_namer_alternating(self):
         path = Path()
-        straight_line(path, spacing=0.2, N=6, bead_name=CyclicNamer(["_A", "_B"]))
+        straight_line(path=path, spacing=0.2, N=6, bead_name=CyclicNamer(["_A", "_B"]))
         assert list(path.beads) == ["_A", "_B", "_A", "_B", "_A", "_B"]
 
     def test_straight_line_cyclic_namer_blocks(self):
@@ -901,14 +901,14 @@ class TestCrossLinks(BaseTest):
             assert (i + 10, i + 20) in path.bond_graph.edges
 
     def test_deterministic_rw(self):
-        path1 = hard_sphere_random_walk(  # TODO: hsrw cuts off some chains early
+        path1 = hard_sphere_random_walk(
             radius=1,
             bond_length=2,
             termination=20,
             rw_angles=(np.pi / 2, np.pi),
             seed=1,
         )
-        path2 = hard_sphere_random_walk(  # TODO: hsrw cuts off some chains early
+        path2 = hard_sphere_random_walk(
             radius=1,
             bond_length=2,
             termination=20,
