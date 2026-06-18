@@ -694,14 +694,7 @@ def knot(spacing, N, m, path=None, closed=True, bead_name="_A"):
 
 
 def helix(
-    N,
-    radius,
-    rise,
-    twist,
-    path=None,
-    right_handed=True,
-    bottom_up=True,
-    bead_name="_A"
+    N, radius, rise, twist, path=None, right_handed=True, bottom_up=True, bead_name="_A"
 ):
     """Generate helical path.
 
@@ -815,7 +808,7 @@ def zigzag(
     ----------
     N : int, required
         Number of sites in the path
-    spacing : float, required 
+    spacing : float, required
         The distance (nm) between consecutive sites along the path.
     path : mbuild.path.Path
         The Path object to populate with coordinates.
