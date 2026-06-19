@@ -517,17 +517,18 @@ def lamellar(
     return path
 
 
-def straight_line(path, spacing, N, direction=(1, 0, 0), bead_name="_A"):
+def straight_line(spacing, N, path=None, direction=(1, 0, 0), bead_name="_A"):
     """Generates a set of coordinates in a straight line along a given axis.
 
     Parameters
     ----------
-    path : mbuild.path.Path, required
-        The Path object to populate with coordinates
     N : int, required
         The number of sites in the path.
     spacing : float, required
         The distance between sites along the path.
+    path : mbuild.path.Path
+        The Path object to populate with coordinates.
+        Defaults to creating a new, empty Path if no Path is given.
     direction : array-like (1,3), default = (1,0,0)
         The direction to align the straight path along.
     bead_name : str or path.BeadNamer, optional, default '_A'
@@ -535,6 +536,8 @@ def straight_line(path, spacing, N, direction=(1, 0, 0), bead_name="_A"):
         every bead. Pass a ``BeadNamer`` instance for heterogeneous sequences.
         See mbuild.path.namers.py
     """
+    if path is None:
+        path = Path()
     direction = np.asarray(direction)
     coordinates = np.array([np.zeros(3) + i * spacing * direction for i in range(N)])
     start_index = len(path.coordinates)
@@ -548,17 +551,18 @@ def straight_line(path, spacing, N, direction=(1, 0, 0), bead_name="_A"):
     return path
 
 
-def cyclic(path, spacing=None, N=None, radius=None, closed=True, bead_name="_A"):
+def cyclic(spacing=None, N=None, path=None, radius=None, closed=True, bead_name="_A"):
     """Generates a set of coordinates evenly spaced along a circle.
 
     Parameters
     ----------
-    path : mbuild.path.Path, required
-        The Path object to populate with coordinates
     spacing : float, optional
         Distance between sites along the path.
     N : int, optional
         Number of sites in the cyclic path.
+    path : mbuild.path.Path
+        The Path object to populate with coordinates.
+        Defaults to creating a new, empty Path if no Path is given.
     radius : float, optional
         The radius (nm) of the cyclic path.
     closed : bool, default True
@@ -573,6 +577,8 @@ def cyclic(path, spacing=None, N=None, radius=None, closed=True, bead_name="_A")
     Only two of spacing, N and radius can be defined, as the third
     is determined by the other two.
     """
+    if path is None:
+        path = Path()
     n_params = sum(1 for i in (spacing, N, radius) if i is not None)
     if n_params != 2:
         raise ValueError("You must specify only 2 of spacing, N and radius.")
@@ -604,13 +610,11 @@ def cyclic(path, spacing=None, N=None, radius=None, closed=True, bead_name="_A")
     return path
 
 
-def knot(path, spacing, N, m, closed=True, bead_name="_A"):
+def knot(spacing, N, m, path=None, closed=True, bead_name="_A"):
     """Generate a knot path.
 
     Parameters
     ----------
-    path : mbuild.path.Path, required
-        The Path object to populate with coordinates
     spacing : float (nm)
         The spacing between sites along the path.
     N : int
@@ -618,6 +622,9 @@ def knot(path, spacing, N, m, closed=True, bead_name="_A"):
     m : int in [3, 4, 5]
         The number of crossings in the knot.
         3 gives the trefoil knot, 4 gives the figure 8 knot and 5 gives the cinquefoil knot.
+    path : mbuild.path.Path
+        The Path object to populate with coordinates.
+        Defaults to creating a new, empty Path if no Path is given.
     closed : bool, default True
         If `True` the cyclic path is closed by bonding the first and last sites together
     bead_name : str or path.BeadNamer, optional, default '_A'
@@ -625,6 +632,8 @@ def knot(path, spacing, N, m, closed=True, bead_name="_A"):
         every bead. Pass a ``BeadNamer`` instance for heterogeneous sequences.
         See mbuild.path.namers.py
     """
+    if path is None:
+        path = Path()
     # Generate dense sites first, sample actual ones later from spacing
     t_dense = np.linspace(0, 2 * np.pi, 5000)
 
@@ -685,14 +694,12 @@ def knot(path, spacing, N, m, closed=True, bead_name="_A"):
 
 
 def helix(
-    path, N, radius, rise, twist, right_handed=True, bottom_up=True, bead_name="_A"
+    N, radius, rise, twist, path=None, right_handed=True, bottom_up=True, bead_name="_A"
 ):
     """Generate helical path.
 
     Parameters:
     -----------
-    path : mbuild.path.Path, required
-        The Path object to populate with coordinates
     N : int, required
         Number of sites in the path
     radius : float, required
@@ -701,6 +708,9 @@ def helix(
         Rise per site on path (nm)
     twist : float, required
         Twist per site in path (degrees)
+    path : mbuild.path.Path
+        The Path object to populate with coordinates.
+        Defaults to creating a new, empty Path if no Path is given.
     right_handed : bool, default True
         Set the handedness of the helical twist
     bottom_up : bool, default True
@@ -710,6 +720,8 @@ def helix(
         every bead. Pass a ``BeadNamer`` instance for heterogeneous sequences.
         See mbuild.path.namers.py
     """
+    if path is None:
+        path = Path()
     coordinates = np.zeros((N, 3))
     indices = reversed(range(N)) if not bottom_up else range(N)
 
@@ -733,13 +745,11 @@ def helix(
     return path
 
 
-def spiral_2D(path, N, a, b, spacing, bead_name="_A"):
+def spiral_2D(N, a, b, spacing, path=None, bead_name="_A"):
     """Generate a 2D spiral path in the XY plane.
 
     Parameters
     ----------
-    path : mbuild.path.Path, required
-        The Path object to populate with coordinates
     N : int, required
         Number of sites in the path
     a : float, required
@@ -748,11 +758,16 @@ def spiral_2D(path, N, a, b, spacing, bead_name="_A"):
         Determines how fast radius grows per angle increment (r = a + bθ)
     spacing : float, required
         Distance between adjacent sites (nm)
+    path : mbuild.path.Path
+        The Path object to populate with coordinates.
+        Defaults to creating a new, empty Path if no Path is given.
     bead_name : str or path.BeadNamer, optional, default '_A'
         Name(s) to assign to beads. A plain string assigns the same name to
         every bead. Pass a ``BeadNamer`` instance for heterogeneous sequences.
         See mbuild.path.namers.py
     """
+    if path is None:
+        path = Path()
     coordinates = np.zeros((N, 3))
     theta = 0.0
 
@@ -779,9 +794,9 @@ def spiral_2D(path, N, a, b, spacing, bead_name="_A"):
 
 
 def zigzag(
-    path,
     N,
-    spacing=1.0,
+    spacing,
+    path=None,
     angle_deg=120.0,
     sites_per_segment=4,
     plane="xy",
@@ -791,12 +806,13 @@ def zigzag(
 
     Parameters
     ----------
-    path : mbuild.path.Path, required
-        The Path object to populate with coordinates
     N : int, required
         Number of sites in the path
-    spacing : float, default = 1.0 nm
+    spacing : float, required
         The distance (nm) between consecutive sites along the path.
+    path : mbuild.path.Path
+        The Path object to populate with coordinates.
+        Defaults to creating a new, empty Path if no Path is given.
     angle_deg : float, default = 120.
         The rotation (degrees) applied between segments
     sites_per_segment : int, default = 4
@@ -811,6 +827,8 @@ def zigzag(
     if N % sites_per_segment != 0:
         raise ValueError("N must be evenly divisible by sites_per_segment")
 
+    if path is None:
+        path = Path()
     angle_rad = np.deg2rad(angle_deg)
     direction = np.array([1.0, 0.0])
     position = np.zeros(2)
@@ -886,8 +904,9 @@ def hard_sphere_random_walk(
 
     Parameters:
     -----------
-    path : mbuild.path.Path, default None.
-        The Path object to populate with coordinates. Creates a new path object if not passed.
+    path : mbuild.path.Path
+        The Path object to populate with coordinates.
+        Defaults to creating a new, empty Path if no Path is given.
     bead_name : str or path.BeadNamer, optional, default '_A'
         Name(s) to assign to beads. A plain string assigns the same name to
         every bead. Pass a ``BeadNamer`` instance for heterogeneous sequences.
