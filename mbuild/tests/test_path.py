@@ -125,7 +125,7 @@ class TestPaths(BaseTest):
         path = Path()
         lamellar(
             path=path,
-            bond_length=0.25,
+            spacing=0.25,
             num_layers=3,
             layer_separation=1.0,
             layer_length=3.0,
@@ -144,7 +144,7 @@ class TestPaths(BaseTest):
         path_left_to_right = Path()
         lamellar(
             path=path_left_to_right,
-            bond_length=0.25,
+            spacing=0.25,
             num_layers=3,
             layer_separation=1.0,
             layer_length=3.0,
@@ -156,7 +156,7 @@ class TestPaths(BaseTest):
         path_right_to_left = Path()
         lamellar(
             path=path_right_to_left,
-            bond_length=0.25,
+            spacing=0.25,
             num_layers=3,
             layer_separation=1.0,
             layer_length=3.0,
