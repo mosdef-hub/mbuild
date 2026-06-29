@@ -1274,35 +1274,43 @@ class RandomWalkState:
         if rng is None:
             rng = np.random.default_rng(seed + previous_count)
         self.rng = rng
+        # Multiple ways to handle angles_sampler arg:
         if angles_sampler is None:
             self.angles = AnglesSampler(
                 "uniform", {"low": np.pi / 2, "high": np.pi}, rng=self.rng
             )
-        elif isinstance(angles_sampler, tuple):
+        # Pass in a tupe or list of (low, high)
+        elif isinstance(angles_sampler, (tuple, list)) and len(angles_sampler) == 2:
             self.angles = AnglesSampler(
                 "uniform",
                 {"low": angles_sampler[0], "high": angles_sampler[1]},
                 rng=self.rng,
             )
-        elif (
-            isinstance(angles_sampler, dict)
-            and angles_sampler.get("loc")
-            and angles_sampler.get("scale")
-        ):
-            self.angles = AnglesSampler("normal", angles_sampler, rng=self.rng)
+        # Pass in a dict with supported kwargs
+        elif isinstance(angles_sampler, dict):
+            if angles_sampler.get("loc") and angles_sampler.get("scale"):
+                self.angles = AnglesSampler("normal", angles_sampler, rng=self.rng)
+            elif angles_sampler.get("low") and angles_sampler.get("high"):
+                self.angles = AnglesSampler("uniform", angles_sampler, rng=self.rng)
+            else:
+                raise ValueError(
+                    f"kwargs {dict} cannot be used to create an AnglesSampler."
+                )
+        # Pass in an array of choices
         elif isinstance(angles_sampler, np.ndarray):
             if angles_sampler.ndim == 1:
                 kwargs = {"a": angles_sampler}
             elif angles_sampler.ndim == 2:
                 kwargs = {"a": angles_sampler[0], "p": angles_sampler[1]}
             self.angles = AnglesSampler("choice", kwargs, rng=self.rng)
+        # Pass in an AnglesSampler instance.
         elif isinstance(angles_sampler, AnglesSampler):
             self.angles = angles_sampler
-            # Drive a user-supplied sampler with the walk's seed for consistency.
             self.angles.rng = self.rng
         else:
             raise ValueError(
-                f"Please provide a reasonable value to set the rw_angles. Passed {angles_sampler}"
+                f"{angles_sampler} is not a supported form to sample angles. "
+                "See mbuild.path.points.AnglesSampler."
             )
         self.bead_name = bead_name
         if hasattr(initial_point, "__len__") and len(initial_point) == 3:
