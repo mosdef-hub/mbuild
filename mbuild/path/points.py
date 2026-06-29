@@ -230,7 +230,10 @@ def get_initial_point(state, existing_points, beads, check_path, next_step):
     # TODO: Use find_low_density_point here instead?
     elif state.volume_constraint:
         xyzs = state.volume_constraint.sample_candidates(
-            points=existing_points, n_candidates=300, buffer=state.radius + 0.1
+            points=existing_points,
+            n_candidates=300,
+            buffer=state.radius + 0.1,
+            rng=state.rng,
         )
         for xyz in xyzs:
             if check_path(

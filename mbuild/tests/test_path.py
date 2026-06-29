@@ -428,6 +428,37 @@ class TestRandomWalk(BaseTest):
         assert len(path2.coordinates) == 20
         assert np.allclose(path1.coordinates, path2.coordinates, atol=1e-6)
 
+    @pytest.mark.parametrize(
+        "constraint",
+        [
+            CuboidConstraint(Lx=6, Ly=6, Lz=6),
+            SphereConstraint(center=(0, 0, 0), radius=3),
+            CylinderConstraint(radius=3, height=6),
+        ],
+    )
+    def test_seeds_with_volume_constraint(self, constraint):
+        termination = Termination([NumSites(15), NumAttempts(1e4)])
+        path1 = Path()
+        hard_sphere_random_walk(
+            path=path1,
+            termination=termination,
+            bond_length=0.25,
+            radius=0.22,
+            volume_constraint=constraint,
+            seed=14,
+        )
+        path2 = Path()
+        hard_sphere_random_walk(
+            path=path2,
+            termination=termination,
+            bond_length=0.25,
+            radius=0.22,
+            volume_constraint=constraint,
+            seed=14,
+        )
+        assert len(path1.coordinates) == len(path2.coordinates)
+        assert np.allclose(path1.coordinates, path2.coordinates, atol=1e-6)
+
     def test_walk_inside_cube(self):
         path = Path()
         cube = CuboidConstraint(Lx=5, Ly=5, Lz=5)

@@ -27,13 +27,13 @@ class Constraint:
         """Return True if point satisfies constraint (inside), else False."""
         raise NotImplementedError("Must be implemented in subclasses")
 
-    def sample_candidates(self, points, n_candiates, buffer):
+    def sample_candidates(self, points, n_candiates, buffer, rng=None):
         """Sample the volume for canidate points sorted by lowest local density."""
         raise NotImplementedError("Must be implemented in subclasses")
 
-    def find_low_density_points(self, points, n_candidates, buffer, k=10):
+    def find_low_density_points(self, points, n_candidates, buffer, k=10, rng=None):
         low_density_points = self.sample_candidates(
-            points=points, n_candidates=n_candidates, buffer=buffer, k=k
+            points=points, n_candidates=n_candidates, buffer=buffer, k=k, rng=rng
         )
         return low_density_points
 
@@ -98,7 +98,7 @@ class CuboidConstraint(Constraint):
             pbc=self.pbc,
         )
 
-    def sample_candidates(self, points, n_candidates, buffer, k=10):
+    def sample_candidates(self, points, n_candidates, buffer, k=10, rng=None):
         """Generate candidate points uniformly distributed inside the box,
         optionally ranked by lowest local density around existing points.
 
@@ -124,8 +124,10 @@ class CuboidConstraint(Constraint):
             the array is sorted so that points with the greatest distance to
             the nearest neighbor (lowest local density) appear first.
         """
+        if rng is None:
+            rng = np.random.default_rng()
         # Create random candidates inside the box to test and sample from
-        candidates = np.random.uniform(
+        candidates = rng.uniform(
             self.mins + buffer, self.maxs - buffer, size=(n_candidates, 3)
         )
         if points is None or len(points) == 0:
@@ -176,7 +178,7 @@ class SphereConstraint(Constraint):
         """
         return is_inside_sphere(points=points, sphere_radius=self.radius, buffer=buffer)
 
-    def sample_candidates(self, points, n_candidates, buffer, k=10):
+    def sample_candidates(self, points, n_candidates, buffer, k=10, rng=None):
         """Generate candidate points uniformly distributed inside the sphere,
         optionally ranked by lowest local density around existing points.
 
@@ -202,10 +204,12 @@ class SphereConstraint(Constraint):
             the array is sorted so that points with the greatest distance to
             the nearest neighbor (lowest local density) appear first.
         """
+        if rng is None:
+            rng = np.random.default_rng()
         effective_radius = self.radius - buffer
-        dirs = np.random.normal(size=(n_candidates, 3))
+        dirs = rng.normal(size=(n_candidates, 3))
         dirs /= np.linalg.norm(dirs, axis=1)[:, None]
-        u = np.random.random(size=n_candidates)
+        u = rng.random(size=n_candidates)
         radii = effective_radius * (u ** (1 / 3))
         candidates = self.center + dirs * radii[:, None]
         # If just sampling from the volume, no KDTree needed
@@ -282,7 +286,7 @@ class CylinderConstraint(Constraint):
             periodic=self.periodic_height,
         )
 
-    def sample_candidates(self, points, n_candidates, buffer, k=10):
+    def sample_candidates(self, points, n_candidates, buffer, k=10, rng=None):
         """Generate candidate points uniformly distributed inside the cylinder,
         optionally ranked by lowest local density around existing points.
 
@@ -308,13 +312,15 @@ class CylinderConstraint(Constraint):
             the array is sorted so that points with the greatest distance to
             the nearest neighbor (lowest local density) appear first.
         """
+        if rng is None:
+            rng = np.random.default_rng()
         eff_radius = max(self.radius - buffer, 0.0)
         eff_half_height = max(self.height * 0.5 - buffer, 0.0)
-        z = self.center[2] + np.random.uniform(
+        z = self.center[2] + rng.uniform(
             -eff_half_height, eff_half_height, size=n_candidates
         )
-        r = eff_radius * np.sqrt(np.random.random(size=n_candidates))
-        theta = 2 * np.pi * np.random.random(size=n_candidates)
+        r = eff_radius * np.sqrt(rng.random(size=n_candidates))
+        theta = 2 * np.pi * rng.random(size=n_candidates)
         x = self.center[0] + r * np.cos(theta)
         y = self.center[1] + r * np.sin(theta)
         candidates = np.column_stack((x, y, z))
