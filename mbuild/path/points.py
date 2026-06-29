@@ -281,28 +281,27 @@ class AnglesSampler:
     "normal" distribution should use 'loc' and 'scale' as kwargs.
     """
 
-    def __init__(self, distributionStr, kwargs, seed):
-        # Create a generator object for high-quality random numbers [9]
-        self.rng = np.random.default_rng(seed)
-        if distributionStr.lower() == "uniform":
-            self.sampler = self.rng.uniform
+    def __init__(self, distributionStr, kwargs, rng=None):
+        self.rng = rng if rng is not None else np.random.default_rng()
+        distribution = distributionStr.lower()
+        if distribution == "uniform":
             assert "low" in kwargs
             assert "high" in kwargs
-        elif distributionStr.lower() == "normal":
-            self.sampler = self.rng.normal
+        elif distribution == "normal":
             assert "loc" in kwargs
             assert "scale" in kwargs
-        elif distributionStr == "choice":
-            self.sampler = self.rng.choice
+        elif distribution == "choice":
             assert "a" in kwargs  # p is not required
         else:
             raise NotImplementedError(
                 f"Sample Distribution {distributionStr} not supported."
             )
+        self.distribution = distribution
         self.kwargs = kwargs
 
     def sample(self, size=None):
-        return self.sampler(size=size, **self.kwargs)
+        # Resolve against self.rng at call time so the rng can be swapped in.
+        return getattr(self.rng, self.distribution)(size=size, **self.kwargs)
 
 
 def generate_trials(state):

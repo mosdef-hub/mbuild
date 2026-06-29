@@ -327,9 +327,7 @@ class TestRandomWalk(BaseTest):
                         termination=term,
                         seed=i,
                         initial_point=initial_point[attempt],
-                        rw_angles=AnglesSampler(
-                            "normal", dict(loc=2.4, scale=1), seed=i
-                        ),
+                        rw_angles=AnglesSampler("normal", dict(loc=2.4, scale=1)),
                         tolerance=tolerance,
                     )
                     if term.success:
@@ -402,6 +400,25 @@ class TestRandomWalk(BaseTest):
             bond_length=0.25,
             radius=0.22,
             seed=14,
+        )
+        assert np.allclose(path1.coordinates, path2.coordinates, atol=1e-7)
+
+    def test_seeds_user_angles_sampler(self):
+        # A reused, stateful user sampler is still driven by the walk's seed,
+        # so same-seed walks reproduce.
+        sampler = AnglesSampler("normal", dict(loc=2.4, scale=0.3))
+        kwargs = dict(bond_length=0.25, radius=0.22, rw_angles=sampler, seed=14)
+        path1 = Path()
+        hard_sphere_random_walk(
+            path=path1,
+            termination=Termination([NumSites(20), NumAttempts(1e4)]),
+            **kwargs,
+        )
+        path2 = Path()
+        hard_sphere_random_walk(
+            path=path2,
+            termination=Termination([NumSites(20), NumAttempts(1e4)]),
+            **kwargs,
         )
         assert np.allclose(path1.coordinates, path2.coordinates, atol=1e-7)
 
@@ -894,7 +911,7 @@ class TestPathUtils(BaseTest):
 
         from mbuild.path.points import AnglesSampler
 
-        sampler = AnglesSampler(distribution, kwargs, seed=0)
+        sampler = AnglesSampler(distribution, kwargs, rng=np.random.default_rng(0))
         points = sampler.sample(1000)
         if reference[0] == "kstest":
             _, p_value = scipy.stats.kstest(points, "uniform", **reference[1])
