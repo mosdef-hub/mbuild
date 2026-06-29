@@ -27,8 +27,8 @@ class Constraint:
         """Return True if point satisfies constraint (inside), else False."""
         raise NotImplementedError("Must be implemented in subclasses")
 
-    def sample_candidates(self, points, n_candiates, buffer, rng=None):
-        """Sample the volume for canidate points sorted by lowest local density."""
+    def sample_candidates(self, points, n_candidates, buffer, k=10, rng=None):
+        """Sample the volume for candidate points sorted by lowest local density."""
         raise NotImplementedError("Must be implemented in subclasses")
 
     def find_low_density_points(self, points, n_candidates, buffer, k=10, rng=None):
