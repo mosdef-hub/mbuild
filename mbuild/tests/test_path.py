@@ -422,6 +422,19 @@ class TestRandomWalk(BaseTest):
         )
         assert np.allclose(path1.coordinates, path2.coordinates, atol=1e-7)
 
+    def test_seeds_random_namer(self):
+        # An unseeded stochastic namer is driven by the walk's seed, so
+        # same-seed walks reproduce both names and coordinates.
+        kwargs = dict(radius=0.1, bond_length=0.15, termination=20, seed=42)
+        path1 = hard_sphere_random_walk(bead_name=RandomNamer(["_A", "_B"]), **kwargs)
+        path2 = hard_sphere_random_walk(bead_name=RandomNamer(["_A", "_B"]), **kwargs)
+        assert list(path1.beads) == list(path2.beads)
+        assert np.allclose(path1.coordinates, path2.coordinates, atol=1e-7)
+        # Naming draws from a separate substream, so the namer choice does not
+        # perturb geometry: same seed gives the same coordinates as a constant namer.
+        const = hard_sphere_random_walk(bead_name="_A", **kwargs)
+        assert np.allclose(path1.coordinates, const.coordinates, atol=1e-7)
+
     def test_from_path(self):
         path1 = Path()
         num_sites = NumSites(20)

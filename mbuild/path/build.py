@@ -953,10 +953,12 @@ def hard_sphere_random_walk(
         If True and CUDA path utilities are available, use GPU-accelerated
         implementations.
     """
-    # Create the RNG that drives all walk randomness. The previous_count offset
-    # decorrelates successive walks continued on the same path.
+    # Create seed sequence used by multiple path classes
+    # The namer seed is separate, so that coordinates are impacted by naming methods.
     previous_count = len(path.coordinates) if path else 0
-    rng = np.random.default_rng(seed + previous_count)
+    seed_sequence = np.random.SeedSequence(seed + previous_count)
+    name_seed_sequence = seed_sequence.spawn(1)[0]
+    rng = np.random.default_rng(seed_sequence)
 
     # Create state object to track random walk progress
     state = RandomWalkState(
@@ -995,6 +997,7 @@ def hard_sphere_random_walk(
     state.termination._attach_path(path, state)
 
     namer = BeadNamer.coerce(bead_name)
+    namer._attach_rng(np.random.default_rng(name_seed_sequence))
 
     # Set up PBC info from volume constraints
     if isinstance(volume_constraint, CuboidConstraint):
@@ -1302,6 +1305,10 @@ class RandomWalkState:
                 kwargs = {"a": angles_sampler}
             elif angles_sampler.ndim == 2:
                 kwargs = {"a": angles_sampler[0], "p": angles_sampler[1]}
+            else:
+                raise ValueError(
+                    "Sampling angles from an array of choices is only supported for 1D and 2D arrays."
+                )
             self.angles = AnglesSampler("choice", kwargs, rng=self.rng)
         # Pass in an AnglesSampler instance.
         elif isinstance(angles_sampler, AnglesSampler):
