@@ -4,6 +4,7 @@ from copy import deepcopy
 
 import numpy as np
 
+from mbuild.path.formats import to_mol3000
 from mbuild.utils.io import import_
 
 
@@ -61,7 +62,7 @@ def visualize_path(path, radius=0.1, hide_periodic_bonds=False):
         "#000000",
     ]
 
-    data = path.to_mol3000(G)
+    data = to_mol3000(path=path, G=G)
     view = py3Dmol.view(data=data)
     for i, name in enumerate(unique_names):
         color = colors[i % len(colors)]

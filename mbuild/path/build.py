@@ -368,7 +368,7 @@ def lamellar(
     num_layers=1,
     layer_separation=None,
     layer_length=None,
-    bond_length=None,
+    spacing=None,
     initial_point=(0, 0, 0),
     num_stacks=1,
     stack_separation=None,
@@ -387,7 +387,7 @@ def lamellar(
         The distance between any two layers.
     layer_length : float (nm), required
         The distance of a lamellar layer before curving to the next.
-    bond_length : float (nm), required
+    spacing : float (nm), required
         The distance between two adjacent sites in the path.
     initial_point : nd.array (1,3), default (0,0,0)
         The coordinate of the first site of the lamellar path.
@@ -407,7 +407,7 @@ def lamellar(
     initial_point = np.asarray(initial_point)
 
     # Coordinates in the y-direction (layer-length) of the lamellar layer
-    layer_spacing = np.arange(0, layer_length, bond_length)
+    layer_spacing = np.arange(0, layer_length, spacing)
     if not left_to_right:
         layer_spacing *= -1
     layer_spacing += initial_point[1]
@@ -415,7 +415,7 @@ def lamellar(
     # Info needed for generating coords of the arc curves between layers
     r = layer_separation / 2
     arc_length = r * np.pi
-    arc_num_points = math.floor(arc_length / bond_length)
+    arc_num_points = math.floor(arc_length / spacing)
     arc_angle = np.pi / (arc_num_points + 1)
     arc_angles = np.linspace(arc_angle, np.pi, arc_num_points, endpoint=False)
 
@@ -461,7 +461,7 @@ def lamellar(
         first_stack_coordinates = np.copy(np.array(coordinates))
         r = stack_separation / 2
         arc_length = r * np.pi
-        arc_num_points = math.floor(arc_length / bond_length)
+        arc_num_points = math.floor(arc_length / spacing)
         arc_angle = np.pi / (arc_num_points + 1)
         arc_angles = np.linspace(arc_angle, np.pi, arc_num_points, endpoint=False)
 
