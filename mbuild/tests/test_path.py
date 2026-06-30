@@ -22,6 +22,7 @@ from mbuild.path.constraints import (
 )
 from mbuild.path.namers import CyclicNamer, RandomNamer
 from mbuild.path.path_utils import (
+    check_path,
     local_density,
     target_density,
     target_sq_distances,
@@ -932,6 +933,32 @@ class TestPathUtils(BaseTest):
             _, p_value = scipy.stats.normaltest(points)
 
         assert p_value > 0.05
+
+    @pytest.mark.parametrize("axis", [0, 1, 2])
+    def test_check_path_pbc_overlap_across_face(self, axis):
+        # Two beads sit just inside opposite faces of a 10 x 10 x 10 box.
+        # minimum-image separation is 0.2
+        box_lengths = np.full(3, 10.0, dtype=np.float32)
+        radius = 1.0
+        tolerance = 1e-5
+        existing = np.full((1, 3), 5.0, dtype=np.float32)
+        existing[0, axis] = 0.1
+        candidate = np.full(3, 5.0, dtype=np.float32)
+        candidate[axis] = 9.9
+        # No PBCs should be accepted.
+        assert check_path(existing, candidate, radius, tolerance)
+
+        # Periodic on each axis, should be rejected.
+        pbc = np.array([False, False, False])
+        pbc[axis] = True
+        assert not check_path(
+            existing,
+            candidate,
+            radius,
+            tolerance,
+            pbc=pbc,
+            box_lengths=box_lengths,
+        )
 
 
 class TestCrossLinks(BaseTest):
