@@ -327,9 +327,7 @@ class TestRandomWalk(BaseTest):
                         termination=term,
                         seed=i,
                         initial_point=initial_point[attempt],
-                        rw_angles=AnglesSampler(
-                            "normal", dict(loc=2.4, scale=1), seed=i
-                        ),
+                        rw_angles=AnglesSampler("normal", dict(loc=2.4, scale=1)),
                         tolerance=tolerance,
                     )
                     if term.success:
@@ -405,6 +403,38 @@ class TestRandomWalk(BaseTest):
         )
         assert np.allclose(path1.coordinates, path2.coordinates, atol=1e-7)
 
+    def test_seeds_user_angles_sampler(self):
+        # A reused, stateful user sampler is still driven by the walk's seed,
+        # so same-seed walks reproduce.
+        sampler = AnglesSampler("normal", dict(loc=2.4, scale=0.3))
+        kwargs = dict(bond_length=0.25, radius=0.22, rw_angles=sampler, seed=14)
+        path1 = Path()
+        hard_sphere_random_walk(
+            path=path1,
+            termination=Termination([NumSites(20), NumAttempts(1e4)]),
+            **kwargs,
+        )
+        path2 = Path()
+        hard_sphere_random_walk(
+            path=path2,
+            termination=Termination([NumSites(20), NumAttempts(1e4)]),
+            **kwargs,
+        )
+        assert np.allclose(path1.coordinates, path2.coordinates, atol=1e-7)
+
+    def test_seeds_random_namer(self):
+        # An unseeded stochastic namer is driven by the walk's seed, so
+        # same-seed walks reproduce both names and coordinates.
+        kwargs = dict(radius=0.1, bond_length=0.15, termination=20, seed=42)
+        path1 = hard_sphere_random_walk(bead_name=RandomNamer(["_A", "_B"]), **kwargs)
+        path2 = hard_sphere_random_walk(bead_name=RandomNamer(["_A", "_B"]), **kwargs)
+        assert list(path1.beads) == list(path2.beads)
+        assert np.allclose(path1.coordinates, path2.coordinates, atol=1e-7)
+        # Naming draws from a separate substream, so the namer choice does not
+        # perturb geometry: same seed gives the same coordinates as a constant namer.
+        const = hard_sphere_random_walk(bead_name="_A", **kwargs)
+        assert np.allclose(path1.coordinates, const.coordinates, atol=1e-7)
+
     def test_from_path(self):
         path1 = Path()
         num_sites = NumSites(20)
@@ -426,6 +456,37 @@ class TestRandomWalk(BaseTest):
         )
         assert len(path1.coordinates) == 20
         assert len(path2.coordinates) == 20
+        assert np.allclose(path1.coordinates, path2.coordinates, atol=1e-6)
+
+    @pytest.mark.parametrize(
+        "constraint",
+        [
+            CuboidConstraint(Lx=6, Ly=6, Lz=6),
+            SphereConstraint(center=(0, 0, 0), radius=3),
+            CylinderConstraint(radius=3, height=6),
+        ],
+    )
+    def test_seeds_with_volume_constraint(self, constraint):
+        termination = Termination([NumSites(15), NumAttempts(1e4)])
+        path1 = Path()
+        hard_sphere_random_walk(
+            path=path1,
+            termination=termination,
+            bond_length=0.25,
+            radius=0.22,
+            volume_constraint=constraint,
+            seed=14,
+        )
+        path2 = Path()
+        hard_sphere_random_walk(
+            path=path2,
+            termination=termination,
+            bond_length=0.25,
+            radius=0.22,
+            volume_constraint=constraint,
+            seed=14,
+        )
+        assert len(path1.coordinates) == len(path2.coordinates)
         assert np.allclose(path1.coordinates, path2.coordinates, atol=1e-6)
 
     def test_walk_inside_cube(self):
@@ -863,7 +924,7 @@ class TestPathUtils(BaseTest):
 
         from mbuild.path.points import AnglesSampler
 
-        sampler = AnglesSampler(distribution, kwargs, seed=0)
+        sampler = AnglesSampler(distribution, kwargs, rng=np.random.default_rng(0))
         points = sampler.sample(1000)
         if reference[0] == "kstest":
             _, p_value = scipy.stats.kstest(points, "uniform", **reference[1])

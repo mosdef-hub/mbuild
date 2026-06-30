@@ -103,7 +103,7 @@ class TestTermination(BaseTest):
             termination=termination,
             bond_length=0.25,
             radius=0.22,
-            seed=14,
+            seed=11,
         )
         dist = np.linalg.norm(rw.coordinates[-1] - rw.coordinates[0])
         assert np.allclose(dist, 2, atol=0.1)
