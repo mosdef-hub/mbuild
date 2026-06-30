@@ -999,7 +999,7 @@ def hard_sphere_random_walk(
     namer = BeadNamer.coerce(bead_name)
     namer._attach_rng(np.random.default_rng(name_seed_sequence))
 
-    # Set up PBC info from volume constraints cast to numba-safe arrays
+    # Set up PBC info from volume constraints
     # TODO: We can probably out-source pbc, box_lengths return to the Constraint classes
     if isinstance(volume_constraint, CuboidConstraint):
         pbc = np.asarray(volume_constraint.pbc, dtype=np.bool_)
@@ -1146,7 +1146,7 @@ def hard_sphere_random_walk(
                 coordinates=coordinates[: state.count],
                 names=beads[: state.count],
             )
-        # Handle postion for PBCs. Cast back to float32
+        # Handle postion for PBCs.
         if any(pbc):
             candidates = (
                 volume_constraint.mins
