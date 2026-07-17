@@ -593,7 +593,7 @@ class Lattice(object):
         transform_mat = self.lattice_vectors
         # Unit vectors
         transform_mat = np.asarray(transform_mat, dtype=np.float64)
-        transform_mat = np.reshape(transform_mat, newshape=(3, 3))
+        transform_mat = np.reshape(transform_mat, shape=(3, 3))
         norms = np.linalg.norm(transform_mat, axis=1)
 
         # Normalized vectors for change of basis
