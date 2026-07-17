@@ -2,23 +2,22 @@ name: mbuild-dev
 channels:
   - conda-forge
 dependencies:
-  - python>=3.10,<=3.13
+  - python>=3.11,<=3.14
   - boltons
-  - numpy>=2.0,<2.3
+  - numpy>=2.0,<2.6
   - sympy
   - unyt>=2.9.5
-  - boltons
   - lark>=1.2
   - lxml
   - intermol
   - mdtraj
   - pydantic>=2
-  - networkx
+  - networkx>=2.5
   - nglview>=3
   - pytest
   - garnett>=0.7.1
   - openff-toolkit-base>0.16.7
-  - openmm
+  - openmm>=8.4
   - gsd>=2.9
   - freud>=3.2
   - parmed>=3.4.3
