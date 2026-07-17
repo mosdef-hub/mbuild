@@ -2,7 +2,7 @@ name: mbuild-dev
 channels:
   - conda-forge
 dependencies:
-  - python>=3.10,<=3.14
+  - python>=3.11,<=3.14
   - boltons
   - numpy>=2.0,<2.6
   - sympy
