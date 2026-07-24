@@ -7,7 +7,7 @@ conda:
 build:
   os: ubuntu-26.04
   tools:
-    python: "mambaforge-4.10"
+    python: "mambaforge-latest"
 sphinx:
   builder: html
   configuration: docs/conf.py
