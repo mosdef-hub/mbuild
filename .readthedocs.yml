@@ -5,7 +5,7 @@ formats:
 conda:
   environment: docs/docs-env.yml
 build:
-  os: ubuntu-26.04
+  os: ubuntu-24.04
   tools:
     python: "mambaforge-latest"
 sphinx:
