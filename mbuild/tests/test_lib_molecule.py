@@ -1,7 +1,9 @@
+import networkx as nx
 import numpy as np
 import pytest
 
 from mbuild.lib.molecules import (
+    FattyAcid,
     WaterOPC,
     WaterOPC3,
     WaterSPC,
@@ -79,3 +81,75 @@ class TestWater(BaseTest):
             ),
             angle,
         )
+
+
+class TestFattyAcid(BaseTest):
+    @pytest.mark.parametrize("chain_length", [4, 12, 18])
+    def test_chain_length(self, chain_length):
+        fatty_acid = FattyAcid(chain_length=chain_length)
+
+        assert len(list(fatty_acid.particles_by_element("C"))) == chain_length
+
+    @pytest.mark.parametrize(
+        "double_bonds, expected_count",
+        [
+            (None, 0),
+            ([(9, "cis")], 1),
+            ([(9, "trans"), (12, "cis")], 2),
+        ],
+    )
+    def test_number_of_double_bonds(self, double_bonds, expected_count):
+        fatty_acid = FattyAcid(double_bonds=double_bonds)
+
+        tail_double_bonds = [
+            bond
+            for bond in fatty_acid.bonds(return_bond_order=True)
+            if bond[2]["bond_order"] == 2.0
+            and bond[0].element.symbol == "C"
+            and bond[1].element.symbol == "C"
+        ]
+        assert len(tail_double_bonds) == expected_count
+
+    @pytest.mark.parametrize(
+        "chain_length, double_bonds",
+        [(12, [(4, "trans")]), (18, [(9, "cis")]), (18, [(9, "cis"), (12, "cis")])],
+    )
+    def test_double_bond_positions(self, chain_length, double_bonds):
+        fatty_acid = FattyAcid(
+            chain_length=chain_length,
+            double_bonds=double_bonds,
+        )
+        bonds = list(fatty_acid.bonds(return_bond_order=True))
+
+        carbonyl_carbon = next(
+            atom1 if atom1.element.symbol == "C" else atom2
+            for atom1, atom2, bond_data in bonds
+            if bond_data["bond_order"] == 2.0
+            and {atom1.element.symbol, atom2.element.symbol} == {"C", "O"}
+        )
+
+        carbon_double_bonds = [
+            bond
+            for bond in bonds
+            if bond[2]["bond_order"] == 2.0
+            and bond[0].element.symbol == "C"
+            and bond[1].element.symbol == "C"
+        ]
+
+        actual_positions_in_chain = sorted(
+            min(
+                nx.shortest_path_length(
+                    fatty_acid.bond_graph,
+                    carbonyl_carbon,
+                    atom,
+                )
+                for atom in bond[:2]
+            )
+            + 1  # since we count distances to reference, add 1 to get
+            # back into carbon numbering
+            for bond in carbon_double_bonds
+        )
+
+        expected_positions = sorted(position for position, _ in double_bonds)
+
+        assert actual_positions_in_chain == expected_positions
