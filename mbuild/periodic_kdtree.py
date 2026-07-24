@@ -383,7 +383,7 @@ class PeriodicKDTree(KDTree):
             return self.__query_ball_point(x, r, p, eps)
         else:
             retshape = x.shape[:-1]
-            result = np.empty(retshape, dtype=np.object)
+            result = np.empty(retshape, dtype=object)
             for c in np.ndindex(retshape):
                 result[c] = self.__query_ball_point(x[c], r, p, eps)
             return result
