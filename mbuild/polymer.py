@@ -15,7 +15,7 @@ from mbuild.coordinate_transform import (
 )
 from mbuild.lib.atoms import H
 from mbuild.port import Port
-from mbuild.simulation import energy_minimize as e_min
+from mbuild.simulation import OpenMMSimulation
 from mbuild.utils.validation import assert_port_exists
 
 __all__ = ["Polymer"]
@@ -199,7 +199,8 @@ class Polymer(Compound):
             coordinates=path.coordinates,
         )
         if energy_minimize:
-            e_min(self)
+            sim = OpenMMSimulation(self)
+            sim.minimize()
 
     def set_monomer_positions(self, coordinates, energy_minimize=False):
         """Shift monomers so that their center of mass matches a set of pre-defined coordinates.
@@ -228,7 +229,8 @@ class Polymer(Compound):
         for i, xyz in enumerate(coordinates):
             self.children[i].translate_to(xyz)
         if energy_minimize:
-            e_min(self)
+            sim = OpenMMSimulation(self)
+            sim.energy_minimize()
 
     def build(
         self,
