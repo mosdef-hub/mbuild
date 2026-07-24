@@ -368,7 +368,7 @@ def lamellar(
     num_layers=1,
     layer_separation=None,
     layer_length=None,
-    bond_length=None,
+    spacing=None,
     initial_point=(0, 0, 0),
     num_stacks=1,
     stack_separation=None,
@@ -387,7 +387,7 @@ def lamellar(
         The distance between any two layers.
     layer_length : float (nm), required
         The distance of a lamellar layer before curving to the next.
-    bond_length : float (nm), required
+    spacing : float (nm), required
         The distance between two adjacent sites in the path.
     initial_point : nd.array (1,3), default (0,0,0)
         The coordinate of the first site of the lamellar path.
@@ -407,7 +407,7 @@ def lamellar(
     initial_point = np.asarray(initial_point)
 
     # Coordinates in the y-direction (layer-length) of the lamellar layer
-    layer_spacing = np.arange(0, layer_length, bond_length)
+    layer_spacing = np.arange(0, layer_length, spacing)
     if not left_to_right:
         layer_spacing *= -1
     layer_spacing += initial_point[1]
@@ -415,7 +415,7 @@ def lamellar(
     # Info needed for generating coords of the arc curves between layers
     r = layer_separation / 2
     arc_length = r * np.pi
-    arc_num_points = math.floor(arc_length / bond_length)
+    arc_num_points = math.floor(arc_length / spacing)
     arc_angle = np.pi / (arc_num_points + 1)
     arc_angles = np.linspace(arc_angle, np.pi, arc_num_points, endpoint=False)
 
@@ -461,7 +461,7 @@ def lamellar(
         first_stack_coordinates = np.copy(np.array(coordinates))
         r = stack_separation / 2
         arc_length = r * np.pi
-        arc_num_points = math.floor(arc_length / bond_length)
+        arc_num_points = math.floor(arc_length / spacing)
         arc_angle = np.pi / (arc_num_points + 1)
         arc_angles = np.linspace(arc_angle, np.pi, arc_num_points, endpoint=False)
 
@@ -517,17 +517,18 @@ def lamellar(
     return path
 
 
-def straight_line(path, spacing, N, direction=(1, 0, 0), bead_name="_A"):
+def straight_line(spacing, N, path=None, direction=(1, 0, 0), bead_name="_A"):
     """Generates a set of coordinates in a straight line along a given axis.
 
     Parameters
     ----------
-    path : mbuild.path.Path, required
-        The Path object to populate with coordinates
     N : int, required
         The number of sites in the path.
     spacing : float, required
         The distance between sites along the path.
+    path : mbuild.path.Path
+        The Path object to populate with coordinates.
+        Defaults to creating a new, empty Path if no Path is given.
     direction : array-like (1,3), default = (1,0,0)
         The direction to align the straight path along.
     bead_name : str or path.BeadNamer, optional, default '_A'
@@ -535,6 +536,8 @@ def straight_line(path, spacing, N, direction=(1, 0, 0), bead_name="_A"):
         every bead. Pass a ``BeadNamer`` instance for heterogeneous sequences.
         See mbuild.path.namers.py
     """
+    if path is None:
+        path = Path()
     direction = np.asarray(direction)
     coordinates = np.array([np.zeros(3) + i * spacing * direction for i in range(N)])
     start_index = len(path.coordinates)
@@ -548,17 +551,18 @@ def straight_line(path, spacing, N, direction=(1, 0, 0), bead_name="_A"):
     return path
 
 
-def cyclic(path, spacing=None, N=None, radius=None, closed=True, bead_name="_A"):
+def cyclic(spacing=None, N=None, path=None, radius=None, closed=True, bead_name="_A"):
     """Generates a set of coordinates evenly spaced along a circle.
 
     Parameters
     ----------
-    path : mbuild.path.Path, required
-        The Path object to populate with coordinates
     spacing : float, optional
         Distance between sites along the path.
     N : int, optional
         Number of sites in the cyclic path.
+    path : mbuild.path.Path
+        The Path object to populate with coordinates.
+        Defaults to creating a new, empty Path if no Path is given.
     radius : float, optional
         The radius (nm) of the cyclic path.
     closed : bool, default True
@@ -573,6 +577,8 @@ def cyclic(path, spacing=None, N=None, radius=None, closed=True, bead_name="_A")
     Only two of spacing, N and radius can be defined, as the third
     is determined by the other two.
     """
+    if path is None:
+        path = Path()
     n_params = sum(1 for i in (spacing, N, radius) if i is not None)
     if n_params != 2:
         raise ValueError("You must specify only 2 of spacing, N and radius.")
@@ -604,13 +610,11 @@ def cyclic(path, spacing=None, N=None, radius=None, closed=True, bead_name="_A")
     return path
 
 
-def knot(path, spacing, N, m, closed=True, bead_name="_A"):
+def knot(spacing, N, m, path=None, closed=True, bead_name="_A"):
     """Generate a knot path.
 
     Parameters
     ----------
-    path : mbuild.path.Path, required
-        The Path object to populate with coordinates
     spacing : float (nm)
         The spacing between sites along the path.
     N : int
@@ -618,6 +622,9 @@ def knot(path, spacing, N, m, closed=True, bead_name="_A"):
     m : int in [3, 4, 5]
         The number of crossings in the knot.
         3 gives the trefoil knot, 4 gives the figure 8 knot and 5 gives the cinquefoil knot.
+    path : mbuild.path.Path
+        The Path object to populate with coordinates.
+        Defaults to creating a new, empty Path if no Path is given.
     closed : bool, default True
         If `True` the cyclic path is closed by bonding the first and last sites together
     bead_name : str or path.BeadNamer, optional, default '_A'
@@ -625,6 +632,8 @@ def knot(path, spacing, N, m, closed=True, bead_name="_A"):
         every bead. Pass a ``BeadNamer`` instance for heterogeneous sequences.
         See mbuild.path.namers.py
     """
+    if path is None:
+        path = Path()
     # Generate dense sites first, sample actual ones later from spacing
     t_dense = np.linspace(0, 2 * np.pi, 5000)
 
@@ -685,14 +694,12 @@ def knot(path, spacing, N, m, closed=True, bead_name="_A"):
 
 
 def helix(
-    path, N, radius, rise, twist, right_handed=True, bottom_up=True, bead_name="_A"
+    N, radius, rise, twist, path=None, right_handed=True, bottom_up=True, bead_name="_A"
 ):
     """Generate helical path.
 
     Parameters:
     -----------
-    path : mbuild.path.Path, required
-        The Path object to populate with coordinates
     N : int, required
         Number of sites in the path
     radius : float, required
@@ -701,6 +708,9 @@ def helix(
         Rise per site on path (nm)
     twist : float, required
         Twist per site in path (degrees)
+    path : mbuild.path.Path
+        The Path object to populate with coordinates.
+        Defaults to creating a new, empty Path if no Path is given.
     right_handed : bool, default True
         Set the handedness of the helical twist
     bottom_up : bool, default True
@@ -710,6 +720,8 @@ def helix(
         every bead. Pass a ``BeadNamer`` instance for heterogeneous sequences.
         See mbuild.path.namers.py
     """
+    if path is None:
+        path = Path()
     coordinates = np.zeros((N, 3))
     indices = reversed(range(N)) if not bottom_up else range(N)
 
@@ -733,13 +745,11 @@ def helix(
     return path
 
 
-def spiral_2D(path, N, a, b, spacing, bead_name="_A"):
+def spiral_2D(N, a, b, spacing, path=None, bead_name="_A"):
     """Generate a 2D spiral path in the XY plane.
 
     Parameters
     ----------
-    path : mbuild.path.Path, required
-        The Path object to populate with coordinates
     N : int, required
         Number of sites in the path
     a : float, required
@@ -748,11 +758,16 @@ def spiral_2D(path, N, a, b, spacing, bead_name="_A"):
         Determines how fast radius grows per angle increment (r = a + bθ)
     spacing : float, required
         Distance between adjacent sites (nm)
+    path : mbuild.path.Path
+        The Path object to populate with coordinates.
+        Defaults to creating a new, empty Path if no Path is given.
     bead_name : str or path.BeadNamer, optional, default '_A'
         Name(s) to assign to beads. A plain string assigns the same name to
         every bead. Pass a ``BeadNamer`` instance for heterogeneous sequences.
         See mbuild.path.namers.py
     """
+    if path is None:
+        path = Path()
     coordinates = np.zeros((N, 3))
     theta = 0.0
 
@@ -779,9 +794,9 @@ def spiral_2D(path, N, a, b, spacing, bead_name="_A"):
 
 
 def zigzag(
-    path,
     N,
-    spacing=1.0,
+    spacing,
+    path=None,
     angle_deg=120.0,
     sites_per_segment=4,
     plane="xy",
@@ -791,12 +806,13 @@ def zigzag(
 
     Parameters
     ----------
-    path : mbuild.path.Path, required
-        The Path object to populate with coordinates
     N : int, required
         Number of sites in the path
-    spacing : float, default = 1.0 nm
+    spacing : float, required
         The distance (nm) between consecutive sites along the path.
+    path : mbuild.path.Path
+        The Path object to populate with coordinates.
+        Defaults to creating a new, empty Path if no Path is given.
     angle_deg : float, default = 120.
         The rotation (degrees) applied between segments
     sites_per_segment : int, default = 4
@@ -811,6 +827,8 @@ def zigzag(
     if N % sites_per_segment != 0:
         raise ValueError("N must be evenly divisible by sites_per_segment")
 
+    if path is None:
+        path = Path()
     angle_rad = np.deg2rad(angle_deg)
     direction = np.array([1.0, 0.0])
     position = np.zeros(2)
@@ -886,8 +904,9 @@ def hard_sphere_random_walk(
 
     Parameters:
     -----------
-    path : mbuild.path.Path, default None.
-        The Path object to populate with coordinates. Creates a new path object if not passed.
+    path : mbuild.path.Path
+        The Path object to populate with coordinates.
+        Defaults to creating a new, empty Path if no Path is given.
     bead_name : str or path.BeadNamer, optional, default '_A'
         Name(s) to assign to beads. A plain string assigns the same name to
         every bead. Pass a ``BeadNamer`` instance for heterogeneous sequences.
@@ -934,6 +953,13 @@ def hard_sphere_random_walk(
         If True and CUDA path utilities are available, use GPU-accelerated
         implementations.
     """
+    # Create seed sequence used by multiple path classes
+    # The namer seed is separate, so that coordinates are impacted by naming methods.
+    previous_count = len(path.coordinates) if path else 0
+    seed_sequence = np.random.SeedSequence(seed + previous_count)
+    name_seed_sequence = seed_sequence.spawn(1)[0]
+    rng = np.random.default_rng(seed_sequence)
+
     # Create state object to track random walk progress
     state = RandomWalkState(
         bond_length=bond_length,
@@ -941,7 +967,7 @@ def hard_sphere_random_walk(
         angles_sampler=rw_angles,
         bead_name=bead_name,
         initial_point=initial_point,
-        previous_count=len(path.coordinates) if path else 0,
+        previous_count=previous_count,
         include_compound=include_compound,
         connectivity=connectivity,
         seed=seed,
@@ -950,6 +976,7 @@ def hard_sphere_random_walk(
         trial_batch_size=int(trial_batch_size),
         chunk_size=chunk_size,
         run_on_gpu=bool(run_on_gpu) and _get_cuda_available(),
+        rng=rng,
     )
     if path is None:  # Create empty path
         path = Path()
@@ -970,17 +997,17 @@ def hard_sphere_random_walk(
     state.termination._attach_path(path, state)
 
     namer = BeadNamer.coerce(bead_name)
-
-    # Create RNG state
-    rng = np.random.default_rng(seed + len(path.coordinates))
-    state.rng = rng
+    namer._attach_rng(np.random.default_rng(name_seed_sequence))
 
     # Set up PBC info from volume constraints
+    # TODO: We can probably out-source pbc, box_lengths return to the Constraint classes
     if isinstance(volume_constraint, CuboidConstraint):
-        pbc = volume_constraint.pbc
+        pbc = np.asarray(volume_constraint.pbc, dtype=np.bool_)
         box_lengths = volume_constraint.box_lengths.astype(np.float32)
     elif isinstance(volume_constraint, CylinderConstraint):
-        pbc = (False, False, volume_constraint.periodic_height)
+        pbc = np.array(
+            [False, False, volume_constraint.periodic_height], dtype=np.bool_
+        )
         box_lengths = np.array(
             [
                 volume_constraint.radius * 2,
@@ -989,8 +1016,10 @@ def hard_sphere_random_walk(
             ]
         ).astype(np.float32)
     else:
-        pbc = (None, None, None)
-        box_lengths = (None, None, None)
+        pbc = np.array([False, False, False], dtype=np.bool_)
+        box_lengths = np.array([np.inf, np.inf, np.inf], dtype=np.float32)
+    state.pbc = pbc
+    state.box_lengths = box_lengths
 
     # Set up bias conditions
     if bias:
@@ -1117,11 +1146,12 @@ def hard_sphere_random_walk(
                 coordinates=coordinates[: state.count],
                 names=beads[: state.count],
             )
-        # Handle postion for PBCs
+        # Handle postion for PBCs.
         if any(pbc):
-            candidates = volume_constraint.mins + np.mod(
-                candidates - volume_constraint.mins, box_lengths
-            )
+            candidates = (
+                volume_constraint.mins
+                + np.mod(candidates - volume_constraint.mins, box_lengths)
+            ).astype(np.float32)
         # Check candidate sites
         accept_xyz = None
         if state.run_on_gpu and len(candidates) > 0:
@@ -1133,6 +1163,8 @@ def hard_sphere_random_walk(
                 candidates,
                 radius,
                 tolerance,
+                pbc=pbc,
+                box_lengths=box_lengths,
             )
             valid_candidates = candidates[valid_mask]
             if len(valid_candidates) > 0:
@@ -1148,6 +1180,8 @@ def hard_sphere_random_walk(
                     new_point=xyz,
                     radius=radius,
                     tolerance=tolerance,
+                    pbc=pbc,
+                    box_lengths=box_lengths,
                 ):
                     accept_xyz = xyz
                     break
@@ -1156,7 +1190,6 @@ def hard_sphere_random_walk(
             coordinates[state.count] = accept_xyz
             beads[state.count] = next(namer)
             state.count += 1
-
         state.attempts += 1
 
         # Extend coordinates array if we're running out of space
@@ -1178,10 +1211,8 @@ def hard_sphere_random_walk(
 class RandomWalkState:
     """Tracks state and configuration for a hard_sphere_random_walk.
 
-
     This class encapsulates all the bookkeeping information needed during
     a random walk, keeping the Path object clean of implementation details.
-
 
     Attributes
     ----------
@@ -1240,6 +1271,7 @@ class RandomWalkState:
         trial_batch_size=20,
         chunk_size=512,
         run_on_gpu=False,
+        rng=None,
     ):
         self.bond_length = bond_length
         self.radius = radius
@@ -1247,31 +1279,52 @@ class RandomWalkState:
             raise ValueError(
                 "Bond length should be greater than radius to prevent overlaps."
             )
+        # Single RNG drives all walk randomness (angles, positions, bias,
+        # volume-constraint sampling).
+        if rng is None:
+            rng = np.random.default_rng(seed + previous_count)
+        self.rng = rng
+        # Multiple ways to handle angles_sampler arg:
         if angles_sampler is None:
             self.angles = AnglesSampler(
-                "uniform", {"low": np.pi / 2, "high": np.pi}, seed
+                "uniform", {"low": np.pi / 2, "high": np.pi}, rng=self.rng
             )
-        elif isinstance(angles_sampler, tuple):
+        # Pass in a tupe or list of (low, high)
+        elif isinstance(angles_sampler, (tuple, list)) and len(angles_sampler) == 2:
             self.angles = AnglesSampler(
-                "uniform", {"low": angles_sampler[0], "high": angles_sampler[1]}, seed
+                "uniform",
+                {"low": angles_sampler[0], "high": angles_sampler[1]},
+                rng=self.rng,
             )
-        elif (
-            isinstance(angles_sampler, dict)
-            and angles_sampler.get("loc")
-            and angles_sampler.get("scale")
-        ):
-            self.angles = AnglesSampler("normal", angles_sampler, seed)
+        # Pass in a dict with supported kwargs
+        elif isinstance(angles_sampler, dict):
+            if angles_sampler.get("loc") and angles_sampler.get("scale"):
+                self.angles = AnglesSampler("normal", angles_sampler, rng=self.rng)
+            elif angles_sampler.get("low") and angles_sampler.get("high"):
+                self.angles = AnglesSampler("uniform", angles_sampler, rng=self.rng)
+            else:
+                raise ValueError(
+                    f"kwargs {dict} cannot be used to create an AnglesSampler."
+                )
+        # Pass in an array of choices
         elif isinstance(angles_sampler, np.ndarray):
             if angles_sampler.ndim == 1:
                 kwargs = {"a": angles_sampler}
             elif angles_sampler.ndim == 2:
                 kwargs = {"a": angles_sampler[0], "p": angles_sampler[1]}
-            self.angles = AnglesSampler("choice", kwargs, seed)
+            else:
+                raise ValueError(
+                    "Sampling angles from an array of choices is only supported for 1D and 2D arrays."
+                )
+            self.angles = AnglesSampler("choice", kwargs, rng=self.rng)
+        # Pass in an AnglesSampler instance.
         elif isinstance(angles_sampler, AnglesSampler):
             self.angles = angles_sampler
+            self.angles.rng = self.rng
         else:
             raise ValueError(
-                f"Please provide a reasonable value to set the rw_angles. Passed {angles_sampler}"
+                f"{angles_sampler} is not a supported form to sample angles. "
+                "See mbuild.path.points.AnglesSampler."
             )
         self.bead_name = bead_name
         if hasattr(initial_point, "__len__") and len(initial_point) == 3:
@@ -1296,6 +1349,10 @@ class RandomWalkState:
         self.attempts = 0
         self.start_time = None
         self.gpu_static_points = None
+        # PBC info for overlap checks; populated in hard_sphere_random_walk.
+        # Defaults reproduce non-periodic behavior.
+        self.pbc = np.array([False, False, False], dtype=np.bool_)
+        self.box_lengths = np.array([np.inf, np.inf, np.inf], dtype=np.float32)
 
     def check_termination(self, path, coordinates, beads):
         """Examine and process termination if we have reached.

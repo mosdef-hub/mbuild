@@ -51,9 +51,13 @@ def get_second_point(state, existing_points, beads, check_path, next_step):
     else:
         pos1 = None
         pos2 = existing_points[-1]
-    # Update existing points to include those in the compound.
+    # Update existing points and beads to include those in the compound.
     if state.include_compound:
-        existing_points = np.concat((existing_points, state.include_compound.xyz))
+        compound_xyz = state.include_compound.xyz
+        compound_names = np.array([p.name for p in state.include_compound.particles()])
+        existing_points = np.concat((existing_points, compound_xyz))
+        beads = np.concat((beads, compound_names))
+
     xyzs = next_step(
         pos1=pos1,
         pos2=pos2,
@@ -134,8 +138,14 @@ def get_initial_point(state, existing_points, beads, check_path, next_step):
         If no valid starting point can be found within the trial batch,
         regardless of which strategy is used.
     """
+    # Get len of existing points before adding coords from include compound
+    n_walk_points = len(existing_points)
+    # Include a Compound's coordinates and bead names
     if state.include_compound:
-        existing_points = np.concat((existing_points, state.include_compound.xyz))
+        compound_xyz = state.include_compound.xyz
+        compound_names = np.array([p.name for p in state.include_compound.particles()])
+        existing_points = np.concat((existing_points, compound_xyz))
+        beads = np.concat((beads, compound_names))
 
     # An initial point was manually given in hard_sphere_random_walk, use that.
     # Check if this point causes any overlaps, if so, raise error.
@@ -156,10 +166,10 @@ def get_initial_point(state, existing_points, beads, check_path, next_step):
 
     # Passing in an index to specify an initial point from already defined set of coordinates
     elif isinstance(state.initial_point, int):
-        if state.initial_point >= len(existing_points):
+        if state.initial_point >= n_walk_points:
             raise ValueError(
                 f"You passed a starting index of {state.initial_point} "
-                f"but there are only {len(existing_points)} existing points in the path."
+                f"but there are only {n_walk_points} existing points in the path."
             )
         # generate point off of current path coordinates
         starting_xyz = existing_points[state.initial_point]
@@ -220,7 +230,10 @@ def get_initial_point(state, existing_points, beads, check_path, next_step):
     # TODO: Use find_low_density_point here instead?
     elif state.volume_constraint:
         xyzs = state.volume_constraint.sample_candidates(
-            points=existing_points, n_candidates=300, buffer=state.radius + 0.1
+            points=existing_points,
+            n_candidates=300,
+            buffer=state.radius + 0.1,
+            rng=state.rng,
         )
         for xyz in xyzs:
             if check_path(
@@ -268,28 +281,27 @@ class AnglesSampler:
     "normal" distribution should use 'loc' and 'scale' as kwargs.
     """
 
-    def __init__(self, distributionStr, kwargs, seed):
-        # Create a generator object for high-quality random numbers [9]
-        self.rng = np.random.default_rng(seed)
-        if distributionStr.lower() == "uniform":
-            self.sampler = self.rng.uniform
+    def __init__(self, distributionStr, kwargs, rng=None):
+        self.rng = rng if rng is not None else np.random.default_rng()
+        distribution = distributionStr.lower()
+        if distribution == "uniform":
             assert "low" in kwargs
             assert "high" in kwargs
-        elif distributionStr.lower() == "normal":
-            self.sampler = self.rng.normal
+        elif distribution == "normal":
             assert "loc" in kwargs
             assert "scale" in kwargs
-        elif distributionStr == "choice":
-            self.sampler = self.rng.choice
+        elif distribution == "choice":
             assert "a" in kwargs  # p is not required
         else:
             raise NotImplementedError(
                 f"Sample Distribution {distributionStr} not supported."
             )
+        self.distribution = distribution
         self.kwargs = kwargs
 
     def sample(self, size=None):
-        return self.sampler(size=size, **self.kwargs)
+        # Resolve against self.rng at call time so the rng can be swapped in.
+        return getattr(self.rng, self.distribution)(size=size, **self.kwargs)
 
 
 def generate_trials(state):
