@@ -2438,6 +2438,60 @@ class Compound(object):
         """
         return conversion.to_gmso(self, **kwargs)
 
+    def to_cgsmiles(self, fragname_map=None):
+        """Write this coarse-grained Compound as a CGsmiles string.
+
+        Each leaf particle is treated as one CG bead: particle names
+        become fragment names and the compound's bonds become the CG
+        bond graph. Append fragment definitions (e.g. ``"{#A=[>]CC[<]}"``)
+        to obtain a fully resolvable CGsmiles string.
+
+        Parameters
+        ----------
+        fragname_map : dict[str, str], optional
+            Mapping of bead (particle) names to CGsmiles fragment names.
+            Names not present in the map are used directly.
+
+        See ``mbuild.coarse_graining.to_cgsmiles``.
+        """
+        from mbuild.coarse_graining import to_cgsmiles
+
+        return to_cgsmiles(self, fragname_map=fragname_map)
+
+    def backmap(self, fragments=None, **kwargs):
+        """Backmap this coarse-grained Compound to an atomistic Compound.
+
+        Treats each leaf particle as one CG bead (particle names become
+        fragment names, positions become bead positions, bonds become
+        the CG bond graph) and resolves each bead to molecular detail
+        with CGsmiles. Works for any bond graph topology, including
+        branch points. Fragments are defined by CGsmiles fragment
+        strings (SMILES with bonding descriptors), by tagged mBuild
+        compounds passed via ``templates``, or a mix of both.
+
+        See ``mbuild.coarse_graining.backmap`` for parameters.
+        """
+        from mbuild.coarse_graining import backmap
+
+        return backmap(self, fragments, **kwargs)
+
+    def coarse_grain(self, fragments=None, **kwargs):
+        """Coarse-grain this atomistic Compound into a CG Path.
+
+        The inverse of ``backmap``: partitions the compound into CG
+        beads and returns ``(path, mapping)`` — an ``mbuild.path.Path``
+        holding bead names, bead coordinates, and the CG bond graph,
+        plus a ``CGMapping`` with the atom/bead correspondence. The
+        mapping is defined by CGsmiles fragment matching (``fragments``
+        and/or ``templates``), by sub-compound names (``beads=[...]``),
+        or explicitly (``mapping={particle: bead_index}``).
+
+        See ``mbuild.coarse_graining.coarse_grain`` for parameters.
+        """
+        from mbuild.coarse_graining import coarse_grain
+
+        return coarse_grain(self, fragments, **kwargs)
+
     def to_hoomdsnapshot(self, **kwargs):
         """Create a HOOMD-Blue snapshot from an mBuild Compound.
 

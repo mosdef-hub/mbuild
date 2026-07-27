@@ -1547,9 +1547,12 @@ class TestCompound(BaseTest):
         assert struct.residues[7].name == "CH3"
         assert sum(len(res.atoms) for res in struct.residues) == len(struct.atoms)
 
-    def test_resnames_parmed_cg(self, benzene_from_SMILES, hexane, propyl):
-        particles = [propyl.__class__]
-        cg = mb.coarse_grain(hexane, particle_classes=particles)
+    def test_resnames_parmed_cg(self, benzene_from_SMILES, hexane):
+        # a simple CG hexane: two bonded "Alkane" beads under a "Hexane" parent
+        cg = mb.Compound(name="Hexane")
+        beads = [mb.Compound(name="Alkane"), mb.Compound(name="Alkane")]
+        cg.add(beads)
+        cg.add_bond((beads[0], beads[1]))
 
         # test single cg molecule
         struct = cg.to_parmed()
@@ -1570,7 +1573,7 @@ class TestCompound(BaseTest):
             infer_residues_kwargs={"segment_level": 1},
         )
         assert len(struct.residues) == 4
-        assert struct.residues[0].name == "Hexane_PROXY"
+        assert struct.residues[0].name == "Hexane"
 
         # test cg molecules to depth 2
         struct = two_bonded_beads.to_parmed(
@@ -1588,7 +1591,7 @@ class TestCompound(BaseTest):
             },
         )
         assert len(struct.residues) == 8
-        assert struct.residues[0].name == "Alkane_PROXY"
+        assert struct.residues[0].name == "Alkane"
 
         # test cg molecules with no infer residues
         box_beads = mb.Compound([mb.clone(cg), mb.clone(cg)])

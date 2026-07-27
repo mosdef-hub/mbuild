@@ -294,11 +294,14 @@ class Path:
         """Convert a path and its bond graph to an mBuild Compound."""
         compound = Compound()
         compounds = []
-        # TODO: Should name be pulled from self.beads[noe_id] as well?
         # TODO: Should we have a mass parameter? Could be useful for density termination
-        for node_id, attrs in self.bond_graph.nodes(data=True):
+        for node_id in sorted(self.bond_graph.nodes):
             compounds.append(
-                Compound(name=attrs["name"], pos=self.coordinates[node_id], mass=1.0)
+                Compound(
+                    name=str(self.beads[node_id]),
+                    pos=self.coordinates[node_id],
+                    mass=1.0,
+                )
             )
         compound.add(compounds)
         for edge1, edge2 in self.bond_graph.edges():
@@ -321,13 +324,13 @@ class Path:
         Returns
         -------
         networkx.Graph
-            Meta graph usable with ``cgsmiles.MoleculeResolver.from_graph``.
+            Meta graph usable with ``cgsmiles.MoleculeResolver``.
 
-        See ``mbuild.path.backmap.path_to_cgsmiles_graph``.
+        See ``mbuild.coarse_graining.to_cgsmiles_graph``.
         """
-        from mbuild.path.backmap import path_to_cgsmiles_graph
+        from mbuild.coarse_graining import to_cgsmiles_graph
 
-        return path_to_cgsmiles_graph(self, fragname_map=fragname_map)
+        return to_cgsmiles_graph(self, fragname_map=fragname_map)
 
     def to_cgsmiles(self, fragname_map=None):
         """Write the coarse-grained level of this Path as a CGsmiles string.
@@ -353,11 +356,11 @@ class Path:
             chains) are written as ``.``-separated segments, which CGsmiles
             reads as zero-order (non-bonded) connections.
 
-        See ``mbuild.path.backmap.path_to_cgsmiles``.
+        See ``mbuild.coarse_graining.to_cgsmiles``.
         """
-        from mbuild.path.backmap import path_to_cgsmiles
+        from mbuild.coarse_graining import to_cgsmiles
 
-        return path_to_cgsmiles(self, fragname_map=fragname_map)
+        return to_cgsmiles(self, fragname_map=fragname_map)
 
     def backmap(self, fragments=None, **kwargs):
         """Backmap the path to an atomistic Compound using CGsmiles.
@@ -369,7 +372,7 @@ class Path:
         descriptors), by tagged mBuild compounds passed via
         ``templates``, or a mix of both.
 
-        See ``mbuild.path.backmap.backmap_path`` for parameters.
+        See ``mbuild.coarse_graining.backmap`` for parameters.
 
         Example
         -------
@@ -379,9 +382,9 @@ class Path:
         >>> template = mb.load("C{>}O{ }C{<}", smiles=True)  # doctest: +SKIP
         >>> compound = path.backmap(templates={"PEO": template})  # doctest: +SKIP
         """
-        from mbuild.path.backmap import backmap_path
+        from mbuild.coarse_graining import backmap
 
-        return backmap_path(self, fragments, **kwargs)
+        return backmap(self, fragments, **kwargs)
 
     def to_mol2(self):
         """Convert a path to a .mol2 file."""
