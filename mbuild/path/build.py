@@ -294,11 +294,12 @@ class Path:
         """Convert a path and its bond graph to an mBuild Compound."""
         compound = Compound()
         compounds = []
-        # TODO: Should name be pulled from self.beads[noe_id] as well?
         # TODO: Should we have a mass parameter? Could be useful for density termination
-        for node_id, attrs in self.bond_graph.nodes(data=True):
+        for node_id in self.bond_graph.nodes:
             compounds.append(
-                Compound(name=attrs["name"], pos=self.coordinates[node_id], mass=1.0)
+                Compound(
+                    name=self.beads[node_id], pos=self.coordinates[node_id], mass=1.0
+                )
             )
         compound.add(compounds)
         for edge1, edge2 in self.bond_graph.edges():
@@ -357,9 +358,12 @@ class Path:
         nthreads : int, optional, default 1
             Number of threads to use during OpenMM simulation.
         """
-        from mbuild.simulation import energy_minimize_path
+        from mbuild.simulation import OpenMMSimulation
 
-        energy_minimize_path(self, bead_radius, bond_length, steps, seed, nthreads)
+        simulation = OpenMMSimulation(self, forcefield=None, nthreads=nthreads)
+        # TODO: Create a forcefield from bead_radius
+        # energy_minimize_path(self, bead_radius, bond_length, steps, seed, nthreads)
+        simulation.minimize(steps, tolerance=1)
         return
 
 
