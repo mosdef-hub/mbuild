@@ -5,6 +5,7 @@ dependencies:
   - ele
   - numpy>=2.0,<2.3
   - packmol>=20.15
+  - cgsmiles>=1.0.2
   - gmso>=0.16.0
   - garnett
   - numba

@@ -7,8 +7,8 @@ dependencies:
   - numba
   - numpy>=2.0,<2.3
   - sympy
+  - cgsmiles>=1.0.2
   - unyt>=2.9.5
-  - boltons
   - lark>=1.2
   - lxml
   - intermol

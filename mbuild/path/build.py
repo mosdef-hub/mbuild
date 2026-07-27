@@ -307,6 +307,82 @@ class Path:
             )
         return compound
 
+    def to_cgsmiles_graph(self, fragname_map=None):
+        """Convert this path's bond graph to a CGsmiles-compatible meta graph.
+
+        Parameters
+        ----------
+        fragname_map : dict[str, str], optional
+            Mapping of bead names to CGsmiles fragment names. Bead names not
+            present in the map are used as fragment names directly. Useful
+            when path bead names differ from the fragment
+            names used in the CGsmiles fragment string.
+
+        Returns
+        -------
+        networkx.Graph
+            Meta graph usable with ``cgsmiles.MoleculeResolver.from_graph``.
+
+        See ``mbuild.path.backmap.path_to_cgsmiles_graph``.
+        """
+        from mbuild.path.backmap import path_to_cgsmiles_graph
+
+        return path_to_cgsmiles_graph(self, fragname_map=fragname_map)
+
+    def to_cgsmiles(self, fragname_map=None):
+        """Write the coarse-grained level of this Path as a CGsmiles string.
+
+        The returned string describes the bead sequence and connectivity
+        (including branches and rings) at the coarse-grained level.
+        Append fragment definitions (e.g. ``"{#A=[>]CC[<]}"``)
+        to obtain a fully resolvable CGsmiles string.
+
+        Parameters
+        ----------
+        fragname_map : dict[str, str], optional
+            Mapping of bead names to CGsmiles fragment names. Bead names not
+            present in the map are used as fragment names directly. Useful
+            when path bead names differ from the fragment
+            names used in the CGsmiles fragment string.
+
+        Returns
+        -------
+        str
+            The CGsmiles graph string, e.g. ``"{[#A][#A]([#B][#B])[#A]}"``.
+            Paths holding multiple disconnected molecules (e.g. a box of
+            chains) are written as ``.``-separated segments, which CGsmiles
+            reads as zero-order (non-bonded) connections.
+
+        See ``mbuild.path.backmap.path_to_cgsmiles``.
+        """
+        from mbuild.path.backmap import path_to_cgsmiles
+
+        return path_to_cgsmiles(self, fragname_map=fragname_map)
+
+    def backmap(self, fragments=None, **kwargs):
+        """Backmap the path to an atomistic Compound using CGsmiles.
+
+        Resolves each bead to molecular detail and returns an atomistic
+        ``mbuild.Compound`` that retains the path's conformation. Works
+        for any bond graph topology, including branch points. Fragments
+        are defined by CGsmiles fragment strings (SMILES with bonding
+        descriptors), by tagged mBuild compounds passed via
+        ``templates``, or a mix of both.
+
+        See ``mbuild.path.backmap.backmap_path`` for parameters.
+
+        Example
+        -------
+        >>> path = straight_line(spacing=0.25, N=10, bead_name="PEO")
+        >>> compound = path.backmap("{#PEO=[>]COC[<]}")
+        >>> # or, defining the fragment with a tagged compound instead
+        >>> template = mb.load("C{>}O{ }C{<}", smiles=True)  # doctest: +SKIP
+        >>> compound = path.backmap(templates={"PEO": template})  # doctest: +SKIP
+        """
+        from mbuild.path.backmap import backmap_path
+
+        return backmap_path(self, fragments, **kwargs)
+
     def to_mol2(self):
         """Convert a path to a .mol2 file."""
         from mbuild.path.formats import to_mol2 as _to_mol2
