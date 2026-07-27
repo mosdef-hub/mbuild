@@ -358,9 +358,11 @@ class Path:
         nthreads : int, optional, default 1
             Number of threads to use during OpenMM simulation.
         """
-        from mbuild.simulation import OpenMMSimulation
+        import mbuild.simulation
 
-        simulation = OpenMMSimulation(self, forcefield=None, nthreads=nthreads)
+        simulation = mbuild.simulation.OpenMMSimulation(
+            self, forcefield=None, nthreads=nthreads
+        )
         # TODO: Create a forcefield from bead_radius
         # energy_minimize_path(self, bead_radius, bond_length, steps, seed, nthreads)
         simulation.minimize(steps, tolerance=1)

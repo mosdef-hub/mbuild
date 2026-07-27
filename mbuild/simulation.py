@@ -43,9 +43,9 @@ def _resolve_input(system):
         Whether the original input was a Path.
     original : the original input object
     """
-    from mbuild.path.build import Path
+    import mbuild.path.build
 
-    if isinstance(system, Path):
+    if isinstance(system, mbuild.path.build.Path):
         return system.to_compound(), True, system
     elif isinstance(system, Compound):
         return system, False, system
