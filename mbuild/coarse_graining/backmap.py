@@ -14,7 +14,6 @@ Information and Modeling 2025 65 (7), 3405-3419.
 DOI: 10.1021/acs.jcim.5c00064
 """
 
-import logging
 from itertools import combinations
 
 import networkx as nx
