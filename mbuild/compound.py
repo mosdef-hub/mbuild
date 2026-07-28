@@ -2479,7 +2479,7 @@ class Compound(object):
         """Coarse-grain this atomistic Compound into a CG Path.
 
         The inverse of ``backmap``: partitions the compound into CG
-        beads and returns ``(path, mapping)`` — an ``mbuild.path.Path``
+        beads and returns ``(path, mapping)``: an ``mbuild.path.Path``
         holding bead names, bead coordinates, and the CG bond graph,
         plus a ``CGMapping`` with the atom/bead correspondence. The
         mapping is defined by CGsmiles fragment matching (``fragments``

@@ -706,3 +706,15 @@ class TestCoarseGraining(BaseTest):
         assert compound.n_particles == 26  # C8H18
         assert compound.n_bonds == 25
         assert nx.is_connected(compound_graph(compound))
+
+    def test_coarse_grain_zero_mass_raises(self):
+        import mbuild as mb
+
+        chain = mb.Compound(name="CG")
+        beads = [mb.Compound(name="A", pos=[0.3 * i, 0, 0]) for i in range(3)]
+        chain.add(beads)
+        for b1, b2 in zip(beads[:-1], beads[1:]):
+            chain.add_bond((b1, b2))
+        # CG beads carry no element, so their mass is 0/None, not usable
+        with pytest.raises(ValueError, match="mass"):
+            chain.coarse_grain(beads=["A"], center="mass")

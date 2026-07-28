@@ -2,7 +2,7 @@
 
 A coarse-grained system is either an ``mbuild.path.Path`` or an
 ``mbuild.Compound`` whose leaf particles are the CG beads. Both carry
-the same information — bead names, bead coordinates, and a bond graph —
+the same information (bead names, bead coordinates, and a bond graph)
 and both convert to the same CGsmiles meta-graph representation used by
 the rest of this package.
 """
@@ -53,9 +53,58 @@ def to_cgsmiles_graph(system, fragname_map=None):
 
 
 def _fragname(name, fragname_map):
+    """Map a bead name to its CGsmiles fragment name via ``fragname_map``,
+    returning the name unchanged when there is no mapping for it.
+    """
     if fragname_map is not None:
         return fragname_map.get(name, name)
     return name
+
+
+def _build_meta_graph(nodes, edges, fragname_map):
+    """Assemble a CGsmiles meta graph from bead and bond iterables.
+
+    Parameters
+    ----------
+    nodes : iterable of (int, str, array-like)
+        One tuple per bead: its node index, bead name, and position.
+    edges : iterable of (int, int)
+        Pairs of bead indices that share a CG bond.
+    fragname_map : dict[str, str] or None
+        Mapping of bead names to CGsmiles fragment names.
+
+    Returns
+    -------
+    networkx.Graph
+        Each node carries ``fragname``, ``beadname``, and ``position``;
+        each edge carries ``order=1``.
+    """
+    meta_graph = nx.Graph()
+    for index, name, position in nodes:
+        meta_graph.add_node(
+            int(index),
+            fragname=_fragname(name, fragname_map),
+            beadname=name,
+            position=np.asarray(position, dtype=float),
+        )
+    for u, v in edges:
+        meta_graph.add_edge(int(u), int(v), order=1)
+    return meta_graph
+
+
+def _sorted_components(graph):
+    """Connected components of a graph, each sorted and ordered by first node.
+
+    Returns
+    -------
+    list of list of int
+        Each inner list holds the sorted node ids of one connected
+        component; components are ordered by their smallest node id.
+    """
+    return sorted(
+        (sorted(component) for component in nx.connected_components(graph)),
+        key=lambda component: component[0],
+    )
 
 
 def _path_meta_graph(path, fragname_map):
@@ -63,18 +112,11 @@ def _path_meta_graph(path, fragname_map):
     # TODO: If we can set bond order in Path, grab it and set it here
     if len(path.bond_graph) != len(path.coordinates):
         path._extend_bond_graph()
-    meta_graph = nx.Graph()
-    for node in sorted(path.bond_graph.nodes):
-        name = str(path.beads[node])
-        meta_graph.add_node(
-            int(node),
-            fragname=_fragname(name, fragname_map),
-            beadname=name,
-            position=np.asarray(path.coordinates[node], dtype=float),
-        )
-    for u, v in path.bond_graph.edges:
-        meta_graph.add_edge(int(u), int(v), order=1)
-    return meta_graph
+    nodes = (
+        (node, str(path.beads[node]), path.coordinates[node])
+        for node in sorted(path.bond_graph.nodes)
+    )
+    return _build_meta_graph(nodes, path.bond_graph.edges, fragname_map)
 
 
 def _compound_meta_graph(compound, fragname_map):
@@ -85,18 +127,15 @@ def _compound_meta_graph(compound, fragname_map):
             "Compound has no particles; cannot build a CGsmiles graph."
         )
     index_of = {particle: index for index, particle in enumerate(particles)}
-    meta_graph = nx.Graph()
-    for index, particle in enumerate(particles):
-        name = str(particle.name)
-        meta_graph.add_node(
-            index,
-            fragname=_fragname(name, fragname_map),
-            beadname=name,
-            position=np.asarray(particle.pos, dtype=float),
-        )
-    for particle_a, particle_b in compound.bonds():
-        meta_graph.add_edge(index_of[particle_a], index_of[particle_b], order=1)
-    return meta_graph
+    nodes = (
+        (index, str(particle.name), particle.pos)
+        for index, particle in enumerate(particles)
+    )
+    edges = (
+        (index_of[particle_a], index_of[particle_b])
+        for particle_a, particle_b in compound.bonds()
+    )
+    return _build_meta_graph(nodes, edges, fragname_map)
 
 
 def to_cgsmiles(system, fragname_map=None):
@@ -131,11 +170,8 @@ def to_cgsmiles(system, fragname_map=None):
     meta_graph = to_cgsmiles_graph(system, fragname_map=fragname_map)
     # cgsmiles' writer walks a single connected component, so write each
     # molecule separately and join with '.' (a zero-order connection)
-    components = sorted(
-        (sorted(component) for component in nx.connected_components(meta_graph)),
-        key=lambda component: component[0],
-    )
     segments = [
-        write_graph(meta_graph.subgraph(component)) for component in components
+        write_graph(meta_graph.subgraph(component))
+        for component in _sorted_components(meta_graph)
     ]
     return "{" + ".".join(segments) + "}"

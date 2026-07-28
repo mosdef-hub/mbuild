@@ -148,9 +148,9 @@ def _template_local_coords(molecule, atoms, template, fragname):
     """Local coordinates for a bead's atoms taken from an mBuild template.
 
     Heavy atoms in the resolved molecule are matched to the template's
-    heavy particles either explicitly — every heavy particle tagged with
-    its fragment atom index, e.g. ``mb.load("O{1}(C{0})C{2}",
-    smiles=True)`` — or, for untagged templates, by fragment atom order
+    heavy particles either explicitly, with every heavy particle tagged
+    by its fragment atom index, e.g. ``mb.load("O{1}(C{0})C{2}",
+    smiles=True)``, or, for untagged templates, by fragment atom order
     (the CGsmiles ``mapping`` node attribute), in which case the
     template's heavy atoms must appear in the same order as in the
     fragment SMILES. Each hydrogen is assigned the position of an unused
@@ -160,6 +160,9 @@ def _template_local_coords(molecule, atoms, template, fragname):
     """
 
     def symbol(particle):
+        """Element symbol of a particle, falling back to its name when no
+        element is set.
+        """
         if particle.element is not None:
             return particle.element.symbol
         return particle.name

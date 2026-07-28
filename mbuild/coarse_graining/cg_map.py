@@ -9,15 +9,25 @@ the resolution transform both ways.
 
 Three ways to define the mapping:
 
-1. **CGsmiles fragments** (``fragments=...`` and/or ``templates=...``):
+1. CGsmiles fragments (``fragments=...`` and/or ``templates=...``):
    the compound's bond graph is tiled with the fragment graphs by
-   subgraph matching. Reproducible and declarative — the headline
+   subgraph matching. Reproducible and declarative; the headline
    route.
-2. **Hierarchy** (``beads=["PEO", ...]``): sub-compounds with a listed
+2. Hierarchy (``beads=["PEO", ...]``): sub-compounds with a listed
    name become beads (with all their particles). This is how compounds
-   produced by ``backmap`` — which have one sub-compound per bead —
+   produced by ``backmap``, which have one sub-compound per bead,
    coarse-grain back trivially.
-3. **Explicit** (``mapping={particle: bead_index}``): the escape hatch.
+3. Explicit (``mapping={particle: bead_index}``).
+
+
+This process utilizes the CGSmiles python package.
+If you use this feature please cite:
+
+CGsmiles: A Versatile Line Notation for Molecular Representations
+across Multiple Resolutions. Fabian Grünewald, Leif Seute, Riccardo
+Alessandri, Melanie König, and Peter C. Kroon. Journal of Chemical
+Information and Modeling 2025 65 (7), 3405-3419.
+DOI: 10.1021/acs.jcim.5c00064
 """
 
 from collections import defaultdict
@@ -26,6 +36,7 @@ from dataclasses import dataclass, field
 import networkx as nx
 import numpy as np
 
+from .convert import _sorted_components
 from .fragments import _particle_symbol, compound_to_fragment_graph
 
 __all__ = ["coarse_grain", "CGMapping"]
@@ -76,7 +87,7 @@ def coarse_grain(
     compound : mbuild.Compound, required
         The atomistic compound to coarse-grain.
     fragments : str, optional
-        A CGsmiles fragment string, e.g. ``"{#PEO=[>]COC[<]}"`` — the
+        A CGsmiles fragment string, e.g. ``"{#PEO=[>]COC[<]}"``; the
         same string used for backmapping. Each fragment's heavy-atom
         graph is matched into the compound's bond graph (elements,
         charges, and bond orders must agree; hydrogens are folded into
@@ -122,6 +133,28 @@ def coarse_grain(
     Bead coordinates are a snapshot computed from the current particle
     positions; re-run ``coarse_grain`` (or apply the returned mapping
     to a trajectory) after the compound moves.
+
+    Examples
+    --------
+    1. CGsmiles fragment string: the inverse of backmap. Each fragment's
+       heavy-atom graph is matched into the compound, which is tiled into
+       beads named after the fragments::
+
+           path = straight_line(spacing=0.35, N=8, bead_name="PEO")
+           compound = path.backmap("{#PEO=[>]COC[<]}")
+           cg_path, mapping = compound.coarse_grain("{#PEO=[>]COC[<]}")
+
+    2. mBuild compound template: a tagged compound defines the fragment
+       in place of a fragment string, exactly as in backmap::
+
+           template = mb.load("C{>}OC{<}", smiles=True)
+           cg_path, mapping = compound.coarse_grain(templates={"PEO": template})
+
+    3. Hierarchy mode: any sub-compound whose name is listed becomes one
+       bead. Compounds produced by backmap carry their bead names, so
+       they coarse-grain straight back::
+
+           cg_path, mapping = compound.coarse_grain(beads=["PEO"])
     """
     from mbuild.path.build import Path
 
@@ -185,6 +218,12 @@ def coarse_grain(
 
 
 def _bead_center(members, center):
+    """Coordinate of one bead: the (mass-weighted) centroid of its particles.
+
+    With ``center="geometry"`` this is the arithmetic mean of the member
+    positions; with ``center="mass"`` the mass-weighted mean, requiring a
+    positive total mass over the bead.
+    """
     positions = np.array([particle.pos for particle in members], dtype=float)
     if center == "geometry":
         return positions.mean(axis=0)
@@ -197,13 +236,20 @@ def _bead_center(members, center):
             )
         masses.append(particle.mass)
     masses = np.asarray(masses, dtype=float)
-    return (positions * masses[:, None]).sum(axis=0) / masses.sum()
-
-
-# --- explicit mapping mode -------------------------------------------------
+    if masses.sum() <= 0:
+        raise ValueError(
+            "center='mass' requires a positive total mass per bead; got "
+            f"{masses.sum()} for a bead of {len(members)} particle(s). "
+            "Use center='geometry' instead."
+        )
+    return np.average(positions, axis=0, weights=masses)
 
 
 def _beads_from_explicit(particles, index_of, mapping, bead_names):
+    """Group particle indices into beads from an explicit particle to
+    bead-index mapping, checking that it covers every particle and uses
+    contiguous indices. Returns the per-bead member lists and names.
+    """
     missing = [p.name for p in particles if p not in mapping]
     if missing:
         raise ValueError(
@@ -232,14 +278,19 @@ def _beads_from_explicit(particles, index_of, mapping, bead_names):
     return members, names
 
 
-# --- hierarchy mode --------------------------------------------------------
-
-
 def _beads_from_hierarchy(compound, index_of, beads):
+    """Group particles into beads by walking the compound tree, treating
+    each sub-compound whose name is listed in ``beads`` as one bead.
+    Returns the per-bead member lists and names, raising if any particle
+    is left unassigned.
+    """
     bead_set = set(beads)
     bead_compounds = []
 
     def collect(comp):
+        """Recursively descend the tree, collecting sub-compounds whose
+        name marks them as a bead.
+        """
         for child in comp.children or []:
             if child.name in bead_set:
                 bead_compounds.append(child)
@@ -269,20 +320,17 @@ def _beads_from_hierarchy(compound, index_of, beads):
     return members, names
 
 
-# --- fragment-matching mode ------------------------------------------------
-
-
 def _beads_from_fragments(compound, particles, index_of, fragments, templates):
+    """Tile the compound's heavy-atom graph into fragment instances,
+    folding each heavy atom's hydrogens back in, to make one bead per
+    instance. Returns the per-bead member lists and fragment names.
+    """
     fragment_dict = _fragment_dict(fragments, templates)
     heavy_graph, h_of = _heavy_graph(compound, particles, index_of)
 
     members = []
     names = []
-    components = sorted(
-        (sorted(component) for component in nx.connected_components(heavy_graph)),
-        key=lambda component: component[0],
-    )
-    for component in components:
+    for component in _sorted_components(heavy_graph):
         instances = _cover_component(
             heavy_graph.subgraph(component), fragment_dict
         )
@@ -306,6 +354,10 @@ def _beads_from_fragments(compound, particles, index_of, fragments, templates):
 
 
 def _fragment_dict(fragments, templates):
+    """Build the fragment-name to fragment-graph dict used for matching,
+    from a single all-atom CGsmiles string and/or tagged template
+    compounds. Multi-resolution strings are rejected.
+    """
     if fragments is not None:
         import re
 
@@ -385,6 +437,9 @@ def _heavy_graph(compound, particles, index_of):
 
 
 def _frag_order(data):
+    """Return a fragment edge's bond order as a float, defaulting to a
+    single bond.
+    """
     order = data.get("order", 1)
     return float(order)
 
@@ -393,14 +448,14 @@ def _cover_component(component_graph, fragment_dict):
     """Tile one connected heavy-atom component with fragment instances.
 
     Enumerates node-induced subgraph matches of every fragment, keeping
-    only locally consistent ones — in any exact cover, an atom's
+    only locally consistent ones: in any exact cover, an atom's
     inter-fragment bond count is exactly its heavy degree minus its
     degree inside the instance, so the hydrogen deficit relative to the
     saturated fragment must equal that number and stay within the
     atom's bonding-descriptor capacity. A backtracking search then
     builds an exact cover of the component's atoms, pruning placements
     whose bonds to already-placed instances lack a compatible bonding
-    descriptor pair (``<x`` bonds ``>x``, ``$x`` bonds ``$x``) — this
+    descriptor pair (``<x`` bonds ``>x``, ``$x`` bonds ``$x``); this
     is what rejects frame-shifted tilings that are otherwise
     self-consistent. Descriptor pairs are checked per bond, not
     assigned injectively across an atom's bonds. Returns a list of
@@ -409,6 +464,10 @@ def _cover_component(component_graph, fragment_dict):
     from networkx.algorithms.isomorphism import GraphMatcher
 
     def node_match(mol_node, frag_node):
+        """Atom comparison for the subgraph matcher: element and charge
+        must match and the molecule atom's hydrogen count must not exceed
+        the fragment atom's.
+        """
         return (
             mol_node["element"] == frag_node.get("element")
             and mol_node["charge"] == frag_node.get("charge", 0)
@@ -416,11 +475,18 @@ def _cover_component(component_graph, fragment_dict):
         )
 
     def edge_match(mol_edge, frag_edge):
+        """Bond comparison for the subgraph matcher: bond orders must be
+        equal.
+        """
         return float(mol_edge.get("order", 1)) == _frag_order(frag_edge)
 
     degree = dict(component_graph.degree)
 
     def locally_consistent(fragment, match):
+        """Keep only matches where every atom's hydrogen deficit equals
+        its number of inter-fragment bonds and stays within its
+        bonding-descriptor capacity.
+        """
         internal = component_graph.subgraph(match)
         for atom, frag_node in match.items():
             external = degree[atom] - internal.degree(atom)
@@ -498,6 +564,11 @@ def _cover_component(component_graph, fragment_dict):
         return True
 
     def search(uncovered, atom_descriptors):
+        """Backtracking search that builds an exact cover of the
+        component's atoms from the candidate placements, respecting
+        bonding-descriptor compatibility. Returns the chosen embedding
+        indices, or None if no cover exists.
+        """
         if not uncovered:
             return []
         target = min(uncovered)
@@ -549,5 +620,3 @@ def _descriptors_compatible(descriptor_a, descriptor_b):
     if a.startswith(">"):
         return b == "<" + a[1:]
     return False
-
-

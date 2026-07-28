@@ -10,7 +10,7 @@ _DESCRIPTOR_PREFIXES = ("<", ">", "$", "!")
 def compound_to_fragment_graph(compound, fragname):
     """Convert a tagged mBuild Compound into a CGsmiles fragment graph.
 
-    This lets an mBuild Compound *define* a fragment's atomistic
+    This lets an mBuild Compound define a fragment's atomistic
     structure, in place of a SMILES string in the CGsmiles fragment
     block. Bonding descriptors are read from particle tags: tag the
     connection atoms with descriptor strings, e.g.
