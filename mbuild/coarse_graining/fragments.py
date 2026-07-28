@@ -45,9 +45,7 @@ def compound_to_fragment_graph(compound, fragname):
         if _particle_symbol(particle) != "H"
     ]
     if not heavy:
-        raise ValueError(
-            f"Compound for fragment '{fragname}' has no heavy atoms."
-        )
+        raise ValueError(f"Compound for fragment '{fragname}' has no heavy atoms.")
     index_of = {particle: index for index, particle in enumerate(heavy)}
     hcounts = dict.fromkeys(heavy, 0)
 

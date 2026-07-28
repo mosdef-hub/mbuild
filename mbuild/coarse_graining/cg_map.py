@@ -165,9 +165,7 @@ def coarse_grain(
             "`beads`, or `mapping`."
         )
     if center not in ("geometry", "mass"):
-        raise ValueError(
-            f"Argument {center=} is invalid. Pass 'geometry' or 'mass'."
-        )
+        raise ValueError(f"Argument {center=} is invalid. Pass 'geometry' or 'mass'.")
 
     particles = list(compound.particles())
     index_of = {particle: index for index, particle in enumerate(particles)}
@@ -272,8 +270,7 @@ def _beads_from_explicit(particles, index_of, mapping, bead_names):
         names = [str(name) for name in bead_names]
         if len(names) != len(members):
             raise ValueError(
-                f"`bead_names` has {len(names)} entries for "
-                f"{len(members)} beads."
+                f"`bead_names` has {len(names)} entries for {len(members)} beads."
             )
     return members, names
 
@@ -331,9 +328,7 @@ def _beads_from_fragments(compound, particles, index_of, fragments, templates):
     members = []
     names = []
     for component in _sorted_components(heavy_graph):
-        instances = _cover_component(
-            heavy_graph.subgraph(component), fragment_dict
-        )
+        instances = _cover_component(heavy_graph.subgraph(component), fragment_dict)
         for fragname, atoms in instances:
             atom_indices = sorted(atoms)
             for atom in atoms:
@@ -385,9 +380,7 @@ def _fragment_dict(fragments, templates):
     if templates:
         for fragname, template in templates.items():
             if fragname not in fragment_dict:
-                fragment_dict[fragname] = compound_to_fragment_graph(
-                    template, fragname
-                )
+                fragment_dict[fragname] = compound_to_fragment_graph(template, fragname)
     return fragment_dict
 
 
@@ -597,10 +590,7 @@ def _cover_component(component_graph, fragment_dict):
             "descriptor pair."
         )
     return sorted(
-        (
-            (embeddings[i][0], set(embeddings[i][1]))
-            for i in cover
-        ),
+        ((embeddings[i][0], set(embeddings[i][1])) for i in cover),
         key=lambda instance: min(instance[1]),
     )
 

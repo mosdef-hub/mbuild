@@ -123,9 +123,7 @@ def _compound_meta_graph(compound, fragname_map):
     """Meta graph from a Compound whose leaf particles are CG beads."""
     particles = list(compound.particles())
     if not particles:
-        raise ValueError(
-            "Compound has no particles; cannot build a CGsmiles graph."
-        )
+        raise ValueError("Compound has no particles; cannot build a CGsmiles graph.")
     index_of = {particle: index for index, particle in enumerate(particles)}
     nodes = (
         (index, str(particle.name), particle.pos)

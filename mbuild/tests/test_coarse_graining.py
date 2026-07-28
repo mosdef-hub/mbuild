@@ -108,9 +108,7 @@ class TestCoarseGraining(BaseTest):
         n_beads = len(branched_path.coordinates)
         degrees = dict(branched_path.bond_graph.degree())
         assert max(degrees.values()) == 3  # the case build_from_path can't handle
-        compound = branched_path.backmap(
-            "{#A=[$]C([$])C[$],#B=[$]CC[$]}"
-        )
+        compound = branched_path.backmap("{#A=[$]C([$])C[$],#B=[$]CC[$]}")
         assert nx.is_connected(compound_graph(compound))
         assert len(compound.children) == n_beads
         assert [c.name for c in compound.children] == list(branched_path.beads)
@@ -134,9 +132,7 @@ class TestCoarseGraining(BaseTest):
 
     def test_backmap_fragname_map(self):
         path = straight_line(spacing=0.35, N=4)  # default bead name "_A"
-        compound = path.backmap(
-            "{#PE=[>]CC[<]}", fragname_map={"_A": "PE"}
-        )
+        compound = path.backmap("{#PE=[>]CC[<]}", fragname_map={"_A": "PE"})
         assert compound.n_particles == 26
         assert compound.n_bonds == 25
         # children keep the original bead names
@@ -160,9 +156,7 @@ class TestCoarseGraining(BaseTest):
         fragments = "{#A=[>]CC[<],#B=[>]CC[<]}"
         with pytest.raises(ValueError, match="bonding descriptors"):
             branched_path.backmap(fragments)
-        compound = branched_path.backmap(
-            fragments, validate=False
-        )
+        compound = branched_path.backmap(fragments, validate=False)
         assert not nx.is_connected(compound_graph(compound))
 
     @pytest.mark.skipif(not has_rdkit, reason="rdkit is not installed")
@@ -189,7 +183,10 @@ class TestCoarseGraining(BaseTest):
 
         compound = branched_path.backmap(
             "{#A=[$]C([$])C[$],#B=[$]CC[$]}",
-            templates={"A": mb.load("CC", smiles=True), "B": mb.load("CC", smiles=True)},
+            templates={
+                "A": mb.load("CC", smiles=True),
+                "B": mb.load("CC", smiles=True),
+            },
             placement="template",
         )
         assert nx.is_connected(compound_graph(compound))
@@ -267,7 +264,6 @@ class TestCoarseGraining(BaseTest):
     @pytest.mark.skipif(not has_rdkit, reason="rdkit is not installed")
     def test_compound_to_fragment_graph(self):
         import mbuild as mb
-
         from mbuild.coarse_graining import compound_to_fragment_graph
 
         template = mb.load("C{<}C{>,$br}", smiles=True)
@@ -376,16 +372,30 @@ class TestCoarseGraining(BaseTest):
             termination=8, radius=0.2, bond_length=0.25, bead_name="A", seed=1
         )
         path = hard_sphere_random_walk(
-            path=path, termination=16, radius=0.2, bond_length=0.25,
-            bead_name="A", seed=2,
+            path=path,
+            termination=16,
+            radius=0.2,
+            bond_length=0.25,
+            bead_name="A",
+            seed=2,
         )
         path = hard_sphere_random_walk(
-            path=path, termination=24, radius=0.2, bond_length=0.25,
-            bead_name="A", seed=3,
+            path=path,
+            termination=24,
+            radius=0.2,
+            bond_length=0.25,
+            bead_name="A",
+            seed=3,
         )
         path = hard_sphere_random_walk(
-            path=path, termination=28, radius=0.2, bond_length=0.25,
-            bead_name="B", initial_point=20, connectivity="link-linear", seed=4,
+            path=path,
+            termination=28,
+            radius=0.2,
+            bond_length=0.25,
+            bead_name="B",
+            initial_point=20,
+            connectivity="link-linear",
+            seed=4,
         )
         assert nx.number_connected_components(path.bond_graph) == 3
         return path
@@ -407,9 +417,7 @@ class TestCoarseGraining(BaseTest):
         assert nx.number_connected_components(bonded) == 3
 
     def test_backmap_multi_chain(self, multi_chain_path):
-        compound = multi_chain_path.backmap(
-            "{#A=[$]C([$])C[$],#B=[$]CC[$]}"
-        )
+        compound = multi_chain_path.backmap("{#A=[$]C([$])C[$],#B=[$]CC[$]}")
         # root -> Molecule compounds -> bead compounds
         assert len(compound.children) == 3
         assert [c.name for c in compound.children] == ["Molecule"] * 3
@@ -474,12 +482,8 @@ class TestCoarseGraining(BaseTest):
 
     def test_backmap_cg_compound_matches_path(self, branched_path):
         cg_compound = self.cg_compound_from_path(branched_path)
-        via_path = branched_path.backmap(
-            "{#A=[>bb]C([<br])C[<bb],#B=[>br]CC[<br]}"
-        )
-        via_compound = cg_compound.backmap(
-            "{#A=[>bb]C([<br])C[<bb],#B=[>br]CC[<br]}"
-        )
+        via_path = branched_path.backmap("{#A=[>bb]C([<br])C[<bb],#B=[>br]CC[<br]}")
+        via_compound = cg_compound.backmap("{#A=[>bb]C([<br])C[<bb],#B=[>br]CC[<br]}")
         assert via_compound.n_particles == via_path.n_particles
         assert via_compound.n_bonds == via_path.n_bonds
         assert [c.name for c in via_compound.children] == [
@@ -510,7 +514,6 @@ class TestCoarseGraining(BaseTest):
     def test_to_cgsmiles_graph_single_particle(self):
         # a childless Compound is itself a particle -> a one-bead graph
         import mbuild as mb
-
         from mbuild.coarse_graining import to_cgsmiles_graph
 
         graph = to_cgsmiles_graph(mb.Compound(name="A", pos=[1.0, 2.0, 3.0]))
@@ -539,29 +542,23 @@ class TestCoarseGraining(BaseTest):
         # chemically distinct fragments -> bead labels are recovered exactly
         fragments = "{#A=[>bb]CC(c1ccccc1)([<bb])[<br],#B=[>br]C[<br]}"
         compound = branched_path.backmap(
-            fragments, 
+            fragments,
         )
         cg_path, _ = compound.coarse_grain(fragments)
         assert nx.is_isomorphic(cg_path.bond_graph, branched_path.bond_graph)
         assert list(cg_path.beads) == list(branched_path.beads)
-        assert np.allclose(
-            cg_path.coordinates, branched_path.coordinates, atol=0.01
-        )
+        assert np.allclose(cg_path.coordinates, branched_path.coordinates, atol=0.01)
 
-    def test_coarse_grain_identical_fragments_ambiguous_names(
-        self, branched_path
-    ):
+    def test_coarse_grain_identical_fragments_ambiguous_names(self, branched_path):
         # A and B are both CC (only descriptor labels differ): the tiling
         # frame is recovered, but the A/B labeling is inherently ambiguous
         fragments = "{#A=[>bb]C([<br])C[<bb],#B=[>br]CC[<br]}"
         compound = branched_path.backmap(
-            fragments, 
+            fragments,
         )
         cg_path, _ = compound.coarse_grain(fragments)
         assert nx.is_isomorphic(cg_path.bond_graph, branched_path.bond_graph)
-        assert np.allclose(
-            cg_path.coordinates, branched_path.coordinates, atol=0.01
-        )
+        assert np.allclose(cg_path.coordinates, branched_path.coordinates, atol=0.01)
 
     def test_coarse_grain_multi_molecule(self):
         import mbuild as mb
@@ -682,7 +679,6 @@ class TestCoarseGraining(BaseTest):
         # particle_tag attribute, bonds added with add_bond (which stores
         # bond_order=0.0 -> must be read as an unspecified single bond)
         import mbuild as mb
-
         from mbuild.coarse_graining import compound_to_fragment_graph
 
         frag = mb.Compound(name="Dimer")

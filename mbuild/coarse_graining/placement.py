@@ -230,7 +230,7 @@ def _template_local_coords(molecule, atoms, template, fragname):
                 if n_tagged
                 else "Template heavy atoms must appear in the same order as "
                 "in the fragment SMILES, or be tagged with fragment atom "
-                "indices (e.g. mb.load(\"O{1}(C{0})C{2}\", smiles=True))."
+                'indices (e.g. mb.load("O{1}(C{0})C{2}", smiles=True)).'
             )
             raise ValueError(
                 f"Template for fragment '{fragname}' does not match: heavy "

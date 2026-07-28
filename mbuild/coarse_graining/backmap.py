@@ -32,7 +32,12 @@ __all__ = ["resolve", "backmap"]
 
 
 def resolve(
-    system, fragments=None, fragname_map=None, legacy=True, validate=True, templates=None
+    system,
+    fragments=None,
+    fragname_map=None,
+    legacy=True,
+    validate=True,
+    templates=None,
 ):
     """Resolve a coarse-grained system to a molecular graph using CGsmiles.
 
@@ -114,8 +119,7 @@ def _resolve_graph(cg_graph, fragments, legacy, validate, templates):
 
     if fragments is None and not templates:
         raise ValueError(
-            "Provide a CGsmiles fragment string, fragment-defining "
-            "templates, or both."
+            "Provide a CGsmiles fragment string, fragment-defining templates, or both."
         )
     if isinstance(fragments, str):
         fragments = [fragments]
@@ -311,13 +315,10 @@ def backmap(
 
     if placement not in ("rdkit", "template"):
         raise ValueError(
-            f"Argument {placement=} is invalid. "
-            "Pass one of 'rdkit', 'template'."
+            f"Argument {placement=} is invalid. Pass one of 'rdkit', 'template'."
         )
     if placement == "template" and not templates:
-        raise ValueError(
-            "placement='template' requires the `templates` argument."
-        )
+        raise ValueError("placement='template' requires the `templates` argument.")
 
     positions = generate_positions(
         molecule=molecule,
