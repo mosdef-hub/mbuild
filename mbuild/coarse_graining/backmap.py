@@ -26,8 +26,6 @@ from .convert import _sorted_components, to_cgsmiles_graph
 from .fragments import compound_to_fragment_graph
 from .placement import generate_positions
 
-logger = logging.getLogger(__name__)
-
 __all__ = ["resolve", "backmap"]
 
 
