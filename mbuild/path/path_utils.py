@@ -56,7 +56,14 @@ def random_coordinate(
 
 
 @njit(cache=True, fastmath=True)
-def check_path(existing_points, new_point, radius, tolerance):
+def check_path(
+    existing_points,
+    new_point,
+    radius,
+    tolerance,
+    pbc=np.array([False, False, False], dtype=bool),
+    box_lengths=np.array([np.inf, np.inf, np.inf], dtype=np.float32),
+):
     """Default check path method for HardSphereRandomWalk.
 
     Parameters
@@ -71,6 +78,14 @@ def check_path(existing_points, new_point, radius, tolerance):
         The radius used for hard-sphere overlap checks.
     tolerance : float, required
         Tolerance in center-to-center distances, allowing for rounding errors.
+    pbc : np.ndarray (3,) of bool, optional
+        Periodic boundary flags per axis. When an axis is periodic, the
+        center-to-center distance along that axis uses the minimum-image
+        convention so overlaps across a periodic face are detected. The
+        default of all ``False`` reproduces the non-periodic behavior.
+    box_lengths : np.ndarray (3,) of float, optional
+        Box length along each axis, used for the minimum-image wrap on
+        periodic axes. Only consulted where ``pbc`` is ``True``.
     """
     if existing_points is None or existing_points.size == 0:
         return True
@@ -79,6 +94,9 @@ def check_path(existing_points, new_point, radius, tolerance):
         dist_sq = 0.0
         for j in range(existing_points.shape[1]):
             diff = existing_points[i, j] - new_point[j]
+            # Apply minimum-image convention on periodic axes
+            if pbc[j]:
+                diff -= np.round(diff / box_lengths[j]) * box_lengths[j]
             dist_sq += diff * diff
         if dist_sq < min_sq_dist:
             return False

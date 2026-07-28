@@ -3,15 +3,15 @@ channels:
   - conda-forge
 dependencies:
   - ele
-  - numpy>=2.0,<2.3
+  - numpy>=2.0,<2.6
   - packmol>=20.15
   - cgsmiles>=1.0.2
-  - gmso>=0.16.0
+  - gmso>=0.16.2
   - garnett
   - numba
   - parmed>=3.4.3
   - pycifrw
-  - python>=3.10,<=3.13
+  - python>=3.11,<=3.14
   - rdkit>=2021
   - scipy
   - networkx

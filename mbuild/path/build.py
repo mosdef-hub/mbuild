@@ -1032,6 +1032,13 @@ def hard_sphere_random_walk(
         If True and CUDA path utilities are available, use GPU-accelerated
         implementations.
     """
+    # Create seed sequence used by multiple path classes
+    # The namer seed is separate, so that coordinates are impacted by naming methods.
+    previous_count = len(path.coordinates) if path else 0
+    seed_sequence = np.random.SeedSequence(seed + previous_count)
+    name_seed_sequence = seed_sequence.spawn(1)[0]
+    rng = np.random.default_rng(seed_sequence)
+
     # Create state object to track random walk progress
     state = RandomWalkState(
         bond_length=bond_length,
@@ -1039,7 +1046,7 @@ def hard_sphere_random_walk(
         angles_sampler=rw_angles,
         bead_name=bead_name,
         initial_point=initial_point,
-        previous_count=len(path.coordinates) if path else 0,
+        previous_count=previous_count,
         include_compound=include_compound,
         connectivity=connectivity,
         seed=seed,
@@ -1048,6 +1055,7 @@ def hard_sphere_random_walk(
         trial_batch_size=int(trial_batch_size),
         chunk_size=chunk_size,
         run_on_gpu=bool(run_on_gpu) and _get_cuda_available(),
+        rng=rng,
     )
     if path is None:  # Create empty path
         path = Path()
@@ -1068,17 +1076,17 @@ def hard_sphere_random_walk(
     state.termination._attach_path(path, state)
 
     namer = BeadNamer.coerce(bead_name)
-
-    # Create RNG state
-    rng = np.random.default_rng(seed + len(path.coordinates))
-    state.rng = rng
+    namer._attach_rng(np.random.default_rng(name_seed_sequence))
 
     # Set up PBC info from volume constraints
+    # TODO: We can probably out-source pbc, box_lengths return to the Constraint classes
     if isinstance(volume_constraint, CuboidConstraint):
-        pbc = volume_constraint.pbc
+        pbc = np.asarray(volume_constraint.pbc, dtype=np.bool_)
         box_lengths = volume_constraint.box_lengths.astype(np.float32)
     elif isinstance(volume_constraint, CylinderConstraint):
-        pbc = (False, False, volume_constraint.periodic_height)
+        pbc = np.array(
+            [False, False, volume_constraint.periodic_height], dtype=np.bool_
+        )
         box_lengths = np.array(
             [
                 volume_constraint.radius * 2,
@@ -1087,8 +1095,10 @@ def hard_sphere_random_walk(
             ]
         ).astype(np.float32)
     else:
-        pbc = (None, None, None)
-        box_lengths = (None, None, None)
+        pbc = np.array([False, False, False], dtype=np.bool_)
+        box_lengths = np.array([np.inf, np.inf, np.inf], dtype=np.float32)
+    state.pbc = pbc
+    state.box_lengths = box_lengths
 
     # Set up bias conditions
     if bias:
@@ -1215,11 +1225,12 @@ def hard_sphere_random_walk(
                 coordinates=coordinates[: state.count],
                 names=beads[: state.count],
             )
-        # Handle postion for PBCs
+        # Handle postion for PBCs.
         if any(pbc):
-            candidates = volume_constraint.mins + np.mod(
-                candidates - volume_constraint.mins, box_lengths
-            )
+            candidates = (
+                volume_constraint.mins
+                + np.mod(candidates - volume_constraint.mins, box_lengths)
+            ).astype(np.float32)
         # Check candidate sites
         accept_xyz = None
         if state.run_on_gpu and len(candidates) > 0:
@@ -1231,6 +1242,8 @@ def hard_sphere_random_walk(
                 candidates,
                 radius,
                 tolerance,
+                pbc=pbc,
+                box_lengths=box_lengths,
             )
             valid_candidates = candidates[valid_mask]
             if len(valid_candidates) > 0:
@@ -1246,6 +1259,8 @@ def hard_sphere_random_walk(
                     new_point=xyz,
                     radius=radius,
                     tolerance=tolerance,
+                    pbc=pbc,
+                    box_lengths=box_lengths,
                 ):
                     accept_xyz = xyz
                     break
@@ -1254,7 +1269,6 @@ def hard_sphere_random_walk(
             coordinates[state.count] = accept_xyz
             beads[state.count] = next(namer)
             state.count += 1
-
         state.attempts += 1
 
         # Extend coordinates array if we're running out of space
@@ -1276,10 +1290,8 @@ def hard_sphere_random_walk(
 class RandomWalkState:
     """Tracks state and configuration for a hard_sphere_random_walk.
 
-
     This class encapsulates all the bookkeeping information needed during
     a random walk, keeping the Path object clean of implementation details.
-
 
     Attributes
     ----------
@@ -1338,6 +1350,7 @@ class RandomWalkState:
         trial_batch_size=20,
         chunk_size=512,
         run_on_gpu=False,
+        rng=None,
     ):
         self.bond_length = bond_length
         self.radius = radius
@@ -1345,31 +1358,52 @@ class RandomWalkState:
             raise ValueError(
                 "Bond length should be greater than radius to prevent overlaps."
             )
+        # Single RNG drives all walk randomness (angles, positions, bias,
+        # volume-constraint sampling).
+        if rng is None:
+            rng = np.random.default_rng(seed + previous_count)
+        self.rng = rng
+        # Multiple ways to handle angles_sampler arg:
         if angles_sampler is None:
             self.angles = AnglesSampler(
-                "uniform", {"low": np.pi / 2, "high": np.pi}, seed
+                "uniform", {"low": np.pi / 2, "high": np.pi}, rng=self.rng
             )
-        elif isinstance(angles_sampler, tuple):
+        # Pass in a tupe or list of (low, high)
+        elif isinstance(angles_sampler, (tuple, list)) and len(angles_sampler) == 2:
             self.angles = AnglesSampler(
-                "uniform", {"low": angles_sampler[0], "high": angles_sampler[1]}, seed
+                "uniform",
+                {"low": angles_sampler[0], "high": angles_sampler[1]},
+                rng=self.rng,
             )
-        elif (
-            isinstance(angles_sampler, dict)
-            and angles_sampler.get("loc")
-            and angles_sampler.get("scale")
-        ):
-            self.angles = AnglesSampler("normal", angles_sampler, seed)
+        # Pass in a dict with supported kwargs
+        elif isinstance(angles_sampler, dict):
+            if angles_sampler.get("loc") and angles_sampler.get("scale"):
+                self.angles = AnglesSampler("normal", angles_sampler, rng=self.rng)
+            elif angles_sampler.get("low") and angles_sampler.get("high"):
+                self.angles = AnglesSampler("uniform", angles_sampler, rng=self.rng)
+            else:
+                raise ValueError(
+                    f"kwargs {dict} cannot be used to create an AnglesSampler."
+                )
+        # Pass in an array of choices
         elif isinstance(angles_sampler, np.ndarray):
             if angles_sampler.ndim == 1:
                 kwargs = {"a": angles_sampler}
             elif angles_sampler.ndim == 2:
                 kwargs = {"a": angles_sampler[0], "p": angles_sampler[1]}
-            self.angles = AnglesSampler("choice", kwargs, seed)
+            else:
+                raise ValueError(
+                    "Sampling angles from an array of choices is only supported for 1D and 2D arrays."
+                )
+            self.angles = AnglesSampler("choice", kwargs, rng=self.rng)
+        # Pass in an AnglesSampler instance.
         elif isinstance(angles_sampler, AnglesSampler):
             self.angles = angles_sampler
+            self.angles.rng = self.rng
         else:
             raise ValueError(
-                f"Please provide a reasonable value to set the rw_angles. Passed {angles_sampler}"
+                f"{angles_sampler} is not a supported form to sample angles. "
+                "See mbuild.path.points.AnglesSampler."
             )
         self.bead_name = bead_name
         if hasattr(initial_point, "__len__") and len(initial_point) == 3:
@@ -1394,6 +1428,10 @@ class RandomWalkState:
         self.attempts = 0
         self.start_time = None
         self.gpu_static_points = None
+        # PBC info for overlap checks; populated in hard_sphere_random_walk.
+        # Defaults reproduce non-periodic behavior.
+        self.pbc = np.array([False, False, False], dtype=np.bool_)
+        self.box_lengths = np.array([np.inf, np.inf, np.inf], dtype=np.float32)
 
     def check_termination(self, path, coordinates, beads):
         """Examine and process termination if we have reached.
