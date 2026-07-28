@@ -1196,15 +1196,15 @@ def _run_packmol(input_text, filled_xyz, temp_file, packmol_file):
         ):
             shutil.copyfileobj(inp_file, new_file)
 
-    proc = Popen(
-        f"{PACKMOL} < {packmol_inp.name}",
-        stdin=PIPE,
-        stdout=PIPE,
-        stderr=PIPE,
-        universal_newlines=True,
-        shell=True,
-    )
-    out, err = proc.communicate()
+    with open(packmol_inp.name) as inp_file:
+        proc = Popen(
+            [PACKMOL],
+            stdin=inp_file,
+            stdout=PIPE,
+            stderr=PIPE,
+            universal_newlines=True,
+        )
+        out, err = proc.communicate()
 
     if "WITHOUT PERFECT PACKING" in out:
         logger.warning(
