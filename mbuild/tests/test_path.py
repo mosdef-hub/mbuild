@@ -14,12 +14,12 @@ from mbuild.path.build import (
     straight_line,
     zigzag,
 )
-from mbuild.path.crosslink import crosslink
 from mbuild.path.constraints import (
     CuboidConstraint,
     CylinderConstraint,
     SphereConstraint,
 )
+from mbuild.path.crosslink import crosslink
 from mbuild.path.namers import CyclicNamer, RandomNamer
 from mbuild.path.path_utils import (
     check_path,
