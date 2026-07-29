@@ -4,7 +4,6 @@ from copy import deepcopy
 
 import numpy as np
 
-from mbuild.path.formats import to_mol3000
 from mbuild.utils.io import import_
 
 

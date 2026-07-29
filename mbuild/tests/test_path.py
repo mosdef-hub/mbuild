@@ -815,8 +815,10 @@ class TestRandomWalk(BaseTest):
 
     def test_consistent_behavior(self):
         num_sites = NumSites(5)
-        conditions = Termination((num_sites, ))
-        constraint = CuboidConstraint(3.2,3.2,3.2, center=(0,0,0), pbc=(True, True, True))
+        conditions = Termination((num_sites,))
+        constraint = CuboidConstraint(
+            3.2, 3.2, 3.2, center=(0, 0, 0), pbc=(True, True, True)
+        )
 
         path1 = hard_sphere_random_walk(
             bead_name="_B",
@@ -824,8 +826,8 @@ class TestRandomWalk(BaseTest):
             bond_length=0.27,
             termination=conditions,
             volume_constraint=constraint,
-            rw_angles=(np.pi/2, np.pi),
-            seed=1
+            rw_angles=(np.pi / 2, np.pi),
+            seed=1,
         )
 
         path2 = hard_sphere_random_walk(
@@ -834,8 +836,8 @@ class TestRandomWalk(BaseTest):
             bond_length=0.27,
             termination=conditions,
             volume_constraint=constraint,
-            rw_angles=(np.pi/2, np.pi),
-            seed=1
+            rw_angles=(np.pi / 2, np.pi),
+            seed=1,
         )
         assert path1 == path2
 
