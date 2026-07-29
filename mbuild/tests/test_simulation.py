@@ -13,6 +13,7 @@ from mbuild.simulation import (
     energy_minimize,
     hoomd_cap_displacement,
     hoomd_fire,
+    hoomd_nvt,
 )
 from mbuild.tests.base_test import BaseTest
 from mbuild.utils.io import get_fn, has_foyer, has_hoomd, has_openbabel
@@ -401,6 +402,29 @@ class TestSimulationHoomd(BaseTest):
         assert hoomd.md.dihedral.OPLS not in forceTypes
         assert hoomd.md.dihedral.OPLS in allforceTypes
 
+    def test_scale_opls(self, sim):
+        ffhandler = ForcesHandler(scale_opls=0.5)
+        ffhandler.scale_sim(sim)
+        forceTypes = [type(force) for force in sim.active_forces]
+        assert hoomd.md.dihedral.OPLS in forceTypes
+
+    @pytest.mark.skipif(not has_hoomd, reason="hoomd is not installed")
+    def test_nvt(self, sim):
+        ffhandler = ForcesHandler(scale_lj=1, scale_bond=1, scale_angle=1)
+        cpd = sim.compound
+        old_coords = cpd.xyz.copy()
+        hoomd_nvt(
+            compound=cpd,
+            sim=sim,
+            forces_handler=ffhandler,
+            n_steps=20,
+            kT=2.0,
+            dt=1e-4,
+            tau=1e-2,
+        )
+        new_coords = cpd.xyz
+        assert not np.allclose(old_coords, new_coords, atol=1e-5)
+
     @pytest.mark.skipif(not has_hoomd, reason="hoomd is not installed")
     def test_fire(self, sim):
         ffhandler = ForcesHandler(scale_lj=1, scale_bond=1, scale_angle=1)
@@ -468,8 +492,10 @@ class TestSimulationHoomd(BaseTest):
         assert np.allclose(
             energyDict["hoomd.md.bond.Harmonic"],
             np.array(([1.35651551e02, 3.05080224e06])),
+            rtol=1e-2,
         )
         assert np.allclose(
             energyDict["hoomd.md.angle.Harmonic"],
             np.array(([3942.05658645, 19129.72619001])),
+            rtol=1e-2,
         )

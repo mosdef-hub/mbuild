@@ -26,6 +26,15 @@ class BeadNamer(ABC):
     def __iter__(self):
         return self
 
+    def _attach_rng(self, rng):
+        """Drive this namer's randomness from an external rng.
+
+        Called by ``hard_sphere_random_walk`` so bead naming is reproducible
+        from the walk's ``seed``. No-op for deterministic namers.
+        """
+        if hasattr(self, "_rng"):
+            self._rng = rng
+
     @classmethod
     def coerce(cls, value):
         """Return value unchanged if it is a BeadNamer or wrap strings in ConstantNamer."""
@@ -68,13 +77,17 @@ class RandomNamer(BeadNamer):
         If True, samples without replacement from a shuffled pool that is
         rebuilt each period — composition is exact over every period.
     seed : int, optional, default None
-        Random seed for reproducibility.
+        Random seed for reproducibility. Leave unset when passing this namer to
+        ``hard_sphere_random_walk``; the walk drives naming from its own seed.
+    rng : numpy.random.Generator, optional, default None
+        Generator to draw from. Takes precedence over ``seed``. Mainly used
+        internally so the random walk can share its rng with the namer.
     """
 
-    def __init__(self, names, weights=None, strict=False, seed=None):
+    def __init__(self, names, weights=None, strict=False, seed=None, rng=None):
         self.names = list(names)
         self.strict = strict
-        self._rng = np.random.default_rng(seed)
+        self._rng = rng if rng is not None else np.random.default_rng(seed)
 
         if strict:
             if weights is not None:
@@ -130,7 +143,11 @@ class MarkovNamer(BeadNamer):
         Starting state, given as a name string or index. If None, a state is
         chosen uniformly at random.
     seed : int, optional, default None
-        Random seed for reproducibility.
+        Random seed for reproducibility. Leave unset when passing this namer to
+        ``hard_sphere_random_walk``; the walk drives naming from its own seed.
+    rng : numpy.random.Generator, optional, default None
+        Generator to draw from. Takes precedence over ``seed``. Mainly used
+        internally so the random walk can share its rng with the namer.
 
     Examples
     --------
@@ -145,7 +162,7 @@ class MarkovNamer(BeadNamer):
     >>> namer = MarkovNamer(["_A", "_B"], [[0.9, 0.1], [0.1, 0.9]], start="_A", seed=0)
     """
 
-    def __init__(self, names, transition_matrix, start=None, seed=None):
+    def __init__(self, names, transition_matrix, start=None, seed=None, rng=None):
         self.names = list(names)
         matrix = np.asarray(transition_matrix, dtype=float)
         if matrix.shape != (len(self.names), len(self.names)):
@@ -155,16 +172,19 @@ class MarkovNamer(BeadNamer):
             )
         row_sums = matrix.sum(axis=1, keepdims=True)
         self._matrix = matrix / row_sums
-        self._rng = np.random.default_rng(seed)
+        self._rng = rng if rng is not None else np.random.default_rng(seed)
 
         if start is None:
-            self._current = int(self._rng.integers(len(self.names)))
+            # Resolved on first __next__ so it uses the active rng.
+            self._current = None
         elif isinstance(start, str):
             self._current = self.names.index(start)
         else:
             self._current = int(start)
 
     def __next__(self) -> str:
+        if self._current is None:
+            self._current = int(self._rng.integers(len(self.names)))
         name = self.names[self._current]
         self._current = int(
             self._rng.choice(len(self.names), p=self._matrix[self._current])
@@ -193,7 +213,11 @@ class GradientNamer(BeadNamer):
     n_steps : int
         Number of steps over which the gradient is applied.
     seed : int, optional, default None
-        Random seed for reproducibility.
+        Random seed for reproducibility. Leave unset when passing this namer to
+        ``hard_sphere_random_walk``; the walk drives naming from its own seed.
+    rng : numpy.random.Generator, optional, default None
+        Generator to draw from. Takes precedence over ``seed``. Mainly used
+        internally so the random walk can share its rng with the namer.
 
     Examples
     --------
@@ -202,14 +226,14 @@ class GradientNamer(BeadNamer):
     >>> namer = GradientNamer(["_A", "_B"], [1, 0], [0, 1], n_steps=100, seed=0)
     """
 
-    def __init__(self, names, start_weights, end_weights, n_steps, seed=None):
+    def __init__(self, names, start_weights, end_weights, n_steps, seed=None, rng=None):
         self.names = list(names)
         start = np.asarray(start_weights, dtype=float)
         end = np.asarray(end_weights, dtype=float)
         self._start = start / start.sum()
         self._end = end / end.sum()
         self._n_steps = int(n_steps)
-        self._rng = np.random.default_rng(seed)
+        self._rng = rng if rng is not None else np.random.default_rng(seed)
         self._step = 0
 
     def __next__(self) -> str:

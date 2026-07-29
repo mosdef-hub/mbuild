@@ -22,6 +22,7 @@ from mbuild.path.constraints import (
 )
 from mbuild.path.namers import CyclicNamer, RandomNamer
 from mbuild.path.path_utils import (
+    check_path,
     local_density,
     target_density,
     target_sq_distances,
@@ -66,7 +67,7 @@ class TestPaths(BaseTest):
 
     def test_straight_line(self):
         path = Path()  # works with empty path
-        straight_line(path, spacing=0.20, N=5, direction=(1, 0, 0))
+        straight_line(path=path, spacing=0.20, N=5, direction=(1, 0, 0))
         assert len(path.coordinates) == 5
         assert path.bond_graph.number_of_edges() == 4
         # 5 sites = 4 bonds at 0.20 each
@@ -78,7 +79,7 @@ class TestPaths(BaseTest):
 
     def test_cyclic_parameters(self):
         path = Path()
-        cyclic(path, spacing=1, N=20)
+        cyclic(path=path, spacing=1, N=20)
         # C = 2*pi*r
         radius = 20 * 1 / (2 * np.pi)
         # Check that computed radius matches expected
@@ -86,25 +87,25 @@ class TestPaths(BaseTest):
         assert np.allclose(actual_radius, radius, atol=1e-2)
 
         path2 = Path()
-        cyclic(path2, spacing=1, radius=10 / np.pi, N=None)
+        cyclic(path=path2, spacing=1, radius=10 / np.pi, N=None)
         assert len(path2.coordinates) == 20
 
         path3 = Path()
-        cyclic(path3, N=20, radius=10 / np.pi, spacing=None)
+        cyclic(path=path3, N=20, radius=10 / np.pi, spacing=None)
         # Check spacing
         dist = np.linalg.norm(path3.coordinates[1] - path3.coordinates[0])
         assert np.allclose(dist, 1.0, atol=1e-2)
 
     def test_cyclic_bonding(self):
         path = Path()
-        cyclic(path, spacing=1, N=20)
+        cyclic(path=path, spacing=1, N=20)
         assert path.bond_graph.number_of_edges() == 20
         comp = path.to_compound()
         assert comp.n_bonds == comp.n_particles
 
     def test_knot(self):
         path = Path()
-        knot(path, spacing=0.25, N=50, m=3)
+        knot(path=path, spacing=0.25, N=50, m=3)
         assert path.bond_graph.number_of_edges() == 50
         comp = path.to_compound()
         assert comp.n_bonds == comp.n_particles
@@ -112,11 +113,11 @@ class TestPaths(BaseTest):
     def test_knot_bad_arg(self):
         path = Path()
         with pytest.raises(ValueError):
-            knot(path, spacing=0.25, N=50, m=2)
+            knot(path=path, spacing=0.25, N=50, m=2)
 
     def test_spiral(self):
         path = Path()
-        spiral_2D(path, N=50, a=0.5, b=2, spacing=0.25)
+        spiral_2D(path=path, N=50, a=0.5, b=2, spacing=0.25)
         assert path.bond_graph.number_of_edges() == 49
         comp = path.to_compound()
         assert comp.n_bonds == comp.n_particles - 1
@@ -124,8 +125,8 @@ class TestPaths(BaseTest):
     def test_lamellar(self):
         path = Path()
         lamellar(
-            path,
-            bond_length=0.25,
+            path=path,
+            spacing=0.25,
             num_layers=3,
             layer_separation=1.0,
             layer_length=3.0,
@@ -143,8 +144,8 @@ class TestPaths(BaseTest):
     def test_lamellar_direction(self):
         path_left_to_right = Path()
         lamellar(
-            path_left_to_right,
-            bond_length=0.25,
+            path=path_left_to_right,
+            spacing=0.25,
             num_layers=3,
             layer_separation=1.0,
             layer_length=3.0,
@@ -155,8 +156,8 @@ class TestPaths(BaseTest):
 
         path_right_to_left = Path()
         lamellar(
-            path_right_to_left,
-            bond_length=0.25,
+            path=path_right_to_left,
+            spacing=0.25,
             num_layers=3,
             layer_separation=1.0,
             layer_length=3.0,
@@ -175,8 +176,8 @@ class TestPaths(BaseTest):
     def test_lamellar_initial_point(self):
         path = Path()
         lamellar(
-            path,
-            bond_length=0.25,
+            path=path,
+            spacing=0.25,
             num_layers=3,
             layer_separation=1.0,
             layer_length=3.0,
@@ -189,7 +190,7 @@ class TestPaths(BaseTest):
 
     def test_helix(self):
         path = Path()
-        helix(path, N=50, radius=2.0, rise=0.5, twist=30)
+        helix(path=path, N=50, radius=2.0, rise=0.5, twist=30)
         assert len(path.coordinates) == 50
         assert path.bond_graph.number_of_edges() == 49
         # Check that all points are roughly at radius distance from z-axis
@@ -198,31 +199,31 @@ class TestPaths(BaseTest):
 
     def test_zigzag(self):
         path = Path()
-        zigzag(path, N=20, spacing=1.0, angle_deg=120.0, sites_per_segment=5)
+        zigzag(path=path, N=20, spacing=1.0, angle_deg=120.0, sites_per_segment=5)
         assert len(path.coordinates) == 20
         assert path.bond_graph.number_of_edges() == 19
 
     def test_straight_line_cyclic_namer_alternating(self):
         path = Path()
-        straight_line(path, spacing=0.2, N=6, bead_name=CyclicNamer(["_A", "_B"]))
+        straight_line(path=path, spacing=0.2, N=6, bead_name=CyclicNamer(["_A", "_B"]))
         assert list(path.beads) == ["_A", "_B", "_A", "_B", "_A", "_B"]
 
     def test_straight_line_cyclic_namer_blocks(self):
         path = Path()
         straight_line(
-            path, spacing=0.2, N=6, bead_name=CyclicNamer([("_A", 3), ("_B", 3)])
+            path=path, spacing=0.2, N=6, bead_name=CyclicNamer([("_A", 3), ("_B", 3)])
         )
         assert list(path.beads) == ["_A", "_A", "_A", "_B", "_B", "_B"]
 
     def test_cyclic_path_cyclic_namer(self):
         path = Path()
-        cyclic(path, spacing=1, N=6, bead_name=CyclicNamer(["_A", "_B"]))
+        cyclic(path=path, spacing=1, N=6, bead_name=CyclicNamer(["_A", "_B"]))
         assert list(path.beads) == ["_A", "_B", "_A", "_B", "_A", "_B"]
 
     def test_helix_cyclic_namer(self):
         path = Path()
         helix(
-            path,
+            path=path,
             N=4,
             radius=1.0,
             rise=0.5,
@@ -234,7 +235,7 @@ class TestPaths(BaseTest):
     def test_zigzag_cyclic_namer(self):
         path = Path()
         zigzag(
-            path,
+            path=path,
             N=4,
             spacing=1.0,
             sites_per_segment=2,
@@ -244,13 +245,13 @@ class TestPaths(BaseTest):
 
     def test_namer_beads_in_bond_graph(self):
         path = Path()
-        straight_line(path, spacing=0.2, N=4, bead_name=CyclicNamer(["_A", "_B"]))
+        straight_line(path=path, spacing=0.2, N=4, bead_name=CyclicNamer(["_A", "_B"]))
         node_names = [d["name"] for _, d in path.bond_graph.nodes(data=True)]
         assert node_names == ["_A", "_B", "_A", "_B"]
 
     def test_string_bead_name_still_works(self):
         path = Path()
-        straight_line(path, spacing=0.2, N=4, bead_name="_X")
+        straight_line(path=path, spacing=0.2, N=4, bead_name="_X")
         assert list(path.beads) == ["_X", "_X", "_X", "_X"]
 
 
@@ -260,7 +261,7 @@ class TestRandomWalk(BaseTest):
         num_sites = NumSites(80)
         max_attempts = NumAttempts(1e4)
         hard_sphere_random_walk(
-            path,
+            path=path,
             termination=Termination([num_sites, max_attempts]),
             bond_length=0.25,
             radius=0.22,
@@ -280,7 +281,7 @@ class TestRandomWalk(BaseTest):
         num_sites = NumSites(20)
         max_attempts = NumAttempts(1e4)
         hard_sphere_random_walk(
-            path,
+            path=path,
             termination=[num_sites, max_attempts],
             bond_length=0.25,
             radius=0.22,
@@ -327,9 +328,7 @@ class TestRandomWalk(BaseTest):
                         termination=term,
                         seed=i,
                         initial_point=initial_point[attempt],
-                        rw_angles=AnglesSampler(
-                            "normal", dict(loc=2.4, scale=1), seed=i
-                        ),
+                        rw_angles=AnglesSampler("normal", dict(loc=2.4, scale=1)),
                         tolerance=tolerance,
                     )
                     if term.success:
@@ -355,7 +354,7 @@ class TestRandomWalk(BaseTest):
         num_sites = NumSites(20)
         max_attempts = NumAttempts(1e4)
         chain = hard_sphere_random_walk(
-            path,
+            path=path,
             termination=[num_sites, max_attempts],
             bond_length=0.25,
             volume_constraint=vol_constraint,
@@ -375,7 +374,7 @@ class TestRandomWalk(BaseTest):
         num_sites = NumSites(20)
         max_attempts = NumAttempts(1e4)
         hard_sphere_random_walk(
-            path,
+            path=path,
             termination=Termination([num_sites, max_attempts]),
             bond_length=0.25,
             radius=0.22,
@@ -389,7 +388,7 @@ class TestRandomWalk(BaseTest):
         num_sites = NumSites(20)
         max_attempts = NumAttempts(1e4)
         hard_sphere_random_walk(
-            path1,
+            path=path1,
             termination=Termination([num_sites, max_attempts]),
             bond_length=0.25,
             radius=0.22,
@@ -397,7 +396,7 @@ class TestRandomWalk(BaseTest):
         )
         path2 = Path()
         hard_sphere_random_walk(
-            path2,
+            path=path2,
             termination=Termination([num_sites, max_attempts]),
             bond_length=0.25,
             radius=0.22,
@@ -405,12 +404,44 @@ class TestRandomWalk(BaseTest):
         )
         assert np.allclose(path1.coordinates, path2.coordinates, atol=1e-7)
 
+    def test_seeds_user_angles_sampler(self):
+        # A reused, stateful user sampler is still driven by the walk's seed,
+        # so same-seed walks reproduce.
+        sampler = AnglesSampler("normal", dict(loc=2.4, scale=0.3))
+        kwargs = dict(bond_length=0.25, radius=0.22, rw_angles=sampler, seed=14)
+        path1 = Path()
+        hard_sphere_random_walk(
+            path=path1,
+            termination=Termination([NumSites(20), NumAttempts(1e4)]),
+            **kwargs,
+        )
+        path2 = Path()
+        hard_sphere_random_walk(
+            path=path2,
+            termination=Termination([NumSites(20), NumAttempts(1e4)]),
+            **kwargs,
+        )
+        assert np.allclose(path1.coordinates, path2.coordinates, atol=1e-7)
+
+    def test_seeds_random_namer(self):
+        # An unseeded stochastic namer is driven by the walk's seed, so
+        # same-seed walks reproduce both names and coordinates.
+        kwargs = dict(radius=0.1, bond_length=0.15, termination=20, seed=42)
+        path1 = hard_sphere_random_walk(bead_name=RandomNamer(["_A", "_B"]), **kwargs)
+        path2 = hard_sphere_random_walk(bead_name=RandomNamer(["_A", "_B"]), **kwargs)
+        assert list(path1.beads) == list(path2.beads)
+        assert np.allclose(path1.coordinates, path2.coordinates, atol=1e-7)
+        # Naming draws from a separate substream, so the namer choice does not
+        # perturb geometry: same seed gives the same coordinates as a constant namer.
+        const = hard_sphere_random_walk(bead_name="_A", **kwargs)
+        assert np.allclose(path1.coordinates, const.coordinates, atol=1e-7)
+
     def test_from_path(self):
         path1 = Path()
         num_sites = NumSites(20)
         max_attempts = NumAttempts(1e4)
         hard_sphere_random_walk(
-            path1,
+            path=path1,
             termination=Termination([num_sites, max_attempts]),
             bond_length=0.25,
             radius=0.22,
@@ -418,7 +449,7 @@ class TestRandomWalk(BaseTest):
         )
         path2 = Path()
         hard_sphere_random_walk(
-            path2,
+            path=path2,
             termination=Termination([num_sites, max_attempts]),
             bond_length=0.25,
             radius=0.22,
@@ -428,12 +459,43 @@ class TestRandomWalk(BaseTest):
         assert len(path2.coordinates) == 20
         assert np.allclose(path1.coordinates, path2.coordinates, atol=1e-6)
 
+    @pytest.mark.parametrize(
+        "constraint",
+        [
+            CuboidConstraint(Lx=6, Ly=6, Lz=6),
+            SphereConstraint(center=(0, 0, 0), radius=3),
+            CylinderConstraint(radius=3, height=6),
+        ],
+    )
+    def test_seeds_with_volume_constraint(self, constraint):
+        termination = Termination([NumSites(15), NumAttempts(1e4)])
+        path1 = Path()
+        hard_sphere_random_walk(
+            path=path1,
+            termination=termination,
+            bond_length=0.25,
+            radius=0.22,
+            volume_constraint=constraint,
+            seed=14,
+        )
+        path2 = Path()
+        hard_sphere_random_walk(
+            path=path2,
+            termination=termination,
+            bond_length=0.25,
+            radius=0.22,
+            volume_constraint=constraint,
+            seed=14,
+        )
+        assert len(path1.coordinates) == len(path2.coordinates)
+        assert np.allclose(path1.coordinates, path2.coordinates, atol=1e-6)
+
     def test_walk_inside_cube(self):
         path = Path()
         cube = CuboidConstraint(Lx=5, Ly=5, Lz=5)
         for i in range(100):
             hard_sphere_random_walk(
-                path,
+                path=path,
                 termination=Termination([NumSites(5), NumAttempts(100)]),
                 bond_length=0.25,
                 radius=0.22,
@@ -447,7 +509,7 @@ class TestRandomWalk(BaseTest):
         # First make sure this seed gives a path outside these bounds without PBC
         path1 = Path()
         hard_sphere_random_walk(
-            path1,
+            path=path1,
             termination=Termination([NumSites(500), NumAttempts(1e4)]),
             bond_length=0.25,
             radius=0.22,
@@ -461,7 +523,7 @@ class TestRandomWalk(BaseTest):
         path2 = Path()
         cube = CuboidConstraint(Lx=5, Ly=5, Lz=5, pbc=(True, True, True))
         hard_sphere_random_walk(
-            path2,
+            path=path2,
             termination=Termination([NumSites(500), NumAttempts(1e4)]),
             bond_length=0.25,
             radius=0.22,
@@ -476,7 +538,7 @@ class TestRandomWalk(BaseTest):
         path = Path()
         sphere = SphereConstraint(radius=4, center=(2, 2, 2))
         hard_sphere_random_walk(
-            path,
+            path=path,
             termination=Termination([NumSites(200), NumAttempts(1e4)]),
             bond_length=0.25,
             radius=0.22,
@@ -491,7 +553,7 @@ class TestRandomWalk(BaseTest):
         path = Path()
         cylinder = CylinderConstraint(radius=3, height=6, center=(0, 0, 0))
         hard_sphere_random_walk(
-            path,
+            path=path,
             termination=Termination([NumSites(200), NumAttempts(1e4)]),
             bond_length=0.25,
             radius=0.22,
@@ -889,7 +951,7 @@ class TestPathUtils(BaseTest):
 
         from mbuild.path.points import AnglesSampler
 
-        sampler = AnglesSampler(distribution, kwargs, seed=0)
+        sampler = AnglesSampler(distribution, kwargs, rng=np.random.default_rng(0))
         points = sampler.sample(1000)
         if reference[0] == "kstest":
             _, p_value = scipy.stats.kstest(points, "uniform", **reference[1])
@@ -897,6 +959,32 @@ class TestPathUtils(BaseTest):
             _, p_value = scipy.stats.normaltest(points)
 
         assert p_value > 0.05
+
+    @pytest.mark.parametrize("axis", [0, 1, 2])
+    def test_check_path_pbc_overlap_across_face(self, axis):
+        # Two beads sit just inside opposite faces of a 10 x 10 x 10 box.
+        # minimum-image separation is 0.2
+        box_lengths = np.full(3, 10.0, dtype=np.float32)
+        radius = 1.0
+        tolerance = 1e-5
+        existing = np.full((1, 3), 5.0, dtype=np.float32)
+        existing[0, axis] = 0.1
+        candidate = np.full(3, 5.0, dtype=np.float32)
+        candidate[axis] = 9.9
+        # No PBCs should be accepted.
+        assert check_path(existing, candidate, radius, tolerance)
+
+        # Periodic on each axis, should be rejected.
+        pbc = np.array([False, False, False])
+        pbc[axis] = True
+        assert not check_path(
+            existing,
+            candidate,
+            radius,
+            tolerance,
+            pbc=pbc,
+            box_lengths=box_lengths,
+        )
 
 
 class TestCrossLinks(BaseTest):
@@ -927,14 +1015,14 @@ class TestCrossLinks(BaseTest):
             assert (i + 10, i + 20) in path.bond_graph.edges
 
     def test_deterministic_rw(self):
-        path1 = hard_sphere_random_walk(  # TODO: hsrw cuts off some chains early
+        path1 = hard_sphere_random_walk(
             radius=1,
             bond_length=2,
             termination=20,
             rw_angles=(np.pi / 2, np.pi),
             seed=1,
         )
-        path2 = hard_sphere_random_walk(  # TODO: hsrw cuts off some chains early
+        path2 = hard_sphere_random_walk(
             radius=1,
             bond_length=2,
             termination=20,

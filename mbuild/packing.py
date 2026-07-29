@@ -1211,7 +1211,7 @@ def _run_packmol(input_text, filled_xyz, temp_file, packmol_file):
             "Packmol finished with imperfect packing. Using the .xyz_FORCED "
             "file instead. This may not be a sufficient packing result."
         )
-        os.system(f"cp {filled_xyz.name}_FORCED {filled_xyz.name}")
+        shutil.copyfile(f"{filled_xyz.name}_FORCED", filled_xyz.name)
 
     if "ERROR" in out or proc.returncode != 0:
         _packmol_error(out, err)
@@ -1220,7 +1220,7 @@ def _run_packmol(input_text, filled_xyz, temp_file, packmol_file):
         os.remove(packmol_inp.name)
 
     if temp_file is not None:
-        os.system("cp {0} {1}".format(filled_xyz.name, os.path.join(temp_file)))
+        shutil.copyfile(filled_xyz.name, temp_file)
 
 
 def _check_packmol(PACKMOL):  # pragma: no cover
