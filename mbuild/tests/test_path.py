@@ -5,7 +5,6 @@ import mbuild as mb
 from mbuild.exceptions import PathConvergenceError
 from mbuild.path.build import (
     Path,
-    crosslink,
     cyclic,
     hard_sphere_random_walk,
     helix,
@@ -15,6 +14,7 @@ from mbuild.path.build import (
     straight_line,
     zigzag,
 )
+from mbuild.path.crosslink import crosslink
 from mbuild.path.constraints import (
     CuboidConstraint,
     CylinderConstraint,
