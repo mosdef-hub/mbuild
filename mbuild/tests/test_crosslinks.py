@@ -912,7 +912,7 @@ class TestReplaceSites(BaseTest):
         linear_repl = CrosslinkerGeometry.linear(
             n_sites=2, bond_length=0.3, connection_sites=[0, 1]
         )
-        out = p.replace_sites(linear_repl, bead_name="_R")
+        out = replace_sites(p, linear_repl, bead_name="_R")
         assert len(out.coordinates) == 5
 
     def test_crosslink_then_replace(self, chain_with_crosslinks):
@@ -946,5 +946,5 @@ class TestReplaceSites(BaseTest):
         triangle = CrosslinkerGeometry.equilateral_triangle(
             bond_length=0.4, connection_sites=[0, 1]
         )
-        path = path.replace_sites(triangle, 1)
+        path = replace_sites(path, triangle, 1)
         assert len(path) == 7

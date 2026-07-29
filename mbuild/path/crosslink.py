@@ -9,7 +9,6 @@ import numpy as np
 from scipy.spatial import cKDTree
 
 from mbuild.exceptions import PathConvergenceError
-import mbuild.path.build.Path
 from mbuild.path.constraints import CuboidConstraint, CylinderConstraint
 
 # =============================================================================
@@ -17,7 +16,7 @@ from mbuild.path.constraints import CuboidConstraint, CylinderConstraint
 # =============================================================================
 
 
-class CrosslinkerGeometry(mbuild.path.build.Path):
+class CrosslinkerGeometry:
     """Rigid crosslinker geometry with connection site metadata.
 
     Parameters
@@ -36,7 +35,6 @@ class CrosslinkerGeometry(mbuild.path.build.Path):
     def __init__(
         self, coordinates, bond_graph=None, bead_name="_R", connection_sites=None
     ):
-        super().__init__()
         coordinates = np.asarray(coordinates, dtype=np.float32)
         self.coordinates = coordinates - coordinates.mean(axis=0)
 
