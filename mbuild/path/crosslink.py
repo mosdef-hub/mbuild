@@ -8,8 +8,8 @@ import networkx as nx
 import numpy as np
 from scipy.spatial import cKDTree
 
-from mbuild.exceptions import PathConvergenceError
 import mbuild.path.build.Path
+from mbuild.exceptions import PathConvergenceError
 from mbuild.path.constraints import CuboidConstraint, CylinderConstraint
 
 # =============================================================================
