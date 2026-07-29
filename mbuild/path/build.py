@@ -531,37 +531,35 @@ class Path:
     def crosslink(
         self,
         crosslinker=None,
-        bead_name="_R",
-        backbone_name="_A",
-        radius=0.1,
+        n_crosslinks=1,
+        crosslink_bond_length=0.2,
+        max_backbone_degree=4,
+        tolerance=0.1,
         excluded_bond_depth=2,
-        n_connection_sites=2,
         volume_constraint=None,
-        initial_point=None,
-        seed=42,
-        chunk_size=512,
-        run_on_gpu=False,
-        n_rotation_samples=36,
-        overlap_radius=None,
+        minimum_separation=0.1,
+        n_rotation_samples=50,
+        backbone_name=None,
+        seed=None,
+        verbose=False,
     ):
         """Add a crosslink to this path. See module-level crosslink() for details."""
-        from mbuild.path.crosslink import crosslink as crosslink2
+        import mbuild.path.crosslink.crosslink
 
-        return crosslink2(
+        return mbuild.path.crosslink.crosslink(
             self,
             crosslinker=crosslinker,
-            bead_name=bead_name,
-            backbone_name=backbone_name,
-            radius=radius,
+            n_crosslinks=n_crosslinks,
+            crosslink_bond_length=crosslink_bond_length,
+            max_backbone_degree=max_backbone_degree,
+            tolerance=tolerance,
             excluded_bond_depth=excluded_bond_depth,
-            n_connection_sites=n_connection_sites,
             volume_constraint=volume_constraint,
-            initial_point=initial_point,
-            seed=seed,
-            chunk_size=chunk_size,
-            run_on_gpu=run_on_gpu,
+            minimum_separation=minimum_separation,
             n_rotation_samples=n_rotation_samples,
-            overlap_radius=overlap_radius,
+            backbone_name=backbone_name,
+            seed=seed,
+            verbose=verbose,
         )
 
     def wrap_inside_box(self, constraint):
