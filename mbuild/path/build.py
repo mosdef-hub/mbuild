@@ -300,11 +300,12 @@ class Path:
         """Convert a path and its bond graph to an mBuild Compound."""
         compound = Compound()
         compounds = []
-        # TODO: Should name be pulled from self.beads[noe_id] as well?
         # TODO: Should we have a mass parameter? Could be useful for density termination
-        for node_id, attrs in self.bond_graph.nodes(data=True):
+        for node_id in self.bond_graph.nodes:
             compounds.append(
-                Compound(name=attrs["name"], pos=self.coordinates[node_id], mass=1.0)
+                Compound(
+                    name=self.beads[node_id], pos=self.coordinates[node_id], mass=1.0
+                )
             )
         compound.add(compounds)
         for edge1, edge2 in self.bond_graph.edges():
@@ -571,7 +572,7 @@ class Path:
         Path
             self (modified in place).
         """
-        from mbuild.path.crosslink import replace_sites
+        from mbuild.path.replace_sites import replace_sites
 
         return replace_sites(
             self,
@@ -643,7 +644,6 @@ class Path:
         # Calculate box bounds relative to center
         half_lengths = constraint.box_lengths / 2.0
         box_min = center - half_lengths
-        box_max = center + half_lengths
 
         # Apply periodic boundary conditions to each dimension
         for dim in range(3):

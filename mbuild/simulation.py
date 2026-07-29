@@ -362,7 +362,9 @@ class ForcesHandler:
                     if param in orig_params and term in orig_params[param]:
                         force.params[param][term] = orig_params[param][term] * scalar
                     else:
-                        import pdb; pdb.set_trace()
+                        import pdb
+
+                        pdb.set_trace()
                         force.params[param][term] *= scalar
             sim.active_forces.append(force)
             self.forcesDict[key] = force  # store for usage elsewhere
@@ -458,10 +460,8 @@ def hoomd_cap_displacement(
     )
     sim.set_integrator(method=displacement_capped, dt=dt)
     if sim.energies == []:
-        print("Initial Energy States:")
         sim.run(0)
         sim.store_current_energies()
-        print("\n")
     sim.run(n_steps)
     sim.store_current_energies()
     sim.operations.integrator = None
