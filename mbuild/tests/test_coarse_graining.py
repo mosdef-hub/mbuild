@@ -521,8 +521,6 @@ class TestCoarseGraining(BaseTest):
         assert graph.nodes[0]["fragname"] == "A"
         assert np.allclose(graph.nodes[0]["position"], [1.0, 2.0, 3.0])
 
-    # --- forward coarse_grain ----------------------------------------------
-
     def test_coarse_grain_round_trip_linear(self):
         from mbuild.coarse_graining import coarse_grain
 
