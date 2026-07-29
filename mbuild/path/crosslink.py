@@ -36,6 +36,7 @@ class CrosslinkerGeometry(Path):
     def __init__(
         self, coordinates, bond_graph=None, bead_name="_R", connection_sites=None
     ):
+        super().__init__()
         coordinates = np.asarray(coordinates, dtype=np.float32)
         self.coordinates = coordinates - coordinates.mean(axis=0)
 
@@ -931,6 +932,7 @@ def _pairwise_same_node_search(
                 if dist <= excluded_bond_depth:
                     continue
             except nx.NetworkXNoPath:
+                # Disconnected nodes are never excluded by bond depth.
                 pass
         candidates.append([[n0], [n1]])
         if len(candidates) >= 5000:
@@ -996,6 +998,7 @@ def _pairwise_diff_node_search(
                     if dist <= excluded_bond_depth:
                         continue
                 except nx.NetworkXNoPath:
+                    # Disconnected nodes are never excluded by bond depth.
                     pass
 
             feasible = _check_separate_sites_feasibility(
@@ -1120,6 +1123,7 @@ def _general_candidate_search(
                                         skip = True
                                         break
                                 except nx.NetworkXNoPath:
+                                    # Disconnected nodes are never excluded by bond depth.
                                     pass
                             if skip:
                                 break
@@ -1203,6 +1207,7 @@ def _general_candidate_search(
                                                 skip = True
                                                 break
                                         except nx.NetworkXNoPath:
+                                            # Disconnected nodes are never excluded by bond depth.
                                             pass
                                     if skip:
                                         break
@@ -1350,6 +1355,7 @@ def _find_valid_combinations(
                             skip = True
                             break
                     except nx.NetworkXNoPath:
+                        # Disconnected nodes are never excluded by bond depth.
                         pass
                 if skip:
                     break
@@ -1442,6 +1448,7 @@ def _find_node_combos(
                             skip = True
                             break
                     except nx.NetworkXNoPath:
+                        # Disconnected nodes are never excluded by bond depth.
                         pass
                 if skip:
                     break

@@ -4,7 +4,6 @@ from copy import deepcopy
 
 import numpy as np
 
-from mbuild.path.formats import to_mol3000
 from mbuild.utils.io import import_
 
 
@@ -59,7 +58,6 @@ def visualize_path(path, radius=0.1, hide_periodic_bonds=False, width=600, heigh
     ]
 
     data, unique_beadnames = path.to_mol3000(G)
-    view = py3Dmol.view(data=data)
     for i, name in enumerate(unique_beadnames.values()):
         color = colors[i % len(colors)]
         label = "R" + str(name)
