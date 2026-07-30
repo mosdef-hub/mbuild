@@ -34,25 +34,25 @@ G_ANGLE = 664.12  # angle force-constant prefactor, kcal/mol
 _COLS = ("r1", "theta0", "x1", "D1", "Zstar", "Vi", "Uj", "chi")
 _TABLE = {
     #  label      r1     theta0   x1      D1     Zstar   Vi     Uj    chi
-    "H_":     (0.354, 180.00, 2.886, 0.044, 0.712, 0.000, 0.0, 4.528),
-    "C_3":    (0.757, 109.47, 3.851, 0.105, 1.912, 2.119, 2.0, 5.343),
-    "C_R":    (0.729, 120.00, 3.851, 0.105, 1.912, 0.000, 2.0, 5.343),
-    "C_2":    (0.732, 120.00, 3.851, 0.105, 1.912, 0.000, 2.0, 5.343),
-    "C_1":    (0.706, 180.00, 3.851, 0.105, 1.912, 0.000, 2.0, 5.343),
-    "N_3":    (0.700, 106.70, 3.660, 0.069, 2.544, 0.450, 2.0, 6.899),
-    "N_R":    (0.699, 120.00, 3.660, 0.069, 2.544, 0.000, 2.0, 6.899),
-    "N_2":    (0.685, 111.20, 3.660, 0.069, 2.544, 0.000, 2.0, 6.899),
-    "N_1":    (0.656, 180.00, 3.660, 0.069, 2.544, 0.000, 2.0, 6.899),
-    "O_3":    (0.658, 104.51, 3.500, 0.060, 2.300, 0.018, 2.0, 8.741),
-    "O_R":    (0.680, 110.00, 3.500, 0.060, 2.300, 0.000, 2.0, 8.741),
-    "O_2":    (0.634, 120.00, 3.500, 0.060, 2.300, 0.000, 2.0, 8.741),
-    "O_1":    (0.639, 180.00, 3.500, 0.060, 2.300, 0.000, 2.0, 8.741),
-    "F_":     (0.668, 180.00, 3.364, 0.050, 1.735, 0.000, 2.0, 10.874),
-    "Cl":     (1.044, 180.00, 3.947, 0.227, 2.348, 0.000, 2.0, 8.564),
-    "Br":     (1.192, 180.00, 4.189, 0.251, 2.519, 0.000, 2.0, 7.790),
-    "I_":     (1.382, 180.00, 4.500, 0.339, 2.650, 0.000, 2.0, 6.822),
-    "S_3+2":  (1.064, 92.10, 4.035, 0.274, 2.703, 0.484, 2.0, 6.928),
-    "P_3+3":  (1.101, 93.80, 4.147, 0.305, 2.863, 2.400, 2.0, 5.463),
+    "H_": (0.354, 180.00, 2.886, 0.044, 0.712, 0.000, 0.0, 4.528),
+    "C_3": (0.757, 109.47, 3.851, 0.105, 1.912, 2.119, 2.0, 5.343),
+    "C_R": (0.729, 120.00, 3.851, 0.105, 1.912, 0.000, 2.0, 5.343),
+    "C_2": (0.732, 120.00, 3.851, 0.105, 1.912, 0.000, 2.0, 5.343),
+    "C_1": (0.706, 180.00, 3.851, 0.105, 1.912, 0.000, 2.0, 5.343),
+    "N_3": (0.700, 106.70, 3.660, 0.069, 2.544, 0.450, 2.0, 6.899),
+    "N_R": (0.699, 120.00, 3.660, 0.069, 2.544, 0.000, 2.0, 6.899),
+    "N_2": (0.685, 111.20, 3.660, 0.069, 2.544, 0.000, 2.0, 6.899),
+    "N_1": (0.656, 180.00, 3.660, 0.069, 2.544, 0.000, 2.0, 6.899),
+    "O_3": (0.658, 104.51, 3.500, 0.060, 2.300, 0.018, 2.0, 8.741),
+    "O_R": (0.680, 110.00, 3.500, 0.060, 2.300, 0.000, 2.0, 8.741),
+    "O_2": (0.634, 120.00, 3.500, 0.060, 2.300, 0.000, 2.0, 8.741),
+    "O_1": (0.639, 180.00, 3.500, 0.060, 2.300, 0.000, 2.0, 8.741),
+    "F_": (0.668, 180.00, 3.364, 0.050, 1.735, 0.000, 2.0, 10.874),
+    "Cl": (1.044, 180.00, 3.947, 0.227, 2.348, 0.000, 2.0, 8.564),
+    "Br": (1.192, 180.00, 4.189, 0.251, 2.519, 0.000, 2.0, 7.790),
+    "I_": (1.382, 180.00, 4.500, 0.339, 2.650, 0.000, 2.0, 6.822),
+    "S_3+2": (1.064, 92.10, 4.035, 0.274, 2.703, 0.484, 2.0, 6.928),
+    "P_3+3": (1.101, 93.80, 4.147, 0.305, 2.863, 2.400, 2.0, 5.463),
 }
 UFF_PARAMS = {label: dict(zip(_COLS, vals)) for label, vals in _TABLE.items()}
 
@@ -219,8 +219,8 @@ def _bond_rest_length(ti, tj, order):
     r_bo = -LAMBDA * (ri + rj) * math.log(order)
     # Electronegativity correction (Rappe eq. 4).
     chi_i, chi_j = pi["chi"], pj["chi"]
-    r_en = ri * rj * (math.sqrt(chi_i) - math.sqrt(chi_j)) ** 2 / (
-        chi_i * ri + chi_j * rj
+    r_en = (
+        ri * rj * (math.sqrt(chi_i) - math.sqrt(chi_j)) ** 2 / (chi_i * ri + chi_j * rj)
     )
     return ri + rj + r_bo - r_en
 
@@ -358,7 +358,9 @@ def _hoomd_forces(top, snap, order_map, r_cut):
                 logger.warning(
                     "UFF: skipping linear angle type %s-%s-%s (theta0=180); the "
                     "lean harmonic approximation cannot represent it.",
-                    ti, tj, tk,
+                    ti,
+                    tj,
+                    tk,
                 )
                 seen.update({(ti, tj, tk), (tk, tj, ti)})
                 continue
@@ -381,11 +383,12 @@ def _hoomd_forces(top, snap, order_map, r_cut):
         seen = set()
         for dih in top.dihedrals:
             m0, m1, m2, m3 = dih.connection_members
-            i, j, k_idx, ll = (
-                site_idx[m0], site_idx[m1], site_idx[m2], site_idx[m3]
-            )
+            i, j, k_idx, ll = (site_idx[m0], site_idx[m1], site_idx[m2], site_idx[m3])
             ti, tj, tk, tl = (
-                sites[i].name, sites[j].name, sites[k_idx].name, sites[ll].name
+                sites[i].name,
+                sites[j].name,
+                sites[k_idx].name,
+                sites[ll].name,
             )
             if (ti, tj, tk, tl) in seen:
                 continue
@@ -461,9 +464,7 @@ def _openmm_forces(top, order_map, r_cut):
     vdw.addPerParticleParameter("epsilon")
     for s in sites:
         p = UFF_PARAMS[s.name]
-        vdw.addParticle(
-            [p["x1"] / two_pow * ANG_TO_NM, p["D1"] * KCAL_TO_KJ]
-        )
+        vdw.addParticle([p["x1"] / two_pow * ANG_TO_NM, p["D1"] * KCAL_TO_KJ])
     # UFF computes vdW for atoms >= 3 bonds apart: exclude 1-2 and 1-3.
     vdw.createExclusionsFromBonds([(i, j) for (i, j) in order_map], 2)
     if top.box is not None:
@@ -482,16 +483,12 @@ def _openmm_forces(top, order_map, r_cut):
             ti, tj = sites[i].name, sites[j].name
             r_ij = _bond_rest_length(ti, tj, order_between(i, j))
             k = _bond_force_constant(ti, tj, r_ij)
-            bond_force.addBond(
-                i, j, r_ij * ANG_TO_NM, k * BOND_K_TO_KJ_NM2
-            )
+            bond_force.addBond(i, j, r_ij * ANG_TO_NM, k * BOND_K_TO_KJ_NM2)
         forces.append(bond_force)
 
     # --- Angles (exact UFF cosine-Fourier, + linear form) ---------------------
     if top.n_angles > 0:
-        general = openmm.CustomAngleForce(
-            "K*(C0 + C1*cos(theta) + C2*cos(2*theta))"
-        )
+        general = openmm.CustomAngleForce("K*(C0 + C1*cos(theta) + C2*cos(2*theta))")
         for name in ("K", "C0", "C1", "C2"):
             general.addPerAngleParameter(name)
         linear = openmm.CustomAngleForce("K*(1 + cos(theta))")
@@ -529,9 +526,7 @@ def _openmm_forces(top, order_map, r_cut):
         torsion = openmm.PeriodicTorsionForce()
         for dih in top.dihedrals:
             m0, m1, m2, m3 = dih.connection_members
-            i, j, k_idx, ll = (
-                site_idx[m0], site_idx[m1], site_idx[m2], site_idx[m3]
-            )
+            i, j, k_idx, ll = (site_idx[m0], site_idx[m1], site_idx[m2], site_idx[m3])
             tj, tk = sites[j].name, sites[k_idx].name
             params = _torsion_params(tj, tk, order_between(j, k_idx))
             if params is None:
@@ -544,12 +539,8 @@ def _openmm_forces(top, order_map, r_cut):
             # OpenMM: k (1 + cos(n phi - phase)); k = 0.5 V,
             # phase = 0 when cos(n phi0) = -1 else pi.
             phase = 0.0 if cos_n_phi0 < 0 else math.pi
-            torsion.addTorsion(
-                i, j, k_idx, ll, n, phase, 0.5 * v * KCAL_TO_KJ
-            )
+            torsion.addTorsion(i, j, k_idx, ll, n, phase, 0.5 * v * KCAL_TO_KJ)
         if torsion.getNumTorsions() > 0:
             forces.append(torsion)
 
     return forces
-
-

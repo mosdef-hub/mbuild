@@ -552,8 +552,7 @@ class TestOpenMMSimulation(BaseTest):
             force = sim.system.getForce(i)
             if isinstance(force, openmm.CustomNonbondedForce):
                 assert (
-                    force.getNonbondedMethod()
-                    == openmm.CustomNonbondedForce.NoCutoff
+                    force.getNonbondedMethod() == openmm.CustomNonbondedForce.NoCutoff
                 )
                 break
 

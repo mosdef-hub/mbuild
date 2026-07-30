@@ -68,7 +68,9 @@ class HoomdSimulation(hoomd.simulation.Simulation):
         logger=None,
     ):
         # Resolve input type
-        compound, self._is_path, self._original_system, self.original_coords = _resolve_input(system)
+        compound, self._is_path, self._original_system, self.original_coords = (
+            _resolve_input(system)
+        )
 
         if kick:
             compound._kick()
@@ -240,7 +242,6 @@ class HoomdSimulation(hoomd.simulation.Simulation):
         )
         self.operations.updaters.append(box_resizer)
 
-
         if self.energies == []:
             self.run(0)
             self._store_current_energies()
@@ -396,7 +397,7 @@ class HoomdSimulation(hoomd.simulation.Simulation):
 
     def recover(self):
         """Reset the system coordinates as they were before the last simulation."""
-        #TODO: Also reset last snapshot, delete last store_energy call?
+        # TODO: Also reset last snapshot, delete last store_energy call?
         _recover(self._original_system, self.original_coords)
 
     def _to_hoomd_snap_forces(self):
@@ -612,7 +613,9 @@ class OpenMMSimulation:
         from openmm.app import AllBonds, HAngles, HBonds
 
         # Resolve input type
-        compound, self._is_path, self._original_system, self.original_coords = _resolve_input(system)
+        compound, self._is_path, self._original_system, self.original_coords = (
+            _resolve_input(system)
+        )
 
         self.compound = compound
         self.forcefield_name = forcefield
@@ -798,9 +801,7 @@ class OpenMMSimulation:
         chain = topology.addChain()
         for p in particles_list:
             residue = topology.addResidue(p.name, chain)
-            topology.addAtom(
-                p.name, Element.getBySymbol(p.element.symbol), residue
-            )
+            topology.addAtom(p.name, Element.getBySymbol(p.element.symbol), residue)
         atoms_list = list(topology.atoms())
         for bond in top.bonds:
             m0, m1 = bond.connection_members
