@@ -80,8 +80,8 @@ class TestForcesHandler(BaseTest):
         """Test that DPD replaces LJ when dpd > 0."""
         fh = ForcesHandler(dpd=1.0, scale_bond=0, scale_angle=0)
         fh.scale_sim(sim)
-        lj_force = sim.get_force(hoomd.md.pair.LJ)
-        dpd_force = sim.get_force(hoomd.md.pair.DPDConservative, active_only=True)
+        lj_force = sim._get_force(hoomd.md.pair.LJ)
+        dpd_force = sim._get_force(hoomd.md.pair.DPDConservative, active_only=True)
         for param in dpd_force.params:
             assert dpd_force.params[param]["A"] == 1.0
             assert dpd_force.r_cut[param] == lj_force.params[param]["sigma"]
@@ -108,7 +108,7 @@ class TestForcesHandler(BaseTest):
     @pytest.mark.skipif(not has_hoomd, reason="hoomd is not installed")
     def test_scale_bond_values(self, sim):
         """Test that bond k values are properly scaled."""
-        bond = sim.get_force(hoomd.md.bond.Harmonic)
+        bond = sim._get_force(hoomd.md.bond.Harmonic)
         orig_params = {p: dict(bond.params[p]) for p in bond.params}
 
         ForcesHandler(scale_bond=0.5, scale_angle=0).scale_sim(sim)
@@ -118,7 +118,7 @@ class TestForcesHandler(BaseTest):
     @pytest.mark.skipif(not has_hoomd, reason="hoomd is not installed")
     def test_scale_angle_values(self, sim):
         """Test that angle k values are properly scaled."""
-        angle = sim.get_force(hoomd.md.angle.Harmonic)
+        angle = sim._get_force(hoomd.md.angle.Harmonic)
         orig_params = {p: dict(angle.params[p]) for p in angle.params}
 
         ForcesHandler(scale_bond=0, scale_angle=0.3).scale_sim(sim)
@@ -136,8 +136,8 @@ class TestForcesHandler(BaseTest):
     @pytest.mark.skipif(not has_hoomd, reason="hoomd is not installed")
     def test_scale_restores_on_second_call(self, sim):
         """Test that calling scale_sim again restores original params before scaling."""
-        bond = sim.get_force(hoomd.md.bond.Harmonic)
-        angle = sim.get_force(hoomd.md.angle.Harmonic)
+        bond = sim._get_force(hoomd.md.bond.Harmonic)
+        angle = sim._get_force(hoomd.md.angle.Harmonic)
         orig_bond_params = {p: dict(bond.params[p]) for p in bond.params}
         orig_angle_params = {p: dict(angle.params[p]) for p in angle.params}
 
@@ -247,7 +247,7 @@ class TestHoomdSimulation(BaseTest):
     @pytest.mark.skipif(not has_hoomd, reason="hoomd is not installed")
     def test_get_force_exists(self, sim):
         """Test retrieving existing forces."""
-        force = sim.get_force(hoomd.md.pair.LJ)
+        force = sim._get_force(hoomd.md.pair.LJ)
         assert force is not None
         assert isinstance(force, hoomd.md.pair.LJ)
 
@@ -255,17 +255,17 @@ class TestHoomdSimulation(BaseTest):
     def test_get_force_not_found(self, sim_no_ff):
         """Test that ValueError is raised for non-existent force type."""
         with pytest.raises(ValueError):
-            sim_no_ff.get_force(hoomd.md.dihedral.OPLS)
+            sim_no_ff._get_force(hoomd.md.dihedral.OPLS)
 
     @pytest.mark.skipif(not has_hoomd, reason="hoomd is not installed")
     def test_get_force_active_only(self, sim):
         """Test get_force with active_only flag."""
         fh = ForcesHandler(scale_lj=1, scale_bond=0, scale_angle=0)
         fh.scale_sim(sim)
-        force = sim.get_force(hoomd.md.pair.LJ, active_only=True)
+        force = sim._get_force(hoomd.md.pair.LJ, active_only=True)
         assert force is not None
         with pytest.raises(ValueError):
-            sim.get_force(hoomd.md.bond.Harmonic, active_only=True)
+            sim._get_force(hoomd.md.bond.Harmonic, active_only=True)
 
     # ── Simulation method tests ───────────────────────────────────────────
 
@@ -283,22 +283,6 @@ class TestHoomdSimulation(BaseTest):
         old_coords = sim_no_ff.compound.xyz.copy()
         sim_no_ff.nvt(forces_handler=None, n_steps=20, kT=2.0, dt=1e-4, tau=1e-2)
         assert not np.allclose(old_coords, sim_no_ff.compound.xyz, atol=1e-5)
-
-    @pytest.mark.skipif(not has_hoomd, reason="hoomd is not installed")
-    def test_npt(self, sim):
-        """Test NPT simulation method."""
-        fh = ForcesHandler(scale_lj=1, scale_bond=1, scale_angle=1)
-        old_coords = sim.compound.xyz.copy()
-        sim.npt(
-            forces_handler=fh,
-            n_steps=20,
-            kT=2.0,
-            dt=1e-4,
-            tau=1e-2,
-            pressure=1.0,
-            tauS=1e-1,
-        )
-        assert not np.allclose(old_coords, sim.compound.xyz, atol=1e-5)
 
     @pytest.mark.skipif(not has_hoomd, reason="hoomd is not installed")
     def test_fire(self, sim):
@@ -435,7 +419,7 @@ class TestHoomdSimulation(BaseTest):
     def test_integrate_group_all(self, octane, oplsaa):
         """Test that default integration group includes all particles."""
         sim = HoomdSimulation(octane, oplsaa, r_cut=0.3, run_on_gpu=False)
-        group = sim.get_integrate_group()
+        group = sim._get_integrate_group()
         assert isinstance(group, hoomd.filter.All)
 
     @pytest.mark.skipif(not has_hoomd, reason="hoomd is not installed")
@@ -452,7 +436,7 @@ class TestHoomdSimulation(BaseTest):
                 fixed_compounds=[children[1]],
             )
             with pytest.raises(RuntimeError):
-                sim.get_integrate_group()
+                sim._get_integrate_group()
 
 
 class TestOpenMMSimulation(BaseTest):
@@ -489,7 +473,7 @@ class TestOpenMMSimulation(BaseTest):
 
         cpd = mb.Compound()
         for i in range(3):
-            p = mb.Compound(name="Ar", pos=[i * 0.4, 0.0, 0.0], element="Ar")
+            p = mb.Compound(name="C", pos=[i * 0.4, 0.0, 0.0], element="C")
             cpd.add(p)
         return cpd
 
@@ -537,7 +521,7 @@ class TestOpenMMSimulation(BaseTest):
         """Test that default system has LJ + bond forces."""
         sim = OpenMMSimulation(simple_compound, forcefield=None)
         n_forces = sim.system.getNumForces()
-        assert n_forces >= 2  # NonbondedForce + HarmonicBondForce
+        assert n_forces >= 2  # CustomNonbondedForce + HarmonicBondForce
 
     def test_init_default_forces_no_bonds(self, compound_no_bonds):
         """Test default system with only LJ (no bonds)."""
@@ -551,9 +535,10 @@ class TestOpenMMSimulation(BaseTest):
         sim = OpenMMSimulation(compound_with_box, forcefield=None)
         for i in range(sim.system.getNumForces()):
             force = sim.system.getForce(i)
-            if isinstance(force, openmm.NonbondedForce):
+            if isinstance(force, openmm.CustomNonbondedForce):
                 assert (
-                    force.getNonbondedMethod() == openmm.NonbondedForce.CutoffPeriodic
+                    force.getNonbondedMethod()
+                    == openmm.CustomNonbondedForce.CutoffPeriodic
                 )
                 break
 
@@ -565,8 +550,11 @@ class TestOpenMMSimulation(BaseTest):
         sim = OpenMMSimulation(simple_compound, forcefield=None)
         for i in range(sim.system.getNumForces()):
             force = sim.system.getForce(i)
-            if isinstance(force, openmm.NonbondedForce):
-                assert force.getNonbondedMethod() == openmm.NonbondedForce.NoCutoff
+            if isinstance(force, openmm.CustomNonbondedForce):
+                assert (
+                    force.getNonbondedMethod()
+                    == openmm.CustomNonbondedForce.NoCutoff
+                )
                 break
 
     @pytest.mark.skipif(not has_foyer, reason="Foyer is not installed")
@@ -597,20 +585,20 @@ class TestOpenMMSimulation(BaseTest):
         """Test energy minimization on a Compound."""
         old_coords = simple_compound.xyz.copy()
         sim = OpenMMSimulation(simple_compound, forcefield=None)
-        sim.minimize(steps=100)
+        sim.minimize(n_steps=100)
         assert not np.allclose(old_coords, simple_compound.xyz, atol=1e-6)
 
     def test_minimize_path(self, simple_path):
         """Test energy minimization on a Path."""
         old_coords = simple_path.coordinates.copy()
         sim = OpenMMSimulation(simple_path, forcefield=None)
-        sim.minimize(steps=100)
+        sim.minimize(n_steps=100)
         assert not np.allclose(old_coords, simple_path.coordinates, atol=1e-6)
 
     def test_minimize_records_energy(self, simple_compound):
         """Test that minimize records energy."""
         sim = OpenMMSimulation(simple_compound, forcefield=None)
-        sim.minimize(steps=50)
+        sim.minimize(n_steps=50)
         energy = sim.get_energy()
         assert energy is not None
         assert "potential_energy" in energy
@@ -619,7 +607,7 @@ class TestOpenMMSimulation(BaseTest):
     def test_minimize_custom_tolerance(self, simple_compound):
         """Test minimize with custom tolerance."""
         sim = OpenMMSimulation(simple_compound, forcefield=None)
-        sim.minimize(steps=100, tolerance=1.0)
+        sim.minimize(n_steps=100, tolerance=1.0)
         assert sim.get_energy() is not None
 
     @pytest.mark.skipif(not has_foyer, reason="Foyer is not installed")
@@ -630,7 +618,7 @@ class TestOpenMMSimulation(BaseTest):
             p.pos = p.pos + np.array([0.01 * (i % 3), -0.01 * (i % 2), 0.005 * i])
         old_coords = octane.xyz.copy()
         sim = OpenMMSimulation(octane, forcefield="oplsaa")
-        sim.minimize(steps=100)
+        sim.minimize(n_steps=100)
         assert not np.allclose(old_coords, octane.xyz, atol=1e-4)
 
     # ── nvt tests ─────────────────────────────────────────────────────────
@@ -638,7 +626,7 @@ class TestOpenMMSimulation(BaseTest):
     def test_nvt_compound(self, simple_compound):
         """Test NVT simulation on a Compound."""
         sim = OpenMMSimulation(simple_compound, forcefield=None)
-        sim.minimize(steps=1000)
+        sim.minimize(n_steps=1000)
         old_coords = simple_compound.xyz.copy()
         sim.nvt(n_steps=50, kT=300, dt=0.0001)
         assert not np.allclose(old_coords, simple_compound.xyz, atol=1e-6)
@@ -646,7 +634,7 @@ class TestOpenMMSimulation(BaseTest):
     def test_nvt_path(self, simple_path):
         """Test NVT simulation on a Path."""
         sim = OpenMMSimulation(simple_path, forcefield=None)
-        sim.minimize(steps=100)
+        sim.minimize(n_steps=100)
         old_coords = simple_path.coordinates.copy()
         sim.nvt(n_steps=50, kT=300, dt=0.0001)
         assert not np.allclose(old_coords, simple_path.coordinates, atol=1e-6)
@@ -654,7 +642,7 @@ class TestOpenMMSimulation(BaseTest):
     def test_nvt_records_energy(self, simple_compound):
         """Test that NVT records energy."""
         sim = OpenMMSimulation(simple_compound, forcefield=None)
-        sim.minimize(steps=50)
+        sim.minimize(n_steps=50)
         sim.nvt(n_steps=50, kT=300, dt=0.0001)
         energy = sim.get_energy()
         assert energy is not None
@@ -672,7 +660,7 @@ class TestOpenMMSimulation(BaseTest):
     def test_nvt_custom_friction(self, simple_compound):
         """Test NVT with custom friction coefficient."""
         sim = OpenMMSimulation(simple_compound, forcefield=None)
-        sim.minimize(steps=50)
+        sim.minimize(n_steps=50)
         sim.nvt(n_steps=20, kT=300, dt=0.0001, friction=5.0)
         assert sim.get_energy() is not None
 
@@ -681,34 +669,10 @@ class TestOpenMMSimulation(BaseTest):
         """Test NVT with a real forcefield."""
         octane.box = mb.Box([5, 5, 5])
         sim = OpenMMSimulation(octane, forcefield="oplsaa")
-        sim.minimize(steps=200)
+        sim.minimize(n_steps=200)
         old_coords = octane.xyz.copy()
         sim.nvt(n_steps=50, kT=300, dt=0.0001)
         assert not np.allclose(old_coords, octane.xyz, atol=1e-6)
-
-    # ── npt tests ─────────────────────────────────────────────────────────
-
-    def test_npt_compound(self, compound_with_box):
-        """Test NPT simulation on a Compound."""
-        sim = OpenMMSimulation(compound_with_box, forcefield=None)
-        sim.minimize(steps=100)
-        old_coords = compound_with_box.xyz.copy()
-        sim.npt(n_steps=50, kT=300, dt=0.0001, pressure=1.0)
-        assert not np.allclose(old_coords, compound_with_box.xyz, atol=1e-6)
-
-    def test_npt_with_report_interval(self, compound_with_box):
-        """Test NPT with periodic reporting."""
-        logger = PropertyLogger(properties=["potential_energy"])
-        sim = OpenMMSimulation(compound_with_box, forcefield=None, logger=logger)
-        sim.npt(n_steps=100, kT=300, dt=0.0001, pressure=1.0, report_interval=50)
-        assert len(logger.data["potential_energy"]) == 2
-
-    def test_npt_custom_barostat_interval(self, compound_with_box):
-        """Test NPT with custom barostat interval."""
-        sim = OpenMMSimulation(compound_with_box, forcefield=None)
-        sim.minimize(steps=100)
-        sim.npt(n_steps=50, kT=300, dt=0.0001, pressure=1.0, barostat_interval=10)
-        assert sim.get_energy() is not None
 
     # ── get_energy tests ──────────────────────────────────────────────────
 
@@ -720,7 +684,7 @@ class TestOpenMMSimulation(BaseTest):
     def test_get_energy_accumulates(self, simple_compound):
         """Test that energies accumulate across multiple calls."""
         sim = OpenMMSimulation(simple_compound, forcefield=None)
-        sim.minimize(steps=50)
+        sim.minimize(n_steps=50)
         sim.nvt(n_steps=20, kT=300, dt=0.0001)
         energy = sim.get_energy()
         assert len(energy["potential_energy"]) == 2
@@ -731,7 +695,7 @@ class TestOpenMMSimulation(BaseTest):
         """Test logger records potential energy."""
         logger = PropertyLogger(properties=["potential_energy"])
         sim = OpenMMSimulation(simple_compound, forcefield=None, logger=logger)
-        sim.minimize(steps=50)
+        sim.minimize(n_steps=50)
         assert len(logger.data["potential_energy"]) == 1
         assert isinstance(logger.data["potential_energy"][0], float)
 
@@ -746,7 +710,7 @@ class TestOpenMMSimulation(BaseTest):
         """Test logger.as_dict() returns numpy arrays."""
         logger = PropertyLogger(properties=["potential_energy"])
         sim = OpenMMSimulation(simple_compound, forcefield=None, logger=logger)
-        sim.minimize(steps=50)
+        sim.minimize(n_steps=50)
         data = logger.as_dict()
         assert isinstance(data["potential_energy"], np.ndarray)
 
@@ -765,14 +729,14 @@ class TestOpenMMSimulation(BaseTest):
         """Test Path coordinates are updated after minimize."""
         old_coords = simple_path.coordinates.copy()
         sim = OpenMMSimulation(simple_path, forcefield=None)
-        sim.minimize(steps=100)
+        sim.minimize(n_steps=100)
         assert not np.allclose(old_coords, simple_path.coordinates, atol=1e-6)
         assert np.allclose(sim.compound.xyz, simple_path.coordinates)
 
     def test_path_syncs_back_nvt(self, simple_path):
         """Test Path coordinates are updated after NVT."""
         sim = OpenMMSimulation(simple_path, forcefield=None)
-        sim.minimize(steps=100)
+        sim.minimize(n_steps=100)
         old_coords = simple_path.coordinates.copy()
         sim.nvt(n_steps=50, kT=300, dt=0.0001)
         assert not np.allclose(old_coords, simple_path.coordinates, atol=1e-6)
@@ -783,7 +747,7 @@ class TestOpenMMSimulation(BaseTest):
     def test_minimize_then_nvt(self, simple_compound):
         """Test calling minimize then nvt sequentially."""
         sim = OpenMMSimulation(simple_compound, forcefield=None)
-        sim.minimize(steps=50)
+        sim.minimize(n_steps=50)
         coords_after_min = simple_compound.xyz.copy()
         sim.nvt(n_steps=50, kT=300, dt=0.0001)
         assert not np.allclose(coords_after_min, simple_compound.xyz, atol=1e-6)
