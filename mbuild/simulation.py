@@ -73,7 +73,7 @@ class HoomdSimulation(hoomd.simulation.Simulation):
         )
 
         if kick:
-            compound._kick()
+            compound._kick(seed=seed)
 
         if run_on_gpu is None:
             device = hoomd.device.auto_select()
@@ -274,6 +274,14 @@ class HoomdSimulation(hoomd.simulation.Simulation):
             active at full strength.
         max_displacement : float (nm), default 1e-3
             Maximum distance a particle may move in a single timestep.
+
+        Notes
+        -----
+        A larger dt is often more stable here: it lets max_displacement
+        dominate the position update, so the step behaves like a steepest
+        descent minimizer capped at max_displacement. Too small a dt keeps the
+        cap from engaging and reverts to plain NVE dynamics, which can build up
+        velocity and run away on stiff potentials.
         """
         if forces_handler is not None:
             forces_handler.scale_sim(self)
@@ -405,10 +413,34 @@ class HoomdSimulation(hoomd.simulation.Simulation):
         if not self.compound.box:
             self.compound.box = self.compound.get_boundingbox(pad_box=self.box_buffer)
 
+        from mbuild.utils.simulation.path_forces import (
+            PathForcefield,
+            generate_ff_from_path,
+        )
+
         top = self.compound.to_gmso()
         top.identify_connections()
 
-        if self.forcefield is not None:
+        if isinstance(self.forcefield, PathForcefield) or (
+            self._is_path and self.forcefield is None
+        ):
+            # No atomistic information available, use a KG-based CG forcefield.
+            pff = (
+                self.forcefield
+                if isinstance(self.forcefield, PathForcefield)
+                else PathForcefield()
+            )
+            snap, _ = gmso.external.to_gsd_snapshot(top=top)
+            forces = generate_ff_from_path(
+                self._original_system,
+                snap,
+                radius=pff.radius,
+                bond_length=pff.bond_length,
+                angles_sampler=pff.angles,
+                dihedrals_sampler=pff.dihedrals,
+                epsilon=pff.epsilon,
+            )
+        elif self.forcefield is not None:
             apply(
                 top,
                 forcefields=self.forcefield,
@@ -417,11 +449,7 @@ class HoomdSimulation(hoomd.simulation.Simulation):
             forces, _ = gmso.external.to_hoomd_forcefield(top, r_cut=self.r_cut)
             snap, _ = gmso.external.to_gsd_snapshot(top=top)
             forces = list(set().union(*forces.values()))
-        else:
-            # No explicit forcefield: parameterize with UFF, computed on the fly
-            # from elements + bond orders. The topology must be UFF-typed before
-            # the snapshot is built so its particle/bond/angle type strings stay
-            # consistent with the generated forces.
+        else: # No GMSO/Foyer FF given, use the UFF-generated parameters
             from mbuild.utils.simulation.uff import assign_uff_types, uff_forces
 
             _, order_map = assign_uff_types(top, self.compound)
@@ -590,6 +618,8 @@ class OpenMMSimulation:
         Nonbonded cutoff distance (nm). Applied to any force that uses a
         cutoff, regardless of forcefield. Forces set to NoCutoff (for example
         non-periodic compounds) are unaffected.
+    seed : int, default 1
+        Seed for the coordinate kick, so kicks are reproducible.
     kick : bool, default True
         Nudge coordinates before simulating. This can be critical to remove
         flat dihedrals.
@@ -606,6 +636,7 @@ class OpenMMSimulation:
         platform="CPU",
         nthreads=1,
         r_cut=1.0,
+        seed=1,
         kick=True,
         logger=None,
     ):
@@ -624,7 +655,7 @@ class OpenMMSimulation:
         self.energies = []
 
         if kick:
-            compound._kick()
+            compound._kick(seed=seed)
 
         # Set up platform
         self._platform = Platform.getPlatformByName(platform)
@@ -646,6 +677,16 @@ class OpenMMSimulation:
         self._constraints = constraint_map[constraints]
 
         # Build system
+        from mbuild.utils.simulation.path_forces import PathForcefield
+
+        if isinstance(forcefield, PathForcefield):
+            # TODO: Add an OpenMM backend to build_path_ff (WCA via
+            # CustomNonbondedForce, FENE via CustomBondForce, tabulated angles/
+            # dihedrals) so paths relax through OpenMM as they do through HOOMD.
+            raise NotImplementedError(
+                "OpenMMSimulation does not yet support PathForcefield. Use "
+                "HoomdSimulation for coarse Kremer-Grest path relaxation."
+            )
         if forcefield is not None:
             self._build_from_forcefield(compound, forcefield)
         else:
