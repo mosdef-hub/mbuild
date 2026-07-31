@@ -2203,15 +2203,22 @@ class Compound(object):
                 shift = particles[idx].pos - initial_coordinates[idx]
                 port.translate(shift)
 
-    def _kick(self):
+    def _kick(self, seed=None):
         """Slightly adjust all coordinates in a Compound.
 
         Provides a slight adjustment to coordinates to kick them out of local
         energy minima.
+
+        Parameters
+        ----------
+        seed : int, numpy.random.Generator, or None, default None
+            Seeds the perturbation. Pass an int (or a Generator) for
+            reproducible kicks. If None, a fresh unseeded generator is used.
         """
+        rng = np.random.default_rng(seed)
         xyz_init = self.xyz
         for particle in self.particles():
-            particle.pos += (np.random.rand(3) - 0.5) / 100
+            particle.pos += (rng.random(3) - 0.5) / 100
         self._update_port_locations(xyz_init)
 
     def save(
