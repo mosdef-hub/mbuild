@@ -449,7 +449,7 @@ class HoomdSimulation(hoomd.simulation.Simulation):
             forces, _ = gmso.external.to_hoomd_forcefield(top, r_cut=self.r_cut)
             snap, _ = gmso.external.to_gsd_snapshot(top=top)
             forces = list(set().union(*forces.values()))
-        else: # No GMSO/Foyer FF given, use the UFF-generated parameters
+        else:  # No GMSO/Foyer FF given, use the UFF-generated parameters
             from mbuild.utils.simulation.uff import assign_uff_types, uff_forces
 
             _, order_map = assign_uff_types(top, self.compound)
