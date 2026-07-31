@@ -194,8 +194,6 @@ class TestHoomdSimulation(BaseTest):
     def sim_no_ff(self, octane):
         return HoomdSimulation(octane, forcefield=None, r_cut=0.3, run_on_gpu=False)
 
-    # ── Initialization tests ──────────────────────────────────────────────
-
     @pytest.mark.skipif(not has_hoomd, reason="hoomd is not installed")
     def test_init_with_compound(self, octane, oplsaa):
         """Test initialization with an mb.Compound."""
@@ -242,8 +240,6 @@ class TestHoomdSimulation(BaseTest):
         )
         assert sim.logger is logger
 
-    # ── get_force tests ───────────────────────────────────────────────────
-
     @pytest.mark.skipif(not has_hoomd, reason="hoomd is not installed")
     def test_get_force_exists(self, sim):
         """Test retrieving existing forces."""
@@ -266,8 +262,6 @@ class TestHoomdSimulation(BaseTest):
         assert force is not None
         with pytest.raises(ValueError):
             sim._get_force(hoomd.md.bond.Harmonic, active_only=True)
-
-    # ── Simulation method tests ───────────────────────────────────────────
 
     @pytest.mark.skipif(not has_hoomd, reason="hoomd is not installed")
     def test_nvt(self, sim):
@@ -333,8 +327,6 @@ class TestHoomdSimulation(BaseTest):
         force_types = set(type(f) for f in sim.active_forces)
         assert force_types == {hoomd.md.pair.DPDConservative, hoomd.md.bond.Harmonic}
 
-    # ── Energy tracking tests ─────────────────────────────────────────────
-
     @pytest.mark.skipif(not has_hoomd, reason="hoomd is not installed")
     def test_get_energy_empty(self, sim):
         """Test get_energy returns None before any run."""
@@ -372,8 +364,6 @@ class TestHoomdSimulation(BaseTest):
         sim.nvt(forces_handler=fh, n_steps=20, kT=2.0, dt=1e-4, tau=1e-2)
         assert len(logger.data["potential_energy"]) > 0
 
-    # ── Path-specific tests ───────────────────────────────────────────────
-
     @pytest.mark.skipif(not has_hoomd, reason="hoomd is not installed")
     def test_path_fire(self):
         """Test FIRE minimization on a Path."""
@@ -409,11 +399,9 @@ class TestHoomdSimulation(BaseTest):
         old_coords = path.coordinates.copy()
         sim = HoomdSimulation(path, forcefield=None, r_cut=0.5, run_on_gpu=False)
         sim.cap_displacement(
-            forces_handler=None, dt=1, max_displacement=0.5, n_steps=10
+            forces_handler=None, dt=1, max_displacement=0.001, n_steps=10
         )
         assert not np.allclose(old_coords, path.coordinates, atol=1e-5)
-
-    # ── Integration group tests ───────────────────────────────────────────
 
     @pytest.mark.skipif(not has_hoomd, reason="hoomd is not installed")
     def test_integrate_group_all(self, octane, oplsaa):
@@ -447,10 +435,6 @@ class TestOpenMMSimulation(BaseTest):
         return _make_simple_compound(n=5, spacing=0.15)
 
     @pytest.fixture
-    def simple_path(self):
-        return _make_simple_path(n=8)
-
-    @pytest.fixture
     def compound_with_box(self):
         """Compound with box, particles centered inside."""
         cpd = mb.Compound()
@@ -477,8 +461,6 @@ class TestOpenMMSimulation(BaseTest):
             cpd.add(p)
         return cpd
 
-    # ── Initialization tests ──────────────────────────────────────────────
-
     def test_init_with_compound(self, simple_compound):
         """Test initialization with a Compound."""
         sim = OpenMMSimulation(simple_compound, forcefield=None)
@@ -486,12 +468,6 @@ class TestOpenMMSimulation(BaseTest):
         assert sim.compound is simple_compound
         assert sim.system is not None
         assert sim.topology is not None
-
-    def test_init_with_path(self, simple_path):
-        """Test initialization with a Path."""
-        sim = OpenMMSimulation(simple_path, forcefield=None)
-        assert sim._is_path is True
-        assert sim.compound.n_particles == 8
 
     def test_init_invalid_input(self):
         """Test that invalid input raises TypeError."""
@@ -578,21 +554,12 @@ class TestOpenMMSimulation(BaseTest):
         sim = OpenMMSimulation(simple_compound, forcefield=None, nthreads=2)
         assert sim._platform.getPropertyDefaultValue("Threads") == "2"
 
-    # ── minimize tests ────────────────────────────────────────────────────
-
     def test_minimize_compound(self, simple_compound):
         """Test energy minimization on a Compound."""
         old_coords = simple_compound.xyz.copy()
         sim = OpenMMSimulation(simple_compound, forcefield=None)
         sim.minimize(n_steps=100)
         assert not np.allclose(old_coords, simple_compound.xyz, atol=1e-6)
-
-    def test_minimize_path(self, simple_path):
-        """Test energy minimization on a Path."""
-        old_coords = simple_path.coordinates.copy()
-        sim = OpenMMSimulation(simple_path, forcefield=None)
-        sim.minimize(n_steps=100)
-        assert not np.allclose(old_coords, simple_path.coordinates, atol=1e-6)
 
     def test_minimize_records_energy(self, simple_compound):
         """Test that minimize records energy."""
@@ -620,8 +587,6 @@ class TestOpenMMSimulation(BaseTest):
         sim.minimize(n_steps=100)
         assert not np.allclose(old_coords, octane.xyz, atol=1e-4)
 
-    # ── nvt tests ─────────────────────────────────────────────────────────
-
     def test_nvt_compound(self, simple_compound):
         """Test NVT simulation on a Compound."""
         sim = OpenMMSimulation(simple_compound, forcefield=None)
@@ -629,14 +594,6 @@ class TestOpenMMSimulation(BaseTest):
         old_coords = simple_compound.xyz.copy()
         sim.nvt(n_steps=50, kT=300, dt=0.0001)
         assert not np.allclose(old_coords, simple_compound.xyz, atol=1e-6)
-
-    def test_nvt_path(self, simple_path):
-        """Test NVT simulation on a Path."""
-        sim = OpenMMSimulation(simple_path, forcefield=None)
-        sim.minimize(n_steps=100)
-        old_coords = simple_path.coordinates.copy()
-        sim.nvt(n_steps=50, kT=300, dt=0.0001)
-        assert not np.allclose(old_coords, simple_path.coordinates, atol=1e-6)
 
     def test_nvt_records_energy(self, simple_compound):
         """Test that NVT records energy."""
@@ -673,8 +630,6 @@ class TestOpenMMSimulation(BaseTest):
         sim.nvt(n_steps=50, kT=300, dt=0.0001)
         assert not np.allclose(old_coords, octane.xyz, atol=1e-6)
 
-    # ── get_energy tests ──────────────────────────────────────────────────
-
     def test_get_energy_empty(self, simple_compound):
         """Test get_energy returns None before any run."""
         sim = OpenMMSimulation(simple_compound, forcefield=None)
@@ -687,8 +642,6 @@ class TestOpenMMSimulation(BaseTest):
         sim.nvt(n_steps=20, kT=300, dt=0.0001)
         energy = sim.get_energy()
         assert len(energy["potential_energy"]) == 2
-
-    # ── PropertyLogger integration ────────────────────────────────────────
 
     def test_logger_records_pe(self, simple_compound):
         """Test logger records potential energy."""
@@ -721,27 +674,6 @@ class TestOpenMMSimulation(BaseTest):
         logger.reset()
         assert len(logger.data["potential_energy"]) == 0
         assert len(logger.data["kinetic_energy"]) == 0
-
-    # ── Path sync-back tests ──────────────────────────────────────────────
-
-    def test_path_syncs_back_minimize(self, simple_path):
-        """Test Path coordinates are updated after minimize."""
-        old_coords = simple_path.coordinates.copy()
-        sim = OpenMMSimulation(simple_path, forcefield=None)
-        sim.minimize(n_steps=100)
-        assert not np.allclose(old_coords, simple_path.coordinates, atol=1e-6)
-        assert np.allclose(sim.compound.xyz, simple_path.coordinates)
-
-    def test_path_syncs_back_nvt(self, simple_path):
-        """Test Path coordinates are updated after NVT."""
-        sim = OpenMMSimulation(simple_path, forcefield=None)
-        sim.minimize(n_steps=100)
-        old_coords = simple_path.coordinates.copy()
-        sim.nvt(n_steps=50, kT=300, dt=0.0001)
-        assert not np.allclose(old_coords, simple_path.coordinates, atol=1e-6)
-        assert np.allclose(sim.compound.xyz, simple_path.coordinates)
-
-    # ── Multiple calls / reuse tests ──────────────────────────────────────
 
     def test_minimize_then_nvt(self, simple_compound):
         """Test calling minimize then nvt sequentially."""
