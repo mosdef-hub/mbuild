@@ -426,6 +426,70 @@ class TestHoomdSimulation(BaseTest):
             with pytest.raises(RuntimeError):
                 sim._get_integrate_group()
 
+    @pytest.mark.skipif(not has_hoomd, reason="hoomd is not installed")
+    def test_integrate_compounds_only_selected_moves(self):
+        """Test that only integrate_compounds move while the rest stay fixed."""
+        methane = mb.load("C", smiles=True)
+        methane.name = "Methane"
+        ethanol = mb.load("CCO", smiles=True)
+        ethanol.name = "Ethanol"
+        box = mb.fill_box(
+            compound=[methane, ethanol], n_compounds=[10, 1], box=[3, 3, 3]
+        )
+        ethanol_compound = box.children[-1]
+        sim = HoomdSimulation(
+            system=box,
+            integrate_compounds=[ethanol_compound],
+            r_cut=1.0,
+            box_buffer=2,
+            run_on_gpu=False,
+        )
+
+        ethanol_ids = {id(p) for p in ethanol_compound.particles()}
+        methane_particles = [p for p in box.particles() if id(p) not in ethanol_ids]
+        methane_before = np.array([np.copy(p.pos) for p in methane_particles])
+        ethanol_before = np.copy(ethanol_compound.xyz)
+
+        sim.nvt(n_steps=50000, kT=2, dt=1e-4, tau=1e-2)
+
+        methane_after = np.array([p.pos for p in methane_particles])
+        ethanol_after = ethanol_compound.xyz
+
+        # HOOMD centers its box at the origin, so sync-back applies a rigid frame
+        # shift to every particle. Compare positions relative to each set's centroid
+        # so the assertions test actual motion, not the global translation.
+        methane_before -= methane_before.mean(axis=0)
+        methane_after -= methane_after.mean(axis=0)
+        ethanol_before -= ethanol_before.mean(axis=0)
+        ethanol_after -= ethanol_after.mean(axis=0)
+
+        # Non-integrated methane particles do not move relative to each other
+        assert np.allclose(methane_before, methane_after, atol=1e-2)
+        # Integrated ethanol changes its internal configuration
+        assert not np.allclose(ethanol_before, ethanol_after, atol=1e-2)
+
+    @pytest.mark.skipif(not has_hoomd, reason="hoomd is not installed")
+    def test_fixed_compounds_anchor_stays_put(self):
+        """Test that a fixed_compounds particle does not move during a run."""
+        chain = mb.load("CCCCCCC", smiles=True)
+        chain.translate_to((0, 0, 0))
+        sim = HoomdSimulation(
+            system=chain, fixed_compounds=[3], r_cut=1.0, box_buffer=4, run_on_gpu=False
+        )
+
+        anchor_pos_before = np.copy(chain.xyz[3])
+        other_pos_before = np.copy(chain.xyz[0])
+
+        sim.nvt(n_steps=50000, kT=2, dt=1e-4, tau=1e-2)
+
+        anchor_pos_after = chain.xyz[3]
+        other_pos_after = chain.xyz[0]
+
+        # The fixed anchor particle stays put
+        assert np.allclose(anchor_pos_before, anchor_pos_after, atol=1e-2)
+        # A non-fixed particle moves
+        assert not np.allclose(other_pos_before, other_pos_after, atol=1e-2)
+
 
 class TestOpenMMSimulation(BaseTest):
     """Tests for the OpenMMSimulation class."""

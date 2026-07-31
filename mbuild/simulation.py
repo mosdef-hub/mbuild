@@ -37,12 +37,14 @@ class HoomdSimulation(hoomd.simulation.Simulation):
         If True, size the simulation box from the compound automatically.
     box_buffer : float, default 10
         Padding (nm) added around the compound when a bounding box is generated.
-    integrate_compounds : list of mb.Compound, default None
+    integrate_compounds : list of mb.Compound or list of int, default None
         Compounds to integrate while all others are held fixed. Mutually
         exclusive with fixed_compounds.
-    fixed_compounds : list of mb.Compound, default None
+        If a list of integers are passed, particles are chosen by matching indices.
+    fixed_compounds : list of mb.Compound or list of int, default None
         Compounds held fixed while all others are integrated. Mutually
         exclusive with integrate_compounds.
+        If a list of integers are passed, particles are chosen by matching indices.
     gsd_file_name : str or None, default None
         Name of a GSD file to write trajectory output to.
     kick : bool, default True
@@ -67,6 +69,16 @@ class HoomdSimulation(hoomd.simulation.Simulation):
         kick=True,
         logger=None,
     ):
+
+        if integrate_compounds and fixed_compounds:
+            raise RuntimeError(
+                "You can specify only one of integrate_compounds and fixed_compounds."
+            )
+        if isinstance(integrate_compounds, Compound):
+            integrate_compounds = [integrate_compounds]
+        if isinstance(fixed_compounds, Compound):
+            fixed_compounds = [fixed_compounds]
+
         # Resolve input type
         compound, self._is_path, self._original_system, self.original_coords = (
             _resolve_input(system)
@@ -490,10 +502,6 @@ class HoomdSimulation(hoomd.simulation.Simulation):
                 fix_indices = self.fixed_compounds
             return hoomd.filter.SetDifference(
                 hoomd.filter.All(), hoomd.filter.Tags(fix_indices)
-            )
-        elif self.integrate_compounds and self.fixed_compounds:
-            raise RuntimeError(
-                "You can specify only one of integrate_compounds and fixed_compounds."
             )
         else:
             return hoomd.filter.All()
