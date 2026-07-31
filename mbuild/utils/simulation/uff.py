@@ -30,7 +30,9 @@ G_ANGLE = 664.12  # angle force-constant prefactor, kcal/mol
 # Columns: r1 (valence bond radius, Ang), theta0 (equilibrium angle, deg),
 #          x1 (vdW minimum distance r_min, Ang), D1 (vdW well depth, kcal/mol),
 #          Zstar (effective charge), Vi (sp3 torsional barrier, kcal/mol),
-#          Uj (sp2 torsional constant), chi (GMP electronegativity).
+#          Uj (sp2 torsional constant; UFF assigns it by periodic-table row:
+#          period 1 = 0.0, 2 = 2.0, 3 = 1.25, 4 = 0.7, 5 = 0.2, 6 = 0.1),
+#          chi (GMP electronegativity).
 _COLS = ("r1", "theta0", "x1", "D1", "Zstar", "Vi", "Uj", "chi")
 _TABLE = {
     #  label      r1     theta0   x1      D1     Zstar   Vi     Uj    chi
@@ -48,11 +50,11 @@ _TABLE = {
     "O_2": (0.634, 120.00, 3.500, 0.060, 2.300, 0.000, 2.0, 8.741),
     "O_1": (0.639, 180.00, 3.500, 0.060, 2.300, 0.000, 2.0, 8.741),
     "F_": (0.668, 180.00, 3.364, 0.050, 1.735, 0.000, 2.0, 10.874),
-    "Cl": (1.044, 180.00, 3.947, 0.227, 2.348, 0.000, 2.0, 8.564),
-    "Br": (1.192, 180.00, 4.189, 0.251, 2.519, 0.000, 2.0, 7.790),
-    "I_": (1.382, 180.00, 4.500, 0.339, 2.650, 0.000, 2.0, 6.822),
-    "S_3+2": (1.064, 92.10, 4.035, 0.274, 2.703, 0.484, 2.0, 6.928),
-    "P_3+3": (1.101, 93.80, 4.147, 0.305, 2.863, 2.400, 2.0, 5.463),
+    "Cl": (1.044, 180.00, 3.947, 0.227, 2.348, 0.000, 1.25, 8.564),
+    "Br": (1.192, 180.00, 4.189, 0.251, 2.519, 0.000, 0.7, 7.790),
+    "I_": (1.382, 180.00, 4.500, 0.339, 2.650, 0.000, 0.2, 6.822),
+    "S_3+2": (1.064, 92.10, 4.035, 0.274, 2.703, 0.484, 1.25, 6.928),
+    "P_3+3": (1.101, 93.80, 4.147, 0.305, 2.863, 2.400, 1.25, 5.463),
 }
 UFF_PARAMS = {label: dict(zip(_COLS, vals)) for label, vals in _TABLE.items()}
 
@@ -353,20 +355,11 @@ def _hoomd_forces(top, snap, order_map, r_cut):
             if (ti, tj, tk) in seen:
                 continue
             theta0 = math.radians(UFF_PARAMS[tj]["theta0"])
-            # Harmonic approximation is invalid at linear centers (sin -> 0).
-            if abs(math.sin(theta0)) < 1e-3:
-                logger.warning(
-                    "UFF: skipping linear angle type %s-%s-%s (theta0=180); the "
-                    "lean harmonic approximation cannot represent it.",
-                    ti,
-                    tj,
-                    tk,
-                )
-                seen.update({(ti, tj, tk), (tk, tj, ti)})
-                continue
             r_ij = _bond_rest_length(ti, tj, order_between(i, j))
             r_jk = _bond_rest_length(tj, tk, order_between(j, k_idx))
             k_theta = _angle_force_constant(ti, tj, tk, r_ij, r_jk, theta0)
+            # Linear centers (theta0=180) get a harmonic too: k_theta is finite
+            # there, and HOOMD requires every angle type to be parameterized.
             params = dict(k=k_theta * KCAL_TO_KJ, t0=theta0)
             _set_both(angle_force, (ti, tj, tk), params, seen)
         forces.append(angle_force)
@@ -392,15 +385,17 @@ def _hoomd_forces(top, snap, order_map, r_cut):
             )
             if (ti, tj, tk, tl) in seen:
                 continue
-            params = _torsion_params(tj, tk, order_between(j, k_idx))
-            if params is None:
-                seen.update({(ti, tj, tk, tl), (tl, tk, tj, ti)})
+            # No-op fallback: unhandled (sp centers etc.) or zero-barrier cases
+            # still need a param entry or HOOMD raises on the missing type.
+            zero = dict(k=0.0, d=1, n=1, phi0=0.0)
+            tp = _torsion_params(tj, tk, order_between(j, k_idx))
+            if tp is None:
+                _set_both(dihedral_force, (ti, tj, tk, tl), zero, seen)
                 continue
-            v_total, n, cos_n_phi0 = params
-            bond_key = tuple(sorted((j, k_idx)))
-            v = v_total / mult[bond_key]
+            v_total, n, cos_n_phi0 = tp
+            v = v_total / mult[tuple(sorted((j, k_idx)))]
             if abs(v) < 1e-9:
-                seen.update({(ti, tj, tk, tl), (tl, tk, tj, ti)})
+                _set_both(dihedral_force, (ti, tj, tk, tl), zero, seen)
                 continue
             # UFF: E = 0.5 V (1 - cos(n phi0) cos(n phi)).
             # HOOMD Periodic: E = k (1 + d cos(n phi - phi0)); phi0 = 0,

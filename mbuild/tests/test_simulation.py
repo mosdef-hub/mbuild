@@ -404,6 +404,21 @@ class TestHoomdSimulation(BaseTest):
         assert not np.allclose(old_coords, path.coordinates, atol=1e-5)
 
     @pytest.mark.skipif(not has_hoomd, reason="hoomd is not installed")
+    def test_stress_uff(self):
+        """UFF on a 60-atom molecule spanning all 10 elements and every hybridization."""
+        smiles = "N#CC(=O)OC(O)C(Br)(Cl)c1ccc(o1)C=Nc1ncc(F)cc1C#CCSCP(C)CCN(C)CI"
+        comp = mb.load(smiles, smiles=True)
+        old_coords = comp.xyz.copy()
+        sim = HoomdSimulation(
+            comp, forcefield=None, r_cut=0.5, box_buffer=6, run_on_gpu=False
+        )
+        # LJ + harmonic bonds + harmonic angles + periodic dihedrals.
+        assert len(sim.forces) == 4
+        sim.fire(forces_handler=None, n_steps=100)
+        assert np.isfinite(comp.xyz).all()
+        assert not np.allclose(old_coords, comp.xyz, atol=1e-5)
+
+    @pytest.mark.skipif(not has_hoomd, reason="hoomd is not installed")
     def test_integrate_group_all(self, octane, oplsaa):
         """Test that default integration group includes all particles."""
         sim = HoomdSimulation(octane, oplsaa, r_cut=0.3, run_on_gpu=False)
