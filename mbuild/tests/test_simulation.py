@@ -455,17 +455,9 @@ class TestHoomdSimulation(BaseTest):
         methane_after = np.array([p.pos for p in methane_particles])
         ethanol_after = ethanol_compound.xyz
 
-        # HOOMD centers its box at the origin, so sync-back applies a rigid frame
-        # shift to every particle. Compare positions relative to each set's centroid
-        # so the assertions test actual motion, not the global translation.
-        methane_before -= methane_before.mean(axis=0)
-        methane_after -= methane_after.mean(axis=0)
-        ethanol_before -= ethanol_before.mean(axis=0)
-        ethanol_after -= ethanol_after.mean(axis=0)
-
-        # Non-integrated methane particles do not move relative to each other
+        # Non-integrated methane coords stay fixed
         assert np.allclose(methane_before, methane_after, atol=1e-2)
-        # Integrated ethanol changes its internal configuration
+        # Integrated ethanol coords change
         assert not np.allclose(ethanol_before, ethanol_after, atol=1e-2)
 
     @pytest.mark.skipif(not has_hoomd, reason="hoomd is not installed")
@@ -489,6 +481,70 @@ class TestHoomdSimulation(BaseTest):
         assert np.allclose(anchor_pos_before, anchor_pos_after, atol=1e-2)
         # A non-fixed particle moves
         assert not np.allclose(other_pos_before, other_pos_after, atol=1e-2)
+
+    @pytest.mark.skipif(not has_hoomd, reason="hoomd is not installed")
+    def test_positions_returned_in_original_frame(self):
+        """Regression: sync-back must undo HOOMD's box-centering translation."""
+        methane = mb.load("C", smiles=True)
+        box = mb.fill_box(compound=[methane], n_compounds=[5], box=[3, 3, 3])
+        frozen_indices = list(range(box.n_particles - 1))
+        sim = HoomdSimulation(
+            system=box,
+            fixed_compounds=frozen_indices,
+            r_cut=1.0,
+            box_buffer=2,
+            run_on_gpu=False,
+        )
+        frozen_before = np.copy(sim.compound.xyz[frozen_indices])
+        sim.nvt(n_steps=100, kT=2, dt=1e-4, tau=1e-2)
+        frozen_after = sim.compound.xyz[frozen_indices]
+        # The fixed particles do not move, so their absolute coordinates must be
+        assert np.allclose(frozen_before, frozen_after, atol=1e-6)
+
+    @pytest.mark.skipif(not has_hoomd, reason="hoomd is not installed")
+    def test_box_update_bounding_box_within_target(self):
+        """box_update should leave the compound fitting inside the target box."""
+        methane = mb.load("C", smiles=True)
+        methane.name = "Methane"
+        box = mb.fill_box(compound=[methane], n_compounds=[8], box=[3, 3, 3])
+        sim = HoomdSimulation(system=box, r_cut=1.0, box_buffer=2, run_on_gpu=False)
+
+        target = hoomd.Box(5, 5, 5)
+        sim.box_update(
+            n_steps=3000,
+            kT=1.0,
+            dt=1e-4,
+            tau=1e-2,
+            target_box=target,
+            update_period=50,
+        )
+
+        bbox_lengths = np.asarray(sim.compound.get_boundingbox().lengths)
+        assert np.all(bbox_lengths <= np.asarray(target.L))
+
+    @pytest.mark.skipif(not has_hoomd, reason="hoomd is not installed")
+    def test_box_update_no_half_box_shift(self):
+        """Resizing must adjust the frame offset by dL/2, not leave it stale."""
+        methane = mb.load("C", smiles=True)
+        methane.name = "Methane"
+        box = mb.fill_box(compound=[methane], n_compounds=[8], box=[3, 3, 3])
+        sim = HoomdSimulation(system=box, r_cut=1.0, box_buffer=2, run_on_gpu=False)
+
+        sim.box_update(
+            n_steps=3000,
+            kT=1.0,
+            dt=1e-4,
+            tau=1e-2,
+            target_box=hoomd.Box(5, 5, 5),
+            update_period=50,
+        )
+
+        L_final = np.asarray(sim.state.box.L)
+        xyz = sim.compound.xyz
+        # Box corner is at the origin: all coords lie within [0, L_final].
+        # A stale offset would shift these by ~dL/2 (1 nm here) and go negative.
+        assert np.all(xyz >= -1e-4)
+        assert np.all(xyz <= L_final + 1e-4)
 
 
 class TestOpenMMSimulation(BaseTest):

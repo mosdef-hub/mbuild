@@ -128,6 +128,11 @@ class HoomdSimulation(hoomd.simulation.Simulation):
                 state=snapshot, forces=self.forces, forcefield=forcefield
             )
 
+        # Undo the translation to -L/2 L/2 used by HOOMD
+        self._frame_offset = self.compound.xyz.mean(axis=0) - np.asarray(
+            snapshot.particles.position
+        ).mean(axis=0)
+
         self.active_forces = []
         self.inactive_forces = []
         self._orig_force_params = {}
@@ -254,12 +259,19 @@ class HoomdSimulation(hoomd.simulation.Simulation):
         )
         self.operations.updaters.append(box_resizer)
 
+        # HOOMD resizes the box about the origin. Track the box lengths so the
+        # frame offset can be adjusted, keeping the compound's box corner fixed
+        # when positions are synced back after the resize (see _update_positions).
+        L_before = np.asarray(self.state.box.L)
+
         if self.energies == []:
             self.run(0)
             self._store_current_energies()
 
         self.run(n_steps)
         self.operations.updaters.remove(box_resizer)
+        L_after = np.asarray(self.state.box.L)
+        self._frame_offset = self._frame_offset + (L_after - L_before) / 2
         self._store_current_energies()
         self._log_properties()
         self.operations.integrator = None
@@ -576,7 +588,9 @@ class HoomdSimulation(hoomd.simulation.Simulation):
         with self.state.cpu_local_snapshot as snap:
             particles = snap.particles.rtag[:]
             pos = snap.particles.position[particles]
-            self.compound.xyz = np.copy(pos)
+            # Undo the box-centering translation applied when building the
+            # snapshot so coordinates return to the compound's original frame.
+            self.compound.xyz = np.copy(pos) + self._frame_offset
         _sync_back(self.compound, self._is_path, self._original_system)
 
     def _store_current_energies(self):
