@@ -340,33 +340,48 @@ class Path:
 
         return visualize_path(self, radius, hide_periodic_bonds)
 
-    def relax(self, bead_radius, bond_length=None, steps=1000, seed=1, nthreads=1):
-        """Perform a dpd simulation to relax the current path.
+    def relax(
+        self,
+        bead_radius,
+        bond_length=None,
+        angles_sampler=None,
+        steps=1000,
+        seed=1,
+    ):
+        """Relax the path with a coarse Kremer-Grest forcefield.
 
-        Runs a short energy minimization simulation in OpenMM.
+        Builds a WCA + FENE forcefield from the given parameters and runs a
+        capped-displacement warm-up followed by FIRE minimization in HOOMD.
+        Relaxed coordinates are synced back onto the path.
 
         Parameters
         ----------
         bead_radius : float
-            Bead size set in the simulation.
+            WCA bead radius (center-to-center exclusion diameter).
         bond_length : float, optional
-            Bond length used for all bonds.
+            Target bond length. Defaults to the path's mean bond length.
+        angles_sampler : mbuild.path.points.AnglesSampler, optional
+            If given, adds a tabulated angle potential from this distribution.
         steps : int, optional, default 1,000
-            Number of simulation steps to run.
+            Number of FIRE minimization steps.
         seed : int, optional, default 1
-            Random seed for integrator.
-        nthreads : int, optional, default 1
-            Number of threads to use during OpenMM simulation.
+            Random seed for the simulation.
         """
         import mbuild.simulation
-
-        simulation = mbuild.simulation.OpenMMSimulation(
-            self, forcefield=None, nthreads=nthreads
+        from mbuild.utils.simulation.path_forces import (
+            PathForcefield,
+            _mean_bond_length,
         )
-        # TODO: Create a forcefield from bead_radius
-        # energy_minimize_path(self, bead_radius, bond_length, steps, seed, nthreads)
-        simulation.minimize(steps, tolerance=1)
-        return
+
+        bond_eff = bond_length if bond_length is not None else _mean_bond_length(self)
+        forcefield = PathForcefield(
+            radius=bead_radius, bond_length=bond_length, angles=angles_sampler
+        )
+        sim = mbuild.simulation.HoomdSimulation(
+            self, forcefield=forcefield, seed=seed, run_on_gpu=False
+        )
+        sim.cap_displacement(n_steps=500, dt=1, max_displacement=0.01 * bond_eff)
+        sim.fire(n_steps=steps)
 
 
 def lamellar(
