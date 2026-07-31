@@ -23,6 +23,7 @@ def generate_positions(
     placement,
     templates,
     seed,
+    all_atom=True,
 ):
     """Compute a position for every atom in the resolved molecule.
 
@@ -31,8 +32,12 @@ def generate_positions(
     fragment (cached per unique fragment). Fragments are rotated so the
     atoms bonded to other beads point toward those beads, then centered
     on the bead anchor.
+
+    With ``all_atom=False`` the resolved nodes are finer coarse-grained
+    beads rather than atoms. There is no atomistic detail to embed with
+    RDKit, so local geometry comes only from templates.
     """
-    if placement == "rdkit":
+    if all_atom and placement == "rdkit":
         try:
             from rdkit import Chem  # noqa: F401
         except ImportError:
@@ -57,8 +62,13 @@ def generate_positions(
 
         if templates is not None and fragname in templates:
             local_xyz = _template_local_coords(
-                molecule, atoms, templates[fragname], fragname
+                molecule, atoms, templates[fragname], fragname, all_atom=all_atom
             )
+        elif not all_atom:
+            # A coarse-grained endpoint has no atomistic geometry to
+            # embed; without a template the sub-beads collapse onto the
+            # parent bead anchor (topology is still correct).
+            local_xyz = np.zeros((len(atoms), 3))
         elif placement == "template":
             raise ValueError(
                 f"placement='template' but no template was provided for "
@@ -106,9 +116,7 @@ def _embedded_fragment_coords(molecule, atoms, rel_index, embed_cache, seed):
     """Local fragment coordinates from a cached RDKit embedding.
 
     Fragment instances created from the same CGsmiles fragment have
-    their atoms in the same relative node order, so element, charge and
-    relative-edge tuples identify structurally identical fragments and
-    index-based reuse of the embedded coordinates is safe.
+    their atoms in the same relative node order.
     """
     elements = tuple(molecule.nodes[n].get("element", "*") for n in atoms)
     charges = tuple(molecule.nodes[n].get("charge", 0) for n in atoms)
@@ -144,7 +152,7 @@ def _tag_as_index(particle):
         return None
 
 
-def _template_local_coords(molecule, atoms, template, fragname):
+def _template_local_coords(molecule, atoms, template, fragname, all_atom=True):
     """Local coordinates for a bead's atoms taken from an mBuild template.
 
     Heavy atoms in the resolved molecule are matched to the template's
@@ -157,7 +165,14 @@ def _template_local_coords(molecule, atoms, template, fragname):
     hydrogen bonded to its parent's matched template particle; surplus
     template hydrogens (e.g. saturating a junction) are ignored. Returns
     coordinates in nm, centered on the centroid of the used atoms.
+
+    With ``all_atom=False`` the resolved fragment is coarse-grained: its
+    nodes are sub-beads with no element and no hydrogens, so each is
+    matched to the template particle at the same fragment index (see
+    ``_template_local_coords_cg``).
     """
+    if not all_atom:
+        return _template_local_coords_cg(molecule, atoms, template, fragname)
 
     def symbol(particle):
         """Element symbol of a particle, falling back to its name when no
@@ -270,6 +285,53 @@ def _template_local_coords(molecule, atoms, template, fragname):
                 "must be at least as saturated as the resolved fragment."
             )
         coords[node] = np.asarray(pool.pop(0).pos, dtype=float)
+
+    local_xyz = np.array([coords[node] for node in atoms])
+    return local_xyz - local_xyz.mean(axis=0)
+
+
+def _template_local_coords_cg(molecule, atoms, template, fragname):
+    """Local coordinates for a coarse-grained fragment from a template.
+
+    The resolved fragment's nodes are sub-beads (no element, no
+    hydrogens). Each is matched to the template particle at the same
+    fragment index, which is the ``mapping`` node attribute CGsmiles
+    records; the template beads must therefore appear in the same order
+    as in the fragment definition. Returns coordinates in nm, centered
+    on the centroid of the fragment.
+    """
+    template_particles = list(template.particles())
+    if len(atoms) != len(template_particles):
+        raise ValueError(
+            f"Template for fragment '{fragname}' has {len(template_particles)} "
+            f"bead(s) but the resolved fragment has {len(atoms)}."
+        )
+
+    coords = {}
+    for node in atoms:
+        mapping = molecule.nodes[node].get("mapping")
+        if not mapping or len(mapping) != 1:
+            raise ValueError(
+                f"Cannot use a template for fragment '{fragname}': bead "
+                f"{node} has no unique fragment mapping (squashed fragments "
+                "are not supported by template placement)."
+            )
+        index = mapping[0][1]
+        if not 0 <= index < len(template_particles):
+            raise ValueError(
+                f"Template for fragment '{fragname}' has no bead at fragment "
+                f"index {index}."
+            )
+        particle = template_particles[index]
+        name = molecule.nodes[node].get("atomname")
+        if name is not None and str(particle.name) != str(name):
+            raise ValueError(
+                f"Template for fragment '{fragname}' does not match: bead at "
+                f"fragment index {index} is '{particle.name}' but the fragment "
+                f"expects '{name}'. Template beads must appear in the same "
+                "order as in the fragment definition."
+            )
+        coords[node] = np.asarray(particle.pos, dtype=float)
 
     local_xyz = np.array([coords[node] for node in atoms])
     return local_xyz - local_xyz.mean(axis=0)

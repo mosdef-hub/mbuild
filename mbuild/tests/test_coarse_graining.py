@@ -701,6 +701,58 @@ class TestCoarseGraining(BaseTest):
         assert compound.n_bonds == 25
         assert nx.is_connected(compound_graph(compound))
 
+    def test_backmap_bead_to_dimer_to_water(self):
+        # multi-resolution to a molecule: each W bead resolves to a two-bead
+        # dimer (CG), then to a water molecule (all-atom). The last block is
+        # SMILES, so an all-atom endpoint is inferred.
+        import mbuild as mb
+
+        box = mb.fill_box(compound=mb.Compound(name="W"), n_compounds=5, box=[3, 3, 3])
+        water = box.backmap(["{#W=[#HH][#OH]}", "{#HH=[$][H],#OH=[$]O}"])
+        # 5 W -> 5 H2O: O with two H, two bonds each
+        assert water.n_particles == 15
+        assert water.n_bonds == 10
+        names = sorted(p.name for p in water.particles())
+        assert names.count("O") == 5 and names.count("H") == 10
+        # the waters are separate molecules (the box beads are unbonded)
+        assert nx.number_connected_components(compound_graph(water)) == 5
+
+    def test_backmap_cg_chain_refine_then_atomistic(self):
+        # a CG chain of 4 E2 beads refines to 8 E beads (CG endpoint), then
+        # all the way to an atomistic polyethylene chain of 8 CC units.
+        path = straight_line(spacing=0.5, N=4, bead_name="E2")
+
+        # CG -> CG: 4 E2 beads -> 8 E beads (all_atom=False inferred)
+        cg_chain = path.backmap("{#E2=[>][#E][#E][<]}")
+        assert cg_chain.n_particles == 8
+        assert cg_chain.n_bonds == 7
+        assert {p.name for p in cg_chain.particles()} == {"E"}
+        assert all(p.element is None for p in cg_chain.particles())
+        assert nx.is_connected(compound_graph(cg_chain))
+
+        # CG -> CG -> atomistic in one multi-resolution call
+        pe = path.backmap(["{#E2=[>][#E][#E][<]}", "{#E=[>]CC[<]}"])
+        assert pe.n_particles == 50  # 16 C + 34 H
+        assert pe.n_bonds == 49
+        names = [p.name for p in pe.particles()]
+        assert names.count("C") == 16 and names.count("H") == 34
+        assert nx.is_connected(compound_graph(pe))
+
+    def test_backmap_cg_chain_direct_to_atomistic(self):
+        # the same polyethylene chain reached directly: each E2 bead resolves
+        # to four carbons in one step, skipping the intermediate CG level.
+        path = straight_line(spacing=0.5, N=4, bead_name="E2")
+
+        direct = path.backmap("{#E2=[>]CCCC[<]}")
+        assert direct.n_particles == 50
+        assert direct.n_bonds == 49
+        assert nx.is_connected(compound_graph(direct))
+
+        # the direct and refined routes give the same atomistic chain
+        refined = path.backmap(["{#E2=[>][#E][#E][<]}", "{#E=[>]CC[<]}"])
+        assert direct.n_particles == refined.n_particles
+        assert direct.n_bonds == refined.n_bonds
+
     def test_coarse_grain_zero_mass_raises(self):
         import mbuild as mb
 

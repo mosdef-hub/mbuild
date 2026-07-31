@@ -35,6 +35,7 @@ def resolve(
     legacy=True,
     validate=True,
     templates=None,
+    all_atom=None,
 ):
     """Resolve a coarse-grained system to a molecular graph using CGsmiles.
 
@@ -83,6 +84,14 @@ def resolve(
         fragments. CGsmiles silently skips CG bonds when a fragment runs
         out of bonding descriptors, which would otherwise produce a
         disconnected molecule with hydrogen-capped stumps.
+    all_atom : bool, optional
+        Whether the final resolution is atomistic. Leave as ``None`` to
+        infer it: the endpoint is treated as coarse-grained only when
+        every fragment definition is coarse-grained (fragment strings
+        using ``[#name]`` sub-bead syntax and templates whose particles
+        are beads without a chemical element). Pass ``False`` to resolve
+        one coarse-grained level to a finer coarse-grained level, or
+        ``True`` to force atomistic resolution.
 
     Returns
     -------
@@ -98,6 +107,8 @@ def resolve(
         CG bead indices it descends from. Atoms claimed by multiple
         beads (via the squash operator) map to multiple indices.
     """
+    if all_atom is None:
+        all_atom = _infer_all_atom(fragments, templates)
     cg_graph = to_cgsmiles_graph(system, fragname_map=fragname_map)
     return _resolve_graph(
         cg_graph,
@@ -105,10 +116,11 @@ def resolve(
         legacy=legacy,
         validate=validate,
         templates=templates,
+        all_atom=all_atom,
     )
 
 
-def _resolve_graph(cg_graph, fragments, legacy, validate, templates):
+def _resolve_graph(cg_graph, fragments, legacy, validate, templates, all_atom=True):
     """Resolve a prebuilt CG meta graph. See ``resolve``."""
     import re
 
@@ -123,24 +135,38 @@ def _resolve_graph(cg_graph, fragments, legacy, validate, templates):
 
     if fragments:
         elements = re.findall(r"\{[^\}]+\}", ".".join(fragments))
+        # A block without '=' is a meta-graph (e.g. "{[#SMA]|100}"), not a
+        # fragment definition. The system (Path or Compound) already is the
+        # meta graph, so pass only the resolution blocks that follow it.
+        meta_blocks = [block for block in elements if "=" not in block]
+        if meta_blocks:
+            raise ValueError(
+                f"Fragment string block {meta_blocks[0]!r} defines no fragments "
+                "(it has no '='); it looks like a meta-graph block. The system "
+                "you passed already provides the coarse-grained meta graph, so "
+                "give only the resolution blocks, e.g. "
+                '"{#SMA=[>][#PS][#MAH][<]}.{#PS=...,#MAH=...}".'
+            )
         fragment_dicts = MoleculeResolver.read_fragment_strings(
-            elements, last_all_atom=True
+            elements, last_all_atom=all_atom
         )
     else:
         fragment_dicts = [{}]
 
     # compounds define any fragments the strings left undefined at the
-    # final all-atom resolution
+    # final resolution
     if templates:
         final_dict = fragment_dicts[-1]
         for fragname, compound in templates.items():
             if fragname not in final_dict:
-                final_dict[fragname] = compound_to_fragment_graph(compound, fragname)
+                final_dict[fragname] = compound_to_fragment_graph(
+                    compound, fragname, all_atom=all_atom
+                )
 
     resolver = MoleculeResolver(
         molecule_graph=cg_graph,
         fragment_dicts=fragment_dicts,
-        last_all_atom=True,
+        last_all_atom=all_atom,
         legacy=legacy,
     )
 
@@ -176,6 +202,7 @@ def backmap(
     seed=42,
     legacy=True,
     validate=True,
+    all_atom=None,
 ):
     """Backmap a coarse-grained system to an atomistic mbuild Compound.
 
@@ -243,6 +270,15 @@ def backmap(
     validate : bool, default True
         Verify that every CG bond was realized as an atomistic bond.
         See ``resolve``.
+    all_atom : bool, optional
+        Whether the final resolution is atomistic. Leave as ``None`` to
+        infer it (see ``resolve``). Pass ``False`` to backmap one
+        coarse-grained level to a finer coarse-grained level: each leaf
+        of the returned Compound is then a finer bead rather than an
+        atom, with its local geometry taken from ``templates`` (a
+        coarse-grained endpoint has no atomistic geometry to embed, so
+        sub-beads of a fragment without a template are all placed at the
+        parent bead position).
 
     Returns
     -------
@@ -288,6 +324,8 @@ def backmap(
            donor = mb.load("COC", smiles=True)  # e.g. a pre-relaxed conformer
            compound = path.backmap("{#PEO=[>]COC[<]}", templates={"PEO": donor})
     """
+    if all_atom is None:
+        all_atom = _infer_all_atom(fragments, templates)
     cg_graph = to_cgsmiles_graph(system, fragname_map=fragname_map)
     _, molecule, node_to_beads = _resolve_graph(
         cg_graph,
@@ -295,6 +333,7 @@ def backmap(
         legacy=legacy,
         validate=validate,
         templates=templates,
+        all_atom=all_atom,
     )
 
     bead_positions = nx.get_node_attributes(cg_graph, "position")
@@ -325,6 +364,7 @@ def backmap(
         placement=placement,
         templates=templates,
         seed=seed,
+        all_atom=all_atom,
     )
 
     return _molecule_to_compound(cg_graph, molecule, node_to_beads, positions)
@@ -354,8 +394,11 @@ def _molecule_to_compound(cg_graph, molecule, node_to_beads, positions):
             element = element_from_symbol(symbol)
         except (ElementError, TypeError):
             element = None
+        # atomistic nodes are named for their element
+        # nodes have no element and are named for their sub-bead
+        name = symbol if symbol is not None else data.get("atomname")
         particle = Compound(
-            name=symbol,
+            name=name,
             pos=positions[node],
             element=element,
             charge=data.get("charge", 0) or None,
@@ -384,13 +427,7 @@ def _molecule_to_compound(cg_graph, molecule, node_to_beads, positions):
 
 
 def _validate_connectivity(cg_graph, molecule, node_to_beads):
-    """Check that every CG bond was realized as an atomistic bond.
-
-    CGsmiles skips a CG bond without raising when it cannot find a pair
-    of matching bonding descriptors between the two fragments, leaving a
-    disconnected molecule behind. Raises a ValueError naming the
-    unrealized CG bonds.
-    """
+    """Check that every CG bond was realized as an atomistic bond."""
     realized = set()
     for u, v in molecule.edges:
         for bead_u in node_to_beads[u]:
@@ -418,3 +455,53 @@ def _validate_connectivity(cg_graph, molecule, node_to_beads):
             "descriptors as the highest degree of the beads that use it. "
             "Pass validate=False to skip this check."
         )
+
+
+def _looks_atomistic(compound):
+    """Whether every particle of a template compound reads as an atom.
+
+    A particle counts as atomistic if it carries a chemical element or
+    its name is a recognized element symbol.
+    """
+    from ele import element_from_symbol
+    from ele.exceptions import ElementError
+
+    for particle in compound.particles():
+        if particle.element is not None:
+            continue
+        try:
+            element_from_symbol(particle.name)
+        except (ElementError, TypeError):
+            return False
+    return True
+
+
+def _infer_all_atom(fragments, templates):
+    """Guess whether the final resolution is atomistic.
+
+    Returns False (a coarse-grained endpoint) only when the final
+    resolution is unambiguously coarse-grained: the last fragment string
+    uses CGsmiles node syntax (``[#name]``) and every template compound
+    is itself coarse-grained (see ``_looks_atomistic``). Any atomistic
+    signal, or the absence of both fragments and templates, yields
+    ``True`` so existing all-atom behavior is preserved. Ambiguous cases
+    (e.g. a coarse-grained bead named for an element) should pass
+    ``all_atom`` explicitly.
+    """
+    import re
+
+    signals = []
+    if fragments:
+        strings = [fragments] if isinstance(fragments, str) else list(fragments)
+        # the final resolution is the last {...} block, whether the caller
+        # passed one dotted string or a list of per-resolution strings
+        blocks = re.findall(r"\{[^\}]+\}", ".".join(strings))
+        if blocks:
+            # CG fragment blocks enumerate sub-beads as [#name] tokens
+            signals.append("[#" not in blocks[-1])
+    if templates:
+        for compound in templates.values():
+            signals.append(_looks_atomistic(compound))
+    if not signals:
+        return True
+    return any(signals)
