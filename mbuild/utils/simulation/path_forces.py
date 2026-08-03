@@ -149,10 +149,6 @@ def build_path_ff(
     list
         HOOMD force objects: [WCA pairs, FENE+WCA bonds, (angle), (dihedral)].
     """
-    # TODO: Add a backend arg ("hoomd"/"openmm") like uff_forces so
-    # OpenMMSimulation can consume the same PathForcefield: WCA via
-    # CustomNonbondedForce, FENE via CustomBondForce, tables via Discrete/
-    # tabulated potentials.
     import hoomd
 
     forces = []
