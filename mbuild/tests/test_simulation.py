@@ -42,6 +42,14 @@ def _make_simple_path(n=8, spacing=0.15):
     return Path(coordinates=coords, bond_graph=bond_graph)
 
 
+def _make_two_type_path(n=6, spacing=0.15):
+    """Create a straight-line Path with alternating A/B bead types."""
+    from mbuild.path.build import straight_line
+    from mbuild.path.namers import CyclicNamer
+
+    return straight_line(spacing=spacing, N=n, bead_name=CyclicNamer(["A", "B"]))
+
+
 class TestForcesHandler(BaseTest):
     """Tests for the ForcesHandler class."""
 
@@ -402,6 +410,110 @@ class TestHoomdSimulation(BaseTest):
             forces_handler=None, dt=1, max_displacement=0.001, n_steps=10
         )
         assert not np.allclose(old_coords, path.coordinates, atol=1e-5)
+
+    @pytest.mark.skipif(not has_hoomd, reason="hoomd is not installed")
+    def test_path_explicit_box(self):
+        """An explicit box=[Lx, Ly, Lz] is used verbatim and stays fixed."""
+        path = _make_simple_path(n=6)
+        box = [5.0, 6.0, 7.0]
+        for _ in range(2):
+            sim = HoomdSimulation(path, forcefield=None, box=box, run_on_gpu=False)
+            assert np.allclose(sim.state.box.L, box)
+            sim.fire(forces_handler=None, n_steps=10)
+
+    @pytest.mark.skipif(not has_hoomd, reason="hoomd is not installed")
+    def test_path_per_type_radius(self):
+        """Per-bead-type radii set unlike-pair WCA sigma to the arithmetic mean."""
+        from mbuild.utils.simulation.path_forces import PathForcefield
+
+        path = _make_two_type_path(n=6)
+        pff = PathForcefield(radius={"A": 0.4, "B": 0.8})
+        sim = HoomdSimulation(path, forcefield=pff, r_cut=0.5, run_on_gpu=False)
+        wca = sim.forces[0]
+        assert wca.params[("A", "A")]["sigma"] == pytest.approx(0.4)
+        assert wca.params[("B", "B")]["sigma"] == pytest.approx(0.8)
+        assert wca.params[("A", "B")]["sigma"] == pytest.approx(0.6)
+
+    @pytest.mark.skipif(not has_hoomd, reason="hoomd is not installed")
+    def test_path_per_type_bond_length(self):
+        """Bond length keyed by bond-type name sizes the FENE bond."""
+        from mbuild.utils.simulation.path_forces import PathForcefield
+
+        path = _make_two_type_path(n=6)
+        pff = PathForcefield(radius=0.4, bond_length={"A-B": 0.25})
+        sim = HoomdSimulation(path, forcefield=pff, r_cut=0.5, run_on_gpu=False)
+        fene = sim.forces[1]
+        assert fene.params["A-B"]["sigma"] == pytest.approx(0.25)
+
+    @pytest.mark.skipif(not has_hoomd, reason="hoomd is not installed")
+    def test_path_auto_per_type(self):
+        """forcefield=None derives per-type radii/lengths and relaxes a 2-type path."""
+        path = _make_two_type_path(n=8)
+        old_coords = path.coordinates.copy()
+        sim = HoomdSimulation(path, forcefield=None, r_cut=0.5, run_on_gpu=False)
+        wca_pairs = set(sim.forces[0].params.keys())
+        assert {("A", "A"), ("A", "B"), ("B", "B")} <= wca_pairs
+        sim.fire(forces_handler=None, n_steps=50)
+        assert not np.allclose(old_coords, path.coordinates, atol=1e-5)
+
+    @pytest.mark.skipif(not has_hoomd, reason="hoomd is not installed")
+    def test_path_missing_type_raises(self):
+        """A per-type radius dict missing a bead type raises a clear error."""
+        from mbuild.utils.simulation.path_forces import PathForcefield
+
+        path = _make_two_type_path(n=6)
+        with pytest.raises(KeyError, match="type"):
+            HoomdSimulation(
+                path, forcefield=PathForcefield(radius={"A": 0.4}), run_on_gpu=False
+            )
+
+    @pytest.mark.skipif(not has_hoomd, reason="hoomd is not installed")
+    def test_path_per_type_angle_partial(self):
+        """A per-type angle dict covers only its types and still runs."""
+        from mbuild.path.points import AnglesSampler
+        from mbuild.utils.simulation.path_forces import PathForcefield
+
+        path = _make_two_type_path(n=6)
+        sampler = AnglesSampler("normal", {"loc": 2.5, "scale": 0.2})
+        pff = PathForcefield(radius=0.15, angles={"A-B-A": sampler})
+        sim = HoomdSimulation(path, forcefield=pff, r_cut=0.5, run_on_gpu=False)
+        angle = sim.forces[-1]
+        assert isinstance(angle, hoomd.md.angle.Table)
+        # Covered type carries a nonzero potential; uncovered type is flat.
+        assert np.any(np.asarray(angle.params["A-B-A"]["U"]) != 0)
+        assert np.all(np.asarray(angle.params["B-A-B"]["U"]) == 0)
+        sim.cap_displacement(dt=1, max_displacement=0.003, n_steps=50)
+        sim.fire(forces_handler=None, n_steps=50)
+
+    def test_auto_bond_length_median_ignores_wrapping(self):
+        """Median sampling ignores periodic-wrap bonds seen as long outliers."""
+        import gsd.hoomd
+
+        from mbuild.utils.simulation.path_forces import (
+            _auto_bond_lengths,
+            _auto_radii,
+        )
+
+        frame = gsd.hoomd.Frame()
+        frame.particles.N = 5
+        # Four in a row 0.25 apart, plus one placed far away.
+        frame.particles.position = [
+            [0, 0, 0],
+            [0.25, 0, 0],
+            [0.5, 0, 0],
+            [0.75, 0, 0],
+            [4.5, 0, 0],
+        ]
+        frame.particles.types = ["A"]
+        frame.particles.typeid = [0] * 5
+        frame.configuration.box = [10, 10, 10, 0, 0, 0]
+        # Three real 0.25 bonds and one long outlier (0,4), like a wrap artifact.
+        frame.bonds.N = 4
+        frame.bonds.types = ["A-A"]
+        frame.bonds.typeid = [0, 0, 0, 0]
+        frame.bonds.group = [[0, 1], [1, 2], [2, 3], [0, 4]]
+        assert _auto_bond_lengths(frame)["A-A"] == pytest.approx(0.25)
+        assert _auto_radii(frame)["A"] == pytest.approx(0.25 / 0.97)
 
     @pytest.mark.skipif(not has_hoomd, reason="hoomd is not installed")
     def test_stress_uff(self):

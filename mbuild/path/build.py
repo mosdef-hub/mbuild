@@ -356,12 +356,15 @@ class Path:
 
         Parameters
         ----------
-        bead_radius : float
-            WCA bead radius (center-to-center exclusion diameter).
-        bond_length : float, optional
-            Target bond length. Defaults to the path's mean bond length.
-        angles_sampler : mbuild.path.points.AnglesSampler, optional
-            If given, adds a tabulated angle potential from this distribution.
+        bead_radius : float or dict
+            WCA bead radius (center-to-center exclusion diameter). A dict keyed
+            by bead type gives each bead type its own size.
+        bond_length : float or dict, optional
+            Target bond length. Defaults to per-bond-type means over the path.
+            A dict is keyed by an unordered bead-type pair.
+        angles_sampler : mbuild.path.points.AnglesSampler or dict, optional
+            If given, adds a tabulated angle potential. A dict keyed by a
+            bead-type triple parameterizes angles per type.
         steps : int, optional, default 1,000
             Number of FIRE minimization steps.
         seed : int, optional, default 1
@@ -373,7 +376,12 @@ class Path:
             _mean_bond_length,
         )
 
-        bond_eff = bond_length if bond_length is not None else _mean_bond_length(self)
+        # Scalar length scale for the displacement cap, even if per-type lengths
+        # were given.
+        if isinstance(bond_length, (int, float)):
+            bond_eff = bond_length
+        else:
+            bond_eff = _mean_bond_length(self)
         forcefield = PathForcefield(
             radius=bead_radius, bond_length=bond_length, angles=angles_sampler
         )

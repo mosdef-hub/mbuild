@@ -8,7 +8,7 @@ import hoomd
 import numpy as np
 from gmso.parameterization import apply
 
-from mbuild import Compound
+from mbuild import Box, Compound
 from mbuild.utils.io import import_
 
 logger = logging.getLogger(__name__)
@@ -37,6 +37,12 @@ class HoomdSimulation(hoomd.simulation.Simulation):
         If True, size the simulation box from the compound automatically.
     box_buffer : float, default 10
         Padding (nm) added around the compound when a bounding box is generated.
+        Used only when neither box nor compound.box is set.
+    box : mb.Box or sequence of float or None, default None
+        Explicit orthorhombic box as [Lx, Ly, Lz] (or an mb.Box). Overrides
+        compound.box and the bounding-box fallback. Pass a constraint's
+        box_lengths so a packed Path keeps one fixed periodic cell across
+        repeated MC/MD rounds.
     integrate_compounds : list of mb.Compound or list of int, default None
         Compounds to integrate while all others are held fixed. Mutually
         exclusive with fixed_compounds.
@@ -63,6 +69,7 @@ class HoomdSimulation(hoomd.simulation.Simulation):
         seed=1,
         automatic_box=False,
         box_buffer=10,
+        box=None,
         integrate_compounds=None,
         fixed_compounds=None,
         gsd_file_name=None,
@@ -109,6 +116,7 @@ class HoomdSimulation(hoomd.simulation.Simulation):
         self.fixed_compounds = fixed_compounds
         self.automatic_box = automatic_box
         self.box_buffer = box_buffer
+        self.box = box
         self.energies = []
         self.logger = logger
 
@@ -434,7 +442,13 @@ class HoomdSimulation(hoomd.simulation.Simulation):
 
     def _to_hoomd_snap_forces(self):
         """Convert compound to HOOMD snapshot and forces."""
-        if not self.compound.box:
+        if self.box is not None:
+            # Explicit box (e.g. a constraint's orthorhombic box_lengths) wins,
+            # so the periodic cell is stable across repeated MC/MD rounds.
+            self.compound.box = (
+                self.box if isinstance(self.box, Box) else Box(lengths=list(self.box))
+            )
+        elif not self.compound.box:
             self.compound.box = self.compound.get_boundingbox(pad_box=self.box_buffer)
 
         from mbuild.utils.simulation.path_forces import (
@@ -456,13 +470,13 @@ class HoomdSimulation(hoomd.simulation.Simulation):
             )
             snap, _ = gmso.external.to_gsd_snapshot(top=top)
             forces = generate_ff_from_path(
-                self._original_system,
                 snap,
                 radius=pff.radius,
                 bond_length=pff.bond_length,
                 angles_sampler=pff.angles,
                 dihedrals_sampler=pff.dihedrals,
                 epsilon=pff.epsilon,
+                r_cut=pff.r_cut,
             )
         elif self.forcefield is not None:
             apply(
@@ -480,6 +494,7 @@ class HoomdSimulation(hoomd.simulation.Simulation):
             snap, _ = gmso.external.to_gsd_snapshot(top=top)
             forces = uff_forces(top, snap, order_map, r_cut=self.r_cut)
 
+        _wrap_into_box(snap)
         return snap, forces
 
     def _snapshot_force_params(self):
@@ -628,8 +643,12 @@ class OpenMMSimulation:
     forcefield : str or None
         A foyer-compatible forcefield name or XML path.
         If None, default LJ + harmonic bond/angle parameters are applied.
-    box : mb.Box or None
-        Simulation box. If None, uses compound.box or a bounding box.
+    box : mb.Box or sequence of float or None, default None
+        Explicit orthorhombic box as [Lx, Ly, Lz] (or an mb.Box). Overrides
+        compound.box, mirroring HoomdSimulation. Pass a constraint's box_lengths
+        so a packed system keeps one fixed periodic cell across repeated rounds.
+        If None and the compound has no box, the system is treated as
+        non-periodic (OpenMM NoCutoff).
     constraints : str or None, default is None
         Bond constraints: None, "HBonds", "AllBonds", "HAngles".
     platform : str
@@ -675,6 +694,13 @@ class OpenMMSimulation:
         self.r_cut = r_cut
         self.logger = logger
         self.energies = []
+        self.box = box
+
+        # Explicit box overrides compound.box (parity with HoomdSimulation).
+        if self.box is not None:
+            compound.box = (
+                self.box if isinstance(self.box, Box) else Box(lengths=list(self.box))
+            )
 
         if kick:
             compound._kick(seed=seed)
@@ -702,9 +728,8 @@ class OpenMMSimulation:
         from mbuild.utils.simulation.path_forces import PathForcefield
 
         if isinstance(forcefield, PathForcefield):
-            # TODO: Add an OpenMM backend to build_path_ff (WCA via
-            # CustomNonbondedForce, FENE via CustomBondForce, tabulated angles/
-            # dihedrals) so paths relax through OpenMM as they do through HOOMD.
+            # Path relaxation is HOOMD-only by design; there is no OpenMM
+            # backend for the coarse Kremer-Grest path forcefield.
             raise NotImplementedError(
                 "OpenMMSimulation does not yet support PathForcefield. Use "
                 "HoomdSimulation for coarse Kremer-Grest path relaxation."
@@ -1068,6 +1093,22 @@ def _resolve_input(system):
         raise TypeError(
             f"Expected an mb.Compound or mbuild.path.Path, got {type(system)}."
         )
+
+
+def _wrap_into_box(snap):
+    """Wrap snapshot positions into the half-open box [-L/2, L/2).
+
+    HOOMD rejects a particle on or past a face, e.g. one nudged there by _kick
+    against a tight box. Uses floor (not round) so +L/2 maps to -L/2. No-op for
+    padded boxes.
+    """
+    L = np.asarray(snap.configuration.box[:3], dtype=float)
+    pos = np.asarray(snap.particles.position, dtype=float)
+    periodic = L > 0
+    pos[:, periodic] -= L[periodic] * np.floor(
+        (pos[:, periodic] + L[periodic] / 2.0) / L[periodic]
+    )
+    snap.particles.position = pos.astype(np.float32)
 
 
 def _sync_back(compound, is_path, original):

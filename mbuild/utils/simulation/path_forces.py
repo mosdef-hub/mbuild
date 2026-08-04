@@ -13,10 +13,11 @@ import numpy as np
 
 logger = logging.getLogger(__name__)
 
-TWO_POW_1_6 = 2.0 ** (1.0 / 6.0)
-
 # Kremer-Grest equilibrium bond length as a fraction of the WCA sigma.
 KG_BOND_SIGMA_RATIO = 0.97
+
+# Used as default r_cut to give purely repulsive (WCA)
+TWO_POW_1_6 = 2.0 ** (1.0 / 6.0)
 
 
 class PathForcefield:
@@ -24,24 +25,37 @@ class PathForcefield:
 
     Passed to a simulation in place of a chemical forcefield to override the
     geometry-derived defaults. Any value left None falls back to its geometric
-    default: the mean bond length, radius = bond_length / 0.97, and no angle or
-    dihedral term.
+    default: per-type bond lengths sampled from the system, per-bead-type radii
+    from those lengths, and no angle or dihedral term.
+
+    Each parameter may be a single value applied to every type, or a dict for
+    per-type parameterization keyed by the type names of the built system (its
+    gmso/HOOMD snapshot types), for example radius={"A": 0.5, "B": 0.8} and
+    bond_length={"A-B": 0.3}. radius keys are bead-type names; bond_length,
+    angles and dihedrals keys are the bond/angle/dihedral-type names gmso
+    assigns (sorted bead names joined by "-", e.g. "A-B", "A-B-A"). radius and
+    bond_length dicts must cover every type; an angles/dihedrals dict need only
+    cover the types it should act on.
 
     Parameters
     ----------
-    radius : float or None, default None
-        WCA sigma (bead exclusion diameter, center-to-center).
-    bond_length : float or None, default None
-        Target bond length for the FENE+WCA bond.
-    angles : mbuild.path.points.AnglesSampler or None, default None
-        Optional bond-angle distribution for a tabulated angle potential.
-    dihedrals : object or None, default None
-        Optional dihedral distribution for a tabulated dihedral potential.
+    radius : float or dict or None, default None
+        WCA sigma (bead exclusion diameter, center-to-center), keyed by bead
+        type. Unlike-pair sigma is the arithmetic mean of the two bead radii.
+    bond_length : float or dict or None, default None
+        Target bond length for the FENE+WCA bond, keyed by bond-type name.
+    angles : mbuild.path.points.AnglesSampler or dict or None, default None
+        Optional bond-angle distribution(s) for a tabulated angle potential,
+        keyed by angle-type name.
+    dihedrals : object or dict or None, default None
+        Optional dihedral distribution(s) for a tabulated dihedral potential,
+        keyed by dihedral-type name.
     epsilon : float, default 1.0
         Energy scale for the WCA and FENE potentials.
-    per_type : dict or None, default None
-        Reserved for future per-bead-type parameters, e.g.
-        {bead_type: {"radius": ..., "bond_length": ...}}. Not yet used.
+    r_cut : float, default 2**(1/6)
+        Pair cutoff in units of sigma. The default gives purely repulsive
+        WCA/KG pairs; larger values include the attractive portion of the LJ
+        well, which helps close excluded-volume voids during relaxation.
     """
 
     def __init__(
@@ -51,65 +65,86 @@ class PathForcefield:
         angles=None,
         dihedrals=None,
         epsilon=1.0,
-        per_type=None,
+        r_cut=TWO_POW_1_6,
     ):
         self.radius = radius
         self.bond_length = bond_length
         self.angles = angles
         self.dihedrals = dihedrals
         self.epsilon = epsilon
-        self.per_type = per_type
+        self.r_cut = r_cut
 
 
 def generate_ff_from_path(
-    path,
     snap,
     radius=None,
     bond_length=None,
     angles_sampler=None,
     dihedrals_sampler=None,
     epsilon=1.0,
+    r_cut=TWO_POW_1_6,
 ):
-    """Build a coarse forcefield for a path from its geometry.
+    """Build a coarse Kremer-Grest forcefield from a system snapshot.
 
-    When not given explicitly, the bond length is the mean over the path's
-    bonds and the bead radius follows the Kremer-Grest relation l0 = sigma * 0.97
-    Angle and dihedral terms are added only when a sampler is supplied.
+    Resolves each parameter against the snapshot's type names and passes fully
+    keyed dicts to build_path_ff. A scalar is broadcast to every type; None is
+    auto-derived from the snapshot geometry (per-bond-type median lengths, and
+    per-bead-type radii from the incident bond lengths via bond_l = sigma * 0.97);
+    a dict is used as given, keyed by type name. Angle and dihedral terms are
+    added only when a sampler is supplied.
 
     Parameters
     ----------
-    path : mbuild.path.build.Path
-        Path providing the geometry the bond length is derived from.
     snap : gsd.hoomd.Frame
-        Snapshot providing particle, bond, angle, and dihedral type names.
-    radius : float or None, default None
-        WCA sigma. If None, derived from bond_length via the Kremer-Grest
-        relation.
-    bond_length : float or None, default None
-        Target bond length. If None, the mean over the path's bonds is used.
-    angles_sampler : mbuild.path.points.AnglesSampler or None, default None
-        Optional bond-angle distribution for a tabulated angle potential.
-    dihedrals_sampler : object or None, default None
-        Optional dihedral distribution for a tabulated dihedral potential.
+        Snapshot providing the particle, bond, angle, and dihedral types and
+        the geometry the defaults are derived from.
+    radius : float or dict or None, default None
+        WCA sigma, keyed by bead type. If None, derived from incident bonds.
+    bond_length : float or dict or None, default None
+        Target bond length, keyed by bond-type name. If None, per-bond-type
+        medians over the snapshot's bonds are used.
+    angles_sampler : mbuild.path.points.AnglesSampler or dict or None, default None
+        Optional bond-angle distribution(s), keyed by angle-type name.
+    dihedrals_sampler : object or dict or None, default None
+        Optional dihedral distribution(s), keyed by dihedral-type name.
     epsilon : float, default 1.0
         Energy scale for the WCA and FENE potentials.
+    r_cut : float, default 2**(1/6)
+        Pair cutoff in units of sigma. The default gives purely repulsive
+        WCA/KG pairs; larger values include the attractive portion of the well.
+
+    Notes
+    -----
+    Using the default values gives a Kremer-Grest bead-spring model with a purely
+    repulsive and shifted pair force (WCA), FENE bonds, and no angle or dihedral forces.
+    To include attractive portions of the LJ force, use larger values of r_cut.
 
     Returns
     -------
     list
         HOOMD force objects, as returned by build_path_ff.
     """
-    if bond_length is None:
-        bond_length = _mean_bond_length(path)
-    if radius is None:
-        radius = bond_length / KG_BOND_SIGMA_RATIO
+    radius = _resolve_param(
+        radius, list(snap.particles.types or []), "radius", lambda: _auto_radii(snap)
+    )
+    bond_length = _resolve_param(
+        bond_length,
+        list(snap.bonds.types or []),
+        "bond_length",
+        lambda: _auto_bond_lengths(snap),
+    )
+    angle_sampler = _resolve_sampler(angles_sampler, list(snap.angles.types or []))
+    dihedral_sampler = _resolve_sampler(
+        dihedrals_sampler, list(snap.dihedrals.types or [])
+    )
     return build_path_ff(
         snap,
         radius=radius,
         bond_length=bond_length,
-        angle_sampler=angles_sampler,
-        dihedral_sampler=dihedrals_sampler,
+        angle_sampler=angle_sampler,
+        dihedral_sampler=dihedral_sampler,
         epsilon=epsilon,
+        r_cut=r_cut,
     )
 
 
@@ -121,60 +156,77 @@ def build_path_ff(
     dihedral_sampler=None,
     epsilon=1.0,
     table_width=100,
+    r_cut=TWO_POW_1_6,
 ):
     """Build coarse Kremer-Grest HOOMD forces for a bead path.
 
-    Every bead, bond, angle and dihedral type in the
-    snapshot receives the same corresponding parameters.
+    All parameters are dicts keyed by the snapshot's own type names. radius is
+    keyed by bead (particle) type and bond_length by bond-type name, and both
+    must cover every type present. angle_sampler/dihedral_sampler are None or
+    dicts keyed by angle/dihedral-type name and may cover a subset (uncovered
+    types get a flat, zero table). LJ cross-pairs sigma is the arithmetic
+    mean of the two bead radii.
 
     Parameters
     ----------
     snap : gsd.hoomd.Frame
         Snapshot providing particle, bond, angle, and dihedral type names.
-    radius : float
-        WCA sigma (bead exclusion diameter, center-to-center).
-    bond_length : float
-        Target bond length, used to size the FENE+WCA bond.
-    angle_sampler : mbuild.path.points.AnglesSampler or None, default None
-        If given, a tabulated angle potential is Boltzmann-inverted from it.
-    dihedral_sampler : object or None, default None
-        If given, a tabulated dihedral potential is Boltzmann-inverted from it.
+    radius : dict
+        {bead_type: WCA sigma}, the center-to-center bead exclusion diameter.
+    bond_length : dict
+        {bond_type: target bond length}, used to size the FENE+WCA bond.
+    angle_sampler : dict or None, default None
+        {angle_type: sampler}; each is Boltzmann-inverted into a tabulated term.
+    dihedral_sampler : dict or None, default None
+        {dihedral_type: sampler}, Boltzmann-inverted into a tabulated term.
     epsilon : float, default 1.0
         Energy scale for the WCA and FENE potentials.
     table_width : int, default 100
         Resolution of the tabulated angle and dihedral potentials.
+    r_cut : float, default 2**(1/6)
+        Pair cutoff in units of sigma (per-pair cutoff is r_cut * sigma_ij).
+        The default truncates at the LJ minimum for purely repulsive pairs
+        (WCA/KG); larger values include the attractive portion of the LJ well.
 
     Returns
     -------
     list
-        HOOMD force objects: [WCA pairs, FENE+WCA bonds, (angle), (dihedral)].
+        HOOMD force objects: [LJ pairs, FENE+WCA bonds, (angle), (dihedral)].
     """
     import hoomd
 
     forces = []
+    ptypes = list(snap.particles.types)
 
-    # WCA excluded volume between non-bonded beads. 1-2 pairs are excluded and
-    # handled by the bond's own WCA term.
-    r_cut = TWO_POW_1_6 * radius
     nlist = hoomd.md.nlist.Cell(buffer=0.2, exclusions=("bond",))
-    wca = hoomd.md.pair.LJ(nlist=nlist, default_r_cut=r_cut, mode="shift")
-    ptypes = list(set(snap.particles.types))
+    lj = hoomd.md.pair.LJ(
+        nlist=nlist, default_r_cut=r_cut * max(radius.values()), mode="shift"
+    )
     for i, t1 in enumerate(ptypes):
         for t2 in ptypes[i:]:
-            wca.params[(t1, t2)] = dict(sigma=radius, epsilon=epsilon)
-    forces.append(wca)
+            sigma_ij = 0.5 * (radius[t1] + radius[t2])
+            lj.params[(t1, t2)] = dict(sigma=sigma_ij, epsilon=epsilon)
+            lj.r_cut[(t1, t2)] = r_cut * sigma_ij
+    forces.append(lj)
 
     if snap.bonds.N > 0:
-        sigma_bond = bond_length
-        if bond_length > 1.33 * radius:
-            logger.warning(
-                "build_path_ff: bond_length (%.3g) exceeds ~1.33*radius (%.3g); "
-                "FENE+WCA no longer guarantees non-crossing bonds.",
-                bond_length,
-                radius,
-            )
+        ptypeid = np.asarray(snap.particles.typeid)
+        group = np.asarray(snap.bonds.group)
+        btypeid = np.asarray(snap.bonds.typeid)
         fene = hoomd.md.bond.FENEWCA()
-        for bt in set(snap.bonds.types):
+        for i, bt in enumerate(snap.bonds.types):
+            sigma_bond = bond_length[bt]
+            a, b = group[np.argmax(btypeid == i)]
+            sigma_pair = 0.5 * (radius[ptypes[ptypeid[a]]] + radius[ptypes[ptypeid[b]]])
+            if sigma_bond > 1.33 * sigma_pair:
+                logger.warning(
+                    "build_path_ff: bond_length (%.3g) for %s exceeds "
+                    "~1.33*radius (%.3g); FENE+WCA no longer guarantees "
+                    "non-crossing bonds.",
+                    sigma_bond,
+                    bt,
+                    sigma_pair,
+                )
             fene.params[bt] = dict(
                 k=30.0 * epsilon / sigma_bond**2,
                 r0=1.5 * sigma_bond,
@@ -184,23 +236,120 @@ def build_path_ff(
             )
         forces.append(fene)
 
-    # Tabulated angle from a sampled bond-angle distribution.
-    if angle_sampler is not None and snap.angles.N > 0:
-        _, U, tau = angle_table_from_sampler(angle_sampler, table_width)
-        angle = hoomd.md.angle.Table(width=len(U))
-        for angle_type in set(snap.angles.types):
-            angle.params[angle_type] = dict(U=U, tau=tau)
+    # Tabulated angle(s). Types the sampler dict does not cover get a flat
+    # (zero) table so HOOMD sees every angle type specified.
+    if angle_sampler and snap.angles.N > 0:
+        angle = hoomd.md.angle.Table(width=table_width)
+        for at in snap.angles.types:
+            if at in angle_sampler:
+                _, U, tau = angle_table_from_sampler(angle_sampler[at], table_width)
+            else:
+                U = tau = np.zeros(table_width)
+            angle.params[at] = dict(U=U, tau=tau)
         forces.append(angle)
 
-    # Tabulated dihedral from a sampled dihedral distribution.
-    if dihedral_sampler is not None and snap.dihedrals.N > 0:
-        _, U, tau = dihedral_table_from_sampler(dihedral_sampler, table_width)
-        dihedral = hoomd.md.dihedral.Table(width=len(U))
-        for dih_type in set(snap.dihedrals.types):
-            dihedral.params[dih_type] = dict(U=U, tau=tau)
+    if dihedral_sampler and snap.dihedrals.N > 0:
+        dihedral = hoomd.md.dihedral.Table(width=table_width)
+        for dt in snap.dihedrals.types:
+            if dt in dihedral_sampler:
+                _, U, tau = dihedral_table_from_sampler(
+                    dihedral_sampler[dt], table_width
+                )
+            else:
+                U = tau = np.zeros(table_width)
+            dihedral.params[dt] = dict(U=U, tau=tau)
         forces.append(dihedral)
 
     return forces
+
+
+def _resolve_param(value, type_names, label, auto_fn):
+    """Resolve radius/bond_length to a {type_name: float} dict over every type.
+
+    None auto-derives from the snapshot; a scalar broadcasts to all types; a
+    dict is used as given and must cover every type name.
+    """
+    if value is None:
+        return auto_fn()
+    if isinstance(value, dict):
+        missing = [t for t in type_names if t not in value]
+        if missing:
+            raise KeyError(f"{label} has no entry for type(s) {missing}.")
+        return {t: float(value[t]) for t in type_names}
+    return {t: float(value) for t in type_names}
+
+
+def _resolve_sampler(sampler, type_names):
+    """Resolve a sampler (or dict of them) to a {type_name: sampler} dict, or None.
+
+    A single sampler broadcasts to every type; a dict is used as given (keyed
+    by type name) and may cover only the types it should act on.
+    """
+    if sampler is None:
+        return None
+    if isinstance(sampler, dict):
+        return {t: sampler[t] for t in type_names if t in sampler} or None
+    return {t: sampler for t in type_names}
+
+
+def _bond_lengths(snap):
+    """Per-bond center-to-center lengths from the snapshot, minimum-imaged.
+
+    Assumes an orthorhombic box: only the Lx/Ly/Lz box lengths are used and any
+    triclinic tilt factors are ignored (paths produce orthorhombic boxes). The
+    minimum image also assumes bonds shorter than half the box.
+    """
+    pos = np.asarray(snap.particles.position)
+    group = np.asarray(snap.bonds.group)
+    d = pos[group[:, 0]] - pos[group[:, 1]]
+    box = np.asarray(snap.configuration.box[:3], dtype=float)
+    periodic = box > 0
+    d[:, periodic] -= box[periodic] * np.round(d[:, periodic] / box[periodic])
+    return np.linalg.norm(d, axis=1)
+
+
+def _auto_bond_lengths(snap):
+    """{bond_type: median length} from the snapshot geometry.
+
+    The median (not the mean) is robust to bonds that wrap across a periodic
+    boundary whose true period is not the snapshot box, which appear as a few
+    large outliers and would otherwise inflate the sampled length.
+    """
+    if snap.bonds.N == 0:
+        return {}
+    lengths = _bond_lengths(snap)
+    btypeid = np.asarray(snap.bonds.typeid)
+    return {
+        bt: float(np.median(lengths[btypeid == i]))
+        for i, bt in enumerate(snap.bonds.types)
+    }
+
+
+def _auto_radii(snap):
+    """{bead_type: radius} from median incident bond length via l0 = sigma * 0.97.
+
+    Uses the median for robustness to periodic-wrap bonds (see
+    _auto_bond_lengths). Bead types with no incident bond fall back to the
+    overall median length.
+    """
+    if snap.bonds.N == 0:
+        raise ValueError(
+            "Cannot derive radii from a system with no bonds. "
+            "Pass radius (and bond_length) explicitly."
+        )
+    lengths = _bond_lengths(snap)
+    group = np.asarray(snap.bonds.group)
+    ptypeid = np.asarray(snap.particles.typeid)
+    ptypes = list(snap.particles.types)
+    incident = {t: [] for t in ptypes}
+    for (a, b), length in zip(group, lengths):
+        incident[ptypes[ptypeid[a]]].append(length)
+        incident[ptypes[ptypeid[b]]].append(length)
+    fallback = float(np.median(lengths))
+    return {
+        t: (float(np.median(v)) if v else fallback) / KG_BOND_SIGMA_RATIO
+        for t, v in incident.items()
+    }
 
 
 def angle_table_from_sampler(sampler, n_bins=100, jacobian=True, n_samples=500_000):
@@ -239,7 +388,7 @@ def angle_table_from_sampler(sampler, n_bins=100, jacobian=True, n_samples=500_0
     if jacobian:
         prob = prob / np.clip(np.sin(theta), 1e-6, None)
 
-    # Assuming kT=1.
+    # U(theta) = -kTlog(P(theta)) --> Assume kT = 1
     # TODO: Possibly add kT parameter for paramaterized Boltzmann sampling.
     U = -1 * np.log(prob)
 
