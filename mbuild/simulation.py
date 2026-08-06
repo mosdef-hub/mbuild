@@ -157,7 +157,7 @@ class HoomdSimulation(hoomd.simulation.Simulation):
         forces_handler=None,
         thermostat=hoomd.md.methods.thermostats.Berendsen,
     ):
-        """Run an NVT simulation.
+        """Run an NVT simulation on an mBuild Compound or Path.
 
         Parameters
         ----------
@@ -611,9 +611,12 @@ class HoomdSimulation(hoomd.simulation.Simulation):
     def _store_current_energies(self):
         """Store energy from active forces."""
         new_energy = {}
+        current_total_energy = 0
         for force in self.active_forces:
             ffname = force.__class__.__module__ + "." + force.__class__.__name__
             new_energy[ffname] = force.energy
+            current_total_energy += force.energy
+        new_energy["total"] = current_total_energy
         if new_energy:
             self.energies.append(new_energy)
 
