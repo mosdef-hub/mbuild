@@ -161,6 +161,9 @@ class SphereConstraint(Constraint):
         self.radius = radius
         self.mins = self.center - self.radius
         self.maxs = self.center + self.radius
+        # Orthorhombic bounding lengths (diameter on each axis), e.g. for
+        # HoomdSimulation(..., box=constraint.box_lengths).
+        self.box_lengths = np.array([2 * radius] * 3, dtype=np.float32)
 
     def is_inside(self, points, buffer):
         """Check a set of coordinates against the volume constraint.
@@ -262,6 +265,9 @@ class CylinderConstraint(Constraint):
                 self.center[2] + self.height / 2,
             ]
         )
+        # Orthorhombic bounding lengths (radial diameter, radial diameter,
+        # height), e.g. for HoomdSimulation(..., box=constraint.box_lengths).
+        self.box_lengths = np.array([2 * radius, 2 * radius, height], dtype=np.float32)
 
     def is_inside(self, points, buffer):
         """Check a set of coordinates against the volume constraint.

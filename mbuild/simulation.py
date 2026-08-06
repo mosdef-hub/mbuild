@@ -1,117 +1,99 @@
-"""Simulation methods that operate on mBuild compounds."""
+"""Simulation methods that operate on mBuild compounds and paths."""
 
 import logging
+import numbers
 import os
-import tempfile
-from warnings import warn
 
 import gmso
 import hoomd
 import numpy as np
-from ele.element import element_from_name, element_from_symbol
-from ele.exceptions import ElementError
 from gmso.parameterization import apply
 
-from mbuild import Compound
-from mbuild.exceptions import MBuildError
+from mbuild import Box, Compound
 from mbuild.utils.io import import_
 
 logger = logging.getLogger(__name__)
 
+# Stands in for forcefield=None in the sim data cache key.
+_DEFAULT_FF = "default"
+
 
 class HoomdSimulation(hoomd.simulation.Simulation):
-    """A custom class to help in creating internal hoomd-based simulation methods.
+    """A custom class for hoomd-based simulation methods.
 
-    See ``hoomd_cap_displacement`` and ``hoomd_fire``.
+    Accepts either an mb.Compound or an mbuild.path.Path as input.
 
     Parameters
     ----------
-    compound : mb.Compound
-        The compound to use in the simulation
-    forcefield : foyer.forcefield.Forcefield or gmso.core.Forcefield
-        The forcefield to apply to the system
+    system : mb.Compound or mbuild.path.build.Path
+        The system to simulate. If a Path is given, it is converted
+        to a Compound internally and positions are synced back after runs.
+    forcefield : foyer/gmso Forcefield or None
+        The forcefield to apply. If None, default LJ + harmonic bond/angle
+        parameters are used.
     r_cut : float (nm)
-        The cutoff distance (nm) used in the non-bonded pair neighborlist.
-        Use smaller values for unstable starting conditions and faster performance.
-    fixed_compounds : list of mb.Compound, default None
-        If given, these compounds will be removed from the integration updates and
-        held "frozen" during the hoomd simulation.
-        They are still able to interact with other particles in the simulation.
-        If desired, pass in a subset of children from `compound.children`.
-    integrate_compounds : list of mb.Compound, default None
-        If given, then only these compounds will be updated during integration
-        and all other compunds in `compound` are removed from the integration group.
-    run_on_gpu : bool, default False
-        When `True` the HOOMD simulation uses the hoomd.device.GPU() device.
-        This requires that you have a GPU compatible HOOMD install and
-        a compatible GPU device.
-    seed : int, default 42
-        The seed passed to HOOMD
-    gsd_filename : str, default None
-        A filename to write out with.
-        TODO: Not currently implemented.
-
-    Notes
-    -----
-    Running on GPU:
-        The hoomd-based methods in ``mbuild.simulation``
-        are able to utilize and run on GPUs to perform energy minimization for larger systems if needed.
-        Performance improvements of using GPU over CPU may not be significant until systems reach a
-        size of ~1,000 particles.
-
-    Running multiple simulations:
-        The information needed to run the HOOMD simulation is saved after the first simulation.
-        Therefore, calling hoomd-based simulation methods multiple times (e.g., in a for loop or while loop)
-        does not require re-running performing atom-typing, applying the forcefield, or running hoomd
-        format writers again.
-
-    Examples
-    --------
-
-    ```python
-    ff = gmso.ForceField("path_to_ff")
-
-    # Scale bonds and angles, replace 12-6 LJ pair force with DPDConservative
-    fhandler = ForcesHandler(scale_bonds=0.1, scale_angles=0.2, dpd=4)
-
-    # Pass in the mBuild Compound you are removing overlaps from
-    sim = HOOMDSimulation(compound, ff, r_cut=0.6, box_buffer=5,)
-
-    hoomd_cap_displacement(compound, sim, fhandler, n_steps=1000)
-
-    # Re-run with without DPD and bond and angle scaling:
-    fhandler = ForcesHandler(scale_bonds=1, scale_angles=1, dpd=None)
-    hoomd_cap_displacement(compound, sim, fhandler, n_steps=1000)
-    ```
-
-    Use in a while loop along with Compound.check_for_overlap()
-    to run capped-displacement simulations in small increments.
-
-    ```python
-    ff = gmso.ForceField("path_to_ff")
-    fhandler = ForcesHandler(scale_bonds=0.1, scale_angles=0.2, dpd=4)
-
-    # Pass in the mBuild Compound you are removing overlaps from
-    sim = HOOMDSimulation(compound, ff, r_cut=0.6, box_buffer=5,)
-
-    while len(compound.check_for_overlap(exlcuded_bond_depth=1, minimum_distance=0.12)) > 0:
-        hoomd_cap_displacement(compound, sim, fhandler, n_steps=200)
-    ```
+        The cutoff distance used in the non-bonded pair neighborlist.
+    run_on_gpu : bool or None, default None
+        If None, auto-select a device. If True use the GPU, if False the CPU.
+    seed : int, default 1
+        Seed for the HOOMD random number generator.
+    box_buffer : float, default 10
+        Padding (nm) added around the compound when a bounding box is generated.
+        Used only when neither box nor compound.box is set.
+    box : mb.Box or sequence of float or None, default None
+        Explicit orthorhombic box as [Lx, Ly, Lz] (or an mb.Box). Overrides
+        compound.box and the bounding-box fallback. Pass a constraint's
+        box_lengths so a packed Path keeps one fixed periodic cell across
+        repeated MC/MD rounds.
+    integrate_compounds : list of mb.Compound or list of int, default None
+        Compounds to integrate while all others are held fixed. Mutually
+        exclusive with fixed_compounds.
+        If a list of integers are passed, particles are chosen by matching indices.
+    fixed_compounds : list of mb.Compound or list of int, default None
+        Compounds held fixed while all others are integrated. Mutually
+        exclusive with integrate_compounds.
+        If a list of integers are passed, particles are chosen by matching indices.
+    kick : bool, default True
+        Nudge coordinates before simulating. This can be critical to remove
+        flat dihedrals.
     """
 
     def __init__(
         self,
-        compound,
-        forcefield,
-        r_cut,
+        system,
+        forcefield=None,
+        r_cut=1.0,
         run_on_gpu=None,
         seed=1,
-        automatic_box=False,
         box_buffer=10,
+        box=None,
         integrate_compounds=None,
         fixed_compounds=None,
-        gsd_file_name=None,
+        kick=True,
     ):
+
+        if isinstance(integrate_compounds, Compound):
+            integrate_compounds = [integrate_compounds]
+        elif integrate_compounds is not None:
+            integrate_compounds = list(integrate_compounds)
+        if isinstance(fixed_compounds, Compound):
+            fixed_compounds = [fixed_compounds]
+        elif fixed_compounds is not None:
+            fixed_compounds = list(fixed_compounds)
+
+        if integrate_compounds and fixed_compounds:
+            raise RuntimeError(
+                "You can specify only one of integrate_compounds and fixed_compounds."
+            )
+
+        # Resolve input type
+        compound, self._is_path, self._original_system, self.original_coords = (
+            _resolve_input(system)
+        )
+
+        if kick:
+            compound._kick(seed=seed)
+
         if run_on_gpu is None:
             device = hoomd.device.auto_select()
         elif run_on_gpu:
@@ -120,63 +102,438 @@ class HoomdSimulation(hoomd.simulation.Simulation):
                 print(f"GPU found, running on device {device.device}")
             except RuntimeError:
                 print(
-                    "Unable to find compatible GPU device. ",
-                    "set `run_on_gpu = False` or see HOOMD documentation "
-                    "for further information about GPU support.",
+                    "Unable to find compatible GPU device. "
+                    "Set `run_on_gpu = False` or see HOOMD documentation."
                 )
                 device = hoomd.device.CPU()
         else:
             device = hoomd.device.CPU()
+
         self.compound = compound
         self.forcefield = forcefield
         self.r_cut = r_cut
         self.integrate_compounds = integrate_compounds
         self.fixed_compounds = fixed_compounds
-        self.automatic_box = automatic_box
         self.box_buffer = box_buffer
-        self.energies = []  # each step of run energy values
-        # Check if a hoomd sim method has been used on this compound already
-        if compound._hoomd_data:
-            last_snapshot, last_forces, last_forcefield = compound._get_sim_data()
-            # Check if the forcefield passed this time matches last time
-            if forcefield == last_forcefield:
-                snapshot = last_snapshot
-                self.forces = last_forces
-            else:  # New foyer/gmso forcefield has been passed, reapply
-                snapshot, self.forces = self._to_hoomd_snap_forces()
-                compound._add_sim_data(
-                    state=snapshot, forces=self.forces, forcefield=forcefield
-                )
-        else:  # Sim method not used on this compound previously
+        self.box = box
+        self.energies = []
+
+        self._get_integrate_group()
+
+        # State and forces are built together, so reuse them only when every
+        # build input still matches.
+        last_snapshot, last_forces, last_params = compound._get_sim_data()
+        if last_snapshot is not None and _same_build(self._build_params(), last_params):
+            snapshot = last_snapshot
+            self.forces = last_forces
+        else:
             snapshot, self.forces = self._to_hoomd_snap_forces()
             compound._add_sim_data(
-                state=snapshot, forces=self.forces, forcefield=forcefield
+                state=snapshot, forces=self.forces, build_params=self._build_params()
             )
-        # Place holders for forces added/changed by specific methods below
+
+        # Undo the translation to -L/2 L/2 used by HOOMD
+        self._frame_offset = self.compound.xyz.mean(axis=0) - np.asarray(
+            snapshot.particles.position
+        ).mean(axis=0)
+
         self.active_forces = []
-        self.inactive_forces = []
-        self._orig_force_params = {}  # populated after forces are known
+        self._orig_force_params = {}
         super(HoomdSimulation, self).__init__(device=device, seed=seed)
         self.create_state_from_snapshot(snapshot)
         self._orig_force_params = self._snapshot_force_params()
 
+    def nvt(
+        self,
+        n_steps,
+        kT,
+        dt,
+        tau,
+        forces_handler=None,
+        thermostat=hoomd.md.methods.thermostats.Berendsen,
+    ):
+        """Run an NVT simulation on an mBuild Compound or Path.
+
+        Parameters
+        ----------
+        n_steps : int
+            Number of timesteps to run.
+        kT : float
+            Thermal energy of the thermostat.
+        dt : float
+            Timestep size.
+        tau : float
+            Thermostat coupling time constant.
+        forces_handler : ForcesHandler or None, default None
+            Scales the active forces before the run. If None, all forces are
+            active at full strength.
+        thermostat : hoomd thermostat class
+            Thermostat used by the integration method.
+        """
+        self.original_coords = np.copy(self.compound.xyz)
+        if forces_handler is not None:
+            forces_handler.scale_sim(self)
+        else:
+            self.active_forces = list(self.forces)
+
+        nvt_method = hoomd.md.methods.ConstantVolume(
+            filter=self._get_integrate_group(),
+            thermostat=thermostat(kT=kT, tau=tau),
+        )
+        self.set_integrator(method=nvt_method, dt=dt)
+        self.state.thermalize_particle_momenta(filter=hoomd.filter.All(), kT=kT)
+
+        if self.energies == []:
+            self.run(0)
+            self._store_current_energies()
+
+        self.run(n_steps)
+        self._store_current_energies()
+        self.operations.integrator = None
+        self._update_positions()
+        self._update_snapshot()
+
+    def box_update(
+        self,
+        n_steps,
+        kT,
+        dt,
+        tau,
+        target_box,
+        update_period,
+        forces_handler=None,
+        thermostat=hoomd.md.methods.thermostats.Berendsen,
+    ):
+        """Run an NVT simulation while updating the simulation volume,
+        and optionally annealing between an initial and final temperature.
+
+        Parameters
+        ----------
+        n_steps : int
+            Number of timesteps to run.
+        kT : float or list of float
+            Thermal energy. A list of two values ramps between them.
+        dt : float
+            Timestep size.
+        tau : float
+            Thermostat coupling time constant.
+        target_box : hoomd.Box
+            Box to interpolate the simulation volume toward.
+        update_period : int
+            Number of timesteps between box resize updates.
+        forces_handler : ForcesHandler or None, default None
+            Scales the active forces before the run. If None, all forces are
+            active at full strength.
+        thermostat : hoomd thermostat class
+            Thermostat used by the integration method.
+        """
+        self.original_coords = np.copy(self.compound.xyz)
+        if forces_handler is not None:
+            forces_handler.scale_sim(self)
+        else:
+            self.active_forces = list(self.forces)
+
+        # Set kT ramp if user passed in a [start, finish] array:
+        if isinstance(kT, (list, tuple, np.ndarray)):
+            thermal_kT = kT[0]
+            kT = hoomd.variant.Ramp(
+                A=kT[0], B=kT[1], t_start=self.timestep, t_ramp=int(n_steps)
+            )
+        else:
+            thermal_kT = kT
+
+        nvt_method = hoomd.md.methods.ConstantVolume(
+            filter=self._get_integrate_group(),
+            thermostat=thermostat(kT=kT, tau=tau),
+        )
+        self.set_integrator(method=nvt_method, dt=dt)
+        self.state.thermalize_particle_momenta(filter=hoomd.filter.All(), kT=thermal_kT)
+
+        # Set box updater here
+        resize_trigger = hoomd.trigger.Periodic(update_period)
+        box_ramp = hoomd.variant.Ramp(
+            A=0, B=1, t_start=self.timestep, t_ramp=int(n_steps)
+        )
+        box_variant = hoomd.variant.box.Interpolate(
+            initial_box=self.state.box, final_box=target_box, variant=box_ramp
+        )
+        box_resizer = hoomd.update.BoxResize(
+            box=box_variant,
+            trigger=resize_trigger,
+        )
+        self.operations.updaters.append(box_resizer)
+
+        # HOOMD resizes the box about the origin. Track the box lengths so the
+        # frame offset can be adjusted, keeping the compound's box corner fixed
+        # when positions are synced back after the resize (see _update_positions).
+        L_before = np.asarray(self.state.box.L)
+
+        if self.energies == []:
+            self.run(0)
+            self._store_current_energies()
+
+        self.run(n_steps)
+        self.operations.updaters.remove(box_resizer)
+        L_after = np.asarray(self.state.box.L)
+        self._frame_offset = self._frame_offset + (L_after - L_before) / 2
+        self._store_current_energies()
+        self.operations.integrator = None
+        self._update_positions()
+        self._update_snapshot()
+
+    def cap_displacement(
+        self,
+        n_steps,
+        dt,
+        forces_handler=None,
+        max_displacement=1e-3,
+    ):
+        """Run a capped-displacement simulation.
+
+        Parameters
+        ----------
+        n_steps : int
+            Number of timesteps to run.
+        dt : float
+            Timestep size.
+        forces_handler : ForcesHandler or None, default None
+            Scales the active forces before the run. If None, all forces are
+            active at full strength.
+        max_displacement : float (nm), default 1e-3
+            Maximum distance a particle may move in a single timestep.
+
+        Notes
+        -----
+        A larger dt is often more stable here: it lets max_displacement
+        dominate the position update, so the step behaves like a steepest
+        descent minimizer capped at max_displacement. Too small a dt keeps the
+        cap from engaging and reverts to plain NVE dynamics, which can build up
+        velocity and run away on stiff potentials.
+        """
+        self.original_coords = np.copy(self.compound.xyz)
+        if forces_handler is not None:
+            forces_handler.scale_sim(self)
+        else:
+            self.active_forces = list(self.forces)
+
+        displacement_capped = hoomd.md.methods.DisplacementCapped(
+            filter=self._get_integrate_group(),
+            maximum_displacement=max_displacement,
+        )
+        self.set_integrator(method=displacement_capped, dt=dt)
+
+        if self.energies == []:
+            self.run(0)
+            self._store_current_energies()
+
+        self.run(n_steps)
+        self._store_current_energies()
+        self.operations.integrator = None
+        self._update_positions()
+        self._update_snapshot()
+
+    def fire(
+        self,
+        n_steps,
+        forces_handler=None,
+        n_iterations=1,
+        dt=1e-5,
+        min_steps_adapt=5,
+        min_steps_conv=100,
+        finc_dt=1.1,
+        fdec_dt=0.5,
+        alpha_start=0.1,
+        fdec_alpha=0.95,
+        force_tol=1e-2,
+        angmom_tol=1e-2,
+        energy_tol=1e-6,
+    ):
+        """Run FIRE energy minimization.
+
+        Parameters
+        ----------
+        n_steps : int
+            Number of timesteps per minimization iteration.
+        forces_handler : ForcesHandler or None, default None
+            Scales the active forces before the run. If None, all forces are
+            active at full strength.
+        n_iterations : int, default 1
+            Number of minimization iterations, resetting the integrator between
+            each.
+        dt : float, default 1e-5
+            Timestep size.
+        min_steps_adapt : int, default 5
+            Number of steps energy must decrease before adapting the timestep.
+        min_steps_conv : int, default 100
+            Number of consecutive steps meeting the tolerances before the run is
+            considered converged.
+        finc_dt : float, default 1.1
+            Factor by which the timestep is increased.
+        fdec_dt : float, default 0.5
+            Factor by which the timestep is decreased.
+        alpha_start : float, default 0.1
+            Initial value of the velocity mixing parameter.
+        fdec_alpha : float, default 0.95
+            Factor by which the mixing parameter is decreased.
+        force_tol : float, default 1e-2
+            Force convergence tolerance.
+        angmom_tol : float, default 1e-2
+            Angular momentum convergence tolerance.
+        energy_tol : float, default 1e-6
+            Energy convergence tolerance.
+        """
+        self.original_coords = np.copy(self.compound.xyz)
+        if forces_handler is not None:
+            forces_handler.scale_sim(self)
+        else:
+            self.active_forces = list(self.forces)
+
+        nvt_method = hoomd.md.methods.ConstantVolume(filter=self._get_integrate_group())
+        self._set_fire_integrator(
+            dt=dt,
+            force_tol=force_tol,
+            angmom_tol=angmom_tol,
+            energy_tol=energy_tol,
+            finc_dt=finc_dt,
+            fdec_dt=fdec_dt,
+            alpha_start=alpha_start,
+            fdec_alpha=fdec_alpha,
+            min_steps_adapt=min_steps_adapt,
+            min_steps_conv=min_steps_conv,
+            methods=[nvt_method],
+        )
+
+        if self.energies == []:
+            self.run(0)
+            self._store_current_energies()
+
+        for _ in range(n_iterations):
+            self.run(n_steps)
+            self.operations.integrator.reset()
+
+        self._store_current_energies()
+        self.operations.integrator = None
+        self._update_positions()
+        self._update_snapshot()
+
+    def get_energy(self):
+        """Return energies by force type across all stored frames.
+
+        Frames where a force was not active are NaN.
+
+        Notes:
+        ------
+        Energies are calcualted from the last snapshot of the simulation,
+        and use the forces and integrator from the last simulation call.
+        Therefore, the values from multiple simulation calls may not be
+        directly comparable when changing the underlying forces or
+        integration method (e.g., using ForcesHandler).
+        """
+        if not self.energies:
+            print(f"No energies currently stored in {self}")
+            return None
+        returnDict = {}
+        n_frames = len(self.energies)
+        for frame, energyDict in enumerate(self.energies):
+            for ffkey in energyDict:
+                if ffkey not in returnDict:
+                    returnDict[ffkey] = np.full(n_frames, np.nan)
+                returnDict[ffkey][frame] = energyDict[ffkey]
+        return returnDict
+
+    def recover(self):
+        """Reset the system coordinates as they were before the last run.
+
+        Rewinds the HOOMD state and the cached snapshot as well, so a later run
+        or a new Simulation built from this compound starts from the restored
+        coordinates. Energies stored by that run are dropped.
+        """
+        _recover(self._original_system, self.original_coords)
+        self.compound.xyz = self.original_coords
+        with self.state.cpu_local_snapshot as snap:
+            particles = snap.particles.rtag[:]
+            snap.particles.position[particles] = (
+                self.original_coords - self._frame_offset
+            )
+        self._update_snapshot()
+        if self.energies:
+            self.energies.pop()
+
+    def _build_params(self):
+        """Inputs the cached snapshot and forces are built from."""
+        if self.box is not None:
+            lengths = self.box.lengths if isinstance(self.box, Box) else self.box
+        elif self.compound.box:
+            lengths = self.compound.box.lengths
+        else:
+            lengths = None
+        return {
+            "forcefield": self.forcefield
+            if self.forcefield is not None
+            else _DEFAULT_FF,
+            "box": tuple(float(i) for i in lengths) if lengths is not None else None,
+            "r_cut": self.r_cut,
+        }
+
     def _to_hoomd_snap_forces(self):
-        # If a box isn't set, make one with the buffer
-        if not self.compound.box:
+        """Convert compound to HOOMD snapshot and forces."""
+        if self.box is not None:
+            # Explicit box (e.g. a constraint's orthorhombic box_lengths) wins,
+            # so the periodic cell is stable across repeated MC/MD rounds.
+            self.compound.box = (
+                self.box if isinstance(self.box, Box) else Box(lengths=list(self.box))
+            )
+        elif not self.compound.box:
             self.compound.box = self.compound.get_boundingbox(pad_box=self.box_buffer)
-        # Convert to GMSO, apply forcefield
+
+        from mbuild.utils.simulation.path_forces import (
+            PathForcefield,
+            generate_ff_from_path,
+        )
+
         top = self.compound.to_gmso()
         top.identify_connections()
-        # TODO: Make a parameter for ignoring dihedrals?
-        apply(top, forcefields=self.forcefield, ignore_params=["dihedral", "improper"])
-        # Get hoomd snapshot and force objects
-        forces, _ = gmso.external.to_hoomd_forcefield(top, r_cut=self.r_cut)
-        snap, _ = gmso.external.to_gsd_snapshot(top=top)
-        forces = list(set().union(*forces.values()))
+
+        if isinstance(self.forcefield, PathForcefield) or (
+            self._is_path and self.forcefield is None
+        ):
+            # No atomistic information available, use a KG-based CG forcefield.
+            pff = (
+                self.forcefield
+                if isinstance(self.forcefield, PathForcefield)
+                else PathForcefield()
+            )
+            snap, _ = gmso.external.to_gsd_snapshot(top=top)
+            forces = generate_ff_from_path(
+                snap,
+                radius=pff.radius,
+                bond_length=pff.bond_length,
+                angles_sampler=pff.angles,
+                dihedrals_sampler=pff.dihedrals,
+                epsilon=pff.epsilon,
+                r_cut=pff.r_cut,
+            )
+        elif self.forcefield is not None:
+            apply(
+                top,
+                forcefields=self.forcefield,
+                ignore_params=["dihedral", "improper"],
+            )
+            forces, _ = gmso.external.to_hoomd_forcefield(top, r_cut=self.r_cut)
+            snap, _ = gmso.external.to_gsd_snapshot(top=top)
+            forces = list(set().union(*forces.values()))
+        else:  # No GMSO/Foyer FF given, use the UFF-generated parameters
+            from mbuild.utils.simulation.uff import assign_uff_types, uff_forces
+
+            _, order_map = assign_uff_types(top, self.compound)
+            snap, _ = gmso.external.to_gsd_snapshot(top=top)
+            forces = uff_forces(top, snap, order_map, r_cut=self.r_cut)
+
+        _wrap_into_box(snap)
         return snap, forces
 
     def _snapshot_force_params(self):
-        """Snapshot current force params so ForcesHandler can restore before re-scaling."""
+        """Snapshot current force params for later restoration."""
         orig = {}
         for force in self.forces:
             if not hasattr(force, "params"):
@@ -186,39 +543,35 @@ class HoomdSimulation(hoomd.simulation.Simulation):
             }
         return orig
 
-    def get_integrate_group(self):
-        # Get indices of compounds to include in integration
+    def _particle_tags(self, compounds, name):
+        """Resolve Compounds or particle indices into a list of HOOMD tags."""
+        if all(isinstance(i, Compound) for i in compounds):
+            indices = []
+            for comp in compounds:
+                indices.extend(self.compound.get_child_indices(comp))
+        elif all(isinstance(i, numbers.Integral) for i in compounds):
+            indices = compounds
+        else:
+            got = sorted({type(i).__name__ for i in compounds})
+            raise TypeError(
+                f"{name} must be all mb.Compound or all integers, got {got}."
+            )
+        return [int(i) for i in indices]
+
+    def _get_integrate_group(self):
+        """Return the HOOMD filter for the integration group."""
         if self.integrate_compounds and not self.fixed_compounds:
-            if all([isinstance(i, Compound) for i in self.integrate_compounds]):
-                integrate_indices = []
-                for comp in self.integrate_compounds:
-                    integrate_indices.extend(
-                        list(self.compound.get_child_indices(comp))
-                    )
-            elif all([isinstance(i, int) for i in self.integrate_compounds]):
-                integrate_indices = self.integrate_compounds
-            return hoomd.filter.Tags(integrate_indices)
-        # Get indices of compounds to NOT include in integration
+            tags = self._particle_tags(self.integrate_compounds, "integrate_compounds")
+            return hoomd.filter.Tags(tags)
         elif self.fixed_compounds and not self.integrate_compounds:
-            if all([isinstance(i, Compound) for i in self.fixed_compounds]):
-                fix_indices = []
-                for comp in self.fixed_compounds:
-                    fix_indices.extend(list(self.compound.get_child_indices(comp)))
-            elif all([isinstance(i, int) for i in self.fixed_compounds]):
-                fix_indices = self.fixed_compounds
+            tags = self._particle_tags(self.fixed_compounds, "fixed_compounds")
             return hoomd.filter.SetDifference(
-                hoomd.filter.All(), hoomd.filter.Tags(fix_indices)
+                hoomd.filter.All(), hoomd.filter.Tags(tags)
             )
-        # Both are passed in, not supported
-        elif self.integrate_compounds and self.fixed_compounds:
-            raise RuntimeError(
-                "You can specify only one of integrate_compounds and fixed_compounds."
-            )
-        # Neither are given, include everything in integration
         else:
             return hoomd.filter.All()
 
-    def get_force(self, instance, active_only=False):
+    def _get_force(self, instance, active_only=False):
         if active_only:
             iterForcesSet = set(self.active_forces)
         else:
@@ -228,16 +581,16 @@ class HoomdSimulation(hoomd.simulation.Simulation):
                 return force
         raise ValueError(f"No force of {instance} was found.")
 
-    def get_dpd_from_lj(self, A):
+    def _get_dpd_from_lj(self, A):
         """Make a best-guess DPD force from types and parameters of an LJ force."""
-        lj_force = self.get_force(hoomd.md.pair.LJ)
+        lj_force = self._get_force(hoomd.md.pair.LJ)
         dpd = hoomd.md.pair.DPDConservative(nlist=lj_force.nlist)
         for param in lj_force.params:
             dpd.params[param] = dict(A=A)
             dpd.r_cut[param] = lj_force.params[param]["sigma"]
         return dpd
 
-    def set_fire_integrator(
+    def _set_fire_integrator(
         self,
         dt,
         force_tol,
@@ -268,84 +621,391 @@ class HoomdSimulation(hoomd.simulation.Simulation):
         self.operations.integrator = fire
 
     def set_integrator(self, dt, method):
+        """Set the integration method used.
+
+        This is used internally by HoomdSimulation, but
+        it is possible for users to call this directly
+        while passing an instance of ``hoomd.md.methods``
+        """
         integrator = hoomd.md.Integrator(dt=dt)
         integrator.forces = self.active_forces
         integrator.methods = [method]
         self.operations.integrator = integrator
 
     def _update_integrator_forces(self):
+        """Sets which forces are passed to the integrator."""
         self.operations.integrator.forces = self.active_forces
 
     def _update_snapshot(self):
+        """Update the last snapshot and the compound's box stored in memory."""
         snapshot = self.state.get_snapshot()
-        # snapshot_copy = hoomd.Snapshot(snapshot)  # full copy
         self.compound._add_sim_data(state=snapshot)
+        Lx, Ly, Lz, xy, xz, yz = snapshot.configuration.box
+        self.compound.box = Box.from_lengths_tilt_factors(
+            lengths=(Lx, Ly, Lz), tilt_factors=(xy, xz, yz)
+        )
 
-    def add_gsd_writer(self, file_name, write_period):
-        """"""
-        pass
-
-    def update_positions(self):
-        """Update compound positions from snapshot."""
+    def _update_positions(self):
+        """Update compound positions from snapshot and sync back to Path if needed."""
         with self.state.cpu_local_snapshot as snap:
             particles = snap.particles.rtag[:]
             pos = snap.particles.position[particles]
-            self.compound.xyz = np.copy(pos)
+            # Undo the box-centering translation applied when building the
+            # snapshot so coordinates return to the compound's original frame.
+            self.compound.xyz = np.copy(pos) + self._frame_offset
+        _sync_back(self.compound, self._is_path, self._original_system)
 
-    def store_current_energies(self):
-        """Store energy simulations progress."""
+    def _store_current_energies(self):
+        """Store energy from active forces."""
         new_energy = {}
+        current_total_energy = 0
         for force in self.active_forces:
             ffname = force.__class__.__module__ + "." + force.__class__.__name__
             new_energy[ffname] = force.energy
+            current_total_energy += force.energy
+        new_energy["potential_energy"] = current_total_energy
         if new_energy:
             self.energies.append(new_energy)
 
+
+class OpenMMSimulation:
+    """A wrapper around OpenMM for running simulations on mBuild Compounds or Paths.
+
+    Accepts either an mb.Compound or an mbuild.path.Path as input.
+
+    Parameters
+    ----------
+    system : mb.Compound or mbuild.path.build.Path
+        The system to simulate.
+    forcefield : str or None
+        A foyer-compatible forcefield name or XML path.
+        If None, default LJ + harmonic bond/angle parameters are applied.
+    box : mb.Box or sequence of float or None, default None
+        Explicit orthorhombic box as [Lx, Ly, Lz] (or an mb.Box). Overrides
+        compound.box, mirroring HoomdSimulation. Pass a constraint's box_lengths
+        so a packed system keeps one fixed periodic cell across repeated rounds.
+        If None and the compound has no box, the system is treated as
+        non-periodic (OpenMM NoCutoff).
+    constraints : str or None, default is None
+        Bond constraints: None, "HBonds", "AllBonds", "HAngles".
+    platform : str
+        OpenMM platform: "CPU", "CUDA", "OpenCL", "Reference".
+    nthreads : int
+        Number of CPU threads (only relevant for CPU platform).
+    r_cut : float, default 1.0
+        Nonbonded cutoff distance (nm). Applied to any force that uses a
+        cutoff, regardless of forcefield. Forces set to NoCutoff (for example
+        non-periodic compounds) are unaffected.
+    seed : int, default 1
+        Seed for the coordinate kick, so kicks are reproducible.
+    kick : bool, default True
+        Nudge coordinates before simulating. This can be critical to remove
+        flat dihedrals.
+    """
+
+    def __init__(
+        self,
+        system,
+        forcefield=None,
+        box=None,
+        constraints=None,
+        platform="CPU",
+        nthreads=1,
+        r_cut=1.0,
+        seed=1,
+        kick=True,
+    ):
+        from openmm import Platform
+        from openmm.app import AllBonds, HAngles, HBonds
+
+        # Resolve input type
+        compound, self._is_path, self._original_system, self.original_coords = (
+            _resolve_input(system)
+        )
+
+        self.compound = compound
+        self.forcefield_name = forcefield
+        self.r_cut = r_cut
+        self.energies = []
+        self.box = box
+
+        # Explicit box overrides compound.box (parity with HoomdSimulation).
+        if self.box is not None:
+            compound.box = (
+                self.box if isinstance(self.box, Box) else Box(lengths=list(self.box))
+            )
+
+        if kick:
+            compound._kick(seed=seed)
+
+        # Set up platform
+        self._platform = Platform.getPlatformByName(platform)
+        if platform == "CPU":
+            self._platform.setPropertyDefaultValue("Threads", str(nthreads))
+
+        # Parse constraints
+        constraint_map = {
+            None: None,
+            "AllBonds": AllBonds,
+            "HBonds": HBonds,
+            "HAngles": HAngles,
+        }
+        if constraints not in constraint_map:
+            raise ValueError(
+                f"Invalid constraints: {constraints}. "
+                f"Options: {list(constraint_map.keys())}"
+            )
+        self._constraints = constraint_map[constraints]
+
+        # Build system
+        from mbuild.utils.simulation.path_forces import PathForcefield
+
+        if isinstance(forcefield, PathForcefield):
+            # Path relaxation is HOOMD-only by design; there is no OpenMM
+            # backend for the coarse Kremer-Grest path forcefield.
+            raise NotImplementedError(
+                "OpenMMSimulation does not yet support PathForcefield. Use "
+                "HoomdSimulation for coarse Kremer-Grest path relaxation."
+            )
+        if forcefield is not None:
+            self._build_from_forcefield(compound, forcefield)
+        else:
+            self._build_uff_system(compound, r_cut=self.r_cut)
+
+        # Apply the requested nonbonded cutoff to whichever forces use one,
+        # independent of how the system was parameterized.
+        self._apply_cutoff()
+
+    def minimize(self, n_steps=1000, tolerance=10.0):
+        """Energy minimize the system.
+
+        Parameters
+        ----------
+        n_steps : int
+        tolerance : float
+            Tolerance in kJ/mol/nm.
+        """
+        import openmm.unit as u
+        from openmm.openmm import LangevinIntegrator
+
+        integrator = LangevinIntegrator(
+            298 * u.kelvin, 1.0 / u.picosecond, 0.002 * u.picoseconds
+        )
+        self._create_simulation(integrator)
+        self.simulation.minimizeEnergy(
+            maxIterations=n_steps,
+            tolerance=tolerance * u.kilojoules_per_mole / u.nanometer,
+        )
+        self._record_energies()
+        self._update_compound_positions()
+
+    def nvt(self, n_steps, T=300, dt=0.002, friction=1.0, report_interval=None):
+        """Run an NVT (Langevin) simulation.
+
+        Parameters
+        ----------
+        n_steps : int
+        T : float
+            Temperature in Kelvin.
+        dt : float
+            Timestep in picoseconds.
+        friction : float
+            Friction coefficient in 1/ps.
+        report_interval : int or None
+            If given, record energies every this many steps.
+        """
+        import openmm.unit as u
+        from openmm.openmm import LangevinIntegrator
+
+        integrator = LangevinIntegrator(
+            T * u.kelvin, friction / u.picosecond, dt * u.picoseconds
+        )
+        self._create_simulation(integrator)
+
+        if report_interval:
+            for i in range(0, n_steps, report_interval):
+                chunk = min(report_interval, n_steps - i)
+                self.simulation.step(chunk)
+                self._record_energies()
+        else:
+            self.simulation.step(n_steps)
+            self._record_energies()
+
+        self._update_compound_positions()
+
+    def recover(self):
+        """Reset the coordinates to what they were when this Simulation was made.
+
+        Rewinds the positions the next run starts from, and clears stored
+        energies along with them.
+        """
+        import openmm.unit as u
+
+        _recover(self._original_system, self.original_coords)
+        self.compound.xyz = self.original_coords
+        self.positions = self.original_coords * u.nanometer
+        self.energies = []
+
     def get_energy(self):
-        """Return each energy by index for previously run energy breakdown."""
+        """Return recorded energies as dict of arrays."""
         if not self.energies:
-            print(f"No energies currently stored in {self}")
             return None
-        returnDict = {}
-        n_frames = len(self.energies)
-        for frame, energyDict in enumerate(self.energies):
-            for ffkey in energyDict:
-                if ffkey not in returnDict:
-                    returnDict[ffkey] = np.zeros(n_frames)
-                returnDict[ffkey][frame] = energyDict[ffkey]
-        return returnDict
+        keys = self.energies[0].keys()
+        return {k: np.array([e.get(k) for e in self.energies]) for k in keys}
+
+    def _build_from_forcefield(self, compound, forcefield):
+        """Build OpenMM system using foyer."""
+        import openmm
+
+        foyer = import_("foyer")
+
+        to_parmed = compound.to_parmed()
+        extension = os.path.splitext(forcefield)[-1]
+        if extension == ".xml":
+            ff = foyer.Forcefield(forcefield_files=forcefield)
+        else:
+            ff = foyer.Forcefield(name=forcefield)
+        self._parmed = ff.apply(to_parmed)
+
+        if self._constraints is not None:
+            self.system = self._parmed.createSystem(constraints=self._constraints)
+        else:
+            self.system = self._parmed.createSystem()
+
+        # For non-periodic compounds, ensure NonbondedForce uses NoCutoff
+        if not compound.box:
+            for i in range(self.system.getNumForces()):
+                force = self.system.getForce(i)
+                if isinstance(force, openmm.NonbondedForce):
+                    force.setNonbondedMethod(openmm.NonbondedForce.NoCutoff)
+
+        self.topology = self._parmed.topology
+        self.positions = self._parmed.positions
+
+    def _build_uff_system(self, compound, r_cut=1.0):
+        """Build an OpenMM system parameterized with UFF.
+
+        Used when no explicit forcefield is given. Parameters are computed from
+        elements and bond orders and emitted as openmm.Force objects.
+
+        Parameters
+        ----------
+        compound : mb.Compound
+        r_cut : float, default 1.0
+            Nonbonded cutoff (nm), used only for periodic compounds.
+        """
+        import openmm
+        import openmm.unit as u
+        from openmm.app import Element, Topology
+
+        from mbuild.utils.simulation.uff import assign_uff_types, uff_forces
+
+        top = compound.to_gmso()
+        top.identify_connections()
+        # to_gmso always fills top.box with a bounding box; only treat the
+        # system as periodic when the compound itself defines a box.
+        if not compound.box:
+            top.box = None
+        _, order_map = assign_uff_types(top, compound)
+
+        particles_list = list(compound.particles())
+        self.system = openmm.System()
+        for p in particles_list:
+            self.system.addParticle(float(p.element.mass) * u.amu)
+
+        if compound.box:
+            Lx, Ly, Lz = compound.box.lengths
+            self.system.setDefaultPeriodicBoxVectors(
+                openmm.Vec3(Lx, 0, 0) * u.nanometer,
+                openmm.Vec3(0, Ly, 0) * u.nanometer,
+                openmm.Vec3(0, 0, Lz) * u.nanometer,
+            )
+
+        for force in uff_forces(top, None, order_map, r_cut=r_cut, backend="openmm"):
+            self.system.addForce(force)
+
+        # Build an OpenMM topology with real elements and bonds.
+        sites_list = list(top.sites)
+        site_idx = {s: i for i, s in enumerate(sites_list)}
+        topology = Topology()
+        chain = topology.addChain()
+        for p in particles_list:
+            residue = topology.addResidue(p.name, chain)
+            topology.addAtom(p.name, Element.getBySymbol(p.element.symbol), residue)
+        atoms_list = list(topology.atoms())
+        for bond in top.bonds:
+            m0, m1 = bond.connection_members
+            topology.addBond(atoms_list[site_idx[m0]], atoms_list[site_idx[m1]])
+
+        self.topology = topology
+        self.positions = compound.xyz * u.nanometer
+
+    def _apply_cutoff(self):
+        """Set the nonbonded cutoff distance on every force that uses one.
+
+        In OpenMM the cutoff lives on each nonbonded force object, not on the
+        simulation. This sets self.r_cut on any NonbondedForce or
+        CustomNonbondedForce whose method uses a cutoff, leaving NoCutoff forces
+        untouched.
+        """
+        import openmm
+
+        for i in range(self.system.getNumForces()):
+            force = self.system.getForce(i)
+            if isinstance(force, openmm.NonbondedForce):
+                if force.getNonbondedMethod() != openmm.NonbondedForce.NoCutoff:
+                    force.setCutoffDistance(self.r_cut)
+            elif isinstance(force, openmm.CustomNonbondedForce):
+                no_cutoff = openmm.CustomNonbondedForce.NoCutoff
+                if force.getNonbondedMethod() != no_cutoff:
+                    force.setCutoffDistance(self.r_cut)
+
+    def _create_simulation(self, integrator):
+        """Create an OpenMM Simulation object."""
+        from openmm.app.simulation import Simulation
+
+        self.simulation = Simulation(
+            self.topology, self.system, integrator, self._platform
+        )
+        self.simulation.context.setPositions(self.positions)
+
+    def _update_compound_positions(self):
+        """Write positions back to compound and sync to Path if needed."""
+        state = self.simulation.context.getState(getPositions=True)
+        pos = state.getPositions(asNumpy=True)
+        pos_array = np.array(pos)  # nm
+        if not np.any(np.isnan(pos_array)):
+            self.compound.xyz = pos_array
+            # Store updated positions so next _create_simulation uses them
+            self.positions = pos
+        else:
+            logger.warning("NaN positions detected; compound not updated.")
+            return
+        _sync_back(self.compound, self._is_path, self._original_system)
+
+    def _record_energies(self):
+        """Record current potential energy."""
+        import openmm.unit as u
+
+        state = self.simulation.context.getState(getEnergy=True)
+        pe = state.getPotentialEnergy().value_in_unit(u.kilojoules_per_mole)
+        self.energies.append({"potential_energy": pe})
 
 
 class ForcesHandler:
-    """Provides a quick method for tuning HOOMD forces to better handle
-    high-energy configurations.
+    """Provides a quick method for tuning HOOMD forces.
 
     Parameters
     ----------
     dpd : float, default 0.0
-        If greater than 0.0, then replaces the LJ 12-6 pair potential
-        with the softer hoomd.md.pair.DPDConservative pair force from HOOMD.
-        This should be used for highly unstable configurations.
-        The value passed to `dpd` is used as the the repulsion force constant.
-    scale_bonds : float, default 1.0
-    scale_angles : float, default 1.0
-    scale_lj : float, default 0.0
+        If > 0, replaces LJ with DPDConservative.
+    scale_bond : float, default 1.0
+    scale_angle : float, default 1.0
+    scale_lj : float, default 1.0
     scale_periodic : float, default 0.0
     scale_opls : float, default 0.0
     scale_improper : float, default 0.0
     scale_charge : float, default 0.0
-        Scaling factors multiplied against each energy term
-        in the forcefield. A value of 0.0 will exclude that interaction
-        during the simulation, a value of 1.0 includes the interaction
-        as described by the forcefield.
-
-    Notes
-    -----
-    The default behavior uses only non-bonded pairs, bond-stretching
-    and bond-bending potentials. Excluding electrostatics, dihedrals, and
-    impropers favors efficient relaxation to quickly remove high energy configurations.
-    See examples in `hoomd_cap_displacement` and `hoomd_fire` for tips about using
-    multiple instances of ForcesHandler in series.
     """
 
     def __init__(
@@ -372,8 +1032,8 @@ class ForcesHandler:
         self.forcesDict = {}
 
     def scale_sim(self, sim):
-        "Iterate through HOOMD force objects and apply scaling factors."
-        sim.active_forces = []  # reset active forces
+        """Iterate through HOOMD force objects and apply scaling factors."""
+        sim.active_forces = []
         forcesDict = {
             "lj": (hoomd.md.pair.LJ, ("epsilon")),
             "charge": (hoomd.md.special_pair.Coulomb, ("alpha")),
@@ -384,16 +1044,19 @@ class ForcesHandler:
             "improper": (hoomd.md.improper.Periodic, ("k")),
         }
         for key, scalar in self.scale_forces.items():
-            if not scalar:  # skip scalars of 0
+            if not scalar:
                 continue
             if key == "lj" and self.dpd:
-                dpd = sim.get_dpd_from_lj(A=self.dpd)
+                dpd = sim._get_dpd_from_lj(A=self.dpd)
                 sim.active_forces.append(dpd)
-                self.forcesDict["lj"] = sim.get_force(forcesDict["lj"][0])
+                self.forcesDict["lj"] = sim._get_force(forcesDict["lj"][0])
                 self.forcesDict["dpd"] = dpd
                 continue
 
-            force = sim.get_force(forcesDict[key][0])
+            try:
+                force = sim._get_force(forcesDict[key][0])
+            except ValueError:
+                continue
             orig_params = sim._orig_force_params.get(id(force), {})
             for param in force.params:
                 for term in forcesDict[key][1:]:
@@ -402,1021 +1065,74 @@ class ForcesHandler:
                     else:
                         force.params[param][term] *= scalar
             sim.active_forces.append(force)
-            self.forcesDict[key] = force  # store for usage elsewhere
+            self.forcesDict[key] = force
 
 
-## HOOMD RUN METHODS ##
-def hoomd_nvt(
-    compound,
-    sim,
-    forces_handler,
-    n_steps,
-    kT,
-    dt,
-    tau,
-    thermostat=hoomd.md.methods.thermostats.Berendsen,
-):
-    """Run a short NVT simulation on an mBuild Compound.
+def _resolve_input(system):
+    """Convert a Path or Compound input into an mBuild Compound.
 
     Parameters
     ----------
+    system : mb.Compound or mbuild.path.build.Path
+        The input system.
+
+    Returns
+    -------
     compound : mb.Compound
-        The compound to use in the simulation
-    sim : mb.simulation.HOOMDSimulation
-        The simulation context used during the simulation.
-    forces_handler : mb.simulation.ForceHander
-        The way to handle forces for this simulation method. Will apply specified forces,
-        scaling as needed.
-        Set to `None` to use the force field as-is.
-    n_steps : int
-        The number of simulation time steps to run.
-    dt : float
-        The simulation timestep. Note that for running capped displacement on highly unstable
-        systems (e.g. overlapping particles), it is often more stable to use a larger
-        value of dt and let the displacement cap limit position updates.
-    kT : float
-        The temperature set point for the thermostat in units of energy.
-    tau : float
-        The thermostat time constant
-    thermostat : Instance of hoomd.md.methods.thermostats
-        The thermostat to use. Defaults to the Berendsen thermostat.
-        For shorter, equilibraiton runs, Berendsen is the most efficient choice.
-        Other options include `hoomd.md.methods.thermostats.MTTK` (i.e., Nose-Hoover) and
-        `hoomd.md.methods.thermostats.Bussi` (i.e., Stochastic velocity rescaling).
-
-    Notes
-    -----
-    kT is in units of energy rather than Kelvin or Celsius. Use the `unyt` package to
-    easily convert T to kT with the energy units used by your force field.
-
-    ```python
-        hoomd_nvt(
-            compound=compound,
-            sim=sim,
-            forces_handler=ForcesHandler(scale_angle=1, scale_bond=1, dpd=0),
-            kT=(300 * u.K).to_equivalent("kJ/mol", "thermal").value,
-            dt=1e-4,
-            tau=1e-2,
-            n_steps=10000
-        )
-    ````
+    is_path : bool
+        Whether the original input was a Path.
+    original : the original input object
     """
-    forces_handler.scale_sim(sim)
+    import mbuild.path.build
 
-    # Set up and run
-    nvt = hoomd.md.methods.ConstantVolume(
-        filter=sim.get_integrate_group(), thermostat=thermostat(kT=kT, tau=tau)
-    )
-    sim.set_integrator(method=nvt, dt=dt)
-    # Create random initial velocities
-    sim.state.thermalize_particle_momenta(filter=hoomd.filter.All(), kT=kT)
-    # Store the initial energy if this is the first simulation call.
-    if sim.energies == []:
-        sim.run(0)
-        sim.store_current_energies()
-    # Run and store resulting energies.
-    sim.run(n_steps)
-    sim.store_current_energies()
-    sim.operations.integrator = None
-    sim.update_positions()
-    sim._update_snapshot()
-
-
-def hoomd_cap_displacement(
-    compound,
-    sim,
-    forces_handler,
-    n_steps,
-    dt,
-    max_displacement=1e-3,
-):
-    """Run a short simulation with hoomd.md.methods.DisplacementCapped
-
-    Parameters
-    ----------
-    compound : mb.Compound
-        The compound to use in the simulation
-    sim : mb.simulation.HOOMDSimulation
-        The simulation context used during the simulation.
-    forces_handler : mb.simulation.ForceHander
-        The way to handle forces for this simulation method. Will apply specified forces,
-        scaling as needed.
-    n_steps : int
-        The number of simulation time steps to run with the modified forcefield
-        created by bond_k_scale, angle_k_scale, and dpd_A.
-        See these parameters for more information.
-    dt : float
-        The simulation timestep. Note that for running capped displacement on highly unstable
-        systems (e.g. overlapping particles), it is often more stable to use a larger
-        value of dt and let the displacement cap limit position updates.
-    max_displacement : float (nm), default = 1e-3 nm
-        The maximum displacement (nm) allowed per timestep. Use smaller values for
-        highly unstable systems.
-
-    """
-    compound._kick()
-
-    forces_handler.scale_sim(sim)
-
-    # Set up and run
-    displacement_capped = hoomd.md.methods.DisplacementCapped(
-        filter=sim.get_integrate_group(),
-        maximum_displacement=max_displacement,
-    )
-    sim.set_integrator(method=displacement_capped, dt=dt)
-    # Store the initial energy if this is the first simulation call.
-    if sim.energies == []:
-        sim.run(0)
-        sim.store_current_energies()
-    # Run and store resulting energies.
-    sim.run(n_steps)
-    sim.store_current_energies()
-    sim.operations.integrator = None
-    sim.update_positions()
-    sim._update_snapshot()
-
-
-def hoomd_fire(
-    compound,
-    sim,
-    forces_handler,
-    n_steps,
-    n_iterations=1,
-    dt=1e-5,
-    min_steps_adapt=5,
-    min_steps_conv=100,
-    finc_dt=1.1,
-    fdec_dt=0.5,
-    alpha_start=0.1,
-    fdec_alpha=0.95,
-    force_tol=1e-2,
-    angmom_tol=1e-2,
-    energy_tol=1e-6,
-):
-    """Run a short HOOMD-Blue simulation with the FIRE integrator.
-    This method can be helpful for relaxing high-energy
-    configurations or for removing overlapping particles.
-
-    Parameters:
-    -----------
-    compound : mb.Compound
-        The compound to use in the simulation
-    sim : mb.simulation.HOOMDSimulation
-        The simulation context used during the simulation.
-    forces_handler : mb.simulation.ForceHander
-        The way to handle forces for this simulation method. Will apply specified forces,
-        scaling as needed.
-    steps : int; required
-        The number of simulation steps to run
-    dt : float, default 1e-5
-        Simulation step size. Consider system stability when setting.
-    min_steps_adapt : int, default 5
-        Minimum number of steps with negative energy change before `dt`
-        and ``alpha`` are allowed to adapt.
-    min_steps_conv : int, default 100
-        Minimum number of steps taken before convergence criteria are
-        evaluated.
-    finc_dt : float, default 1.1
-        Multiplicative factor by which ``dt`` is increased on successful steps.
-    fdec_dt : float, default 0.5
-        Multiplicative factor by which ``dt`` is decreased on unsuccessful steps.
-    alpha_start : float, default 0.1
-        Initial and maximum value of the velocity mixing parameter ``alpha``.
-    fdec_alpha : float, default 0.95
-        Multiplicative factor by which ``alpha`` is decreased each adapting step.
-    force_tol : float, default 1e-2
-        Convergence threshold for the per-particle force magnitude.
-    angmom_tol : float, default 1e-2
-        Convergence threshold for the per-particle angular momentum magnitude.
-    energy_tol : float, default 1e-6
-        Convergence threshold for the fractional change in system energy.
-    """
-    compound._kick()
-    forces_handler.scale_sim(sim)
-    # Set up and run
-    nvt = hoomd.md.methods.ConstantVolume(filter=sim.get_integrate_group())
-    sim.set_fire_integrator(
-        dt=dt,
-        force_tol=force_tol,
-        angmom_tol=angmom_tol,
-        energy_tol=energy_tol,
-        finc_dt=finc_dt,
-        fdec_dt=fdec_dt,
-        alpha_start=alpha_start,
-        fdec_alpha=fdec_alpha,
-        min_steps_adapt=min_steps_adapt,
-        min_steps_conv=min_steps_conv,
-        methods=[nvt],
-    )
-    # Store the initial energy if this is the first simulation call.
-    if sim.energies == []:
-        sim.run(0)
-        sim.store_current_energies()
-    # Run and store resulting energies.
-    for sim_num in range(n_iterations):
-        sim.run(n_steps)
-        sim.operations.integrator.reset()
-
-    # Update particle positions, save latest state point snapshot
-    sim.store_current_energies()
-    sim.operations.integrator = None
-    sim._update_snapshot()
-    sim.update_positions()
-
-
-# Openbabel and OpenMM
-def energy_minimize(
-    compound,
-    forcefield="UFF",
-    steps=1000,
-    shift_com=True,
-    anchor=None,
-    **kwargs,
-):
-    """Perform an energy minimization on a Compound.
-
-    Default behavior utilizes `Open Babel <http://openbabel.org/docs/dev/>`_
-    to perform an energy minimization/geometry optimization on a Compound by
-    applying a generic force field
-
-    Can also utilize `OpenMM <http://openmm.org/>`_ to energy minimize after
-    atomtyping a Compound using
-    `Foyer <https://github.com/mosdef-hub/foyer>`_ to apply a forcefield XML
-    file that contains valid SMARTS strings.
-
-    This function is primarily intended to be used on smaller components,
-    with sizes on the order of 10's to 100's of particles, as the energy
-    minimization scales poorly with the number of particles.
-
-    Parameters
-    ----------
-    compound : mbuid.Compound, required
-        The compound to perform energy minimization on.
-    steps : int, optional, default=1000
-        The number of optimization iterations
-    forcefield : str, optional, default='UFF'
-        The generic force field to apply to the Compound for minimization.
-        Valid options are 'MMFF94', 'MMFF94s', ''UFF', 'GAFF', 'Ghemical'.
-        Please refer to the `Open Babel documentation
-        <http://open-babel.readthedocs.io/en/latest/Forcefields/Overview.html>`_
-        when considering your choice of force field.
-        Utilizing OpenMM for energy minimization requires a forcefield
-        XML file with valid SMARTS strings. Please refer to `OpenMM docs
-        <http://docs.openmm.org/7.0.0/userguide/application.html#creating-force-fields>`_
-        for more information.
-    shift_com : bool, optional, default=True
-        If True, the energy-minimized Compound is translated such that the
-        center-of-mass is unchanged relative to the initial configuration.
-    anchor : Compound, optional, default=None
-        Translates the energy-minimized Compound such that the
-        position of the anchor Compound is unchanged relative to the
-        initial configuration.
-
-    Other Parameters
-    ----------------
-    algorithm : str, optional, default='cg'
-        The energy minimization algorithm.  Valid options are 'steep', 'cg',
-        and 'md', corresponding to steepest descent, conjugate gradient, and
-        equilibrium molecular dynamics respectively.
-        For _energy_minimize_openbabel
-    fixed_compounds : Compound, optional, default=None
-        An individual Compound or list of Compounds that will have their
-        position fixed during energy minimization. Note, positions are fixed
-        using a restraining potential and thus may change slightly.
-        Position fixing will apply to all Particles (i.e., atoms) that exist
-        in the Compound and to particles in any subsequent sub-Compounds.
-        By default x,y, and z position is fixed. This can be toggled by instead
-        passing a list containing the Compound and an list or tuple of bool values
-        corresponding to x,y and z; e.g., [Compound, (True, True, False)]
-        will fix the x and y position but allow z to be free.
-        For _energy_minimize_openbabel
-    ignore_compounds: Compound, optional, default=None
-        An individual compound or list of Compounds whose underlying particles
-        will have their positions fixed and not interact with other atoms via
-        the specified force field during the energy minimization process.
-        Note, a restraining potential used and thus absolute position may vary
-        as a result of the energy minimization process.
-        Interactions of these ignored atoms can  be specified by the user,
-        e.g., by explicitly setting a distance constraint.
-        For _energy_minimize_openbabel
-    distance_constraints: list, optional, default=None
-        A list containing a pair of Compounds as a tuple or list and
-        a float value specifying the target distance between the two Compounds, e.g.,:
-        [(compound1, compound2), distance].
-        To specify more than one constraint, pass constraints as a 2D list, e.g.,:
-        [ [(compound1, compound2), distance1],  [(compound3, compound4), distance2] ].
-        Note, Compounds specified here must represent individual point particles.
-        For _energy_minimize_openbabel
-    constraint_factor: float, optional, default=50000.0
-        Harmonic springs are used to constrain distances and fix atom positions, where
-        the resulting energy associated with the spring is scaled by the
-        constraint_factor; the energy of this spring is considering during the minimization.
-        As such, very small values of the constraint_factor may result in an energy
-        minimized state that does not adequately restrain the distance/position of atoms.
-        For _energy_minimize_openbabel
-    scale_bonds : float, optional, default=1
-        Scales the bond force constant (1 is completely on).
-        For _energy_minimize_openmm
-    scale_angles : float, optional, default=1
-        Scales the angle force constant (1 is completely on)
-        For _energy_minimize_openmm
-    scale_torsions : float, optional, default=1
-        Scales the torsional force constants (1 is completely on)
-        For _energy_minimize_openmm
-        Note: Only Ryckaert-Bellemans style torsions are currently supported
-    scale_nonbonded : float, optional, default=1
-        Scales epsilon (1 is completely on)
-        For _energy_minimize_openmm
-    constraints : str, optional, default="AllBonds"
-        Specify constraints on the molecule to minimize, options are:
-        None, "HBonds", "AllBonds", "HAngles"
-        For _energy_minimize_openmm
-
-    References
-    ----------
-    If using _energy_minimize_openmm(), please cite:
-
-    .. [Eastman2013] P. Eastman, M. S. Friedrichs, J. D. Chodera,
-       R. J. Radmer, C. M. Bruns, J. P. Ku, K. A. Beauchamp, T. J. Lane,
-       L.-P. Wang, D. Shukla, T. Tye, M. Houston, T. Stich, C. Klein,
-       M. R. Shirts, and V. S. Pande. "OpenMM 4: A Reusable, Extensible,
-       Hardware Independent Library for High Performance Molecular
-       Simulation." J. Chem. Theor. Comput. 9(1): 461-469. (2013).
-
-    If using _energy_minimize_openbabel(), please cite:
-
-    .. [OBoyle2011] O'Boyle, N.M.; Banck, M.; James, C.A.; Morley, C.;
-       Vandermeersch, T.; Hutchison, G.R. "Open Babel: An open chemical
-       toolbox." (2011) J. Cheminf. 3, 33
-
-    .. [OpenBabel] Open Babel, version X.X.X http://openbabel.org,
-       (installed Month Year)
-
-    If using the 'MMFF94' force field please also cite the following:
-
-    .. [Halgren1996a] T.A. Halgren, "Merck molecular force field. I. Basis,
-       form, scope, parameterization, and performance of MMFF94." (1996)
-       J. Comput. Chem. 17, 490-519
-
-    .. [Halgren1996b] T.A. Halgren, "Merck molecular force field. II. MMFF94
-       van der Waals and electrostatic parameters for intermolecular
-       interactions." (1996) J. Comput. Chem. 17, 520-552
-
-    .. [Halgren1996c] T.A. Halgren, "Merck molecular force field. III.
-       Molecular geometries and vibrational frequencies for MMFF94." (1996)
-       J. Comput. Chem. 17, 553-586
-
-    .. [Halgren1996d] T.A. Halgren and R.B. Nachbar, "Merck molecular force
-       field. IV. Conformational energies and geometries for MMFF94." (1996)
-       J. Comput. Chem. 17, 587-615
-
-    .. [Halgren1996e] T.A. Halgren, "Merck molecular force field. V.
-       Extension of MMFF94 using experimental data, additional computational
-       data, and empirical rules." (1996) J. Comput. Chem. 17, 616-641
-
-    If using the 'MMFF94s' force field please cite the above along with:
-
-    .. [Halgren1999] T.A. Halgren, "MMFF VI. MMFF94s option for energy minimization
-       studies." (1999) J. Comput. Chem. 20, 720-729
-
-    If using the 'UFF' force field please cite the following:
-
-    .. [Rappe1992] Rappe, A.K., Casewit, C.J., Colwell, K.S., Goddard, W.A.
-       III, Skiff, W.M. "UFF, a full periodic table force field for
-       molecular mechanics and molecular dynamics simulations." (1992)
-       J. Am. Chem. Soc. 114, 10024-10039
-
-    If using the 'GAFF' force field please cite the following:
-
-    .. [Wang2004] Wang, J., Wolf, R.M., Caldwell, J.W., Kollman, P.A.,
-       Case, D.A. "Development and testing of a general AMBER force field"
-       (2004) J. Comput. Chem. 25, 1157-1174
-
-    If using the 'Ghemical' force field please cite the following:
-
-    .. [Hassinen2001] T. Hassinen and M. Perakyla, "New energy terms for
-       reduced protein models implemented in an off-lattice force field"
-       (2001) J. Comput. Chem. 22, 1229-1242
-
-    """
-    # TODO: Update mbuild tutorials to provide overview of new features
-    #   Preliminary tutorials: https://github.com/chrisiacovella/mbuild_energy_minimization
-    com = compound.pos
-    anchor_in_compound = False
-    if anchor is not None:
-        # check to see if the anchor exists
-        # in the Compound to be energy minimized
-        for succesor in compound.successors():
-            if id(anchor) == id(succesor):
-                anchor_in_compound = True
-                anchor_pos_old = anchor.pos
-
-        if not anchor_in_compound:
-            raise MBuildError(
-                f"Anchor: {anchor} is not part of the Compound: {compound}"
-                "that you are trying to energy minimize."
-            )
-    compound._kick()
-    extension = os.path.splitext(forcefield)[-1]
-    openbabel_ffs = ["MMFF94", "MMFF94s", "UFF", "GAFF", "Ghemical"]
-    if forcefield in openbabel_ffs:
-        _energy_minimize_openbabel(
-            compound=compound, forcefield=forcefield, steps=steps, **kwargs
-        )
+    if isinstance(system, mbuild.path.build.Path):
+        return system.to_compound(), True, system, np.copy(system.coordinates)
+    elif isinstance(system, Compound):
+        return system, False, system, np.copy(system.xyz)
     else:
-        tmp_dir = tempfile.mkdtemp()
-        compound.save(os.path.join(tmp_dir, "un-minimized.mol2"))
-
-        if extension == ".xml":
-            _energy_minimize_openmm(
-                compound=compound,
-                tmp_dir=tmp_dir,
-                forcefield_files=forcefield,
-                forcefield_name=None,
-                steps=steps,
-                **kwargs,
-            )
-        else:
-            _energy_minimize_openmm(
-                compound=compound,
-                tmp_dir=tmp_dir,
-                forcefield_files=None,
-                forcefield_name=forcefield,
-                steps=steps,
-                **kwargs,
-            )
-
-        compound.update_coordinates(os.path.join(tmp_dir, "minimized.pdb"))
-
-    if shift_com:
-        compound.translate_to(com)
-
-    if anchor_in_compound:
-        anchor_pos_new = anchor.pos
-        delta = anchor_pos_old - anchor_pos_new
-        compound.translate(delta)
-
-
-def _energy_minimize_openmm(
-    compound,
-    tmp_dir,
-    forcefield_files=None,
-    forcefield_name=None,
-    steps=1000,
-    scale_bonds=1,
-    scale_angles=1,
-    scale_torsions=1,
-    scale_nonbonded=1,
-    constraints="AllBonds",
-):
-    """Perform energy minimization using OpenMM.
-
-    Converts an mBuild Compound to a ParmEd Structure,
-    applies a forcefield using Foyer, and creates an OpenMM System.
-
-    Parameters
-    ----------
-    compound : mbuid.Compound, required
-        The compound to perform energy minimization on.
-    forcefield_files : str or list of str, optional, default=None
-        Forcefield files to load
-    forcefield_name : str, optional, default=None
-        Apply a named forcefield to the output file using the `foyer`
-        package, e.g. 'oplsaa'. `Foyer forcefields`
-        <https://github.com/mosdef-hub/foyer/tree/master/foyer/forcefields>_
-    steps : int, optional, default=1000
-        Number of energy minimization iterations
-    scale_bonds : float, optional, default=1
-        Scales the bond force constant (1 is completely on)
-    scale_angles : float, optiona, default=1
-        Scales the angle force constant (1 is completely on)
-    scale_torsions : float, optional, default=1
-        Scales the torsional force constants (1 is completely on)
-    scale_nonbonded : float, optional, default=1
-        Scales epsilon (1 is completely on)
-    constraints : str, optional, default="AllBonds"
-        Specify constraints on the molecule to minimize, options are:
-        None, "HBonds", "AllBonds", "HAngles"
-
-    Notes
-    -----
-    Assumes a particular organization for the force groups
-    (HarmonicBondForce, HarmonicAngleForce, RBTorsionForce, NonBondedForce)
-
-    References
-    ----------
-    [Eastman2013]_
-    """
-    foyer = import_("foyer")
-
-    to_parmed = compound.to_parmed()
-    ff = foyer.Forcefield(forcefield_files=forcefield_files, name=forcefield_name)
-    to_parmed = ff.apply(to_parmed)
-
-    import openmm.unit as u
-    from openmm.app import AllBonds, HAngles, HBonds
-    from openmm.app.pdbreporter import PDBReporter
-    from openmm.app.simulation import Simulation
-    from openmm.openmm import LangevinIntegrator
-
-    if constraints:
-        if constraints == "AllBonds":
-            constraints = AllBonds
-        elif constraints == "HBonds":
-            constraints = HBonds
-        elif constraints == "HAngles":
-            constraints = HAngles
-        else:
-            raise ValueError(
-                f"Provided constraints value of: {constraints}.\n"
-                f'Expected "HAngles", "AllBonds" "HBonds".'
-            )
-        system = to_parmed.createSystem(
-            constraints=constraints
-        )  # Create an OpenMM System
-    else:
-        system = to_parmed.createSystem()  # Create an OpenMM System
-    # Create a Langenvin Integrator in OpenMM
-    integrator = LangevinIntegrator(
-        298 * u.kelvin, 1 / u.picosecond, 0.002 * u.picoseconds
-    )
-    # Create Simulation object in OpenMM
-    simulation = Simulation(to_parmed.topology, system, integrator)
-
-    # Loop through forces in OpenMM System and set parameters
-    for force in system.getForces():
-        if type(force).__name__ == "HarmonicBondForce":
-            for bond_index in range(force.getNumBonds()):
-                atom1, atom2, r0, k = force.getBondParameters(bond_index)
-                force.setBondParameters(bond_index, atom1, atom2, r0, k * scale_bonds)
-            force.updateParametersInContext(simulation.context)
-
-        elif type(force).__name__ == "HarmonicAngleForce":
-            for angle_index in range(force.getNumAngles()):
-                atom1, atom2, atom3, r0, k = force.getAngleParameters(angle_index)
-                force.setAngleParameters(
-                    angle_index, atom1, atom2, atom3, r0, k * scale_angles
-                )
-            force.updateParametersInContext(simulation.context)
-
-        elif type(force).__name__ == "RBTorsionForce":
-            for torsion_index in range(force.getNumTorsions()):
-                (
-                    atom1,
-                    atom2,
-                    atom3,
-                    atom4,
-                    c0,
-                    c1,
-                    c2,
-                    c3,
-                    c4,
-                    c5,
-                ) = force.getTorsionParameters(torsion_index)
-                force.setTorsionParameters(
-                    torsion_index,
-                    atom1,
-                    atom2,
-                    atom3,
-                    atom4,
-                    c0 * scale_torsions,
-                    c1 * scale_torsions,
-                    c2 * scale_torsions,
-                    c3 * scale_torsions,
-                    c4 * scale_torsions,
-                    c5 * scale_torsions,
-                )
-            force.updateParametersInContext(simulation.context)
-
-        elif type(force).__name__ == "NonbondedForce":
-            for nb_index in range(force.getNumParticles()):
-                charge, sigma, epsilon = force.getParticleParameters(nb_index)
-                force.setParticleParameters(
-                    nb_index, charge, sigma, epsilon * scale_nonbonded
-                )
-            force.updateParametersInContext(simulation.context)
-
-        elif type(force).__name__ == "CMMotionRemover":
-            pass
-
-        else:
-            warn(
-                f"OpenMM Force {type(force).__name__} is "
-                "not currently supported in _energy_minimize_openmm. "
-                "This Force will not be updated!"
-            )
-
-    simulation.context.setPositions(to_parmed.positions)
-    # Run energy minimization through OpenMM
-    simulation.minimizeEnergy(maxIterations=steps)
-    reporter = PDBReporter(os.path.join(tmp_dir, "minimized.pdb"), 1)
-    reporter.report(simulation, simulation.context.getState(getPositions=True))
-
-
-def _check_openbabel_constraints(
-    compound,
-    particle_list,
-    successors_list,
-    check_if_particle=False,
-):
-    """Provide routines commonly used to check constraint inputs."""
-    for part in particle_list:
-        if not isinstance(part, Compound):
-            raise MBuildError(f"{part} is not a Compound.")
-        if id(part) != id(compound) and id(part) not in successors_list:
-            raise MBuildError(f"{part} is not a member of Compound {compound}.")
-
-        if check_if_particle:
-            if len(part.children) != 0:
-                raise MBuildError(
-                    f"{part} does not correspond to an individual particle."
-                )
-
-
-def _energy_minimize_openbabel(
-    compound,
-    steps=1000,
-    algorithm="cg",
-    forcefield="UFF",
-    constraint_factor=50000.0,
-    distance_constraints=None,
-    fixed_compounds=None,
-    ignore_compounds=None,
-):
-    """Perform an energy minimization on a Compound.
-
-    Utilizes Open Babel (http://openbabel.org/docs/dev/) to perform an
-    energy minimization/geometry optimization on a Compound by applying
-    a generic force field.
-
-    This function is primarily intended to be used on smaller components,
-    with sizes on the order of 10's to 100's of particles, as the energy
-    minimization scales poorly with the number of particles.
-
-    Parameters
-    ----------
-    compound : mbuid.Compound, required
-        The compound to perform energy minimization on.
-    steps : int, optionl, default=1000
-        The number of optimization iterations
-    algorithm : str, optional, default='cg'
-        The energy minimization algorithm.  Valid options are 'steep',
-        'cg', and 'md', corresponding to steepest descent, conjugate
-        gradient, and equilibrium molecular dynamics respectively.
-    forcefield : str, optional, default='UFF'
-        The generic force field to apply to the Compound for minimization.
-        Valid options are 'MMFF94', 'MMFF94s', ''UFF', 'GAFF', 'Ghemical'.
-        Please refer to the Open Babel documentation
-        (http://open-babel.readthedocs.io/en/latest/Forcefields/Overview.html)
-        when considering your choice of force field.
-    fixed_compounds : Compound, optional, default=None
-        An individual Compound or list of Compounds that will have their
-        position fixed during energy minimization. Note, positions are fixed
-        using a restraining potential and thus may change slightly.
-        Position fixing will apply to all Particles (i.e., atoms) that exist
-        in the Compound and to particles in any subsequent sub-Compounds.
-        By default x,y, and z position is fixed. This can be toggled by instead
-        passing a list containing the Compound and a list or tuple of bool values
-        corresponding to x,y and z; e.g., [Compound, (True, True, False)]
-        will fix the x and y position but allow z to be free.
-    ignore_compounds: Compound, optional, default=None
-        An individual compound or list of Compounds whose underlying particles
-        will have their positions fixed and not interact with other atoms via
-        the specified force field during the energy minimization process.
-        Note, a restraining potential is used and thus absolute position may vary
-        as a result of the energy minimization process.
-        Interactions of these ignored atoms can  be specified by the user,
-        e.g., by explicitly setting a distance constraint.
-    distance_constraints: list, optional, default=None
-        A list containing a pair of Compounds as a tuple or list and
-        a float value specifying the target distance between the two Compounds, e.g.,:
-        [(compound1, compound2), distance].
-        To specify more than one constraint, pass constraints as a 2D list, e.g.,:
-        [ [(compound1, compound2), distance1],  [(compound3, compound4), distance2] ].
-        Note, Compounds specified here must represent individual point particles.
-    constraint_factor: float, optional, default=50000.0
-        Harmonic springs are used to constrain distances and fix atom positions, where
-        the resulting energy associated with the spring is scaled by the
-        constraint_factor; the energy of this spring is considering during the minimization.
-        As such, very small values of the constraint_factor may result in an energy
-        minimized state that does not adequately restrain the distance/position of atom(s)e.
-
-
-    References
-    ----------
-    [OBoyle2011]_
-    [OpenBabel]_
-
-    If using the 'MMFF94' force field please also cite the following:
-    [Halgren1996a]_
-    [Halgren1996b]_
-    [Halgren1996c]_
-    [Halgren1996d]_
-    [Halgren1996e]_
-
-    If using the 'MMFF94s' force field please cite the above along with:
-    [Halgren1999]_
-
-    If using the 'UFF' force field please cite the following:
-    [Rappe1992]_
-
-    If using the 'GAFF' force field please cite the following:
-    [Wang2001]_
-
-    If using the 'Ghemical' force field please cite the following:
-    [Hassinen2001]_
-    """
-    openbabel = import_("openbabel")
-    for particle in compound.particles():
-        if particle.element is None:
-            try:
-                particle._element = element_from_symbol(particle.name)
-            except ElementError:
-                try:
-                    particle._element = element_from_name(particle.name)
-                except ElementError:
-                    raise MBuildError(
-                        f"No element assigned to {particle}; element could not be"
-                        f"inferred from particle name {particle.name}. Cannot perform"
-                        "an energy minimization."
-                    )
-    # Create a dict containing particle id and associated index to speed up looping
-    particle_idx = {
-        id(particle): idx for idx, particle in enumerate(compound.particles())
-    }
-
-    # A list containing all Compounds ids contained in compound. Will be used to check if
-    # compounds refered to in the constrains are actually in the Compound we are minimizing.
-    successors_list = [id(comp) for comp in compound.successors()]
-
-    # initialize constraints
-    ob_constraints = openbabel.OBFFConstraints()
-
-    if distance_constraints is not None:
-        # if a user passes single constraint as a 1-D array,
-        # i.e., [(p1,p2), 2.0]  rather than [[(p1,p2), 2.0]],
-        # just add it to a list so we can use the same looping code
-        if len(np.array(distance_constraints, dtype=object).shape) == 1:
-            distance_constraints = [distance_constraints]
-
-        for con_temp in distance_constraints:
-            p1 = con_temp[0][0]
-            p2 = con_temp[0][1]
-
-            _check_openbabel_constraints(
-                compound=compound,
-                particle_list=[p1, p2],
-                successors_list=successors_list,
-                check_if_particle=True,
-            )
-            if id(p1) == id(p2):
-                raise MBuildError(
-                    f"Cannot create a constraint between a Particle and itself: {p1} {p2} ."
-                )
-
-            # openbabel indices start at 1
-            pid_1 = particle_idx[id(p1)] + 1
-            # openbabel indices start at 1
-            pid_2 = particle_idx[id(p2)] + 1
-            dist = (
-                con_temp[1] * 10.0
-            )  # obenbabel uses angstroms, not nm, convert to angstroms
-
-            ob_constraints.AddDistanceConstraint(pid_1, pid_2, dist)
-
-    if fixed_compounds is not None:
-        # if we are just passed a single Compound, wrap it into
-        # and array so we can just use the same looping code
-        if isinstance(fixed_compounds, Compound):
-            fixed_compounds = [fixed_compounds]
-
-        # if fixed_compounds is a 1-d array and it is of length 2, we need to determine whether it is
-        # a list of two Compounds or if fixed_compounds[1] should correspond to the directions to constrain
-        if len(np.array(fixed_compounds, dtype=object).shape) == 1:
-            if len(fixed_compounds) == 2:
-                if not isinstance(fixed_compounds[1], Compound):
-                    # if it is not a list of two Compounds, make a 2d array so we can use the same looping code
-                    fixed_compounds = [fixed_compounds]
-
-        for fixed_temp in fixed_compounds:
-            # if an individual entry is a list, validate the input
-            if isinstance(fixed_temp, list):
-                if len(fixed_temp) == 2:
-                    msg1 = (
-                        "Expected tuple or list of length 3 to set"
-                        "which dimensions to fix motion."
-                    )
-                    assert isinstance(fixed_temp[1], (list, tuple)), msg1
-
-                    msg2 = (
-                        "Expected tuple or list of length 3 to set"
-                        "which dimensions to fix motion, "
-                        f"{len(fixed_temp[1])} found."
-                    )
-                    assert len(fixed_temp[1]) == 3, msg2
-
-                    dims = [dim for dim in fixed_temp[1]]
-                    msg3 = (
-                        "Expected bool values for which directions are fixed."
-                        f"Found instead {dims}."
-                    )
-                    assert all(isinstance(dim, bool) for dim in dims), msg3
-
-                    p1 = fixed_temp[0]
-
-                # if fixed_compounds is defined as [[Compound],[Compound]],
-                # fixed_temp will be a list of length 1
-                elif len(fixed_temp) == 1:
-                    p1 = fixed_temp[0]
-                    dims = [True, True, True]
-
-            else:
-                p1 = fixed_temp
-                dims = [True, True, True]
-
-            all_true = all(dims)
-
-            _check_openbabel_constraints(
-                compound=compound, particle_list=[p1], successors_list=successors_list
-            )
-
-            if len(p1.children) == 0:
-                pid = particle_idx[id(p1)] + 1  # openbabel indices start at 1
-
-                if all_true:
-                    ob_constraints.AddAtomConstraint(pid)
-                else:
-                    if dims[0]:
-                        ob_constraints.AddAtomXConstraint(pid)
-                    if dims[1]:
-                        ob_constraints.AddAtomYConstraint(pid)
-                    if dims[2]:
-                        ob_constraints.AddAtomZConstraint(pid)
-            else:
-                for particle in p1.particles():
-                    pid = particle_idx[id(particle)] + 1  # openbabel indices start at 1
-
-                    if all_true:
-                        ob_constraints.AddAtomConstraint(pid)
-                    else:
-                        if dims[0]:
-                            ob_constraints.AddAtomXConstraint(pid)
-                        if dims[1]:
-                            ob_constraints.AddAtomYConstraint(pid)
-                        if dims[2]:
-                            ob_constraints.AddAtomZConstraint(pid)
-
-    if ignore_compounds is not None:
-        temp1 = np.array(ignore_compounds, dtype=object)
-        if len(temp1.shape) == 2:
-            ignore_compounds = list(temp1.reshape(-1))
-
-        # Since the ignore_compounds can only be passed as a list
-        # we can check the whole list at once before looping over it
-        _check_openbabel_constraints(
-            compound=compound,
-            particle_list=ignore_compounds,
-            successors_list=successors_list,
+        raise TypeError(
+            f"Expected an mb.Compound or mbuild.path.Path, got {type(system)}."
         )
 
-        for ignore in ignore_compounds:
-            p1 = ignore
-            if len(p1.children) == 0:
-                pid = particle_idx[id(p1)] + 1  # openbabel indices start at 1
-                ob_constraints.AddIgnore(pid)
 
-            else:
-                for particle in p1.particles():
-                    pid = particle_idx[id(particle)] + 1  # openbabel indices start at 1
-                    ob_constraints.AddIgnore(pid)
-
-    mol = compound.to_pybel()
-    mol = mol.OBMol
-
-    mol.PerceiveBondOrders()
-    mol.SetAtomTypesPerceived()
-
-    ff = openbabel.OBForceField.FindForceField(forcefield)
-    if ff is None:
-        raise MBuildError(
-            f"Force field '{forcefield}' not supported for energy "
-            "minimization. Valid force fields are 'MMFF94', "
-            "'MMFF94s', 'UFF', 'GAFF', and 'Ghemical'."
-            ""
-        )
-    warn(
-        "Performing energy minimization using the Open Babel package. "
-        "Please refer to the documentation to find the appropriate "
-        f"citations for Open Babel and the {forcefield} force field"
+def _same_build(new, cached):
+    """Compare two sets of build params, matching forcefields by identity."""
+    if cached is None:
+        return False
+    return (
+        new["forcefield"] is cached["forcefield"]
+        and new["box"] == cached["box"]
+        and new["r_cut"] == cached["r_cut"]
     )
 
-    if (
-        distance_constraints is not None
-        or fixed_compounds is not None
-        or ignore_compounds is not None
-    ):
-        ob_constraints.SetFactor(constraint_factor)
-        if ff.Setup(mol, ob_constraints) == 0:
-            raise MBuildError("Could not setup forcefield for OpenBabel Optimization.")
-    else:
-        if ff.Setup(mol) == 0:
-            raise MBuildError("Could not setup forcefield for OpenBabel Optimization.")
 
-    if algorithm == "steep":
-        ff.SteepestDescent(steps)
-    elif algorithm == "md":
-        ff.MolecularDynamicsTakeNSteps(steps, 300)
-    elif algorithm == "cg":
-        ff.ConjugateGradients(steps)
-    else:
-        raise MBuildError(
-            "Invalid minimization algorithm. Valid options are 'steep', 'cg', and 'md'."
-        )
-    ff.UpdateCoordinates(mol)
+def _wrap_into_box(snap):
+    """Wrap snapshot positions into the half-open box [-L/2, L/2).
 
-    # update the coordinates in the Compound
-    for i, obatom in enumerate(openbabel.OBMolAtomIter(mol)):
-        x = obatom.GetX() / 10.0
-        y = obatom.GetY() / 10.0
-        z = obatom.GetZ() / 10.0
-        compound[i].pos = np.array([x, y, z])
-
-
-def energy_minimize_path(
-    path, bead_size=0.3, bond_length=None, steps=1000, seed=1, nthreads=1
-):
-    # TODO: Set equilibrium or constrained angle
-    positions = path.coordinates
-    n_particles = len(positions)
-
-    import openmm
-    import openmm.unit as u
-    from openmm import Platform
-    from openmm.app import Topology
-    from openmm.app.simulation import Simulation
-    from openmm.openmm import LangevinIntegrator
-
-    # Create platform without parallelization
-    platform = Platform.getPlatformByName("CPU")
-    platform.setPropertyDefaultValue("Threads", str(nthreads))
-
-    system = openmm.System()
-    for i in range(n_particles):
-        system.addParticle(1.0 * u.amu)
-
-    # Create a Langenvin Integrator in OpenMM
-    integrator = LangevinIntegrator(
-        298 * u.kelvin,
-        1 / u.picosecond,
-        0.001 * u.picoseconds,
+    HOOMD rejects a particle on or past a face, e.g. one nudged there by _kick
+    against a tight box. Uses floor (not round) so +L/2 maps to -L/2. No-op for
+    padded boxes.
+    """
+    L = np.asarray(snap.configuration.box[:3], dtype=float)
+    pos = np.asarray(snap.particles.position, dtype=float)
+    periodic = L > 0
+    pos[:, periodic] -= L[periodic] * np.floor(
+        (pos[:, periodic] + L[periodic] / 2.0) / L[periodic]
     )
-    integrator.setRandomNumberSeed(seed)  # set seed
+    snap.particles.position = pos.astype(np.float32)
 
-    # Set nonbonded force for each particle
-    nonbonded_force = openmm.NonbondedForce()
-    nonbonded_force.setNonbondedMethod(openmm.NonbondedForce.NoCutoff)
-    sigma = bead_size * u.nanometer
-    epsilon = 0.1 * u.kilocalories_per_mole
-    for i in range(n_particles):
-        nonbonded_force.addParticle(0.0, sigma, epsilon)
-    system.addForce(nonbonded_force)
 
-    if not bond_length:
-        for i, j in path.bond_graph.edges():
-            bond_length = np.linalg.norm(positions[j] - positions[i])
-            system.addConstraint(i, j, bond_length * u.nanometer)
-    else:
-        # Use HarmonicBondForce instead of constraints
-        harmonic_force = openmm.HarmonicBondForce()
-        for i, j in path.bond_graph.edges():
-            harmonic_force.addBond(
-                i,
-                j,
-                bond_length * u.nanometer,
-                300 * u.kilocalories_per_mole / u.nanometer**2,
-            )
-        system.addForce(harmonic_force)
+def _sync_back(compound, is_path, original):
+    """If the original was a Path, copy positions back."""
+    if is_path:
+        original.coordinates = compound.xyz
 
-    topology = Topology()
-    chain = topology.addChain()
-    for i in range(n_particles):
-        residue = topology.addResidue(f"LJ{i}", chain)
-        topology.addAtom(f"P{i}", openmm.app.Element.getByMass(1), residue)
-    # Add bonds to topology
-    atomsList = list(topology.atoms())
-    for i, j in path.bond_graph.edges():
-        topology.addBond(atomsList[i], atomsList[j])
 
-    simulation = Simulation(topology, system, integrator, platform)
-    simulation.context.setPositions(positions)
+def _recover(system, original_coordinates):
+    """Restore a Compound or Path's original coordinates"""
+    import mbuild.path.build
 
-    # Run energy minimization through OpenMM
-    simulation.minimizeEnergy(maxIterations=steps)
-
-    # Get positions directly
-    state = simulation.context.getState(getPositions=True)
-    pos = np.array(state.getPositions(asNumpy=True))
-    if np.any(np.isnan(pos)):
-        logger.warning("Unable to energy minimize. Nan values detected.")
-    else:
-        path.coordinates = np.array(state.getPositions(asNumpy=True))
+    if isinstance(system, Compound):
+        system.xyz = original_coordinates
+    elif isinstance(system, mbuild.path.build.Path):
+        system.coordinates = original_coordinates
