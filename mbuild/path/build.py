@@ -294,11 +294,12 @@ class Path:
         """Convert a path and its bond graph to an mBuild Compound."""
         compound = Compound()
         compounds = []
-        # TODO: Should name be pulled from self.beads[noe_id] as well?
         # TODO: Should we have a mass parameter? Could be useful for density termination
-        for node_id, attrs in self.bond_graph.nodes(data=True):
+        for node_id in self.bond_graph.nodes:
             compounds.append(
-                Compound(name=attrs["name"], pos=self.coordinates[node_id], mass=1.0)
+                Compound(
+                    name=self.beads[node_id], pos=self.coordinates[node_id], mass=1.0
+                )
             )
         compound.add(compounds)
         for edge1, edge2 in self.bond_graph.edges():
@@ -339,28 +340,56 @@ class Path:
 
         return visualize_path(self, radius, hide_periodic_bonds)
 
-    def relax(self, bead_radius, bond_length=None, steps=1000, seed=1, nthreads=1):
-        """Perform a dpd simulation to relax the current path.
+    def relax(
+        self,
+        bead_radius,
+        bond_length=None,
+        angles_sampler=None,
+        steps=1000,
+        seed=1,
+    ):
+        """Relax the path with a coarse Kremer-Grest forcefield.
 
-        Runs a short energy minimization simulation in OpenMM.
+        Builds a WCA + FENE forcefield from the given parameters and runs a
+        capped-displacement warm-up followed by FIRE minimization in HOOMD.
+        Relaxed coordinates are synced back onto the path.
 
         Parameters
         ----------
-        bead_radius : float
-            Bead size set in the simulation.
-        bond_length : float, optional
-            Bond length used for all bonds.
+        bead_radius : float or dict
+            WCA bead radius (center-to-center exclusion diameter). A dict keyed
+            by bead type gives each bead type its own size.
+        bond_length : float or dict, optional
+            Target bond length. Defaults to per-bond-type means over the path.
+            A dict is keyed by an unordered bead-type pair.
+        angles_sampler : mbuild.path.points.AnglesSampler or dict, optional
+            If given, adds a tabulated angle potential. A dict keyed by a
+            bead-type triple parameterizes angles per type.
         steps : int, optional, default 1,000
-            Number of simulation steps to run.
+            Number of FIRE minimization steps.
         seed : int, optional, default 1
-            Random seed for integrator.
-        nthreads : int, optional, default 1
-            Number of threads to use during OpenMM simulation.
+            Random seed for the simulation.
         """
-        from mbuild.simulation import energy_minimize_path
+        import mbuild.simulation
+        from mbuild.utils.simulation.path_forces import (
+            PathForcefield,
+            _mean_bond_length,
+        )
 
-        energy_minimize_path(self, bead_radius, bond_length, steps, seed, nthreads)
-        return
+        # Scalar length scale for the displacement cap, even if per-type lengths
+        # were given.
+        if isinstance(bond_length, (int, float)):
+            bond_eff = bond_length
+        else:
+            bond_eff = _mean_bond_length(self)
+        forcefield = PathForcefield(
+            radius=bead_radius, bond_length=bond_length, angles=angles_sampler
+        )
+        sim = mbuild.simulation.HoomdSimulation(
+            self, forcefield=forcefield, seed=seed, run_on_gpu=False
+        )
+        sim.cap_displacement(n_steps=500, dt=1, max_displacement=0.01 * bond_eff)
+        sim.fire(n_steps=steps)
 
 
 def lamellar(
