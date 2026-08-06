@@ -8,7 +8,6 @@ from mbuild.simulation import (
     ForcesHandler,
     HoomdSimulation,
     OpenMMSimulation,
-    PropertyLogger,
 )
 from mbuild.tests.base_test import BaseTest
 from mbuild.utils.io import get_fn, has_foyer, has_hoomd
@@ -240,15 +239,6 @@ class TestHoomdSimulation(BaseTest):
         assert hoomd.md.angle.Harmonic in force_types
 
     @pytest.mark.skipif(not has_hoomd, reason="hoomd is not installed")
-    def test_init_with_logger(self, octane, oplsaa):
-        """Test initialization with a PropertyLogger."""
-        logger = PropertyLogger(properties=["potential_energy"])
-        sim = HoomdSimulation(
-            octane, oplsaa, r_cut=0.3, run_on_gpu=False, logger=logger
-        )
-        assert sim.logger is logger
-
-    @pytest.mark.skipif(not has_hoomd, reason="hoomd is not installed")
     def test_get_force_exists(self, sim):
         """Test retrieving existing forces."""
         force = sim._get_force(hoomd.md.pair.LJ)
@@ -352,6 +342,24 @@ class TestHoomdSimulation(BaseTest):
             assert len(energy[key]) == 2
 
     @pytest.mark.skipif(not has_hoomd, reason="hoomd is not installed")
+    def test_get_energy_nan_for_inactive_forces(self, sim):
+        """Forces inactive in a frame read NaN, not zero."""
+        fh = ForcesHandler(dpd=1, scale_bond=0.1, scale_angle=0)
+        sim.cap_displacement(
+            forces_handler=fh, dt=1e-3, max_displacement=1e-3, n_steps=5
+        )
+        sim.fire(n_steps=5)
+        energy = sim.get_energy()
+
+        def key(cls):
+            return cls.__module__ + "." + cls.__name__
+
+        # DPD replaces LJ only while the handler is applied.
+        assert np.isnan(energy[key(hoomd.md.pair.DPDConservative)][-1])
+        assert np.all(np.isnan(energy[key(hoomd.md.pair.LJ)][:-1]))
+        assert not np.any(np.isnan(energy["potential_energy"]))
+
+    @pytest.mark.skipif(not has_hoomd, reason="hoomd is not installed")
     def test_energies_accumulate(self, sim):
         """Test that energies accumulate over multiple calls."""
         fh = ForcesHandler(scale_lj=1, scale_bond=1, scale_angle=1)
@@ -360,17 +368,6 @@ class TestHoomdSimulation(BaseTest):
         energy = sim.get_energy()
         for key in energy:
             assert len(energy[key]) == 3
-
-    @pytest.mark.skipif(not has_hoomd, reason="hoomd is not installed")
-    def test_property_logger(self, octane, oplsaa):
-        """Test that PropertyLogger records data during runs."""
-        logger = PropertyLogger(properties=["potential_energy"])
-        sim = HoomdSimulation(
-            octane, oplsaa, r_cut=0.3, run_on_gpu=False, logger=logger
-        )
-        fh = ForcesHandler(scale_lj=1, scale_bond=1, scale_angle=1)
-        sim.nvt(forces_handler=fh, n_steps=20, kT=2.0, dt=1e-4, tau=1e-2)
-        assert len(logger.data["potential_energy"]) > 0
 
     @pytest.mark.skipif(not has_hoomd, reason="hoomd is not installed")
     def test_path_fire(self):
@@ -673,6 +670,120 @@ class TestHoomdSimulation(BaseTest):
         assert np.all(xyz >= -1e-4)
         assert np.all(xyz <= L_final + 1e-4)
 
+    @pytest.mark.skipif(not has_hoomd, reason="hoomd is not installed")
+    def test_recover_undoes_only_the_last_run(self):
+        """recover() rewinds the last run's coordinates and drops its energies."""
+        octane = mb.load("CCCCCCCC", smiles=True)
+        sim = HoomdSimulation(system=octane, box=[3, 3, 3], run_on_gpu=False)
+
+        sim.fire(n_steps=10)
+        after_fire = np.copy(sim.compound.xyz)
+        n_energies = len(sim.energies)
+
+        sim.cap_displacement(n_steps=10, dt=1e-3)
+        assert not np.allclose(sim.compound.xyz, after_fire)
+
+        sim.recover()
+        assert np.allclose(sim.compound.xyz, after_fire, atol=1e-5)
+        assert len(sim.energies) == n_energies
+
+    @pytest.mark.skipif(not has_hoomd, reason="hoomd is not installed")
+    def test_recover_rewinds_cached_snapshot(self):
+        """A Simulation built after recover() starts from the restored coords."""
+        octane = mb.load("CCCCCCCC", smiles=True)
+        sim = HoomdSimulation(system=octane, box=[3, 3, 3], run_on_gpu=False)
+        before = np.copy(sim.compound.xyz)
+
+        sim.fire(n_steps=10)
+        sim.recover()
+
+        reused = HoomdSimulation(system=octane, box=[3, 3, 3], kick=False)
+        assert np.allclose(reused.compound.xyz, before, atol=1e-5)
+
+    @pytest.mark.skipif(not has_hoomd, reason="hoomd is not installed")
+    def test_fixed_compounds_accepts_numpy_indices(self):
+        """Numpy integer indices work the same as built-in ints."""
+        chain = mb.load("CCCCCCCC", smiles=True)
+        sim = HoomdSimulation(
+            system=chain,
+            fixed_compounds=np.arange(3),
+            box_buffer=4,
+            run_on_gpu=False,
+        )
+        sim.nvt(n_steps=10, kT=1.0, dt=1e-4, tau=1e-2)
+
+    @pytest.mark.skipif(not has_hoomd, reason="hoomd is not installed")
+    def test_integrate_compounds_mixed_types_raises(self, octane):
+        """A mix of Compounds and indices is rejected with a clear error."""
+        with pytest.raises(TypeError, match="integrate_compounds"):
+            HoomdSimulation(
+                system=octane,
+                integrate_compounds=[list(octane.particles())[0], 1],
+                box_buffer=4,
+                run_on_gpu=False,
+            )
+
+    @pytest.mark.skipif(not has_hoomd, reason="hoomd is not installed")
+    def test_box_update_syncs_compound_box(self):
+        """The compound's box must track the resized simulation box."""
+        methane = mb.load("C", smiles=True)
+        methane.name = "Methane"
+        box = mb.fill_box(compound=[methane], n_compounds=[8], box=[3, 3, 3])
+        sim = HoomdSimulation(system=box, r_cut=1.0, box_buffer=2, run_on_gpu=False)
+
+        sim.box_update(
+            n_steps=3000,
+            kT=1.0,
+            dt=1e-4,
+            tau=1e-2,
+            target_box=hoomd.Box(5, 5, 5),
+            update_period=50,
+        )
+
+        assert np.allclose(sim.compound.box.lengths, sim.state.box.L, atol=1e-4)
+
+    @pytest.mark.skipif(not has_hoomd, reason="hoomd is not installed")
+    def test_nvt_leaves_compound_box_unchanged(self):
+        """Runs that do not resize must leave the compound's box alone."""
+        methane = mb.load("C", smiles=True)
+        methane.name = "Methane"
+        box = mb.fill_box(compound=[methane], n_compounds=[8], box=[3, 3, 3])
+        sim = HoomdSimulation(system=box, r_cut=1.0, box_buffer=2, run_on_gpu=False)
+        lengths_before = np.asarray(sim.compound.box.lengths)
+
+        sim.nvt(n_steps=100, kT=1.0, dt=1e-4, tau=1e-2)
+
+        assert np.allclose(sim.compound.box.lengths, lengths_before, atol=1e-4)
+
+    @pytest.mark.skipif(not has_hoomd, reason="hoomd is not installed")
+    def test_second_sim_from_same_compound(self, oplsaa):
+        """A compound can be re-simulated after its sim data has been cached."""
+        octane = mb.load("CCCCCCCC", smiles=True)
+        sim = HoomdSimulation(system=octane, box=[3, 3, 3], run_on_gpu=False)
+        sim.fire(n_steps=10)
+        reused = HoomdSimulation(system=octane, box=[3, 3, 3], run_on_gpu=False)
+        assert reused.forces is sim.forces
+
+        rebuilt = HoomdSimulation(
+            system=octane, forcefield=oplsaa, box=[3, 3, 3], run_on_gpu=False
+        )
+        assert rebuilt.forces is not sim.forces
+
+    @pytest.mark.skipif(not has_hoomd, reason="hoomd is not installed")
+    def test_cached_sim_data_respects_box_and_r_cut(self):
+        """Changing the box or cutoff must not silently reuse cached sim data."""
+        octane = mb.load("CCCCCCCC", smiles=True)
+        sim = HoomdSimulation(system=octane, box=[3, 3, 3], run_on_gpu=False)
+
+        bigger = HoomdSimulation(system=octane, box=[9, 9, 9], run_on_gpu=False)
+        assert np.allclose(bigger.state.box.L, [9, 9, 9])
+
+        wider_cut = HoomdSimulation(
+            system=octane, box=[9, 9, 9], r_cut=2.5, run_on_gpu=False
+        )
+        assert wider_cut.forces is not bigger.forces
+        assert wider_cut.forces is not sim.forces
+
 
 class TestOpenMMSimulation(BaseTest):
     """Tests for the OpenMMSimulation class."""
@@ -734,12 +845,6 @@ class TestOpenMMSimulation(BaseTest):
         )
         assert sim is not None
 
-    def test_init_with_logger(self, simple_compound):
-        """Test initialization with a PropertyLogger."""
-        logger = PropertyLogger(properties=["potential_energy"])
-        sim = OpenMMSimulation(simple_compound, forcefield=None, logger=logger)
-        assert sim.logger is logger
-
     def test_init_default_forces_with_bonds(self, simple_compound):
         """Test that default system has LJ + bond forces."""
         sim = OpenMMSimulation(simple_compound, forcefield=None)
@@ -791,16 +896,6 @@ class TestOpenMMSimulation(BaseTest):
         sim = OpenMMSimulation(octane, forcefield=get_fn("small_oplsaa.xml"))
         assert sim.system is not None
 
-    def test_init_platform_cpu(self, simple_compound):
-        """Test that CPU platform is set correctly."""
-        sim = OpenMMSimulation(simple_compound, forcefield=None, platform="CPU")
-        assert sim._platform.getName() == "CPU"
-
-    def test_init_nthreads(self, simple_compound):
-        """Test that nthreads is set."""
-        sim = OpenMMSimulation(simple_compound, forcefield=None, nthreads=2)
-        assert sim._platform.getPropertyDefaultValue("Threads") == "2"
-
     def test_minimize_compound(self, simple_compound):
         """Test energy minimization on a Compound."""
         old_coords = simple_compound.xyz.copy()
@@ -817,12 +912,6 @@ class TestOpenMMSimulation(BaseTest):
         assert "potential_energy" in energy
         assert len(energy["potential_energy"]) == 1
 
-    def test_minimize_custom_tolerance(self, simple_compound):
-        """Test minimize with custom tolerance."""
-        sim = OpenMMSimulation(simple_compound, forcefield=None)
-        sim.minimize(n_steps=100, tolerance=1.0)
-        assert sim.get_energy() is not None
-
     @pytest.mark.skipif(not has_foyer, reason="Foyer is not installed")
     def test_minimize_with_forcefield(self, octane):
         """Test minimize with a real forcefield."""
@@ -834,38 +923,11 @@ class TestOpenMMSimulation(BaseTest):
         sim.minimize(n_steps=100)
         assert not np.allclose(old_coords, octane.xyz, atol=1e-4)
 
-    def test_nvt_compound(self, simple_compound):
-        """Test NVT simulation on a Compound."""
-        sim = OpenMMSimulation(simple_compound, forcefield=None)
-        sim.minimize(n_steps=1000)
-        old_coords = simple_compound.xyz.copy()
-        sim.nvt(n_steps=50, kT=300, dt=0.0001)
-        assert not np.allclose(old_coords, simple_compound.xyz, atol=1e-6)
-
-    def test_nvt_records_energy(self, simple_compound):
-        """Test that NVT records energy."""
-        sim = OpenMMSimulation(simple_compound, forcefield=None)
-        sim.minimize(n_steps=50)
-        sim.nvt(n_steps=50, kT=300, dt=0.0001)
-        energy = sim.get_energy()
-        assert energy is not None
-        # minimize + nvt = 2 entries
-        assert len(energy["potential_energy"]) == 2
-
     def test_nvt_with_report_interval(self, simple_compound):
-        """Test NVT with periodic reporting."""
-        logger = PropertyLogger(properties=["potential_energy", "kinetic_energy"])
-        sim = OpenMMSimulation(simple_compound, forcefield=None, logger=logger)
-        sim.nvt(n_steps=100, kT=300, dt=0.0001, report_interval=25)
-        assert len(logger.data["potential_energy"]) == 4
-        assert len(logger.data["kinetic_energy"]) == 4
-
-    def test_nvt_custom_friction(self, simple_compound):
-        """Test NVT with custom friction coefficient."""
+        """Test NVT records an energy frame per reporting chunk."""
         sim = OpenMMSimulation(simple_compound, forcefield=None)
-        sim.minimize(n_steps=50)
-        sim.nvt(n_steps=20, kT=300, dt=0.0001, friction=5.0)
-        assert sim.get_energy() is not None
+        sim.nvt(n_steps=100, T=300, dt=0.0001, report_interval=25)
+        assert len(sim.get_energy()["potential_energy"]) == 4
 
     @pytest.mark.skipif(not has_foyer, reason="Foyer is not installed")
     def test_nvt_with_forcefield(self, octane):
@@ -874,7 +936,7 @@ class TestOpenMMSimulation(BaseTest):
         sim = OpenMMSimulation(octane, forcefield="oplsaa")
         sim.minimize(n_steps=200)
         old_coords = octane.xyz.copy()
-        sim.nvt(n_steps=50, kT=300, dt=0.0001)
+        sim.nvt(n_steps=50, T=300, dt=0.0001)
         assert not np.allclose(old_coords, octane.xyz, atol=1e-6)
 
     def test_get_energy_empty(self, simple_compound):
@@ -882,52 +944,12 @@ class TestOpenMMSimulation(BaseTest):
         sim = OpenMMSimulation(simple_compound, forcefield=None)
         assert sim.get_energy() is None
 
-    def test_get_energy_accumulates(self, simple_compound):
-        """Test that energies accumulate across multiple calls."""
-        sim = OpenMMSimulation(simple_compound, forcefield=None)
-        sim.minimize(n_steps=50)
-        sim.nvt(n_steps=20, kT=300, dt=0.0001)
-        energy = sim.get_energy()
-        assert len(energy["potential_energy"]) == 2
-
-    def test_logger_records_pe(self, simple_compound):
-        """Test logger records potential energy."""
-        logger = PropertyLogger(properties=["potential_energy"])
-        sim = OpenMMSimulation(simple_compound, forcefield=None, logger=logger)
-        sim.minimize(n_steps=50)
-        assert len(logger.data["potential_energy"]) == 1
-        assert isinstance(logger.data["potential_energy"][0], float)
-
-    def test_logger_records_ke(self, simple_compound):
-        """Test logger records kinetic energy during dynamics."""
-        logger = PropertyLogger(properties=["kinetic_energy"])
-        sim = OpenMMSimulation(simple_compound, forcefield=None, logger=logger)
-        sim.nvt(n_steps=50, kT=300, dt=0.0001, report_interval=25)
-        assert len(logger.data["kinetic_energy"]) == 2
-
-    def test_logger_as_dict(self, simple_compound):
-        """Test logger.as_dict() returns numpy arrays."""
-        logger = PropertyLogger(properties=["potential_energy"])
-        sim = OpenMMSimulation(simple_compound, forcefield=None, logger=logger)
-        sim.minimize(n_steps=50)
-        data = logger.as_dict()
-        assert isinstance(data["potential_energy"], np.ndarray)
-
-    def test_logger_reset(self):
-        """Test logger reset clears all data."""
-        logger = PropertyLogger(properties=["potential_energy", "kinetic_energy"])
-        logger.data["potential_energy"].append(1.0)
-        logger.data["kinetic_energy"].append(2.0)
-        logger.reset()
-        assert len(logger.data["potential_energy"]) == 0
-        assert len(logger.data["kinetic_energy"]) == 0
-
     def test_minimize_then_nvt(self, simple_compound):
         """Test calling minimize then nvt sequentially."""
         sim = OpenMMSimulation(simple_compound, forcefield=None)
         sim.minimize(n_steps=50)
         coords_after_min = simple_compound.xyz.copy()
-        sim.nvt(n_steps=50, kT=300, dt=0.0001)
+        sim.nvt(n_steps=50, T=300, dt=0.0001)
         assert not np.allclose(coords_after_min, simple_compound.xyz, atol=1e-6)
         energy = sim.get_energy()
         assert len(energy["potential_energy"]) == 2

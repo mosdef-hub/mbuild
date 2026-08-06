@@ -2908,23 +2908,22 @@ class Compound(object):
                     "Particles outside of its containment hierarchy."
                 )
 
-    def _add_sim_data(self, state=None, forces=None, forcefield=None):
-        if state:
+    def _add_sim_data(self, state=None, forces=None, build_params=None):
+        """Used by simulation.HoomdSimulation to store state, forces and build params."""
+        if state is not None:
             self._hoomd_data["state"] = state
-        if forces:
+        if forces is not None:
             self._hoomd_data["forces"] = forces
-        if forcefield:
-            self._hoomd_data["forcefield"] = forcefield
+        if build_params is not None:
+            self._hoomd_data["build_params"] = build_params
 
     def _get_sim_data(self):
-        if not self._hoomd_data:
-            return None, None, None
-        else:
-            return (
-                self._hoomd_data["state"],
-                self._hoomd_data["forces"],
-                self._hoomd_data["forcefield"],
-            )
+        """Return cached HOOMD state and forces, with the params they were built from."""
+        return (
+            self._hoomd_data.get("state"),
+            self._hoomd_data.get("forces"),
+            self._hoomd_data.get("build_params"),
+        )
 
 
 Particle = Compound

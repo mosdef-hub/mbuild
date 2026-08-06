@@ -1,6 +1,7 @@
 """Simulation methods that operate on mBuild compounds and paths."""
 
 import logging
+import numbers
 import os
 
 import gmso
@@ -12,6 +13,9 @@ from mbuild import Box, Compound
 from mbuild.utils.io import import_
 
 logger = logging.getLogger(__name__)
+
+# Stands in for forcefield=None in the sim data cache key.
+_DEFAULT_FF = "default"
 
 
 class HoomdSimulation(hoomd.simulation.Simulation):
@@ -33,8 +37,6 @@ class HoomdSimulation(hoomd.simulation.Simulation):
         If None, auto-select a device. If True use the GPU, if False the CPU.
     seed : int, default 1
         Seed for the HOOMD random number generator.
-    automatic_box : bool, default False
-        If True, size the simulation box from the compound automatically.
     box_buffer : float, default 10
         Padding (nm) added around the compound when a bounding box is generated.
         Used only when neither box nor compound.box is set.
@@ -51,13 +53,9 @@ class HoomdSimulation(hoomd.simulation.Simulation):
         Compounds held fixed while all others are integrated. Mutually
         exclusive with integrate_compounds.
         If a list of integers are passed, particles are chosen by matching indices.
-    gsd_file_name : str or None, default None
-        Name of a GSD file to write trajectory output to.
     kick : bool, default True
         Nudge coordinates before simulating. This can be critical to remove
         flat dihedrals.
-    logger : PropertyLogger or None
-        Logger used to record scalar properties during runs.
     """
 
     def __init__(
@@ -67,24 +65,26 @@ class HoomdSimulation(hoomd.simulation.Simulation):
         r_cut=1.0,
         run_on_gpu=None,
         seed=1,
-        automatic_box=False,
         box_buffer=10,
         box=None,
         integrate_compounds=None,
         fixed_compounds=None,
-        gsd_file_name=None,
         kick=True,
-        logger=None,
     ):
+
+        if isinstance(integrate_compounds, Compound):
+            integrate_compounds = [integrate_compounds]
+        elif integrate_compounds is not None:
+            integrate_compounds = list(integrate_compounds)
+        if isinstance(fixed_compounds, Compound):
+            fixed_compounds = [fixed_compounds]
+        elif fixed_compounds is not None:
+            fixed_compounds = list(fixed_compounds)
 
         if integrate_compounds and fixed_compounds:
             raise RuntimeError(
                 "You can specify only one of integrate_compounds and fixed_compounds."
             )
-        if isinstance(integrate_compounds, Compound):
-            integrate_compounds = [integrate_compounds]
-        if isinstance(fixed_compounds, Compound):
-            fixed_compounds = [fixed_compounds]
 
         # Resolve input type
         compound, self._is_path, self._original_system, self.original_coords = (
@@ -114,26 +114,22 @@ class HoomdSimulation(hoomd.simulation.Simulation):
         self.r_cut = r_cut
         self.integrate_compounds = integrate_compounds
         self.fixed_compounds = fixed_compounds
-        self.automatic_box = automatic_box
         self.box_buffer = box_buffer
         self.box = box
         self.energies = []
-        self.logger = logger
 
-        if compound._hoomd_data:
-            last_snapshot, last_forces, last_forcefield = compound._get_sim_data()
-            if forcefield == last_forcefield:
-                snapshot = last_snapshot
-                self.forces = last_forces
-            else:
-                snapshot, self.forces = self._to_hoomd_snap_forces()
-                compound._add_sim_data(
-                    state=snapshot, forces=self.forces, forcefield=forcefield
-                )
+        self._get_integrate_group()
+
+        # State and forces are built together, so reuse them only when every
+        # build input still matches.
+        last_snapshot, last_forces, last_params = compound._get_sim_data()
+        if last_snapshot is not None and _same_build(self._build_params(), last_params):
+            snapshot = last_snapshot
+            self.forces = last_forces
         else:
             snapshot, self.forces = self._to_hoomd_snap_forces()
             compound._add_sim_data(
-                state=snapshot, forces=self.forces, forcefield=forcefield
+                state=snapshot, forces=self.forces, build_params=self._build_params()
             )
 
         # Undo the translation to -L/2 L/2 used by HOOMD
@@ -142,7 +138,6 @@ class HoomdSimulation(hoomd.simulation.Simulation):
         ).mean(axis=0)
 
         self.active_forces = []
-        self.inactive_forces = []
         self._orig_force_params = {}
         super(HoomdSimulation, self).__init__(device=device, seed=seed)
         self.create_state_from_snapshot(snapshot)
@@ -175,6 +170,7 @@ class HoomdSimulation(hoomd.simulation.Simulation):
         thermostat : hoomd thermostat class
             Thermostat used by the integration method.
         """
+        self.original_coords = np.copy(self.compound.xyz)
         if forces_handler is not None:
             forces_handler.scale_sim(self)
         else:
@@ -193,7 +189,6 @@ class HoomdSimulation(hoomd.simulation.Simulation):
 
         self.run(n_steps)
         self._store_current_energies()
-        self._log_properties()
         self.operations.integrator = None
         self._update_positions()
         self._update_snapshot()
@@ -232,6 +227,7 @@ class HoomdSimulation(hoomd.simulation.Simulation):
         thermostat : hoomd thermostat class
             Thermostat used by the integration method.
         """
+        self.original_coords = np.copy(self.compound.xyz)
         if forces_handler is not None:
             forces_handler.scale_sim(self)
         else:
@@ -241,7 +237,7 @@ class HoomdSimulation(hoomd.simulation.Simulation):
         if isinstance(kT, (list, tuple, np.ndarray)):
             thermal_kT = kT[0]
             kT = hoomd.variant.Ramp(
-                A=kT[0], B=kT[0], t_start=self.timestep, t_ramp=int(n_steps)
+                A=kT[0], B=kT[1], t_start=self.timestep, t_ramp=int(n_steps)
             )
         else:
             thermal_kT = kT
@@ -281,7 +277,6 @@ class HoomdSimulation(hoomd.simulation.Simulation):
         L_after = np.asarray(self.state.box.L)
         self._frame_offset = self._frame_offset + (L_after - L_before) / 2
         self._store_current_energies()
-        self._log_properties()
         self.operations.integrator = None
         self._update_positions()
         self._update_snapshot()
@@ -315,6 +310,7 @@ class HoomdSimulation(hoomd.simulation.Simulation):
         cap from engaging and reverts to plain NVE dynamics, which can build up
         velocity and run away on stiff potentials.
         """
+        self.original_coords = np.copy(self.compound.xyz)
         if forces_handler is not None:
             forces_handler.scale_sim(self)
         else:
@@ -332,7 +328,6 @@ class HoomdSimulation(hoomd.simulation.Simulation):
 
         self.run(n_steps)
         self._store_current_energies()
-        self._log_properties()
         self.operations.integrator = None
         self._update_positions()
         self._update_snapshot()
@@ -387,6 +382,7 @@ class HoomdSimulation(hoomd.simulation.Simulation):
         energy_tol : float, default 1e-6
             Energy convergence tolerance.
         """
+        self.original_coords = np.copy(self.compound.xyz)
         if forces_handler is not None:
             forces_handler.scale_sim(self)
         else:
@@ -416,13 +412,23 @@ class HoomdSimulation(hoomd.simulation.Simulation):
             self.operations.integrator.reset()
 
         self._store_current_energies()
-        self._log_properties()
         self.operations.integrator = None
-        self._update_snapshot()
         self._update_positions()
+        self._update_snapshot()
 
     def get_energy(self):
-        """Return energies by force type across all stored frames."""
+        """Return energies by force type across all stored frames.
+
+        Frames where a force was not active are NaN.
+
+        Notes:
+        ------
+        Energies are calcualted from the last snapshot of the simulation,
+        and use the forces and integrator from the last simulation call.
+        Therefore, the values from multiple simulation calls may not be
+        directly comparable when changing the underlying forces or
+        integration method (e.g., using ForcesHandler).
+        """
         if not self.energies:
             print(f"No energies currently stored in {self}")
             return None
@@ -431,14 +437,43 @@ class HoomdSimulation(hoomd.simulation.Simulation):
         for frame, energyDict in enumerate(self.energies):
             for ffkey in energyDict:
                 if ffkey not in returnDict:
-                    returnDict[ffkey] = np.zeros(n_frames)
+                    returnDict[ffkey] = np.full(n_frames, np.nan)
                 returnDict[ffkey][frame] = energyDict[ffkey]
         return returnDict
 
     def recover(self):
-        """Reset the system coordinates as they were before the last simulation."""
-        # TODO: Also reset last snapshot, delete last store_energy call?
+        """Reset the system coordinates as they were before the last run.
+
+        Rewinds the HOOMD state and the cached snapshot as well, so a later run
+        or a new Simulation built from this compound starts from the restored
+        coordinates. Energies stored by that run are dropped.
+        """
         _recover(self._original_system, self.original_coords)
+        self.compound.xyz = self.original_coords
+        with self.state.cpu_local_snapshot as snap:
+            particles = snap.particles.rtag[:]
+            snap.particles.position[particles] = (
+                self.original_coords - self._frame_offset
+            )
+        self._update_snapshot()
+        if self.energies:
+            self.energies.pop()
+
+    def _build_params(self):
+        """Inputs the cached snapshot and forces are built from."""
+        if self.box is not None:
+            lengths = self.box.lengths if isinstance(self.box, Box) else self.box
+        elif self.compound.box:
+            lengths = self.compound.box.lengths
+        else:
+            lengths = None
+        return {
+            "forcefield": self.forcefield
+            if self.forcefield is not None
+            else _DEFAULT_FF,
+            "box": tuple(float(i) for i in lengths) if lengths is not None else None,
+            "r_cut": self.r_cut,
+        }
 
     def _to_hoomd_snap_forces(self):
         """Convert compound to HOOMD snapshot and forces."""
@@ -508,27 +543,30 @@ class HoomdSimulation(hoomd.simulation.Simulation):
             }
         return orig
 
+    def _particle_tags(self, compounds, name):
+        """Resolve Compounds or particle indices into a list of HOOMD tags."""
+        if all(isinstance(i, Compound) for i in compounds):
+            indices = []
+            for comp in compounds:
+                indices.extend(self.compound.get_child_indices(comp))
+        elif all(isinstance(i, numbers.Integral) for i in compounds):
+            indices = compounds
+        else:
+            got = sorted({type(i).__name__ for i in compounds})
+            raise TypeError(
+                f"{name} must be all mb.Compound or all integers, got {got}."
+            )
+        return [int(i) for i in indices]
+
     def _get_integrate_group(self):
         """Return the HOOMD filter for the integration group."""
         if self.integrate_compounds and not self.fixed_compounds:
-            if all([isinstance(i, Compound) for i in self.integrate_compounds]):
-                integrate_indices = []
-                for comp in self.integrate_compounds:
-                    integrate_indices.extend(
-                        list(self.compound.get_child_indices(comp))
-                    )
-            elif all([isinstance(i, int) for i in self.integrate_compounds]):
-                integrate_indices = self.integrate_compounds
-            return hoomd.filter.Tags(integrate_indices)
+            tags = self._particle_tags(self.integrate_compounds, "integrate_compounds")
+            return hoomd.filter.Tags(tags)
         elif self.fixed_compounds and not self.integrate_compounds:
-            if all([isinstance(i, Compound) for i in self.fixed_compounds]):
-                fix_indices = []
-                for comp in self.fixed_compounds:
-                    fix_indices.extend(list(self.compound.get_child_indices(comp)))
-            elif all([isinstance(i, int) for i in self.fixed_compounds]):
-                fix_indices = self.fixed_compounds
+            tags = self._particle_tags(self.fixed_compounds, "fixed_compounds")
             return hoomd.filter.SetDifference(
-                hoomd.filter.All(), hoomd.filter.Tags(fix_indices)
+                hoomd.filter.All(), hoomd.filter.Tags(tags)
             )
         else:
             return hoomd.filter.All()
@@ -583,7 +621,12 @@ class HoomdSimulation(hoomd.simulation.Simulation):
         self.operations.integrator = fire
 
     def set_integrator(self, dt, method):
-        """Used internally to set the integration method."""
+        """Set the integration method used.
+
+        This is used internally by HoomdSimulation, but
+        it is possible for users to call this directly
+        while passing an instance of ``hoomd.md.methods``
+        """
         integrator = hoomd.md.Integrator(dt=dt)
         integrator.forces = self.active_forces
         integrator.methods = [method]
@@ -594,9 +637,13 @@ class HoomdSimulation(hoomd.simulation.Simulation):
         self.operations.integrator.forces = self.active_forces
 
     def _update_snapshot(self):
-        """Update the last snapshot stored in memory."""
+        """Update the last snapshot and the compound's box stored in memory."""
         snapshot = self.state.get_snapshot()
         self.compound._add_sim_data(state=snapshot)
+        Lx, Ly, Lz, xy, xz, yz = snapshot.configuration.box
+        self.compound.box = Box.from_lengths_tilt_factors(
+            lengths=(Lx, Ly, Lz), tilt_factors=(xy, xz, yz)
+        )
 
     def _update_positions(self):
         """Update compound positions from snapshot and sync back to Path if needed."""
@@ -616,22 +663,9 @@ class HoomdSimulation(hoomd.simulation.Simulation):
             ffname = force.__class__.__module__ + "." + force.__class__.__name__
             new_energy[ffname] = force.energy
             current_total_energy += force.energy
-        new_energy["total"] = current_total_energy
+        new_energy["potential_energy"] = current_total_energy
         if new_energy:
             self.energies.append(new_energy)
-
-    def _log_properties(self):
-        """Record properties to the logger if one is attached."""
-        if self.logger is None:
-            return
-        for prop in self.logger.properties:
-            if prop == "potential_energy":
-                pe = sum(f.energy for f in self.active_forces)
-                self.logger.data["potential_energy"].append(pe)
-            elif prop == "kinetic_energy":
-                self.logger.data["kinetic_energy"].append(None)
-            elif prop == "temperature":
-                self.logger.data["temperature"].append(None)
 
 
 class OpenMMSimulation:
@@ -667,8 +701,6 @@ class OpenMMSimulation:
     kick : bool, default True
         Nudge coordinates before simulating. This can be critical to remove
         flat dihedrals.
-    logger : PropertyLogger or None
-        Optional property logger.
     """
 
     def __init__(
@@ -682,7 +714,6 @@ class OpenMMSimulation:
         r_cut=1.0,
         seed=1,
         kick=True,
-        logger=None,
     ):
         from openmm import Platform
         from openmm.app import AllBonds, HAngles, HBonds
@@ -695,7 +726,6 @@ class OpenMMSimulation:
         self.compound = compound
         self.forcefield_name = forcefield
         self.r_cut = r_cut
-        self.logger = logger
         self.energies = []
         self.box = box
 
@@ -769,13 +799,13 @@ class OpenMMSimulation:
         self._record_energies()
         self._update_compound_positions()
 
-    def nvt(self, n_steps, kT=300, dt=0.002, friction=1.0, report_interval=None):
+    def nvt(self, n_steps, T=300, dt=0.002, friction=1.0, report_interval=None):
         """Run an NVT (Langevin) simulation.
 
         Parameters
         ----------
         n_steps : int
-        kT : float
+        T : float
             Temperature in Kelvin.
         dt : float
             Timestep in picoseconds.
@@ -788,7 +818,7 @@ class OpenMMSimulation:
         from openmm.openmm import LangevinIntegrator
 
         integrator = LangevinIntegrator(
-            kT * u.kelvin, friction / u.picosecond, dt * u.picoseconds
+            T * u.kelvin, friction / u.picosecond, dt * u.picoseconds
         )
         self._create_simulation(integrator)
 
@@ -804,8 +834,17 @@ class OpenMMSimulation:
         self._update_compound_positions()
 
     def recover(self):
-        """Reset the system coordinates as they were before the last simulation."""
+        """Reset the coordinates to what they were when this Simulation was made.
+
+        Rewinds the positions the next run starts from, and clears stored
+        energies along with them.
+        """
+        import openmm.unit as u
+
         _recover(self._original_system, self.original_coords)
+        self.compound.xyz = self.original_coords
+        self.positions = self.original_coords * u.nanometer
+        self.energies = []
 
     def get_energy(self):
         """Return recorded energies as dict of arrays."""
@@ -951,19 +990,6 @@ class OpenMMSimulation:
         state = self.simulation.context.getState(getEnergy=True)
         pe = state.getPotentialEnergy().value_in_unit(u.kilojoules_per_mole)
         self.energies.append({"potential_energy": pe})
-        if self.logger and "potential_energy" in self.logger.properties:
-            self.logger.data["potential_energy"].append(pe)
-        if self.logger and "kinetic_energy" in self.logger.properties:
-            ke_state = self.simulation.context.getState(getEnergy=True)
-            ke = ke_state.getKineticEnergy().value_in_unit(u.kilojoules_per_mole)
-            self.logger.data["kinetic_energy"].append(ke)
-        if self.logger and "temperature" in self.logger.properties:
-            # Approximate from KE
-            self.logger.data["temperature"].append(None)
-        if self.logger and "volume" in self.logger.properties:
-            box_vecs = state.getPeriodicBoxVectors(asNumpy=True)
-            vol = np.dot(box_vecs[0], np.cross(box_vecs[1], box_vecs[2]))
-            self.logger.data["volume"].append(float(vol))
 
 
 class ForcesHandler:
@@ -1042,35 +1068,6 @@ class ForcesHandler:
             self.forcesDict[key] = force
 
 
-class PropertyLogger:
-    """Collects energies and other scalar properties during a simulation.
-
-    Parameters
-    ----------
-    log_every : int
-        Frequency (in steps) at which properties are recorded.
-    properties : list of str
-        Which properties to log. Options depend on the backend:
-        - HOOMD: "potential_energy", "kinetic_energy", "temperature", "pressure"
-        - OpenMM: "potential_energy", "kinetic_energy", "temperature", "volume"
-    """
-
-    def __init__(self, log_every=100, properties=None):
-        self.log_every = log_every
-        if properties is None:
-            properties = ["potential_energy"]
-        self.properties = properties
-        self.data = {p: [] for p in properties}
-
-    def reset(self):
-        """Clear all recorded property data."""
-        self.data = {p: [] for p in self.properties}
-
-    def as_dict(self):
-        """Return the recorded properties as a dict of arrays."""
-        return {k: np.array(v) for k, v in self.data.items()}
-
-
 def _resolve_input(system):
     """Convert a Path or Compound input into an mBuild Compound.
 
@@ -1096,6 +1093,17 @@ def _resolve_input(system):
         raise TypeError(
             f"Expected an mb.Compound or mbuild.path.Path, got {type(system)}."
         )
+
+
+def _same_build(new, cached):
+    """Compare two sets of build params, matching forcefields by identity."""
+    if cached is None:
+        return False
+    return (
+        new["forcefield"] is cached["forcefield"]
+        and new["box"] == cached["box"]
+        and new["r_cut"] == cached["r_cut"]
+    )
 
 
 def _wrap_into_box(snap):
