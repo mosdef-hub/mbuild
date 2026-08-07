@@ -58,6 +58,18 @@ def resolve(
         Multiple strings resolve through intermediate resolutions in
         order, with the last string interpreted as all-atom SMILES.
         May be omitted when ``templates`` defines every fragment.
+
+        Descriptor labelling decides where bonds land, not just how
+        many there are. CGsmiles satisfies each CG bond with the first
+        compatible descriptor pair in atom order, so a fragment whose
+        descriptors are all self-matching and identically labelled
+        attaches every inter-fragment bond to its first matching atom.
+        On a branching bead, ``"{#A=[$]C([$])C[$]}"`` therefore yields
+        a comb rather than a branched chain, and ``validate`` cannot
+        detect it because every CG bond was in fact realized. Give
+        each bond type its own directed pair instead::
+
+            {#A=[>bb]C([<br])C[<bb],#B=[>br]CC[<br]}
     fragname_map : dict[str, str], optional
         Mapping of bead names to CGsmiles fragment names.
         See ``to_cgsmiles_graph``.
@@ -230,6 +242,18 @@ def backmap(
         Multiple strings resolve through intermediate resolutions in
         order, with the last string interpreted as the highest resolution.
         May be omitted when ``templates`` defines every fragment.
+
+        Descriptor labelling decides where bonds land, not just how
+        many there are. CGsmiles satisfies each CG bond with the first
+        compatible descriptor pair in atom order, so a fragment whose
+        descriptors are all self-matching and identically labelled
+        attaches every inter-fragment bond to its first matching atom.
+        On a branching bead, ``"{#A=[$]C([$])C[$]}"`` therefore yields
+        a comb rather than a branched chain, and ``validate`` cannot
+        detect it because every CG bond was in fact realized. Give
+        each bond type its own directed pair instead::
+
+            {#A=[>bb]C([<br])C[<bb],#B=[>br]CC[<br]}
     fragname_map : dict[str, str], optional
         Mapping of bead names to CGsmiles fragment names.
         See ``to_cgsmiles_graph``.
@@ -452,7 +476,11 @@ def _validate_connectivity(cg_graph, molecule, node_to_beads):
             f"{len(missing)} CG bond(s) were not realized as "
             f"atomistic bonds: {details}. This usually means a fragment ran "
             "out of bonding descriptors; each fragment needs at least as many "
-            "descriptors as the highest degree of the beads that use it. "
+            "descriptors as the highest degree of the beads that use it, and "
+            "a compatible label for each bond it must form ('<x' bonds '>x', "
+            "'$x' bonds '$x'). Note that this check only verifies that each "
+            "CG bond was realized, not which atom it attached to; see the "
+            "`fragments` docs on descriptor labelling. "
             "Pass validate=False to skip this check."
         )
 
