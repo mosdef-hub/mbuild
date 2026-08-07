@@ -171,7 +171,7 @@ class Polymer(Compound):
         energy_minimize : bool, default True
             If ``True`` then relax the bonds and angles that may be distorted from mapping
             the atomistic polymer to a path.
-            This uses the capped displacement methods in ``mbuild.simulation``.
+            This uses ``mbuild.simulation.OpenMMSimulation.minimize``.
 
         Notes
         -----
@@ -181,13 +181,14 @@ class Polymer(Compound):
             the topology to a suitable starting point.
             mBuild contains multiple energy minimization approaches in the ``mbuild.simulation`` module.
 
-            When ``energy_minimize`` is set to ``True``, this method uses the OpenBabel based energy
-            minimization method with the UFF force field. We have found that once polymers
+            When ``energy_minimize`` is set to ``True``, this method uses the OpenMM based energy
+            minimization method with UFF derived parameters. We have found that once polymers
             reach a size on the order of ~500 atoms, significantly faster energy minimization can be
             achieved using one of the hoomd-based methods in ``mbuild.simulation``.
             In that case, set ``energy_minimize=False`` and pass the resulting polymer
             compound into one of these methods.
-            See: ``mbuild.simulation.hoomd_cap_displacement``, and ``mbuild.simulation.hoomd_fire``.
+            See: ``mbuild.simulation.HoomdSimulation.cap_displacement``, and
+            ``mbuild.simulation.HoomdSimulation.fire``.
 
         """
         n = len(path.coordinates) - sum([1 for i in self.end_groups if i is not None])
@@ -218,19 +219,19 @@ class Polymer(Compound):
             the topology to a suitable starting point.
             mBuild contains multiple energy minimization approaches in the ``mbuild.simulation`` module.
 
-            When ``energy_minimize`` is set to ``True``, this method uses the OpenBabel based energy
-            minimization method with the UFF force field. We have found that once polymers
+            When ``energy_minimize`` is set to ``True``, this method uses the OpenMM based energy
+            minimization method with UFF derived parameters. We have found that once polymers
             reach a size on the order of ~500 atoms, significantly faster energy minimization can be
             achieved using one of the hoomd-based methods in ``mbuild.simulation``
             In that case, set ``energy_minimize=False`` and pass the resulting polymer
             compound into one of these methods.
-            See: `hoomd_cap_displacement`, and `hoomd_fire`.
+            See: ``HoomdSimulation.cap_displacement``, and ``HoomdSimulation.fire``.
         """
         for i, xyz in enumerate(coordinates):
             self.children[i].translate_to(xyz)
         if energy_minimize:
             sim = OpenMMSimulation(self)
-            sim.energy_minimize()
+            sim.minimize()
 
     def build(
         self,
@@ -279,7 +280,8 @@ class Polymer(Compound):
             corresponding coordinate. A rotatation will be performed to attempt to
             align the monomer head-tail vector with the neighboring monomer orientations.
             Further energy minimization may be required to remove overlapping particles and relax bonds.
-            See ``mbuild.simulation.hoomd_cap_displacement`` and ``mbuild.simulation.hoomd_fire``.
+            See ``mbuild.simulation.HoomdSimulation.cap_displacement`` and
+            ``mbuild.simulation.HoomdSimulation.fire``.
             See ``Polyer.build_from_path`` to build a polymer chain from an ``mbuild.path.Path``.
 
         Notes
