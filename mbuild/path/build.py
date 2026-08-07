@@ -1044,7 +1044,6 @@ def hard_sphere_random_walk(
         See path._connect_edges for different options.
     initial_point : array-like or int, optional
         Used as the coordinate for the first site in this random walk path. If an integer is
-        Used as the coordinate for the first site in this random walk path. If an integer is
         passed, look in coordinates of passed path object, and grab the starting coordinates from there.
     seed : int, default = 42
         Random seed
@@ -1313,6 +1312,46 @@ def hard_sphere_random_walk(
     return path
 
 
+def _normalize_initial_point(initial_point):
+    """Resolve a user given initial_point into a value and what it means.
+
+    An initial point is either a coordinate to start the walk at, or an index
+    of a site in an existing path to start the walk from. A sequence of 3
+    values is a coordinate. Any single integer is an index, including numpy
+    integer scalars and single element integer arrays such as ``np.int64(4)``,
+    ``np.array(4)`` and ``np.array([4])``. Indices are returned as python ints.
+
+    Parameters
+    ----------
+    initial_point : array-like, int or None
+        The initial_point argument given to a random walk.
+
+    Returns
+    -------
+    value : np.ndarray of shape (3,), int or None
+        The coordinate, the site index, or None if no initial point was given.
+    starting_from_site : bool
+        True when value is an index of a site in an existing path.
+
+    Raises
+    ------
+    ValueError
+        If initial_point is neither a 3 coordinate array nor an integer index.
+    """
+    if initial_point is None:
+        return None, False
+    point = np.asarray(initial_point)
+    if point.ndim == 1 and point.size == 3:
+        return point, False
+    if point.size == 1 and np.issubdtype(point.dtype, np.integer):
+        return point.item(), True
+    raise ValueError(
+        f"Unsupported initial_point {initial_point!r}. Pass either an "
+        "array-like of 3 coordinates, or an integer index of a site in the "
+        "coordinates of an existing path."
+    )
+
+
 class RandomWalkState:
     """Tracks state and configuration for a hard_sphere_random_walk.
 
@@ -1337,8 +1376,11 @@ class RandomWalkState:
         Total number of attempted moves
     start_time : float
         Time when the random walk started (for WallTime terminator)
-    initial_point : np.ndarray or None
-        Specified initial coordinate
+    initial_point : np.ndarray, int or None
+        Specified initial coordinate, or the index of the site in an existing
+        path that this walk starts from
+    starting_from_site : bool
+        True when initial_point is an index of a site in an existing path
     include_compound : mbuild.compound.Compound, default None
         If an mBuild Compound is given, the random walk with include its coordinates
         when checking for overlapping sites.
@@ -1432,10 +1474,9 @@ class RandomWalkState:
                 "See mbuild.path.points.AnglesSampler."
             )
         self.bead_name = bead_name
-        if hasattr(initial_point, "__len__") and len(initial_point) == 3:
-            self.initial_point = np.asarray(initial_point)
-        else:
-            self.initial_point = initial_point
+        self.initial_point, self.starting_from_site = _normalize_initial_point(
+            initial_point
+        )
         self.previous_count = previous_count
         self.include_compound = include_compound
         self.connectivity = connectivity
@@ -1490,9 +1531,8 @@ class RandomWalkState:
             if self.bias:
                 self.bias._clean()
             path._extend_bond_graph()
-            if isinstance(
-                self.initial_point, int
-            ):  # make sure to build from previous point instead of last point
+            if self.starting_from_site:
+                # build from the given site instead of the last point
                 path._connect_edges(
                     self.connectivity,
                     np.arange(self.previous_count, self.count),
@@ -1612,8 +1652,9 @@ def crosslink(
         coordsArray: np.array
             each value matches path.coordinates[nodesList]
         """
+        initial_point, starting_from_site = _normalize_initial_point(initial_point)
         if initial_point is not None:
-            if isinstance(initial_point, (int, np.integer)):
+            if starting_from_site:
                 # Use coordinate of specified node
                 if initial_point not in path.bond_graph.nodes:
                     raise ValueError(f"Node {initial_point} not found in bond_graph")

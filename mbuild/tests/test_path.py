@@ -383,6 +383,47 @@ class TestRandomWalk(BaseTest):
         )
         assert np.array_equal(path.coordinates[0], np.array([1, 2, 3]))
 
+    @pytest.mark.parametrize(
+        "index", [2, np.int64(2), np.array(2), np.array([2])], ids=type
+    )
+    def test_initial_point_index_types(self, index):
+        """Every spelling of a site index starts the same walk from that site."""
+
+        def walk_from_index(initial_point):
+            path = straight_line(spacing=0.25, N=5)
+            hard_sphere_random_walk(
+                path=path,
+                termination=Termination([NumSites(10), NumAttempts(1e4)]),
+                bond_length=0.25,
+                radius=0.22,
+                initial_point=initial_point,
+                connectivity="link-linear",
+                seed=14,
+            )
+            return path
+
+        path = walk_from_index(index)
+        # The first site of the walk is bonded to, and one bond length from, site 2.
+        assert path.bond_graph.has_edge(2, 5)
+        assert np.isclose(
+            np.linalg.norm(path.coordinates[5] - path.coordinates[2]), 0.25
+        )
+        # Every index type gives an identical path.
+        expected = walk_from_index(2)
+        assert np.allclose(path.coordinates, expected.coordinates)
+        assert set(path.bond_graph.edges) == set(expected.bond_graph.edges)
+
+    def test_initial_point_bad_type(self):
+        for bad in [2.5, np.array([1, 2]), "2"]:
+            with pytest.raises(ValueError):
+                hard_sphere_random_walk(
+                    path=straight_line(spacing=0.25, N=5),
+                    termination=Termination([NumSites(10), NumAttempts(1e4)]),
+                    bond_length=0.25,
+                    radius=0.22,
+                    initial_point=bad,
+                )
+
     def test_seeds(self):
         path1 = Path()
         num_sites = NumSites(20)

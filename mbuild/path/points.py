@@ -90,13 +90,14 @@ def get_initial_point(state, existing_points, beads, check_path, next_step):
 
     The strategy for choosing a starting point depends on ``state.initial_point``:
 
-    - **np.ndarray (3,)**: the array is used directly as the starting coordinate.
-    - **int**: treated as an index into ``existing_points``; a new point is
-      generated in a sphere around that coordinate, filtered by volume
-      constraint and bias, and checked for overlaps.
-    - **None with volume_constraint**: candidates are sampled from the volume
+    - A coordinate: the array is used directly as the starting coordinate.
+    - A site index, indicated by ``state.starting_from_site``: indexes into
+      ``existing_points``; a new point is generated in a sphere around that
+      coordinate, filtered by volume constraint and bias, and checked for
+      overlaps.
+    - None with volume_constraint: candidates are sampled from the volume
       constraint's low-density regions and checked for overlaps.
-    - **None without volume_constraint**: candidates are drawn uniformly at
+    - None without volume_constraint: candidates are drawn uniformly at
       random within the bounding box of ``existing_points`` (or a unit sphere
       around the origin if no points exist yet) and checked for overlaps.
 
@@ -122,7 +123,7 @@ def get_initial_point(state, existing_points, beads, check_path, next_step):
     next_step : callable
         Coordinate-generation function with signature
         ``next_step(pos1, pos2, bond_length, thetas, r_vectors) -> np.ndarray``.
-        Used only when ``state.initial_point`` is an int.
+        Used only when ``state.initial_point`` is a site index.
 
     Returns
     -------
@@ -132,7 +133,7 @@ def get_initial_point(state, existing_points, beads, check_path, next_step):
     Raises
     ------
     ValueError
-        If ``state.initial_point`` is an int that is out of bounds for
+        If ``state.initial_point`` is a site index that is out of bounds for
         ``existing_points``.
     PathConvergenceError
         If no valid starting point can be found within the trial batch,
@@ -149,9 +150,7 @@ def get_initial_point(state, existing_points, beads, check_path, next_step):
 
     # An initial point was manually given in hard_sphere_random_walk, use that.
     # Check if this point causes any overlaps, if so, raise error.
-    if isinstance(state.initial_point, np.ndarray) and state.initial_point.shape == (
-        3,
-    ):
+    if state.initial_point is not None and not state.starting_from_site:
         if check_path(
             existing_points=existing_points,
             new_point=state.initial_point,
@@ -165,7 +164,7 @@ def get_initial_point(state, existing_points, beads, check_path, next_step):
         )
 
     # Passing in an index to specify an initial point from already defined set of coordinates
-    elif isinstance(state.initial_point, int):
+    elif state.starting_from_site:
         if state.initial_point >= n_walk_points:
             raise ValueError(
                 f"You passed a starting index of {state.initial_point} "
