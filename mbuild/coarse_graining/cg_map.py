@@ -461,10 +461,9 @@ def _cover_component(component_graph, fragment_dict):
         must match and the molecule atom's hydrogen count must not exceed
         the fragment atom's.
         """
-        return (
-            mol_node["element"] == frag_node.get("element")
-            and mol_node["hcount"] <= frag_node.get("hcount", 0)
-        )
+        return mol_node["element"] == frag_node.get("element") and mol_node[
+            "hcount"
+        ] <= frag_node.get("hcount", 0)
 
     def edge_match(mol_edge, frag_edge):
         """Bond comparison for the subgraph matcher: bond orders must be
