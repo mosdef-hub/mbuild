@@ -246,14 +246,21 @@ def _bead_center(members, center):
 
 def _beads_from_explicit(particles, index_of, mapping, bead_names):
     """Group particle indices into beads from an explicit particle to
-    bead-index mapping, checking that it covers every particle and uses
-    contiguous indices. Returns the per-bead member lists and names.
+    bead-index mapping, checking that it covers every particle of this
+    compound and nothing else, and that it uses contiguous indices.
+    Returns the per-bead member lists and names.
     """
     missing = [p.name for p in particles if p not in mapping]
     if missing:
         raise ValueError(
             f"`mapping` must cover every particle; {len(missing)} particle(s) "
             f"are missing (first few: {missing[:5]})."
+        )
+    unknown = [p for p in mapping if p not in index_of]
+    if unknown:
+        raise ValueError(
+            f"`mapping` contains {len(unknown)} particle(s) that are not in "
+            f"this compound (first few: {[p.name for p in unknown[:5]]})."
         )
     bead_indices = sorted({int(b) for b in mapping.values()})
     if bead_indices != list(range(len(bead_indices))):
@@ -263,8 +270,7 @@ def _beads_from_explicit(particles, index_of, mapping, bead_names):
         )
     members = [[] for _ in bead_indices]
     for particle, bead in mapping.items():
-        if particle in index_of:
-            members[int(bead)].append(index_of[particle])
+        members[int(bead)].append(index_of[particle])
     if bead_names is None:
         names = ["_A"] * len(members)
     else:
