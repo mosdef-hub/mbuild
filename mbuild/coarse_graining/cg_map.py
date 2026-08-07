@@ -90,7 +90,7 @@ def coarse_grain(
         A CGsmiles fragment string, e.g. ``"{#PEO=[>]COC[<]}"``; the
         same string used for backmapping. Each fragment's heavy-atom
         graph is matched into the compound's bond graph (elements,
-        charges, and bond orders must agree; hydrogens are folded into
+        and bond orders must agree; hydrogens are folded into
         each heavy atom's hydrogen count) and the compound must tile
         exactly into fragment instances. Hydrogen deficits relative to
         the saturated fragment must be accounted for by inter-fragment
@@ -388,7 +388,7 @@ def _fragment_dict(fragments, templates):
 def _heavy_graph(compound, particles, index_of):
     """Heavy-atom graph of the compound with hydrogens folded in.
 
-    Nodes are particle indices with ``element``, ``charge``, and
+    Nodes are particle indices with ``element``, and
     ``hcount`` (actual bonded hydrogens); edges carry the bond
     ``order``. Also returns a dict mapping each heavy atom to the
     indices of its bonded hydrogens.
@@ -406,7 +406,6 @@ def _heavy_graph(compound, particles, index_of):
         graph.add_node(
             index,
             element=_particle_symbol(particle),
-            charge=int(particle.charge or 0),
             hcount=0,
         )
     h_of = defaultdict(list)
@@ -458,13 +457,12 @@ def _cover_component(component_graph, fragment_dict):
     from networkx.algorithms.isomorphism import GraphMatcher
 
     def node_match(mol_node, frag_node):
-        """Atom comparison for the subgraph matcher: element and charge
+        """Atom comparison for the subgraph matcher: elements
         must match and the molecule atom's hydrogen count must not exceed
         the fragment atom's.
         """
         return (
             mol_node["element"] == frag_node.get("element")
-            and mol_node["charge"] == frag_node.get("charge", 0)
             and mol_node["hcount"] <= frag_node.get("hcount", 0)
         )
 
