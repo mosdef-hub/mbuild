@@ -1445,13 +1445,16 @@ class RandomWalkState:
             )
         # Pass in a dict with supported kwargs
         elif isinstance(angles_sampler, dict):
-            if angles_sampler.get("loc") and angles_sampler.get("scale"):
+            if "loc" in angles_sampler and "scale" in angles_sampler:
                 self.angles = AnglesSampler("normal", angles_sampler, rng=self.rng)
-            elif angles_sampler.get("low") and angles_sampler.get("high"):
+            elif "low" in angles_sampler and "high" in angles_sampler:
                 self.angles = AnglesSampler("uniform", angles_sampler, rng=self.rng)
             else:
                 raise ValueError(
-                    f"kwargs {dict} cannot be used to create an AnglesSampler."
+                    f"kwargs {angles_sampler} cannot be used to create an "
+                    "AnglesSampler. Pass either {'loc': mean, 'scale': std} for "
+                    "a normal distribution, or {'low': min, 'high': max} for a "
+                    "uniform distribution."
                 )
         # Pass in an array of choices
         elif isinstance(angles_sampler, np.ndarray):
