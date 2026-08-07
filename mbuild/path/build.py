@@ -11,7 +11,7 @@ from scipy.interpolate import interp1d
 from mbuild import Compound
 from mbuild.exceptions import PathConvergenceError
 from mbuild.path.constraints import CuboidConstraint, CylinderConstraint
-from mbuild.path.namers import BeadNamer
+from mbuild.path.namers import BEAD_NAME_DTYPE, BeadNamer
 from mbuild.path.path_utils import (
     calculate_sq_distances,
     check_path,
@@ -43,8 +43,8 @@ class Path:
         multiple `Path` instances to build heterogeneous systems.
         If an array of bead names is passed, it should be the same length
         as ``coordinates`` or the number of nodes in ``bond_graph``
-        The array will be cast to a "U10" data type, so bead names
-        should not exceed 10 characters.
+        The array will be cast to BEAD_NAME_DTYPE, so bead names
+        should not exceed MAX_BEAD_NAME_LENGTH characters.
 
     """
 
@@ -66,14 +66,14 @@ class Path:
             )
             self.bond_graph = bond_graph
             self.coordinates = coordinates
-            self.beads = bead_name.astype("U10")
+            self.beads = bead_name.astype(BEAD_NAME_DTYPE)
         # Passing in an array of coordinates, bond graph, and single bead name
         elif coordinates is not None and bond_graph is not None:
             assert len(coordinates) == len(bond_graph)
             self.bond_graph = bond_graph
             self.coordinates = coordinates
             self.beads = np.array(
-                [str(bead_name) for _ in range(len(coordinates))], dtype="U10"
+                [str(bead_name) for _ in range(len(coordinates))], dtype=BEAD_NAME_DTYPE
             )
         # Only passing in a bond graph with data defined for xyz and name
         # TODO: Cast to fp32 here?
@@ -84,24 +84,26 @@ class Path:
             )
             self.beads = np.array(
                 [node.get("name") for node in bond_graph.nodes(data=True)]
-            ).astype("U10")
+            ).astype(BEAD_NAME_DTYPE)
         # Only passing in coordinates, need to create bond graph object.
         elif coordinates is not None and bond_graph is None:
             self.coordinates = np.asarray(coordinates)
             self.bond_graph = nx.Graph()
             # Only passed a single string for bead name, create array
             if isinstance(bead_name, str):
-                self.beads = np.array([bead_name for _ in coordinates], dtype="U10")
-            # Passed array of bead names, cast to U10 dtype
+                self.beads = np.array(
+                    [bead_name for _ in coordinates], dtype=BEAD_NAME_DTYPE
+                )
+            # Passed array of bead names, cast to the bead name dtype
             elif isinstance(bead_name, np.ndarray):
-                self.beads = bead_name.astype("U10")
+                self.beads = bead_name.astype(BEAD_NAME_DTYPE)
             for idx in range(len((self.coordinates))):
                 self.bond_graph.add_node(idx)
         # Nothing is defined, create empty place holders for coords, bond graph and bead names
         else:
             self.coordinates = np.array([], dtype=np.float32)
             self.bond_graph = nx.Graph()
-            self.beads = np.array([], dtype="U10")
+            self.beads = np.array([], dtype=BEAD_NAME_DTYPE)
 
     def __eq__(self, other):
         return (
@@ -160,7 +162,7 @@ class Path:
             points = np.array([points])  # make a 2d array
         # Create sequence of bead names
         if isinstance(bead_names, str):
-            bead_names = np.array([bead_names] * len(points), dtype="U10")
+            bead_names = np.array([bead_names] * len(points), dtype=BEAD_NAME_DTYPE)
 
         if self.coordinates.size == 0:
             self.coordinates = points
@@ -176,13 +178,13 @@ class Path:
         """Create new coordinate and bead name place holders for setting values."""
         if self.coordinates.size == 0:
             self.coordinates = np.zeros((N, 3), dtype=np.float32)
-            self.beads = np.zeros(N, dtype="U10")  # Place holder is empty str
+            self.beads = np.zeros(N, dtype=BEAD_NAME_DTYPE)  # Place holder is empty str
             return
         # Update coordinates array
         zeros = np.zeros((N, 3), dtype=self.coordinates.dtype)
         self.coordinates = np.concatenate([self.coordinates, zeros])
         # Update bead names array
-        empty = np.zeros(N, dtype="U10")
+        empty = np.zeros(N, dtype=BEAD_NAME_DTYPE)
         self.beads = np.concatenate([self.beads, empty])
 
     def _extend_bond_graph(self):
@@ -614,7 +616,9 @@ def lamellar(
     start_index = len(path.coordinates)
     stop_index = start_index + len(coordinates)
     namer = BeadNamer.coerce(bead_name)
-    names = np.array([next(namer) for _ in range(len(coordinates))], dtype="U10")
+    names = np.array(
+        [next(namer) for _ in range(len(coordinates))], dtype=BEAD_NAME_DTYPE
+    )
     path.append_coordinates(coordinates, names)
     path._connect_edges(
         connectivity="linear", indices=np.arange(start_index, stop_index)
@@ -648,7 +652,9 @@ def straight_line(spacing, N, path=None, direction=(1, 0, 0), bead_name="_A"):
     start_index = len(path.coordinates)
     stop_index = start_index + N
     namer = BeadNamer.coerce(bead_name)
-    names = np.array([next(namer) for _ in range(len(coordinates))], dtype="U10")
+    names = np.array(
+        [next(namer) for _ in range(len(coordinates))], dtype=BEAD_NAME_DTYPE
+    )
     path.append_coordinates(coordinates, names)
     path._connect_edges(
         connectivity="linear", indices=np.arange(start_index, stop_index)
@@ -702,7 +708,9 @@ def cyclic(spacing=None, N=None, path=None, radius=None, closed=True, bead_name=
     start_index = len(path.coordinates)
     stop_index = start_index + len(coordinates)
     namer = BeadNamer.coerce(bead_name)
-    names = np.array([next(namer) for _ in range(len(coordinates))], dtype="U10")
+    names = np.array(
+        [next(namer) for _ in range(len(coordinates))], dtype=BEAD_NAME_DTYPE
+    )
     path.append_coordinates(coordinates, names)
     if closed:
         path._connect_edges(
@@ -785,7 +793,9 @@ def knot(spacing, N, m, path=None, closed=True, bead_name="_A"):
     start_index = len(path.coordinates)
     stop_index = start_index + len(coordinates)
     namer = BeadNamer.coerce(bead_name)
-    names = np.array([next(namer) for _ in range(len(coordinates))], dtype="U10")
+    names = np.array(
+        [next(namer) for _ in range(len(coordinates))], dtype=BEAD_NAME_DTYPE
+    )
     path.append_coordinates(coordinates, names)
     if closed:
         path._connect_edges(
@@ -842,7 +852,9 @@ def helix(
     start_index = len(path.coordinates)
     stop_index = start_index + len(coordinates)
     namer = BeadNamer.coerce(bead_name)
-    names = np.array([next(namer) for _ in range(len(coordinates))], dtype="U10")
+    names = np.array(
+        [next(namer) for _ in range(len(coordinates))], dtype=BEAD_NAME_DTYPE
+    )
     path.append_coordinates(coordinates, names)
     path._connect_edges(
         connectivity="linear", indices=np.arange(start_index, stop_index)
@@ -890,7 +902,9 @@ def spiral_2D(N, a, b, spacing, path=None, bead_name="_A"):
     start_index = len(path.coordinates)
     stop_index = start_index + len(coordinates)
     namer = BeadNamer.coerce(bead_name)
-    names = np.array([next(namer) for _ in range(len(coordinates))], dtype="U10")
+    names = np.array(
+        [next(namer) for _ in range(len(coordinates))], dtype=BEAD_NAME_DTYPE
+    )
     path.append_coordinates(coordinates, names)
     path._connect_edges(
         connectivity="linear", indices=np.arange(start_index, stop_index)
@@ -977,7 +991,9 @@ def zigzag(
     start_index = len(path.coordinates)
     stop_index = start_index + len(coordinates)
     namer = BeadNamer.coerce(bead_name)
-    names = np.array([next(namer) for _ in range(len(coordinates))], dtype="U10")
+    names = np.array(
+        [next(namer) for _ in range(len(coordinates))], dtype=BEAD_NAME_DTYPE
+    )
     path.append_coordinates(coordinates, names)
     path._connect_edges(
         connectivity="linear", indices=np.arange(start_index, stop_index)
@@ -1141,14 +1157,14 @@ def hard_sphere_random_walk(
             axis=0,
         )
         beads = np.concatenate(
-            (path.beads, np.zeros(chunk_size, dtype="U10")),
+            (path.beads, np.zeros(chunk_size, dtype=BEAD_NAME_DTYPE)),
             axis=0,
         )
         state.count = len(path.coordinates)  # starting index
     # The path used for this RW doesn't have previous sites
     else:
         coordinates = np.zeros((chunk_size, 3), dtype=np.float32)
-        beads = np.zeros(chunk_size, dtype="U10")
+        beads = np.zeros(chunk_size, dtype=BEAD_NAME_DTYPE)
         state.count = 0
 
     state.init_count = state.count

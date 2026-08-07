@@ -157,6 +157,7 @@ def coarse_grain(
            cg_path, mapping = compound.coarse_grain(beads=["PEO"])
     """
     from mbuild.path.build import Path
+    from mbuild.path.namers import BEAD_NAME_DTYPE
 
     modes = [fragments is not None or templates, beads is not None, mapping is not None]
     if sum(bool(m) for m in modes) != 1:
@@ -204,7 +205,7 @@ def coarse_grain(
     path = Path(
         coordinates=coordinates,
         bond_graph=cg_graph,
-        bead_name=np.array(names, dtype="U10"),
+        bead_name=np.array(names, dtype=BEAD_NAME_DTYPE),
     )
     cg_mapping = CGMapping(
         atom_to_bead=atom_to_bead,
