@@ -111,9 +111,7 @@ class TestCoarseGraining(BaseTest):
 
     @pytest.mark.skipif(not has_rdkit, reason="rdkit is not installed")
     def test_backmap_rdkit_positions(self, branched_path):
-        compound = branched_path.backmap(
-            "{#A=[$]C([$])C[$],#B=[$]CC[$]}", placement="rdkit"
-        )
+        compound = branched_path.backmap("{#A=[$]C([$])C[$],#B=[$]CC[$]}")
         # each bead's atoms are centered on the bead coordinate
         for i, child in enumerate(compound.children):
             centroid = np.mean([p.pos for p in child.particles()], axis=0)
@@ -134,10 +132,26 @@ class TestCoarseGraining(BaseTest):
             assert particle.element is not None
             assert particle.element.symbol == particle.name
 
-    def test_backmap_bad_placement(self):
+    def test_backmap_unknown_template_name(self):
+        import mbuild as mb
+
         path = straight_line(spacing=0.35, N=2, bead_name="PE")
-        with pytest.raises(ValueError):
-            path.backmap("{#PE=[>]CC[<]}", placement="bad-option")
+        # "PEO" names neither a bead nor a fragment of the string
+        with pytest.raises(ValueError, match="no bead or fragment uses"):
+            path.backmap(
+                "{#PE=[>]CC[<]}", templates={"PEO": mb.load("COC", smiles=True)}
+            )
+
+    def test_backmap_template_name_from_fragname_map(self):
+        import mbuild as mb
+
+        # templates are keyed by fragment name, not the original bead name
+        path = straight_line(spacing=0.35, N=3)  # default bead name "_A"
+        template = mb.load("C{<}C{>}", smiles=True)
+        with pytest.raises(ValueError, match="no bead or fragment uses"):
+            path.backmap(templates={"_A": template}, fragname_map={"_A": "PE"})
+        compound = path.backmap(templates={"PE": template}, fragname_map={"_A": "PE"})
+        assert nx.is_connected(compound.bond_graph)
 
     def test_validate_missing_descriptors(self, branched_path):
         # A only has two descriptors but the branch point has degree 3;
@@ -157,7 +171,6 @@ class TestCoarseGraining(BaseTest):
         compound = path.backmap(
             "{#PEO=[>]COC[<]}",
             templates={"PEO": template},
-            placement="template",
         )
         assert compound.n_particles == 37
         assert compound.n_bonds == 36
@@ -176,7 +189,6 @@ class TestCoarseGraining(BaseTest):
                 "A": mb.load("CC", smiles=True),
                 "B": mb.load("CC", smiles=True),
             },
-            placement="template",
         )
         assert nx.is_connected(compound.bond_graph)
         assert [c.name for c in compound.children] == list(branched_path.beads)
@@ -208,10 +220,12 @@ class TestCoarseGraining(BaseTest):
                 "{#PEO=[>]COC[<]}", templates={"PEO": mb.load("CCO", smiles=True)}
             )
 
-    def test_backmap_template_placement_requires_templates(self):
-        path = straight_line(spacing=0.35, N=2, bead_name="PE")
-        with pytest.raises(ValueError, match="requires"):
-            path.backmap("{#PE=[>]CC[<]}", placement="template")
+    def test_backmap_cg_endpoint_requires_template(self):
+        # a coarse-grained endpoint has no atomistic detail to embed, so
+        # a fragment without a template cannot be placed
+        path = straight_line(spacing=0.35, N=3, bead_name="SMA")
+        with pytest.raises(ValueError, match="coarse-grained fragment"):
+            path.backmap("{#SMA=[>][#PS][#MAH][<]}")
 
     @pytest.mark.skipif(not has_rdkit, reason="rdkit is not installed")
     def test_backmap_template_tagged(self):
@@ -221,9 +235,7 @@ class TestCoarseGraining(BaseTest):
         # template SMILES written in a different atom order than the
         # fragment (COC); tags pin each heavy atom to its fragment index
         tagged = mb.load("O{1}(C{0})C{2}", smiles=True)
-        compound = path.backmap(
-            "{#PEO=[>]COC[<]}", templates={"PEO": tagged}, placement="template"
-        )
+        compound = path.backmap("{#PEO=[>]COC[<]}", templates={"PEO": tagged})
         assert compound.n_particles == 30
         assert nx.is_connected(compound.bond_graph)
         # the same reordered template without tags fails the order check
@@ -231,7 +243,6 @@ class TestCoarseGraining(BaseTest):
             path.backmap(
                 "{#PEO=[>]COC[<]}",
                 templates={"PEO": mb.load("O(C)C", smiles=True)},
-                placement="template",
             )
 
     @pytest.mark.skipif(not has_rdkit, reason="rdkit is not installed")
@@ -338,9 +349,7 @@ class TestCoarseGraining(BaseTest):
         path = straight_line(spacing=0.35, N=3, bead_name="PE")
         # head/tail tags from the Polymer workflow fall back to order matching
         template = mb.load("C{head}C{tail}", smiles=True)
-        compound = path.backmap(
-            "{#PE=[>]CC[<]}", templates={"PE": template}, placement="template"
-        )
+        compound = path.backmap("{#PE=[>]CC[<]}", templates={"PE": template})
         assert nx.is_connected(compound.bond_graph)
 
     def test_backmap_missing_fragment(self):
@@ -707,15 +716,27 @@ class TestCoarseGraining(BaseTest):
     def test_backmap_cg_chain_refine_then_atomistic(self):
         # a CG chain of 4 E2 beads refines to 8 E beads (CG endpoint), then
         # all the way to an atomistic polyethylene chain of 8 CC units.
+        import mbuild as mb
+
         path = straight_line(spacing=0.5, N=4, bead_name="E2")
 
+        # a CG endpoint has no atomistic detail to embed, so the fragment
+        # geometry comes from a template of its two sub-beads
+        e2_template = mb.Compound(name="E2")
+        sub_beads = [mb.Compound(name="E", pos=[x, 0, 0]) for x in (-0.125, 0.125)]
+        e2_template.add(sub_beads)
+        e2_template.add_bond(sub_beads)
+
         # CG -> CG: 4 E2 beads -> 8 E beads (all_atom=False inferred)
-        cg_chain = path.backmap("{#E2=[>][#E][#E][<]}")
+        cg_chain = path.backmap("{#E2=[>][#E][#E][<]}", templates={"E2": e2_template})
         assert cg_chain.n_particles == 8
         assert cg_chain.n_bonds == 7
         assert {p.name for p in cg_chain.particles()} == {"E"}
         assert all(p.element is None for p in cg_chain.particles())
         assert nx.is_connected(cg_chain.bond_graph)
+        # the sub-beads are spread out, not collapsed onto their parent bead
+        positions = np.array([p.pos for p in cg_chain.particles()])
+        assert len(np.unique(positions.round(6), axis=0)) == 8
 
         # CG -> CG -> atomistic in one multi-resolution call
         pe = path.backmap(["{#E2=[>][#E][#E][<]}", "{#E=[>]CC[<]}"])

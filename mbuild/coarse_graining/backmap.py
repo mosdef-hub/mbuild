@@ -146,6 +146,8 @@ def _resolve_graph(
         )
     if isinstance(fragments, str):
         fragments = [fragments]
+    if templates:
+        _validate_template_names(cg_graph, fragments, templates)
 
     if fragments:
         elements = re.findall(r"\{[^\}]+\}", ".".join(fragments))
@@ -212,7 +214,6 @@ def backmap(
     fragments=None,
     fragname_map=None,
     templates=None,
-    placement="rdkit",
     seed=42,
     check_bonding=True,
     all_atom=None,
@@ -272,22 +273,15 @@ def backmap(
         2. Supplies the bead's local geometry. The template's
            coordinates (including hydrogen positions) are used in
            place of an RDKit embedding.
-    placement : str, default "rdkit"
-        How to generate initial atom positions for beads not covered by
-        ``templates``.
 
-        - ``"rdkit"``: embed each bead's fragment with RDKit to obtain
-          valid local geometry (identical fragments are embedded once
-          and reused), rotated it so its junction atoms point toward the
-          neighboring beads, and center it on the bead coordinate. Cost
-          scales with the number of unique fragments, not molecule
-          size. Raises if an embedding fails; provide a template for
-          that fragment instead.
-        - ``"template"``: require a template for every fragment and
-          raise if one is missing. No RDKit needed.
-
-        Template-placed fragments are rotated toward their neighboring
-        beads exactly like RDKit-placed ones.
+        Fragments with no template are embedded with RDKit: each unique
+        fragment is embedded once and reused, so cost scales with the
+        number of unique fragments rather than molecule size. An
+        embedding that fails raises; provide a template for that
+        fragment instead. Templated and embedded fragments are both
+        rotated so their junction atoms point toward the neighboring
+        beads. Keys must name a bead or a fragment of the ``fragments``
+        string.
     seed : int, default 42
         Random seed used for RDKit embedding.
     check_bonding : bool, default True
@@ -298,10 +292,8 @@ def backmap(
         infer it (see ``resolve``). Pass ``False`` to backmap one
         coarse-grained level to a finer coarse-grained level: each leaf
         of the returned Compound is then a finer bead rather than an
-        atom, with its local geometry taken from ``templates`` (a
-        coarse-grained endpoint has no atomistic geometry to embed, so
-        sub-beads of a fragment without a template are all placed at the
-        parent bead position).
+        atom. Every fragment then needs a template to supply its local
+        geometry, since there is no atomistic detail to embed.
 
     Returns
     -------
@@ -372,19 +364,11 @@ def backmap(
             )
         anchors[node] = np.mean([bead_positions[b] for b in beads], axis=0)
 
-    if placement not in ("rdkit", "template"):
-        raise ValueError(
-            f"Argument {placement=} is invalid. Pass one of 'rdkit', 'template'."
-        )
-    if placement == "template" and not templates:
-        raise ValueError("placement='template' requires the `templates` argument.")
-
     positions = generate_positions(
         molecule=molecule,
         node_to_beads=node_to_beads,
         anchors=anchors,
         bead_fragnames=nx.get_node_attributes(cg_graph, "fragname"),
-        placement=placement,
         templates=templates,
         seed=seed,
         all_atom=all_atom,
@@ -481,6 +465,32 @@ def _validate_connectivity(cg_graph, molecule, node_to_beads):
             "CG bond was realized, not which atom it attached to; see the "
             "`fragments` docs on descriptor labelling. "
             "Pass check_bonding=False to skip this check."
+        )
+
+
+def _validate_template_names(cg_graph, fragments, templates):
+    """Check that every ``templates`` key names a fragment of this system.
+
+    Valid keys are the fragment names of the system's beads and any
+    fragment named in the fragment string, whether defined there
+    (``#PEO=``) or referenced as a sub-bead (``[#PEO]``). Raises
+    ``ValueError`` for any other key.
+    """
+    import re
+
+    known = set(nx.get_node_attributes(cg_graph, "fragname").values())
+    if fragments:
+        joined = ".".join(fragments)
+        known.update(re.findall(r"\[#([^\]]+)\]", joined))
+        known.update(name.strip() for name in re.findall(r"#([^=,{}]+)=", joined))
+
+    unknown = sorted(name for name in templates if name not in known)
+    if unknown:
+        raise ValueError(
+            f"templates contains {len(unknown)} name(s) that no bead or "
+            f"fragment uses: {unknown}. Templates are keyed by fragment "
+            "name, which is the bead name unless `fragname_map` remaps it. "
+            f"This system uses {sorted(known)}."
         )
 
 

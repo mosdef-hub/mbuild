@@ -21,7 +21,6 @@ def generate_positions(
     node_to_beads,
     anchors,
     bead_fragnames,
-    placement,
     templates,
     seed,
     all_atom=True,
@@ -35,11 +34,9 @@ def generate_positions(
     on the bead anchor.
 
     With ``all_atom=False`` the resolved nodes are finer coarse-grained
-    beads rather than atoms. There is no atomistic detail to embed with
-    RDKit, so local geometry comes only from templates.
+    beads rather than atoms. Local geometry then comes only from
+    templates; a fragment without one raises ``ValueError``.
     """
-    import_("rdkit")
-
     # Group atoms by primary bead
     bead_to_atoms = {}
     for node in molecule.nodes:
@@ -58,16 +55,17 @@ def generate_positions(
                 molecule, atoms, templates[fragname], fragname, all_atom=all_atom
             )
         elif not all_atom:
-            # A coarse-grained endpoint has no atomistic geometry to
-            # embed; without a template the sub-beads collapse onto the
-            # parent bead anchor (topology is still correct).
-            local_xyz = np.zeros((len(atoms), 3))
-        elif placement == "template":
+            # a coarse-grained endpoint has no atomistic detail to embed
             raise ValueError(
-                f"placement='template' but no template was provided for "
-                f"fragment '{fragname}'."
+                f"No template was provided for coarse-grained fragment "
+                f"'{fragname}'. Resolving to a coarse-grained resolution "
+                "has no atomistic geometry to embed, so each such fragment "
+                "needs a template compound whose particles are its "
+                "sub-beads, in the same order as the fragment definition: "
+                f"templates={{'{fragname}': compound}}."
             )
         else:
+            import_("rdkit")
             try:
                 local_xyz = _embedded_fragment_coords(
                     molecule, atoms, rel_index, embed_cache, seed
