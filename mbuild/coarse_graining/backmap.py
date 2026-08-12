@@ -33,7 +33,7 @@ def resolve(
     fragments=None,
     fragname_map=None,
     legacy=True,
-    validate=True,
+    check_bonding=True,
     templates=None,
     all_atom=None,
 ):
@@ -65,7 +65,7 @@ def resolve(
         descriptors are all self-matching and identically labelled
         attaches every inter-fragment bond to its first matching atom.
         On a branching bead, ``"{#A=[$]C([$])C[$]}"`` therefore yields
-        a comb rather than a branched chain, and ``validate`` cannot
+        a comb rather than a branched chain, and ``check_bonding`` cannot
         detect it because every CG bond was in fact realized. Give
         each bond type its own directed pair instead::
 
@@ -90,7 +90,7 @@ def resolve(
     legacy : bool, default True
         Bonding descriptor matching convention passed through to
         ``cgsmiles.MoleculeResolver`` (legacy=BigSmiles convention).
-    validate : bool, default True
+    check_bonding : bool, default True
         If ``True``, verify that every bond in the CG bond graph was
         realized as an atomistic bond between the corresponding
         fragments. CGsmiles silently skips CG bonds when a fragment runs
@@ -126,13 +126,13 @@ def resolve(
         cg_graph,
         fragments,
         legacy=legacy,
-        validate=validate,
+        check_bonding=check_bonding,
         templates=templates,
         all_atom=all_atom,
     )
 
 
-def _resolve_graph(cg_graph, fragments, legacy, validate, templates, all_atom=True):
+def _resolve_graph(cg_graph, fragments, legacy, check_bonding, templates, all_atom=True):
     """Resolve a prebuilt CG meta graph. See ``resolve``."""
     import re
 
@@ -199,7 +199,7 @@ def _resolve_graph(cg_graph, fragments, legacy, validate, templates, all_atom=Tr
             new_map[node] = sorted(beads)
         node_to_beads = new_map
 
-    if validate:
+    if check_bonding:
         _validate_connectivity(cg_graph, molecule, node_to_beads)
 
     return meta_graph, molecule, node_to_beads
@@ -212,7 +212,7 @@ def backmap(
     templates=None,
     placement="rdkit",
     seed=42,
-    validate=True,
+    check_bonding=True,
     all_atom=None,
 ):
     """Backmap a coarse-grained system to an atomistic mbuild Compound.
@@ -248,7 +248,7 @@ def backmap(
         descriptors are all self-matching and identically labelled
         attaches every inter-fragment bond to its first matching atom.
         On a branching bead, ``"{#A=[$]C([$])C[$]}"`` therefore yields
-        a comb rather than a branched chain, and ``validate`` cannot
+        a comb rather than a branched chain, and ``check_bonding`` cannot
         detect it because every CG bond was in fact realized. Give
         each bond type its own directed pair instead::
 
@@ -288,7 +288,7 @@ def backmap(
         beads exactly like RDKit-placed ones.
     seed : int, default 42
         Random seed used for RDKit embedding.
-    validate : bool, default True
+    check_bonding : bool, default True
         Verify that every CG bond was realized as an atomistic bond.
         See ``resolve``.
     all_atom : bool, optional
@@ -352,7 +352,7 @@ def backmap(
         cg_graph,
         fragments,
         legacy=True,
-        validate=validate,
+        check_bonding=check_bonding,
         templates=templates,
         all_atom=all_atom,
     )
@@ -478,7 +478,7 @@ def _validate_connectivity(cg_graph, molecule, node_to_beads):
             "'$x' bonds '$x'). Note that this check only verifies that each "
             "CG bond was realized, not which atom it attached to; see the "
             "`fragments` docs on descriptor labelling. "
-            "Pass validate=False to skip this check."
+            "Pass check_bonding=False to skip this check."
         )
 
 

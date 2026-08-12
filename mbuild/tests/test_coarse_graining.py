@@ -145,7 +145,7 @@ class TestCoarseGraining(BaseTest):
         fragments = "{#A=[>]CC[<],#B=[>]CC[<]}"
         with pytest.raises(ValueError, match="bonding descriptors"):
             branched_path.backmap(fragments)
-        compound = branched_path.backmap(fragments, validate=False)
+        compound = branched_path.backmap(fragments, check_bonding=False)
         assert not nx.is_connected(compound.bond_graph)
 
     @pytest.mark.skipif(not has_rdkit, reason="rdkit is not installed")
