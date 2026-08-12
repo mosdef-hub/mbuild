@@ -38,7 +38,7 @@ def generate_positions(
     beads rather than atoms. There is no atomistic detail to embed with
     RDKit, so local geometry comes only from templates.
     """
-    rdkit = import_("rdkit")
+    import_("rdkit")
 
     # Group atoms by primary bead
     bead_to_atoms = {}
