@@ -10,6 +10,7 @@ import logging
 
 import numpy as np
 
+from mbuild.utils.io import import_
 from mbuild.utils.geometry import kabsch
 
 logger = logging.getLogger(__name__)
@@ -37,15 +38,7 @@ def generate_positions(
     beads rather than atoms. There is no atomistic detail to embed with
     RDKit, so local geometry comes only from templates.
     """
-    if all_atom and placement == "rdkit":
-        try:
-            from rdkit import Chem  # noqa: F401
-        except ImportError:
-            raise ImportError(
-                "Backmapping requires the `rdkit` package (or a template "
-                "for every fragment with placement='template'). Install "
-                "it with `conda install -c conda-forge rdkit`."
-            )
+    rdkit = import_("rdkit")
 
     # Group atoms by primary bead
     bead_to_atoms = {}
