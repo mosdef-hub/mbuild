@@ -317,7 +317,7 @@ def backmap(
 
     Notes
     -----
-    Initial configurations produced by this method have distorted bonds
+    Initial configurations produced by this method may have distorted bonds
     at the fragment-fragment connections; an energy minimization is
     required before using them in a simulation.
 
