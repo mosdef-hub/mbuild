@@ -321,7 +321,7 @@ def backmap(
     at the fragment-fragment connections; an energy minimization is
     required before using them in a simulation.
 
-    See mbuild.Simulation for minimization methods.
+    See mbuild.simulation for minimization methods.
 
     Examples
     --------
