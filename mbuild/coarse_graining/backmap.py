@@ -212,7 +212,6 @@ def backmap(
     templates=None,
     placement="rdkit",
     seed=42,
-    legacy=True,
     validate=True,
     all_atom=None,
 ):
@@ -289,8 +288,6 @@ def backmap(
         beads exactly like RDKit-placed ones.
     seed : int, default 42
         Random seed used for RDKit embedding.
-    legacy : bool, default True
-        Bonding descriptor matching convention. See ``resolve``.
     validate : bool, default True
         Verify that every CG bond was realized as an atomistic bond.
         See ``resolve``.
@@ -354,7 +351,7 @@ def backmap(
     _, molecule, node_to_beads = _resolve_graph(
         cg_graph,
         fragments,
-        legacy=legacy,
+        legacy=True,
         validate=validate,
         templates=templates,
         all_atom=all_atom,
