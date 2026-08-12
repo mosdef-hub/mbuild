@@ -11,17 +11,6 @@ from mbuild.tests.base_test import BaseTest
 from mbuild.utils.io import has_rdkit
 
 
-def compound_graph(compound):
-    """Build a particle-index graph from a compound's bonds."""
-    particles = list(compound.particles())
-    indices = {p: i for i, p in enumerate(particles)}
-    graph = nx.Graph()
-    graph.add_nodes_from(range(len(particles)))
-    for p1, p2 in compound.bonds():
-        graph.add_edge(indices[p1], indices[p2])
-    return graph
-
-
 @pytest.fixture
 def branched_path():
     """A random walk backbone of A beads with a B bead branch on node 4."""
@@ -100,7 +89,7 @@ class TestCoarseGraining(BaseTest):
         compound = path.backmap("{#PEO=[>]COC[<]}")
         assert compound.n_particles == 37
         assert compound.n_bonds == 36
-        assert nx.is_connected(compound_graph(compound))
+        assert nx.is_connected(compound.bond_graph)
         # hierarchy mirrors the path: one child compound per bead
         assert [c.name for c in compound.children] == ["PEO"] * 5
 
@@ -109,7 +98,7 @@ class TestCoarseGraining(BaseTest):
         degrees = dict(branched_path.bond_graph.degree())
         assert max(degrees.values()) == 3  # the case build_from_path can't handle
         compound = branched_path.backmap("{#A=[$]C([$])C[$],#B=[$]CC[$]}")
-        assert nx.is_connected(compound_graph(compound))
+        assert nx.is_connected(compound.bond_graph)
         assert len(compound.children) == n_beads
         assert [c.name for c in compound.children] == list(branched_path.beads)
 
@@ -157,7 +146,7 @@ class TestCoarseGraining(BaseTest):
         with pytest.raises(ValueError, match="bonding descriptors"):
             branched_path.backmap(fragments)
         compound = branched_path.backmap(fragments, validate=False)
-        assert not nx.is_connected(compound_graph(compound))
+        assert not nx.is_connected(compound.bond_graph)
 
     @pytest.mark.skipif(not has_rdkit, reason="rdkit is not installed")
     def test_backmap_template(self):
@@ -172,7 +161,7 @@ class TestCoarseGraining(BaseTest):
         )
         assert compound.n_particles == 37
         assert compound.n_bonds == 36
-        assert nx.is_connected(compound_graph(compound))
+        assert nx.is_connected(compound.bond_graph)
         for i, child in enumerate(compound.children):
             centroid = np.mean([p.pos for p in child.particles()], axis=0)
             assert np.linalg.norm(centroid - path.coordinates[i]) < 0.35
@@ -189,7 +178,7 @@ class TestCoarseGraining(BaseTest):
             },
             placement="template",
         )
-        assert nx.is_connected(compound_graph(compound))
+        assert nx.is_connected(compound.bond_graph)
         assert [c.name for c in compound.children] == list(branched_path.beads)
 
     @pytest.mark.skipif(not has_rdkit, reason="rdkit is not installed")
@@ -201,7 +190,7 @@ class TestCoarseGraining(BaseTest):
             "{#A=[$]C([$])C[$],#B=[$]CC[$]}",
             templates={"A": mb.load("CC", smiles=True)},
         )
-        assert nx.is_connected(compound_graph(compound))
+        assert nx.is_connected(compound.bond_graph)
 
     @pytest.mark.skipif(not has_rdkit, reason="rdkit is not installed")
     def test_backmap_template_mismatch(self):
@@ -236,7 +225,7 @@ class TestCoarseGraining(BaseTest):
             "{#PEO=[>]COC[<]}", templates={"PEO": tagged}, placement="template"
         )
         assert compound.n_particles == 30
-        assert nx.is_connected(compound_graph(compound))
+        assert nx.is_connected(compound.bond_graph)
         # the same reordered template without tags fails the order check
         with pytest.raises(ValueError, match="same order"):
             path.backmap(
@@ -287,7 +276,7 @@ class TestCoarseGraining(BaseTest):
         compound = path.backmap(templates={"PE": template})
         assert compound.n_particles == 26
         assert compound.n_bonds == 25
-        assert nx.is_connected(compound_graph(compound))
+        assert nx.is_connected(compound.bond_graph)
         # template coordinates are used for placement
         for i, child in enumerate(compound.children):
             centroid = np.mean([p.pos for p in child.particles()], axis=0)
@@ -302,7 +291,7 @@ class TestCoarseGraining(BaseTest):
             "B": mb.load("C{$}C{$}", smiles=True),
         }
         compound = branched_path.backmap(templates=templates)
-        assert nx.is_connected(compound_graph(compound))
+        assert nx.is_connected(compound.bond_graph)
         assert [c.name for c in compound.children] == list(branched_path.beads)
 
     @pytest.mark.skipif(not has_rdkit, reason="rdkit is not installed")
@@ -312,7 +301,7 @@ class TestCoarseGraining(BaseTest):
         path = straight_line(spacing=0.35, N=3, bead_name="PS")
         template = mb.load("C{>}C{<}(c1ccccc1)", smiles=True)
         compound = path.backmap(templates={"PS": template})
-        assert nx.is_connected(compound_graph(compound))
+        assert nx.is_connected(compound.bond_graph)
         carbons = sum(1 for p in compound.particles() if p.name == "C")
         assert carbons == 3 * 8
 
@@ -325,7 +314,7 @@ class TestCoarseGraining(BaseTest):
             "{#A=[$]C([$])C[$]}",
             templates={"B": mb.load("C{$}C{$}", smiles=True)},
         )
-        assert nx.is_connected(compound_graph(compound))
+        assert nx.is_connected(compound.bond_graph)
 
     @pytest.mark.skipif(not has_rdkit, reason="rdkit is not installed")
     def test_backmap_compound_defined_untagged(self):
@@ -352,7 +341,7 @@ class TestCoarseGraining(BaseTest):
         compound = path.backmap(
             "{#PE=[>]CC[<]}", templates={"PE": template}, placement="template"
         )
-        assert nx.is_connected(compound_graph(compound))
+        assert nx.is_connected(compound.bond_graph)
 
     def test_backmap_missing_fragment(self):
         path = straight_line(spacing=0.35, N=2, bead_name="PE")
@@ -424,7 +413,7 @@ class TestCoarseGraining(BaseTest):
         n_beads = sum(len(mol.children) for mol in compound.children)
         assert n_beads == len(multi_chain_path.coordinates)
         # one atomistic molecule per CG component
-        assert nx.number_connected_components(compound_graph(compound)) == 3
+        assert nx.number_connected_components(compound.bond_graph) == 3
         # bead compounds keep bead names, grouped by their own chain
         for mol, component in zip(
             compound.children,
@@ -439,8 +428,6 @@ class TestCoarseGraining(BaseTest):
             assert [b.name for b in mol.children] == [
                 str(multi_chain_path.beads[i]) for i in component
             ]
-
-    # --- CG Compound input -------------------------------------------------
 
     @staticmethod
     def cg_compound_from_path(path):
@@ -699,7 +686,7 @@ class TestCoarseGraining(BaseTest):
         compound = path.backmap(templates={"A": frag})
         assert compound.n_particles == 26  # C8H18
         assert compound.n_bonds == 25
-        assert nx.is_connected(compound_graph(compound))
+        assert nx.is_connected(compound.bond_graph)
 
     def test_backmap_bead_to_dimer_to_water(self):
         # multi-resolution to a molecule: each W bead resolves to a two-bead
@@ -715,7 +702,7 @@ class TestCoarseGraining(BaseTest):
         names = sorted(p.name for p in water.particles())
         assert names.count("O") == 5 and names.count("H") == 10
         # the waters are separate molecules (the box beads are unbonded)
-        assert nx.number_connected_components(compound_graph(water)) == 5
+        assert nx.number_connected_components(water.bond_graph) == 5
 
     def test_backmap_cg_chain_refine_then_atomistic(self):
         # a CG chain of 4 E2 beads refines to 8 E beads (CG endpoint), then
@@ -728,7 +715,7 @@ class TestCoarseGraining(BaseTest):
         assert cg_chain.n_bonds == 7
         assert {p.name for p in cg_chain.particles()} == {"E"}
         assert all(p.element is None for p in cg_chain.particles())
-        assert nx.is_connected(compound_graph(cg_chain))
+        assert nx.is_connected(cg_chain.bond_graph)
 
         # CG -> CG -> atomistic in one multi-resolution call
         pe = path.backmap(["{#E2=[>][#E][#E][<]}", "{#E=[>]CC[<]}"])
@@ -736,7 +723,7 @@ class TestCoarseGraining(BaseTest):
         assert pe.n_bonds == 49
         names = [p.name for p in pe.particles()]
         assert names.count("C") == 16 and names.count("H") == 34
-        assert nx.is_connected(compound_graph(pe))
+        assert nx.is_connected(pe.bond_graph)
 
     def test_backmap_cg_chain_direct_to_atomistic(self):
         # the same polyethylene chain reached directly: each E2 bead resolves
@@ -746,7 +733,7 @@ class TestCoarseGraining(BaseTest):
         direct = path.backmap("{#E2=[>]CCCC[<]}")
         assert direct.n_particles == 50
         assert direct.n_bonds == 49
-        assert nx.is_connected(compound_graph(direct))
+        assert nx.is_connected(direct.bond_graph)
 
         # the direct and refined routes give the same atomistic chain
         refined = path.backmap(["{#E2=[>][#E][#E][<]}", "{#E=[>]CC[<]}"])
