@@ -132,7 +132,9 @@ def resolve(
     )
 
 
-def _resolve_graph(cg_graph, fragments, legacy, check_bonding, templates, all_atom=True):
+def _resolve_graph(
+    cg_graph, fragments, legacy, check_bonding, templates, all_atom=True
+):
     """Resolve a prebuilt CG meta graph. See ``resolve``."""
     import re
 
