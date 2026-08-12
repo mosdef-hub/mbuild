@@ -10,8 +10,8 @@ import logging
 
 import numpy as np
 
-from mbuild.utils.io import import_
 from mbuild.utils.geometry import kabsch
+from mbuild.utils.io import import_
 
 logger = logging.getLogger(__name__)
 
