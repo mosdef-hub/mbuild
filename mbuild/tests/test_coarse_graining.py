@@ -216,7 +216,6 @@ class TestCoarseGraining(BaseTest):
             )
 
     def test_backmap_cg_endpoint_beads_named_for_elements(self):
-
         # sub-beads named "B" and "C" read as element symbols; the [#name]
         # syntax in the string must still win the all_atom inference
         template = mb.Compound(name="BC")
