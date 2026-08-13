@@ -12,7 +12,7 @@ from scipy.interpolate import interp1d
 from mbuild import Box, Compound
 from mbuild.exceptions import PathConvergenceError
 from mbuild.path.constraints import CuboidConstraint, CylinderConstraint
-from mbuild.path.namers import BeadNamer
+from mbuild.path.namers import BEAD_NAME_DTYPE, BeadNamer
 from mbuild.path.path_utils import (
     check_path,
     random_coordinate,
@@ -44,8 +44,8 @@ class Path:
         multiple `Path` instances to build heterogeneous systems.
         If an array of bead names is passed, it should be the same length
         as ``coordinates`` or the number of nodes in ``bond_graph``
-        The array will be cast to a "U10" data type, so bead names
-        should not exceed 10 characters.
+        The array will be cast to BEAD_NAME_DTYPE, so bead names
+        should not exceed MAX_BEAD_NAME_LENGTH characters.
 
     """
 
@@ -67,14 +67,14 @@ class Path:
             )
             self.bond_graph = bond_graph
             self.coordinates = coordinates
-            self.beads = bead_name.astype("U10")
+            self.beads = bead_name.astype(BEAD_NAME_DTYPE)
         # Passing in an array of coordinates, bond graph, and single bead name
         elif coordinates is not None and bond_graph is not None:
             assert len(coordinates) == len(bond_graph)
             self.bond_graph = bond_graph
             self.coordinates = coordinates
             self.beads = np.array(
-                [str(bead_name) for _ in range(len(coordinates))], dtype="U10"
+                [str(bead_name) for _ in range(len(coordinates))], dtype=BEAD_NAME_DTYPE
             )
         # Only passing in a bond graph with data defined for xyz and name
         # TODO: Cast to fp32 here?
@@ -85,24 +85,26 @@ class Path:
             )
             self.beads = np.array(
                 [node.get("name") for node in bond_graph.nodes(data=True)]
-            ).astype("U10")
+            ).astype(BEAD_NAME_DTYPE)
         # Only passing in coordinates, need to create bond graph object.
         elif coordinates is not None and bond_graph is None:
             self.coordinates = np.asarray(coordinates)
             self.bond_graph = nx.Graph()
             # Only passed a single string for bead name, create array
             if isinstance(bead_name, str):
-                self.beads = np.array([bead_name for _ in coordinates], dtype="U10")
-            # Passed array of bead names, cast to U10 dtype
+                self.beads = np.array(
+                    [bead_name for _ in coordinates], dtype=BEAD_NAME_DTYPE
+                )
+            # Passed array of bead names, cast to the bead name dtype
             elif isinstance(bead_name, np.ndarray):
-                self.beads = bead_name.astype("U10")
+                self.beads = bead_name.astype(BEAD_NAME_DTYPE)
             for idx in range(len((self.coordinates))):
                 self.bond_graph.add_node(idx)
         # Nothing is defined, create empty place holders for coords, bond graph and bead names
         else:
             self.coordinates = np.array([], dtype=np.float32)
             self.bond_graph = nx.Graph()
-            self.beads = np.array([], dtype="U10")
+            self.beads = np.array([], dtype=BEAD_NAME_DTYPE)
 
     def __eq__(self, other):
         return (
@@ -175,7 +177,7 @@ class Path:
             points = np.array([points])  # make a 2d array
         # Create sequence of bead names
         if isinstance(bead_names, str):
-            bead_names = np.array([bead_names] * len(points), dtype="U10")
+            bead_names = np.array([bead_names] * len(points), dtype=BEAD_NAME_DTYPE)
 
         if self.coordinates.size == 0:
             self.coordinates = points
@@ -191,13 +193,13 @@ class Path:
         """Create new coordinate and bead name place holders for setting values."""
         if self.coordinates.size == 0:
             self.coordinates = np.zeros((N, 3), dtype=np.float32)
-            self.beads = np.zeros(N, dtype="U10")  # Place holder is empty str
+            self.beads = np.zeros(N, dtype=BEAD_NAME_DTYPE)  # Place holder is empty str
             return
         # Update coordinates array
         zeros = np.zeros((N, 3), dtype=self.coordinates.dtype)
         self.coordinates = np.concatenate([self.coordinates, zeros])
         # Update bead names array
-        empty = np.zeros(N, dtype="U10")
+        empty = np.zeros(N, dtype=BEAD_NAME_DTYPE)
         self.beads = np.concatenate([self.beads, empty])
 
     def _extend_bond_graph(self):
@@ -322,6 +324,82 @@ class Path:
                 compounds[edge1], compounds[edge2], bond_order=1.0
             )
         return compound
+
+    def to_cgsmiles_graph(self, fragname_map=None):
+        """Convert this path's bond graph to a CGsmiles-compatible meta graph.
+
+        Parameters
+        ----------
+        fragname_map : dict[str, str], optional
+            Mapping of bead names to CGsmiles fragment names. Bead names not
+            present in the map are used as fragment names directly. Useful
+            when path bead names differ from the fragment
+            names used in the CGsmiles fragment string.
+
+        Returns
+        -------
+        networkx.Graph
+            Meta graph usable with ``cgsmiles.MoleculeResolver``.
+
+        See ``mbuild.coarse_graining.to_cgsmiles_graph``.
+        """
+        from mbuild.coarse_graining import to_cgsmiles_graph
+
+        return to_cgsmiles_graph(self, fragname_map=fragname_map)
+
+    def to_cgsmiles(self, fragname_map=None):
+        """Write the coarse-grained level of this Path as a CGsmiles string.
+
+        The returned string describes the bead sequence and connectivity
+        (including branches and rings) at the coarse-grained level.
+        Append fragment definitions (e.g. ``"{#A=[>]CC[<]}"``)
+        to obtain a fully resolvable CGsmiles string.
+
+        Parameters
+        ----------
+        fragname_map : dict[str, str], optional
+            Mapping of bead names to CGsmiles fragment names. Bead names not
+            present in the map are used as fragment names directly. Useful
+            when path bead names differ from the fragment
+            names used in the CGsmiles fragment string.
+
+        Returns
+        -------
+        str
+            The CGsmiles graph string, e.g. ``"{[#A][#A]([#B][#B])[#A]}"``.
+            Paths holding multiple disconnected molecules (e.g. a box of
+            chains) are written as ``.``-separated segments, which CGsmiles
+            reads as zero-order (non-bonded) connections.
+
+        See ``mbuild.coarse_graining.to_cgsmiles``.
+        """
+        from mbuild.coarse_graining import to_cgsmiles
+
+        return to_cgsmiles(self, fragname_map=fragname_map)
+
+    def backmap(self, fragments=None, **kwargs):
+        """Backmap the path to an atomistic Compound using CGsmiles.
+
+        Resolves each bead to molecular detail and returns an atomistic
+        ``mbuild.Compound`` that retains the path's conformation. Works
+        for any bond graph topology, including branch points. Fragments
+        are defined by CGsmiles fragment strings (SMILES with bonding
+        descriptors), by tagged mBuild compounds passed via
+        ``templates``, or a mix of both.
+
+        See ``mbuild.coarse_graining.backmap`` for parameters.
+
+        Example
+        -------
+        >>> path = straight_line(spacing=0.25, N=10, bead_name="PEO")
+        >>> compound = path.backmap("{#PEO=[>]COC[<]}")
+        >>> # or, defining the fragment with a tagged compound instead
+        >>> template = mb.load("C{>}O{ }C{<}", smiles=True)  # doctest: +SKIP
+        >>> compound = path.backmap(templates={"PEO": template})  # doctest: +SKIP
+        """
+        from mbuild.coarse_graining import backmap
+
+        return backmap(self, fragments, **kwargs)
 
     def to_mol2(self):
         """Convert a path to a .mol2 file."""
@@ -693,7 +771,9 @@ def lamellar(
     start_index = len(path.coordinates)
     stop_index = start_index + len(coordinates)
     namer = BeadNamer.coerce(bead_name)
-    names = np.array([next(namer) for _ in range(len(coordinates))], dtype="U10")
+    names = np.array(
+        [next(namer) for _ in range(len(coordinates))], dtype=BEAD_NAME_DTYPE
+    )
     path.append_coordinates(coordinates, names)
     path._connect_edges(
         connectivity="linear", indices=np.arange(start_index, stop_index)
@@ -727,7 +807,9 @@ def straight_line(spacing, N, path=None, direction=(1, 0, 0), bead_name="_A"):
     start_index = len(path.coordinates)
     stop_index = start_index + N
     namer = BeadNamer.coerce(bead_name)
-    names = np.array([next(namer) for _ in range(len(coordinates))], dtype="U10")
+    names = np.array(
+        [next(namer) for _ in range(len(coordinates))], dtype=BEAD_NAME_DTYPE
+    )
     path.append_coordinates(coordinates, names)
     path._connect_edges(
         connectivity="linear", indices=np.arange(start_index, stop_index)
@@ -781,7 +863,9 @@ def cyclic(spacing=None, N=None, path=None, radius=None, closed=True, bead_name=
     start_index = len(path.coordinates)
     stop_index = start_index + len(coordinates)
     namer = BeadNamer.coerce(bead_name)
-    names = np.array([next(namer) for _ in range(len(coordinates))], dtype="U10")
+    names = np.array(
+        [next(namer) for _ in range(len(coordinates))], dtype=BEAD_NAME_DTYPE
+    )
     path.append_coordinates(coordinates, names)
     if closed:
         path._connect_edges(
@@ -864,7 +948,9 @@ def knot(spacing, N, m, path=None, closed=True, bead_name="_A"):
     start_index = len(path.coordinates)
     stop_index = start_index + len(coordinates)
     namer = BeadNamer.coerce(bead_name)
-    names = np.array([next(namer) for _ in range(len(coordinates))], dtype="U10")
+    names = np.array(
+        [next(namer) for _ in range(len(coordinates))], dtype=BEAD_NAME_DTYPE
+    )
     path.append_coordinates(coordinates, names)
     if closed:
         path._connect_edges(
@@ -921,7 +1007,9 @@ def helix(
     start_index = len(path.coordinates)
     stop_index = start_index + len(coordinates)
     namer = BeadNamer.coerce(bead_name)
-    names = np.array([next(namer) for _ in range(len(coordinates))], dtype="U10")
+    names = np.array(
+        [next(namer) for _ in range(len(coordinates))], dtype=BEAD_NAME_DTYPE
+    )
     path.append_coordinates(coordinates, names)
     path._connect_edges(
         connectivity="linear", indices=np.arange(start_index, stop_index)
@@ -969,7 +1057,9 @@ def spiral_2D(N, a, b, spacing, path=None, bead_name="_A"):
     start_index = len(path.coordinates)
     stop_index = start_index + len(coordinates)
     namer = BeadNamer.coerce(bead_name)
-    names = np.array([next(namer) for _ in range(len(coordinates))], dtype="U10")
+    names = np.array(
+        [next(namer) for _ in range(len(coordinates))], dtype=BEAD_NAME_DTYPE
+    )
     path.append_coordinates(coordinates, names)
     path._connect_edges(
         connectivity="linear", indices=np.arange(start_index, stop_index)
@@ -1056,7 +1146,9 @@ def zigzag(
     start_index = len(path.coordinates)
     stop_index = start_index + len(coordinates)
     namer = BeadNamer.coerce(bead_name)
-    names = np.array([next(namer) for _ in range(len(coordinates))], dtype="U10")
+    names = np.array(
+        [next(namer) for _ in range(len(coordinates))], dtype=BEAD_NAME_DTYPE
+    )
     path.append_coordinates(coordinates, names)
     path._connect_edges(
         connectivity="linear", indices=np.arange(start_index, stop_index)
@@ -1122,7 +1214,6 @@ def hard_sphere_random_walk(
         Will be used to connect the bond_graph of the walk post generation based on a specified method.
         See path._connect_edges for different options.
     initial_point : array-like or int, optional
-        Used as the coordinate for the first site in this random walk path. If an integer is
         Used as the coordinate for the first site in this random walk path. If an integer is
         passed, look in coordinates of passed path object, and grab the starting coordinates from there.
     seed : int, default = 42
@@ -1221,14 +1312,14 @@ def hard_sphere_random_walk(
             axis=0,
         )
         beads = np.concatenate(
-            (path.beads, np.zeros(chunk_size, dtype="U10")),
+            (path.beads, np.zeros(chunk_size, dtype=BEAD_NAME_DTYPE)),
             axis=0,
         )
         state.count = len(path.coordinates)  # starting index
     # The path used for this RW doesn't have previous sites
     else:
         coordinates = np.zeros((chunk_size, 3), dtype=np.float32)
-        beads = np.zeros(chunk_size, dtype="U10")
+        beads = np.zeros(chunk_size, dtype=BEAD_NAME_DTYPE)
         state.count = 0
 
     state.init_count = state.count
@@ -1391,6 +1482,46 @@ def hard_sphere_random_walk(
     return path
 
 
+def _normalize_initial_point(initial_point):
+    """Resolve a user given initial_point into a value and what it means.
+
+    An initial point is either a coordinate to start the walk at, or an index
+    of a site in an existing path to start the walk from. A sequence of 3
+    values is a coordinate. Any single integer is an index, including numpy
+    integer scalars and single element integer arrays such as ``np.int64(4)``,
+    ``np.array(4)`` and ``np.array([4])``. Indices are returned as python ints.
+
+    Parameters
+    ----------
+    initial_point : array-like, int or None
+        The initial_point argument given to a random walk.
+
+    Returns
+    -------
+    value : np.ndarray of shape (3,), int or None
+        The coordinate, the site index, or None if no initial point was given.
+    starting_from_site : bool
+        True when value is an index of a site in an existing path.
+
+    Raises
+    ------
+    ValueError
+        If initial_point is neither a 3 coordinate array nor an integer index.
+    """
+    if initial_point is None:
+        return None, False
+    point = np.asarray(initial_point)
+    if point.ndim == 1 and point.size == 3:
+        return point, False
+    if point.size == 1 and np.issubdtype(point.dtype, np.integer):
+        return point.item(), True
+    raise ValueError(
+        f"Unsupported initial_point {initial_point!r}. Pass either an "
+        "array-like of 3 coordinates, or an integer index of a site in the "
+        "coordinates of an existing path."
+    )
+
+
 class RandomWalkState:
     """Tracks state and configuration for a hard_sphere_random_walk.
 
@@ -1415,8 +1546,11 @@ class RandomWalkState:
         Total number of attempted moves
     start_time : float
         Time when the random walk started (for WallTime terminator)
-    initial_point : np.ndarray or None
-        Specified initial coordinate
+    initial_point : np.ndarray, int or None
+        Specified initial coordinate, or the index of the site in an existing
+        path that this walk starts from
+    starting_from_site : bool
+        True when initial_point is an index of a site in an existing path
     include_compound : mbuild.compound.Compound, default None
         If an mBuild Compound is given, the random walk with include its coordinates
         when checking for overlapping sites.
@@ -1481,13 +1615,16 @@ class RandomWalkState:
             )
         # Pass in a dict with supported kwargs
         elif isinstance(angles_sampler, dict):
-            if angles_sampler.get("loc") and angles_sampler.get("scale"):
+            if "loc" in angles_sampler and "scale" in angles_sampler:
                 self.angles = AnglesSampler("normal", angles_sampler, rng=self.rng)
-            elif angles_sampler.get("low") and angles_sampler.get("high"):
+            elif "low" in angles_sampler and "high" in angles_sampler:
                 self.angles = AnglesSampler("uniform", angles_sampler, rng=self.rng)
             else:
                 raise ValueError(
-                    f"kwargs {dict} cannot be used to create an AnglesSampler."
+                    f"kwargs {angles_sampler} cannot be used to create an "
+                    "AnglesSampler. Pass either {'loc': mean, 'scale': std} for "
+                    "a normal distribution, or {'low': min, 'high': max} for a "
+                    "uniform distribution."
                 )
         # Pass in an array of choices
         elif isinstance(angles_sampler, np.ndarray):
@@ -1510,10 +1647,9 @@ class RandomWalkState:
                 "See mbuild.path.points.AnglesSampler."
             )
         self.bead_name = bead_name
-        if hasattr(initial_point, "__len__") and len(initial_point) == 3:
-            self.initial_point = np.asarray(initial_point)
-        else:
-            self.initial_point = initial_point
+        self.initial_point, self.starting_from_site = _normalize_initial_point(
+            initial_point
+        )
         self.previous_count = previous_count
         self.include_compound = include_compound
         self.connectivity = connectivity
@@ -1568,9 +1704,8 @@ class RandomWalkState:
             if self.bias:
                 self.bias._clean()
             path._extend_bond_graph()
-            if isinstance(
-                self.initial_point, int
-            ):  # make sure to build from previous point instead of last point
+            if self.starting_from_site:
+                # build from the given site instead of the last point
                 path._connect_edges(
                     self.connectivity,
                     np.arange(self.previous_count, self.count),

@@ -64,10 +64,14 @@ def visualize_path(path, radius=0.1, hide_periodic_bonds=False):
 
     data = to_mol3000(path=path, G=G)
     view = py3Dmol.view(data=data)
+    # Select atoms by index rather than by element name. 3Dmol.js normalizes
+    # the SDF atom symbol to a 1-2 char element (e.g. "PEO" -> "Pe"), so an
+    # {"elem": name} selector only matches single/double-char bead names.
     for i, name in enumerate(unique_names):
         color = colors[i % len(colors)]
+        indices = [int(idx) for idx, bead in enumerate(path.beads) if bead == name]
         view.addStyle(
-            {"elem": name.strip("_")},  # Select all atoms with this name
+            {"index": indices},  # Select all atoms with this bead name
             {
                 "sphere": {"color": color, "radius": radius, "scale": 0.5},
                 "stick": {"radius": radius / 4, "color": "grey"},
