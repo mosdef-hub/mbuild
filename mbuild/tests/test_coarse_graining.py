@@ -2,6 +2,7 @@ import networkx as nx
 import numpy as np
 import pytest
 
+import mbuild as mb
 from mbuild.path.build import (
     Path,
     hard_sphere_random_walk,
@@ -133,7 +134,6 @@ class TestCoarseGraining(BaseTest):
             assert particle.element.symbol == particle.name
 
     def test_backmap_unknown_template_name(self):
-        import mbuild as mb
 
         path = straight_line(spacing=0.35, N=2, bead_name="PE")
         # "PEO" names neither a bead nor a fragment of the string
@@ -143,7 +143,6 @@ class TestCoarseGraining(BaseTest):
             )
 
     def test_backmap_template_name_from_fragname_map(self):
-        import mbuild as mb
 
         # templates are keyed by fragment name, not the original bead name
         path = straight_line(spacing=0.35, N=3)  # default bead name "_A"
@@ -164,7 +163,6 @@ class TestCoarseGraining(BaseTest):
 
     @pytest.mark.skipif(not has_rdkit, reason="rdkit is not installed")
     def test_backmap_template(self):
-        import mbuild as mb
 
         path = straight_line(spacing=0.35, N=5, bead_name="PEO")
         template = mb.load("COC", smiles=True)
@@ -181,7 +179,6 @@ class TestCoarseGraining(BaseTest):
 
     @pytest.mark.skipif(not has_rdkit, reason="rdkit is not installed")
     def test_backmap_template_branched(self, branched_path):
-        import mbuild as mb
 
         compound = branched_path.backmap(
             "{#A=[$]C([$])C[$],#B=[$]CC[$]}",
@@ -195,7 +192,6 @@ class TestCoarseGraining(BaseTest):
 
     @pytest.mark.skipif(not has_rdkit, reason="rdkit is not installed")
     def test_backmap_template_partial(self, branched_path):
-        import mbuild as mb
 
         # A beads use the template, B beads fall back to rdkit embedding
         compound = branched_path.backmap(
@@ -206,7 +202,6 @@ class TestCoarseGraining(BaseTest):
 
     @pytest.mark.skipif(not has_rdkit, reason="rdkit is not installed")
     def test_backmap_template_mismatch(self):
-        import mbuild as mb
 
         path = straight_line(spacing=0.35, N=3, bead_name="PEO")
         # wrong heavy atom count: template CC vs fragment COC
@@ -220,6 +215,24 @@ class TestCoarseGraining(BaseTest):
                 "{#PEO=[>]COC[<]}", templates={"PEO": mb.load("CCO", smiles=True)}
             )
 
+    def test_backmap_cg_endpoint_beads_named_for_elements(self):
+
+        # sub-beads named "B" and "C" read as element symbols; the [#name]
+        # syntax in the string must still win the all_atom inference
+        template = mb.Compound(name="BC")
+        sub_beads = [
+            mb.Compound(name=n, pos=[x, 0, 0]) for n, x in (("B", -0.1), ("C", 0.1))
+        ]
+        template.add(sub_beads)
+        template.add_bond(sub_beads)
+
+        path = straight_line(spacing=0.5, N=3, bead_name="BC")
+        compound = path.backmap("{#BC=[>][#B][#C][<]}", templates={"BC": template})
+        assert compound.n_particles == 6
+        assert [p.name for p in compound.particles()] == ["B", "C"] * 3
+        assert all(p.element is None for p in compound.particles())
+        assert nx.is_connected(compound.bond_graph)
+
     def test_backmap_cg_endpoint_requires_template(self):
         # a coarse-grained endpoint has no atomistic detail to embed, so
         # a fragment without a template cannot be placed
@@ -229,7 +242,6 @@ class TestCoarseGraining(BaseTest):
 
     @pytest.mark.skipif(not has_rdkit, reason="rdkit is not installed")
     def test_backmap_template_tagged(self):
-        import mbuild as mb
 
         path = straight_line(spacing=0.35, N=4, bead_name="PEO")
         # template SMILES written in a different atom order than the
@@ -247,7 +259,6 @@ class TestCoarseGraining(BaseTest):
 
     @pytest.mark.skipif(not has_rdkit, reason="rdkit is not installed")
     def test_backmap_template_bad_tags(self):
-        import mbuild as mb
 
         path = straight_line(spacing=0.35, N=3, bead_name="PEO")
         with pytest.raises(ValueError, match="all heavy atoms or none"):
@@ -263,7 +274,6 @@ class TestCoarseGraining(BaseTest):
 
     @pytest.mark.skipif(not has_rdkit, reason="rdkit is not installed")
     def test_compound_to_fragment_graph(self):
-        import mbuild as mb
         from mbuild.coarse_graining import compound_to_fragment_graph
 
         template = mb.load("C{<}C{>,$br}", smiles=True)
@@ -278,7 +288,6 @@ class TestCoarseGraining(BaseTest):
 
     @pytest.mark.skipif(not has_rdkit, reason="rdkit is not installed")
     def test_backmap_compound_defined_fragment(self):
-        import mbuild as mb
 
         # no CGsmiles fragment string at all: the tagged compound
         # defines the fragment (equivalent to "{#PE=[<]CC[>]}")
@@ -295,7 +304,6 @@ class TestCoarseGraining(BaseTest):
 
     @pytest.mark.skipif(not has_rdkit, reason="rdkit is not installed")
     def test_backmap_compound_defined_branched(self, branched_path):
-        import mbuild as mb
 
         templates = {
             "A": mb.load("C{$,$}C{$}", smiles=True),
@@ -307,7 +315,6 @@ class TestCoarseGraining(BaseTest):
 
     @pytest.mark.skipif(not has_rdkit, reason="rdkit is not installed")
     def test_backmap_compound_defined_aromatic(self):
-        import mbuild as mb
 
         path = straight_line(spacing=0.35, N=3, bead_name="PS")
         template = mb.load("C{>}C{<}(c1ccccc1)", smiles=True)
@@ -318,7 +325,6 @@ class TestCoarseGraining(BaseTest):
 
     @pytest.mark.skipif(not has_rdkit, reason="rdkit is not installed")
     def test_backmap_mixed_string_and_compound_definitions(self, branched_path):
-        import mbuild as mb
 
         # A defined by the string, B defined by a tagged compound
         compound = branched_path.backmap(
@@ -329,7 +335,6 @@ class TestCoarseGraining(BaseTest):
 
     @pytest.mark.skipif(not has_rdkit, reason="rdkit is not installed")
     def test_backmap_compound_defined_untagged(self):
-        import mbuild as mb
 
         # a compound-defined fragment without descriptor tags cannot
         # bond to its neighbors; validation reports the unrealized bonds
@@ -344,7 +349,6 @@ class TestCoarseGraining(BaseTest):
 
     @pytest.mark.skipif(not has_rdkit, reason="rdkit is not installed")
     def test_backmap_template_non_integer_tags_ignored(self):
-        import mbuild as mb
 
         path = straight_line(spacing=0.35, N=3, bead_name="PE")
         # head/tail tags from the Polymer workflow fall back to order matching
@@ -441,7 +445,6 @@ class TestCoarseGraining(BaseTest):
     @staticmethod
     def cg_compound_from_path(path):
         """Build a CG Compound with one leaf particle per path bead."""
-        import mbuild as mb
 
         compound = mb.Compound(name="CG")
         beads = [
@@ -488,7 +491,6 @@ class TestCoarseGraining(BaseTest):
         assert np.allclose(via_compound.xyz, via_path.xyz)
 
     def test_backmap_cg_compound_fragname_map(self):
-        import mbuild as mb
 
         path = straight_line(spacing=0.35, N=4)  # default bead name "_A"
         cg_compound = self.cg_compound_from_path(path)
@@ -509,7 +511,6 @@ class TestCoarseGraining(BaseTest):
 
     def test_to_cgsmiles_graph_single_particle(self):
         # a childless Compound is itself a particle -> a one-bead graph
-        import mbuild as mb
         from mbuild.coarse_graining import to_cgsmiles_graph
 
         graph = to_cgsmiles_graph(mb.Compound(name="A", pos=[1.0, 2.0, 3.0]))
@@ -555,7 +556,6 @@ class TestCoarseGraining(BaseTest):
         assert np.allclose(cg_path.coordinates, branched_path.coordinates, atol=0.01)
 
     def test_coarse_grain_multi_molecule(self):
-        import mbuild as mb
 
         water = mb.load("O", smiles=True)
         box = mb.Compound()
@@ -584,7 +584,6 @@ class TestCoarseGraining(BaseTest):
             compound.coarse_grain(beads=["NotABead"])
 
     def test_coarse_grain_explicit_mapping(self):
-        import mbuild as mb
 
         ethane = mb.load("CC", smiles=True)
         carbons = [p for p in ethane.particles() if p.name == "C"]
@@ -619,7 +618,6 @@ class TestCoarseGraining(BaseTest):
 
     @pytest.mark.skipif(not has_rdkit, reason="rdkit is not installed")
     def test_coarse_grain_template_fragment(self):
-        import mbuild as mb
 
         path = straight_line(spacing=0.35, N=4, bead_name="PEO")
         compound = path.backmap("{#PEO=[>]COC[<]}")
@@ -672,7 +670,6 @@ class TestCoarseGraining(BaseTest):
         # a template built by hand (no SMILES): descriptor tags set via the
         # particle_tag attribute, bonds added with add_bond (which stores
         # bond_order=0.0 -> must be read as an unspecified single bond)
-        import mbuild as mb
         from mbuild.coarse_graining import compound_to_fragment_graph
 
         frag = mb.Compound(name="Dimer")
@@ -701,7 +698,6 @@ class TestCoarseGraining(BaseTest):
         # multi-resolution to a molecule: each W bead resolves to a two-bead
         # dimer (CG), then to a water molecule (all-atom). The last block is
         # SMILES, so an all-atom endpoint is inferred.
-        import mbuild as mb
 
         box = mb.fill_box(compound=mb.Compound(name="W"), n_compounds=5, box=[3, 3, 3])
         water = box.backmap(["{#W=[#HH][#OH]}", "{#HH=[$][H],#OH=[$]O}"])
@@ -716,7 +712,6 @@ class TestCoarseGraining(BaseTest):
     def test_backmap_cg_chain_refine_then_atomistic(self):
         # a CG chain of 4 E2 beads refines to 8 E beads (CG endpoint), then
         # all the way to an atomistic polyethylene chain of 8 CC units.
-        import mbuild as mb
 
         path = straight_line(spacing=0.5, N=4, bead_name="E2")
 
@@ -762,7 +757,6 @@ class TestCoarseGraining(BaseTest):
         assert direct.n_bonds == refined.n_bonds
 
     def test_coarse_grain_zero_mass_raises(self):
-        import mbuild as mb
 
         chain = mb.Compound(name="CG")
         beads = [mb.Compound(name="A", pos=[0.3 * i, 0, 0]) for i in range(3)]

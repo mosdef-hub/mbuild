@@ -146,8 +146,6 @@ def _resolve_graph(
         )
     if isinstance(fragments, str):
         fragments = [fragments]
-    if templates:
-        _validate_template_names(cg_graph, fragments, templates)
 
     if fragments:
         elements = re.findall(r"\{[^\}]+\}", ".".join(fragments))
@@ -168,6 +166,9 @@ def _resolve_graph(
         )
     else:
         fragment_dicts = [{}]
+
+    if templates:
+        _validate_template_names(cg_graph, fragments, fragment_dicts, templates)
 
     # compounds define any fragments the strings left undefined at the
     # final resolution
@@ -468,7 +469,7 @@ def _validate_connectivity(cg_graph, molecule, node_to_beads):
         )
 
 
-def _validate_template_names(cg_graph, fragments, templates):
+def _validate_template_names(cg_graph, fragments, fragment_dicts, templates):
     """Check that every ``templates`` key names a fragment of this system.
 
     Valid keys are the fragment names of the system's beads and any
@@ -479,10 +480,12 @@ def _validate_template_names(cg_graph, fragments, templates):
     import re
 
     known = set(nx.get_node_attributes(cg_graph, "fragname").values())
+    # defined names come from the parsed fragments; '#' is also the SMILES
+    # triple bond, so the string itself cannot be scanned for them
+    for fragment_dict in fragment_dicts:
+        known.update(fragment_dict)
     if fragments:
-        joined = ".".join(fragments)
-        known.update(re.findall(r"\[#([^\]]+)\]", joined))
-        known.update(name.strip() for name in re.findall(r"#([^=,{}]+)=", joined))
+        known.update(re.findall(r"\[#([^\]]+)\]", ".".join(fragments)))
 
     unknown = sorted(name for name in templates if name not in known)
     if unknown:
@@ -516,29 +519,26 @@ def _looks_atomistic(compound):
 def _infer_all_atom(fragments, templates):
     """Guess whether the final resolution is atomistic.
 
-    Returns False (a coarse-grained endpoint) only when the final
-    resolution is unambiguously coarse-grained: the last fragment string
-    uses CGsmiles node syntax (``[#name]``) and every template compound
-    is itself coarse-grained (see ``_looks_atomistic``). Any atomistic
-    signal, or the absence of both fragments and templates, yields
-    ``True`` so existing all-atom behavior is preserved. Ambiguous cases
-    (e.g. a coarse-grained bead named for an element) should pass
-    ``all_atom`` explicitly.
+    A fragment string decides on its own: its last block is
+    coarse-grained when it enumerates sub-beads as ``[#name]``, which is
+    not valid SMILES and so cannot appear in an atomistic fragment.
+    Templates are consulted only when no fragment string is given, and
+    the endpoint is then coarse-grained only if every template is (see
+    ``_looks_atomistic``). With neither, returns ``True``.
+
+    A template of coarse-grained beads all named for elements (e.g.
+    ``B``, ``C``) is indistinguishable from an atomistic fragment; pass
+    ``all_atom`` explicitly for those.
     """
     import re
 
-    signals = []
     if fragments:
         strings = [fragments] if isinstance(fragments, str) else list(fragments)
         # the final resolution is the last {...} block, whether the caller
         # passed one dotted string or a list of per-resolution strings
         blocks = re.findall(r"\{[^\}]+\}", ".".join(strings))
         if blocks:
-            # CG fragment blocks enumerate sub-beads as [#name] tokens
-            signals.append("[#" not in blocks[-1])
+            return "[#" not in blocks[-1]
     if templates:
-        for compound in templates.values():
-            signals.append(_looks_atomistic(compound))
-    if not signals:
-        return True
-    return any(signals)
+        return any(_looks_atomistic(compound) for compound in templates.values())
+    return True
