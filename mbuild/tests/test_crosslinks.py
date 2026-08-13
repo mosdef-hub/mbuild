@@ -392,10 +392,10 @@ class TestCrosslink(BaseTest):
 
         coords = np.array(
             [
-                [near_face, 0.0, 0.0], 
-                [-near_face, 0.0, 0.0],  
-                [near_face, sep, 0.0], 
-                [-near_face, sep, 0.0],  
+                [near_face, 0.0, 0.0],
+                [-near_face, 0.0, 0.0],
+                [near_face, sep, 0.0],
+                [-near_face, sep, 0.0],
             ],
             dtype=np.float32,
         )
