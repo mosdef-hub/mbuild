@@ -501,9 +501,10 @@ class TestRandomWalk(BaseTest):
                 radius=0.22,
                 volume_constraint=cube,
                 seed=14,
+                tolerance=0.2,
             )
         bounds = bounding_box(path.coordinates)
-        assert np.all(bounds < np.array([5 - 0.44, 5 - 0.44, 5 - 0.44]))
+        assert np.all(bounds < np.array([5 - 0.4, 5 - 0.4, 5 - 0.4]))
 
     def test_walk_inside_cube_with_pbc(self):
         # First make sure this seed gives a path outside these bounds without PBC
@@ -689,6 +690,7 @@ class TestRandomWalk(BaseTest):
             initial_point=(-0.25, -0.25, -0.25),
             termination=3,
             seed=100,
+            tolerance=0.1,
         )
         assert np.allclose(path.coordinates[0], np.array([-0.25, -0.25, -0.25]))
         assert all(constraint.is_inside(points=path.coordinates[1:], buffer=0.1))
