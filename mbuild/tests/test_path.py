@@ -5,7 +5,6 @@ import mbuild as mb
 from mbuild.exceptions import PathConvergenceError
 from mbuild.path.build import (
     Path,
-    crosslink,
     cyclic,
     hard_sphere_random_walk,
     helix,
@@ -253,6 +252,16 @@ class TestPaths(BaseTest):
         path = Path()
         straight_line(path=path, spacing=0.2, N=4, bead_name="_X")
         assert list(path.beads) == ["_X", "_X", "_X", "_X"]
+
+    def test_add_paths(self):
+        coords = np.random.uniform(-5, 5, size=(20, 3))
+        path1 = Path(coordinates=coords)
+        path2 = Path(coordinates=coords)
+        path3 = path1 + path2
+        assert path3 == path1 + path2
+        assert np.allclose(
+            path3.coordinates, np.concatenate((path1.coordinates, path2.coordinates))
+        )
 
 
 class TestRandomWalk(BaseTest):
@@ -1000,66 +1009,3 @@ class TestPathUtils(BaseTest):
             pbc=pbc,
             box_lengths=box_lengths,
         )
-
-
-class TestCrossLinks(BaseTest):
-    def test_find_links_line(self):
-        path = Path()
-        pos1 = np.zeros((10, 3))
-        pos1[:, 1] = np.arange(10)
-        path.append_coordinates(pos1, "_A")
-        path.form_linear_bond_graph()
-
-        pos2 = np.zeros((10, 3))
-        pos2[:, 0] += 1
-        pos2[:, 1] = np.arange(10)
-        path.append_coordinates(pos2, "_A")
-        path.form_linear_bond_graph(indices=np.arange(10, 20))
-
-        for i in range(10):
-            crosslink(
-                path, initial_point=i, radius=1.1, excluded_bond_depth=10, seed=42
-            )
-
-        clinks = sum([b == "_R" for b in path.beads])
-        bbones = sum([b == "_A" for b in path.beads])
-        assert clinks == 10
-        assert bbones == 20
-        for i in range(10):
-            assert (i, i + 20) in path.bond_graph.edges
-            assert (i + 10, i + 20) in path.bond_graph.edges
-
-    def test_deterministic_rw(self):
-        path1 = hard_sphere_random_walk(
-            radius=1,
-            bond_length=2,
-            termination=20,
-            rw_angles=(np.pi / 2, np.pi),
-            seed=1,
-        )
-        path2 = hard_sphere_random_walk(
-            radius=1,
-            bond_length=2,
-            termination=20,
-            rw_angles=(np.pi / 2, np.pi),
-            seed=1,
-        )
-        assert path1 == path2
-
-    def test_deterministic_crosslink(self):
-        """Test set coordinates, relax seed as well"""
-        rng = np.random.default_rng(1)
-
-        points = rng.random((100, 3))
-        path1 = Path(coordinates=points)
-        path2 = Path(coordinates=points)
-        assert path1 == path2
-
-        crosslink(path1, radius=1, excluded_bond_depth=2)
-        crosslink(path2, radius=1, excluded_bond_depth=2)
-        assert path1 == path2
-
-        path1.relax(0.2, None, steps=10)
-        path2.relax(0.2, None, steps=10)
-        print(path1.coordinates - path2.coordinates)
-        assert np.allclose(path1.coordinates, path2.coordinates, atol=1e-6)

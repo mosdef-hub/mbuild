@@ -116,9 +116,10 @@ class Path:
     def __add__(self, other):
         coordinates = np.concat((self.coordinates, other.coordinates))
         beads = np.concat((self.beads, other.beads))
-        bond_graph = nx.compose(
-            self.bond_graph, other.bond_graph
-        )  # TODO: Don't overwrite nodes in bg
+        offset = len(self)
+        mapping = {node: node + offset for node in range(len(other))}
+        shifted_graph = nx.relabel_nodes(other.bond_graph, mapping)
+        bond_graph = nx.compose(self.bond_graph, shifted_graph)
         return Path(coordinates, bond_graph, beads)
 
     def __len__(self):
