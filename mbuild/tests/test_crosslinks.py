@@ -392,10 +392,10 @@ class TestCrosslink(BaseTest):
 
         coords = np.array(
             [
-                [near_face, 0.0, 0.0], 
-                [-near_face, 0.0, 0.0],  
-                [near_face, sep, 0.0], 
-                [-near_face, sep, 0.0],  
+                [near_face, 0.0, 0.0],
+                [-near_face, 0.0, 0.0],
+                [near_face, sep, 0.0],
+                [-near_face, sep, 0.0],
             ],
             dtype=np.float32,
         )
@@ -486,3 +486,50 @@ class TestCrosslink(BaseTest):
         edges = set(list(parallel_chains.bond_graph.edges()))
         for edge in [(0, 1), (1, 2), (3, 4), (4, 5), (0, 3), (1, 4), (2, 5)]:
             assert edge in edges
+
+
+class TestCrosslinkUtilities(BaseTest):
+    def test_find_neighbors_non_periodic(self):
+        from mbuild.path.crosslink import _find_neighbors
+
+        coords = np.array([[0, 0, 0], [1, 0, 0]])
+        box = CuboidConstraint(10, 10, 10)
+        box.pbc = (False, False, False)
+        origin = 0
+        neighbors = _find_neighbors(coords, box, origin, r_max=1, r_min=0.0)
+        assert len(neighbors) == 1, neighbors
+
+        coords = np.array([[0, 0, 0], [9, 0, 0]])
+        neighbors = _find_neighbors(coords, box, origin, r_max=1, r_min=0.0)
+        assert len(neighbors) == 0, neighbors
+
+    def test_find_neighbors_periodic(self):
+        from mbuild.path.crosslink import _find_neighbors
+
+        coords = np.array([[0, 0, 0], [9, 0, 0]])
+        box = CuboidConstraint(10, 10, 10)
+        box.pbc = (True, True, True)
+        origin = 0
+        neighbors = _find_neighbors(coords, box, origin, r_max=1, r_min=0.0)
+        assert len(neighbors) == 1, neighbors
+        coords = np.array([[0, 0, 0], [9.8, 0, 0]])
+        neighbors = _find_neighbors(coords, box, origin, r_max=1, r_min=0.5)
+        assert len(neighbors) == 0
+
+    def test_verify_direct_bond(self):
+        from mbuild.path.crosslink import _verify_direct_bond
+
+        coords = np.array([[0, 0, 0], [1, 0, 0]])
+        candidate = (0, 1)  # should thsi be integers
+        path = Path(coords)
+        box = CuboidConstraint(10, 10, 10)
+        box.pbc = (True, True, True)
+        box.center = np.array((0, 0, 0))
+        crosslinker_pos = _verify_direct_bond(
+            candidate,
+            path.coordinates,
+            1,
+            0,
+            box,
+        )
+        assert crosslinker_pos == 1

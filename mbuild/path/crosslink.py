@@ -4,7 +4,6 @@ Handles placement of crosslinker geometries between backbone beads,
 with proper overlap avoidance and bond length enforcement under PBC.
 """
 
-import freud
 import networkx as nx
 import numpy as np
 from scipy.spatial import cKDTree
@@ -416,7 +415,14 @@ def crosslink(
     PathConvergenceError
         If the requested number of crosslinks cannot be placed.
     """
-    freud_box, box_center = _get_freud_box(volume_constraint)
+    if volume_constraint is None:
+        box = CuboidConstraint(np.inf, np.inf, np.inf)  # aperiodic inf box is default
+    elif isinstance(volume_constraint, CuboidConstraint):
+        box = volume_constraint
+    else:
+        raise ValueError(
+            f"Only supporting crosslinking in CuboidConstrint for the volume_constraint, not {volume_constraint}"
+        )
 
     # filter down to valid backbone sites here
     backbone_sitesArray = _filter_initial_backbones(
@@ -464,8 +470,7 @@ def crosslink(
                 "rng": rng,
                 "bond_graph": path.bond_graph,
                 "minimum_intrachain_depth": minimum_intrachain_depth,
-                "freud_box": freud_box,
-                "box_center": box_center,
+                "box": box,
             }
         elif crosslinkKey == 1:
             candidatesGenerator = one_site_crosslink
@@ -477,8 +482,7 @@ def crosslink(
                 "rng": rng,
                 "bond_graph": path.bond_graph,
                 "minimum_intrachain_depth": minimum_intrachain_depth,
-                "freud_box": freud_box,
-                "box_center": box_center,
+                "box": box,
             }
         elif crosslinkKey == 2:
             raise ValueError(f"Unsupported for {crosslinker} as of now.")
@@ -494,8 +498,7 @@ def crosslink(
                     path.coordinates,
                     crosslink_bond_lengthList[0],
                     tolerance,
-                    freud_box,
-                    box_center,
+                    box,
                 )
             elif crosslinkKey == 1:
                 crosslinker_pos = _verify_one_site_bond(
@@ -504,12 +507,11 @@ def crosslink(
                     path.coordinates,
                     minimum_separation,
                     crosslink_bond_lengthList,
-                    tolerance,
-                    rng,
+                    box=box,
+                    tolerance=tolerance,
+                    rng=rng,
                     n_position_samples=8,  # TODO: expose to top level api
                     n_rotation_samples=12,
-                    freud_box=freud_box,
-                    box_center=box_center,
                 )
             if crosslinker_pos is not False:
                 break
@@ -534,9 +536,7 @@ def crosslink(
         if crosslinkKey == 0:
             path.bond_graph.add_edge(*candidate)
         else:  # any other number of connection sites
-            _insert_crosslinker(
-                path, crosslinker, candidate, crosslinker_pos, freud_box, box_center
-            )
+            _insert_crosslinker(path, crosslinker, candidate, crosslinker_pos, box)
         n_placed += 1
         if verbose and n_placed % 10 == 0:
             print(f"Placed {n_placed}/{n_crosslinks} crosslinks")
@@ -611,7 +611,11 @@ def _filter_initial_backbones(path, backbone_name, backbone_degree):
 
 
 def _insert_crosslinker(
-    path, crosslinker, candidate, crosslinker_pos, freud_box=None, box_center=None
+    path,
+    crosslinker,
+    candidate,
+    crosslinker_pos,
+    box,
 ):
     """Modify path inplace with crosslinker positions, and update backbone info for next cycle.
 
@@ -619,15 +623,14 @@ def _insert_crosslinker(
     -------
     None
     """
-    if box_center is None:
-        box_center = np.zeros(3, dtype=np.float32)
+    box_center = box.center
 
     # Wrap final positions into the box one more time as a safety net.
-    if freud_box is not None and any(freud_box.periodic):
-        mask = freud_box.periodic & ~np.isinf(freud_box.L)
+    if any(box.pbc):
+        mask = box.pbc & ~np.isinf(box.box_lengths)
         if np.any(mask):
             shifted = (crosslinker_pos - box_center).astype(np.float32)
-            wrapped = freud_box.wrap(shifted)
+            wrapped = box.wrap(shifted)  # TODO: Add a cuboid wrap function
             # Apply mask to dimensions (axis 1), not particles (axis 0)
             crosslinker_pos[:, mask] = (wrapped[:, mask] + box_center[mask]).astype(
                 np.float32
@@ -650,18 +653,16 @@ def direct_crosslink(
     crosslink_bond_lengthList,
     bond_tolerance,
     rng,
-    freud_box,
-    box_center=None,
+    box,
     bond_graph=None,
     minimum_intrachain_depth=2,
 ):
     """Yield candidate backbone site pairs for a direct crosslink bond."""
-    if box_center is None:
-        box_center = np.zeros(3, dtype=np.float32)
+    box_center = box.center
 
     bond_length = crosslink_bond_lengthList[0]
-    r_max = bond_length * (1 - bond_tolerance)
-    r_min = bond_length * (1 + bond_tolerance) + 1e-4
+    r_max = bond_length * (1 + bond_tolerance) + 1e-4  # 1e-4 edge padding
+    r_min = bond_length * (1 - bond_tolerance) - 1e-4  # edge padding
     n_backbones = len(backbone_sites)
 
     # Boolean mask so we can intersect the distance window with valid sites.
@@ -683,7 +684,7 @@ def direct_crosslink(
         # cKDTree (any aperiodic axis).
         neighbors = _find_neighbors(
             coords - box_center,
-            freud_box,
+            box,
             origin,
             r_max=r_max,
             r_min=r_min,
@@ -696,15 +697,17 @@ def direct_crosslink(
 
 
 def _verify_direct_bond(
-    candidate, coords, bond_length, tolerance, freud_box, box_center=None
+    candidate,
+    coords,
+    bond_length,
+    tolerance,
+    box,
 ):
     """Verify a candidate backbone pair is within tolerance of the target
     direct bond length, using minimum-image distance under PBC.
     """
-    if box_center is None:
-        box_center = np.zeros(3, dtype=np.float32)
-    pbc = np.asarray(freud_box.periodic)
-    box_lengths = np.asarray(freud_box.L)
+    pbc = box.pbc
+    box_lengths = box.box_lengths
 
     p1, p2 = coords[list(candidate)]
     d = np.linalg.norm(_minimum_image(p2 - p1, pbc, box_lengths))
@@ -724,21 +727,16 @@ def one_site_crosslink(
     crosslink_bond_lengthList,
     bond_tolerance,
     rng,
-    freud_box,
-    box_center=None,
+    box,
     bond_graph=None,
     minimum_intrachain_depth=2,
 ):
     """Yield candidate backbone site pairs for a one-site crosslink."""
-    if box_center is None:
-        box_center = np.zeros(3, dtype=np.float32)
-
+    box_center = box.center
     if len(crosslink_bond_lengthList) == 1:
         r_max = 2 * crosslink_bond_lengthList[0] * (1 + bond_tolerance)
-        r_min = 2 * crosslink_bond_lengthList[0] * (1 - bond_tolerance)
     else:
         r_max = sum(crosslink_bond_lengthList) * (1 + bond_tolerance)
-        r_min = sum(crosslink_bond_lengthList) * (1 - bond_tolerance)
 
     # Shift to freud's box frame once; all neighbor queries use this array.
     # TODO: Probably should shift all coordinates centered at 0 at beginning of
@@ -763,10 +761,10 @@ def one_site_crosslink(
         # cKDTree (any aperiodic axis).
         neighbors = _find_neighbors(
             shifted_coords,
-            freud_box,
+            box,
             origin,
             r_max=r_max,
-            r_min=r_min,
+            r_min=1e-4,  # Will account for r_min during single site placement
         )
 
         for candidate_site in neighbors:
@@ -781,25 +779,22 @@ def _verify_one_site_bond(
     coords,
     minimum_separation,
     crosslink_bond_lengthsList,
+    box,
     tolerance=0.1,
     rng=None,
     n_position_samples=8,
     n_rotation_samples=12,
-    freud_box=None,
-    box_center=None,
 ):
-    """... (docstring as before, plus pbc/box_lengths/freud_box) ..."""
+    """Check bond_lengths, overlaps, and connectivity of a single_site crosslink."""
     unique_sites = crosslinker.unique_connection_sites
     if len(unique_sites) != 1:
         return False
     if crosslinker.n_connections != 2:
         return False
 
-    pbc = freud_box.periodic
-    box_lengths = freud_box.L  # Assume Cubic
-    box_lengths = box_lengths.astype(np.float32)
-    if box_center is None:
-        box_center = np.zeros(3, dtype=np.float32)
+    pbc = box.pbc
+    box_lengths = box.box_lengths  # Assume Cubic
+    box_center = box.center
     connection_node = unique_sites[0]
     target_bond_lengths = np.asarray(crosslink_bond_lengthsList, dtype=float)
     if target_bond_lengths.size == 1:  # set for all connection sites
@@ -847,9 +842,7 @@ def _verify_one_site_bond(
                 continue
             if any(pbc):
                 shifted = (transformed - box_center).astype(np.float32)
-                newly_transformed = (
-                    freud_box.wrap(shifted).astype(np.float32) + box_center
-                )
+                newly_transformed = box.wrap(shifted).astype(np.float32) + box_center
                 nan_mask = ~np.isnan(newly_transformed)
                 transformed[nan_mask] = newly_transformed[nan_mask]
                 connection_pos = transformed[connection_node]
@@ -1004,57 +997,15 @@ def _minimum_image(diff, pbc, box_lengths):
     return diff
 
 
-def _get_freud_box(volume_constraint):
-    """Build a freud.box.Box directly from a volume constraint, along
-    with the constraint's center (freud.box.Box is always centered at
-    the origin in its own frame, so callers must shift coordinates by
-    -box_center before any AABBQuery/wrap call on this box).
-
-    Returns
-    -------
-    box : freud.box.Box
-    box_center : np.ndarray (3,) float32
-
-    Note
-    ----
-    Only CuboidConstraint is fully supported -- freud.box.Box is
-    rectangular (or triclinic), so CylinderConstraint's cylindrical
-    periodicity isn't representable here. Anything else falls back to
-    a non-periodic unit box. TODO: handle CylinderConstraint properly
-    if crosslinking needs to support cylindrical wrapping.
-    """
-    if isinstance(volume_constraint, CuboidConstraint):
-        box_lengths = np.asarray(volume_constraint.box_lengths, dtype=np.float64)
-        lengths = np.where(
-            np.isfinite(box_lengths) & (box_lengths > 0), box_lengths, 1.0
-        )
-        box = freud.box.Box(Lx=lengths[0], Ly=lengths[1], Lz=lengths[2])
-        box.periodic = tuple(bool(p) for p in volume_constraint.pbc)
-        box_center = np.asarray(
-            getattr(volume_constraint, "center", (0.0, 0.0, 0.0)), dtype=np.float32
-        )
-        return box, box_center
-
-    elif volume_constraint is None:
-        box = freud.box.Box(Lx=np.inf, Ly=np.inf, Lz=np.inf)
-        box.periodic = (True, True, True)
-    return box, np.zeros(3, dtype=np.float32)
-
-
-def _find_neighbors(coords, freud_box, origin_idx, r_max, r_min=0.0):
+def _find_neighbors(coords, box, origin_idx, r_max, r_min=0.0):
     """Return neighbor indices of `origin_idx` within [r_min, r_max].
 
-    Dispatches on box periodicity:
-      - all axes periodic  → freud AABBQuery  (native MIC, fastest)
-      - any axis aperiodic → cKDTree + ghost-image tiling
-
-    freud AABBQuery raises a ValueError on any non-periodic axis, so the
-    dispatch boundary must be all-or-nothing.
+    Uses scikit cKDTree for handling MIC
 
     Parameters
     ----------
     coords    : np.ndarray (N, 3) float32, freud convention [-L/2, L/2).
-    freud_box : freud.box.Box  (periodic flags already set).
+    box : mbuild.path.constraints.CuboidConstraint  (periodic flags already set).
     origin_idx : int
     r_max      : float
     r_min      : float, default 0.0
@@ -1063,78 +1014,27 @@ def _find_neighbors(coords, freud_box, origin_idx, r_max, r_min=0.0):
     -------
     np.ndarray of int  –  indices into `coords`.
     """
-    if all(freud_box.periodic):
-        return _neighbors_aabb(coords, freud_box, origin_idx, r_max, r_min)
-    else:
-        return _neighbors_ckdtree(coords, freud_box, origin_idx, r_max, r_min)
 
+    periodic = box.pbc
+    Ls = box.box_lengths
+    boxsize = np.where(periodic & np.isfinite(Ls) & (Ls > 0), Ls, 0.0)
 
-def _neighbors_aabb(coords, freud_box, origin_idx, r_max, r_min):
-    """freud AABBQuery backend — fully periodic boxes only."""
-    aq = freud.locality.AABBQuery(freud_box, coords)
-    # exclude_ii=False: we filter self manually.  exclude_ii compares the
-    # query-array index (always 0 for a single-point query) against reference
-    # indices, so it would silently drop reference point 0 instead of origin.
-    hits = list(
-        aq.query(coords[origin_idx][None, :], {"r_max": r_max, "exclude_ii": False})
-    )
+    pts = np.asarray(coords, dtype=np.float64).copy()
+    for ax in range(3):  # cKDTree needs periodic coords in [0, L)
+        if boxsize[ax] > 0:
+            pts[:, ax] = np.mod(pts[:, ax], boxsize[ax])
+            pts[pts[:, ax] >= boxsize[ax], ax] = 0.0  # np.mod can return exactly L
 
-    if not hits:
+    tree = cKDTree(pts, boxsize=boxsize if np.any(boxsize > 0) else None)
+    raw = np.asarray(tree.query_ball_point(pts[origin_idx], r=r_max), dtype=np.intp)
+    if raw.size == 0:
         return np.empty(0, dtype=np.intp)
 
-    indices = np.array([b[1] for b in hits], dtype=np.intp)
-    distances = np.array([b[2] for b in hits], dtype=np.float32)
-    keep = (indices != origin_idx) & (distances >= r_min)
-    return indices[keep]
+    d = pts[raw] - pts[origin_idx]
+    for ax in range(3):
+        if boxsize[ax] > 0:
+            d[:, ax] -= np.round(d[:, ax] / boxsize[ax]) * boxsize[ax]
+    dists = np.linalg.norm(d, axis=1)
 
-
-def _neighbors_ckdtree(coords, freud_box, origin_idx, r_max, r_min):
-    """cKDTree + ghost-image tiling backend — aperiodic or mixed boxes.
-
-    Tiles [-L, 0, +L] ghost copies along every periodic axis so the tree
-    itself stays aperiodic (boxsize=None).  Each ghost carries its original
-    index; after querying we de-duplicate by keeping the closest image.
-    """
-    periodic = freud_box.periodic  # (bool, bool, bool)
-    Lx, Ly, Lz = freud_box.Lx, freud_box.Ly, freud_box.Lz
-    Ls = np.array([Lx, Ly, Lz], dtype=np.float64)
-
-    # Per-axis ghost offsets: [-L, 0, +L] for periodic, [0] for aperiodic.
-    axis_offsets = [
-        ([-Ls[ax], 0.0, Ls[ax]] if periodic[ax] else [0.0]) for ax in range(3)
-    ]
-    ox, oy, oz = axis_offsets
-    offsets = np.array(
-        [[dx, dy, dz] for dx in ox for dy in oy for dz in oz],
-        dtype=np.float64,
-    )  # shape (n_images, 3),  n_images <= 27
-
-    coords_d = coords.astype(np.float64)
-    N = len(coords_d)
-    n_images = len(offsets)
-
-    tiled_pts = (coords_d[None, :, :] + offsets[:, None, :]).reshape(-1, 3)
-    tiled_idx = np.tile(np.arange(N, dtype=np.intp), n_images)
-
-    tree = cKDTree(tiled_pts)
-    raw = np.array(tree.query_ball_point(coords_d[origin_idx], r=r_max), dtype=np.intp)
-    if len(raw) == 0:
-        return np.empty(0, dtype=np.intp)
-
-    orig_idx = tiled_idx[raw]
-    dists = np.linalg.norm(tiled_pts[raw] - coords_d[origin_idx], axis=1)
-
-    # self-exclusion and r_min lower bound
-    keep = (orig_idx != origin_idx) & (dists >= r_min)
-    orig_idx, dists = orig_idx[keep], dists[keep]
-
-    if len(orig_idx) == 0:
-        return np.empty(0, dtype=np.intp)
-
-    # De-duplicate: same point can appear via multiple images; keep closest.
-    best: dict[int, float] = {}
-    for idx, dist in zip(orig_idx.tolist(), dists.tolist()):
-        if idx not in best or dist < best[idx]:
-            best[idx] = dist
-
-    return np.array(list(best.keys()), dtype=np.intp)
+    keep = (raw != origin_idx) & (dists >= r_min)
+    return raw[keep]
