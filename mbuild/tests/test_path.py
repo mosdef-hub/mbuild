@@ -286,7 +286,6 @@ class TestRandomWalk(BaseTest):
             bond_length=0.25,
             radius=0.22,
             seed=14,
-            run_on_gpu=True,
         )
         assert len(path.coordinates) == 20
         diffs = path.coordinates[0:-2] - path.coordinates[1:-1]
@@ -361,7 +360,6 @@ class TestRandomWalk(BaseTest):
             include_compound=box,
             radius=0.22,
             seed=14,
-            run_on_gpu=True,
         )
         box.add(chain.to_compound())
         assert (

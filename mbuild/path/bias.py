@@ -7,26 +7,6 @@ from mbuild.path.path_utils import (
     target_sq_distances as _target_sq_distances_cpu,
 )
 
-try:
-    from numba import cuda
-
-    _CUDA_AVAILABLE = cuda.is_available()
-    if _CUDA_AVAILABLE:
-        from mbuild.path.path_utils_gpu import (
-            target_density as _target_density_gpu,
-        )
-        from mbuild.path.path_utils_gpu import (
-            target_sq_distances as _target_sq_distances_gpu,
-        )
-    else:
-        _target_density_gpu = None
-        _target_sq_distances_gpu = None
-
-except Exception:  # pragma: no cover - CUDA stack not importable or GPU utils failed
-    _CUDA_AVAILABLE = False
-    _target_density_gpu = None
-    _target_sq_distances_gpu = None
-
 
 class Bias:
     def __init__(self, weight):
@@ -46,13 +26,8 @@ class Bias:
         # Inherit rng from the path for use in Bias classes
         self.rng = self.state.rng
         # Decide which path_utils implementations to use based on the path's device.
-        use_gpu = getattr(state, "run_on_gpu", False)
-        if use_gpu and _CUDA_AVAILABLE and _target_sq_distances_gpu is not None:
-            self._target_sq_distances = _target_sq_distances_gpu
-            self._target_density = _target_density_gpu
-        else:
-            self._target_sq_distances = _target_sq_distances_cpu
-            self._target_density = _target_density_cpu
+        self._target_sq_distances = _target_sq_distances_cpu
+        self._target_density = _target_density_cpu
 
     def _clean(self):
         self.path = None
