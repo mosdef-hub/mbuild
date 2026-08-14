@@ -27,6 +27,9 @@ from mbuild.path.termination import NumSites, Termination, Terminator
 
 logger = logging.getLogger(__name__)
 
+# Passed to check_path when no existing site is bonded to the candidate.
+NO_EXCLUDED_INDICES = np.empty(0, dtype=np.int64)
+
 
 class Path:
     """Creates a path from a given set of coordinates and a bond graph.
@@ -1257,6 +1260,7 @@ def hard_sphere_random_walk(
         existing_points = coordinates[: state.count]
         if state.include_compound:  # Include compound's particle coordinates
             existing_points = np.concat((existing_points, include_compound.xyz))
+        excluded_indices = state.excluded_indices()
         # Iterate through current state of candidates, break after first accept
         for xyz in candidates:
             if check_path_cpu(
@@ -1266,6 +1270,7 @@ def hard_sphere_random_walk(
                 tolerance=tolerance,
                 pbc=pbc,
                 box_lengths=box_lengths,
+                excluded_indices=excluded_indices,
             ):
                 accept_xyz = xyz
                 break
@@ -1290,6 +1295,70 @@ def hard_sphere_random_walk(
     state.check_termination(path, coordinates, beads)
 
     return path
+
+
+def _angle_range(angles_sampler):
+    """Return the smallest and largest angle a sampler can produce.
+
+    Returns None for distributions with unbounded support.
+    """
+    if angles_sampler.distribution == "uniform":
+        return (
+            float(angles_sampler.kwargs["low"]),
+            float(angles_sampler.kwargs["high"]),
+        )
+    if angles_sampler.distribution == "choice":
+        angles = np.asarray(angles_sampler.kwargs["a"], dtype=float)
+        return float(angles.min()), float(angles.max())
+    return None
+
+
+def _check_angle_range(bond_length, radius, angles_sampler):
+    """Compare the sampled angle range against the angle radius allows.
+
+    Sites two bonds apart are separated by ``2 * bond_length * sin(theta / 2)``
+    for a bond angle theta, and are not excluded from the overlap check. Angles
+    below the critical angle place a new site within ``radius`` of the site two
+    bonds back, so those angles are always rejected.
+
+    Raises
+    ------
+    ValueError
+        If no angle in the sampled range can avoid the overlap.
+    """
+    ratio = radius / (2.0 * bond_length)
+    if ratio > 1.0:
+        raise ValueError(
+            f"A {radius=} larger than twice {bond_length=} leaves no bond angle "
+            "that avoids overlapping the site two bonds back. Reduce radius or "
+            "increase bond_length."
+        )
+    critical_angle = 2.0 * np.arcsin(ratio)
+    angle_range = _angle_range(angles_sampler)
+    if angle_range is None:
+        return
+    low, high = angle_range
+    if critical_angle >= high:
+        raise ValueError(
+            f"With {bond_length=} and {radius=}, bond angles below "
+            f"{np.degrees(critical_angle):.1f} degrees overlap the site two "
+            f"bonds back, which rejects every angle in the sampled range of "
+            f"{np.degrees(low):.1f} to {np.degrees(high):.1f} degrees. "
+            "Reduce radius, increase bond_length, or raise rw_angles."
+        )
+    if critical_angle > low:
+        if angles_sampler.distribution == "uniform":
+            fraction = (critical_angle - low) / (high - low)
+        else:
+            angles = np.asarray(angles_sampler.kwargs["a"], dtype=float)
+            fraction = float(np.mean(angles < critical_angle))
+        logger.warning(
+            f"With {bond_length=} and {radius=}, bond angles below "
+            f"{np.degrees(critical_angle):.1f} degrees overlap the site two "
+            f"bonds back. This rejects {fraction:.0%} of the sampled range "
+            f"starting at {np.degrees(low):.1f} degrees, biasing the walk "
+            "toward wider angles."
+        )
 
 
 def _normalize_initial_point(initial_point):
@@ -1397,10 +1466,6 @@ class RandomWalkState:
     ):
         self.bond_length = bond_length
         self.radius = radius
-        if bond_length < radius:
-            raise ValueError(
-                "Bond length should be greater than radius to prevent overlaps."
-            )
         # Single RNG drives all walk randomness (angles, positions, bias,
         # volume-constraint sampling).
         if rng is None:
@@ -1465,6 +1530,7 @@ class RandomWalkState:
         self.bias = bias
         self.trial_batch_size = trial_batch_size
         self.chunk_size = chunk_size
+        _check_angle_range(bond_length, radius, self.angles)
 
         # State tracking
         self.count = 0
@@ -1475,6 +1541,52 @@ class RandomWalkState:
         # Defaults reproduce non-periodic behavior.
         self.pbc = np.array([False, False, False], dtype=np.bool_)
         self.box_lengths = np.array([np.inf, np.inf, np.inf], dtype=np.float32)
+
+    @property
+    def attaches_to_path(self):
+        """Whether the first site of this walk bonds to an existing site."""
+        return self.connectivity == "link-linear"
+
+    @property
+    def attach_index(self):
+        """Index of the existing site that the first site of this walk bonds to.
+
+        Returns -1 when the walk does not bond to an existing site.
+        """
+        if not self.attaches_to_path:
+            return -1
+        if self.starting_from_site:
+            return self.initial_point
+        return self.previous_count - 1
+
+    @property
+    def initial_point_distance(self):
+        """Distance from an existing site at which the first site is placed.
+
+        Uses the bond length when the first site bonds to that existing site.
+        Uses the larger of the bond length and the radius otherwise, so an
+        unbonded first site is placed no closer than contact.
+        """
+        if self.attaches_to_path:
+            return self.bond_length
+        return max(self.bond_length, self.radius)
+
+    def excluded_indices(self):
+        """Return indices of existing sites bonded to the next candidate.
+
+        Candidates are generated at the bond length from the site they bond
+        to, so that site is left out of the overlap check. Returns the last
+        accepted site once this walk has placed one, the attach site when
+        placing the first site of a walk that links to an existing path, and
+        an empty array when the next candidate has no bonded neighbor among
+        the existing sites.
+        """
+        if self.count > self.previous_count:
+            return np.array([self.count - 1], dtype=np.int64)
+        attach_index = self.attach_index
+        if attach_index < 0:
+            return NO_EXCLUDED_INDICES
+        return np.array([attach_index], dtype=np.int64)
 
     def check_termination(self, path, coordinates, beads):
         """Examine and process termination if we have reached.
@@ -1507,19 +1619,11 @@ class RandomWalkState:
             if self.bias:
                 self.bias._clean()
             path._extend_bond_graph()
-            if self.starting_from_site:
-                # build from the given site instead of the last point
-                path._connect_edges(
-                    self.connectivity,
-                    np.arange(self.previous_count, self.count),
-                    self.initial_point,
-                )
-            else:  # build bond graph, and connect to last index in previous path coordinates
-                path._connect_edges(
-                    self.connectivity,
-                    np.arange(self.previous_count, self.count),
-                    self.previous_count,
-                )
+            path._connect_edges(
+                self.connectivity,
+                np.arange(self.previous_count, self.count),
+                self.attach_index,
+            )
             # path._extend_beads(self.bead_name)
             return True
         return False

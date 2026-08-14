@@ -63,6 +63,7 @@ def check_path(
     tolerance,
     pbc=np.array([False, False, False], dtype=bool),
     box_lengths=np.array([np.inf, np.inf, np.inf], dtype=np.float32),
+    excluded_indices=np.empty(0, dtype=np.int64),
 ):
     """Default check path method for HardSphereRandomWalk.
 
@@ -86,11 +87,23 @@ def check_path(
     box_lengths : np.ndarray (3,) of float, optional
         Box length along each axis, used for the minimum-image wrap on
         periodic axes. Only consulted where ``pbc`` is ``True``.
+    excluded_indices : np.ndarray (K,) of int, optional
+        Indices into ``existing_points`` that are skipped, sorted ascending.
+        Used to leave out sites bonded to ``new_point``, whose separation is
+        set by the bond length rather than by ``radius``. Indices at or past
+        the end of ``existing_points`` are ignored. The default of an empty
+        array checks every point.
     """
     if existing_points is None or existing_points.size == 0:
         return True
     min_sq_dist = (radius - tolerance) ** 2
+    n_excluded = excluded_indices.shape[0]
+    next_excluded = 0
     for i in range(existing_points.shape[0]):
+        # excluded_indices ascends alongside i, so one comparison per point
+        if next_excluded < n_excluded and i == excluded_indices[next_excluded]:
+            next_excluded += 1
+            continue
         dist_sq = 0.0
         for j in range(existing_points.shape[1]):
             diff = existing_points[i, j] - new_point[j]

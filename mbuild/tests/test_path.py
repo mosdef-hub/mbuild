@@ -651,6 +651,8 @@ class TestRandomWalk(BaseTest):
             connectivity="link-linear",
         )
         assert len(path.bond_graph.edges) == 9
+        # The new segment links to the last site of the previous chain.
+        assert path.bond_graph.has_edge(4, 5)
 
         path = hard_sphere_random_walk(
             radius=0.2, bond_length=0.25, termination=5, connectivity="disconnected"
@@ -852,6 +854,65 @@ class TestRandomWalk(BaseTest):
         node_names = [d["name"] for _, d in path.bond_graph.nodes(data=True)]
         assert node_names == ["_A", "_B", "_A", "_B"]
 
+    def test_bond_length_less_than_radius(self):
+        path = hard_sphere_random_walk(
+            bead_name="A", bond_length=0.285, radius=0.392, termination=200, seed=7
+        )
+        coordinates = path.coordinates
+        assert len(coordinates) == 200
+        # Bonded neighbors sit at the bond length.
+        bond_lengths = np.linalg.norm(np.diff(coordinates, axis=0), axis=1)
+        assert np.allclose(bond_lengths, 0.285, atol=1e-5)
+        # Every pair more than one bond apart respects the radius.
+        distances = np.linalg.norm(
+            coordinates[:, None, :] - coordinates[None, :, :], axis=-1
+        )
+        indices = np.arange(len(coordinates))
+        non_bonded = np.abs(indices[:, None] - indices[None, :]) > 1
+        assert distances[non_bonded].min() >= 0.392 - 1e-5
+
+    @pytest.mark.parametrize(
+        "bond_length, radius, rw_angles, expected",
+        [
+            (0.1, 0.25, None, "raise"),
+            (0.15, 0.15, (0.3, 0.5), "raise"),
+            (0.285, 0.392, (np.pi / 3, np.pi), "warn"),
+        ],
+    )
+    def test_angle_range_against_radius(
+        self, bond_length, radius, rw_angles, expected, caplog
+    ):
+        kwargs = dict(
+            bond_length=bond_length,
+            radius=radius,
+            rw_angles=rw_angles,
+            termination=30,
+            seed=1,
+        )
+        if expected == "raise":
+            with pytest.raises(ValueError):
+                hard_sphere_random_walk(**kwargs)
+        else:
+            hard_sphere_random_walk(**kwargs)
+            assert "overlap the site two bonds back" in caplog.text
+
+    def test_unbonded_branch_start_uses_radius(self):
+        # Under linear connectivity the first site of the walk is not bonded to
+        # the site it starts from, so it is placed no closer than the radius.
+        path = straight_line(spacing=0.5, N=6)
+        hard_sphere_random_walk(
+            path=path,
+            bond_length=0.285,
+            radius=0.392,
+            termination=16,
+            initial_point=2,
+            connectivity="linear",
+            seed=3,
+        )
+        assert not path.bond_graph.has_edge(2, 6)
+        separation = np.linalg.norm(path.coordinates[6] - path.coordinates[2])
+        assert separation >= 0.392 - 1e-5
+
 
 class TestPathUtils(BaseTest):
     def test_target_sq_distances_no_pbc(self):
@@ -997,6 +1058,30 @@ class TestPathUtils(BaseTest):
             tolerance,
             pbc=pbc,
             box_lengths=box_lengths,
+        )
+
+    def test_check_path_excluded_indices(self):
+        existing = np.array(
+            [[0.0, 0.0, 0.0], [1.0, 0.0, 0.0], [2.0, 0.0, 0.0]], dtype=np.float32
+        )
+        candidate = np.array([1.1, 0.0, 0.0], dtype=np.float32)
+        # Overlaps index 1 when every point is checked.
+        assert not check_path(existing, candidate, 0.5, 1e-5)
+        # Accepted once index 1 is excluded.
+        assert check_path(
+            existing,
+            candidate,
+            0.5,
+            1e-5,
+            excluded_indices=np.array([1], dtype=np.int64),
+        )
+        # Excluding a point that does not overlap changes nothing.
+        assert not check_path(
+            existing,
+            candidate,
+            0.5,
+            1e-5,
+            excluded_indices=np.array([0], dtype=np.int64),
         )
 
 
