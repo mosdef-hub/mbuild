@@ -313,6 +313,7 @@ class Path:
         compound = Compound()
         compounds = []
         # TODO: Should we have a mass parameter? Could be useful for density termination
+        # TODO: Could also add an is_atomistic flag and validate the bead names here before sending to Compound.
         for node_id in self.bond_graph.nodes:
             compounds.append(
                 Compound(

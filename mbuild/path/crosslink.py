@@ -4,6 +4,8 @@ Handles placement of crosslinker geometries between backbone beads,
 with proper overlap avoidance and bond length enforcement under PBC.
 """
 
+import itertools
+
 import networkx as nx
 import numpy as np
 from scipy.spatial import cKDTree
@@ -25,7 +27,7 @@ class CrosslinkerGeometry:
         Internal bond topology. If None, creates a graph with no edges.
     bead_name : str or array-like of str
         Name(s) for each bead. Strings are prefixed with '_' if not already.
-    connection_sites : list of int
+    connection_sites : list of int, or numpy array with dtype int
         Node indices that bond to external backbone beads. May contain
         duplicates to indicate multiple connections from the same physical node.
     isrigid : bool
@@ -50,16 +52,16 @@ class CrosslinkerGeometry:
         self.bond_graph = bond_graph
 
         if isinstance(bead_name, str):
-            if not bead_name.startswith("_"):
-                bead_name = "_" + bead_name
             self.beads = np.full(self.n_sites, bead_name, dtype="U10")
         else:
             self.beads = np.asarray(bead_name, dtype="U10")
 
         if connection_sites is None:
-            connection_sites = list(range(self.n_sites))
+            self.connection_sites = list(range(self.n_sites))
         elif isinstance(connection_sites, int):
             self.connection_sites = [connection_sites, connection_sites]
+        elif isinstance(connection_sites, np.ndarray):
+            self.connection_sites = connection_sites.tolist()
         else:
             self.connection_sites = list(connection_sites)
 
@@ -100,6 +102,7 @@ class CrosslinkerGeometry:
             bond_graph=self.bond_graph.copy(),
             bead_name=self.beads.copy(),
             connection_sites=list(self.connection_sites),
+            isrigid=self.isrigid,
         )
 
     def recenter(self):
@@ -324,15 +327,17 @@ class CrosslinkerGeometry:
         )
 
     @classmethod
-    def from_edges(cls, coordinates, edges, bead_name="_R", connection_sites=None):
-        """Create a crosslinker from explicit coordinates and edge list.
+    def from_graph_edges(
+        cls, coordinates, edges, bead_name="_R", connection_sites=None
+    ):
+        """Create a crosslinker from explicit coordinates and edge list, use for constructing from other graphs.
 
         Parameters
         ----------
         coordinates : array-like, shape (N, 3)
             Bead positions.
         edges : list of (int, int)
-            Pairs of node indices defining internal bonds.
+            Pairs of node indices defining internal bonds. Can be nx.Graph.edges().
         bead_name : str
             Name for each bead.
         connection_sites : list of int, optional
@@ -342,7 +347,11 @@ class CrosslinkerGeometry:
         n = len(coordinates)
         G = nx.Graph()
         G.add_nodes_from(range(n))
-        G.add_edges_from(edges)
+        # edges map from 0 to n-1
+        sorted_edges = sorted(itertools.chain(*edges))
+        edges_map = {edge: i for i, edge in enumerate(sorted_edges)}
+        ordered_edges = [(edges_map[e1], edges_map[e2]) for e1, e2 in edges]
+        G.add_edges_from(ordered_edges)
         if connection_sites is None:
             connection_sites = list(range(n))
         return cls(
@@ -358,11 +367,12 @@ def crosslink(
     crosslinker=None,
     n_crosslinks=1,
     crosslink_bond_length=0.2,
-    max_backbone_degree=4,
+    backbone_degree=(0, 4),
     tolerance=0.1,
     minimum_intrachain_depth=2,
     volume_constraint=None,
     minimum_separation=0.1,
+    n_rotation_samples=12,
     backbone_bead_name=None,
     seed=None,
     verbose=False,
@@ -384,20 +394,25 @@ def crosslink(
     crosslink_bond_length : float, default 0.2
         Target distance from each crosslinker connection node to its
         backbone bead(s).
-    max_backbone_degree : int, default 4
-        Maximum graph degree a backbone node may have and remain eligible.
+    backbone_degree : int, or tuple size 2 of int, default (0,4)
+        (minimum_backbone_degee, maximum_backbone_degree) to use when selecting
+        from available backbones. See _filter_initial_backbones for more info.
+        Values are inclusive. If only a single integer value is provided, the
+        minimum_backbone_degree is assumed to be 0 and the
+        maximum_backbone_degree is used as the passed argument.
     tolerance : float, default 0.1
         Fractional tolerance on bond lengths (0.1 = ±10%).
-    excluded_bond_depth : int, default 2
+    minimum_intrachain_depth : int, default 2
         Backbone beads within this many bonds of a selected bead are
         excluded from being selected as additional connection points.
-    volume_constraint : optional
-        Provides PBC information (CuboidConstraint or CylinderConstraint).
+    volume_constraint : optional, default None
+        Provides PBC information from CuboidConstraint. Will by default assume
+        infinite aperiodic box if `None` is passed.
     minimum_separation : float, default 0.1
         Minimum distance between placed crosslinker beads and existing beads.
-    n_rotation_samples : int, default 50
+    n_rotation_samples : int, default 12
         Number of rotations to try for overlap avoidance.
-    backbone_name : str or list, optional
+    backbone_bead_name : str or list, optional
         Filter eligible backbone beads by name. If a list, must have one
         entry per connection site.
     seed : int, optional
@@ -420,13 +435,14 @@ def crosslink(
     elif isinstance(volume_constraint, CuboidConstraint):
         box = volume_constraint
     else:
-        raise ValueError(
-            f"Only supporting crosslinking in CuboidConstrint for the volume_constraint, not {volume_constraint}"
+        raise NotImplementedError(
+            f"{type(volume_constraint).__name__} is not yet supported for crosslinking; "
+            "only CuboidConstraint (or None) is implemented."
         )
 
     # filter down to valid backbone sites here
     backbone_sitesArray = _filter_initial_backbones(
-        path, backbone_bead_name, max_backbone_degree
+        path, backbone_bead_name, backbone_degree
     )
 
     # key to access supported crosslink geometry functions
@@ -437,20 +453,32 @@ def crosslink(
         crosslinkKey = len(
             set(crosslinker.connection_sites)
         )  # i.e. [0,0] means only one unique bonding site
+    if crosslinkKey not in (0, 1):
+        raise NotImplementedError(
+            "Have not implemented crosslinking for CrosslinkerGeometry with > 1 connection points. "
+            "In the future, more candidatesGenerator functions will be used to handle placement "
+            "on a case by case basis."
+        )
     if isinstance(crosslink_bond_length, (float, int)) and crosslinker is not None:
         crosslink_bond_lengthList = [crosslink_bond_length] * len(
             crosslinker.connection_sites
         )
     elif isinstance(crosslink_bond_length, (float, int)):
         crosslink_bond_lengthList = [crosslink_bond_length]
-    elif isinstance(crosslink_bond_length, (list, tuple, np.ndarray)):
-        crosslink_bond_lengthList = list(crosslink_bond_lengthList)
+    elif isinstance(crosslink_bond_length, np.ndarray):
+        crosslink_bond_lengthList = crosslink_bond_length.tolist()
+    elif isinstance(crosslink_bond_length, (list, tuple)):
+        crosslink_bond_lengthList = list(crosslink_bond_length)
         if not len(crosslink_bond_lengthList) == len(crosslinker.connection_sites):
             raise PathConvergenceError(
                 f"backbone_bond_lengths list doesn't match crosslinker.connection_sites"
                 f"{crosslink_bond_length}"
-                and {crosslinker.connection_sites}
+                f"and {crosslinker.connection_sites}"
             )
+    else:
+        raise TypeError(
+            f"Unsupported crosslink_bond_length type {type(crosslink_bond_length).__name__}"
+        )
 
     rng = np.random.default_rng(seed)
     n_placed = 0
@@ -510,8 +538,8 @@ def crosslink(
                     box=box,
                     tolerance=tolerance,
                     rng=rng,
+                    n_rotation_samples=n_rotation_samples,
                     n_position_samples=8,  # TODO: expose to top level api
-                    n_rotation_samples=12,
                 )
             if crosslinker_pos is not False:
                 break
@@ -524,8 +552,8 @@ def crosslink(
                 f"Ended after {n_placed} crosslinks placed.\n"
                 "Ways to increase crosslinking:\n"
                 " - Modify crosslink_bond_length or tolerance\n"
-                " - Increase max_backbone_degree\n"
-                " - Decrease excluded_bond_depth\n"
+                " - Increase backbone_degree range\n"
+                " - Decrease minimum_intrachain_depth\n"
                 " - Pack at different density"
                 " - Run relaxation after this error and try again/"
             )
@@ -568,7 +596,8 @@ def _filter_initial_backbones(path, backbone_name, backbone_degree):
         names filter to get indices of valid backbone sites
     backbone_degree : int or tuple or list
         Specification of site backbone degree.
-        If is an integer, set to the maximum allowed degree.
+        If is an integer, this argument is used for the maximum allowed degree.
+        The minimum value is set to 0.
         If an iterable is passed, assume the first value is the minumimum
         and the second is the maximum value, inclusive.
 
@@ -583,28 +612,34 @@ def _filter_initial_backbones(path, backbone_name, backbone_degree):
     Handles a single bead name, and the maximum_degree. In the future might more specifically filter
     out other features of backbones.
     """
-    if backbone_name is None:
-        return np.arange(len(path))
     if isinstance(backbone_name, str):
         backbone_namesSet = set(
             (backbone_name,)
         )  # every connection bond to same crosslink
+    elif backbone_name is None:
+        pass  # skip nonetype formatting
     else:
         backbone_namesSet = set(backbone_name)  # assume it's some iterable
     if isinstance(backbone_degree, int):
-        min_backbone_degree = 1
+        min_backbone_degree = 0
         max_backbone_degree = backbone_degree
     elif isinstance(backbone_degree, (tuple, list, np.ndarray)):
-        min_backbone_degree = backbone_degree[0]
-        max_backbone_degree = backbone_degree[1]
+        assert len(backbone_degree) == 2, (
+            f"Provided {backbone_degree} must be length 2."
+        )
+        min_backbone_degree = int(backbone_degree[0])
+        max_backbone_degree = int(backbone_degree[1])
     n = path.bond_graph.number_of_nodes()
     degrees = np.zeros(n, dtype=int)
     nodes, degs = zip(*path.bond_graph.degree())
     degrees[list(nodes)] = degs
 
-    name_ok = np.isin(
-        path.beads, np.fromiter(backbone_namesSet, dtype=path.beads.dtype)
-    )
+    if backbone_name is None:
+        name_ok = True
+    else:
+        name_ok = np.isin(
+            path.beads, np.fromiter(backbone_namesSet, dtype=path.beads.dtype)
+        )
     return np.flatnonzero(
         (degrees >= min_backbone_degree) & (degrees <= max_backbone_degree) & name_ok
     )
@@ -694,6 +729,7 @@ def direct_crosslink(
             if candidate_site not in backbone_set or candidate_site in excluded:
                 continue
             yield (origin, int(candidate_site))
+    return None
 
 
 def _verify_direct_bond(
@@ -714,6 +750,7 @@ def _verify_direct_bond(
 
     if bond_length * (1 - tolerance) <= d <= bond_length * (1 + tolerance):
         return d
+    return False
 
 
 # =============================================================================
@@ -812,6 +849,10 @@ def _verify_one_site_bond(
         rng = np.random.default_rng()
 
     local_coords = crosslinker.coordinates - crosslinker.coordinates[connection_node]
+
+    if crosslinker.n_sites == 1:
+        # skip rotation for beads with only a single bead site, which is the connection site.
+        n_rotation_samples = 1
     other_bead_mask = np.ones(crosslinker.n_sites, dtype=bool)
     other_bead_mask[connection_node] = False
 

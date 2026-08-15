@@ -86,10 +86,21 @@ class TestCrosslinkerGeometry(BaseTest):
             dist = np.linalg.norm(cl.coordinates[i] - cl.coordinates[j])
             assert abs(dist - 0.27) < 1e-4
 
-    def test_from_edges(self):
+    def test_from_graph_edges(self):
         coords = [[0, 0, 0], [1, 0, 0], [0.5, 0.866, 0]]
         edges = [(0, 1), (1, 2)]
-        cl = CrosslinkerGeometry.from_edges(
+        cl = CrosslinkerGeometry.from_graph_edges(
+            coords, edges, bead_name="_R", connection_sites=[0, 2]
+        )
+        assert cl.n_sites == 3
+        assert cl.n_connections == 2
+        assert len(cl.internal_bonds) == 2
+        assert cl.connection_sites == [0, 2]
+
+    def test_from_graph_edges_disordered(self):
+        coords = [[0, 0, 0], [1, 0, 0], [0.5, 0.866, 0]]
+        edges = [(0, 1), (1, 5)]
+        cl = CrosslinkerGeometry.from_graph_edges(
             coords, edges, bead_name="_R", connection_sites=[0, 2]
         )
         assert cl.n_sites == 3
@@ -206,7 +217,7 @@ class TestCrosslink(BaseTest):
             crosslink_bond_length=1.1,
             seed=3,
             backbone_bead_name="_A",
-            max_backbone_degree=2,
+            backbone_degree=2,
             minimum_separation=min_sep,
             tolerance=0,
         )
@@ -216,7 +227,7 @@ class TestCrosslink(BaseTest):
             crosslink_bond_length=1.1,
             seed=3,
             backbone_bead_name="_A",
-            max_backbone_degree=2,
+            backbone_degree=2,
             minimum_separation=min_sep,
             tolerance=0,
         )
@@ -226,7 +237,7 @@ class TestCrosslink(BaseTest):
             crosslink_bond_length=1.1,
             seed=3,
             backbone_bead_name="_A",
-            max_backbone_degree=2,
+            backbone_degree=2,
             minimum_separation=min_sep,
             tolerance=0,
         )
