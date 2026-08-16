@@ -1,8 +1,8 @@
 """Methods for visualizing mBuild Compound and Path instances."""
 
-from copy import deepcopy
-import tempfile
 import os
+import tempfile
+from copy import deepcopy
 
 import numpy as np
 
@@ -91,6 +91,7 @@ def visualize_path(path, radius=0.1, filename=None, hide_periodic_bonds=False):
 
     return view
 
+
 def visualize_compound(
     compound,
     show_ports=False,
@@ -147,6 +148,7 @@ def visualize_compound(
 
     else:
         raise RuntimeError("Visualization is only supported in Jupyter Notebooks.")
+
 
 def _visualize_py3dmol(
     compound,
@@ -278,6 +280,7 @@ def _visualize_py3dmol(
         view.zoomTo()
 
     return view
+
 
 def _visualize_nglview(compound, show_ports=False):
     """Visualize the Compound using nglview.

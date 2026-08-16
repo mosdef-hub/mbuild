@@ -1834,6 +1834,7 @@ class Compound(object):
         See mbuild.utils.visualize.visualize_compound for more details.
         """
         from mbuild.utils.visualize import visualize_compound
+
         return visualize_compound(
             compound=self,
             show_ports=show_ports,
@@ -1842,7 +1843,7 @@ class Compound(object):
             bead_size=bead_size,
             periodic_bond_opacity=periodic_bond_opacity,
         )
-        
+
     def condense(self, inplace=True):
         """Condense the hierarchical structure of the Compound to the level of molecules.
 
