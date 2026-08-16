@@ -5,22 +5,21 @@ import tempfile
 from copy import deepcopy
 
 import numpy as np
+import networkx as nx
 
-from mbuild.compound import clone
+from mbuild.compound import clone, Compound
 from mbuild.path.formats import to_mol3000
 from mbuild.utils.io import import_, run_from_ipython
 from mbuild.utils.jsutils import overwrite_nglview_default
 
 
-def visualize_path(path, radius=0.1, filename=None, hide_periodic_bonds=False):
+def visualize_path(path, radius=0.1, hide_periodic_bonds=False):
     """Visualize in 3D space using py3Dmol of the Path as a Compound.
 
     Parameters
     ----------
     radius : float, default 0.1
         Radius for sphere and stick representation
-    filename : str, optional default None
-        If None, no png file is created. Otherwise, a png file is generated at the file path.
     hide_periodic_bonds : bool, default False
         If ``True`` bonds crossing periodic boundaries aren't shown.
     """
@@ -85,9 +84,6 @@ def visualize_path(path, radius=0.1, filename=None, hide_periodic_bonds=False):
         )
     view.setBackgroundColor("white")
     view.zoomTo()
-
-    if filename is not None:
-        _py3dmol_to_png(view, filename)
 
     return view
 
