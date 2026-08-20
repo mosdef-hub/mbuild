@@ -453,8 +453,9 @@ class Polymer(Compound):
                 self.remove(port)
         if self.end_groups[0]:
             self.add(self.end_groups[0])
-        for compound in repeat_compounds:
-            self.add(new_child=compound, label="monomer[$]")
+        # Preserve sequence order while composing repeat-unit bond graphs once.
+        monomer_labels = ["monomer[$]"] * len(repeat_compounds)
+        self.add(repeat_compounds, label=monomer_labels)
         if self.end_groups[1]:
             self.add(self.end_groups[1])
 
