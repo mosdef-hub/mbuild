@@ -7,7 +7,6 @@ with proper overlap avoidance and bond length enforcement under PBC.
 import itertools
 
 import networkx as nx
-import warnings
 import numpy as np
 from scipy.spatial import cKDTree
 from scipy.spatial.transform import Rotation
@@ -618,6 +617,7 @@ def crosslink(
 
     return path
 
+
 # =============================================================================
 # General crosslink functions
 # =============================================================================
@@ -693,11 +693,13 @@ def _filter_initial_backbones(path, backbone_name, backbone_degree):
     backbone_sitesDict = {int(site): int(degrees[site]) for site in valid_sites}
     return backbone_sitesDict
 
+
 def _normalize_degree_range(backbone_degree):
     if isinstance(backbone_degree, (int, np.integer)):
         return 0, int(backbone_degree)
     min_deg, max_deg = backbone_degree
     return int(min_deg), int(max_deg)
+
 
 def _get_backbone_graph(path, backbone_bead_name=None):
     """
@@ -755,6 +757,7 @@ def _get_backbone_graph(path, backbone_bead_name=None):
 
     return backbone_graph
 
+
 def _insert_crosslinker(
     path,
     crosslinker,
@@ -784,7 +787,9 @@ def _insert_crosslinker(
     previous_n_nodes = len(path)
     path.add_path(crosslinker, crosslinker_pos)
     for clink_site, backbone_site in zip(crosslinker.connection_sites, candidate):
-        path.bond_graph.add_edge(previous_n_nodes + clink_site, backbone_site,  crosslink=True)
+        path.bond_graph.add_edge(
+            previous_n_nodes + clink_site, backbone_site, crosslink=True
+        )
 
 
 # =============================================================================
