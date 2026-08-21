@@ -7,6 +7,7 @@ with proper overlap avoidance and bond length enforcement under PBC.
 import itertools
 
 import networkx as nx
+import warnings
 import numpy as np
 from scipy.spatial import cKDTree
 from scipy.spatial.transform import Rotation
@@ -367,7 +368,7 @@ def crosslink(
     crosslinker=None,
     n_crosslinks=1,
     crosslink_bond_length=0.2,
-    backbone_degree=(0, 4),
+    backbone_degree=(0, 2),
     tolerance=0.1,
     minimum_intrachain_depth=2,
     volume_constraint=None,
@@ -440,10 +441,22 @@ def crosslink(
             "only CuboidConstraint (or None) is implemented."
         )
 
-    # filter down to valid backbone sites here
-    backbone_sitesArray = _filter_initial_backbones(
+    # normalize backbone_degree once, so we can enforce max_backbone_degree
+    # ourselves as sites get consumed during the loop below
+    _, max_backbone_degree = _normalize_degree_range(backbone_degree)
+
+    # filter down to valid backbone sites here; keys are eligible node
+    # indices, values are their current degree in path.bond_graph.
+    # This is computed once upfront and updated in-place as crosslinks
+    # are placed (see bottom of loop), rather than being recomputed from
+    # path.bond_graph every iteration.
+    backbone_sitesDict = _filter_initial_backbones(
         path, backbone_bead_name, backbone_degree
     )
+    if minimum_intrachain_depth:
+        backbone_graph = _get_backbone_graph(path, backbone_bead_name)
+    else:
+        backbone_graph = None  # no checks necessary
 
     # key to access supported crosslink geometry functions
     if crosslinker is None:
@@ -488,6 +501,13 @@ def crosslink(
     while n_placed < n_crosslinks and attempt < max_attempts:
         attempt += 1
 
+        backbone_sitesArray = np.array(list(backbone_sitesDict.keys()))
+        if backbone_sitesArray.size == 0:
+            raise PathConvergenceError(
+                f"No backbone sites remain eligible under backbone_degree={backbone_degree} "
+                f"after placing {n_placed}/{n_crosslinks} crosslinks."
+            )
+
         if crosslinkKey == 0:
             candidatesGenerator = direct_crosslink
             generator_kwargs = {
@@ -496,7 +516,7 @@ def crosslink(
                 "crosslink_bond_lengthList": crosslink_bond_lengthList,
                 "bond_tolerance": tolerance,
                 "rng": rng,
-                "bond_graph": path.bond_graph,
+                "bond_graph": backbone_graph,
                 "minimum_intrachain_depth": minimum_intrachain_depth,
                 "box": box,
             }
@@ -508,7 +528,7 @@ def crosslink(
                 "crosslink_bond_lengthList": crosslink_bond_lengthList,
                 "bond_tolerance": tolerance,
                 "rng": rng,
-                "bond_graph": path.bond_graph,
+                "bond_graph": backbone_graph,
                 "minimum_intrachain_depth": minimum_intrachain_depth,
                 "box": box,
             }
@@ -559,12 +579,31 @@ def crosslink(
             )
         elif crosslinker_pos is None:  # never found a viable candidate after loop
             raise PathConvergenceError(
-                "Found no valid candidate sites in backbone for crosslinking."
+                f"Found no valid candidate sites in backbone for crosslinking after creating {n_placed}/{n_crosslinks} crosslinks."
             )
+
         if crosslinkKey == 0:
-            path.bond_graph.add_edge(*candidate)
+            if path.bond_graph.has_edge(*candidate):
+                # direct_crosslink has no built-in duplicate-pair
+                # exclusion; treat re-proposals of an existing bond as a
+                # failed attempt so they don't silently consume a
+                # placement slot.
+                continue
+            path.bond_graph.add_edge(*candidate, crosslink=True)
+            consumed_sites = tuple(int(c) for c in candidate)
         else:  # any other number of connection sites
             _insert_crosslinker(path, crosslinker, candidate, crosslinker_pos, box)
+            consumed_sites = tuple(int(c) for c in candidate)
+
+        # increment degree for every backbone site consumed by this
+        # placement, and drop any that have now exceeded max_backbone_degree
+        for site in consumed_sites:
+            if site not in backbone_sitesDict:
+                continue  # defensive; e.g. non-backbone crosslinker-inserted node
+            backbone_sitesDict[site] += 1
+            if backbone_sitesDict[site] > max_backbone_degree:
+                del backbone_sitesDict[site]
+
         n_placed += 1
         if verbose and n_placed % 10 == 0:
             print(f"Placed {n_placed}/{n_crosslinks} crosslinks")
@@ -579,14 +618,13 @@ def crosslink(
 
     return path
 
-
 # =============================================================================
 # General crosslink functions
 # =============================================================================
 
 
 def _filter_initial_backbones(path, backbone_name, backbone_degree):
-    """Return a list of valid backbones in path.
+    """Return a dict of valid backbone sites in path, mapped to their current degree.
 
     Parameters
     ----------
@@ -603,9 +641,11 @@ def _filter_initial_backbones(path, backbone_name, backbone_degree):
 
     Returns
     -------
-    backbones : np.ndarray (M,3) of integers
-        Where M is the number of valid backbones. Each integer is an index in the overall path
-        that can be considered a backbone.
+    backbone_sitesDict : dict[int, int]
+        Mapping of valid backbone node index -> its current degree in
+        path.bond_graph. Only includes sites whose name matches
+        backbone_name (if provided) and whose degree falls within
+        [min_backbone_degree, max_backbone_degree] at call time.
 
     Notes
     -----
@@ -629,21 +669,91 @@ def _filter_initial_backbones(path, backbone_name, backbone_degree):
         )
         min_backbone_degree = int(backbone_degree[0])
         max_backbone_degree = int(backbone_degree[1])
+    else:
+        raise TypeError(
+            f"Unsupported backbone_degree type {type(backbone_degree).__name__}"
+        )
+
     n = path.bond_graph.number_of_nodes()
     degrees = np.zeros(n, dtype=int)
     nodes, degs = zip(*path.bond_graph.degree())
     degrees[list(nodes)] = degs
 
     if backbone_name is None:
-        name_ok = True
+        name_ok = np.ones(n, dtype=bool)
     else:
         name_ok = np.isin(
             path.beads, np.fromiter(backbone_namesSet, dtype=path.beads.dtype)
         )
-    return np.flatnonzero(
+
+    valid_sites = np.flatnonzero(
         (degrees >= min_backbone_degree) & (degrees <= max_backbone_degree) & name_ok
     )
 
+    backbone_sitesDict = {int(site): int(degrees[site]) for site in valid_sites}
+    return backbone_sitesDict
+
+def _normalize_degree_range(backbone_degree):
+    if isinstance(backbone_degree, (int, np.integer)):
+        return 0, int(backbone_degree)
+    min_deg, max_deg = backbone_degree
+    return int(min_deg), int(max_deg)
+
+def _get_backbone_graph(path, backbone_bead_name=None):
+    """
+    Extract the backbone-only bond graph from `path`.
+
+    Returns a graph containing only the original backbone connectivity
+    (i.e. excluding bonds added later as crosslinks between backbones).
+    Every node is tagged with an `eligible` attribute indicating whether
+    its bead name matches `backbone_bead_name`, so it can be used as a
+    connection/crosslink site.
+
+    Parameters
+    ----------
+    path : Path
+        Custom object exposing:
+            path.bond_graph : networkx.Graph
+                Nodes are integer bead indices (0..n-1). Crosslink bonds
+                added after the backbone was built should carry an edge
+                attribute `bond_graph.edges[u, v]['crosslink'] = True`.
+            path.beads : sequence
+                path.beads[i].name gives the bead name at node i.
+    backbone_bead_name : str or list of str, optional
+        Name(s) of beads eligible to act as connection sites. If a list,
+        one entry per connection site. If None, every backbone bead is
+        treated as eligible.
+
+    Returns
+    -------
+    networkx.Graph
+        Backbone-only subgraph of path.bond_graph, with nodes annotated
+        with `name` and `eligible` attributes.
+    """
+    if backbone_bead_name is None:
+        eligible_names = None
+    elif isinstance(backbone_bead_name, str):
+        eligible_names = {backbone_bead_name}
+    else:
+        eligible_names = set(backbone_bead_name)
+
+    source_graph = path.bond_graph
+    backbone_graph = nx.Graph()
+    backbone_graph.add_nodes_from(source_graph.nodes)
+
+    for u, v, data in source_graph.edges(data=True):
+        if data.get("crosslink", False):
+            continue
+        backbone_graph.add_edge(u, v)
+
+    for node in backbone_graph.nodes:
+        bead_name = path.beads[node]
+        backbone_graph.nodes[node]["name"] = bead_name
+        backbone_graph.nodes[node]["eligible"] = (
+            eligible_names is None or bead_name in eligible_names
+        )
+
+    return backbone_graph
 
 def _insert_crosslinker(
     path,
@@ -674,7 +784,7 @@ def _insert_crosslinker(
     previous_n_nodes = len(path)
     path.add_path(crosslinker, crosslinker_pos)
     for clink_site, backbone_site in zip(crosslinker.connection_sites, candidate):
-        path.bond_graph.add_edge(previous_n_nodes + clink_site, backbone_site)
+        path.bond_graph.add_edge(previous_n_nodes + clink_site, backbone_site,  crosslink=True)
 
 
 # =============================================================================

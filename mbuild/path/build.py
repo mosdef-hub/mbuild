@@ -98,6 +98,8 @@ class Path:
             # Passed array of bead names, cast to the bead name dtype
             elif isinstance(bead_name, np.ndarray):
                 self.beads = bead_name.astype(BEAD_NAME_DTYPE)
+            elif isinstance(bead_name, list):
+                self.beads = np.array(bead_name, dtype=BEAD_NAME_DTYPE)
             for idx in range(len((self.coordinates))):
                 self.bond_graph.add_node(idx)
         # Nothing is defined, create empty place holders for coords, bond graph and bead names
@@ -139,9 +141,10 @@ class Path:
     @classmethod
     def from_compound(cls, compound):
         coordinates = compound.xyz
+        names = [particle.name for particle in compound.particles()]
 
         # Create the path with coordinates and bond graph
-        path = cls(coordinates=coordinates, bead_name=compound.name)
+        path = cls(coordinates=coordinates, bead_name=names)
         path.bond_graph = nx.Graph()
 
         # Ensure all nodes have xyz and name attributes

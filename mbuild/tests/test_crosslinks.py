@@ -492,10 +492,60 @@ class TestCrosslink(BaseTest):
             crosslink_bond_length=2,
             n_crosslinks=3,
             minimum_intrachain_depth=2,
+            
         )
         assert len(parallel_chains.bond_graph.edges()) == 7
         edges = set(list(parallel_chains.bond_graph.edges()))
         for edge in [(0, 1), (1, 2), (3, 4), (4, 5), (0, 3), (1, 4), (2, 5)]:
+            assert edge in edges
+
+    def test_get_backbone_degree_correct_on_n_crosslinks(self):
+        # Two linear paths offset by two
+        coords = np.array([[0, 0, 0], [1, 0, 0], [2, 0, 0], [3, 0, 0]], dtype=np.float32)
+        linear_path = Path(coords, bead_name="_A")
+        linear_path._connect_edges("linear")
+        linear_path.append_coordinates(coords + np.array([0, 2, 0]), bead_names="_A")
+        linear_path.form_linear_bond_graph(np.arange(4, 8))
+
+        path1 = copy.deepcopy(linear_path)
+        path2 = copy.deepcopy(linear_path)
+        path3 = copy.deepcopy(linear_path)
+        crosslink( # check that form two middle bonds
+            path1,
+            None,
+            n_crosslinks=2,
+            crosslink_bond_length=2,
+            backbone_degree=(2,2), # should only be able to form two crosslinks
+            minimum_intrachain_depth=2,
+            tolerance=0,
+        )
+        assert len(path1.bond_graph.edges()) == 8
+        edges = set(list(path1.bond_graph.edges()))
+        for edge in [(0, 1), (1, 2), (2, 3), (4, 5), (5, 6), (6,7), (1,5), (2,6)]:
+            assert edge in edges
+        with pytest.raises(PathConvergenceError):
+            crosslink( # check that you can't form links on end chains
+                path2,
+                None,
+                n_crosslinks=3,
+                crosslink_bond_length=2,
+                backbone_degree=(2,2), # should only be able to form two crosslinks
+                minimum_intrachain_depth=3,
+                tolerance=0,
+            )
+        crosslink( # Validate that intrachain_depth doesn't cross backbones as bond_graph
+            # forms more and more crosslinks
+            path3,
+            None,
+            n_crosslinks=2,
+            crosslink_bond_length=2,
+            backbone_degree=(2,2), # should only be able to form two crosslinks
+            minimum_intrachain_depth=3,
+            tolerance=0,
+        )
+        assert len(path3.bond_graph.edges()) == 8
+        edges = set(list(path3.bond_graph.edges()))
+        for edge in [(0, 1), (1, 2), (2, 3), (4, 5), (5, 6), (6,7), (1,5), (2,6)]:
             assert edge in edges
 
 
