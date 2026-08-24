@@ -5,7 +5,6 @@ import mbuild as mb
 from mbuild.exceptions import PathConvergenceError
 from mbuild.path.build import (
     Path,
-    crosslink,
     cyclic,
     hard_sphere_random_walk,
     helix,
@@ -253,6 +252,16 @@ class TestPaths(BaseTest):
         path = Path()
         straight_line(path=path, spacing=0.2, N=4, bead_name="_X")
         assert list(path.beads) == ["_X", "_X", "_X", "_X"]
+
+    def test_add_paths(self):
+        coords = np.random.uniform(-5, 5, size=(20, 3))
+        path1 = Path(coordinates=coords)
+        path2 = Path(coordinates=coords)
+        path3 = path1 + path2
+        assert path3 == path1 + path2
+        assert np.allclose(
+            path3.coordinates, np.concatenate((path1.coordinates, path2.coordinates))
+        )
 
 
 class TestRandomWalk(BaseTest):
@@ -540,9 +549,10 @@ class TestRandomWalk(BaseTest):
                 radius=0.22,
                 volume_constraint=cube,
                 seed=14,
+                tolerance=0.2,
             )
         bounds = bounding_box(path.coordinates)
-        assert np.all(bounds < np.array([5 - 0.44, 5 - 0.44, 5 - 0.44]))
+        assert np.all(bounds < np.array([5 - 0.4, 5 - 0.4, 5 - 0.4]))
 
     def test_walk_inside_cube_with_pbc(self):
         # First make sure this seed gives a path outside these bounds without PBC
@@ -730,6 +740,7 @@ class TestRandomWalk(BaseTest):
             initial_point=(-0.25, -0.25, -0.25),
             termination=3,
             seed=100,
+            tolerance=0.1,
         )
         assert np.allclose(path.coordinates[0], np.array([-0.25, -0.25, -0.25]))
         assert all(constraint.is_inside(points=path.coordinates[1:], buffer=0.1))

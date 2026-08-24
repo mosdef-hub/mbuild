@@ -108,7 +108,7 @@ def check_path(
         for j in range(existing_points.shape[1]):
             diff = existing_points[i, j] - new_point[j]
             # Apply minimum-image convention on periodic axes
-            if pbc[j]:
+            if pbc[j] and not (box_lengths[0] + 1 == box_lengths[0]):  # handles inf box
                 diff -= np.round(diff / box_lengths[j]) * box_lengths[j]
             dist_sq += diff * diff
         if dist_sq < min_sq_dist:
