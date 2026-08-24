@@ -14,6 +14,7 @@ from mbuild.exceptions import PathConvergenceError
 from mbuild.path.constraints import CuboidConstraint, CylinderConstraint
 from mbuild.path.namers import BEAD_NAME_DTYPE, BeadNamer
 from mbuild.path.path_utils import (
+    check_angle_range,
     check_path,
     random_coordinate,
 )
@@ -1456,70 +1457,6 @@ def hard_sphere_random_walk(
     return path
 
 
-def _angle_range(angles_sampler):
-    """Return the smallest and largest angle a sampler can produce.
-
-    Returns None for distributions with unbounded support.
-    """
-    if angles_sampler.distribution == "uniform":
-        return (
-            float(angles_sampler.kwargs["low"]),
-            float(angles_sampler.kwargs["high"]),
-        )
-    if angles_sampler.distribution == "choice":
-        angles = np.asarray(angles_sampler.kwargs["a"], dtype=float)
-        return float(angles.min()), float(angles.max())
-    return None
-
-
-def _check_angle_range(bond_length, radius, angles_sampler):
-    """Compare the sampled angle range against the angle radius allows.
-
-    Sites two bonds apart are separated by ``2 * bond_length * sin(theta / 2)``
-    for a bond angle theta, and are not excluded from the overlap check. Angles
-    below the critical angle place a new site within ``radius`` of the site two
-    bonds back, so those angles are always rejected.
-
-    Raises
-    ------
-    ValueError
-        If no angle in the sampled range can avoid the overlap.
-    """
-    ratio = radius / (2.0 * bond_length)
-    if ratio > 1.0:
-        raise ValueError(
-            f"A {radius=} larger than twice {bond_length=} leaves no bond angle "
-            "that avoids overlapping the site two bonds back. Reduce radius or "
-            "increase bond_length."
-        )
-    critical_angle = 2.0 * np.arcsin(ratio)
-    angle_range = _angle_range(angles_sampler)
-    if angle_range is None:
-        return
-    low, high = angle_range
-    if critical_angle >= high:
-        raise ValueError(
-            f"With {bond_length=} and {radius=}, bond angles below "
-            f"{np.degrees(critical_angle):.1f} degrees overlap the site two "
-            f"bonds back, which rejects every angle in the sampled range of "
-            f"{np.degrees(low):.1f} to {np.degrees(high):.1f} degrees. "
-            "Reduce radius, increase bond_length, or raise rw_angles."
-        )
-    if critical_angle > low:
-        if angles_sampler.distribution == "uniform":
-            fraction = (critical_angle - low) / (high - low)
-        else:
-            angles = np.asarray(angles_sampler.kwargs["a"], dtype=float)
-            fraction = float(np.mean(angles < critical_angle))
-        logger.warning(
-            f"With {bond_length=} and {radius=}, bond angles below "
-            f"{np.degrees(critical_angle):.1f} degrees overlap the site two "
-            f"bonds back. This rejects {fraction:.0%} of the sampled range "
-            f"starting at {np.degrees(low):.1f} degrees, biasing the walk "
-            "toward wider angles."
-        )
-
-
 def _normalize_initial_point(initial_point):
     """Resolve a user given initial_point into a value and what it means.
 
@@ -1689,7 +1626,7 @@ class RandomWalkState:
         self.bias = bias
         self.trial_batch_size = trial_batch_size
         self.chunk_size = chunk_size
-        _check_angle_range(bond_length, radius, self.angles)
+        check_angle_range(bond_length, radius, self.angles)
 
         # State tracking
         self.count = 0
