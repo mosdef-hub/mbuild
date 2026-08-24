@@ -399,7 +399,11 @@ def crosslink(
         from available backbones. See _filter_initial_backbones for more info.
         Values are inclusive. If only a single integer value is provided, the
         minimum_backbone_degree is assumed to be 0 and the
-        maximum_backbone_degree is used as the passed argument.
+        maximum_backbone_degree is set from that integer. Note that the resultant
+        path will end with crosslinked sites with > than the maximum_backbone_degree,
+        since the backbone site will only be excluded once it falls outside of this
+        specified range, i.e. once it forms an edge that pushes it past the maximum
+        criteria.
     tolerance : float, default 0.1
         Fractional tolerance on bond lengths (0.1 = ±10%).
     minimum_intrachain_depth : int, default 2
