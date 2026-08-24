@@ -813,6 +813,7 @@ def direct_crosslink(
 ):
     """Yield candidate backbone site pairs for a direct crosslink bond."""
     box_center = box.center
+    shifted_coords32 = (coords - box_center).astype(np.float32)
 
     bond_length = crosslink_bond_lengthList[0]
     r_max = bond_length * (1 + bond_tolerance) + 1e-4  # 1e-4 edge padding
@@ -837,7 +838,7 @@ def direct_crosslink(
         # _find_neighbors dispatches to AABBQuery (all-periodic) or tiled
         # cKDTree (any aperiodic axis).
         neighbors = _find_neighbors(
-            coords - box_center,
+            shifted_coords32,
             box,
             origin,
             r_max=r_max,
@@ -897,7 +898,7 @@ def one_site_crosslink(
     # Shift to freud's box frame once; all neighbor queries use this array.
     # TODO: Probably should shift all coordinates centered at 0 at beginning of
     # crosslink function
-    shifted_coords = (coords - box_center).astype(np.float32)
+    shifted_coords32 = (coords - box_center).astype(np.float32)
     backbone_set = set(backbone_sites.tolist())
     n_backbones = len(backbone_sites)
 
@@ -916,7 +917,7 @@ def one_site_crosslink(
         # _find_neighbors dispatches to AABBQuery (all-periodic) or tiled
         # cKDTree (any aperiodic axis).
         neighbors = _find_neighbors(
-            shifted_coords,
+            shifted_coords32,
             box,
             origin,
             r_max=r_max,
