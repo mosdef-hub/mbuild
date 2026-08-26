@@ -9,6 +9,17 @@ from mbuild.path.path_utils import (
 
 
 class Bias:
+    """Base class for biases applied to candidate sites in a random walk.
+
+    Sub classes measure a signal over candidate sites and rank them with `_score`.
+
+    Parameters
+    ----------
+    weight : float, required
+        Bias weight in (0, 1]. 1 ranks candidates by the signal alone; values
+        approaching 0 rank them close to randomly.
+    """
+
     def __init__(self, weight):
         if weight <= 0 or weight > 1:
             raise ValueError(
@@ -18,6 +29,17 @@ class Bias:
         # Large beta diminishes the effect of noise
         self.beta = self.weight / max(1e-6, (1.0 - self.weight))
         self.noise_scale = 1 - self.weight
+
+    def _score(self, signal):
+        """Score candidates by their signal plus noise scaled to the signal's spread.
+
+        A flat signal is ordered by noise alone.
+        """
+        spread = np.std(signal)
+        if spread == 0:
+            spread = 1.0
+        noise = self.rng.normal(0.0, self.noise_scale * spread, size=signal.shape)
+        return self.beta * signal + noise
 
     def _attach_path(self, path, state):
         """Create access Path and RandomWalkState used by hard_sphere_random_walk."""
@@ -66,8 +88,7 @@ class TargetCoordinate(Bias):
             Returns the original candidate array, sorted according to the bias.
         """
         sq_distances = self._target_sq_distances(self.target_coordinate, candidates)
-        noise = self.rng.normal(0, self.noise_scale, size=sq_distances.shape)
-        scores = self.beta * sq_distances + noise
+        scores = self._score(sq_distances)
         # Target coordinate should favor short distances, sort in ascending order (np default)
         sort_idx = np.argsort(scores)
         return candidates[sort_idx]
@@ -98,8 +119,7 @@ class AvoidCoordinate(Bias):
             Returns the original candidate array, sorted according to the bias.
         """
         sq_distances = self._target_sq_distances(self.avoid_coordinate, candidates)
-        noise = self.rng.normal(0, self.noise_scale, size=sq_distances.shape)
-        scores = self.beta * sq_distances + noise
+        scores = self._score(sq_distances)
         # Avoid cooardinate should favor larger distances, sort in descending order
         sort_idx = np.argsort(scores)[::-1]
         return candidates[sort_idx]
@@ -135,8 +155,7 @@ class TargetType(Bias):
         densities = self._target_density(
             candidates=candidates, target_coords=target_coords, r_cut=self.r_cut
         )
-        noise = self.rng.normal(0, self.noise_scale, size=densities.shape)
-        scores = self.beta * densities + noise
+        scores = self._score(densities)
         # Target type should favor larger densities, sort in descending order
         sort_idx = np.argsort(scores)[::-1]
         return candidates[sort_idx]
@@ -171,8 +190,7 @@ class AvoidType(Bias):
         densities = self._target_density(
             candidates=candidates, target_coords=target_coords, r_cut=self.r_cut
         )
-        noise = self.rng.normal(0, self.noise_scale, size=densities.shape)
-        scores = self.beta * densities + noise
+        scores = self._score(densities)
         # Avoid type should favor smaller densities, sort in ascending order (np default)
         sort_idx = np.argsort(scores)
         return candidates[sort_idx]
@@ -214,8 +232,7 @@ class TargetDirection(Bias):
         next_step_unit_vectors = next_step_vectors / norms
         # Alignment score: dot product with target direction
         alignment = np.dot(next_step_unit_vectors, self.direction)
-        noise = self.rng.normal(0.0, self.noise_scale, size=alignment.shape)
-        scores = self.beta * alignment + noise
+        scores = self._score(alignment)
         # Larger dot product = better alignment with target, sort descending
         sort_idx = np.argsort(scores)[::-1]
         return candidates[sort_idx]
@@ -253,8 +270,7 @@ class AvoidDirection(Bias):
         next_step_unit_vectors = next_step_vectors / norms
         # Alignment score: dot product with target direction
         alignment = np.dot(next_step_unit_vectors, self.direction)
-        noise = self.rng.normal(0.0, self.noise_scale, size=alignment.shape)
-        scores = self.beta * alignment + noise
+        scores = self._score(alignment)
         # Larger dot product = better alignment with target, sort ascending (np default)
         sort_idx = np.argsort(scores)
         return candidates[sort_idx]
