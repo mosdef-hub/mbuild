@@ -76,6 +76,39 @@ class TestPaths(BaseTest):
         for edge in path.bond_graph.edges(data=True):
             assert np.allclose(edge[2]["direction"], np.array([1, 0, 0]))
 
+    def test_initial_point(self):
+        """Every builder places its first site at initial_point."""
+        initial_point = (1.5, -2.0, 3.0)
+        builders = [
+            (straight_line, dict(spacing=0.25, N=10)),
+            (cyclic, dict(spacing=0.25, N=20)),
+            (knot, dict(spacing=0.25, N=40, m=3)),
+            (spiral_2D, dict(N=30, a=0.5, b=0.1, spacing=0.25)),
+            (zigzag, dict(N=20, spacing=0.25)),
+            (helix, dict(N=30, radius=0.5, rise=0.1, twist=30)),
+        ]
+        for builder, kwargs in builders:
+            at_origin = builder(**kwargs).coordinates
+            shifted = builder(initial_point=initial_point, **kwargs).coordinates
+            assert np.allclose(shifted[0], initial_point)
+            # Only translated; the shape of the path is unchanged
+            assert np.allclose(shifted - shifted[0], at_origin - at_origin[0])
+
+    def test_initial_point_appends_to_path(self):
+        """Builders place their segment at initial_point within an existing path."""
+        path = straight_line(spacing=0.25, N=5)
+        straight_line(path=path, spacing=0.25, N=5, initial_point=(4.0, 0.0, 0.0))
+        assert len(path.coordinates) == 10
+        assert np.allclose(path.coordinates[0], (0, 0, 0))
+        assert np.allclose(path.coordinates[5], (4.0, 0.0, 0.0))
+        # The two segments are bonded separately, not to each other
+        assert path.bond_graph.number_of_edges() == 8
+
+    def test_knot_not_closed(self):
+        path = knot(spacing=0.25, N=50, m=3, closed=False)
+        assert len(path.coordinates) == 50
+        assert path.bond_graph.number_of_edges() == 49
+
     def test_cyclic_parameters(self):
         path = Path()
         cyclic(path=path, spacing=1, N=20)
