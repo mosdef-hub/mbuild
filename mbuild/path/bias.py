@@ -87,7 +87,12 @@ class TargetCoordinate(Bias):
         candidates : np.ndarray (N,3)
             Returns the original candidate array, sorted according to the bias.
         """
-        sq_distances = self._target_sq_distances(self.target_coordinate, candidates)
+        sq_distances = self._target_sq_distances(
+            self.target_coordinate,
+            candidates,
+            self.state.pbc,
+            self.state.box_lengths,
+        )
         scores = self._score(sq_distances)
         # Target coordinate should favor short distances, sort in ascending order (np default)
         sort_idx = np.argsort(scores)
@@ -118,7 +123,12 @@ class AvoidCoordinate(Bias):
         candidates : np.ndarray (N,3)
             Returns the original candidate array, sorted according to the bias.
         """
-        sq_distances = self._target_sq_distances(self.avoid_coordinate, candidates)
+        sq_distances = self._target_sq_distances(
+            self.avoid_coordinate,
+            candidates,
+            self.state.pbc,
+            self.state.box_lengths,
+        )
         scores = self._score(sq_distances)
         # Avoid cooardinate should favor larger distances, sort in descending order
         sort_idx = np.argsort(scores)[::-1]

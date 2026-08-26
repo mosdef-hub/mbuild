@@ -10,7 +10,13 @@ from mbuild.path.bias import (
     TargetType,
 )
 from mbuild.path.build import hard_sphere_random_walk
-from mbuild.path.termination import NumAttempts, NumSites, Termination
+from mbuild.path.constraints import CuboidConstraint
+from mbuild.path.termination import (
+    NumAttempts,
+    NumSites,
+    Termination,
+    WithinCoordinate,
+)
 from mbuild.tests.base_test import BaseTest, radius_of_gyration
 
 
@@ -180,3 +186,44 @@ class TestBias(BaseTest):
             # A given weight behaves the same at every signal scale
             assert picked[0.9] > 0.85
             assert 0.1 < picked[0.2] < 0.6
+
+    def test_target_coordinate_pbc(self):
+        """Under PBC the bias steers across the nearest boundary, not through the box."""
+        L = 10.0
+        box = CuboidConstraint(
+            Lx=L, Ly=L, Lz=L, center=(0, 0, 0), pbc=(True, True, True)
+        )
+        start = np.array([4.0, 0.0, 0.0])
+        target = np.array([-4.0, 0.0, 0.0])
+        # target is 8 nm away directly, but only 2 nm across the +x boundary
+        path = hard_sphere_random_walk(
+            termination=Termination([NumSites(6), NumAttempts(1e4)]),
+            bond_length=0.25,
+            radius=0.2,
+            bias=TargetCoordinate(target_coordinate=target, weight=0.95),
+            initial_point=start,
+            volume_constraint=box,
+            seed=3,
+        )
+        # Steps head toward the near boundary (+x), away from the raw target
+        first_steps = path.coordinates[1:5, 0] - path.coordinates[0:4, 0]
+        assert np.all(first_steps > 0)
+
+    def test_within_coordinate_pbc(self):
+        """WithinCoordinate measures distance to the target in minimum image."""
+        L = 10.0
+        target = np.array([-4.9, 0.0, 0.0])
+        # 0.2 nm from the target across the +x boundary, 9.8 nm from it directly
+        coordinates = np.array([[4.9, 0.0, 0.0]])
+        names = np.array(["_A"])
+
+        class _State:
+            pbc = np.array([True, True, True])
+            box_lengths = np.array([L, L, L], dtype=np.float32)
+
+        unattached = WithinCoordinate(target_coordinate=target, distance=0.3)
+        assert not unattached.is_met(coordinates, names)
+
+        periodic = WithinCoordinate(target_coordinate=target, distance=0.3)
+        periodic.state = _State()
+        assert periodic.is_met(coordinates, names)
