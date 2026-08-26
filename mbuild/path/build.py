@@ -1714,6 +1714,8 @@ class RandomWalkState:
         check_angle_range(bond_length, radius, self.angles)
 
         # State tracking
+        self._excluded_buffer = np.empty(1, dtype=np.int64)
+        self._no_excluded = np.empty(0, dtype=np.int64)
         self.count = 0
         self.init_count = 0
         self.attempts = 0
@@ -1734,11 +1736,13 @@ class RandomWalkState:
         the existing sites.
         """
         if self.count > self.previous_count:
-            return np.array([self.count - 1], dtype=np.int64)
+            self._excluded_buffer[0] = self.count - 1
+            return self._excluded_buffer
         attach_index = self.attach_index
         if attach_index < 0:
-            return np.empty(0, dtype=np.int64)
-        return np.array([attach_index], dtype=np.int64)
+            return self._no_excluded
+        self._excluded_buffer[0] = attach_index
+        return self._excluded_buffer
 
     def check_termination(self, path, coordinates, beads):
         """Examine and process termination if we have reached.
