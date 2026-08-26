@@ -1690,13 +1690,17 @@ class RandomWalkState:
         self.connectivity = connectivity
         self.previous_count = previous_count
         self.attaches_to_path = self.connectivity == "link-linear"
-        self.attach_index = -1 # default case
+        self.attach_index = -1  # default case
         if self.attaches_to_path:
             self.attach_index = (
-                self.initial_point if self.starting_from_site else self.previous_count - 1
+                self.initial_point
+                if self.starting_from_site
+                else self.previous_count - 1
             )
         self.initial_point_distance = (
-            self.bond_length if self.attaches_to_path else max(self.bond_length, self.radius)
+            self.bond_length
+            if self.attaches_to_path
+            else max(self.bond_length, self.radius)
         )
 
         self.include_compound = include_compound
@@ -1718,7 +1722,6 @@ class RandomWalkState:
         # Defaults reproduce non-periodic behavior.
         self.pbc = np.array([False, False, False], dtype=np.bool_)
         self.box_lengths = np.array([np.inf, np.inf, np.inf], dtype=np.float32)
-
 
     def excluded_indices(self):
         """Return indices of existing sites bonded to the next candidate.
