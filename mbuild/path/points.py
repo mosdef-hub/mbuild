@@ -74,12 +74,14 @@ def get_second_point(state, existing_points, beads, check_path, next_step):
     if state.bias:
         xyzs = state.bias(candidates=xyzs, coordinates=existing_points, names=beads)
 
+    excluded_indices = state.excluded_indices()
     for xyz in xyzs:
         if check_path(
             existing_points=existing_points,
             new_point=xyz,
             radius=state.radius,
             tolerance=state.tolerance,
+            excluded_indices=excluded_indices,
         ):
             return xyz
     return None
@@ -148,6 +150,8 @@ def get_initial_point(state, existing_points, beads, check_path, next_step):
         existing_points = np.concat((existing_points, compound_xyz))
         beads = np.concat((beads, compound_names))
 
+    excluded_indices = state.excluded_indices()
+
     # An initial point was manually given in hard_sphere_random_walk, use that.
     # Check if this point causes any overlaps, if so, raise error.
     if state.initial_point is not None and not state.starting_from_site:
@@ -156,6 +160,7 @@ def get_initial_point(state, existing_points, beads, check_path, next_step):
             new_point=state.initial_point,
             radius=state.radius,
             tolerance=state.tolerance,
+            excluded_indices=excluded_indices,
         ):
             return state.initial_point
         raise PathConvergenceError(
@@ -177,7 +182,7 @@ def get_initial_point(state, existing_points, beads, check_path, next_step):
         xyzs = next_step(
             pos1=None,  # will generate sphere of points around pos2
             pos2=starting_xyz,
-            bond_length=state.bond_length,
+            bond_length=state.initial_point_distance,
             thetas=batch_angles,
             r_vectors=batch_vectors,
         )
@@ -218,6 +223,7 @@ def get_initial_point(state, existing_points, beads, check_path, next_step):
                 new_point=xyz,
                 radius=state.radius,
                 tolerance=state.tolerance,
+                excluded_indices=excluded_indices,
             ):
                 return xyz
         raise PathConvergenceError(
@@ -240,6 +246,7 @@ def get_initial_point(state, existing_points, beads, check_path, next_step):
                 new_point=xyz,
                 radius=state.radius,
                 tolerance=state.tolerance,
+                excluded_indices=excluded_indices,
             ):
                 return xyz
         raise PathConvergenceError(
@@ -262,6 +269,7 @@ def get_initial_point(state, existing_points, beads, check_path, next_step):
                 new_point=xyz,
                 radius=state.radius,
                 tolerance=state.tolerance,
+                excluded_indices=excluded_indices,
             ):
                 return xyz
         raise PathConvergenceError(

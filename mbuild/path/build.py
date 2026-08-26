@@ -14,6 +14,7 @@ from mbuild.exceptions import PathConvergenceError
 from mbuild.path.constraints import CuboidConstraint, CylinderConstraint
 from mbuild.path.namers import BEAD_NAME_DTYPE, BeadNamer
 from mbuild.path.path_utils import (
+    check_angle_range,
     check_path,
     random_coordinate,
 )
@@ -1490,6 +1491,7 @@ def hard_sphere_random_walk(
         existing_points = coordinates[: state.count]
         if state.include_compound:  # Include compound's particle coordinates
             existing_points = np.concat((existing_points, include_compound.xyz))
+        excluded_indices = state.excluded_indices()
         # Iterate through current state of candidates, break after first accept
         for xyz in candidates:
             if check_path_cpu(
@@ -1499,6 +1501,7 @@ def hard_sphere_random_walk(
                 tolerance=tolerance,
                 pbc=pbc,
                 box_lengths=box_lengths,
+                excluded_indices=excluded_indices,
             ):
                 accept_xyz = xyz
                 break
@@ -1630,10 +1633,6 @@ class RandomWalkState:
     ):
         self.bond_length = bond_length
         self.radius = radius
-        if bond_length < radius:
-            raise ValueError(
-                "Bond length should be greater than radius to prevent overlaps."
-            )
         # Single RNG drives all walk randomness (angles, positions, bias,
         # volume-constraint sampling).
         if rng is None:
@@ -1688,9 +1687,23 @@ class RandomWalkState:
         self.initial_point, self.starting_from_site = _normalize_initial_point(
             initial_point
         )
-        self.previous_count = previous_count
-        self.include_compound = include_compound
         self.connectivity = connectivity
+        self.previous_count = previous_count
+        self.attaches_to_path = self.connectivity == "link-linear"
+        self.attach_index = -1  # default case
+        if self.attaches_to_path:
+            self.attach_index = (
+                self.initial_point
+                if self.starting_from_site
+                else self.previous_count - 1
+            )
+        self.initial_point_distance = (
+            self.bond_length
+            if self.attaches_to_path
+            else max(self.bond_length, self.radius)
+        )
+
+        self.include_compound = include_compound
         self.seed = seed
         self.volume_constraint = volume_constraint
         self.termination = termination
@@ -1698,8 +1711,11 @@ class RandomWalkState:
         self.bias = bias
         self.trial_batch_size = trial_batch_size
         self.chunk_size = chunk_size
+        check_angle_range(bond_length, radius, self.angles)
 
         # State tracking
+        self._excluded_buffer = np.empty(1, dtype=np.int64)
+        self._no_excluded = np.empty(0, dtype=np.int64)
         self.count = 0
         self.init_count = 0
         self.attempts = 0
@@ -1708,6 +1724,25 @@ class RandomWalkState:
         # Defaults reproduce non-periodic behavior.
         self.pbc = np.array([False, False, False], dtype=np.bool_)
         self.box_lengths = np.array([np.inf, np.inf, np.inf], dtype=np.float32)
+
+    def excluded_indices(self):
+        """Return indices of existing sites bonded to the next candidate.
+
+        Candidates are generated at the bond length from the site they bond
+        to, so that site is left out of the overlap check. Returns the last
+        accepted site once this walk has placed one, the attach site when
+        placing the first site of a walk that links to an existing path, and
+        an empty array when the next candidate has no bonded neighbor among
+        the existing sites.
+        """
+        if self.count > self.previous_count:
+            self._excluded_buffer[0] = self.count - 1
+            return self._excluded_buffer
+        attach_index = self.attach_index
+        if attach_index < 0:
+            return self._no_excluded
+        self._excluded_buffer[0] = attach_index
+        return self._excluded_buffer
 
     def check_termination(self, path, coordinates, beads):
         """Examine and process termination if we have reached.
@@ -1740,35 +1775,11 @@ class RandomWalkState:
             if self.bias:
                 self.bias._clean()
             path._extend_bond_graph()
-            if self.starting_from_site:
-                # build from the given site instead of the last point
-                path._connect_edges(
-                    self.connectivity,
-                    np.arange(self.previous_count, self.count),
-                    self.initial_point,
-                )
-            else:  # build bond graph, and connect to last index in previous path coordinates
-                path._connect_edges(
-                    self.connectivity,
-                    np.arange(self.previous_count, self.count),
-                    self.previous_count,
-                )
+            path._connect_edges(
+                self.connectivity,
+                np.arange(self.previous_count, self.count),
+                self.attach_index,
+            )
             # path._extend_beads(self.bead_name)
             return True
         return False
-
-
-_CUDA_AVAILABLE = None
-
-
-def _get_cuda_available():
-    """Check if numba can access CUDA runtime."""
-    global _CUDA_AVAILABLE
-    if _CUDA_AVAILABLE is None:
-        try:
-            from numba import cuda
-
-            _CUDA_AVAILABLE = cuda.is_available()
-        except Exception:
-            _CUDA_AVAILABLE = False
-    return _CUDA_AVAILABLE
