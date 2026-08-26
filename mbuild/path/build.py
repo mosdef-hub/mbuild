@@ -792,7 +792,14 @@ def lamellar(
     return path
 
 
-def straight_line(spacing, N, path=None, direction=(1, 0, 0), bead_name="_A"):
+def straight_line(
+    spacing,
+    N,
+    path=None,
+    direction=(1, 0, 0),
+    bead_name="_A",
+    initial_point=None,
+):
     """Generates a set of coordinates in a straight line along a given axis.
 
     Parameters
@@ -810,11 +817,18 @@ def straight_line(spacing, N, path=None, direction=(1, 0, 0), bead_name="_A"):
         Name(s) to assign to beads. A plain string assigns the same name to
         every bead. Pass a ``BeadNamer`` instance for heterogeneous sequences.
         See mbuild.path.namers.py
+    initial_point : array-like (1,3), optional, default None
+        If given, translates the path so that its first site sits at this
+        coordinate.
     """
     if path is None:
         path = Path()
     direction = np.asarray(direction)
     coordinates = np.array([np.zeros(3) + i * spacing * direction for i in range(N)])
+    if initial_point is not None:
+        coordinates = coordinates + (
+            np.asarray(initial_point, dtype=float) - coordinates[0]
+        )
     start_index = len(path.coordinates)
     stop_index = start_index + N
     namer = BeadNamer.coerce(bead_name)
@@ -828,7 +842,15 @@ def straight_line(spacing, N, path=None, direction=(1, 0, 0), bead_name="_A"):
     return path
 
 
-def cyclic(spacing=None, N=None, path=None, radius=None, closed=True, bead_name="_A"):
+def cyclic(
+    spacing=None,
+    N=None,
+    path=None,
+    radius=None,
+    closed=True,
+    bead_name="_A",
+    initial_point=None,
+):
     """Generates a set of coordinates evenly spaced along a circle.
 
     Parameters
@@ -848,6 +870,9 @@ def cyclic(spacing=None, N=None, path=None, radius=None, closed=True, bead_name=
         Name(s) to assign to beads. A plain string assigns the same name to
         every bead. Pass a ``BeadNamer`` instance for heterogeneous sequences.
         See mbuild.path.namers.py
+    initial_point : array-like (1,3), optional, default None
+        If given, translates the path so that its first site sits at this
+        coordinate.
 
     Notes
     -----
@@ -871,6 +896,10 @@ def cyclic(spacing=None, N=None, path=None, radius=None, closed=True, bead_name=
     coordinates = np.array(
         [(np.cos(a) * radius, np.sin(a) * radius, 0) for a in angles]
     )
+    if initial_point is not None:
+        coordinates = coordinates + (
+            np.asarray(initial_point, dtype=float) - coordinates[0]
+        )
     start_index = len(path.coordinates)
     stop_index = start_index + len(coordinates)
     namer = BeadNamer.coerce(bead_name)
@@ -889,7 +918,15 @@ def cyclic(spacing=None, N=None, path=None, radius=None, closed=True, bead_name=
     return path
 
 
-def knot(spacing, N, m, path=None, closed=True, bead_name="_A"):
+def knot(
+    spacing,
+    N,
+    m,
+    path=None,
+    closed=True,
+    bead_name="_A",
+    initial_point=None,
+):
     """Generate a knot path.
 
     Parameters
@@ -910,6 +947,9 @@ def knot(spacing, N, m, path=None, closed=True, bead_name="_A"):
         Name(s) to assign to beads. A plain string assigns the same name to
         every bead. Pass a ``BeadNamer`` instance for heterogeneous sequences.
         See mbuild.path.namers.py
+    initial_point : array-like (1,3), optional, default None
+        If given, translates the path so that its first site sits at this
+        coordinate.
     """
     if path is None:
         path = Path()
@@ -956,6 +996,10 @@ def knot(spacing, N, m, path=None, closed=True, bead_name="_A"):
     z_interp = interp1d(arc_lengths, coords_dense[:, 2])(desired_arcs)
     coordinates = np.stack((x_interp, y_interp, z_interp), axis=1)
 
+    if initial_point is not None:
+        coordinates = coordinates + (
+            np.asarray(initial_point, dtype=float) - coordinates[0]
+        )
     start_index = len(path.coordinates)
     stop_index = start_index + len(coordinates)
     namer = BeadNamer.coerce(bead_name)
@@ -969,13 +1013,21 @@ def knot(spacing, N, m, path=None, closed=True, bead_name="_A"):
         )
     else:
         path._connect_edges(
-            connectivit="linear", indices=np.arange(start_index, stop_index)
+            connectivity="linear", indices=np.arange(start_index, stop_index)
         )
     return path
 
 
 def helix(
-    N, radius, rise, twist, path=None, right_handed=True, bottom_up=True, bead_name="_A"
+    N,
+    radius,
+    rise,
+    twist,
+    path=None,
+    right_handed=True,
+    bottom_up=True,
+    bead_name="_A",
+    initial_point=None,
 ):
     """Generate helical path.
 
@@ -1000,6 +1052,9 @@ def helix(
         Name(s) to assign to beads. A plain string assigns the same name to
         every bead. Pass a ``BeadNamer`` instance for heterogeneous sequences.
         See mbuild.path.namers.py
+    initial_point : array-like (1,3), optional, default None
+        If given, translates the path so that its first site sits at this
+        coordinate.
     """
     if path is None:
         path = Path()
@@ -1015,6 +1070,10 @@ def helix(
         z = i * rise if bottom_up else -i * rise
         coordinates[i] = (x, y, z)
 
+    if initial_point is not None:
+        coordinates = coordinates + (
+            np.asarray(initial_point, dtype=float) - coordinates[0]
+        )
     start_index = len(path.coordinates)
     stop_index = start_index + len(coordinates)
     namer = BeadNamer.coerce(bead_name)
@@ -1028,7 +1087,7 @@ def helix(
     return path
 
 
-def spiral_2D(N, a, b, spacing, path=None, bead_name="_A"):
+def spiral_2D(N, a, b, spacing, path=None, bead_name="_A", initial_point=None):
     """Generate a 2D spiral path in the XY plane.
 
     Parameters
@@ -1048,6 +1107,9 @@ def spiral_2D(N, a, b, spacing, path=None, bead_name="_A"):
         Name(s) to assign to beads. A plain string assigns the same name to
         every bead. Pass a ``BeadNamer`` instance for heterogeneous sequences.
         See mbuild.path.namers.py
+    initial_point : array-like (1,3), optional, default None
+        If given, translates the path so that its first site sits at this
+        coordinate.
     """
     if path is None:
         path = Path()
@@ -1065,6 +1127,10 @@ def spiral_2D(N, a, b, spacing, path=None, bead_name="_A"):
         dtheta = spacing / ds_dtheta
         theta += dtheta
 
+    if initial_point is not None:
+        coordinates = coordinates + (
+            np.asarray(initial_point, dtype=float) - coordinates[0]
+        )
     start_index = len(path.coordinates)
     stop_index = start_index + len(coordinates)
     namer = BeadNamer.coerce(bead_name)
@@ -1086,6 +1152,7 @@ def zigzag(
     sites_per_segment=4,
     plane="xy",
     bead_name="_A",
+    initial_point=None,
 ):
     """Generates a path following a zig-zag pattern in a given plane.
 
@@ -1108,6 +1175,9 @@ def zigzag(
         Name(s) to assign to beads. A plain string assigns the same name to
         every bead. Pass a ``BeadNamer`` instance for heterogeneous sequences.
         See mbuild.path.namers.py
+    initial_point : array-like (1,3), optional, default None
+        If given, translates the path so that its first site sits at this
+        coordinate.
     """
     if N % sites_per_segment != 0:
         raise ValueError("N must be evenly divisible by sites_per_segment")
@@ -1154,6 +1224,10 @@ def zigzag(
         elif plane == "yz":
             coordinates[i] = (0, x2d, y2d)
 
+    if initial_point is not None:
+        coordinates = coordinates + (
+            np.asarray(initial_point, dtype=float) - coordinates[0]
+        )
     start_index = len(path.coordinates)
     stop_index = start_index + len(coordinates)
     namer = BeadNamer.coerce(bead_name)
