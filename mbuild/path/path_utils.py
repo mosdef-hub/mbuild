@@ -102,7 +102,8 @@ def check_path(
         return True
     min_sq_dist = (radius - tolerance) ** 2
     n_excluded = excluded_indices.shape[0]
-    next_excluded = 0
+    next_excluded = 0 # counter to increment along excluded_indices, which is sorted
+    use_pbc = np.array([pbc[j] and not (box_lengths[j] + 1 == box_lengths[j]) for j in range(3)])
     for i in range(existing_points.shape[0]):
         # excluded_indices ascends alongside i, so one comparison per point
         if next_excluded < n_excluded and i == excluded_indices[next_excluded]:
@@ -112,7 +113,7 @@ def check_path(
         for j in range(existing_points.shape[1]):
             diff = existing_points[i, j] - new_point[j]
             # Apply minimum-image convention on periodic axes
-            if pbc[j] and not (box_lengths[0] + 1 == box_lengths[0]):  # handles inf box
+            if use_pbc[j]:
                 diff -= np.round(diff / box_lengths[j]) * box_lengths[j]
             dist_sq += diff * diff
         if dist_sq < min_sq_dist:

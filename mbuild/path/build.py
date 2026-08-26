@@ -29,9 +29,6 @@ from mbuild.utils.io import import_
 
 logger = logging.getLogger(__name__)
 
-# Passed to check_path when no existing site is bonded to the candidate.
-NO_EXCLUDED_INDICES = np.empty(0, dtype=np.int64)
-
 
 class Path:
     """Creates a path from a given set of coordinates and a bond graph.
@@ -1690,9 +1687,19 @@ class RandomWalkState:
         self.initial_point, self.starting_from_site = _normalize_initial_point(
             initial_point
         )
-        self.previous_count = previous_count
-        self.include_compound = include_compound
         self.connectivity = connectivity
+        self.previous_count = previous_count
+        self.attaches_to_path = self.connectivity == "link-linear"
+        self.attach_index = -1 # default case
+        if self.attaches_to_path:
+            self.attach_index = (
+                self.initial_point if self.starting_from_site else self.previous_count - 1
+            )
+        self.initial_point_distance = (
+            self.bond_length if self.attaches_to_path else max(self.bond_length, self.radius)
+        )
+
+        self.include_compound = include_compound
         self.seed = seed
         self.volume_constraint = volume_constraint
         self.termination = termination
@@ -1712,34 +1719,6 @@ class RandomWalkState:
         self.pbc = np.array([False, False, False], dtype=np.bool_)
         self.box_lengths = np.array([np.inf, np.inf, np.inf], dtype=np.float32)
 
-    @property
-    def attaches_to_path(self):
-        """Whether the first site of this walk bonds to an existing site."""
-        return self.connectivity == "link-linear"
-
-    @property
-    def attach_index(self):
-        """Index of the existing site that the first site of this walk bonds to.
-
-        Returns -1 when the walk does not bond to an existing site.
-        """
-        if not self.attaches_to_path:
-            return -1
-        if self.starting_from_site:
-            return self.initial_point
-        return self.previous_count - 1
-
-    @property
-    def initial_point_distance(self):
-        """Distance from an existing site at which the first site is placed.
-
-        Uses the bond length when the first site bonds to that existing site.
-        Uses the larger of the bond length and the radius otherwise, so an
-        unbonded first site is placed no closer than contact.
-        """
-        if self.attaches_to_path:
-            return self.bond_length
-        return max(self.bond_length, self.radius)
 
     def excluded_indices(self):
         """Return indices of existing sites bonded to the next candidate.
@@ -1755,7 +1734,7 @@ class RandomWalkState:
             return np.array([self.count - 1], dtype=np.int64)
         attach_index = self.attach_index
         if attach_index < 0:
-            return NO_EXCLUDED_INDICES
+            return np.empty(0, dtype=np.int64)
         return np.array([attach_index], dtype=np.int64)
 
     def check_termination(self, path, coordinates, beads):
@@ -1797,19 +1776,3 @@ class RandomWalkState:
             # path._extend_beads(self.bead_name)
             return True
         return False
-
-
-_CUDA_AVAILABLE = None
-
-
-def _get_cuda_available():
-    """Check if numba can access CUDA runtime."""
-    global _CUDA_AVAILABLE
-    if _CUDA_AVAILABLE is None:
-        try:
-            from numba import cuda
-
-            _CUDA_AVAILABLE = cuda.is_available()
-        except Exception:
-            _CUDA_AVAILABLE = False
-    return _CUDA_AVAILABLE
