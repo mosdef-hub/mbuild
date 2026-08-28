@@ -43,11 +43,12 @@ def get_second_point(state, existing_points, beads, check_path, next_step):
 
     """
     batch_angles, batch_vectors = generate_trials(state)
-    # If this RW is using link linear, pos2 = last site of last
+    # If this RW links to an existing path, the first site of this walk is bonded
+    # to state.attach_index, so that site sets the angle reference for the second.
     # Set pos1 and pos2 before checking include compound and combining coordinates
-    if state.connectivity == "link-linear" and len(existing_points) > 1:
+    if state.connectivity == "link-linear" and state.attach_index >= 0:
         pos1 = existing_points[-1]
-        pos2 = existing_points[-2]
+        pos2 = existing_points[state.attach_index]
     else:
         pos1 = None
         pos2 = existing_points[-1]
@@ -193,7 +194,13 @@ def get_initial_point(state, existing_points, beads, check_path, next_step):
             xyzs = xyzs[is_inside_mask]
 
         if state.bias:
-            xyzs = state.bias(candidates=xyzs, coordinates=existing_points, names=beads)
+            bias_coords = np.concat((existing_points, starting_xyz[None, :]))
+            bias_names = np.concat(
+                (beads, beads[state.initial_point : state.initial_point + 1])
+            )
+            xyzs = state.bias(
+                candidates=xyzs, coordinates=bias_coords, names=bias_names
+            )
 
         # Set up PBC info from volume constraints
         if isinstance(state.volume_constraint, CuboidConstraint):
