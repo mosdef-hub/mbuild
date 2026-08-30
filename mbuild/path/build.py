@@ -442,6 +442,7 @@ class Path:
     def relax(
         self,
         bead_radius,
+        btype="harmonic",
         bond_length=None,
         angles_sampler=None,
         steps=1000,
@@ -457,11 +458,14 @@ class Path:
         Parameters
         ----------
         bead_radius : float or dict
-            WCA bead radius (center-to-center exclusion diameter). A dict keyed
+            LJ or WCA bead radius (center-to-center exclusion diameter). A dict keyed
             by bead type gives each bead type its own size.
         bond_length : float or dict, optional
             Target bond length. Defaults to per-bond-type means over the path.
             A dict is keyed by an unordered bead-type pair.
+        btype : str, optional, default='harmonic'
+            Which bond type to use by default. Harmonic bonds are useful when the current
+            bond_length distribution is far from the bond_length target.
         angles_sampler : mbuild.path.points.AnglesSampler or dict, optional
             If given, adds a tabulated angle potential. A dict keyed by a
             bead-type triple parameterizes angles per type.
@@ -488,7 +492,10 @@ class Path:
         else:
             bond_eff = _mean_bond_length(self)
         forcefield = PathForcefield(
-            radius=bead_radius, bond_length=bond_length, angles=angles_sampler
+            radius=bead_radius,
+            bond_length=bond_length,
+            btype=btype,
+            angles=angles_sampler,
         )
         sim = mbuild.simulation.HoomdSimulation(
             self, forcefield=forcefield, seed=seed, run_on_gpu=run_on_gpu
