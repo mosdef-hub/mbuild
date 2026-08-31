@@ -7,7 +7,7 @@ class CH2(mb.Compound):
     """A methylene bridge."""
 
     def __init__(self):
-        super(CH2, self).__init__()
+        super().__init__()
 
         mb.load(
             "ch2.pdb",

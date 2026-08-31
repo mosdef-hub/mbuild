@@ -277,7 +277,7 @@ def _perform_sanity_check(json_dict):
     json_mb_type = json_dict.get("type", None)
 
     if (not json_mb_type) or (json_mb_type != "Compound"):
-        raise MBuildError("Error. Cannot convert JSON of type: {}".format(json_mb_type))
+        raise MBuildError(f"Error. Cannot convert JSON of type: {json_mb_type}")
 
     [major, minor, patch] = json_mbuild_version.split(".")
     [this_major, this_minor, this_patch] = this_version.split(".")

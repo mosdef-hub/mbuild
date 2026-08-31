@@ -1,6 +1,5 @@
 # Copied from the mdtraj project, commit 3fddb5d  (Mar 10, 2016)
 
-from __future__ import print_function
 
 import os
 import shutil
@@ -12,7 +11,7 @@ from nbconvert import HTMLExporter, PythonExporter
 
 
 def _read(wd, name):
-    with open("{}/{}.ipynb".format(wd, name)) as f:
+    with open(f"{wd}/{name}.ipynb") as f:
         notebook = nbformat.read(f, as_version=4)
     return notebook
 
@@ -37,7 +36,7 @@ def export_html(wd, name):
         body, resources = exporter.from_notebook_node(nb)
 
         for fn, data in resources["outputs"].items():
-            with open("{}/{}".format(wd, fn), "wb") as f:
+            with open(f"{wd}/{fn}", "wb") as f:
                 f.write(data)
         return body
     except Exception as e:
@@ -48,7 +47,7 @@ def export_python(wd, name):
     nb = _read(wd, name)
     exporter = PythonExporter()
     body, resources = exporter.from_notebook_node(nb)
-    with open("{}/{}.py".format(wd, name), "w") as f:
+    with open(f"{wd}/{name}.py", "w") as f:
         f.write(body)
 
 
@@ -67,11 +66,11 @@ class NotebookDirective(Directive):
 
         # get path to notebook
         nb_rel_path = self.arguments[0]
-        nb_abs_path = "{}/../{}".format(setup.confdir, nb_rel_path)
+        nb_abs_path = f"{setup.confdir}/../{nb_rel_path}"
         nb_abs_path = os.path.abspath(nb_abs_path)
         nb_name = os.path.basename(nb_rel_path).split(".")[0]
-        dest_dir = "{}/{}/{}".format(
-            setup.app.builder.outdir, os.path.dirname(nb_rel_path), nb_name
+        dest_dir = (
+            f"{setup.app.builder.outdir}/{os.path.dirname(nb_rel_path)}/{nb_name}"
         )
         fmt = {"wd": dest_dir, "name": nb_name}
 

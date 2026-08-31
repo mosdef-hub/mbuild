@@ -10,7 +10,7 @@ class AmorphousSilicaBulk(mb.Compound):
     """
 
     def __init__(self):
-        super(AmorphousSilicaBulk, self).__init__()
+        super().__init__()
 
         mb.load(
             "amorphous_silica_bulk.pdb",

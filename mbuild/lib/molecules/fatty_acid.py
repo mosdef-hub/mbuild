@@ -40,7 +40,7 @@ class FattyAcid(mb.Compound):
                           (16, "cis"), (19, "cis")]
                 )``
         """
-        super(FattyAcid, self).__init__()
+        super().__init__()
         smiles = self._build_smiles(chain_length, double_bonds or [])
         mb.load(smiles, smiles=True, compound=self)
         self.name = name
