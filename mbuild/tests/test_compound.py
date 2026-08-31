@@ -402,9 +402,12 @@ class TestCompound(BaseTest):
     )
     def test_save_simple(self, ch3, extension):
         # Can't save gsd files with Windows
-        if extension == ".gsd" and not has_hoomd:
-            return True
-        elif extension == ".sdf" and not has_openbabel:
+        if (
+            extension == ".gsd"
+            and not has_hoomd
+            or extension == ".sdf"
+            and not has_openbabel
+        ):
             return True
         outfile = "methyl_out" + extension
         ch3.save(filename=outfile)
@@ -707,7 +710,7 @@ class TestCompound(BaseTest):
         temp_comp = mb.Compound()
         comp_list = []
         label_list = []
-        for j in range(0, 5):
+        for j in range(5):
             comp_list.append(mb.clone(h2o))
             label_list.append("water[$]")
         temp_comp.add(comp_list, label=label_list)
@@ -724,7 +727,7 @@ class TestCompound(BaseTest):
         temp_comp = mb.Compound()
         comp_list = []
         label_list = ["water"]
-        for j in range(0, 5):
+        for j in range(5):
             comp_list.append(mb.clone(h2o))
 
         with pytest.raises(ValueError):
@@ -1081,7 +1084,7 @@ class TestCompound(BaseTest):
         water_list = []
         waters = mb.Compound()
         system = mb.Compound()
-        for i in range(0, 3):
+        for i in range(3):
             water_list.append(mb.clone(water))
 
         waters.add(water_list)
@@ -2195,11 +2198,11 @@ class TestCompound(BaseTest):
 
         for n in range(2):
             child = Compound()
-            child.name = "c_{}".format(n)
+            child.name = f"c_{n}"
             comp.add(child)
             for m in range(3):
                 child_child = Compound()
-                child_child.name = "c_{0}_{1}".format(m, n)
+                child_child.name = f"c_{m}_{n}"
                 child.add(child_child)
 
         graph = comp.to_networkx()
@@ -2228,11 +2231,11 @@ class TestCompound(BaseTest):
 
         for n in range(2):
             child = Compound()
-            child.name = "c_{}".format(n)
+            child.name = f"c_{n}"
             comp.add(child)
             for m in range(3):
                 child_child = Compound()
-                child_child.name = "c_{0}_{1}".format(m, n)
+                child_child.name = f"c_{m}_{n}"
                 child.add(child_child)
 
         graph = comp.to_networkx(names_only=True)
@@ -2350,9 +2353,7 @@ class TestCompound(BaseTest):
     @pytest.mark.skipif(not has_openbabel, reason="Pybel is not installed")
     def test_from_pybel_molecule(self, extension):
         pybel = import_("pybel")
-        chol = list(
-            pybel.readfile(extension, get_fn("cholesterol.{}".format(extension)))
-        )[0]
+        chol = list(pybel.readfile(extension, get_fn(f"cholesterol.{extension}")))[0]
         cmpd = mb.Compound()
         cmpd.from_pybel(chol)
         assert chol.OBMol.NumAtoms() == cmpd.n_particles

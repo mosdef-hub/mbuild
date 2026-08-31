@@ -229,7 +229,7 @@ class TestUtilsConversion(BaseTest):
 
     def test_RB_to_OPLS_f0_not_0_within_tolerance_error(self):
         text_for_error_tolerance = (
-            "f0 \= 2 \* \( c0 \+ c1 \+ c2 \+ c3 \+ c4 \+ c5 \) is not zero. "
+            r"f0 \= 2 \* \( c0 \+ c1 \+ c2 \+ c3 \+ c4 \+ c5 \) is not zero. "
             "The f0/2 term is the constant for the OPLS dihedral. "
             "Since the f0 term is not zero, the dihedral is not an "
             "exact conversion; since this constant does not contribute "
@@ -253,7 +253,7 @@ class TestUtilsConversion(BaseTest):
     def test_RB_to_OPLS_f0_not_0_within_tolerance_error_s(self):
         with pytest.raises(
             TypeError,
-            match=f"The error_tolerance variable must be a float, is type {type('s')}.",
+            match=f"The error_tolerance variable must be a float, is type {str}.",
         ):
             c0 = 0.1
             c1 = 0.1
@@ -275,7 +275,7 @@ class TestUtilsConversion(BaseTest):
     def test_RB_to_OPLS_text_for_error_tolerance_not_bool(self):
         with pytest.raises(
             TypeError,
-            match=f"The text_for_error_tolerance variable must be a bool, is type {type('s')}.",
+            match=f"The text_for_error_tolerance variable must be a bool, is type {str}.",
         ):
             c0 = 0.1
             c1 = 0.1
@@ -342,7 +342,7 @@ class TestUtilsConversion(BaseTest):
     def test_OPLS_to_RB_error_tolerance_not_float(self):
         with pytest.raises(
             TypeError,
-            match=f"The error_tolerance variable must be a float, is type {type('s')}.",
+            match=f"The error_tolerance variable must be a float, is type {str}.",
         ):
             f0 = 0.1
             f1 = 0.1

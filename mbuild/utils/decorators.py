@@ -55,7 +55,7 @@ def deprecated_property(
     """
 
     def old_func(fcn):
-        class Property(object):
+        class Property:
             def __init__(self, fget=None, fset=None, fdel=None, doc=None):
                 self.fget = fget
                 self.fset = fset

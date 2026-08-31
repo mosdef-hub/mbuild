@@ -1,5 +1,4 @@
 # ruff: noqa: F401
-# ruff: noqa: F403
 """mBuild: a hierarchical, component based molecule builder."""
 
 import logging

@@ -28,7 +28,7 @@ class TiledCompound(Compound):
     """
 
     def __init__(self, tile, n_tiles, name=None, **kwargs):
-        super(TiledCompound, self).__init__()
+        super().__init__()
 
         n_tiles = np.asarray(n_tiles)
         periodicity = np.asarray(tile.periodicity)

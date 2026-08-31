@@ -9,7 +9,7 @@ class PegMonomer(mb.Compound):
     """A monomer of polyethylene glycol (PEG)."""
 
     def __init__(self):
-        super(PegMonomer, self).__init__()
+        super().__init__()
 
         mb.load(
             "peg_monomer.pdb",

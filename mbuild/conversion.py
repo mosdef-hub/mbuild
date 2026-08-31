@@ -241,7 +241,7 @@ def load_pybel_smiles(
         mymol = pybel.readstring("smi", smiles_or_filename)
         mymolGen = [mymol]
     # Now we treat it as a filename
-    except (OSError, IOError):
+    except OSError:
         mymolGen = pybel.readfile("smi", smiles_or_filename)
 
     for mymol in mymolGen:
@@ -996,7 +996,7 @@ def save(
     formats.json_formats.compound_to_json : Write to a json file
     """
     if os.path.exists(filename) and not overwrite:
-        raise IOError(f"{filename} exists; not overwriting")
+        raise OSError(f"{filename} exists; not overwriting")
     if compound.charge:
         if round(compound.charge, 4) != 0.0:
             logger.info(
@@ -1588,7 +1588,7 @@ def _to_topology(compound, atom_list, chains=None, residues=None):
         # Ensure that both atoms are part of the compound. This becomes an
         # issue if you try to convert a sub-compound to a topology which is
         # bonded to a different subcompound.
-        if all(a in atom_mapping.keys() for a in [atom1, atom2]):
+        if all(a in atom_mapping for a in [atom1, atom2]):
             top.add_bond(atom_mapping[atom1], atom_mapping[atom2])
     return top
 
@@ -1848,7 +1848,7 @@ def _iterate_children(compound, nodes, edges, names_only=False):
     for child in compound.children:
         if names_only:
             unique_name = child.name + "_" + str(id(child))
-            unique_name_parent = child.parent.name + "_" + str((id(child.parent)))
+            unique_name_parent = child.parent.name + "_" + str(id(child.parent))
             nodes.append(unique_name)
             edges.append([unique_name_parent, unique_name])
         else:

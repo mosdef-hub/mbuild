@@ -21,7 +21,7 @@ class Betacristobalite(mb.Compound):
     """
 
     def __init__(self):
-        super(Betacristobalite, self).__init__()
+        super().__init__()
 
         mb.load(
             "beta-cristobalite-expanded.mol2",
@@ -38,7 +38,7 @@ class Betacristobalite(mb.Compound):
             if particle.name.startswith("O") and particle.pos[2] > 1.0:
                 count += 1
                 port = mb.Port(anchor=particle, orientation=[0, 0, 1], separation=0.1)
-                self.add(port, "port_{}".format(count))
+                self.add(port, f"port_{count}")
                 particle.name = "O"  # Strip numbers required in .mol2 files.
             elif particle.name.startswith("Si"):
                 particle.name = "Si"
