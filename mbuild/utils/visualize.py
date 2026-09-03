@@ -4,10 +4,10 @@ import os
 import tempfile
 from copy import deepcopy
 
-import numpy as np
 import networkx as nx
+import numpy as np
 
-from mbuild.compound import clone, Compound
+from mbuild.compound import clone
 from mbuild.path.formats import to_mol3000
 from mbuild.utils.io import import_, run_from_ipython
 from mbuild.utils.jsutils import overwrite_nglview_default
@@ -197,6 +197,8 @@ def _visualize_py3dmol(
     tmp_dir = tempfile.mkdtemp()
     # bin bonds into periodic and aperiodic bonds
     if isinstance(periodic_bond_opacity, float):
+        from mbuild import Compound
+
         # save into two mol2 files, one with periodic bonds and one without
         periodic_bonds, aperiodic_bonds = cloned._classify_periodic_bonds()
         periodicGraph = nx.subgraph_view(
@@ -289,7 +291,7 @@ def _visualize_nglview(compound, show_ports=False):
         Visualize Ports in addition to Particles
     """
     nglview = import_("nglview")
-    mdtraj = import_("mdtraj")  # noqa: F841
+    import_("mdtraj")  # noqa: F841
     from mdtraj.geometry.sasa import _ATOMIC_RADII
 
     def remove_digits(x):
