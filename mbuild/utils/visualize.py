@@ -177,7 +177,9 @@ def _visualize_py3dmol(
     """
     py3Dmol = import_("py3Dmol")
 
-    cloned = compound._clone()
+    clone_of = {}
+    cloned = compound._clone(clone_of)
+    compound._clone_bonds(clone_of)
     for edge in cloned.bond_graph.edges(data=True):
         if edge[2]["bond_order"] == 0.0:
             edge[2]["bond_order"] = 1.0
