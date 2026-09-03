@@ -439,8 +439,12 @@ class TestHoomdSimulation(BaseTest):
         path = _make_two_type_path(n=6)
         pff = PathForcefield(radius=0.4, bond_length={"A-B": 0.25})
         sim = HoomdSimulation(path, forcefield=pff, r_cut=0.5, run_on_gpu=False)
-        fene = sim.forces[1]
-        assert fene.params["A-B"]["sigma"] == pytest.approx(0.25)
+        harmonic = hoomd.md.bond.Harmonic()
+        for force in sim.forces:
+            if isinstance(force, hoomd.md.bond.Harmonic):
+                harmonic = force
+                break
+        assert harmonic.params["A-B"]["r0"] == pytest.approx(0.25)
 
     @pytest.mark.skipif(not has_hoomd, reason="hoomd is not installed")
     def test_path_auto_per_type(self):

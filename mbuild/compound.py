@@ -2,8 +2,6 @@
 
 import itertools
 import logging
-import os
-import tempfile
 from collections import OrderedDict
 from collections.abc import Iterable
 from copy import deepcopy
@@ -23,8 +21,7 @@ from mbuild.coordinate_transform import _rotate, _translate
 from mbuild.exceptions import MBuildError
 from mbuild.periodic_kdtree import PeriodicKDTree
 from mbuild.utils.geometry import bounding_box
-from mbuild.utils.io import import_, run_from_ipython
-from mbuild.utils.jsutils import overwrite_nglview_default
+from mbuild.utils.io import import_
 
 __all__ = ["clone", "Compound", "Particle"]
 
@@ -1831,215 +1828,21 @@ class Compound(object):
         periodic_bond_opacity : bool, float, Optional, default=False
             Specify as a float from 0 to 1 to set the bond opacity
             for bonds that cross periodic boundaries.
+
+        Notes
+        -----
+        See mbuild.utils.visualize.visualize_compound for more details.
         """
-        viz_pkg = {
-            "nglview": self._visualize_nglview,
-            "py3dmol": self._visualize_py3dmol,
-        }
-        if run_from_ipython():
-            if backend.lower() in viz_pkg:
-                if backend.lower == "nglview":
-                    return viz_pkg[backend.lower()](show_ports=show_ports)
-                else:
-                    return viz_pkg[backend.lower()](
-                        show_ports=show_ports,
-                        color_scheme=color_scheme,
-                        bead_size=bead_size,
-                        periodic_bond_opacity=periodic_bond_opacity,
-                    )
-            else:
-                raise RuntimeError(
-                    f"Unsupported visualization backend ({backend}). "
-                    "Currently supported backends include nglview and py3dmol"
-                )
+        from mbuild.utils.visualize import visualize_compound
 
-        else:
-            raise RuntimeError("Visualization is only supported in Jupyter Notebooks.")
-
-    def _visualize_py3dmol(
-        self,
-        show_ports=False,
-        color_scheme={},
-        bead_size=0.3,
-        periodic_bond_opacity=False,
-    ):
-        """Visualize the Compound using py3Dmol.
-
-        Allows for visualization of a Compound within a Jupyter Notebook.
-
-        Parameters
-        ----------
-        show_ports : bool, optional, default=False
-            Visualize Ports in addition to Particles
-        color_scheme : dict, optional
-            Specify coloring for non-elemental particles
-            keys are strings of the particle names
-            values are strings of the colors
-            i.e. {'_CGBEAD': 'blue'}
-        bead_size : float, Optional, default=0.3
-            Size of beads in visualization
-        periodic_bond_opacity : bool, float, Optional, default=False
-            Specify as a float from 0 to 1 to set the bond opacity
-            for bonds that cross periodic boundaries.
-
-        Returns
-        -------
-        view : py3Dmol.view
-        """
-        py3Dmol = import_("py3Dmol")
-
-        cloned = clone(self)
-        for edge in cloned.bond_graph.edges(data=True):
-            if edge[2]["bond_order"] == 0.0:
-                edge[2]["bond_order"] = 1.0
-
-        modified_color_scheme = {}
-        for name, color in color_scheme.items():
-            # Py3dmol does some element string conversions,
-            # first character is as-is, rest of the characters are lowercase
-            new_name = name[0] + name[1:].lower()
-            modified_color_scheme[new_name] = color
-            modified_color_scheme[name] = color
-
-        for particle in cloned.particles():
-            if not particle.name:
-                particle.name = "UNK"
-        tmp_dir = tempfile.mkdtemp()
-        # bin bonds into periodic and aperiodic bonds
-        if isinstance(periodic_bond_opacity, float):
-            # save into two mol2 files, one with periodic bonds and one without
-            periodic_bonds, aperiodic_bonds = cloned._classify_periodic_bonds()
-            periodicGraph = nx.subgraph_view(
-                cloned.bond_graph,
-                filter_edge=lambda n1, n2: (
-                    (n1, n2) in periodic_bonds or (n2, n1) in periodic_bonds
-                ),
-            )
-            aperiodicGraph = nx.subgraph_view(
-                cloned.bond_graph,
-                filter_edge=lambda n1, n2: (
-                    (n1, n2) in aperiodic_bonds or (n2, n1) in aperiodic_bonds
-                ),
-            )
-            cpd1 = Compound.from_bondgraph(periodicGraph)
-            cpd2 = Compound.from_bondgraph(aperiodicGraph)
-            cpd1.save(
-                os.path.join(tmp_dir, "periodic.mol2"),
-                include_ports=show_ports,
-            )
-            cpd2.save(
-                os.path.join(tmp_dir, "aperiodic.mol2"),
-                include_ports=show_ports,
-            )
-            view = py3Dmol.view()
-            with open(os.path.join(tmp_dir, "periodic.mol2"), "r") as f:
-                view.addModel(f.read(), "mol2", keepH=True)
-            with open(os.path.join(tmp_dir, "aperiodic.mol2"), "r") as f:
-                view.addModel(f.read(), "mol2", keepH=True)
-
-            view.setStyle(
-                {"model": 0},
-                {
-                    "stick": {
-                        "radius": bead_size * 0.3,
-                        "color": "grey",
-                        "opacity": periodic_bond_opacity,
-                    },
-                    "sphere": {
-                        "scale": bead_size,
-                        "colorscheme": modified_color_scheme,
-                    },
-                },
-            )
-            view.setStyle(
-                {"model": 1},
-                {
-                    "stick": {"radius": bead_size * 0.6, "color": "grey"},
-                    "sphere": {
-                        "scale": bead_size,
-                        "colorscheme": modified_color_scheme,
-                    },
-                },
-            )
-            view.zoomTo()
-
-        else:
-            cloned.save(
-                os.path.join(tmp_dir, "tmp.mol2"),
-                include_ports=show_ports,
-                overwrite=True,
-            )
-
-            view = py3Dmol.view()
-            with open(os.path.join(tmp_dir, "tmp.mol2"), "r") as f:
-                view.addModel(f.read(), "mol2", keepH=True)
-
-            view.setStyle(
-                {
-                    "stick": {"radius": bead_size * 0.6, "color": "grey"},
-                    "sphere": {
-                        "scale": bead_size,
-                        "colorscheme": modified_color_scheme,
-                    },
-                }
-            )
-            view.zoomTo()
-
-        return view
-
-    def _visualize_nglview(self, show_ports=False):
-        """Visualize the Compound using nglview.
-
-        Allows for visualization of a Compound within a Jupyter Notebook.
-
-        Parameters
-        ----------
-        show_ports : bool, optional, default=False
-            Visualize Ports in addition to Particles
-        """
-        nglview = import_("nglview")
-        mdtraj = import_("mdtraj")  # noqa: F841
-        from mdtraj.geometry.sasa import _ATOMIC_RADII
-
-        def remove_digits(x):
-            return "".join(i for i in x if not i.isdigit() or i == "_")
-
-        for particle in self.particles():
-            particle.name = remove_digits(particle.name).upper()
-            if not particle.name:
-                particle.name = "UNK"
-        tmp_dir = tempfile.mkdtemp()
-        self.save(
-            os.path.join(tmp_dir, "tmp.mol2"),
-            include_ports=show_ports,
-            overwrite=True,
+        return visualize_compound(
+            compound=self,
+            show_ports=show_ports,
+            backend=backend,
+            color_scheme=color_scheme,
+            bead_size=bead_size,
+            periodic_bond_opacity=periodic_bond_opacity,
         )
-        widget = nglview.show_file(os.path.join(tmp_dir, "tmp.mol2"))
-        widget.clear()
-        widget.add_ball_and_stick(cylinderOnly=True)
-        elements = set([particle.name for particle in self.particles()])
-        scale = 50.0
-        for element in elements:
-            try:
-                widget.add_ball_and_stick(
-                    f"_{element.upper()}",
-                    aspect_ratio=_ATOMIC_RADII[element.title()] ** 1.5 * scale,
-                )
-            except KeyError:
-                ids = [
-                    str(i)
-                    for i, particle in enumerate(self.particles())
-                    if particle.name == element
-                ]
-                widget.add_ball_and_stick(
-                    f"@{','.join(ids)}",
-                    aspect_ratio=0.17**1.5 * scale,
-                    color="grey",
-                )
-        if show_ports:
-            widget.add_ball_and_stick("_VS", aspect_ratio=1.0, color="#991f00")
-        overwrite_nglview_default(widget)
-        return widget
 
     def condense(self, inplace=True):
         """Condense the hierarchical structure of the Compound to the level of molecules.

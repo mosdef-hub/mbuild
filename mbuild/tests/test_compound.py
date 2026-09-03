@@ -2280,12 +2280,16 @@ class TestCompound(BaseTest):
     @pytest.mark.skipif(not has_py3Dmol, reason="Py3Dmol is not installed")
     def test_visualize_py3dmol(self, ethane):
         py3Dmol = import_("py3Dmol")
-        vis_object = ethane._visualize_py3dmol()
+        from mbuild.utils.visualize import _visualize_py3dmol
+
+        vis_object = _visualize_py3dmol(ethane)
         assert isinstance(vis_object, py3Dmol.view)
 
     @pytest.mark.skipif(not has_py3Dmol, reason="Py3Dmol is not installed")
     def test_visualize_periodic_bonds_py3dmol(self):
         py3Dmol = import_("py3Dmol")
+        from mbuild.utils.visualize import _visualize_py3dmol
+
         # create a periodic structure to test
         cpd = mb.load("CCCCCCCCCCCC", smiles=True)
         # position at left x wall
@@ -2296,13 +2300,15 @@ class TestCompound(BaseTest):
         for particle in cpd.particles():
             if particle.xyz[0][0] > cpd.box.Lz:
                 particle.translate([-1 * cpd.box.Lx, 0, 0])
-        vis_object = cpd._visualize_py3dmol(periodic_bond_opacity=0.2)
+        vis_object = _visualize_py3dmol(cpd, periodic_bond_opacity=0.2)
         assert isinstance(vis_object, py3Dmol.view)
 
     @pytest.mark.skipif(not has_nglview, reason="NGLView is not installed")
     def test_visualize_nglview(self, ethane):
         nglview = import_("nglview")
-        vis_object = ethane._visualize_nglview()
+        from mbuild.utils.visualize import _visualize_nglview
+
+        vis_object = _visualize_nglview(ethane)
         assert isinstance(vis_object.component_0, nglview.component.ComponentViewer)
 
     def test_element(self):
