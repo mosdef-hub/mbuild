@@ -4,6 +4,7 @@ from .build import (
     Path,
     cyclic,
     hard_sphere_random_walk,
+    helix,
     knot,
     lamellar,
     spiral_2D,

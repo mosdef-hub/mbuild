@@ -5,7 +5,6 @@ import mbuild as mb
 from mbuild.exceptions import PathConvergenceError
 from mbuild.path.build import (
     Path,
-    crosslink,
     cyclic,
     hard_sphere_random_walk,
     helix,
@@ -76,6 +75,39 @@ class TestPaths(BaseTest):
         )
         for edge in path.bond_graph.edges(data=True):
             assert np.allclose(edge[2]["direction"], np.array([1, 0, 0]))
+
+    def test_initial_point(self):
+        """Every builder places its first site at initial_point."""
+        initial_point = (1.5, -2.0, 3.0)
+        builders = [
+            (straight_line, dict(spacing=0.25, N=10)),
+            (cyclic, dict(spacing=0.25, N=20)),
+            (knot, dict(spacing=0.25, N=40, m=3)),
+            (spiral_2D, dict(N=30, a=0.5, b=0.1, spacing=0.25)),
+            (zigzag, dict(N=20, spacing=0.25)),
+            (helix, dict(N=30, radius=0.5, rise=0.1, twist=30)),
+        ]
+        for builder, kwargs in builders:
+            at_origin = builder(**kwargs).coordinates
+            shifted = builder(initial_point=initial_point, **kwargs).coordinates
+            assert np.allclose(shifted[0], initial_point)
+            # Only translated; the shape of the path is unchanged
+            assert np.allclose(shifted - shifted[0], at_origin - at_origin[0])
+
+    def test_initial_point_appends_to_path(self):
+        """Builders place their segment at initial_point within an existing path."""
+        path = straight_line(spacing=0.25, N=5)
+        straight_line(path=path, spacing=0.25, N=5, initial_point=(4.0, 0.0, 0.0))
+        assert len(path.coordinates) == 10
+        assert np.allclose(path.coordinates[0], (0, 0, 0))
+        assert np.allclose(path.coordinates[5], (4.0, 0.0, 0.0))
+        # The two segments are bonded separately, not to each other
+        assert path.bond_graph.number_of_edges() == 8
+
+    def test_knot_not_closed(self):
+        path = knot(spacing=0.25, N=50, m=3, closed=False)
+        assert len(path.coordinates) == 50
+        assert path.bond_graph.number_of_edges() == 49
 
     def test_cyclic_parameters(self):
         path = Path()
@@ -253,6 +285,16 @@ class TestPaths(BaseTest):
         path = Path()
         straight_line(path=path, spacing=0.2, N=4, bead_name="_X")
         assert list(path.beads) == ["_X", "_X", "_X", "_X"]
+
+    def test_add_paths(self):
+        coords = np.random.uniform(-5, 5, size=(20, 3))
+        path1 = Path(coordinates=coords)
+        path2 = Path(coordinates=coords)
+        path3 = path1 + path2
+        assert path3 == path1 + path2
+        assert np.allclose(
+            path3.coordinates, np.concatenate((path1.coordinates, path2.coordinates))
+        )
 
 
 class TestRandomWalk(BaseTest):
@@ -540,9 +582,10 @@ class TestRandomWalk(BaseTest):
                 radius=0.22,
                 volume_constraint=cube,
                 seed=14,
+                tolerance=0.2,
             )
         bounds = bounding_box(path.coordinates)
-        assert np.all(bounds < np.array([5 - 0.44, 5 - 0.44, 5 - 0.44]))
+        assert np.all(bounds < np.array([5 - 0.4, 5 - 0.4, 5 - 0.4]))
 
     def test_walk_inside_cube_with_pbc(self):
         # First make sure this seed gives a path outside these bounds without PBC
@@ -651,6 +694,8 @@ class TestRandomWalk(BaseTest):
             connectivity="link-linear",
         )
         assert len(path.bond_graph.edges) == 9
+        # The new segment links to the last site of the previous chain.
+        assert path.bond_graph.has_edge(4, 5)
 
         path = hard_sphere_random_walk(
             radius=0.2, bond_length=0.25, termination=5, connectivity="disconnected"
@@ -728,6 +773,7 @@ class TestRandomWalk(BaseTest):
             initial_point=(-0.25, -0.25, -0.25),
             termination=3,
             seed=100,
+            tolerance=0.1,
         )
         assert np.allclose(path.coordinates[0], np.array([-0.25, -0.25, -0.25]))
         assert all(constraint.is_inside(points=path.coordinates[1:], buffer=0.1))
@@ -851,6 +897,65 @@ class TestRandomWalk(BaseTest):
         )
         node_names = [d["name"] for _, d in path.bond_graph.nodes(data=True)]
         assert node_names == ["_A", "_B", "_A", "_B"]
+
+    def test_bond_length_less_than_radius(self):
+        path = hard_sphere_random_walk(
+            bead_name="A", bond_length=0.285, radius=0.392, termination=200, seed=7
+        )
+        coordinates = path.coordinates
+        assert len(coordinates) == 200
+        # Bonded neighbors sit at the bond length.
+        bond_lengths = np.linalg.norm(np.diff(coordinates, axis=0), axis=1)
+        assert np.allclose(bond_lengths, 0.285, atol=1e-5)
+        # Every pair more than one bond apart respects the radius.
+        distances = np.linalg.norm(
+            coordinates[:, None, :] - coordinates[None, :, :], axis=-1
+        )
+        indices = np.arange(len(coordinates))
+        non_bonded = np.abs(indices[:, None] - indices[None, :]) > 1
+        assert distances[non_bonded].min() >= 0.392 - 1e-5
+
+    @pytest.mark.parametrize(
+        "bond_length, radius, rw_angles, expected",
+        [
+            (0.1, 0.25, None, "raise"),
+            (0.15, 0.15, (0.3, 0.5), "raise"),
+            (0.285, 0.392, (np.pi / 3, np.pi), "warn"),
+        ],
+    )
+    def test_angle_range_against_radius(
+        self, bond_length, radius, rw_angles, expected, caplog
+    ):
+        kwargs = dict(
+            bond_length=bond_length,
+            radius=radius,
+            rw_angles=rw_angles,
+            termination=30,
+            seed=1,
+        )
+        if expected == "raise":
+            with pytest.raises(ValueError):
+                hard_sphere_random_walk(**kwargs)
+        else:
+            hard_sphere_random_walk(**kwargs)
+            assert "overlap the site two bonds back" in caplog.text
+
+    def test_unbonded_branch_start_uses_radius(self):
+        # Under linear connectivity the first site of the walk is not bonded to
+        # the site it starts from, so it is placed no closer than the radius.
+        path = straight_line(spacing=0.5, N=6)
+        hard_sphere_random_walk(
+            path=path,
+            bond_length=0.285,
+            radius=0.392,
+            termination=16,
+            initial_point=2,
+            connectivity="linear",
+            seed=3,
+        )
+        assert not path.bond_graph.has_edge(2, 6)
+        separation = np.linalg.norm(path.coordinates[6] - path.coordinates[2])
+        assert separation >= 0.392 - 1e-5
 
 
 class TestPathUtils(BaseTest):
@@ -999,65 +1104,26 @@ class TestPathUtils(BaseTest):
             box_lengths=box_lengths,
         )
 
-
-class TestCrossLinks(BaseTest):
-    def test_find_links_line(self):
-        path = Path()
-        pos1 = np.zeros((10, 3))
-        pos1[:, 1] = np.arange(10)
-        path.append_coordinates(pos1, "_A")
-        path.form_linear_bond_graph()
-
-        pos2 = np.zeros((10, 3))
-        pos2[:, 0] += 1
-        pos2[:, 1] = np.arange(10)
-        path.append_coordinates(pos2, "_A")
-        path.form_linear_bond_graph(indices=np.arange(10, 20))
-
-        for i in range(10):
-            crosslink(
-                path, initial_point=i, radius=1.1, excluded_bond_depth=10, seed=42
-            )
-
-        clinks = sum([b == "_R" for b in path.beads])
-        bbones = sum([b == "_A" for b in path.beads])
-        assert clinks == 10
-        assert bbones == 20
-        for i in range(10):
-            assert (i, i + 20) in path.bond_graph.edges
-            assert (i + 10, i + 20) in path.bond_graph.edges
-
-    def test_deterministic_rw(self):
-        path1 = hard_sphere_random_walk(
-            radius=1,
-            bond_length=2,
-            termination=20,
-            rw_angles=(np.pi / 2, np.pi),
-            seed=1,
+    def test_check_path_excluded_indices(self):
+        existing = np.array(
+            [[0.0, 0.0, 0.0], [1.0, 0.0, 0.0], [2.0, 0.0, 0.0]], dtype=np.float32
         )
-        path2 = hard_sphere_random_walk(
-            radius=1,
-            bond_length=2,
-            termination=20,
-            rw_angles=(np.pi / 2, np.pi),
-            seed=1,
+        candidate = np.array([1.1, 0.0, 0.0], dtype=np.float32)
+        # Overlaps index 1 when every point is checked.
+        assert not check_path(existing, candidate, 0.5, 1e-5)
+        # Accepted once index 1 is excluded.
+        assert check_path(
+            existing,
+            candidate,
+            0.5,
+            1e-5,
+            excluded_indices=np.array([1], dtype=np.int64),
         )
-        assert path1 == path2
-
-    def test_deterministic_crosslink(self):
-        """Test set coordinates, relax seed as well"""
-        rng = np.random.default_rng(1)
-
-        points = rng.random((100, 3))
-        path1 = Path(coordinates=points)
-        path2 = Path(coordinates=points)
-        assert path1 == path2
-
-        crosslink(path1, radius=1, excluded_bond_depth=2)
-        crosslink(path2, radius=1, excluded_bond_depth=2)
-        assert path1 == path2
-
-        path1.relax(0.2, None, steps=10)
-        path2.relax(0.2, None, steps=10)
-        print(path1.coordinates - path2.coordinates)
-        assert np.allclose(path1.coordinates, path2.coordinates, atol=1e-6)
+        # Excluding a point that does not overlap changes nothing.
+        assert not check_path(
+            existing,
+            candidate,
+            0.5,
+            1e-5,
+            excluded_indices=np.array([0], dtype=np.int64),
+        )

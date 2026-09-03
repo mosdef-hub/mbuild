@@ -788,6 +788,29 @@ class TestHoomdSimulation(BaseTest):
         assert wider_cut.forces is not bigger.forces
         assert wider_cut.forces is not sim.forces
 
+    @pytest.mark.skipif(not has_hoomd, reason="hoomd is not installed")
+    def test_relax_path(self):
+        from mbuild.path.build import Path
+
+        bond_length = 1  # target, starting at lengths of (2,1)
+        bead_radius = 0.5
+
+        xcoords = np.concat((np.arange(0, 10, 2), np.arange(1, 10, 4)))
+        xcoords.sort()
+        coords = np.zeros((len(xcoords), 3))
+        coords[:, 0] = xcoords
+        path = Path(coords)
+        path.form_linear_bond_graph()
+        with pytest.raises(RuntimeError):
+            path.relax(bead_radius=bead_radius, bond_length=bond_length, btype="fene")
+        path.relax(bead_radius=bead_radius, bond_length=bond_length)
+        bond_lengths = [
+            np.linalg.norm(path.coordinates[i] - path.coordinates[i + 1])
+            for i in range(len(path) - 1)
+        ]
+        assert path
+        assert max(bond_lengths) < bond_length + 0.05  # converges to target
+
 
 class TestOpenMMSimulation(BaseTest):
     """Tests for the OpenMMSimulation class."""

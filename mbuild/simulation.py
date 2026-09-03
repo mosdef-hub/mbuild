@@ -508,6 +508,7 @@ class HoomdSimulation(hoomd.simulation.Simulation):
                 snap,
                 radius=pff.radius,
                 bond_length=pff.bond_length,
+                btype=pff.btype,
                 angles_sampler=pff.angles,
                 dihedrals_sampler=pff.dihedrals,
                 epsilon=pff.epsilon,

@@ -4,6 +4,8 @@ import time
 
 import numpy as np
 
+from mbuild.path.path_utils import target_sq_distances
+
 
 class Termination:
     """A modular and composable container for individual Terminator instances.
@@ -231,7 +233,16 @@ class WithinCoordinate(Terminator):
 
     def is_met(self, coordinates, names):
         last_site = coordinates[-1]
-        current_distance = np.linalg.norm(self.target_coordinate - last_site)
+        if self.state is None:
+            current_distance = np.linalg.norm(self.target_coordinate - last_site)
+        else:
+            sq_distance = target_sq_distances(
+                self.target_coordinate,
+                last_site.reshape(1, 3),
+                self.state.pbc,
+                self.state.box_lengths,
+            )
+            current_distance = np.sqrt(sq_distance[0])
         if current_distance <= self.distance + self.tolerance:
             self._is_met = True
             return True

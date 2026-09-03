@@ -144,6 +144,29 @@ class CuboidConstraint(Constraint):
         sorted_order = np.argsort(-density_metric)  # negative = biggest first
         return candidates[sorted_order]
 
+    def wrap(self, points):
+        """Wrap an array of points into the box using periodic boundary conditions.
+
+        Parameters
+        ----------
+        points : array-like, shape (N, 3)
+            The points to wrap.
+
+        Returns
+        -------
+        np.ndarray, shape (N, 3)
+            The wrapped points.
+        """
+        points = np.asarray(points, dtype=np.float64)
+        wrapped = points.copy()
+        pbc = self.pbc  # shape (3,) use as a bool mask
+        if pbc.any():
+            # Shift to box-local coordinates, apply modulo, shift back
+            wrapped[:, pbc] = (
+                (wrapped[:, pbc] - self.mins[pbc]) % self.box_lengths[pbc]
+            ) + self.mins[pbc]
+        return wrapped
+
 
 class SphereConstraint(Constraint):
     """Creates a spherical constraint.

@@ -62,6 +62,7 @@ class PathForcefield:
         self,
         radius=None,
         bond_length=None,
+        btype=None,
         angles=None,
         dihedrals=None,
         epsilon=1.0,
@@ -69,6 +70,7 @@ class PathForcefield:
     ):
         self.radius = radius
         self.bond_length = bond_length
+        self.btype = btype
         self.angles = angles
         self.dihedrals = dihedrals
         self.epsilon = epsilon
@@ -79,6 +81,7 @@ def generate_ff_from_path(
     snap,
     radius=None,
     bond_length=None,
+    btype="harmonic",
     angles_sampler=None,
     dihedrals_sampler=None,
     epsilon=1.0,
@@ -103,6 +106,9 @@ def generate_ff_from_path(
     bond_length : float or dict or None, default None
         Target bond length, keyed by bond-type name. If None, per-bond-type
         medians over the snapshot's bonds are used.
+    btype : str, optional, default='harmonic'
+        Which bond type to use by default. Harmonic bonds are useful when the current
+        bond_length distribution is far from the bond_length target.
     angles_sampler : mbuild.path.points.AnglesSampler or dict or None, default None
         Optional bond-angle distribution(s), keyed by angle-type name.
     dihedrals_sampler : object or dict or None, default None
@@ -141,6 +147,7 @@ def generate_ff_from_path(
         snap,
         radius=radius,
         bond_length=bond_length,
+        btype=btype,
         angle_sampler=angle_sampler,
         dihedral_sampler=dihedral_sampler,
         epsilon=epsilon,
@@ -152,6 +159,7 @@ def build_path_ff(
     snap,
     radius,
     bond_length,
+    btype="harmonic",
     angle_sampler=None,
     dihedral_sampler=None,
     epsilon=1.0,
@@ -174,7 +182,9 @@ def build_path_ff(
     radius : dict
         {bead_type: WCA sigma}, the center-to-center bead exclusion diameter.
     bond_length : dict
-        {bond_type: target bond length}, used to size the FENE+WCA bond.
+        {bond_type: target bond length}, used to size the Harmonic or FENE+WCA bond.
+    btype : str, default="harmonic"
+        The approach for sampling bonds. Can be either fene or harmonic
     angle_sampler : dict or None, default None
         {angle_type: sampler}; each is Boltzmann-inverted into a tabulated term.
     dihedral_sampler : dict or None, default None
@@ -213,28 +223,46 @@ def build_path_ff(
         ptypeid = np.asarray(snap.particles.typeid)
         group = np.asarray(snap.bonds.group)
         btypeid = np.asarray(snap.bonds.typeid)
-        fene = hoomd.md.bond.FENEWCA()
-        for i, bt in enumerate(snap.bonds.types):
-            sigma_bond = bond_length[bt]
-            a, b = group[np.argmax(btypeid == i)]
-            sigma_pair = 0.5 * (radius[ptypes[ptypeid[a]]] + radius[ptypes[ptypeid[b]]])
-            if sigma_bond > 1.33 * sigma_pair:
-                logger.warning(
-                    "build_path_ff: bond_length (%.3g) for %s exceeds "
-                    "~1.33*radius (%.3g); FENE+WCA no longer guarantees "
-                    "non-crossing bonds.",
-                    sigma_bond,
-                    bt,
-                    sigma_pair,
+        if btype is None or btype.lower() == "harmonic":
+            bond_template = hoomd.md.bond.Harmonic()
+            for i, bt in enumerate(snap.bonds.types):
+                sigma_bond = bond_length[bt]
+                a, b = group[np.argmax(btypeid == i)]
+                energy_units = epsilon / sigma_bond**2
+                bond_template.params[bt] = dict(
+                    k=100.0 * energy_units,
+                    r0=sigma_bond,
                 )
-            fene.params[bt] = dict(
-                k=30.0 * epsilon / sigma_bond**2,
-                r0=1.5 * sigma_bond,
-                epsilon=epsilon,
-                sigma=sigma_bond,
-                delta=0.0,
+        elif btype.lower() == "fene":
+            bond_template = hoomd.md.bond.FENEWCA()
+            for i, bt in enumerate(snap.bonds.types):
+                sigma_bond = bond_length[bt]
+                a, b = group[np.argmax(btypeid == i)]
+                sigma_pair = 0.5 * (
+                    radius[ptypes[ptypeid[a]]] + radius[ptypes[ptypeid[b]]]
+                )
+                if sigma_bond > 1.33 * sigma_pair:
+                    logger.warning(
+                        "build_path_ff: bond_length (%.3g) for %s exceeds "
+                        "~1.33*radius (%.3g); FENE+WCA no longer guarantees "
+                        "non-crossing bonds.",
+                        sigma_bond,
+                        bt,
+                        sigma_pair,
+                    )
+                bond_template.params[bt] = dict(
+                    k=30.0 * epsilon / sigma_bond**2,
+                    r0=1.5 * sigma_bond,
+                    epsilon=epsilon,
+                    sigma=sigma_bond,
+                    delta=0.0,
+                )
+        else:
+            raise ValueError(
+                f"Incorrect argument {btype=}. Please use one of 'fene' or 'harmonic'."
             )
-        forces.append(fene)
+
+        forces.append(bond_template)
 
     # Tabulated angle(s). Types the sampler dict does not cover get a flat
     # (zero) table so HOOMD sees every angle type specified.
