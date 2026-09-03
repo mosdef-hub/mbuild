@@ -7,7 +7,7 @@ from copy import deepcopy
 import networkx as nx
 import numpy as np
 
-from mbuild.compound import Compound, clone
+from mbuild.compound import clone
 from mbuild.path.formats import to_mol3000
 from mbuild.utils.io import import_, run_from_ipython
 from mbuild.utils.jsutils import overwrite_nglview_default
