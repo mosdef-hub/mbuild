@@ -439,6 +439,7 @@ class TestHoomdSimulation(BaseTest):
         path = _make_two_type_path(n=6)
         pff = PathForcefield(radius=0.4, bond_length={"A-B": 0.25})
         sim = HoomdSimulation(path, forcefield=pff, r_cut=0.5, run_on_gpu=False)
+        harmonic = hoomd.md.bond.Harmonic()
         for force in sim.forces:
             if isinstance(force, hoomd.md.bond.Harmonic):
                 harmonic = force
