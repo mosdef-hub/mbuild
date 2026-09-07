@@ -7,7 +7,7 @@ class Methane(mb.Compound):
     """A methane molecule."""
 
     def __init__(self):
-        super(Methane, self).__init__()
+        super().__init__()
         carbon = mb.Particle(name="C", element="C")
         self.add(carbon)
 

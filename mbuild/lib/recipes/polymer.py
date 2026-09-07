@@ -85,7 +85,7 @@ class Polymer(Compound):
     """
 
     def __init__(self, monomers=None, end_groups=None):
-        super(Polymer, self).__init__()
+        super().__init__()
         self._monomers = monomers or []
         self._end_groups = end_groups or [None, None]
         if not isinstance(self._end_groups, list):

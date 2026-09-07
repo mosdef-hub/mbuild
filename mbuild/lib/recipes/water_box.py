@@ -73,7 +73,7 @@ class Water3SiteBox(Compound):
         radii_overlap=0.15,
         radii_scaling=1.0,
     ):
-        super(Water3SiteBox, self).__init__()
+        super().__init__()
 
         # if we do not define a dictionary, create an empty one
         if radii_dict is None:

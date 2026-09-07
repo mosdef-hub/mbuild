@@ -4,10 +4,8 @@ import sys
 from importlib import metadata
 
 
-class Recipes(object):
+class Recipes:
     """mBuild recipe object."""
-
-    pass
 
 
 recipes = Recipes()
