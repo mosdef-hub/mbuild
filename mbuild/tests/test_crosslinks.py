@@ -549,6 +549,14 @@ class TestCrosslink(BaseTest):
         for edge in [(0, 1), (1, 2), (2, 3), (4, 5), (5, 6), (6, 7), (1, 5), (2, 6)]:
             assert edge in edges
 
+    def test_error_on_empty_path(self):
+        path = Path()
+        with pytest.raises(ValueError):
+            crosslink(path)
+        path = Path(np.array([[0, 0, 0], [1, 0, 0]]), bead_name="A")
+        with pytest.raises(PathConvergenceError):
+            crosslink(path, backbone_bead_name="B")
+
 
 class TestCrosslinkUtilities(BaseTest):
     def test_find_neighbors_non_periodic(self):
