@@ -7,7 +7,7 @@ class H2O(mb.Compound):
     """A water molecule."""
 
     def __init__(self):
-        super(H2O, self).__init__()
+        super().__init__()
 
         self.add(mb.Particle(name="O", pos=[1.0203, 0.7604, 1.2673], element="O"))
         self.add(mb.Particle(name="H", pos=[0.9626, 0.8420, 1.2673], element="H"))

@@ -35,8 +35,6 @@ logger = logging.getLogger(__name__)
 class DelayImportError(ImportError, SkipTest):
     """Error to allow better import handling."""
 
-    pass
-
 
 MESSAGES = dict()
 MESSAGES["gsd"] = """
@@ -235,7 +233,7 @@ def import_(module):
             + "\033[0m"
         )
 
-        print("", file=sys.stderr)
+        print(file=sys.stderr)
         print(bar, file=sys.stderr)
         print(m, file=sys.stderr)
         print(bar, file=sys.stderr)
@@ -369,7 +367,7 @@ def get_fn(name):
     fn = files("mbuild").joinpath("utils", "reference", name)
 
     if not os.path.exists(fn):
-        raise IOError(f"Sorry! {fn} does not exists.")
+        raise OSError(f"Sorry! {fn} does not exists.")
     return str(fn)
 
 
