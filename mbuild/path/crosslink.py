@@ -434,6 +434,8 @@ def crosslink(
     PathConvergenceError
         If the requested number of crosslinks cannot be placed.
     """
+    if len(path) == 0:
+        raise ValueError(f"Path {path} has no viable sites for crosslinking.")
     if volume_constraint is None:
         box = CuboidConstraint(np.inf, np.inf, np.inf)  # aperiodic inf box is default
     elif isinstance(volume_constraint, CuboidConstraint):
