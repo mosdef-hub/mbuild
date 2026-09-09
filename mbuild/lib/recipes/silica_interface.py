@@ -61,7 +61,7 @@ class SilicaInterface(Compound):
         """
         O_buffer = self._O_buffer
         z_height = bulk_silica.box.lengths[2]
-        tile_z = int(math.ceil((thickness + 2 * O_buffer) / z_height))
+        tile_z = math.ceil((thickness + 2 * O_buffer) / z_height)
         bulk = TiledCompound(bulk_silica, n_tiles=(tile_x, tile_y, tile_z))
 
         interface = Compound(
@@ -113,11 +113,11 @@ class SilicaInterface(Compound):
             bridged = False
             while not bridged:
                 O1 = random.choice(dangling_Os)
-                Si1 = list(self.bond_graph.neighbors(O1))[0]
+                Si1 = next(iter(self.bond_graph.neighbors(O1)))
                 for O2 in dangling_Os:
                     if O2 == O1:
                         continue
-                    Si2 = list(self.bond_graph.neighbors(O2))[0]
+                    Si2 = next(iter(self.bond_graph.neighbors(O2)))
                     if Si1 == Si2:
                         continue
                     if any(

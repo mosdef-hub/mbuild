@@ -257,12 +257,11 @@ def fill_box(
         if len(compound) != len(n_compounds):
             raise ValueError("`compound` and `n_compounds` must be of equal length.")
 
-    if compound is not None:
-        if len(compound) != len(fix_orientation):
-            raise ValueError(
-                "`compound`, `n_compounds`, and `fix_orientation` must be of "
-                "equal length."
-            )
+    if compound is not None and len(compound) != len(fix_orientation):
+        raise ValueError(
+            "`compound`, `n_compounds`, and `fix_orientation` must be of "
+            "equal length."
+        )
 
     if density is not None:
         total_mass = _validate_mass(compound, n_compounds)
@@ -310,7 +309,7 @@ def fill_box(
                     * np.prod(np.asarray(box.lengths))
                     * 0.60224
                 )
-                n_compounds = list()
+                n_compounds = []
                 for c in compound_ratio:
                     n_compounds.append(int(n_prototypes * c))
 
@@ -338,17 +337,17 @@ def fill_box(
     filled_xyz = _new_xyz_file()
 
     # create a list to contain the file handles for the compound temp files
-    compound_xyz_list = list()
+    compound_xyz_list = []
     try:
         if use_pbc:
-            pbc_arg = "pbc {0:.3f} {1:.3f} {2:.3f} {3:.3f} {4:.3f} {5:.3f}".format(
+            pbc_arg = "pbc {:.3f} {:.3f} {:.3f} {:.3f} {:.3f} {:.3f}".format(
                 *box_arg
             )
             fill_arg = ""
             periodicity = (True, True, True)
         else:
             fill_arg = (
-                "inside box {0:.3f} {1:.3f} {2:.3f} {3:.3f} {4:.3f} {5:.3f}".format(
+                "inside box {:.3f} {:.3f} {:.3f} {:.3f} {:.3f} {:.3f}".format(
                     *box_arg
                 )
             )
@@ -503,12 +502,11 @@ def fill_region(
     if compound is not None and n_compounds is not None:
         if len(compound) != len(n_compounds):
             raise ValueError("`compound` and `n_compounds` must be of equal length.")
-    if compound is not None:
-        if len(compound) != len(fix_orientation):
-            raise ValueError(
-                "`compound`, `n_compounds`, and `fix_orientation` must be of "
-                "equal length."
-            )
+    if compound is not None and len(compound) != len(fix_orientation):
+        raise ValueError(
+            "`compound`, `n_compounds`, and `fix_orientation` must be of "
+            "equal length."
+        )
     if bounds is not None:
         if not isinstance(bounds, (list)):
             raise TypeError(
@@ -568,7 +566,7 @@ def fill_region(
     filled_xyz = _new_xyz_file()
 
     # List to hold file handles for the temporary compounds
-    compound_xyz_list = list()
+    compound_xyz_list = []
     try:
         input_text = PACKMOL_HEADER.format(
             overlap, filled_xyz.name, seed, sidemax * 10, packmol_commands, ""
@@ -592,7 +590,7 @@ def fill_region(
             reg_maxs -= edge * 10  # Apply edge buffer
             box_arg = list(reg_mins) + list(reg_maxs)
             fill_arg = (
-                "inside box {0:.3f} {1:.3f} {2:.3f} {3:.3f} {4:.3f} {5:.3f}".format(
+                "inside box {:.3f} {:.3f} {:.3f} {:.3f} {:.3f} {:.3f}".format(
                     *box_arg
                 )
             )
@@ -751,12 +749,11 @@ def fill_sphere(
         if len(compound) != len(n_compounds):
             raise ValueError("`compound` and `n_compounds` must be of equal length.")
 
-    if compound is not None:
-        if len(compound) != len(fix_orientation):
-            raise ValueError(
-                "`compound`, `n_compounds`, and `fix_orientation` must be of "
-                "equal length."
-            )
+    if compound is not None and len(compound) != len(fix_orientation):
+        raise ValueError(
+            "`compound`, `n_compounds`, and `fix_orientation` must be of "
+            "equal length."
+        )
 
     for coord in sphere[:3]:
         if coord < sphere[3]:
@@ -791,7 +788,7 @@ def fill_sphere(
                 n_prototypes = int(
                     density / prototype_mass * (4 / 3 * np.pi * radius**3) * 0.60224
                 )
-                n_compounds = list()
+                n_compounds = []
                 for c in compound_ratio:
                     n_compounds.append(int(n_prototypes * c))
 
@@ -811,7 +808,7 @@ def fill_sphere(
     filled_xyz = _new_xyz_file()
 
     # List to hold file handles for the temporary compounds
-    compound_xyz_list = list()
+    compound_xyz_list = []
     try:
         input_text = PACKMOL_HEADER.format(
             overlap, filled_xyz.name, seed, sidemax * 10, packmol_commands, ""
@@ -989,17 +986,17 @@ def solvate(
     solute_xyz = _new_xyz_file()
 
     # generate list of temp files for the solvents
-    solvent_xyz_list = list()
+    solvent_xyz_list = []
     try:
         if use_pbc:
-            pbc_arg = "pbc {0:.3f} {1:.3f} {2:.3f} {3:.3f} {4:.3f} {5:.3f}".format(
+            pbc_arg = "pbc {:.3f} {:.3f} {:.3f} {:.3f} {:.3f} {:.3f}".format(
                 *box_arg
             )
             fill_arg = ""
             periodicity = (True, True, True)
         else:
             fill_arg = (
-                "inside box {0:.3f} {1:.3f} {2:.3f} {3:.3f} {4:.3f} {5:.3f}".format(
+                "inside box {:.3f} {:.3f} {:.3f} {:.3f} {:.3f} {:.3f}".format(
                     *box_arg
                 )
             )

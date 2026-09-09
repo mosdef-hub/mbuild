@@ -40,7 +40,7 @@ class Pattern:
     def __init__(self, points, orientations=None, scale=None, **kwargs):
         self.points = points
         if orientations is None:
-            orientations = dict()
+            orientations = {}
         self.orientations = orientations
         if scale is not None:
             self.scale(scale)
@@ -67,7 +67,7 @@ class Pattern:
 
     def _adjust_ports(self):
         """Adjust ports according to the provided orientations."""
-        for orientation, ports in self.orientations.items():
+        for ports in self.orientations.values():
             for port, point in zip(ports, self.points):
                 port.translate(point)
 
@@ -88,7 +88,7 @@ class Pattern:
         compound : mb.Compound
             mb.Compound with applied pattern
         """
-        compounds = list()
+        compounds = []
         if self.orientations.get(orientation):
             for port in self.orientations[orientation]:
                 new_compound = clone(compound)
@@ -148,7 +148,7 @@ class Pattern:
             self.points += host.mins
         pattern = self.points
         port_positions = np.empty(shape=(n_ports, 3))
-        port_list = list()
+        port_list = []
         for port_idx, port in enumerate(host.available_ports()):
             port_positions[port_idx, :] = port["up"]["middle"].pos
             port_list.append(port)
@@ -360,7 +360,7 @@ class SpherePattern(Pattern):
         from mbuild.port import Port
 
         if kwargs.get("orientations") is None:
-            ports = list()
+            ports = []
             for point in points:
                 port = Port()
                 ports.append(port)

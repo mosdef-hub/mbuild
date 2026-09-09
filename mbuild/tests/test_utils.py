@@ -47,19 +47,19 @@ class TestUtils(BaseTest):
         union2 = oset2.union(oset)
 
         assert union == union2
-        assert union == set([1, 2, 3, 4, 6, 8])
+        assert union == {1, 2, 3, 4, 6, 8}
 
         inter = oset.intersection(oset2)
         inter2 = oset2.intersection(oset)
 
         assert inter == inter2
-        assert inter == set([2, 4])
+        assert inter == {2, 4}
 
         diff = oset.difference(oset2)
         diff2 = oset2.difference(oset)
 
-        assert diff == set([1, 3])
-        assert diff2 == set([6, 8])
+        assert diff == {1, 3}
+        assert diff2 == {6, 8}
 
     def test_assert_port_exists(self, ch2):
         assert_port_exists("up", ch2)
@@ -73,11 +73,10 @@ class TestUtils(BaseTest):
         filename = "decane-tmp.xyz"
         decane = Alkane(10)
         decane.save(filename)
-        with open(get_fn("decane.xyz")) as file1:
-            with open(filename) as file2:
-                diff = difflib.ndiff(file1.readlines(), file2.readlines())
+        with open(get_fn("decane.xyz")) as file1, open(filename) as file2:
+            diff = difflib.ndiff(file1.readlines(), file2.readlines())
         changes = [
-            line for line in diff if line.startswith("+ ") or line.startswith("- ")
+            line for line in diff if line.startswith(("+ ", "- "))
         ]
         assert not changes
 

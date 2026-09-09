@@ -40,12 +40,12 @@ def compound_from_json(json_file):
     with open(json_file, "r") as cmpdfile:
         try:
             cmpd_dict_and_meta = json.load(cmpdfile)
-        except ValueError as e:
-            raise e
+        except ValueError:
+            raise
         try:
             _perform_sanity_check(cmpd_dict_and_meta)
-        except MBuildError as e:
-            raise e
+        except MBuildError:
+            raise
         compound_dict = cmpd_dict_and_meta["Compound"]
         converted_dict = {}
         parent = _dict_to_mb(compound_dict)
@@ -66,7 +66,7 @@ def compound_from_json(json_file):
             label_list = compound.get("label_list", {})
             for key, vals in label_list.items():
                 if not parent_compound.labels.get(key, None):
-                    parent_compound.labels[key] = list()
+                    parent_compound.labels[key] = []
                 if sub_compound["id"] in vals:
                     parent_compound.labels[key].append(sub_cmpd)
             parent_compound.add(sub_cmpd, check_box_size=False, label=label_str)
@@ -122,7 +122,7 @@ def compound_to_json(cmpd, file_path, include_ports=False):
                     ]
 
             if not cmpd_info[parent_compound].get("children", False):
-                cmpd_info[parent_compound]["children"] = list()
+                cmpd_info[parent_compound]["children"] = []
             cmpd_info[parent_compound]["children"].append(sub_compound_dict)
             cmpd_info[sub_compound] = sub_compound_dict
 
@@ -148,7 +148,7 @@ def _particle_info(cmpd, include_ports=False):
     particle_dict["box"] = _box_info(cmpd)
 
     if include_ports:
-        particle_dict["ports"] = list()
+        particle_dict["ports"] = []
         for port in cmpd.available_ports():
             port_info = OrderedDict()
             if port.anchor is not None:
@@ -167,7 +167,7 @@ def _particle_info(cmpd, include_ports=False):
 
 def _bond_info(cmpd):
     """Given a compound, return the bond information."""
-    bond_list = list()
+    bond_list = []
     for bond in cmpd.bonds():
         bond_list.append((id(bond[0]), id(bond[1])))
     return bond_list
@@ -227,8 +227,7 @@ def _dict_successors(compound_dict):
     else:
         for sub_compund in compound_dict["children"]:
             yield sub_compund, compound_dict
-            for sub_sub_compound, parent_compound in _dict_successors(sub_compund):
-                yield (sub_sub_compound, parent_compound)
+            yield from _dict_successors(sub_compund)
 
 
 def _add_ports(compound_dict, converted_dict):
@@ -279,8 +278,8 @@ def _perform_sanity_check(json_dict):
     if (not json_mb_type) or (json_mb_type != "Compound"):
         raise MBuildError(f"Error. Cannot convert JSON of type: {json_mb_type}")
 
-    [major, minor, patch] = json_mbuild_version.split(".")
-    [this_major, this_minor, this_patch] = this_version.split(".")
+    [major, minor, _patch] = json_mbuild_version.split(".")
+    [this_major, this_minor, _this_patch] = this_version.split(".")
     if major != this_major:
         raise MBuildError(
             warning_msg.format(json_mbuild_version, this_version)

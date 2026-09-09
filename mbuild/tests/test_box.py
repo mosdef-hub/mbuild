@@ -130,7 +130,7 @@ class TestBox(BaseTest):
     def test_lo_hi_tilt_factors(self, lo, hi, tilt_factors, angles):
         (xlo, ylo, zlo) = lo
         (xhi, yhi, zhi) = hi
-        (xy, xz, yz) = tilt_factors
+        (xy, _xz, _yz) = tilt_factors
 
         lengths = [xhi - (xlo + xy), yhi - ylo, zhi - zlo]
         box = mb.Box.from_lo_hi_tilt_factors(lo=lo, hi=hi, tilt_factors=tilt_factors)

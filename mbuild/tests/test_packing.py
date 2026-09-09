@@ -496,14 +496,14 @@ class TestPacking(BaseTest):
     @pytest.mark.parametrize(
         "args",
         [
-            dict(maxit=500),
-            dict(nloop=1000),
-            dict(movebadrandom=""),
-            dict(fbins=1.2),
-            dict(discale=1.5),
-            dict(movefrac=0.05),
-            dict(avoid_overlap=""),
-            dict(precision=0.02),
+            {"maxit": 500},
+            {"nloop": 1000},
+            {"movebadrandom": ""},
+            {"fbins": 1.2},
+            {"discale": 1.5},
+            {"movefrac": 0.05},
+            {"avoid_overlap": ""},
+            {"precision": 0.02},
         ],
     )
     def test_packmol_args_allowed(self, args):
@@ -517,9 +517,9 @@ class TestPacking(BaseTest):
     @pytest.mark.parametrize(
         "args",
         [
-            dict(tolerance=0.2),
-            dict(seed=42),
-            dict(sidemax=2.0),
+            {"tolerance": 0.2},
+            {"seed": 42},
+            {"sidemax": 2.0},
         ],
     )
     def test_packmol_args_default(self, args, caplog):
@@ -530,14 +530,14 @@ class TestPacking(BaseTest):
                 box=[10, 10, 10],
                 packmol_args=args,
             )
-        arg = list(args.keys())[0]
+        arg = next(iter(args.keys()))
         assert f"The PACKMOL argument {arg} was passed to" in caplog.text
 
     def test_packmol_warning(self, h2o, caplog):
         import sys
 
         if (
-            "win" in sys.platform and not sys.platform == "darwin"
+            "win" in sys.platform and sys.platform != "darwin"
         ):  # windows uses old 20.0.4 of packmol, which raises a warning
             with caplog.at_level(logging.WARNING, logger="mbuild"):
                 mb.fill_box(h2o, n_compounds=10, box=[1, 1, 1], overlap=10)

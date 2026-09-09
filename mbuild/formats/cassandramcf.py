@@ -41,7 +41,7 @@ def write_mcf(structure, filename, angle_style, dihedral_style, lj14=None, coul1
     """
     if not isinstance(structure, pmd.Structure):
         raise ValueError("MCF writer requires parmed structure.")
-    if not all([a.type for a in structure.atoms]):
+    if not all(a.type for a in structure.atoms):
         raise ValueError("MCF writing not supported without parameterized forcefield.")
 
     # Conversion factors
@@ -113,7 +113,7 @@ def write_mcf(structure, filename, angle_style, dihedral_style, lj14=None, coul1
                     sqrt(adj.atom1.epsilon * adj.atom2.epsilon)
                     for adj in structure.adjusts
                 ]
-                if all([c_eps == 0 for c_eps in combined_eps_list]):
+                if all(c_eps == 0 for c_eps in combined_eps_list):
                     lj14 = 0.0
                     logger.info(
                         f"Unable to infer LJ 1-4 scaling factor. Setting to {lj14:.1f}"

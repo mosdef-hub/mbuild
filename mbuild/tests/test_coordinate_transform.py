@@ -459,7 +459,7 @@ class TestCoordinateTransform(BaseTest):
             assert bgraph.has_edge(edge1, edge0)
         neighbors = {"C": 4, "H": 1}
         for node in bgraph.nodes():
-            x = map(lambda node: node.name, bgraph._adj[node])
+            x = (node.name for node in bgraph._adj[node])
             assert neighbors[node.name] == len(list(x))
 
 

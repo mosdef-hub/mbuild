@@ -166,9 +166,7 @@ class TestCif(BaseTest):
         assert np.all(np.isclose(manual_lengths, list(periodic_box.lengths)))
         assert np.all(np.isclose(manual_angles, list(periodic_box.angles)))
         assert len(periodic_boxed_molecule.children) == manual_num_atoms
-        assert None not in list(
-            map(lambda x: x.element, periodic_boxed_molecule.particles())
-        )
+        assert None not in [x.element for x in periodic_boxed_molecule.particles()]
 
     def test_cif_raise_warnings(self, caplog):
         with caplog.at_level(logging.INFO, logger="mbuild"):

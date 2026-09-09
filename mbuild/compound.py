@@ -54,7 +54,7 @@ def clone(existing_compound, clone_of=None, root_container=None):
     root_container : mb.Compound, optional, default None,
     """
     if clone_of is None:
-        clone_of = dict()
+        clone_of = {}
 
     newone = existing_compound._clone(clone_of=clone_of, root_container=root_container)
     existing_compound._clone_bonds(clone_of=clone_of)
@@ -173,7 +173,7 @@ class Compound:
             self._pos = np.zeros(3)
 
         self.parent = None
-        self.children = list()
+        self.children = []
         self.labels = OrderedDict()
         self.referrers = set()
 
@@ -212,7 +212,7 @@ class Compound:
         """Create an mb.Compound from some mb.BondGraph."""
         assert isinstance(bondgraph, BondGraph)
         cpd = cls()
-        searched_nodes = dict()
+        searched_nodes = {}
         for u, v, border in bondgraph.edges.data("bond_order"):
             new_edge = []
             for node in (u, v):
@@ -241,8 +241,7 @@ class Compound:
         if not self.children:
             yield self
         else:
-            for particle in self._particles(include_ports):
-                yield particle
+            yield from self._particles(include_ports)
 
     def _particles(self, include_ports=False):
         """Return all Particles of the Compound."""
@@ -265,8 +264,7 @@ class Compound:
             # Parts local to the current Compound.
             yield part
             # Parts further down the hierarchy.
-            for subpart in part.successors():
-                yield subpart
+            yield from part.successors()
 
     @property
     def n_particles(self):
@@ -384,8 +382,7 @@ class Compound:
                 "comp_id": id(child),
                 "comp": child,
             }
-            for subchild in child._get_hierarchy(level + 1):
-                yield subchild
+            yield from child._get_hierarchy(level + 1)
 
     def _get_hierarchy_nodup(self, level=0):
         """Return an array of dictionaries corresponding to hierarchy of the compound, recursively.
@@ -434,8 +431,7 @@ class Compound:
                     "n_dup": duplicates[identifier][0],
                 }
 
-                for subchild in child._get_hierarchy_nodup(level + 1):
-                    yield subchild
+                yield from child._get_hierarchy_nodup(level + 1)
                 duplicates[identifier][1] = False
 
     def ancestors(self):
@@ -448,8 +444,7 @@ class Compound:
         """
         if self.parent is not None:
             yield self.parent
-            for ancestor in self.parent.ancestors():
-                yield ancestor
+            yield from self.parent.ancestors()
 
     @property
     def root(self):
@@ -690,7 +685,7 @@ class Compound:
 
         # Create children and labels on the first add operation
         if self.children is None:
-            self.children = list()
+            self.children = []
         if self.labels is None:
             self.labels = OrderedDict()
 
@@ -765,15 +760,14 @@ class Compound:
                     )
 
         # Check that bounding box is within box after adding compound
-        if self.box and check_box_size:
-            if (
-                np.array(self.box.lengths) < np.array(self.get_boundingbox().lengths)
-            ).any():
-                logger.warning(
-                    "After adding new Compound, Compound.box.lengths < "
-                    "Compound.boundingbox.lengths. There may be particles "
-                    "outside of the defined simulation box"
-                )
+        if self.box and check_box_size and (
+            np.array(self.box.lengths) < np.array(self.get_boundingbox().lengths)
+        ).any():
+            logger.warning(
+                "After adding new Compound, Compound.box.lengths < "
+                "Compound.boundingbox.lengths. There may be particles "
+                "outside of the defined simulation box"
+            )
 
     def remove(self, objs_to_remove, reset_labels=False):
         """Remove children from the Compound cleanly.
@@ -808,12 +802,12 @@ class Compound:
         objs_to_remove = objs_to_remove - ports_removed
 
         # Get particles to remove
-        particles_to_remove = set(
-            [particle for obj in objs_to_remove for particle in obj.particles()]
-        )
+        particles_to_remove = {
+            particle for obj in objs_to_remove for particle in obj.particles()
+        }
 
         # Recursively get container compounds to remove
-        to_remove = list()
+        to_remove = []
 
         def _check_if_empty(child):
             if child in to_remove:
@@ -886,9 +880,9 @@ class Compound:
             )
             if label is None:
                 if "Port" in child.name:
-                    label = [
+                    label = next(
                         key for key, x in self.labels.items() if id(x) == id(child)
-                    ][0]
+                    )
                     if "port" in label:
                         label = "port[$]"
                 else:
@@ -1146,7 +1140,7 @@ class Compound:
             self.box = self.get_boundingbox()
         particle_kdtree = PeriodicKDTree.from_compound(compound=self, leafsize=10)
         particle_array = np.array(list(self.particles()))
-        added_bonds = list()
+        added_bonds = []
         for p1 in self.particles_by_name(name_a):
             nearest = self.particles_in_range(
                 p1,
@@ -1208,7 +1202,7 @@ class Compound:
 
         nlist = aq.query(
             moved_positions[a_indices],
-            dict(r_min=dmin, r_max=dmax, exclude_ii=exclude_ii),
+            {"r_min": dmin, "r_max": dmax, "exclude_ii": exclude_ii},
         ).toNeighborList()
 
         part_list = [part for part in self.particles(include_ports=False)]
@@ -1288,7 +1282,7 @@ class Compound:
     def periodicity(self, periods):
         if len(list(periods)) != 3:
             raise ValueError("Periodicity must be of length 3")
-        if not all([isinstance(p, bool) for p in periods]):
+        if not all(isinstance(p, bool) for p in periods):
             raise TypeError(
                 "Periodicity values must be True/False; if you are trying to "
                 "set the dimensions, use Compound.box."
@@ -1500,11 +1494,11 @@ class Compound:
         aq = freud.locality.AABBQuery(freud_box, moved_positions)
         aq_query = aq.query(
             query_points=moved_positions,
-            query_args=dict(r_min=0.0, r_max=minimum_distance, exclude_ii=True),
+            query_args={"r_min": 0.0, "r_max": minimum_distance, "exclude_ii": True},
         )
         nlist = aq_query.toNeighborList()
         # nlist contains each pair twice, get the set
-        pairs_set = set([tuple(sorted((i, j))) for i, j in nlist])
+        pairs_set = {tuple(sorted((i, j))) for i, j in nlist}
         all_particles = [p for p in self.particles()]
         overlapping_particles = []
         for i, j in pairs_set:
@@ -1719,7 +1713,7 @@ class Compound:
         self,
         show_ports=False,
         backend="py3dmol",
-        color_scheme={},
+        color_scheme=None,
         bead_size=0.3,
         periodic_bond_opacity=False,
     ):  # pragma: no cover
@@ -1745,6 +1739,8 @@ class Compound:
             Specify as a float from 0 to 1 to set the bond opacity
             for bonds that cross periodic boundaries.
         """
+        if color_scheme is None:
+            color_scheme = {}
         viz_pkg = {
             "nglview": self._visualize_nglview,
             "py3dmol": self._visualize_py3dmol,
@@ -1772,7 +1768,7 @@ class Compound:
     def _visualize_py3dmol(
         self,
         show_ports=False,
-        color_scheme={},
+        color_scheme=None,
         bead_size=0.3,
         periodic_bond_opacity=False,
     ):
@@ -1799,6 +1795,8 @@ class Compound:
         -------
         view : py3Dmol.view
         """
+        if color_scheme is None:
+            color_scheme = {}
         py3Dmol = import_("py3Dmol")
 
         cloned = clone(self)
@@ -1930,7 +1928,7 @@ class Compound:
         widget = nglview.show_file(os.path.join(tmp_dir, "tmp.mol2"))
         widget.clear()
         widget.add_ball_and_stick(cylinderOnly=True)
-        elements = set([particle.name for particle in self.particles()])
+        elements = {particle.name for particle in self.particles()}
         scale = 50.0
         for element in elements:
             try:
@@ -2043,7 +2041,7 @@ class Compound:
         # Make a list of bond that involved the particles of this compound.
         # This include bonds made exist between this compound and other
         # component of the system
-        new_bonds = list()
+        new_bonds = []
         for particle in particle_list:
             for neighbor in nx.neighbors(bond_graph, particle):
                 new_bonds.append((particle, neighbor))
@@ -2523,11 +2521,10 @@ class Compound:
             if id(part) != id(self) and id(part) not in successors_list:
                 raise MBuildError(f"{part} is not a member of Compound {self}.")
 
-            if check_if_particle:
-                if len(part.children) != 0:
-                    raise MBuildError(
-                        f"{part} does not correspond to an individual particle."
-                    )
+            if check_if_particle and len(part.children) != 0:
+                raise MBuildError(
+                    f"{part} does not correspond to an individual particle."
+                )
 
     def _energy_minimize_openbabel(
         self,
@@ -3200,7 +3197,7 @@ class Compound:
         residues=None,
         include_ports=False,
         infer_residues=False,
-        infer_residues_kwargs={},
+        infer_residues_kwargs=None,
     ):
         """Create a ParmEd Structure from a Compound.
 
@@ -3234,6 +3231,8 @@ class Compound:
         mbuild.conversion.to_parmed
         parmed.structure.Structure : Details on the ParmEd Structure object
         """
+        if infer_residues_kwargs is None:
+            infer_residues_kwargs = {}
         return conversion.to_parmed(
             compound=self,
             box=box,
@@ -3440,7 +3439,7 @@ class Compound:
         if root_container is None:
             root_container = self
         if clone_of is None:
-            clone_of = dict()
+            clone_of = {}
 
         # If this compound has already been cloned, return that.
         if self in clone_of:
@@ -3467,7 +3466,7 @@ class Compound:
         if self.children is None:
             newone.children = None
         else:
-            newone.children = list()
+            newone.children = []
         # Parent should be None initially.
         newone.parent = None
         newone.labels = OrderedDict()

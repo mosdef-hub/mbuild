@@ -236,7 +236,7 @@ class Polymer(Compound):
         compound,
         indices,
         separation=None,
-        orientation=[None, None],
+        orientation=None,
         replace=True,
     ):
         """Add a Compound to self.monomers.
@@ -298,6 +298,8 @@ class Polymer(Compound):
             will have ports added, and no particles are removed from
             the monomer compound.
         """
+        if orientation is None:
+            orientation = [None, None]
         port_labels = ["up", "down"]
         comp = clone(compound)
 
@@ -432,8 +434,8 @@ def _add_port(compound, label, idx, separation, orientation=None, replace=True):
     The port will either use that particle as an anchor or replace it entirely.
     """
     if replace:
-        atom_bonds = [b for b in compound.bonds() if compound[idx] in b][0]
-        anchor = [p for p in atom_bonds if p != compound[idx]][0]
+        atom_bonds = next(b for b in compound.bonds() if compound[idx] in b)
+        anchor = next(p for p in atom_bonds if p != compound[idx])
         if orientation is None:
             orientation = compound[idx].pos - anchor.pos
         if separation is None:

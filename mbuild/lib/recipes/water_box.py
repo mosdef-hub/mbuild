@@ -1,7 +1,7 @@
 """mBuild recipe for building a water box."""
 
 import itertools
-import math as math
+import math
 from collections.abc import Iterable
 
 import numpy as np
@@ -116,7 +116,7 @@ class Water3SiteBox(Compound):
                 # in case we are specified a list of Compounds,
                 # we will make sure it is a 1d list.
                 mask = [e for e in _flatten_list(mask)]
-                if not all([isinstance(entry, Compound) for entry in mask]):
+                if not all(isinstance(entry, Compound) for entry in mask):
                     raise MBuildError(msg)
 
         # read in our propotype, a 4.0x4.0x4.0 nm box

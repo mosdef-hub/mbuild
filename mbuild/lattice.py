@@ -205,7 +205,7 @@ class Lattice:
         self.dimension = 3
         self.lattice_spacing = None
         self.lattice_vectors = None
-        self.lattice_points = dict()
+        self.lattice_points = {}
         self.angles = None
         self._sanitize_inputs(
             lattice_spacing=lattice_spacing,
@@ -435,7 +435,7 @@ class Lattice:
         overlap_dict = defaultdict(list)
         num_iter = 3
         dim = self.dimension
-        for name, positions in lattice_points.items():
+        for positions in lattice_points.values():
             for pos in positions:
                 for offsets in it.product(range(num_iter), repeat=dim):
                     offset_vector = tuple(

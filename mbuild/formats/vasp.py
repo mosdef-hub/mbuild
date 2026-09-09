@@ -70,9 +70,9 @@ def write_poscar(compound, filename, lattice_constant=1.0, coord_style="cartesia
         f.write(filename + " - created by mBuild\n")
         f.write(f"\t{lattice_constant:.15f}\n")
 
-        f.write("\t{0:.15f} {1:.15f} {2:.15f}\n".format(*lattice[0]))
-        f.write("\t{0:.15f} {1:.15f} {2:.15f}\n".format(*lattice[1]))
-        f.write("\t{0:.15f} {1:.15f} {2:.15f}\n".format(*lattice[2]))
+        f.write("\t{:.15f} {:.15f} {:.15f}\n".format(*lattice[0]))
+        f.write("\t{:.15f} {:.15f} {:.15f}\n".format(*lattice[1]))
+        f.write("\t{:.15f} {:.15f} {:.15f}\n".format(*lattice[2]))
         f.write("{}\n".format("\t".join(unique_atoms)))
         f.write("{}\n".format("\t".join(count_list)))
         f.write(f"{coord_style}\n")

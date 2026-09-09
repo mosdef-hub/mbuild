@@ -76,7 +76,7 @@ class Monolayer(mb.Compound):
             for chain, fraction in zip(chains[:-1], fractions[:-1]):
                 # Create sub-pattern for this chain type
                 subpattern = deepcopy(pattern)
-                n_points = int(round(fraction * n_chains))
+                n_points = round(fraction * n_chains)
                 logger.info(f"\n Adding {n_points} of chain {chain}")
                 pick = np.random.choice(
                     subpattern.points.shape[0], n_points, replace=False

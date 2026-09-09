@@ -73,7 +73,7 @@ class Proxy(Compound):
         if root_container is None:
             root_container = self
         if clone_of is None:
-            clone_of = dict()
+            clone_of = {}
 
         # If this compound has already been cloned, return that.
         if self in clone_of:
@@ -95,7 +95,7 @@ class Proxy(Compound):
         if self.children is None:
             newone.children = None
         else:
-            newone.children = list()
+            newone.children = []
         # Parent should be None initially.
         newone.parent = None
         newone.labels = OrderedDict()
