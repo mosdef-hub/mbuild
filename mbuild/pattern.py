@@ -9,18 +9,18 @@ from mbuild.coordinate_transform import force_overlap
 from mbuild.utils.validation import assert_port_exists
 
 __all__ = [
-    "Pattern",
     "DiskPattern",
-    "SpherePattern",
-    "Random2DPattern",
-    "Random3DPattern",
     "Grid2DPattern",
     "Grid3DPattern",
+    "Pattern",
+    "Random2DPattern",
+    "Random3DPattern",
+    "SpherePattern",
     "Triangle2DPattern",
 ]
 
 
-class Pattern(object):
+class Pattern:
     """A superclass for molecules spatial Patterns.
 
     Patterns refer to how molecules are arranged either in a box (volume) or 2-D
@@ -202,7 +202,7 @@ class Random2DPattern(Pattern):
             np.random.seed(seed)
         points = np.random.random((n, 3))
         points[:, 2] = 0
-        super(Random2DPattern, self).__init__(points=points, **kwargs)
+        super().__init__(points=points, **kwargs)
 
 
 class Random3DPattern(Pattern):
@@ -220,7 +220,7 @@ class Random3DPattern(Pattern):
         if seed:
             np.random.seed(seed)
         points = np.random.random((n, 3))
-        super(Random3DPattern, self).__init__(points=points, **kwargs)
+        super().__init__(points=points, **kwargs)
 
 
 class Grid2DPattern(Pattern):
@@ -243,7 +243,7 @@ class Grid2DPattern(Pattern):
         for i, j in product(range(n), range(m)):
             points[i * m + j, 0] = i / n
             points[i * m + j, 1] = j / m
-        super(Grid2DPattern, self).__init__(points=points, **kwargs)
+        super().__init__(points=points, **kwargs)
 
 
 class Grid3DPattern(Pattern):
@@ -263,13 +263,13 @@ class Grid3DPattern(Pattern):
         Number of grid aisles
     """
 
-    def __init__(self, n, m, l, **kwargs):  # noqa: E741
+    def __init__(self, n, m, l, **kwargs):
         points = np.zeros(shape=(n * m * l, 3), dtype=float)
         for i, j, k in product(range(n), range(m), range(l)):
             points[i * m * l + j * l + k, 0] = i / n
             points[i * m * l + j * l + k, 1] = j / m
             points[i * m * l + j * l + k, 2] = k / l
-        super(Grid3DPattern, self).__init__(points=points, **kwargs)
+        super().__init__(points=points, **kwargs)
 
 
 class Triangle2DPattern(Pattern):
@@ -333,7 +333,7 @@ class Triangle2DPattern(Pattern):
             if points[i][0] > 1:
                 points[i][0] -= 1
 
-        super(Triangle2DPattern, self).__init__(points=points, **kwargs)
+        super().__init__(points=points, **kwargs)
 
 
 class SpherePattern(Pattern):
@@ -377,7 +377,7 @@ class SpherePattern(Pattern):
             raise NotImplementedError(
                 "Custom orientation support is not yet implemented."
             )
-        super(SpherePattern, self).__init__(points=points, **kwargs)
+        super().__init__(points=points, **kwargs)
 
 
 class DiskPattern(Pattern):
@@ -397,4 +397,4 @@ class DiskPattern(Pattern):
         points[:, 0] = np.cos(theta)
         points[:, 1] = np.sin(theta)
         points *= radius.reshape((n, 1))
-        super(DiskPattern, self).__init__(points=points, **kwargs)
+        super().__init__(points=points, **kwargs)

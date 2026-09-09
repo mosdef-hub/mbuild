@@ -5,9 +5,8 @@ import logging
 import os
 import tempfile
 from collections import OrderedDict
-from collections.abc import Iterable
+from collections.abc import Iterable, Sequence
 from copy import deepcopy
-from typing import Sequence
 
 import ele
 import networkx as nx
@@ -26,7 +25,7 @@ from mbuild.periodic_kdtree import PeriodicKDTree
 from mbuild.utils.io import import_, run_from_ipython
 from mbuild.utils.jsutils import overwrite_nglview_default
 
-__all__ = ["clone", "Compound", "Particle"]
+__all__ = ["Compound", "Particle", "clone"]
 
 logger = logging.getLogger(__name__)
 
@@ -62,7 +61,7 @@ def clone(existing_compound, clone_of=None, root_container=None):
     return newone
 
 
-class Compound(object):
+class Compound:
     """A building block in the mBuild hierarchy.
 
     Compound is the superclass of all composite building blocks in the mBuild
@@ -157,7 +156,7 @@ class Compound(object):
         element=None,
         port_particle=False,
     ):
-        super(Compound, self).__init__()
+        super().__init__()
 
         if name:
             if not isinstance(name, str):
@@ -358,13 +357,7 @@ class Compound(object):
             if h["level"] == 0:
                 count = count + 1
             if print_full:
-                if index is None:
-                    tree.create_node(
-                        f"[{h['comp'].name}]: {h['comp'].n_particles} particles, {n_bonds} bonds, {len(h['comp'].children)} children",
-                        f"{h['comp_id']}",
-                        f"{h['parent_id']}",
-                    )
-                elif count == index:
+                if index is None or count == index:
                     tree.create_node(
                         f"[{h['comp'].name}]: {h['comp'].n_particles} particles, {n_bonds} bonds, {len(h['comp'].children)} children",
                         f"{h['comp_id']}",
@@ -1318,7 +1311,7 @@ class Compound(object):
             raise ValueError("Ports cannot have a box")
         # Make sure the box is bigger than the bounding box
         if box is not None:
-            if np.asarray((box.lengths < self.get_boundingbox().lengths)).any():
+            if np.asarray(box.lengths < self.get_boundingbox().lengths).any():
                 logger.warning(
                     "Compound.box.lengths < Compound.boundingbox.lengths. "
                     "There may be particles outside of the defined "
