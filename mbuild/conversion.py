@@ -90,9 +90,7 @@ def load(
     structure's position (recommended).
     """
     # First check if we are loading from an object
-    if not (
-        isinstance(filename_or_object, (str, list, tuple))
-    ):
+    if not (isinstance(filename_or_object, (str, list, tuple))):
         return load_object(
             obj=filename_or_object,
             compound=compound,
@@ -996,9 +994,7 @@ def save(
     if os.path.exists(filename) and not overwrite:
         raise OSError(f"{filename} exists; not overwriting")
     if compound.charge and round(compound.charge, 4) != 0.0:
-        logger.info(
-            f"System is not charge neutral. Total charge is {compound.charge}."
-        )
+        logger.info(f"System is not charge neutral. Total charge is {compound.charge}.")
 
     extension = os.path.splitext(filename)[-1]
     # Keep json stuff with internal mbuild method

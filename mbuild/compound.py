@@ -760,9 +760,13 @@ class Compound:
                     )
 
         # Check that bounding box is within box after adding compound
-        if self.box and check_box_size and (
-            np.array(self.box.lengths) < np.array(self.get_boundingbox().lengths)
-        ).any():
+        if (
+            self.box
+            and check_box_size
+            and (
+                np.array(self.box.lengths) < np.array(self.get_boundingbox().lengths)
+            ).any()
+        ):
             logger.warning(
                 "After adding new Compound, Compound.box.lengths < "
                 "Compound.boundingbox.lengths. There may be particles "

@@ -259,8 +259,7 @@ def fill_box(
 
     if compound is not None and len(compound) != len(fix_orientation):
         raise ValueError(
-            "`compound`, `n_compounds`, and `fix_orientation` must be of "
-            "equal length."
+            "`compound`, `n_compounds`, and `fix_orientation` must be of equal length."
         )
 
     if density is not None:
@@ -340,16 +339,12 @@ def fill_box(
     compound_xyz_list = []
     try:
         if use_pbc:
-            pbc_arg = "pbc {:.3f} {:.3f} {:.3f} {:.3f} {:.3f} {:.3f}".format(
-                *box_arg
-            )
+            pbc_arg = "pbc {:.3f} {:.3f} {:.3f} {:.3f} {:.3f} {:.3f}".format(*box_arg)
             fill_arg = ""
             periodicity = (True, True, True)
         else:
-            fill_arg = (
-                "inside box {:.3f} {:.3f} {:.3f} {:.3f} {:.3f} {:.3f}".format(
-                    *box_arg
-                )
+            fill_arg = "inside box {:.3f} {:.3f} {:.3f} {:.3f} {:.3f} {:.3f}".format(
+                *box_arg
             )
             pbc_arg = ""
             periodicity = (False, False, False)
@@ -504,8 +499,7 @@ def fill_region(
             raise ValueError("`compound` and `n_compounds` must be of equal length.")
     if compound is not None and len(compound) != len(fix_orientation):
         raise ValueError(
-            "`compound`, `n_compounds`, and `fix_orientation` must be of "
-            "equal length."
+            "`compound`, `n_compounds`, and `fix_orientation` must be of equal length."
         )
     if bounds is not None:
         if not isinstance(bounds, (list)):
@@ -589,10 +583,8 @@ def fill_region(
 
             reg_maxs -= edge * 10  # Apply edge buffer
             box_arg = list(reg_mins) + list(reg_maxs)
-            fill_arg = (
-                "inside box {:.3f} {:.3f} {:.3f} {:.3f} {:.3f} {:.3f}".format(
-                    *box_arg
-                )
+            fill_arg = "inside box {:.3f} {:.3f} {:.3f} {:.3f} {:.3f} {:.3f}".format(
+                *box_arg
             )
             input_text += PACKMOL_BOX.format(
                 compound_xyz.name,
@@ -751,8 +743,7 @@ def fill_sphere(
 
     if compound is not None and len(compound) != len(fix_orientation):
         raise ValueError(
-            "`compound`, `n_compounds`, and `fix_orientation` must be of "
-            "equal length."
+            "`compound`, `n_compounds`, and `fix_orientation` must be of equal length."
         )
 
     for coord in sphere[:3]:
@@ -989,16 +980,12 @@ def solvate(
     solvent_xyz_list = []
     try:
         if use_pbc:
-            pbc_arg = "pbc {:.3f} {:.3f} {:.3f} {:.3f} {:.3f} {:.3f}".format(
-                *box_arg
-            )
+            pbc_arg = "pbc {:.3f} {:.3f} {:.3f} {:.3f} {:.3f} {:.3f}".format(*box_arg)
             fill_arg = ""
             periodicity = (True, True, True)
         else:
-            fill_arg = (
-                "inside box {:.3f} {:.3f} {:.3f} {:.3f} {:.3f} {:.3f}".format(
-                    *box_arg
-                )
+            fill_arg = "inside box {:.3f} {:.3f} {:.3f} {:.3f} {:.3f} {:.3f}".format(
+                *box_arg
             )
             pbc_arg = ""
             periodicity = (False, False, False)
