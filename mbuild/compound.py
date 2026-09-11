@@ -2784,9 +2784,11 @@ class Compound(object):
 
     def energy_minimize(self, ff=None, n_steps=1000):
         from mbuild.simulation import OpenMMSimulation
+
         sim = OpenMMSimulation(self, ff)
         sim.minimize(n_steps)
         return sim
+
 
 Particle = Compound
 
