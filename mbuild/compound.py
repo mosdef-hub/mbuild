@@ -2782,6 +2782,13 @@ class Compound(object):
             self._hoomd_data.get("build_params"),
         )
 
+    def energy_minimize(self, ff=None, n_steps=1000):
+        from mbuild.simulation import OpenMMSimulation
+
+        sim = OpenMMSimulation(self, ff)
+        sim.minimize(n_steps)
+        return sim
+
 
 Particle = Compound
 

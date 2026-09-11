@@ -6,7 +6,7 @@ import pytest
 from mbuild.path.bias import (
     TargetCoordinate,
 )
-from mbuild.path.build import hard_sphere_random_walk
+from mbuild.path.build import Path, hard_sphere_random_walk
 from mbuild.path.constraints import (
     CuboidConstraint,
 )
@@ -149,3 +149,31 @@ class TestTermination(BaseTest):
         )
         dist = np.linalg.norm(rw.coordinates[-1] - np.array([3, 3, 3]))
         assert np.allclose(dist, 0, atol=1e-1)
+
+    def test_walk_termination_cuts_off_path(self):
+        aPath = Path()
+        num_sites = NumSites(10)
+        attempts = NumAttempts(10)
+        conditions = Termination((num_sites, attempts))
+        volume = CuboidConstraint(3, 3, 3)
+        for _ in range(10):
+            starting_length = len(aPath)
+            hard_sphere_random_walk(
+                path=aPath,
+                radius=0.1,
+                bond_length=0.2,
+                termination=conditions,
+                volume_constraint=volume,
+                rw_angles=(3.14, 3.14),  # straight line paths
+                seed=42,
+            )
+            current_length = len(aPath)
+            assert current_length % 10 == 0, current_length
+            if current_length > starting_length:
+                assert conditions.success, current_length
+                assert conditions.terminators[0]._is_met  # reached number of sites
+                assert not conditions.terminators[1]._is_met
+            else:
+                assert not conditions.terminators[0]._is_met
+                assert conditions.terminators[1]._is_met  # reached number of attempts
+                assert not conditions.success, current_length

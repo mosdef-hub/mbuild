@@ -46,6 +46,7 @@ class Termination:
         """This is automatically called within hard_sphere_random_walk."""
         for i in self.terminators:
             i._attach_path(path, state)
+        self.success = False  # reset success params
 
     def _clean(self):
         """This is automatically called within hard_sphere_random_walk."""
@@ -138,8 +139,12 @@ class NumSites(Terminator):
 
     def is_met(self, coordinates, names):
         if self.state is None:
-            return False
-        return self.state.count - self.state.init_count >= self.num_sites
+            is_met = len(coordinates) == self.num_sites
+            self._is_met = is_met
+            return is_met
+        is_met = self.state.count - self.state.init_count >= self.num_sites
+        self._is_met = is_met
+        return is_met
 
 
 class NumAttempts(Terminator):
