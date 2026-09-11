@@ -98,7 +98,9 @@ class CuboidConstraint(Constraint):
             pbc=self.pbc,
         )
 
-    def sample_candidates(self, points, n_candidates, buffer, k=10, rng=None):
+    def sample_candidates(
+        self, points, n_candidates, buffer, max_attempts=10, k=10, rng=None
+    ):
         """Generate candidate points uniformly distributed inside the box,
         optionally ranked by lowest local density around existing points.
 
@@ -111,11 +113,17 @@ class CuboidConstraint(Constraint):
             If None or empty, candidates are returned in random order.
         n_candidates : int
             Number of candidate points to sample uniformly inside the sphere.
-        k : int, optional, default 10
-            Number of neighbors to use for local density.
         buffer : float
             Edge buffer to subtract from the box edge, ensuring sampled
             points remain at least `buffer` distance away from the boundary.
+            Also buffers against neighboring points, checking their minimum
+            distance.
+        max_attempts : int, default 10
+            Maximum number of points to sample when checking minimum_distace
+            from buffer.
+        k : int, optional, default 10
+            Number of neighbors to use for local density.
+        rng : np.random.rng, default isNone
 
         Returns
         -------
@@ -125,17 +133,41 @@ class CuboidConstraint(Constraint):
             the nearest neighbor (lowest local density) appear first.
         """
         if rng is None:
-            rng = np.random.default_rng()
+            rng = np.random.default_rng(42)
+
         # Create random candidates inside the box to test and sample from
-        candidates = rng.uniform(
-            self.mins + buffer, self.maxs - buffer, size=(n_candidates, 3)
-        )
+        def _sample(n_points):
+            return rng.uniform(
+                self.mins + buffer, self.maxs - buffer, size=(n_candidates, 3)
+            )
+
         if points is None or len(points) == 0:
-            return candidates
+            return _sample(n_candidates)
+
         # Existing points given, sort candidates by local density
         points = np.asarray(points)
         points = points[np.isfinite(points).all(axis=1)]  # Filter out np.inf values
         tree = cKDTree(points)
+
+        accepted = []
+        n_accepted = 0
+        for _ in range(max_attempts):
+            batch = _sample(n_candidates // 2)
+            # Distance to the nearest existing point
+            nn_dist, _ = tree.query(batch, k=1)
+            batch = batch[nn_dist >= buffer]
+            if len(batch):
+                accepted.append(batch)
+                n_accepted += len(batch)
+            if n_accepted >= n_candidates:
+                break
+        if not accepted:
+            return np.empty((0, 3), dtype=float)
+        candidates = np.concatenate(accepted, axis=0)[
+            :n_candidates
+        ]  # trim excess candidates
+
+        # density sort from accepted candidates
         dists, _ = tree.query(candidates, k=k)
         if dists.ndim == 1:
             density_metric = dists

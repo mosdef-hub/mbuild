@@ -299,6 +299,12 @@ class Path:
             length=float(bond_length),
         )
 
+    def strip_coordinates(self, number_of_sites):
+        """Remove coordinates beyond the number of sites."""
+        self.bond_graph.remove_nodes_from(range(number_of_sites, len(self)))
+        self.coordinates = self.coordinates[:number_of_sites]
+        self.beads = self.beads[:number_of_sites]
+
     def find_neighbors(
         self, u, min_bond_length, max_bond_length, excluded_bond_depth=0
     ):
@@ -1530,7 +1536,10 @@ def hard_sphere_random_walk(
         walk_finished = termination.is_met(
             coordinates=coordinates[: state.count], names=beads[: state.count]
         )
-    state.check_termination(path, coordinates, beads)
+    if not state.check_termination(path, coordinates, beads):
+        # remove unfinished walk
+        path.strip_coordinates(state.init_count)
+    state.termination._clean()
 
     return path
 
@@ -1776,7 +1785,7 @@ class RandomWalkState:
             else:
                 logger.warning("Random walk not successful.")
                 logger.warning(self.termination.summarize())
-                return True
+                return False
             # RW is terminated and successful, update bond graph
             self.termination._clean()
             if self.bias:
