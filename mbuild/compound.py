@@ -2684,11 +2684,13 @@ class Compound:
 
             # if fixed_compounds is a 1-d array and it is of length 2, we need to determine whether it is
             # a list of two Compounds or if fixed_compounds[1] should correspond to the directions to constrain
-            if len(np.array(fixed_compounds, dtype=object).shape) == 1:
-                if len(fixed_compounds) == 2:
-                    if not isinstance(fixed_compounds[1], Compound):
-                        # if it is not a list of two Compounds, make a 2d array so we can use the same looping code
-                        fixed_compounds = [fixed_compounds]
+            if (
+                len(np.array(fixed_compounds, dtype=object).shape) == 1
+                and len(fixed_compounds) == 2
+                and not isinstance(fixed_compounds[1], Compound)
+            ):
+                # if it is not a list of two Compounds, make a 2d array so we can use the same looping code
+                fixed_compounds = [fixed_compounds]
 
             for fixed_temp in fixed_compounds:
                 # if an individual entry is a list, validate the input

@@ -185,9 +185,9 @@ def load_object(
             compound.add(obj)
             return compound
 
-    for type_ in type_dict:
+    for type_, value in type_dict.items():
         if isinstance(obj, type_):
-            compound = type_dict[type_](
+            compound = value(
                 obj,
                 compound,
                 coords_only=coords_only,
