@@ -260,8 +260,8 @@ class PeriodicKDTree(KDTree):
         x = np.asarray(x)
         if np.shape(x)[-1] != self.m:
             raise ValueError(
-                "x must consist of vectors of length %d but has "
-                "shape %s" % (self.m, np.shape(x))
+                f"x must consist of vectors of length {self.m} but has "
+                f"shape {np.shape(x)}"
             )
         if p < 1:
             raise ValueError("Only p-norms with 1<=p<=infinity permitted")

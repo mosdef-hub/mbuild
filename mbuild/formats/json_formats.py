@@ -280,6 +280,6 @@ def _perform_sanity_check(json_dict):
             + " Cannot Convert JSON to compound"
         )
     if minor != this_minor:
-        logging.warning(
+        logger.warning(
             warning_msg.format(json_mbuild_version, this_version) + " Will Proceed."
         )

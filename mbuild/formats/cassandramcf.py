@@ -40,7 +40,7 @@ def write_mcf(structure, filename, angle_style, dihedral_style, lj14=None, coul1
     a complete description of the MCF format.
     """
     if not isinstance(structure, pmd.Structure):
-        raise ValueError("MCF writer requires parmed structure.")
+        raise TypeError("MCF writer requires parmed structure.")
     if not all(a.type for a in structure.atoms):
         raise ValueError("MCF writing not supported without parameterized forcefield.")
 
