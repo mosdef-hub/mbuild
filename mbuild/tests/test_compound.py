@@ -108,7 +108,7 @@ class TestCompound(BaseTest):
     def test_n_bonds_particle(self):
         comp = mb.Compound(name="A", pos=[0, 0, 0])
         with pytest.raises(MBuildError):
-            comp.n_bonds
+            _ = comp.n_bonds
 
     def test_direct_bonds_parent(self, methane):
         with pytest.raises(MBuildError):
@@ -208,7 +208,7 @@ class TestCompound(BaseTest):
 
     def test_n_direct_bonds_parent(self, ethane):
         with pytest.raises(MBuildError):
-            ethane.n_direct_bonds
+            _ = ethane.n_direct_bonds
 
     def test_n_direct_bonds(self, ethane):
         assert ethane[0].n_direct_bonds == 4
