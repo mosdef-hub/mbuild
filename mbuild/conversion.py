@@ -401,12 +401,10 @@ def load_file(
             backend = "mdtraj" if has_mdtraj else "parmed"
 
     # First check internal readers
-    if backend == "internal":
-        # Handle json format
-        if extension == ".json":
-            # This doesn't seem to handle the case when compound is given
-            compound = compound_from_json(filename)
-            return compound
+    if backend == "internal" and extension == ".json":
+        # This doesn't seem to handle the case when compound is given
+        compound = compound_from_json(filename)
+        return compound
         # Handle xyz file
     # Then gmso reader
     if backend == "gmso":
