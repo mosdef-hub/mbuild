@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 #
 # mbuild documentation build configuration file, created by
 # sphinx-quickstart on Wed Oct  1 08:59:12 2014.
@@ -14,8 +13,8 @@
 
 import os
 import sys
+from unittest import mock
 
-import mock
 import sphinx_rtd_theme
 
 # If extensions (or modules to document with autodoc) are in another directory,

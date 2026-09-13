@@ -1,4 +1,5 @@
 # ruff: noqa: F401
+# ruff: noqa: B018
 """Module for working with external libraries.
 
 Portions of this code are adapted from MDTraj and are released under the
@@ -35,10 +36,8 @@ logger = logging.getLogger(__name__)
 class DelayImportError(ImportError, SkipTest):
     """Error to allow better import handling."""
 
-    pass
 
-
-MESSAGES = dict()
+MESSAGES = {}
 MESSAGES["gsd"] = """
 The code at {filename}:{line_number} requires the "gsd" package
 
@@ -218,12 +217,12 @@ def import_(module):
             raise ImportError(f"No module named {module}")
 
         (
-            frame,
+            _frame,
             filename,
             line_number,
-            function_name,
-            lines,
-            index,
+            _function_name,
+            _lines,
+            _index,
         ) = inspect.getouterframes(inspect.currentframe())[1]
 
         m = message.format(filename=os.path.basename(filename), line_number=line_number)
@@ -235,7 +234,7 @@ def import_(module):
             + "\033[0m"
         )
 
-        print("", file=sys.stderr)
+        print(file=sys.stderr)
         print(bar, file=sys.stderr)
         print(m, file=sys.stderr)
         print(bar, file=sys.stderr)
@@ -369,7 +368,7 @@ def get_fn(name):
     fn = files("mbuild").joinpath("utils", "reference", name)
 
     if not os.path.exists(fn):
-        raise IOError(f"Sorry! {fn} does not exists.")
+        raise OSError(f"Sorry! {fn} does not exists.")
     return str(fn)
 
 

@@ -14,4 +14,4 @@ class TestPlugins(BaseTest):
     def test_recipes_contents(self, recipe_name):
         import mbuild.recipes
 
-        recipe_name in dir(mbuild.recipes)
+        assert recipe_name in dir(mbuild.recipes)

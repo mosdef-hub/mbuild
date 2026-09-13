@@ -1,7 +1,7 @@
 """mBuild recipe for building a water box."""
 
 import itertools
-import math as math
+import math
 from collections.abc import Iterable
 
 import numpy as np
@@ -42,7 +42,8 @@ class Water3SiteBox(Compound):
         The desired box to fill with water
     edge : float or list of floats, default=0.1 (nm)
         Specifies the gutter around the system to avoid overlaps at boundaries
-    model : mb.Compound, optional, default=water_models.WaterTIP3P()
+    model : mb.Compound, optional, default=None
+        If left as `None`, water_models.WaterTIP3P is used.
         The specified 3-site water model to be used. This uses the force overlap
         command to translate and orient the specified water model to the given coordinates.
         See mbuild/lib/molecules/water.py for available water models or extend the base model.
@@ -67,13 +68,16 @@ class Water3SiteBox(Compound):
         self,
         box,
         edge=0.1,
-        model=water_models.WaterTIP3P(),
+        model=None,
         mask=None,
         radii_dict=None,
         radii_overlap=0.15,
         radii_scaling=1.0,
     ):
-        super(Water3SiteBox, self).__init__()
+        super().__init__()
+
+        if model is None:
+            model = water_models.WaterTIP3P()
 
         # if we do not define a dictionary, create an empty one
         if radii_dict is None:
@@ -116,7 +120,7 @@ class Water3SiteBox(Compound):
                 # in case we are specified a list of Compounds,
                 # we will make sure it is a 1d list.
                 mask = [e for e in _flatten_list(mask)]
-                if not all([isinstance(entry, Compound) for entry in mask]):
+                if not all(isinstance(entry, Compound) for entry in mask):
                     raise MBuildError(msg)
 
         # read in our propotype, a 4.0x4.0x4.0 nm box
