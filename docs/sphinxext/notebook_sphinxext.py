@@ -3,6 +3,8 @@
 
 import os
 import shutil
+import traceback
+from typing import ClassVar
 
 import nbformat
 from docutils import nodes
@@ -39,14 +41,14 @@ def export_html(wd, name):
             with open(f"{wd}/{fn}", "wb") as f:
                 f.write(data)
         return body
-    except Exception as e:
-        return str(e)
+    except Exception:  # noqa: BLE001
+        return traceback.format_exc()
 
 
 def export_python(wd, name):
     nb = _read(wd, name)
     exporter = PythonExporter()
-    body, resources = exporter.from_notebook_node(nb)
+    body, _ = exporter.from_notebook_node(nb)
     with open(f"{wd}/{name}.py", "w") as f:
         f.write(body)
 
@@ -56,13 +58,13 @@ class NotebookDirective(Directive):
 
     required_arguments = 1
     optional_arguments = 1
-    option_spec = {"skip_exceptions": directives.flag}
+    option_spec: ClassVar[dict] = {"skip_exceptions": directives.flag}
     final_argument_whitespace = True
 
     def run(self):
         # check if raw html is supported
         if not self.state.document.settings.raw_enabled:
-            raise self.warning('"%s" directive disabled.' % self.name)
+            raise self.warning(f'"{self.name}" directive disabled.')
 
         # get path to notebook
         nb_rel_path = self.arguments[0]
@@ -113,7 +115,7 @@ class notebook_node(nodes.raw):
 
 
 def formatted_link(path):
-    return "`%s <%s>`__" % (os.path.basename(path), path)
+    return f"`{os.path.basename(path)} <{path}>`__"
 
 
 def visit_notebook_node(self, node):
