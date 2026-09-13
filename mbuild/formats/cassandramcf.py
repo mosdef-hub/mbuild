@@ -250,11 +250,11 @@ def _id_rings_fragments(structure):
             adj_to_ring[idx] = True
     # Now ID the other fragments
     for idx, value in neigh_dict.items():
-        if len(neigh_dict[idx]) > 1:
+        if len(value) > 1:
             if in_ring[idx] is True:
                 continue
             else:
-                frag_list.append([idx] + neigh_dict[idx])
+                frag_list.append([idx] + value)
     # Now find connectivity (shared bonds)
     for i in range(len(frag_list)):
         frag1 = frag_list[i]
