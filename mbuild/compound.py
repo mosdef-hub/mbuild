@@ -1308,13 +1308,15 @@ class Compound:
         if self.port_particle and box is not None:
             raise ValueError("Ports cannot have a box")
         # Make sure the box is bigger than the bounding box
-        if box is not None:
-            if np.asarray(box.lengths < self.get_boundingbox().lengths).any():
-                logger.warning(
-                    "Compound.box.lengths < Compound.boundingbox.lengths. "
-                    "There may be particles outside of the defined "
-                    "simulation box."
-                )
+        if (
+            box is not None
+            and np.asarray(box.lengths < self.get_boundingbox().lengths).any()
+        ):
+            logger.warning(
+                "Compound.box.lengths < Compound.boundingbox.lengths. "
+                "There may be particles outside of the defined "
+                "simulation box."
+            )
         self._box = box
 
     @property
@@ -2091,10 +2093,10 @@ class Compound:
         """
         if update_port_locations:
             xyz_init = self.xyz
-            self = conversion.load(filename, compound=self, coords_only=True)
+            conversion.load(filename, compound=self, coords_only=True)
             self._update_port_locations(xyz_init)
         else:
-            self = conversion.load(filename, compound=self, coords_only=True)
+            conversion.load(filename, compound=self, coords_only=True)
 
     def _update_port_locations(self, initial_coordinates):
         """Adjust port locations after particles have moved.
