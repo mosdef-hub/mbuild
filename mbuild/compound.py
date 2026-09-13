@@ -246,9 +246,8 @@ class Compound:
     def _particles(self, include_ports=False):
         """Return all Particles of the Compound."""
         for child in self.successors():
-            if not child.children:
-                if include_ports or not child.port_particle:
-                    yield child
+            if not child.children and (include_ports or not child.port_particle):
+                yield child
 
     def successors(self):
         """Yield Compounds below self in the hierarchy.
@@ -339,11 +338,10 @@ class Compound:
         )
 
         # if index is specified, ensure we are not selecting an index out of range
-        if index is not None:
-            if index >= len(self.children):
-                raise MBuildError(
-                    f"Index {index} out of range. The number of first level nodes in the tree is {len(self.children)}."
-                )
+        if index is not None and index >= len(self.children):
+            raise MBuildError(
+                f"Index {index} out of range. The number of first level nodes in the tree is {len(self.children)}."
+            )
 
         count = -1
 
@@ -635,9 +633,8 @@ class Compound:
             temp_bond_graphs = []
             for child in compound_list:
                 # create a list of bond graphs of the children to add
-                if containment:
-                    if child.bond_graph and not isinstance(self, Port):
-                        temp_bond_graphs.append(child.bond_graph)
+                if containment and child.bond_graph and not isinstance(self, Port):
+                    temp_bond_graphs.append(child.bond_graph)
 
             # compose children bond_graphs; make sure we actually have graphs to compose
             children_bond_graph = None
@@ -671,7 +668,7 @@ class Compound:
             return
 
         if not isinstance(new_child, Compound):
-            raise ValueError(
+            raise TypeError(
                 "Only objects that inherit from mbuild.Compound can be added "
                 f"to Compounds. You tried to add '{new_child}'."
             )

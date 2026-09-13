@@ -607,7 +607,7 @@ class TestCompound(BaseTest):
             Compound(name=1)
 
     def test_add_wrong_input(self, ethane):
-        with pytest.raises(ValueError):
+        with pytest.raises(TypeError):
             ethane.add("water")
 
     def test_mass_property(self, h2o):
