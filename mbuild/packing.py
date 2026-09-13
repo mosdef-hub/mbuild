@@ -1176,11 +1176,10 @@ def _run_packmol(input_text, filled_xyz, temp_file, packmol_file):
         Path to save the generated PACKMOL input file if desired.
     """
     # Create input file
-    packmol_inp = tempfile.NamedTemporaryFile(
+    with tempfile.NamedTemporaryFile(
         mode="w", delete=False, prefix="packmol-", suffix=".inp"
-    )
-    packmol_inp.write(input_text)
-    packmol_inp.close()
+    ) as packmol_inp:
+        packmol_inp.write(input_text)
     # Save PACKMOL file to cwd
     if packmol_file:
         with (
