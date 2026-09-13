@@ -137,13 +137,16 @@ class SilicaInterface(Compound):
     def _identify_surface_sites(self, thickness):
         """Label surface sites and add ports above them."""
         for atom in list(self.particles()):
-            if len(list(self.bond_graph.neighbors(atom))) == 1:
-                if atom.name == "O" and atom.pos[2] > thickness:
-                    atom.name = "O_surface"
-                    port = Port(anchor=atom)
-                    port.spin(np.pi / 2, [1, 0, 0])
-                    port.translate(np.array([0.0, 0.0, 0.1]))
-                    self.add(port, f"port_{len(self.referenced_ports())}")
+            if (
+                len(list(self.bond_graph.neighbors(atom))) == 1
+                and atom.name == "O"
+                and atom.pos[2] > thickness
+            ):
+                atom.name = "O_surface"
+                port = Port(anchor=atom)
+                port.spin(np.pi / 2, [1, 0, 0])
+                port.translate(np.array([0.0, 0.0, 0.1]))
+                self.add(port, f"port_{len(self.referenced_ports())}")
 
     def _adjust_stoichiometry(self):
         """Remove O's from underside of surface to yield a 2:1 Si:O ratio."""

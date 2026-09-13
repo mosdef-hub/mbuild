@@ -75,9 +75,7 @@ class TestUtils(BaseTest):
         decane.save(filename)
         with open(get_fn("decane.xyz")) as file1, open(filename) as file2:
             diff = difflib.ndiff(file1.readlines(), file2.readlines())
-        changes = [
-            line for line in diff if line.startswith(("+ ", "- "))
-        ]
+        changes = [line for line in diff if line.startswith(("+ ", "- "))]
         assert not changes
 
     def test_fn(self):

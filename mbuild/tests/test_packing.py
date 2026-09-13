@@ -193,7 +193,7 @@ class TestPacking(BaseTest):
 
     def test_fill_region_incorrect_type(self, ethane):
         box1 = {"a": 1}
-        with pytest.raises(ValueError, match=r"expected a list of type:"):
+        with pytest.raises(TypeError, match=r"expected a list of type:"):
             mb.fill_region(compound=[ethane], n_compounds=[2], region=box1, bounds=None)
 
     def test_fill_region_bounds_not_list(self, ethane):

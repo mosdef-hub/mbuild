@@ -89,7 +89,7 @@ class Polymer(Compound):
         self._monomers = monomers or []
         self._end_groups = end_groups or [None, None]
         if not isinstance(self._end_groups, list):
-            raise ValueError(
+            raise TypeError(
                 "Please provide two end groups in a list; "
                 f"you provided {self._end_groups}"
             )
@@ -303,8 +303,8 @@ class Polymer(Compound):
         port_labels = ["up", "down"]
         comp = clone(compound)
 
-        for idx, label, orientation in zip(indices, port_labels, orientation):
-            _add_port(comp, label, idx, separation, orientation, replace)
+        for idx, label, _orientation in zip(indices, port_labels, orientation):
+            _add_port(comp, label, idx, separation, _orientation, replace)
         if replace:
             remove_atom1 = comp[indices[0]]
             remove_atom2 = comp[indices[1]]

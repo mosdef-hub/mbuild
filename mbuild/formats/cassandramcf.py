@@ -249,7 +249,7 @@ def _id_rings_fragments(structure):
         for idx in adjacentatoms:
             adj_to_ring[idx] = True
     # Now ID the other fragments
-    for idx in neigh_dict:
+    for idx, value in neigh_dict.items():
         if len(neigh_dict[idx]) > 1:
             if in_ring[idx] is True:
                 continue

@@ -253,9 +253,12 @@ def fill_box(
     if not isinstance(fix_orientation, (list, set)):
         fix_orientation = [fix_orientation] * len(compound)
 
-    if compound is not None and n_compounds is not None:
-        if len(compound) != len(n_compounds):
-            raise ValueError("`compound` and `n_compounds` must be of equal length.")
+    if (
+        compound is not None
+        and n_compounds is not None
+        and len(compound) != len(n_compounds)
+    ):
+        raise ValueError("`compound` and `n_compounds` must be of equal length.")
 
     if compound is not None and len(compound) != len(fix_orientation):
         raise ValueError(
@@ -494,9 +497,12 @@ def fill_region(
     if not isinstance(fix_orientation, (list, set)):
         fix_orientation = [fix_orientation] * len(compound)
 
-    if compound is not None and n_compounds is not None:
-        if len(compound) != len(n_compounds):
-            raise ValueError("`compound` and `n_compounds` must be of equal length.")
+    if (
+        compound is not None
+        and n_compounds is not None
+        and len(compound) != len(n_compounds)
+    ):
+        raise ValueError("`compound` and `n_compounds` must be of equal length.")
     if compound is not None and len(compound) != len(fix_orientation):
         raise ValueError(
             "`compound`, `n_compounds`, and `fix_orientation` must be of equal length."
@@ -514,7 +520,7 @@ def fill_region(
             )
         for bound in bounds:
             if not isinstance(bound, (Box, list)):
-                raise ValueError(
+                raise TypeError(
                     "Each bound in `bounds` must be `None`, `Box`, or a "
                     "list of [min_x, min_y, min_z, max_x, max_y, max_z]."
                 )
@@ -529,11 +535,11 @@ def fill_region(
             if isinstance(reg, (list, Box)):
                 my_regions.append(reg)
             else:
-                raise ValueError(
+                raise TypeError(
                     f"list contents expected to be mbuild.Box or list of floats, provided: {type(reg)}"
                 )
     else:
-        raise ValueError(
+        raise TypeError(
             f"expected a list of type: list or mbuild.Box, was provided {region} of type: {type(region)}"
         )
     container = []
@@ -737,9 +743,12 @@ def fill_sphere(
     if not isinstance(fix_orientation, (list, set)):
         fix_orientation = [fix_orientation] * len(compound)
 
-    if compound is not None and n_compounds is not None:
-        if len(compound) != len(n_compounds):
-            raise ValueError("`compound` and `n_compounds` must be of equal length.")
+    if (
+        compound is not None
+        and n_compounds is not None
+        and len(compound) != len(n_compounds)
+    ):
+        raise ValueError("`compound` and `n_compounds` must be of equal length.")
 
     if compound is not None and len(compound) != len(fix_orientation):
         raise ValueError(

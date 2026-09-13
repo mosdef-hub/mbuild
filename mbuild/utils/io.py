@@ -1,4 +1,5 @@
 # ruff: noqa: F401
+# ruff: noqa: B018
 """Module for working with external libraries.
 
 Portions of this code are adapted from MDTraj and are released under the

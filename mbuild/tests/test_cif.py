@@ -18,7 +18,9 @@ class TestCif(BaseTest):
     @pytest.mark.skipif(not has_garnett, reason="garnett package not installed")
     @pytest.mark.skipif(not has_pycifrw, reason="pycifrw package not installed")
     def test_malformed_cif(self):
-        with pytest.raises(Exception):
+        from CifFile.StarFile import StarError
+
+        with pytest.raises(StarError):
             load_cif(file_or_path=get_fn("extra_blank_field.cif"))
 
     @pytest.mark.skipif(not has_garnett, reason="garnett package not installed")

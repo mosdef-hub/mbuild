@@ -38,14 +38,8 @@ def compound_from_json(json_file):
         keys, when trying to convert the compound to JSON.
     """
     with open(json_file, "r") as cmpdfile:
-        try:
-            cmpd_dict_and_meta = json.load(cmpdfile)
-        except ValueError:
-            raise
-        try:
-            _perform_sanity_check(cmpd_dict_and_meta)
-        except MBuildError:
-            raise
+        cmpd_dict_and_meta = json.load(cmpdfile)
+        _perform_sanity_check(cmpd_dict_and_meta)
         compound_dict = cmpd_dict_and_meta["Compound"]
         converted_dict = {}
         parent = _dict_to_mb(compound_dict)

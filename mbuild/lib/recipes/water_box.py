@@ -42,7 +42,8 @@ class Water3SiteBox(Compound):
         The desired box to fill with water
     edge : float or list of floats, default=0.1 (nm)
         Specifies the gutter around the system to avoid overlaps at boundaries
-    model : mb.Compound, optional, default=water_models.WaterTIP3P()
+    model : mb.Compound, optional, default=None
+        If left as `None`, water_models.WaterTIP3P is used.
         The specified 3-site water model to be used. This uses the force overlap
         command to translate and orient the specified water model to the given coordinates.
         See mbuild/lib/molecules/water.py for available water models or extend the base model.
@@ -67,13 +68,16 @@ class Water3SiteBox(Compound):
         self,
         box,
         edge=0.1,
-        model=water_models.WaterTIP3P(),
+        model=None,
         mask=None,
         radii_dict=None,
         radii_overlap=0.15,
         radii_scaling=1.0,
     ):
         super().__init__()
+
+        if model is None:
+            model = water_models.WaterTIP3P()
 
         # if we do not define a dictionary, create an empty one
         if radii_dict is None:

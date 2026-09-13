@@ -1900,47 +1900,47 @@ class TestCompound(BaseTest):
             octane.energy_minimize(fixed_compounds=[not_in_compound])
         with pytest.raises(MBuildError):
             octane.energy_minimize(fixed_compounds=[12323.3, (True, False, False)])
-        with pytest.raises(Exception):
+        with pytest.raises(MBuildError):
             octane.energy_minimize(
                 fixed_compounds=[methyl_end0, (True, False, False, False)]
             )
-        with pytest.raises(Exception):
+        with pytest.raises(MBuildError):
             octane.energy_minimize(fixed_compounds=[methyl_end0, True, False, False])
-        with pytest.raises(Exception):
+        with pytest.raises(MBuildError):
             octane.energy_minimize(fixed_compounds=[methyl_end0, True])
-        with pytest.raises(Exception):
+        with pytest.raises(MBuildError):
             octane.energy_minimize(
                 fixed_compounds=[methyl_end0, [True, False, False, False]]
             )
-        with pytest.raises(Exception):
+        with pytest.raises(MBuildError):
             octane.energy_minimize(fixed_compounds=[methyl_end0, (True, False)])
 
-        with pytest.raises(Exception):
+        with pytest.raises(MBuildError):
             octane.energy_minimize(fixed_compounds=[methyl_end0, (True)])
 
-        with pytest.raises(Exception):
+        with pytest.raises(MBuildError):
             octane.energy_minimize(fixed_compounds=[methyl_end0, ("True", True, True)])
-        with pytest.raises(Exception):
+        with pytest.raises(MBuildError):
             octane.energy_minimize(fixed_compounds=[methyl_end0, (True, "True", True)])
-        with pytest.raises(Exception):
+        with pytest.raises(MBuildError):
             octane.energy_minimize(fixed_compounds=[methyl_end0, (True, True, "True")])
-        with pytest.raises(Exception):
+        with pytest.raises(MBuildError):
             octane.energy_minimize(
                 fixed_compounds=[methyl_end0, ("True", True, "True")]
             )
-        with pytest.raises(Exception):
+        with pytest.raises(MBuildError):
             octane.energy_minimize(
                 fixed_compounds=[methyl_end0, (True, "True", "True")]
             )
-        with pytest.raises(Exception):
+        with pytest.raises(MBuildError):
             octane.energy_minimize(
                 fixed_compounds=[methyl_end0, ("True", "True", True)]
             )
-        with pytest.raises(Exception):
+        with pytest.raises(MBuildError):
             octane.energy_minimize(
                 fixed_compounds=[methyl_end0, ("True", "True", "True")]
             )
-        with pytest.raises(Exception):
+        with pytest.raises(MBuildError):
             octane.energy_minimize(fixed_compounds=[methyl_end0, (123.0, 231, "True")])
 
     @pytest.mark.skipif(not has_openbabel, reason="Open Babel not installed")
