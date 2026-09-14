@@ -44,7 +44,7 @@ jobs:
 
       - name: Conditionally install OpenBabel
         if: ${{ matrix.python-version < '3.13' }}
-        run: micromamba install -y "openbabel<3.2"
+        run: micromamba install -y "openbabel<3.2 && micromamba list"
 
       - name: Test (OS -> ${{ matrix.os }} / Python -> ${{ matrix.python-version }})
         run: python -m pytest -v --cov=mbuild --cov-report=xml --cov-append --cov-config=setup.cfg --color yes --pyargs mbuild
