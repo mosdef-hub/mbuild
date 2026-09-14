@@ -11,7 +11,7 @@ __all__ = ["Box"]
 logger = logging.getLogger(__name__)
 
 
-class Box(object):
+class Box:
     """A box representing the bounds of the system.
 
     Parameters

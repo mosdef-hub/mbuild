@@ -3,8 +3,6 @@
 https://cassandra-mc.readthedocs.io/en/latest/guides/input_files.html#molecular-connectivity-file
 """
 
-from __future__ import division
-
 import logging
 from math import sqrt
 
@@ -76,15 +74,13 @@ def write_mcf(structure, filename, angle_style, dihedral_style, lj14=None, coul1
     if dihedral_style.casefold() != "none":
         if len(structure.rb_torsions) > 0 and dihedral_style.casefold() != "opls":
             raise ValueError(
-                "Dihedral style declared as {} but RB torsions found.".format(
-                    dihedral_style
-                )
+                f"Dihedral style declared as {dihedral_style} but RB torsions found."
             )
 
         if len(structure.dihedrals) > 0 and dihedral_style.casefold() != "charmm":
             raise ValueError(
-                "Dihedral style declared as {} but charmm-style dihedrals "
-                "found.".format(dihedral_style)
+                f"Dihedral style declared as {dihedral_style} but charmm-style dihedrals "
+                "found."
             )
 
         if len(structure.rb_torsions) > 0 and len(structure.dihedrals) > 0:
@@ -105,7 +101,7 @@ def write_mcf(structure, filename, angle_style, dihedral_style, lj14=None, coul1
             if len(structure.dihedrals) > 0 or len(structure.rb_torsions) > 0:
                 logger.info(
                     "Unable to infer coulombic 1-4 scaling factor. Setting to "
-                    "{:.1f}".format(coul14)
+                    f"{coul14:.1f}"
                 )
     if lj14 is None:
         if len(structure.adjusts) > 0:
@@ -120,8 +116,7 @@ def write_mcf(structure, filename, angle_style, dihedral_style, lj14=None, coul1
                 if all([c_eps == 0 for c_eps in combined_eps_list]):
                     lj14 = 0.0
                     logger.info(
-                        "Unable to infer LJ 1-4 scaling factor. Setting to "
-                        "{:.1f}".format(lj14)
+                        f"Unable to infer LJ 1-4 scaling factor. Setting to {lj14:.1f}"
                     )
                 else:
                     scaled_eps_list = [adj.type.epsilon for adj in structure.adjusts]
@@ -132,23 +127,19 @@ def write_mcf(structure, filename, angle_style, dihedral_style, lj14=None, coul1
             else:
                 lj14 = 0.0
                 logger.info(
-                    "Unable to infer LJ 1-4 scaling factor. Setting to {:.1f}".format(
-                        lj14
-                    )
+                    f"Unable to infer LJ 1-4 scaling factor. Setting to {lj14:.1f}"
                 )
         else:
             lj14 = 0.0
             if len(structure.dihedrals) > 0 or len(structure.rb_torsions) > 0:
                 logger.info(
-                    "Unable to infer LJ 1-4 scaling factor. Setting to {:.1f}".format(
-                        lj14
-                    )
+                    f"Unable to infer LJ 1-4 scaling factor. Setting to {lj14:.1f}"
                 )
 
     if coul14 < 0.0 or coul14 > 1.0:
-        raise ValueError("Unreasonable value {} for coul14 scaling.".format(coul14))
+        raise ValueError(f"Unreasonable value {coul14} for coul14 scaling.")
     if lj14 < 0.0 or lj14 > 1.0:
-        raise ValueError("Unreasonable value {} for lj14 scaling.".format(lj14))
+        raise ValueError(f"Unreasonable value {lj14} for lj14 scaling.")
 
     # Now we write the MCF file
     with open(filename, "w") as mcf_file:
@@ -352,19 +343,10 @@ def _write_atom_information(mcf_file, structure, in_ring, IG_CONSTANT_KCAL):
     )
 
     mcf_file.write(header)
-    mcf_file.write("{:d}\n".format(len(structure.atoms)))
+    mcf_file.write(f"{len(structure.atoms):d}\n")
     for i in range(len(structure.atoms)):
         mcf_file.write(
-            "{:<4d}  {:<6s}  {:<2s}  {:7.3f}  {:12.8f}  {:3s}  {:8.5f}  {:8.5f}".format(
-                i + 1,
-                types[i],
-                elements[i],
-                masses[i],
-                charges[i],
-                vdw_type,
-                epsilons[i],
-                sigmas[i],
-            )
+            f"{i + 1:<4d}  {types[i]:<6s}  {elements[i]:<2s}  {masses[i]:7.3f}  {charges[i]:12.8f}  {vdw_type:3s}  {epsilons[i]:8.5f}  {sigmas[i]:8.5f}"
         )
         if in_ring[i] is True:
             mcf_file.write("  ring")
@@ -386,7 +368,7 @@ def _write_bond_information(mcf_file, structure):
     mcf_file.write("\n!Bond Format\n")
     mcf_file.write("!index i j type parameters\n" + '!type="fixed", parms=bondLength\n')
     mcf_file.write("\n# Bond_Info\n")
-    mcf_file.write("{:d}\n".format(len(structure.bonds)))
+    mcf_file.write(f"{len(structure.bonds):d}\n")
     for i, bond in enumerate(structure.bonds):
         mcf_file.write(
             "{:<4d}  {:<4d}  {:<4d}  {:s}  {:s}\n".format(
@@ -435,18 +417,11 @@ def _write_angle_information(mcf_file, structure, angle_style, IG_CONSTANT_KCAL)
     )
 
     mcf_file.write(header)
-    mcf_file.write("{:d}\n".format(len(structure.angles)))
+    mcf_file.write(f"{len(structure.angles):d}\n")
 
     for i, angle in enumerate(structure.angles):
         mcf_file.write(
-            "{:<4d}  {:<4d}  {:<4d}  {:<4d}  {:s}  {:s}\n".format(
-                i + 1,
-                angle.atom1.idx + 1,
-                angle.atom2.idx + 1,
-                angle.atom3.idx + 1,
-                angle_style.lower(),
-                angle_parms[i],
-            )
+            f"{i + 1:<4d}  {angle.atom1.idx + 1:<4d}  {angle.atom2.idx + 1:<4d}  {angle.atom3.idx + 1:<4d}  {angle_style.lower():s}  {angle_parms[i]:s}\n"
         )
 
 
@@ -501,19 +476,19 @@ def _write_dihedral_information(mcf_file, structure, dihedral_style, KCAL_TO_KJ)
                         "if c4==0 and c5==0"
                     )
                 dihedral_parms.append(
-                    str("{:8.3f} ".format(a0 * KCAL_TO_KJ))
-                    + str("{:8.3f} ".format(a1 * KCAL_TO_KJ))
-                    + str("{:8.3f} ".format(a2 * KCAL_TO_KJ))
-                    + str("{:8.3f} ".format(a3 * KCAL_TO_KJ))
+                    str(f"{a0 * KCAL_TO_KJ:8.3f} ")
+                    + str(f"{a1 * KCAL_TO_KJ:8.3f} ")
+                    + str(f"{a2 * KCAL_TO_KJ:8.3f} ")
+                    + str(f"{a3 * KCAL_TO_KJ:8.3f} ")
                 )
 
         elif dihedral_style.casefold() == "charmm":
             dihedral_style = dihedral_style.upper()
             dihedrals = structure.dihedrals
             dihedral_parms = [
-                str("{:8.3f} ".format(dihedral.type.phi_k * KCAL_TO_KJ))
-                + str("{:8.3f} ".format(dihedral.type.per))
-                + str("{:8.3f}".format(dihedral.type.phase))
+                str(f"{dihedral.type.phi_k * KCAL_TO_KJ:8.3f} ")
+                + str(f"{dihedral.type.per:8.3f} ")
+                + str(f"{dihedral.type.phase:8.3f}")
                 for dihedral in dihedrals
             ]
 
@@ -531,22 +506,14 @@ def _write_dihedral_information(mcf_file, structure, dihedral_style, KCAL_TO_KJ)
                 "Only 'OPLS', 'CHARMM', and 'none' dihedral styles are supported."
             )
 
-        mcf_file.write("{:d}\n".format(len(dihedrals)))
+        mcf_file.write(f"{len(dihedrals):d}\n")
         for i, dihedral in enumerate(dihedrals):
             # 2021 Jun 24 Ryan S. DeFever
             # Removed improper sorting for reproducibility;
             # The atom order provided in the parmed.Structure
             # is written to the MCF file.
             mcf_file.write(
-                "{:<4d}  {:<4d}  {:<4d}  {:<4d}  {:<4d}  {:s}  {:s}\n".format(
-                    i + 1,
-                    dihedral.atom1.idx + 1,
-                    dihedral.atom2.idx + 1,
-                    dihedral.atom3.idx + 1,
-                    dihedral.atom4.idx + 1,
-                    dihedral_style,
-                    dihedral_parms[i],
-                )
+                f"{i + 1:<4d}  {dihedral.atom1.idx + 1:<4d}  {dihedral.atom2.idx + 1:<4d}  {dihedral.atom3.idx + 1:<4d}  {dihedral.atom4.idx + 1:<4d}  {dihedral_style:s}  {dihedral_parms[i]:s}\n"
             )
     else:
         mcf_file.write("0\n")
@@ -572,21 +539,12 @@ def _write_improper_information(mcf_file, structure, KCAL_TO_KJ):
     )
 
     mcf_file.write(header)
-    mcf_file.write("{:d}\n".format(len(structure.impropers)))
+    mcf_file.write(f"{len(structure.impropers):d}\n")
 
     improper_type = "harmonic"
     for i, improper in enumerate(structure.impropers):
         mcf_file.write(
-            "{:<4d}  {:<4d}  {:<4d}  {:<4d}  {:<4d}  {:s}  {:8.3f}  {:8.3f}\n".format(
-                i + 1,
-                improper.atom1.idx + 1,
-                improper.atom2.idx + 1,
-                improper.atom3.idx + 1,
-                improper.atom4.idx + 1,
-                improper_type,
-                improper.type.psi_k * KCAL_TO_KJ,
-                improper.type.psi_eq,
-            )
+            f"{i + 1:<4d}  {improper.atom1.idx + 1:<4d}  {improper.atom2.idx + 1:<4d}  {improper.atom3.idx + 1:<4d}  {improper.atom4.idx + 1:<4d}  {improper_type:s}  {improper.type.psi_k * KCAL_TO_KJ:8.3f}  {improper.type.psi_eq:8.3f}\n"
         )
 
 
@@ -624,17 +582,17 @@ def _write_fragment_information(mcf_file, structure, frag_list, frag_conn):
             logger.info("More than two atoms present but no fragments identified.")
             mcf_file.write("0\n")
     else:
-        mcf_file.write("{:d}\n".format(len(frag_list)))
+        mcf_file.write(f"{len(frag_list):d}\n")
         for i, frag in enumerate(frag_list):
-            mcf_file.write("{:d}    {:d}".format(i + 1, len(frag)))
+            mcf_file.write(f"{i + 1:d}    {len(frag):d}")
             for idx in frag:
-                mcf_file.write("    {:d}".format(idx + 1))
+                mcf_file.write(f"    {idx + 1:d}")
             mcf_file.write("\n")
 
     mcf_file.write("\n\n# Fragment_Connectivity\n")
-    mcf_file.write("{:d}\n".format(len(frag_conn)))
+    mcf_file.write(f"{len(frag_conn):d}\n")
     for i, conn in enumerate(frag_conn):
-        mcf_file.write("{:d}    {:d}    {:d}\n".format(i + 1, conn[0] + 1, conn[1] + 1))
+        mcf_file.write(f"{i + 1:d}    {conn[0] + 1:d}    {conn[1] + 1:d}\n")
 
 
 def _write_intrascaling_information(mcf_file, lj14, coul14):
@@ -657,5 +615,5 @@ def _write_intrascaling_information(mcf_file, lj14, coul14):
     )
 
     mcf_file.write(header)
-    mcf_file.write("0. 0. {:.4f} 1.\n".format(lj14))
-    mcf_file.write("0. 0. {:.4f} 1.\n".format(coul14))
+    mcf_file.write(f"0. 0. {lj14:.4f} 1.\n")
+    mcf_file.write(f"0. 0. {coul14:.4f} 1.\n")

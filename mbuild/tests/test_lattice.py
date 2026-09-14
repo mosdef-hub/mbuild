@@ -100,7 +100,7 @@ class TestLattice(BaseTest):
         with pytest.raises(ValueError):
             mb.Lattice(lattice_spacing=space, lattice_vectors=vectors, angles=angles)
 
-    @pytest.mark.parametrize("the_type", [(list()), (tuple()), (str()), ([])])
+    @pytest.mark.parametrize("the_type", [(list()), (tuple()), (""), ([])])
     def test_lattice_points_input_empty_type(self, the_type):
         with pytest.raises(TypeError):
             mb.Lattice(lattice_spacing=[1, 1, 1], lattice_points=the_type)

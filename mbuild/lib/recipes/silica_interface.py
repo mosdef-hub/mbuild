@@ -40,7 +40,7 @@ class SilicaInterface(Compound):
     """
 
     def __init__(self, bulk_silica, tile_x=1, tile_y=1, thickness=1.0, seed=12345):
-        super(SilicaInterface, self).__init__()
+        super().__init__()
 
         random.seed(seed)
         self._oh_density = 5.0
@@ -75,7 +75,7 @@ class SilicaInterface(Compound):
                 particle.name == "O" and particle.pos[2] < (thickness + 2 * O_buffer)
             ):
                 interface_particle = Compound(name=particle.name, pos=particle.pos)
-                interface.add(interface_particle, particle.name + "_{}".format(i))
+                interface.add(interface_particle, particle.name + f"_{i}")
         self.add(interface, inherit_box=True, inherit_periodicity=True)
 
     def _strip_stray_atoms(self):

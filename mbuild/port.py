@@ -42,7 +42,7 @@ class Port(Compound):
     """
 
     def __init__(self, anchor=None, orientation=None, separation=0):
-        super(Port, self).__init__(name="Port", port_particle=True)
+        super().__init__(name="Port", port_particle=True)
         self.bond_graph = None
         self.anchor = anchor
         default_direction = np.array([0, 1, 0])
@@ -81,7 +81,7 @@ class Port(Compound):
         self.translate(separation * unit_vector(orientation))
 
     def _clone(self, clone_of=None, root_container=None):
-        newone = super(Port, self)._clone(clone_of, root_container)
+        newone = super()._clone(clone_of, root_container)
         newone.anchor = clone(self.anchor, clone_of, root_container)
         newone.used = self.used
         return newone

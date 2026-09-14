@@ -47,7 +47,7 @@ def _gen_relevant_images(x, bounds, distance_upper_bound):
 
     for i, coord in enumerate(x):
         if bounds[i] > 0.0:
-            real_x[i] = x[i] - np.floor(x[i] / bounds[i]) * bounds[i]
+            real_x[i] = coord - np.floor(coord / bounds[i]) * bounds[i]
 
     m = len(x)
 
@@ -138,7 +138,7 @@ class PeriodicKDTree(KDTree):
         )
 
         # Set up underlying kd-tree
-        super(PeriodicKDTree, self).__init__(wrapped_data, leafsize)
+        super().__init__(wrapped_data, leafsize)
 
     @classmethod
     def from_compound(cls, compound, leafsize=10):
@@ -208,9 +208,7 @@ class PeriodicKDTree(KDTree):
         # Run queries over all relevant images of x
         hits_list = []
         for real_x in _gen_relevant_images(x, self.bounds, distance_upper_bound):
-            d, i = super(PeriodicKDTree, self).query(
-                real_x, k, eps, p, distance_upper_bound
-            )
+            d, i = super().query(real_x, k, eps, p, distance_upper_bound)
             if k > 1:
                 hits_list.append(list(zip(d, i)))
             else:
@@ -338,9 +336,7 @@ class PeriodicKDTree(KDTree):
         # Run queries over all relevant images of x
         results = []
         for real_x in _gen_relevant_images(x, self.bounds, r):
-            results.extend(
-                super(PeriodicKDTree, self).query_ball_point(real_x, r, p, eps)
-            )
+            results.extend(super().query_ball_point(real_x, r, p, eps))
         return results
 
     def query_ball_point(self, x, r, p=2.0, eps=0):
@@ -376,8 +372,8 @@ class PeriodicKDTree(KDTree):
         x = np.asarray(x).astype(float)
         if x.shape[-1] != self.m:
             raise ValueError(
-                "Searching for a {}d-dimensional point in a {}d-dimensional "
-                "KDTree".format(x.shape[-1], self.m)
+                f"Searching for a {x.shape[-1]}d-dimensional point in a {self.m}d-dimensional "
+                "KDTree"
             )
         if len(x.shape) == 1:
             return self.__query_ball_point(x, r, p, eps)

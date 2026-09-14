@@ -23,7 +23,7 @@ class Alkane(mb.Compound):
         """
         if n < 1:
             raise ValueError("n must be 1 or more")
-        super(Alkane, self).__init__()
+        super().__init__()
         from mbuild.lib.recipes import Polymer
 
         # Handle the case of Methane and Ethane separately

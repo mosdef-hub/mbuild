@@ -11,7 +11,7 @@ class Ethane(mb.Compound):
     """
 
     def __init__(self):
-        super(Ethane, self).__init__()
+        super().__init__()
 
         self.add(CH3(), "methyl1")
         self.add(CH3(), "methyl2")

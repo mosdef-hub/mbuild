@@ -1231,4 +1231,4 @@ def _check_packmol(PACKMOL):  # pragma: no cover
                 msg + " If packmol is already installed, make sure that the "
                 "packmol.exe is on the path."
             )
-        raise IOError(msg)
+        raise OSError(msg)

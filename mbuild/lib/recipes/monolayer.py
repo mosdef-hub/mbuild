@@ -49,7 +49,7 @@ class Monolayer(mb.Compound):
     ):
         from mbuild.lib.recipes import TiledCompound
 
-        super(Monolayer, self).__init__()
+        super().__init__()
 
         # Replicate the surface.
         tiled_compound = TiledCompound(surface, n_tiles=(tile_x, tile_y, 1))

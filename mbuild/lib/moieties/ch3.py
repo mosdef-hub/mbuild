@@ -7,7 +7,7 @@ class CH3(mb.Compound):
     """A methyl group."""
 
     def __init__(self):
-        super(CH3, self).__init__()
+        super().__init__()
 
         mb.load(
             "ch3.pdb",

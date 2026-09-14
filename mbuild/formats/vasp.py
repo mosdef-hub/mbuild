@@ -9,7 +9,7 @@ from numpy.linalg import inv
 
 import mbuild as mb
 
-__all__ = ["write_poscar", "read_poscar"]
+__all__ = ["read_poscar", "write_poscar"]
 
 logger = logging.getLogger(__name__)
 
@@ -76,8 +76,9 @@ def write_poscar(compound, filename, lattice_constant=1.0, coord_style="cartesia
         f.write("{}\n".format("\t".join(unique_atoms)))
         f.write("{}\n".format("\t".join(count_list)))
         f.write(f"{coord_style}\n")
-        for row in sorted_xyz:
-            f.write(f"{row[0]:.15f} {row[1]:.15f} {row[2]:.15f}\n")
+        f.writelines(
+            f"{row[0]:.15f} {row[1]:.15f} {row[2]:.15f}\n" for row in sorted_xyz
+        )
 
 
 def read_poscar(filename, conversion=0.1):
