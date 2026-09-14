@@ -115,7 +115,7 @@ jobs:
           source ~/.bashrc
           source $HOME/miniforge/etc/profile.d/conda.sh
           mamba update -n base --all -y
-          mamba env create -f environment-dev.yml python=3.12 -y
+          mamba env create -f environment-dev.yml python=3.14 -y
           conda activate mbuild-dev
           pip install -e . --prefix=$HOME/tmp_egginfo --no-build-isolation
           python -m pytest -v --color yes --pyargs mbuild
