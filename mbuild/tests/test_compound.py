@@ -13,6 +13,7 @@ from mbuild.exceptions import MBuildError
 from mbuild.tests.base_test import BaseTest
 from mbuild.utils.io import (
     get_fn,
+    has_coxeter,
     has_foyer,
     has_freud,
     has_hoomd,
@@ -1399,6 +1400,50 @@ class TestCompound(BaseTest):
         h2os = list(intermol_system.molecule_types["H2O"].molecules)
         assert len(h2os[0].atoms) == 3
 
+    @pytest.mark.skipif(not has_coxeter, reason="coxeter is not installed")
+    def test_coxeter_conversion(self):
+        from coxeter.families import PlatonicFamily
+
+        from mbuild.conversion import from_coxeter
+
+        shape = PlatonicFamily.get_shape("Cube")
+        cube = from_coxeter(shape=shape, ref_length=0.5)
+
+        assert cube.n_particles == len(shape.vertices)
+        assert cube.n_bonds == len(shape.edges)
+
+        indices = {id(p): i for i, p in enumerate(cube.particles())}
+        bonds = set(
+            frozenset((indices[id(p1)], indices[id(p2)])) for p1, p2 in cube.bonds()
+        )
+        assert bonds == set(frozenset(edge) for edge in shape.edges)
+
+        bond_lengths = [np.linalg.norm(p1.pos - p2.pos) for p1, p2 in cube.bonds()]
+        assert np.allclose(max(bond_lengths), 0.5)
+
+    @pytest.mark.skipif(not has_coxeter, reason="coxeter is not installed")
+    def test_coxeter_conversion_names(self):
+        from coxeter.families import PlatonicFamily
+
+        from mbuild.conversion import from_coxeter
+
+        shape = PlatonicFamily.get_shape("Tetrahedron")
+
+        tet = from_coxeter(shape=shape)
+        assert all(p.element is None for p in tet.particles())
+
+        tet = from_coxeter(shape=shape, element="C")
+        assert all(p.name == "C" for p in tet.particles())
+        assert all(p.element.symbol == "C" for p in tet.particles())
+
+        tet = from_coxeter(shape=shape, element="C", name="_A")
+        assert all(p.name == "_A" for p in tet.particles())
+        assert all(p.element.symbol == "C" for p in tet.particles())
+
+        tet = from_coxeter(shape=shape, name="_A")
+        assert all(p.name == "_A" for p in tet.particles())
+        assert all(p.element is None for p in tet.particles())
+
     def test_parmed_conversion(self, ethane, h2o):
         compound = Compound([ethane, h2o])
 
@@ -1547,9 +1592,12 @@ class TestCompound(BaseTest):
         assert struct.residues[7].name == "CH3"
         assert sum(len(res.atoms) for res in struct.residues) == len(struct.atoms)
 
-    def test_resnames_parmed_cg(self, benzene_from_SMILES, hexane, propyl):
-        particles = [propyl.__class__]
-        cg = mb.coarse_grain(hexane, particle_classes=particles)
+    def test_resnames_parmed_cg(self, benzene_from_SMILES, hexane):
+        # a simple CG hexane: two bonded "Alkane" beads under a "Hexane" parent
+        cg = mb.Compound(name="Hexane")
+        beads = [mb.Compound(name="Alkane"), mb.Compound(name="Alkane")]
+        cg.add(beads)
+        cg.add_bond((beads[0], beads[1]))
 
         # test single cg molecule
         struct = cg.to_parmed()
@@ -1570,7 +1618,7 @@ class TestCompound(BaseTest):
             infer_residues_kwargs={"segment_level": 1},
         )
         assert len(struct.residues) == 4
-        assert struct.residues[0].name == "Hexane_PROXY"
+        assert struct.residues[0].name == "Hexane"
 
         # test cg molecules to depth 2
         struct = two_bonded_beads.to_parmed(
@@ -1588,7 +1636,7 @@ class TestCompound(BaseTest):
             },
         )
         assert len(struct.residues) == 8
-        assert struct.residues[0].name == "Alkane_PROXY"
+        assert struct.residues[0].name == "Alkane"
 
         # test cg molecules with no infer residues
         box_beads = mb.Compound([mb.clone(cg), mb.clone(cg)])
@@ -2277,12 +2325,16 @@ class TestCompound(BaseTest):
     @pytest.mark.skipif(not has_py3Dmol, reason="Py3Dmol is not installed")
     def test_visualize_py3dmol(self, ethane):
         py3Dmol = import_("py3Dmol")
-        vis_object = ethane._visualize_py3dmol()
+        from mbuild.utils.visualize import _visualize_py3dmol
+
+        vis_object = _visualize_py3dmol(ethane)
         assert isinstance(vis_object, py3Dmol.view)
 
     @pytest.mark.skipif(not has_py3Dmol, reason="Py3Dmol is not installed")
     def test_visualize_periodic_bonds_py3dmol(self):
         py3Dmol = import_("py3Dmol")
+        from mbuild.utils.visualize import _visualize_py3dmol
+
         # create a periodic structure to test
         cpd = mb.load("CCCCCCCCCCCC", smiles=True)
         # position at left x wall
@@ -2293,13 +2345,15 @@ class TestCompound(BaseTest):
         for particle in cpd.particles():
             if particle.xyz[0][0] > cpd.box.Lz:
                 particle.translate([-1 * cpd.box.Lx, 0, 0])
-        vis_object = cpd._visualize_py3dmol(periodic_bond_opacity=0.2)
+        vis_object = _visualize_py3dmol(cpd, periodic_bond_opacity=0.2)
         assert isinstance(vis_object, py3Dmol.view)
 
     @pytest.mark.skipif(not has_nglview, reason="NGLView is not installed")
     def test_visualize_nglview(self, ethane):
         nglview = import_("nglview")
-        vis_object = ethane._visualize_nglview()
+        from mbuild.utils.visualize import _visualize_nglview
+
+        vis_object = _visualize_nglview(ethane)
         assert isinstance(vis_object.component_0, nglview.component.ComponentViewer)
 
     def test_element(self):
