@@ -8,6 +8,7 @@ dependencies:
   - cgsmiles>=1.0.2
   - gmso>=0.16.2
   - garnett
+  - coxeter>=0.11
   - numba
   - parmed>=3.4.3
   - pycifrw

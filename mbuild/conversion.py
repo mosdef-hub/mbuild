@@ -493,6 +493,54 @@ def load_file(
     return compound
 
 
+def from_coxeter(shape, compound=None, ref_length=1, element=None, name=None):
+    """Backend-specific loading function for Coxeter.
+
+    Vertices are placed as particles and edges become bonds. The shape is
+    scaled so that its longest edge has length ``ref_length``, independent of
+    coxeter's native (unit-volume / unit-area) normalization.
+
+    Parameters
+    ----------
+    shape : coxeter.shapes
+        Any member of coxeter.shapes that exposes ``vertices`` and ``edges``.
+    compound : mb.Compound, optional, default=None
+        Host mb.Compound to load into. A new one is created if left as ``None``.
+    ref_length : float, optional, default=1
+        Target length of the longest edge, in the compound's units.
+    element : str, optional, default=None
+        The element symbol that sets the particle type for the particles.
+        If None, a generic bead-type is used.
+    name : str, optional, default="X"
+        Sets the particle name, but not the element.
+        Use this instead of ``element`` for non-atomistic particles.
+    """
+    if compound is None:
+        compound = mb.Compound()
+
+    scale = ref_length / shape.edge_lengths.max()
+
+    particles = []
+    for v in shape.vertices:
+        p = mb.Compound(pos=np.asarray(v) * scale)
+        if element:
+            p.element = element_from_symbol(element)
+            if not name:
+                p.name = element
+            else:
+                p.name = name
+        elif name:
+            p.name = name
+        compound.add(p)
+        particles.append(p)
+
+    for edge in shape.edges:
+        p1 = particles[int(edge[0])]
+        p2 = particles[int(edge[1])]
+        compound.add_bond(particle_pair=(p1, p2))
+    return compound
+
+
 def from_parmed(
     structure, compound=None, coords_only=False, infer_hierarchy=True, **kwargs
 ):

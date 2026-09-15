@@ -353,6 +353,14 @@ try:
 except ImportError:
     has_freud = False
 
+try:
+    import coxeter
+
+    has_coxeter = True
+    del coxeter
+except ImportError:
+    has_coxeter = False
+
 
 def get_fn(name):
     """Get the full path to one of the reference files shipped for utils.
