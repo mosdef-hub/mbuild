@@ -90,11 +90,7 @@ def load(
     structure's position (recommended).
     """
     # First check if we are loading from an object
-    if not (
-        isinstance(filename_or_object, str)
-        or isinstance(filename_or_object, list)
-        or isinstance(filename_or_object, tuple)
-    ):
+    if not (isinstance(filename_or_object, (str, list, tuple))):
         return load_object(
             obj=filename_or_object,
             compound=compound,
@@ -189,9 +185,9 @@ def load_object(
             compound.add(obj)
             return compound
 
-    for type_ in type_dict:
+    for type_, value in type_dict.items():
         if isinstance(obj, type_):
-            compound = type_dict[type_](
+            compound = value(
                 obj,
                 compound,
                 coords_only=coords_only,
@@ -241,7 +237,7 @@ def load_pybel_smiles(
         mymol = pybel.readstring("smi", smiles_or_filename)
         mymolGen = [mymol]
     # Now we treat it as a filename
-    except (OSError, IOError):
+    except OSError:
         mymolGen = pybel.readfile("smi", smiles_or_filename)
 
     for mymol in mymolGen:
@@ -405,12 +401,10 @@ def load_file(
             backend = "mdtraj" if has_mdtraj else "parmed"
 
     # First check internal readers
-    if backend == "internal":
-        # Handle json format
-        if extension == ".json":
-            # This doesn't seem to handle the case when compound is given
-            compound = compound_from_json(filename)
-            return compound
+    if backend == "internal" and extension == ".json":
+        # This doesn't seem to handle the case when compound is given
+        compound = compound_from_json(filename)
+        return compound
         # Handle xyz file
     # Then gmso reader
     if backend == "gmso":
@@ -524,7 +518,7 @@ def from_parmed(
         compound = mb.Compound()
 
     # Convert parmed structure to mbuild compound
-    atom_mapping = dict()
+    atom_mapping = {}
     chains = defaultdict(list)
 
     # Build up chains dict
@@ -634,7 +628,7 @@ def from_trajectory(
     if not compound:
         compound = mb.Compound()
 
-    atom_mapping = dict()
+    atom_mapping = {}
     # temporary lists to speed up add to the compound
     chains_list = []
     chains_list_label = []
@@ -996,12 +990,9 @@ def save(
     formats.json_formats.compound_to_json : Write to a json file
     """
     if os.path.exists(filename) and not overwrite:
-        raise IOError(f"{filename} exists; not overwriting")
-    if compound.charge:
-        if round(compound.charge, 4) != 0.0:
-            logger.info(
-                f"System is not charge neutral. Total charge is {compound.charge}."
-            )
+        raise OSError(f"{filename} exists; not overwriting")
+    if compound.charge and round(compound.charge, 4) != 0.0:
+        logger.info(f"System is not charge neutral. Total charge is {compound.charge}.")
 
     extension = os.path.splitext(filename)[-1]
     # Keep json stuff with internal mbuild method
@@ -1238,7 +1229,7 @@ def to_hoomdsnapshot(
         "energy": 1 * u.Unit("kJ/mol"),
     }
 
-    snapshot, refs = to_gsd_snapshot(
+    snapshot, _refs = to_gsd_snapshot(
         top=gmso_top,
         base_units=base_units,
         shift_coords=shift_coords,
@@ -1255,7 +1246,7 @@ def to_parmed(
     residues=None,
     include_ports=False,
     infer_residues=False,
-    infer_residues_kwargs={},
+    infer_residues_kwargs=None,
 ):
     """Create a Parmed Structure from a Compound.
 
@@ -1290,6 +1281,8 @@ def to_parmed(
     --------
     parmed.structure.Structure : Details on the ParmEd Structure object
     """
+    if infer_residues_kwargs is None:
+        infer_residues_kwargs = {}
     structure = pmd.Structure()
     structure.title = title if title else compound.name
     atom_mapping = {}  # For creating bonds below
@@ -1309,8 +1302,8 @@ def to_parmed(
 
     default_residue = pmd.Residue("RES")
     port_residue = pmd.Residue("PRT")
-    compound_residue_map = dict()
-    atom_residue_map = dict()
+    compound_residue_map = {}
+    atom_residue_map = {}
 
     # Loop through particles and add initialize ParmEd atoms
     for atom in compound.particles(include_ports=include_ports):
@@ -1505,10 +1498,10 @@ def _to_topology(compound, atom_list, chains=None, residues=None):
     default_chain = top.add_chain()
     default_residue = top.add_residue("RES", default_chain)
 
-    compound_residue_map = dict()
-    atom_residue_map = dict()
-    compound_chain_map = dict()
-    atom_chain_map = dict()
+    compound_residue_map = {}
+    atom_residue_map = {}
+    compound_chain_map = {}
+    atom_chain_map = {}
 
     for atom in atom_list:
         # Chains
@@ -1588,7 +1581,7 @@ def _to_topology(compound, atom_list, chains=None, residues=None):
         # Ensure that both atoms are part of the compound. This becomes an
         # issue if you try to convert a sub-compound to a topology which is
         # bonded to a different subcompound.
-        if all(a in atom_mapping.keys() for a in [atom1, atom2]):
+        if all(a in atom_mapping for a in [atom1, atom2]):
             top.add_bond(atom_mapping[atom1], atom_mapping[atom2])
     return top
 
@@ -1636,14 +1629,14 @@ def to_pybel(
     guessed_elements = set()
 
     if not residues and infer_residues:
-        residues = list(set([child.name for child in compound.children]))
+        residues = list({child.name for child in compound.children})
     if isinstance(residues, str):
         residues = [residues]
     if isinstance(residues, (list, set)):
         residues = tuple(residues)
 
-    compound_residue_map = dict()
-    atom_residue_map = dict()
+    compound_residue_map = {}
+    atom_residue_map = {}
 
     for i, part in enumerate(compound.particles(include_ports=include_ports)):
         if residues and part.name in residues:
@@ -1824,8 +1817,8 @@ def to_networkx(compound, names_only=False):
     """
     nx = import_("networkx")
 
-    nodes = list()
-    edges = list()
+    nodes = []
+    edges = []
     if names_only:
         nodes.append(compound.name + "_" + str(id(compound)))
     else:
@@ -1848,7 +1841,7 @@ def _iterate_children(compound, nodes, edges, names_only=False):
     for child in compound.children:
         if names_only:
             unique_name = child.name + "_" + str(id(child))
-            unique_name_parent = child.parent.name + "_" + str((id(child.parent)))
+            unique_name_parent = child.parent.name + "_" + str(id(child.parent))
             nodes.append(unique_name)
             edges.append([unique_name_parent, unique_name])
         else:

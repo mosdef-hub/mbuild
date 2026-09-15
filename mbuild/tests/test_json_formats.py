@@ -71,16 +71,16 @@ class TestJSONFormats(BaseTest):
         num_ports = 2
         ancestor = mb.Compound(name="Ancestor")
         for i in range(num_chidren):
-            this_child = mb.Compound(name="Child{}".format(i + 1))
-            ancestor.add(this_child, label="Ancestor'sChild{}".format(i + 1))
+            this_child = mb.Compound(name=f"Child{i + 1}")
+            ancestor.add(this_child, label=f"Ancestor'sChild{i + 1}")
             for j in range(num_ports):
                 port1 = mb.Port(anchor=this_child)
-                this_child.add(port1, label="port{}".format(j + 1))
+                this_child.add(port1, label=f"port{j + 1}")
             for k in range(num_grand_children):
-                this_grand_child = mb.Compound(name="GrandChild{}".format(k + 1))
+                this_grand_child = mb.Compound(name=f"GrandChild{k + 1}")
                 this_child.add(
                     this_grand_child,
-                    label="Child{0}GrandChild{1}".format(i + 1, k + 1),
+                    label=f"Child{i + 1}GrandChild{k + 1}",
                 )
         compound_to_json(ancestor, "large_compound.json", include_ports=True)
         ancestor_copy = compound_from_json("large_compound.json")

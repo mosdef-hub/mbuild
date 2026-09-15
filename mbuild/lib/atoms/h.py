@@ -9,7 +9,7 @@ class H(mb.Compound):
     """A hydrogen atom with two overlaid ports."""
 
     def __init__(self):
-        super(H, self).__init__()
+        super().__init__()
         self.add(mb.Particle(name="H", element="H"))
         self.add(mb.Port(anchor=self[0]), "up")
         self["up"].spin(np.pi, [0, 0, 1])

@@ -9,7 +9,7 @@ class Ester(mb.Compound):
     """A ester group -C(=O)O-."""
 
     def __init__(self):
-        super(Ester, self).__init__()
+        super().__init__()
 
         mb.load(
             "ester.pdb",

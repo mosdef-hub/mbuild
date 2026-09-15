@@ -11,7 +11,7 @@ class Silane(mb.Compound):
     def __init__(
         self,
     ):
-        super(Silane, self).__init__()
+        super().__init__()
         mb.load(
             "silane.pdb",
             compound=self,

@@ -7,7 +7,7 @@ class AmorphousSilicaSurface(mb.Compound):
     """Amorphous silica surface."""
 
     def __init__(self, surface_roughness=1.0):
-        super(AmorphousSilicaSurface, self).__init__()
+        super().__init__()
 
         if surface_roughness == 1.0:
             mb.load(
@@ -20,16 +20,16 @@ class AmorphousSilicaSurface(mb.Compound):
         else:
             raise ValueError(
                 "Amorphous silica input file with surface "
-                "roughness of {0:.1f} does not exist. If you have "
+                f"roughness of {surface_roughness:.1f} does not exist. If you have "
                 "this structure, please submit a pull request to "
-                "add it! ".format(surface_roughness)
+                "add it! "
             )
         count = 0
         for particle in list(self.particles()):
             if particle.name == "OB":
                 count += 1
                 port = mb.Port(anchor=particle, orientation=[0, 0, 1], separation=0.1)
-                self.add(port, "port_{}".format(count))
+                self.add(port, f"port_{count}")
 
 
 if __name__ == "__main__":

@@ -12,7 +12,7 @@ from ele.exceptions import ElementError
 import mbuild as mb
 from mbuild.utils.io import import_
 
-__all__ = ["load_cif", "Lattice"]
+__all__ = ["Lattice", "load_cif"]
 
 logger = logging.getLogger(__name__)
 
@@ -66,7 +66,7 @@ def load_cif(file_or_path=None, wrap_coords=False):
         )
 
 
-class Lattice(object):
+class Lattice:
     """Develop crystal structure from user defined inputs.
 
     Lattice, the abstract building block of a crystal cell.
@@ -201,11 +201,11 @@ class Lattice(object):
         lattice_points=None,
         angles=None,
     ):
-        super(Lattice, self).__init__()
+        super().__init__()
         self.dimension = 3
         self.lattice_spacing = None
         self.lattice_vectors = None
-        self.lattice_points = dict()
+        self.lattice_points = {}
         self.angles = None
         self._sanitize_inputs(
             lattice_spacing=lattice_spacing,
@@ -435,13 +435,13 @@ class Lattice(object):
         overlap_dict = defaultdict(list)
         num_iter = 3
         dim = self.dimension
-        for name, positions in lattice_points.items():
+        for positions in lattice_points.values():
             for pos in positions:
                 for offsets in it.product(range(num_iter), repeat=dim):
                     offset_vector = tuple(
                         (v + offset for v, offset in zip(pos, offsets))
                     )
-                    overlap_dict[offset_vector].append((pos))
+                    overlap_dict[offset_vector].append(pos)
 
         for key, val in overlap_dict.items():
             if len(val) > 1:

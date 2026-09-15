@@ -100,7 +100,7 @@ class TestCompound(BaseTest):
         assert myethane.n_particles == 8
         assert myethane.n_bonds == 0
         assert len(myethane.children) == 1
-        assert set([p.name for p in myethane.particles()]) == {"C", "H"}
+        assert {p.name for p in myethane.particles()} == {"C", "H"}
 
     def test_update_from_file(self, ch3):
         ch3.update_coordinates(get_fn("methyl.pdb"))
@@ -108,7 +108,7 @@ class TestCompound(BaseTest):
     def test_n_bonds_particle(self):
         comp = mb.Compound(name="A", pos=[0, 0, 0])
         with pytest.raises(MBuildError):
-            comp.n_bonds
+            _ = comp.n_bonds
 
     def test_direct_bonds_parent(self, methane):
         with pytest.raises(MBuildError):
@@ -208,7 +208,7 @@ class TestCompound(BaseTest):
 
     def test_n_direct_bonds_parent(self, ethane):
         with pytest.raises(MBuildError):
-            ethane.n_direct_bonds
+            _ = ethane.n_direct_bonds
 
     def test_n_direct_bonds(self, ethane):
         assert ethane[0].n_direct_bonds == 4
@@ -402,9 +402,12 @@ class TestCompound(BaseTest):
     )
     def test_save_simple(self, ch3, extension):
         # Can't save gsd files with Windows
-        if extension == ".gsd" and not has_hoomd:
-            return True
-        elif extension == ".sdf" and not has_openbabel:
+        if (
+            extension == ".gsd"
+            and not has_hoomd
+            or extension == ".sdf"
+            and not has_openbabel
+        ):
             return True
         outfile = "methyl_out" + extension
         ch3.save(filename=outfile)
@@ -604,7 +607,7 @@ class TestCompound(BaseTest):
             Compound(name=1)
 
     def test_add_wrong_input(self, ethane):
-        with pytest.raises(ValueError):
+        with pytest.raises(TypeError):
             ethane.add("water")
 
     def test_mass_property(self, h2o):
@@ -707,7 +710,7 @@ class TestCompound(BaseTest):
         temp_comp = mb.Compound()
         comp_list = []
         label_list = []
-        for j in range(0, 5):
+        for j in range(5):
             comp_list.append(mb.clone(h2o))
             label_list.append("water[$]")
         temp_comp.add(comp_list, label=label_list)
@@ -724,7 +727,7 @@ class TestCompound(BaseTest):
         temp_comp = mb.Compound()
         comp_list = []
         label_list = ["water"]
-        for j in range(0, 5):
+        for j in range(5):
             comp_list.append(mb.clone(h2o))
 
         with pytest.raises(ValueError):
@@ -936,7 +939,7 @@ class TestCompound(BaseTest):
         assert particle not in compound.particles()
 
     def test_remove_bond(self, ch3, caplog):
-        ch_bond = list(ch3.bonds())[0]
+        ch_bond = next(iter(ch3.bonds()))
         ch3.remove_bond(ch_bond)
         assert ch3.n_bonds == 2
         with pytest.raises(MBuildError):
@@ -1081,7 +1084,7 @@ class TestCompound(BaseTest):
         water_list = []
         waters = mb.Compound()
         system = mb.Compound()
-        for i in range(0, 3):
+        for i in range(3):
             water_list.append(mb.clone(water))
 
         waters.add(water_list)
@@ -1897,47 +1900,47 @@ class TestCompound(BaseTest):
             octane.energy_minimize(fixed_compounds=[not_in_compound])
         with pytest.raises(MBuildError):
             octane.energy_minimize(fixed_compounds=[12323.3, (True, False, False)])
-        with pytest.raises(Exception):
+        with pytest.raises(MBuildError):
             octane.energy_minimize(
                 fixed_compounds=[methyl_end0, (True, False, False, False)]
             )
-        with pytest.raises(Exception):
+        with pytest.raises(MBuildError):
             octane.energy_minimize(fixed_compounds=[methyl_end0, True, False, False])
-        with pytest.raises(Exception):
+        with pytest.raises(MBuildError):
             octane.energy_minimize(fixed_compounds=[methyl_end0, True])
-        with pytest.raises(Exception):
+        with pytest.raises(MBuildError):
             octane.energy_minimize(
                 fixed_compounds=[methyl_end0, [True, False, False, False]]
             )
-        with pytest.raises(Exception):
+        with pytest.raises(MBuildError):
             octane.energy_minimize(fixed_compounds=[methyl_end0, (True, False)])
 
-        with pytest.raises(Exception):
+        with pytest.raises(MBuildError):
             octane.energy_minimize(fixed_compounds=[methyl_end0, (True)])
 
-        with pytest.raises(Exception):
+        with pytest.raises(MBuildError):
             octane.energy_minimize(fixed_compounds=[methyl_end0, ("True", True, True)])
-        with pytest.raises(Exception):
+        with pytest.raises(MBuildError):
             octane.energy_minimize(fixed_compounds=[methyl_end0, (True, "True", True)])
-        with pytest.raises(Exception):
+        with pytest.raises(MBuildError):
             octane.energy_minimize(fixed_compounds=[methyl_end0, (True, True, "True")])
-        with pytest.raises(Exception):
+        with pytest.raises(MBuildError):
             octane.energy_minimize(
                 fixed_compounds=[methyl_end0, ("True", True, "True")]
             )
-        with pytest.raises(Exception):
+        with pytest.raises(MBuildError):
             octane.energy_minimize(
                 fixed_compounds=[methyl_end0, (True, "True", "True")]
             )
-        with pytest.raises(Exception):
+        with pytest.raises(MBuildError):
             octane.energy_minimize(
                 fixed_compounds=[methyl_end0, ("True", "True", True)]
             )
-        with pytest.raises(Exception):
+        with pytest.raises(MBuildError):
             octane.energy_minimize(
                 fixed_compounds=[methyl_end0, ("True", "True", "True")]
             )
-        with pytest.raises(Exception):
+        with pytest.raises(MBuildError):
             octane.energy_minimize(fixed_compounds=[methyl_end0, (123.0, 231, "True")])
 
     @pytest.mark.skipif(not has_openbabel, reason="Open Babel not installed")
@@ -2195,11 +2198,11 @@ class TestCompound(BaseTest):
 
         for n in range(2):
             child = Compound()
-            child.name = "c_{}".format(n)
+            child.name = f"c_{n}"
             comp.add(child)
             for m in range(3):
                 child_child = Compound()
-                child_child.name = "c_{0}_{1}".format(m, n)
+                child_child.name = f"c_{m}_{n}"
                 child.add(child_child)
 
         graph = comp.to_networkx()
@@ -2207,7 +2210,7 @@ class TestCompound(BaseTest):
         assert graph.number_of_edges() == 8
         assert graph.number_of_nodes() == 9
 
-        assert all([isinstance(n, Compound) for n in graph.nodes()])
+        assert all(isinstance(n, Compound) for n in graph.nodes())
 
     @pytest.mark.skipif(not has_networkx, reason="NetworkX is not installed")
     def test_to_networkx_no_hierarchy(self):
@@ -2219,7 +2222,7 @@ class TestCompound(BaseTest):
         assert graph.number_of_edges() == 0
         assert graph.number_of_nodes() == 1
 
-        assert all([isinstance(n, Compound) for n in graph.nodes()])
+        assert all(isinstance(n, Compound) for n in graph.nodes())
 
     @pytest.mark.skipif(not has_networkx, reason="NetworkX is not installed")
     def test_to_networkx_names_only(self):
@@ -2228,11 +2231,11 @@ class TestCompound(BaseTest):
 
         for n in range(2):
             child = Compound()
-            child.name = "c_{}".format(n)
+            child.name = f"c_{n}"
             comp.add(child)
             for m in range(3):
                 child_child = Compound()
-                child_child.name = "c_{0}_{1}".format(m, n)
+                child_child.name = f"c_{m}_{n}"
                 child.add(child_child)
 
         graph = comp.to_networkx(names_only=True)
@@ -2240,7 +2243,7 @@ class TestCompound(BaseTest):
         assert graph.number_of_edges() == 8
         assert graph.number_of_nodes() == 9
 
-        assert all([isinstance(n, str) for n in graph.nodes()])
+        assert all(isinstance(n, str) for n in graph.nodes())
 
     @pytest.mark.skipif(not has_mdtraj, reason="MDTraj not installed")
     def test_from_trajectory(self):
@@ -2296,7 +2299,7 @@ class TestCompound(BaseTest):
         assert graph.number_of_edges() == 8
         assert graph.number_of_nodes() == 9
 
-        assert all([isinstance(n, str) for n in graph.nodes()])
+        assert all(isinstance(n, str) for n in graph.nodes())
 
     @pytest.mark.skipif(not has_openbabel, reason="Pybel is not installed")
     def test_to_pybel(self, ethane):
@@ -2315,7 +2318,7 @@ class TestCompound(BaseTest):
     @pytest.mark.skipif(not has_openbabel, reason="Pybel is not installed")
     def test_from_pybel(self):
         pybel = import_("pybel")
-        benzene = list(pybel.readfile("mol2", get_fn("benzene.mol2")))[0]
+        benzene = next(iter(pybel.readfile("mol2", get_fn("benzene.mol2"))))
         cmpd = Compound()
         cmpd.from_pybel(benzene)
         assert benzene.OBMol.NumAtoms() == cmpd.n_particles
@@ -2341,7 +2344,7 @@ class TestCompound(BaseTest):
     @pytest.mark.skipif(not has_openbabel, reason="Pybel is not installed")
     def test_from_pybel_residues(self):
         pybel = import_("pybel")
-        pybel_mol = list(pybel.readfile("mol2", get_fn("methyl.mol2")))[0]
+        pybel_mol = next(iter(pybel.readfile("mol2", get_fn("methyl.mol2"))))
         cmpd = Compound()
         cmpd.from_pybel(pybel_mol)
         assert "LIG1" in cmpd.children[0].name
@@ -2350,9 +2353,7 @@ class TestCompound(BaseTest):
     @pytest.mark.skipif(not has_openbabel, reason="Pybel is not installed")
     def test_from_pybel_molecule(self, extension):
         pybel = import_("pybel")
-        chol = list(
-            pybel.readfile(extension, get_fn("cholesterol.{}".format(extension)))
-        )[0]
+        chol = next(iter(pybel.readfile(extension, get_fn(f"cholesterol.{extension}"))))
         cmpd = mb.Compound()
         cmpd.from_pybel(chol)
         assert chol.OBMol.NumAtoms() == cmpd.n_particles
@@ -2372,7 +2373,7 @@ class TestCompound(BaseTest):
     )
     @pytest.mark.skipif(not has_rdkit, reason="RDKit is not installed")
     def test_from_rdkit_smiles(self, test_smiles):
-        pos = list()
+        pos = []
         for _ in range(3):
             cmpd = mb.load(test_smiles, smiles=True, backend="rdkit", seed=29)
             pos.append(cmpd.xyz)
@@ -2510,7 +2511,7 @@ class TestCompound(BaseTest):
             decimal=6,
         )
 
-    @pytest.mark.parametrize("bad_value", [[1.0, 2.0], set([1, 2, 3]), {"x": 1.0}])
+    @pytest.mark.parametrize("bad_value", [[1.0, 2.0], {1, 2, 3}, {"x": 1.0}])
     def test_get_boundingbox_error(self, bad_value):
         with pytest.raises(TypeError):
             meth = mb.load(get_fn("methyl.pdb"))
@@ -2698,7 +2699,7 @@ class TestCompound(BaseTest):
         ethane = mb.load("CC", smiles=True)
         Hs = ethane.particles_by_name("H")
         ethane.remove(Hs, reset_labels=True)
-        ports = set(f"port[{i}]" for i in range(6))
+        ports = {f"port[{i}]" for i in range(6)}
         assert ports.issubset(set(ethane.labels.keys()))
 
     def test_load_molfile(self):
