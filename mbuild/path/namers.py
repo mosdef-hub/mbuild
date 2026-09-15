@@ -5,6 +5,9 @@ from abc import ABC, abstractmethod
 
 import numpy as np
 
+MAX_BEAD_NAME_LENGTH = 32
+BEAD_NAME_DTYPE = f"U{MAX_BEAD_NAME_LENGTH}"
+
 
 class BeadNamer(ABC):
     """Abstract base class for bead name generators.

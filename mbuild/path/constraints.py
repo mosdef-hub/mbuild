@@ -144,6 +144,29 @@ class CuboidConstraint(Constraint):
         sorted_order = np.argsort(-density_metric)  # negative = biggest first
         return candidates[sorted_order]
 
+    def wrap(self, points):
+        """Wrap an array of points into the box using periodic boundary conditions.
+
+        Parameters
+        ----------
+        points : array-like, shape (N, 3)
+            The points to wrap.
+
+        Returns
+        -------
+        np.ndarray, shape (N, 3)
+            The wrapped points.
+        """
+        points = np.asarray(points, dtype=np.float64)
+        wrapped = points.copy()
+        pbc = self.pbc  # shape (3,) use as a bool mask
+        if pbc.any():
+            # Shift to box-local coordinates, apply modulo, shift back
+            wrapped[:, pbc] = (
+                (wrapped[:, pbc] - self.mins[pbc]) % self.box_lengths[pbc]
+            ) + self.mins[pbc]
+        return wrapped
+
 
 class SphereConstraint(Constraint):
     """Creates a spherical constraint.
@@ -161,6 +184,9 @@ class SphereConstraint(Constraint):
         self.radius = radius
         self.mins = self.center - self.radius
         self.maxs = self.center + self.radius
+        # Orthorhombic bounding lengths (diameter on each axis), e.g. for
+        # HoomdSimulation(..., box=constraint.box_lengths).
+        self.box_lengths = np.array([2 * radius] * 3, dtype=np.float32)
 
     def is_inside(self, points, buffer):
         """Check a set of coordinates against the volume constraint.
@@ -262,6 +288,9 @@ class CylinderConstraint(Constraint):
                 self.center[2] + self.height / 2,
             ]
         )
+        # Orthorhombic bounding lengths (radial diameter, radial diameter,
+        # height), e.g. for HoomdSimulation(..., box=constraint.box_lengths).
+        self.box_lengths = np.array([2 * radius, 2 * radius, height], dtype=np.float32)
 
     def is_inside(self, points, buffer):
         """Check a set of coordinates against the volume constraint.

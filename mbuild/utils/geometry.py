@@ -138,3 +138,12 @@ def wrap_coords(xyz, box, mins=None):
         )
 
     return wrap_xyz
+
+
+def kabsch(sources, targets):
+    """Optimal rotation matrix aligning source vectors onto target vectors."""
+    covariance = sources.T @ targets
+    U, _, Vt = np.linalg.svd(covariance)
+    sign = np.sign(np.linalg.det(Vt.T @ U.T))
+    correction = np.diag([1.0, 1.0, sign])
+    return Vt.T @ correction @ U.T

@@ -7,7 +7,7 @@ import sys
 from logging.handlers import RotatingFileHandler
 
 from mbuild.box import Box
-from mbuild.coarse_graining import coarse_grain
+from mbuild.coarse_graining import backmap, coarse_grain
 from mbuild.compound import *
 from mbuild.conversion import load
 from mbuild.coordinate_transform import *
