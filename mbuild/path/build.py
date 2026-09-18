@@ -299,11 +299,14 @@ class Path:
             length=float(bond_length),
         )
 
-    def strip_coordinates(self, number_of_sites):
-        """Remove coordinates beyond the number of sites."""
-        self.bond_graph.remove_nodes_from(range(number_of_sites, len(self)))
-        self.coordinates = self.coordinates[:number_of_sites]
-        self.beads = self.beads[:number_of_sites]
+    def remove_nodes(self, nodes_to_remove):
+        """Remove coordinates, bead_names, and update bond_graph concurrently."""
+        mask = np.ones(len(self.coordinates), dtype=bool)
+        mask[list(nodes_to_remove)] = False
+        self.bond_graph.remove_nodes_from(nodes_to_remove)
+
+        self.coordinates = self.coordinates[mask]
+        self.beads = self.beads[mask]
 
     def find_neighbors(
         self, u, min_bond_length, max_bond_length, excluded_bond_depth=0
@@ -1538,7 +1541,7 @@ def hard_sphere_random_walk(
         )
     if not state.check_termination(path, coordinates, beads):
         # remove unfinished walk
-        path.strip_coordinates(state.init_count)
+        path.remove_nodes(range(state.init_count, len(path)))
     state.termination._clean()
 
     return path
