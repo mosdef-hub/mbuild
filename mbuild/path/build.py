@@ -1542,7 +1542,6 @@ def hard_sphere_random_walk(
     if not state.check_termination(path, coordinates, beads):
         # remove unfinished walk
         path.remove_nodes(range(state.init_count, len(path)))
-    state.termination._clean()
 
     return path
 
@@ -1763,6 +1762,12 @@ class RandomWalkState:
         self._excluded_buffer[0] = attach_index
         return self._excluded_buffer
 
+    def clean_termination(self):
+        """Clean attached termination checks, check states before cleaning and clean before exiting hsrw."""
+        if self.bias:
+            self.bias._clean()
+        self.termination._clean()
+
     def check_termination(self, path, coordinates, beads):
         """Examine and process termination if we have reached.
 
@@ -1788,17 +1793,15 @@ class RandomWalkState:
             else:
                 logger.warning("Random walk not successful.")
                 logger.warning(self.termination.summarize())
+                self.clean_termination()
                 return False
             # RW is terminated and successful, update bond graph
-            self.termination._clean()
-            if self.bias:
-                self.bias._clean()
+            self.clean_termination()
             path._extend_bond_graph()
             path._connect_edges(
                 self.connectivity,
                 np.arange(self.previous_count, self.count),
                 self.attach_index,
             )
-            # path._extend_beads(self.bead_name)
             return True
         return False
