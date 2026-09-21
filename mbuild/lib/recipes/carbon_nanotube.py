@@ -4,10 +4,22 @@ from math import gcd
 
 import numpy as np
 
-from mbuild import Box, Compound, Particle
+from mbuild import Box, Compound, Particle, Port, clone, force_overlap
+from mbuild.coordinate_transform import unit_vector
+from mbuild.utils.validation import assert_port_exists
 
 CC_BOND = 0.142
 GRAPHENE_A = CC_BOND * np.sqrt(3)
+
+# C-X bond lengths (nm) for the single-atom caps. C-O is a carbonyl.
+CAP_BOND_LENGTHS = {
+    "H": 0.109,
+    "O": 0.122,
+    "F": 0.135,
+    "N": 0.140,
+    "Cl": 0.177,
+    "S": 0.182,
+}
 
 
 class CarbonNanotube(Compound):
@@ -49,6 +61,12 @@ class CarbonNanotube(Compound):
         Bonds are added between carbons closer than CC_BOND + bond_tolerance.
     periodic : bool, optional, default=False
         If True, make the tube periodic along z and set the compound box.
+        A periodic tube has no open ends, so `cap` is ignored.
+    cap : str or Compound or None, optional, default="H"
+        What to bond to the carbons at the open ends. Either an element symbol
+        from CAP_BOND_LENGTHS, a Compound carrying a port labeled "up", or None
+        to leave the ports exposed for the caller to fill. Capping a tube end
+        terminates the dangling bonds but does not close off the bore.
 
     Attributes
     ----------
@@ -58,6 +76,8 @@ class CarbonNanotube(Compound):
         Radius of the tube in nm.
     unit_cell_length : float
         Length of one nanotube unit cell along z in nm.
+    cap_ports : list of Port
+        Ports on the end carbons, empty once they have been capped.
 
     Examples
     --------
@@ -74,8 +94,20 @@ class CarbonNanotube(Compound):
     >>> zigzag.n, zigzag.m
     (13, 0)
 
+    Ends can be capped with another species, or left as ports to attach
+    something larger.
+
+    >>> fluorinated = CarbonNanotube(n=6, m=6, length=1.0, cap="F")
+    >>> open_ended = CarbonNanotube(n=6, m=6, length=1.0, cap=None)
+    >>> len(open_ended.cap_ports)
+    24
+
     Notes
     -----
+    Cutting the tube to length can leave carbons bonded to only one neighbor,
+    which are not a physical tube edge. These are trimmed before capping, so
+    every end carbon has two neighbors and one dangling bond.
+
     Adapted from the Nanotube-Builder mBuild recipe by M. Whitehead:
     https://github.com/whitehml/Nanotube-Builder
 
@@ -94,6 +126,7 @@ class CarbonNanotube(Compound):
         chirality="armchair",
         bond_tolerance=0.02,
         periodic=False,
+        cap="H",
     ):
         super().__init__()
 
@@ -106,6 +139,12 @@ class CarbonNanotube(Compound):
             raise ValueError(f"`m` must satisfy 0 <= m <= n, got m={m}, n={n}.")
         if length <= 0:
             raise ValueError(f"`length` must be positive, got {length}.")
+        if isinstance(cap, str) and cap not in CAP_BOND_LENGTHS:
+            raise ValueError(
+                f"'{cap}' is not one of the supported cap atoms "
+                f"({', '.join(CAP_BOND_LENGTHS)}). Pass a Compound with a port "
+                "labeled 'up' to attach anything else."
+            )
 
         self.n = n
         self.m = m
@@ -132,9 +171,56 @@ class CarbonNanotube(Compound):
         self.generate_bonds(
             name_a="C", name_b="C", dmin=0.0, dmax=CC_BOND + bond_tolerance
         )
+        self.cap_ports = []
         if not periodic:
             # generate_bonds assigns a bounding box when the compound has none
             self.box = None
+            self._trim_ends()
+            self._add_cap_ports()
+            if cap is not None:
+                self._cap_ends(cap)
+
+    def _trim_ends(self):
+        """Remove end carbons left with fewer than two neighbors by the cut."""
+        while True:
+            lonely = [
+                p
+                for p in self.particles()
+                if len(list(self.bond_graph.neighbors(p))) < 2
+            ]
+            if not lonely:
+                break
+            self.remove(lonely)
+
+    def _add_cap_ports(self):
+        """Add a port along the missing sp2 direction of each end carbon."""
+        for particle in list(self.particles()):
+            neighbors = list(self.bond_graph.neighbors(particle))
+            if len(neighbors) != 2:
+                continue
+            bonds = [unit_vector(n.pos - particle.pos) for n in neighbors]
+            port = Port(
+                anchor=particle,
+                orientation=-unit_vector(bonds[0] + bonds[1]),
+                separation=CC_BOND / 2,
+            )
+            self.add(port, label="cap_port[$]")
+            self.cap_ports.append(port)
+
+    def _cap_ends(self, cap):
+        """Attach a copy of `cap` to every port."""
+        for port in list(self.cap_ports):
+            if isinstance(cap, str):
+                capper = Compound(name=cap)
+                capper.add(Particle(name=cap, element=cap))
+                separation = CAP_BOND_LENGTHS[cap] - CC_BOND / 2
+                capper.add(Port(anchor=capper[0], separation=separation), "up")
+            else:
+                capper = clone(cap)
+                assert_port_exists("up", capper)
+            self.add(capper)
+            force_overlap(capper, capper.labels["up"], port)
+        self.cap_ports = []
 
 
 def _unit_cell(n, m):
