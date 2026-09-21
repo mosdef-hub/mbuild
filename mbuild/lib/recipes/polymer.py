@@ -85,11 +85,11 @@ class Polymer(Compound):
     """
 
     def __init__(self, monomers=None, end_groups=None):
-        super(Polymer, self).__init__()
+        super().__init__()
         self._monomers = monomers or []
         self._end_groups = end_groups or [None, None]
         if not isinstance(self._end_groups, list):
-            raise ValueError(
+            raise TypeError(
                 "Please provide two end groups in a list; "
                 f"you provided {self._end_groups}"
             )
@@ -236,7 +236,7 @@ class Polymer(Compound):
         compound,
         indices,
         separation=None,
-        orientation=[None, None],
+        orientation=None,
         replace=True,
     ):
         """Add a Compound to self.monomers.
@@ -298,11 +298,13 @@ class Polymer(Compound):
             will have ports added, and no particles are removed from
             the monomer compound.
         """
+        if orientation is None:
+            orientation = [None, None]
         port_labels = ["up", "down"]
         comp = clone(compound)
 
-        for idx, label, orientation in zip(indices, port_labels, orientation):
-            _add_port(comp, label, idx, separation, orientation, replace)
+        for idx, label, _orientation in zip(indices, port_labels, orientation):
+            _add_port(comp, label, idx, separation, _orientation, replace)
         if replace:
             remove_atom1 = comp[indices[0]]
             remove_atom2 = comp[indices[1]]
@@ -432,8 +434,8 @@ def _add_port(compound, label, idx, separation, orientation=None, replace=True):
     The port will either use that particle as an anchor or replace it entirely.
     """
     if replace:
-        atom_bonds = [b for b in compound.bonds() if compound[idx] in b][0]
-        anchor = [p for p in atom_bonds if p != compound[idx]][0]
+        atom_bonds = next(b for b in compound.bonds() if compound[idx] in b)
+        anchor = next(p for p in atom_bonds if p != compound[idx])
         if orientation is None:
             orientation = compound[idx].pos - anchor.pos
         if separation is None:

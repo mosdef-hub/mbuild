@@ -32,7 +32,7 @@ class Proxy(Compound):
             name = "G"
         else:
             name = compound.name + "_PROXY"
-        super(Proxy, self).__init__(name=name)
+        super().__init__(name=name)
 
         self.wrapped = compound
         self.children = None
@@ -73,7 +73,7 @@ class Proxy(Compound):
         if root_container is None:
             root_container = self
         if clone_of is None:
-            clone_of = dict()
+            clone_of = {}
 
         # If this compound has already been cloned, return that.
         if self in clone_of:
@@ -95,7 +95,7 @@ class Proxy(Compound):
         if self.children is None:
             newone.children = None
         else:
-            newone.children = list()
+            newone.children = []
         # Parent should be None initially.
         newone.parent = None
         newone.labels = OrderedDict()
@@ -148,12 +148,13 @@ def _create_proxy_compounds(real_thing, memo, particle_classes):
     proxy = Proxy(real_thing)
     memo[real_thing] = proxy
 
-    if type(real_thing) not in particle_classes:
-        if not is_leaf(real_thing):  # Recurse only if it has parts.
-            # Recursively create proxies for parts.
-            for part in real_thing.children:
-                part_proxy = _create_proxy_compounds(part, memo, particle_classes)
-                proxy.add(part_proxy)
+    if type(real_thing) not in particle_classes and not is_leaf(
+        real_thing
+    ):  # Recurse only if it has parts.
+        # Recursively create proxies for parts.
+        for part in real_thing.children:
+            part_proxy = _create_proxy_compounds(part, memo, particle_classes)
+            proxy.add(part_proxy)
 
     return proxy
 
