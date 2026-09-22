@@ -503,7 +503,7 @@ def from_coxeter(shape, compound=None, ref_length=1, element=None, name=None):
     Parameters
     ----------
     shape : coxeter.shapes.base_classes.Shape
-        Any member of coxeter.shapes that exposes ``vertices`` and ``edges``.
+        Any Shape subclassed member of coxeter.shapes that exposes ``vertices`` and ``edges``.
     compound : mb.Compound, optional, default=None
         Host mb.Compound to load into. A new one is created if left as ``None``.
     ref_length : float, optional, default=1
