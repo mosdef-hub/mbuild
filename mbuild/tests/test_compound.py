@@ -13,6 +13,7 @@ from mbuild.exceptions import MBuildError
 from mbuild.tests.base_test import BaseTest
 from mbuild.utils.io import (
     get_fn,
+    has_coxeter,
     has_foyer,
     has_freud,
     has_hoomd,
@@ -1398,6 +1399,50 @@ class TestCompound(BaseTest):
         assert len(intermol_system.molecule_types["H2O"].molecules) == 1
         h2os = list(intermol_system.molecule_types["H2O"].molecules)
         assert len(h2os[0].atoms) == 3
+
+    @pytest.mark.skipif(not has_coxeter, reason="coxeter is not installed")
+    def test_coxeter_conversion(self):
+        from coxeter.families import PlatonicFamily
+
+        from mbuild.conversion import from_coxeter
+
+        shape = PlatonicFamily.get_shape("Cube")
+        cube = from_coxeter(shape=shape, ref_length=0.5)
+
+        assert cube.n_particles == len(shape.vertices)
+        assert cube.n_bonds == len(shape.edges)
+
+        indices = {id(p): i for i, p in enumerate(cube.particles())}
+        bonds = set(
+            frozenset((indices[id(p1)], indices[id(p2)])) for p1, p2 in cube.bonds()
+        )
+        assert bonds == set(frozenset(edge) for edge in shape.edges)
+
+        bond_lengths = [np.linalg.norm(p1.pos - p2.pos) for p1, p2 in cube.bonds()]
+        assert np.allclose(max(bond_lengths), 0.5)
+
+    @pytest.mark.skipif(not has_coxeter, reason="coxeter is not installed")
+    def test_coxeter_conversion_names(self):
+        from coxeter.families import PlatonicFamily
+
+        from mbuild.conversion import from_coxeter
+
+        shape = PlatonicFamily.get_shape("Tetrahedron")
+
+        tet = from_coxeter(shape=shape)
+        assert all(p.element is None for p in tet.particles())
+
+        tet = from_coxeter(shape=shape, element="C")
+        assert all(p.name == "C" for p in tet.particles())
+        assert all(p.element.symbol == "C" for p in tet.particles())
+
+        tet = from_coxeter(shape=shape, element="C", name="_A")
+        assert all(p.name == "_A" for p in tet.particles())
+        assert all(p.element.symbol == "C" for p in tet.particles())
+
+        tet = from_coxeter(shape=shape, name="_A")
+        assert all(p.name == "_A" for p in tet.particles())
+        assert all(p.element is None for p in tet.particles())
 
     def test_parmed_conversion(self, ethane, h2o):
         compound = Compound([ethane, h2o])
