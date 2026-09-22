@@ -496,27 +496,27 @@ def load_file(
 def from_coxeter(shape, compound=None, ref_length=1, element=None, name=None):
     """Backend-specific loading function for Coxeter.
 
-    Vertices are placed as particles and edges become bonds. The shape is
-    scaled so that its longest edge has length ``ref_length``, independent of
-    coxeter's native (unit-volume / unit-area) normalization.
+        Vertices are placed as particles and edges become bonds. The shape is
+        scaled so that its longest edge has length ``ref_length``, independent of
+        coxeter's native (unit-volume / unit-area) normalization.
 
-    Parameters
-    ----------
-    shape : coxeter.shapes.base_classes.Shape
-        Any Shape subclassed member of coxeter.shapes that exposes ``vertices`` and ``edges``.
-    compound : mb.Compound, optional, default=None
-        Host mb.Compound to load into. A new one is created if left as ``None``.
-    ref_length : float, optional, default=1
-        Target length of the longest edge, in the compound's units.
-    element : str, optional, default=None
-        The element symbol that sets the particle type for the particles.
-        If None, a generic bead-type is used.
-    name : str, optional, default="X"
-        Sets the particle name, but not the element.
-        Use this instead of ``element`` for non-atomistic particles.
-Info
-----
-See https://coxeter.readthedocs.io/en/latest/package-shapes.html# for more details on available shape geometry.
+        Parameters
+        ----------
+        shape : coxeter.shapes.base_classes.Shape
+            Any Shape subclassed member of coxeter.shapes that exposes ``vertices`` and ``edges``.
+        compound : mb.Compound, optional, default=None
+            Host mb.Compound to load into. A new one is created if left as ``None``.
+        ref_length : float, optional, default=1
+            Target length of the longest edge, in the compound's units.
+        element : str, optional, default=None
+            The element symbol that sets the particle type for the particles.
+            If None, a generic bead-type is used.
+        name : str, optional, default="X"
+            Sets the particle name, but not the element.
+            Use this instead of ``element`` for non-atomistic particles.
+    Info
+    ----
+    See https://coxeter.readthedocs.io/en/latest/package-shapes.html# for more details on available shape geometry.
     """
     if compound is None:
         compound = mb.Compound()
