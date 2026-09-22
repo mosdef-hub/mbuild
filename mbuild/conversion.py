@@ -514,6 +514,9 @@ def from_coxeter(shape, compound=None, ref_length=1, element=None, name=None):
     name : str, optional, default="X"
         Sets the particle name, but not the element.
         Use this instead of ``element`` for non-atomistic particles.
+Info
+----
+See https://coxeter.readthedocs.io/en/latest/package-shapes.html# for more details on available shape geometry.
     """
     if compound is None:
         compound = mb.Compound()
