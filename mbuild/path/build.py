@@ -321,15 +321,6 @@ class Path:
             length=float(bond_length),
         )
 
-    def remove_nodes(self, nodes_to_remove):
-        """Remove coordinates, bead_names, and update bond_graph concurrently."""
-        mask = np.ones(len(self.coordinates), dtype=bool)
-        mask[list(nodes_to_remove)] = False
-        self.bond_graph.remove_nodes_from(nodes_to_remove)
-
-        self.coordinates = self.coordinates[mask]
-        self.beads = self.beads[mask]
-
     def find_neighbors(
         self, u, min_bond_length, max_bond_length, excluded_bond_depth=0
     ):
