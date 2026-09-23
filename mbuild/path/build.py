@@ -304,6 +304,10 @@ class Path:
         mask = np.ones(len(self.coordinates), dtype=bool)
         mask[list(nodes_to_remove)] = False
         self.bond_graph.remove_nodes_from(nodes_to_remove)
+        G = self.bond_graph
+        self.bond_graph = nx.convert_node_labels_to_integers(
+            G, first_label=0
+        )  # renumber 0 to n
 
         self.coordinates = self.coordinates[mask]
         self.beads = self.beads[mask]

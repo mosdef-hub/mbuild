@@ -296,6 +296,20 @@ class TestPaths(BaseTest):
             path3.coordinates, np.concatenate((path1.coordinates, path2.coordinates))
         )
 
+    def test_remove_nodes(self):
+        path = straight_line(spacing=1, N=5, direction=(1, 0, 0))
+        path.remove_nodes([2, 3])
+
+        assert len(path) == 3
+        assert len(path.beads) == 3
+        assert len(path.bond_graph) == 3
+        assert set(path.bond_graph.nodes) == {0, 1, 2}
+        assert len(path.bond_graph.edges()) == 1
+        assert set(path.bond_graph.edges()) == {(0, 1)}
+        assert np.allclose(
+            path.coordinates, np.array([[0, 0, 0], [1, 0, 0], [4, 0, 0]])
+        )
+
 
 class TestRandomWalk(BaseTest):
     def test_extend_coordinates(self):

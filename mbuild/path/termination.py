@@ -46,6 +46,7 @@ class Termination:
         """This is automatically called within hard_sphere_random_walk."""
         for i in self.terminators:
             i._attach_path(path, state)
+            i._is_met = False
         self.success = False  # reset success params
 
     def _clean(self):
