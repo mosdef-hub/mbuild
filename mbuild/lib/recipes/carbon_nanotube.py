@@ -191,6 +191,8 @@ class CarbonNanotube(Compound):
             if not lonely:
                 break
             self.remove(lonely)
+        # Compound.remove leaves a port on each particle it disconnects
+        self.remove(self.all_ports())
 
     def _add_cap_ports(self):
         """Add a port along the missing sp2 direction of each end carbon."""

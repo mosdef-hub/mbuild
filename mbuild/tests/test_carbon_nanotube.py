@@ -1,6 +1,7 @@
 import numpy as np
 import pytest
 
+import mbuild as mb
 from mbuild.lib.recipes import CarbonNanotube
 from mbuild.tests.base_test import BaseTest
 
@@ -23,6 +24,7 @@ class TestCarbonNanotube(BaseTest):
     def test_capped_ends(self, n, m):
         tube = CarbonNanotube(n=n, m=m, length=2.0, cap="F")
         assert not tube.cap_ports
+        assert not tube.all_ports()
         for particle in tube.particles():
             expected = 3 if particle.name == "C" else 1
             assert len(list(tube.bond_graph.neighbors(particle))) == expected
@@ -38,6 +40,7 @@ class TestCarbonNanotube(BaseTest):
             p for p in tube.particles() if len(list(tube.bond_graph.neighbors(p))) == 2
         ]
         assert len(tube.cap_ports) == len(edge_carbons)
+        assert len(tube.all_ports()) == len(edge_carbons)
 
     def test_periodic(self):
         tube = CarbonNanotube(n=5, m=5, length=3.0, periodic=True)
@@ -56,3 +59,25 @@ class TestCarbonNanotube(BaseTest):
     def test_invalid_cap(self):
         with pytest.raises(ValueError):
             CarbonNanotube(n=5, m=5, cap="Xe")
+
+    def test_compound_cap(self):
+        hydroxyl = mb.load("O", smiles=True)
+        hydroxyl.remove(hydroxyl.children[-1])
+        hydroxyl.add(hydroxyl.all_ports()[0], label="up", containment=False)
+
+        uncapped = CarbonNanotube(n=6, m=0, length=3.0, periodic=False, cap=None)
+        n_ports = len(uncapped.cap_ports)
+
+        tube = CarbonNanotube(n=6, m=0, length=3.0, periodic=False, cap=hydroxyl)
+        assert not tube.cap_ports
+        assert not tube.all_ports()
+        oxygens = list(tube.particles_by_name("O"))
+        assert len(oxygens) == n_ports
+        assert len(list(tube.particles_by_name("H"))) == n_ports
+        for particle in tube.particles():
+            expected = {"C": 3, "O": 2, "H": 1}[particle.name]
+            assert len(list(tube.bond_graph.neighbors(particle))) == expected
+        for oxygen in oxygens:
+            carbon = next(n for n in tube.bond_graph.neighbors(oxygen) if n.name == "C")
+            # The C-O distance is set by the two port separations, not a lookup
+            assert 0.10 < np.linalg.norm(oxygen.pos - carbon.pos) < 0.16
