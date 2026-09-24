@@ -2782,6 +2782,34 @@ class Compound(object):
             self._hoomd_data.get("build_params"),
         )
 
+    def energy_minimize(self, forcefield=None, n_steps=1000):
+        """Apply an OpenMMSimulation minimization on the Compound.
+
+        Parameters
+        ----------
+        forcefield : gmso.ForceField object, default None
+            The loaded forcefield xml that can be used to atomtype
+            the Compound.
+        n_steps : int, default 1000
+            The number of simulation steps to run
+
+        Returns
+        -------
+        sim : OpenMMSimulation object
+
+        Notes
+        -----
+        See mBuild.simulation for more simulation setup directly on
+        Compound or Path objects. Minimization can also be performed
+        with either HOOMDSimulation.fire or HOOMDSimulation.cap_displacement
+        methods and scaled down forces.
+        """
+        from mbuild.simulation import OpenMMSimulation
+
+        sim = OpenMMSimulation(self, forcefield)
+        sim.minimize(n_steps)
+        return sim
+
 
 Particle = Compound
 

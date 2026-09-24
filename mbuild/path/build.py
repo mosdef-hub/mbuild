@@ -299,6 +299,19 @@ class Path:
             length=float(bond_length),
         )
 
+    def remove_nodes(self, nodes_to_remove):
+        """Remove coordinates, bead_names, and update bond_graph concurrently."""
+        mask = np.ones(len(self.coordinates), dtype=bool)
+        mask[list(nodes_to_remove)] = False
+        self.bond_graph.remove_nodes_from(nodes_to_remove)
+        G = self.bond_graph
+        self.bond_graph = nx.convert_node_labels_to_integers(
+            G, first_label=0
+        )  # renumber 0 to n
+
+        self.coordinates = self.coordinates[mask]
+        self.beads = self.beads[mask]
+
     def find_neighbors(
         self, u, min_bond_length, max_bond_length, excluded_bond_depth=0
     ):
@@ -1530,7 +1543,9 @@ def hard_sphere_random_walk(
         walk_finished = termination.is_met(
             coordinates=coordinates[: state.count], names=beads[: state.count]
         )
-    state.check_termination(path, coordinates, beads)
+    if not state.check_termination(path, coordinates, beads):
+        # remove unfinished walk
+        path.remove_nodes(range(state.init_count, len(path)))
 
     return path
 
@@ -1751,6 +1766,12 @@ class RandomWalkState:
         self._excluded_buffer[0] = attach_index
         return self._excluded_buffer
 
+    def clean_termination(self):
+        """Clean attached termination checks, check states before cleaning and clean before exiting hsrw."""
+        if self.bias:
+            self.bias._clean()
+        self.termination._clean()
+
     def check_termination(self, path, coordinates, beads):
         """Examine and process termination if we have reached.
 
@@ -1776,17 +1797,15 @@ class RandomWalkState:
             else:
                 logger.warning("Random walk not successful.")
                 logger.warning(self.termination.summarize())
-                return True
+                self.clean_termination()
+                return False
             # RW is terminated and successful, update bond graph
-            self.termination._clean()
-            if self.bias:
-                self.bias._clean()
+            self.clean_termination()
             path._extend_bond_graph()
             path._connect_edges(
                 self.connectivity,
                 np.arange(self.previous_count, self.count),
                 self.attach_index,
             )
-            # path._extend_beads(self.bead_name)
             return True
         return False
