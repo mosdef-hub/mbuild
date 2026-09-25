@@ -1,9 +1,13 @@
 """Classes to generate intra-molecular paths and configurations."""
 
+from __future__ import annotations
+
 import logging
 import math
 import time
+from collections import defaultdict
 from itertools import combinations_with_replacement
+from typing import Sequence
 
 import networkx as nx
 import numpy as np
@@ -28,6 +32,24 @@ from mbuild.path.termination import NumSites, Termination, Terminator
 from mbuild.utils.io import import_
 
 logger = logging.getLogger(__name__)
+
+
+#: Fractional centering translations for each orthorhombic Bravais lattice.
+#: The lamellar cell is a = layer_separation (x), b = spacing (y),
+#: c = stack_separation (z).
+ORTHORHOMBIC_CENTERINGS: dict[str, tuple[tuple[float, float, float], ...]] = {
+    "primitive": ((0.0, 0.0, 0.0),),
+    "base_centered": ((0.0, 0.0, 0.0), (0.5, 0.5, 0.0)),
+    "body_centered": ((0.0, 0.0, 0.0), (0.5, 0.5, 0.5)),
+    "face_centered": (
+        (0.0, 0.0, 0.0),
+        (0.5, 0.5, 0.0),
+        (0.5, 0.0, 0.5),
+        (0.0, 0.5, 0.5),
+    ),
+}
+FACE_AXES: dict[str, tuple[int, int]] = {"ab": (0, 1), "ac": (0, 2), "bc": (1, 2)}
+_PLACES = 9
 
 
 class Path:
@@ -658,157 +680,97 @@ class Path:
 
 
 def lamellar(
-    path=None,
-    num_layers=1,
-    layer_separation=None,
-    layer_length=None,
-    spacing=None,
-    initial_point=(0, 0, 0),
-    num_stacks=1,
-    stack_separation=None,
-    left_to_right=True,
-    bead_name="_A",
-):
-    """Generate a 2-D or 3-D lamellar-like path.
+    path: "Path | None" = None,
+    cell: Sequence[float] | None = None,
+    repeat_units: Sequence[int] = (1, 1, 1),
+    initial_point: Sequence[float] = (0.0, 0.0, 0.0),
+    left_to_right: bool = True,
+    crystal_system: str = "primitive",
+    centered_face: str = "ab",
+    bead_name: "str | BeadNamer" = "_A",
+) -> "Path":
+    """Generate a 2-D or 3-D lamellar path threading an orthorhombic lattice.
+
+    A single chain visits every site of the lattice exactly once, so the path
+    never overlaps itself regardless of the centering. The chain runs along ``c``
+    within a column of sites, folds along ``a`` from one layer to the next, and
+    turns along ``b`` from one stacked lamella to the next.
 
     Parameters
     ----------
-    path : mbuild.path.Path, required
-        The Path object to populate with coordinates
-    num_layers : int, required
-        The number of times the lamellar path curves around creating another layer.
-    layer_separation : float (nm), required
-        The distance between any two layers.
-    layer_length : float (nm), required
-        The distance of a lamellar layer before curving to the next.
-    spacing : float (nm), required
-        The distance between two adjacent sites in the path.
-    initial_point : nd.array (1,3), default (0,0,0)
-        The coordinate of the first site of the lamellar path.
-    num_stacks : int, default 1
-        The number of times to repeat each layer in the Z direction.
-    stack_separation : float (nm), optional
-        The distance between two stacked layers. Required if `num_stacks` >= 2.
-    left_to_right : boolean, default True
-        If `True`, the first layer is built with increasing y-coordinates from the origin.
-    bead_name : str or BeadNamer, optional, default '_A'
-        Name(s) to assign to beads. A plain string assigns the same name to
-        every bead. Pass a ``BeadNamer`` instance (e.g. ``CyclicNamer``,
-        ``RandomNamer``, ``MarkovNamer``) for heterogeneous sequences.
+    path : mbuild.path.Path, optional
+        Path object to populate. A new ``Path`` is created if omitted.
+    cell : sequence of float (nm), required
+        Orthorhombic cell lengths ``(a, b, c)`` of a single cell:
+
+        * ``a`` — layer-to-layer separation (x),
+        * ``b`` — stack-to-stack separation (y),
+        * ``c`` — site-to-site separation along a layer (z), i.e. the bond
+          length, which also sets the resolution of the folds and turns.
+
+        Centering translations are half-multiples of these lengths.
+    repeat_units : sequence of int, default (1, 1, 1)
+        Number of cells along each axis, matching ``cell`` element-for-element:
+        ``(num_layers, num_stacks, num_sites)``. The primitive supercell spans
+        ``(num_layers * a, num_stacks * b, num_sites * c)``; centered lattices
+        add sites half a cell beyond it.
+    initial_point : sequence of float, default (0, 0, 0)
+        Coordinate of the lattice origin, i.e. of the site at ``(0, 0, 0)``.
+    left_to_right : bool, default True
+        If ``True``, the first column is traversed along +z.
+    crystal_system : str, default "primitive"
+        Orthorhombic Bravais lattice: ``"primitive"``, ``"base_centered"``,
+        ``"body_centered"`` or ``"face_centered"``. Centering sites are woven
+        into the same chain rather than forming separate strands.
+    centered_face : str, default "ab"
+        Face centered when ``crystal_system="base_centered"``: ``"ab"``, ``"ac"``
+        or ``"bc"``. Any face may be used; because the chain is threaded through
+        the decorated lattice, a translation along the bond axis no longer
+        superimposes strands.
+    bead_name : str or BeadNamer, default "_A"
+        Name assigned to every bead, or a ``BeadNamer`` producing a sequence of
+        names along the chain.
+
+    Returns
+    -------
+    mbuild.path.Path
+        The populated path.
+
+    Examples
+    --------
+    >>> path = lamellar(
+    ...     cell=(0.5, 0.5, 0.2),
+    ...     repeat_units=(2, 2, 4),
+    ...     crystal_system="face_centered",
+    ... )
     """
+    if cell is None:
+        raise ValueError("`cell` is required: three lengths (a, b, c).")
+
+    lengths, counts = _validate(cell, repeat_units)
+    centerings = _centering_translations(crystal_system, centered_face)
+
     if path is None:
         path = Path()
-    initial_point = np.asarray(initial_point)
 
-    # Coordinates in the y-direction (layer-length) of the lamellar layer
-    layer_spacing = np.arange(0, layer_length, spacing)
-    if not left_to_right:
-        layer_spacing *= -1
-    layer_spacing += initial_point[1]
-
-    # Info needed for generating coords of the arc curves between layers
-    r = layer_separation / 2
-    arc_length = r * np.pi
-    arc_num_points = math.floor(arc_length / spacing)
-    arc_angle = np.pi / (arc_num_points + 1)
-    arc_angles = np.linspace(arc_angle, np.pi, arc_num_points, endpoint=False)
-
-    coordinates = []
-
-    # Iterate and build up layers
-    for i in range(num_layers):
-        x = initial_point[0] + (layer_separation * i)
-        if i % 2 == 0:  # Even layer
-            layer = [np.array([x, y, initial_point[2]]) for y in layer_spacing]
-            origin = layer[-1] + np.array([r, 0, 0])
-            if left_to_right:
-                arc = [
-                    origin + np.array([-np.cos(theta), np.sin(theta), 0]) * r
-                    for theta in arc_angles
-                ]
-            else:
-                arc = [
-                    origin + np.array([-np.cos(theta), -np.sin(theta), 0]) * r
-                    for theta in arc_angles
-                ]
-        else:  # Odd layer
-            layer = [np.array([x, y, initial_point[2]]) for y in layer_spacing[::-1]]
-            origin = layer[-1] + np.array([r, 0, 0])
-            if left_to_right:
-                arc = [
-                    origin + np.array([-np.cos(theta), -np.sin(theta), 0]) * r
-                    for theta in arc_angles
-                ]
-            else:
-                arc = [
-                    origin + np.array([-np.cos(theta), np.sin(theta), 0]) * r
-                    for theta in arc_angles
-                ]
-
-        if i != num_layers - 1:
-            coordinates.extend(layer + arc)
-        else:
-            coordinates.extend(layer)
-
-    # Build up lamellar structure in 3rd dimension (Z) by stacking layers
-    if num_stacks > 1:
-        first_stack_coordinates = np.copy(np.array(coordinates))
-        r = stack_separation / 2
-        arc_length = r * np.pi
-        arc_num_points = math.floor(arc_length / spacing)
-        arc_angle = np.pi / (arc_num_points + 1)
-        arc_angles = np.linspace(arc_angle, np.pi, arc_num_points, endpoint=False)
-
-        if num_layers % 2 == 0:
-            if left_to_right:
-                odd_stack_mult = -1
-                even_stack_mult = -1
-            else:
-                odd_stack_mult = 1
-                even_stack_mult = -1
-        else:
-            if left_to_right:
-                odd_stack_mult = 1
-                even_stack_mult = -1
-            else:
-                odd_stack_mult = -1
-                even_stack_mult = 1
-
-        for i in range(1, num_stacks):
-            if i % 2 != 0:  # Odd stack
-                this_stack = np.copy(first_stack_coordinates[::-1]) + np.array(
-                    [0, 0, stack_separation * i]
-                )
-                origin = coordinates[-1] + np.array([0, 0, r])
-                arc = [
-                    origin
-                    + np.array([0, odd_stack_mult * np.sin(theta), np.cos(theta)]) * r
-                    for theta in arc_angles
-                ]
-                coordinates.extend(arc[::-1])
-                coordinates.extend(list(this_stack))
-            elif i % 2 == 0:  # Even stack
-                this_stack = np.copy(first_stack_coordinates) + np.array(
-                    [0, 0, stack_separation * i]
-                )
-                origin = coordinates[-1] + np.array([0, 0, r])
-                arc = [
-                    origin
-                    + np.array([0, even_stack_mult * np.sin(theta), np.cos(theta)]) * r
-                    for theta in arc_angles
-                ]
-                coordinates.extend(arc[::-1])
-                coordinates.extend(list(this_stack))
-    # Coordinates are set, update the Path object
-    start_index = len(path.coordinates)
-    stop_index = start_index + len(coordinates)
-    namer = BeadNamer.coerce(bead_name)
-    names = np.array(
-        [next(namer) for _ in range(len(coordinates))], dtype=BEAD_NAME_DTYPE
+    origin = np.asarray(initial_point, dtype=float)
+    columns = _decorated_columns(lengths, counts, centerings)
+    coordinates = _thread_columns(
+        columns=columns,
+        ordered=_ordered_columns(columns),
+        spacing=lengths[2],
+        left_to_right=left_to_right,
     )
+    offset = origin - coordinates[0]
+    coordinates = [point + offset for point in coordinates]
+
+    namer = BeadNamer.coerce(bead_name)
+    names = np.array([next(namer) for _ in coordinates], dtype=BEAD_NAME_DTYPE)
+    start = len(path.coordinates)
     path.append_coordinates(coordinates, names)
     path._connect_edges(
-        connectivity="linear", indices=np.arange(start_index, stop_index)
+        connectivity="linear",
+        indices=np.arange(start, start + len(coordinates)),
     )
     return path
 
@@ -1809,3 +1771,190 @@ class RandomWalkState:
             )
             return True
         return False
+
+
+def _centering_translations(
+    crystal_system: str, centered_face: str = "ab"
+) -> np.ndarray:
+    """Return the fractional centering translations for ``crystal_system``.
+
+    Parameters
+    ----------
+    crystal_system : str
+        ``"primitive"``, ``"base_centered"``, ``"body_centered"`` or
+        ``"face_centered"``.
+    centered_face : str, default "ab"
+        Face to center when ``crystal_system="base_centered"``: ``"ab"``,
+        ``"ac"`` or ``"bc"``. Ignored by the other lattices.
+    """
+    system = crystal_system.strip().lower().replace("-", "_").replace(" ", "_")
+    face = centered_face.strip().lower()
+    if face not in FACE_AXES:
+        raise ValueError(
+            f"Unknown centered_face {centered_face!r}; expected one of "
+            f"{sorted(FACE_AXES)}."
+        )
+
+    def half(*axes: int) -> list[float]:
+        translation = [0.0, 0.0, 0.0]
+        for axis in axes:
+            translation[axis] = 0.5
+        return translation
+
+    origin = [0.0, 0.0, 0.0]
+    if system == "primitive":
+        translations = [origin]
+    elif system == "base_centered":
+        translations = [origin, half(*FACE_AXES[face])]
+    elif system == "body_centered":
+        translations = [origin, half(0, 1, 2)]
+    elif system == "face_centered":
+        translations = [origin, *(half(*axes) for axes in FACE_AXES.values())]
+    else:
+        raise ValueError(
+            f"Unknown crystal_system {crystal_system!r}; expected one of "
+            "['base_centered', 'body_centered', 'face_centered', 'primitive']."
+        )
+    return np.asarray(translations, dtype=float)
+
+
+def _validate(
+    cell: Sequence[float], repeat_units: Sequence[int]
+) -> tuple[np.ndarray, np.ndarray]:
+    """Validate the cell and repeat counts, returning them as arrays."""
+    lengths = np.asarray(cell, dtype=float).ravel()
+    if lengths.shape != (3,):
+        raise ValueError("`cell` must be three lengths (a, b, c).")
+    if np.any(lengths <= 0):
+        raise ValueError(f"`cell` lengths must all be positive; got {tuple(lengths)}.")
+
+    counts = np.asarray(repeat_units).ravel()
+    if counts.shape != (3,):
+        raise ValueError(
+            "`repeat_units` must be three counts (num_layers, num_stacks, num_sites)."
+        )
+    if not np.issubdtype(counts.dtype, np.integer):
+        raise TypeError("`repeat_units` must contain integers.")
+    if np.any(counts < 1):
+        raise ValueError(f"`repeat_units` must all be >= 1; got {tuple(counts)}.")
+
+    return lengths, counts.astype(int)
+
+
+def _arc(
+    start: np.ndarray, end: np.ndarray, spacing: float, bulge: np.ndarray
+) -> list[np.ndarray]:
+    """Points along a half-circle joining ``start`` to ``end``.
+
+    The arc lies in the plane spanned by the chord and ``bulge``, bowing toward
+    ``bulge``. Both endpoints are excluded, since they are existing sites. An
+    empty list is returned when the chord is too short to hold a bead, leaving
+    the two sites bonded directly.
+
+    Parameters
+    ----------
+    start, end : numpy.ndarray, shape (3,)
+        Sites the connector bridges; the chord is their separation.
+    spacing : float
+        Target distance between adjacent arc points.
+    bulge : numpy.ndarray, shape (3,)
+        Direction the arc bows toward. Its component along the chord is removed,
+        so only the perpendicular part matters.
+    """
+    chord = end - start
+    chord_length = float(np.linalg.norm(chord))
+    if chord_length == 0.0:
+        return []
+    radius = chord_length / 2
+    chord_hat = chord / chord_length
+
+    # Orthogonalize so the result is a true half-circle through both endpoints.
+    normal = bulge - np.dot(bulge, chord_hat) * chord_hat
+    norm = float(np.linalg.norm(normal))
+    if norm < 1e-12:  # bulge parallel to the chord: no plane to bow in
+        return []
+    normal /= norm
+
+    num_points = math.floor(np.pi * radius / spacing)
+    if num_points < 1:
+        return []
+    angles = (np.pi / (num_points + 1)) * np.arange(1, num_points + 1)
+
+    midpoint = (start + end) / 2
+    return [
+        midpoint - np.cos(theta) * radius * chord_hat + np.sin(theta) * radius * normal
+        for theta in angles
+    ]
+
+
+def _decorated_columns(
+    cell: np.ndarray,
+    repeat_units: np.ndarray,
+    centerings: np.ndarray,
+) -> dict[tuple[float, float], list[float]]:
+    """Group every site of the decorated lattice into columns along c.
+
+    Sites are generated from the coordinate origin; the caller translates the
+    finished chain so its first bead lands on ``initial_point``.
+    """
+    a, b, c = cell
+    num_layers, num_stacks, num_sites = repeat_units
+
+    columns: dict[tuple[float, float], set[float]] = defaultdict(set)
+    for offset_a, offset_b, offset_c in centerings:
+        for layer in range(num_layers):
+            for stack in range(num_stacks):
+                key = (
+                    round((layer + offset_a) * a, _PLACES),
+                    round((stack + offset_b) * b, _PLACES),
+                )
+                columns[key].update(
+                    round((site + offset_c) * c, _PLACES) for site in range(num_sites)
+                )
+    return {key: sorted(values) for key, values in columns.items()}
+
+
+def _ordered_columns(
+    columns: dict[tuple[float, float], list[float]],
+) -> list[tuple[float, float]]:
+    """Order columns into a serpentine: lamellae along b, layers along a.
+
+    Columns are grouped by ``y`` into lamellae. Within each lamella the columns
+    are swept along ``x``, reversing direction every lamella so consecutive
+    columns are always neighbours. Lattices whose columns do not form a full
+    ``x`` by ``y`` grid (body-centering, for instance, gives a checkerboard) are
+    handled because each lamella is swept over only the columns it actually has.
+    """
+    lamellae: dict[float, list[float]] = defaultdict(list)
+    for x, y in columns:
+        lamellae[y].append(x)
+
+    ordered: list[tuple[float, float]] = []
+    for index, y in enumerate(sorted(lamellae)):
+        xs = sorted(lamellae[y], reverse=index % 2 == 1)
+        ordered.extend((x, y) for x in xs)
+    return ordered
+
+
+def _thread_columns(
+    columns: dict[tuple[float, float], list[float]],
+    ordered: list[tuple[float, float]],
+    spacing: float,
+    left_to_right: bool,
+) -> list[np.ndarray]:
+    """Walk the ordered columns as one continuous path, inserting fold arcs."""
+    coordinates: list[np.ndarray] = []
+    for index, key in enumerate(ordered):
+        x, y = key
+        ascending = (index % 2 == 0) == left_to_right
+        heights = columns[key] if ascending else columns[key][::-1]
+        sites = [np.array([x, y, z]) for z in heights]
+
+        if coordinates:
+            # Bow past the end of the column just finished: the previous column
+            # ran opposite to this one, so it ended at the far z extremum.
+            bulge = np.array([0.0, 0.0, -1.0 if ascending else 1.0])
+            coordinates.extend(_arc(coordinates[-1], sites[0], spacing, bulge))
+
+        coordinates.extend(sites)
+    return coordinates
