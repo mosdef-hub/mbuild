@@ -34,24 +34,6 @@ from mbuild.utils.io import import_
 logger = logging.getLogger(__name__)
 
 
-#: Fractional centering translations for each orthorhombic Bravais lattice.
-#: The lamellar cell is a = layer_separation (x), b = spacing (y),
-#: c = stack_separation (z).
-ORTHORHOMBIC_CENTERINGS: dict[str, tuple[tuple[float, float, float], ...]] = {
-    "primitive": ((0.0, 0.0, 0.0),),
-    "base_centered": ((0.0, 0.0, 0.0), (0.5, 0.5, 0.0)),
-    "body_centered": ((0.0, 0.0, 0.0), (0.5, 0.5, 0.5)),
-    "face_centered": (
-        (0.0, 0.0, 0.0),
-        (0.5, 0.5, 0.0),
-        (0.5, 0.0, 0.5),
-        (0.0, 0.5, 0.5),
-    ),
-}
-FACE_AXES: dict[str, tuple[int, int]] = {"ab": (0, 1), "ac": (0, 2), "bc": (1, 2)}
-_PLACES = 9
-
-
 class Path:
     """Creates a path from a given set of coordinates and a bond graph.
     This class is designed to be use in mbuild.polymer.Polymer.build_from_path().
@@ -659,7 +641,7 @@ class Path:
         elif isinstance(box, Box):
             box = np.array([*box.lengths, 0, 0, 0])
         elif len(box) == 3:
-            box = np.array([*box, 0, 0, 0])  # assume orthorhombic
+            box = np.array([*box, 0, 0, 0])  # assume orthogonal
 
         rdf = freud.density.RDF(bins=bins, r_max=r_max)
         rdf.compute(system=(box, self.coordinates))
@@ -668,15 +650,15 @@ class Path:
 
 def lamellar(
     path: "Path | None" = None,
-    cell: Sequence[float] | None = None,
+    cell: Sequence[float] = (1, 1, 1),
     repeat_units: Sequence[int] = (1, 1, 1),
     initial_point: Sequence[float] = (0.0, 0.0, 0.0),
     left_to_right: bool = True,
-    crystal_system: str = "primitive",
-    centered_face: str = "ab",
+    lattice_centerings: str = "primitive",
+    base_centered_face: str = "ab",
     bead_name: "str | BeadNamer" = "_A",
 ) -> "Path":
-    """Generate a 2-D or 3-D lamellar path threading an orthorhombic lattice.
+    """Generate a 2-D or 3-D lamellar path threading an orthogonal lattice.
 
     A single chain visits every site of the lattice exactly once, so the path
     never overlaps itself regardless of the centering. The chain runs along ``c``
@@ -688,7 +670,7 @@ def lamellar(
     path : mbuild.path.Path, optional
         Path object to populate. A new ``Path`` is created if omitted.
     cell : sequence of float (nm), required
-        Orthorhombic cell lengths ``(a, b, c)`` of a single cell:
+        Orthogonal cell lengths ``(a, b, c)`` of a single cell:
 
         * ``a`` — layer-to-layer separation (x),
         * ``b`` — stack-to-stack separation (y),
@@ -705,15 +687,15 @@ def lamellar(
         Coordinate of the lattice origin, i.e. of the site at ``(0, 0, 0)``.
     left_to_right : bool, default True
         If ``True``, the first column is traversed along +z.
-    crystal_system : str, default "primitive"
-        Orthorhombic Bravais lattice: ``"primitive"``, ``"base_centered"``,
+    lattice_centerings : str, default "primitive"
+        Orthogonal Bravais lattice: ``"primitive"``, ``"base_centered"``,
         ``"body_centered"`` or ``"face_centered"``. Centering sites are woven
         into the same chain rather than forming separate strands.
-    centered_face : str, default "ab"
-        Face centered when ``crystal_system="base_centered"``: ``"ab"``, ``"ac"``
-        or ``"bc"``. Any face may be used; because the chain is threaded through
-        the decorated lattice, a translation along the bond axis no longer
-        superimposes strands.
+    base_centered_face : str, default "ab"
+        Use when ``lattice_centerings="base_centered"``. Can be ``"ab"``, ``"ac"``
+        or ``"bc"``, which corresponds to which face on the lattice contains the
+        crystal site. This Path is disconnected from the Path defined by the vertex
+        sites, so two independent chains are threaded between each other.
     bead_name : str or BeadNamer, default "_A"
         Name assigned to every bead, or a ``BeadNamer`` producing a sequence of
         names along the chain.
@@ -728,19 +710,20 @@ def lamellar(
     >>> path = lamellar(
     ...     cell=(0.5, 0.5, 0.2),
     ...     repeat_units=(2, 2, 4),
-    ...     crystal_system="face_centered",
+    ...     lattice_centerings="face_centered",
     ... )
     """
-    if cell is None:
-        raise ValueError("`cell` is required: three lengths (a, b, c).")
-
-    lengths, counts = _validate(cell, repeat_units)
-    centerings = _centering_translations(crystal_system, centered_face)
+    lengths, counts = _validate_lamellar_cell(cell, repeat_units)
+    centerings = _centering_translations(lattice_centerings, base_centered_face)
 
     if path is None:
         path = Path()
 
     origin = np.asarray(initial_point, dtype=float)
+    if not (origin.shape == (1, 3) or origin.shape == (3,)):
+        raise ValueError(
+            f"Only 3D coordinates are accepted for the initial Point. Please pass {initial_point} as a length 3 iterable."
+        )
     columns = _decorated_columns(lengths, counts, centerings)
     coordinates = _thread_columns(
         columns=columns,
@@ -1755,24 +1738,25 @@ class RandomWalkState:
 
 
 def _centering_translations(
-    crystal_system: str, centered_face: str = "ab"
+    lattice_centerings: str, base_centered_face: str = "ab"
 ) -> np.ndarray:
-    """Return the fractional centering translations for ``crystal_system``.
+    """Return the fractional centering translations for ``lattice_centerings``.
 
     Parameters
     ----------
-    crystal_system : str
+    lattice_centerings : str
         ``"primitive"``, ``"base_centered"``, ``"body_centered"`` or
         ``"face_centered"``.
-    centered_face : str, default "ab"
-        Face to center when ``crystal_system="base_centered"``: ``"ab"``,
+    base_centered_face : str, default "ab"
+        Face to center when ``lattice_centerings="base_centered"``: ``"ab"``,
         ``"ac"`` or ``"bc"``. Ignored by the other lattices.
     """
-    system = crystal_system.strip().lower().replace("-", "_").replace(" ", "_")
-    face = centered_face.strip().lower()
+    FACE_AXES: dict[str, tuple[int, int]] = {"ab": (0, 1), "ac": (0, 2), "bc": (1, 2)}
+    system = lattice_centerings.strip().lower().replace("-", "_").replace(" ", "_")
+    face = base_centered_face.strip().lower()
     if face not in FACE_AXES:
         raise ValueError(
-            f"Unknown centered_face {centered_face!r}; expected one of "
+            f"Unknown base_centered_face {base_centered_face!r}; expected one of "
             f"{sorted(FACE_AXES)}."
         )
 
@@ -1793,13 +1777,13 @@ def _centering_translations(
         translations = [origin, *(half(*axes) for axes in FACE_AXES.values())]
     else:
         raise ValueError(
-            f"Unknown crystal_system {crystal_system!r}; expected one of "
+            f"Unknown lattice_centerings {lattice_centerings!r}; expected one of "
             "['base_centered', 'body_centered', 'face_centered', 'primitive']."
         )
     return np.asarray(translations, dtype=float)
 
 
-def _validate(
+def _validate_lamellar_cell(
     cell: Sequence[float], repeat_units: Sequence[int]
 ) -> tuple[np.ndarray, np.ndarray]:
     """Validate the cell and repeat counts, returning them as arrays."""
@@ -1878,6 +1862,7 @@ def _decorated_columns(
     Sites are generated from the coordinate origin; the caller translates the
     finished chain so its first bead lands on ``initial_point``.
     """
+    precision = 9
     a, b, c = cell
     num_layers, num_stacks, num_sites = repeat_units
 
@@ -1886,11 +1871,11 @@ def _decorated_columns(
         for layer in range(num_layers):
             for stack in range(num_stacks):
                 key = (
-                    round((layer + offset_a) * a, _PLACES),
-                    round((stack + offset_b) * b, _PLACES),
+                    round((layer + offset_a) * a, precision),
+                    round((stack + offset_b) * b, precision),
                 )
                 columns[key].update(
-                    round((site + offset_c) * c, _PLACES) for site in range(num_sites)
+                    round((site + offset_c) * c, precision) for site in range(num_sites)
                 )
     return {key: sorted(values) for key, values in columns.items()}
 

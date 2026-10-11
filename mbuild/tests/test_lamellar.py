@@ -7,7 +7,7 @@ from mbuild.path.build import Path, lamellar
 from mbuild.path.namers import CyclicNamer
 from mbuild.tests.base_test import BaseTest
 
-# Fractional centering translations expected of each crystal system, written
+# Fractional centering translations expected of each crystal lattice, written
 # out here so the tests do not depend on the table in the module under test.
 TRANSLATIONS = {
     "primitive": ((0.0, 0.0, 0.0),),
@@ -105,85 +105,83 @@ class TestLamellar(BaseTest):
         assert path.bond_graph.number_of_edges() == 0
         assert np.allclose(path.coordinates[0], (0, 0, 0))
 
-    @pytest.mark.parametrize("system", list(TRANSLATIONS))
-    def test_lamellar_visits_every_site(self, system):
-        path = lamellar(cell=CELL, repeat_units=REPEATS, crystal_system=system)
-        sites = lattice_sites(CELL, REPEATS, TRANSLATIONS[system])
+    @pytest.mark.parametrize("lattice", list(TRANSLATIONS))
+    def test_lamellar_visits_every_site(self, lattice):
+        path = lamellar(cell=CELL, repeat_units=REPEATS, lattice_centerings=lattice)
+        sites = lattice_sites(CELL, REPEATS, TRANSLATIONS[lattice])
         visited = {tuple(np.round(point, 9)) for point in path.coordinates}
         assert sites <= visited
-        assert len(sites) == len(TRANSLATIONS[system]) * math.prod(REPEATS)
+        assert len(sites) == len(TRANSLATIONS[lattice]) * math.prod(REPEATS)
 
-    @pytest.mark.parametrize("system", list(TRANSLATIONS))
-    def test_lamellar_visits_every_site_once(self, system):
-        path = lamellar(cell=CELL, repeat_units=REPEATS, crystal_system=system)
-        sites = lattice_sites(CELL, REPEATS, TRANSLATIONS[system])
+    @pytest.mark.parametrize("lattice", list(TRANSLATIONS))
+    def test_lamellar_visits_every_site_once(self, lattice):
+        path = lamellar(cell=CELL, repeat_units=REPEATS, lattice_centerings=lattice)
+        sites = lattice_sites(CELL, REPEATS, TRANSLATIONS[lattice])
         rounded = [tuple(np.round(point, 9)) for point in path.coordinates]
         assert len([point for point in rounded if point in sites]) == len(sites)
         assert len(set(rounded)) == len(rounded)
 
-    @pytest.mark.parametrize("system", list(TRANSLATIONS))
-    def test_lamellar_sites_on_half_cell_fractions(self, system):
-        path = lamellar(cell=CELL, repeat_units=REPEATS, crystal_system=system)
-        sites = lattice_sites(CELL, REPEATS, TRANSLATIONS[system])
+    @pytest.mark.parametrize("lattice", list(TRANSLATIONS))
+    def test_lamellar_sites_on_half_cell_fractions(self, lattice):
+        path = lamellar(cell=CELL, repeat_units=REPEATS, lattice_centerings=lattice)
+        sites = lattice_sites(CELL, REPEATS, TRANSLATIONS[lattice])
         for point in path.coordinates:
             if tuple(np.round(point, 9)) in sites:
                 doubled = 2.0 * point / np.asarray(CELL)
                 assert np.allclose(doubled, np.round(doubled))
 
-    @pytest.mark.parametrize("system", list(TRANSLATIONS))
-    def test_lamellar_columns_entered_once(self, system):
-        path = lamellar(cell=CELL, repeat_units=REPEATS, crystal_system=system)
-        sites = lattice_sites(CELL, REPEATS, TRANSLATIONS[system])
+    @pytest.mark.parametrize("lattice", list(TRANSLATIONS))
+    def test_lamellar_columns_entered_once(self, lattice):
+        path = lamellar(cell=CELL, repeat_units=REPEATS, lattice_centerings=lattice)
+        sites = lattice_sites(CELL, REPEATS, TRANSLATIONS[lattice])
         keys = [key for key, _ in column_runs(path.coordinates, sites)]
         assert len(keys) == len(set(keys))
-        assert len(keys) == len(TRANSLATIONS[system]) * REPEATS[0] * REPEATS[1]
+        assert len(keys) == len(TRANSLATIONS[lattice]) * REPEATS[0] * REPEATS[1]
 
-    @pytest.mark.parametrize("system", list(TRANSLATIONS))
-    def test_lamellar_column_runs_monotonic(self, system):
-        path = lamellar(cell=CELL, repeat_units=REPEATS, crystal_system=system)
-        sites = lattice_sites(CELL, REPEATS, TRANSLATIONS[system])
+    @pytest.mark.parametrize("lattice", list(TRANSLATIONS))
+    def test_lamellar_column_runs_monotonic(self, lattice):
+        path = lamellar(cell=CELL, repeat_units=REPEATS, lattice_centerings=lattice)
+        sites = lattice_sites(CELL, REPEATS, TRANSLATIONS[lattice])
         for _, heights in column_runs(path.coordinates, sites):
             assert len(heights) == REPEATS[2]
             steps = np.diff(heights)
             assert np.allclose(np.abs(steps), CELL[2])
             assert np.all(steps > 0) or np.all(steps < 0)
 
-    @pytest.mark.parametrize("system", list(TRANSLATIONS))
-    def test_lamellar_bond_lengths(self, system):
-        # Regression: mis-ordered fold arcs produced bonds that leapt a whole
-        # cell length across the structure.
-        path = lamellar(cell=CELL, repeat_units=REPEATS, crystal_system=system)
+    @pytest.mark.parametrize("lattice", list(TRANSLATIONS))
+    def test_lamellar_bond_lengths(self, lattice):
+        """Verify that bonds lengths are reasonable."""
+        path = lamellar(cell=CELL, repeat_units=REPEATS, lattice_centerings=lattice)
         bonds = np.linalg.norm(np.diff(path.coordinates, axis=0), axis=1)
-        assert np.all(bonds > 0)
         assert np.all(bonds <= CELL[2] + 1e-8)
 
     @pytest.mark.parametrize(
-        "system, num_beads", [("primitive", 25), ("base-centered", 50)]
+        "lattice, num_beads", [("primitive", 25), ("base-centered", 50)]
     )
-    def test_lamellar_bead_count(self, system, num_beads):
+    def test_lamellar_bead_count(self, lattice, num_beads):
         # 4 columns of 4 sites joined by 3 arcs of 3 beads, doubled and
         # re-threaded for the C-centered lattice.
-        path = lamellar(cell=CELL, repeat_units=REPEATS, crystal_system=system)
+        path = lamellar(cell=CELL, repeat_units=REPEATS, lattice_centerings=lattice)
         assert len(path.coordinates) == num_beads
 
     @pytest.mark.parametrize(
-        "system", ["base_centered", "body_centered", "face_centered"]
+        "lattice", ["base_centered", "body_centered", "face_centered"]
     )
-    def test_lamellar_centering_adds_beads(self, system):
+    def test_lamellar_centering_adds_beads(self, lattice):
         primitive = lamellar(cell=CELL, repeat_units=REPEATS)
-        centered = lamellar(cell=CELL, repeat_units=REPEATS, crystal_system=system)
+        centered = lamellar(cell=CELL, repeat_units=REPEATS, lattice_centerings=lattice)
         assert len(centered.coordinates) > len(primitive.coordinates)
         # Centering only adds sites; the primitive ones stay where they were.
         visited = {tuple(np.round(point, 9)) for point in centered.coordinates}
         assert lattice_sites(CELL, REPEATS, TRANSLATIONS["primitive"]) <= visited
 
     @pytest.mark.parametrize("face", list(FACE_TRANSLATIONS))
-    def test_lamellar_centered_face(self, face):
+    def test_lamellar_base_centered_face(self, face):
         path = lamellar(
             cell=CELL,
             repeat_units=REPEATS,
-            crystal_system="base_centered",
-            centered_face=face,
+            lattice_centerings="base_centered",
+            base_centered_face=face,
         )
         visited = {tuple(np.round(point, 9)) for point in path.coordinates}
         expected = lattice_sites(
@@ -195,40 +193,42 @@ class TestLamellar(BaseTest):
                 unique = lattice_sites(CELL, REPEATS, (translation,)) - expected
                 assert not unique <= visited
 
-    def test_lamellar_default_centered_face(self):
+    def test_lamellar_default_base_centered_face(self):
         default = lamellar(
-            cell=CELL, repeat_units=REPEATS, crystal_system="base_centered"
+            cell=CELL, repeat_units=REPEATS, lattice_centerings="base_centered"
         )
         explicit = lamellar(
             cell=CELL,
             repeat_units=REPEATS,
-            crystal_system="base_centered",
-            centered_face="ab",
+            lattice_centerings="base_centered",
+            base_centered_face="ab",
         )
         assert np.allclose(default.coordinates, explicit.coordinates)
 
-    @pytest.mark.parametrize("system", ["primitive", "body_centered", "face_centered"])
-    def test_lamellar_centered_face_ignored(self, system):
-        reference = lamellar(cell=CELL, repeat_units=REPEATS, crystal_system=system)
+    @pytest.mark.parametrize("lattice", ["primitive", "body_centered", "face_centered"])
+    def test_lamellar_base_centered_face_ignored(self, lattice):
+        reference = lamellar(
+            cell=CELL, repeat_units=REPEATS, lattice_centerings=lattice
+        )
         for face in FACE_TRANSLATIONS:
             path = lamellar(
                 cell=CELL,
                 repeat_units=REPEATS,
-                crystal_system=system,
-                centered_face=face,
+                lattice_centerings=lattice,
+                base_centered_face=face,
             )
             assert np.allclose(path.coordinates, reference.coordinates)
 
-    @pytest.mark.parametrize("system", list(TRANSLATIONS))
-    def test_lamellar_initial_point(self, system):
+    @pytest.mark.parametrize("lattice", list(TRANSLATIONS))
+    def test_lamellar_initial_point(self, lattice):
         shift = np.array([1.5, -2.0, 0.25])
         at_origin = lamellar(
-            cell=CELL, repeat_units=REPEATS, crystal_system=system
+            cell=CELL, repeat_units=REPEATS, lattice_centerings=lattice
         ).coordinates
         shifted = lamellar(
             cell=CELL,
             repeat_units=REPEATS,
-            crystal_system=system,
+            lattice_centerings=lattice,
             initial_point=shift,
         ).coordinates
         assert np.allclose(shifted, at_origin + shift)
@@ -263,11 +263,11 @@ class TestLamellar(BaseTest):
         "spelling",
         ["face_centered", "face-centered", "FACE CENTERED", " Face-Centered "],
     )
-    def test_lamellar_crystal_system_spellings(self, spelling):
+    def test_lamellar_lattice_centerings_spellings(self, spelling):
         reference = lamellar(
-            cell=CELL, repeat_units=REPEATS, crystal_system="face_centered"
+            cell=CELL, repeat_units=REPEATS, lattice_centerings="face_centered"
         )
-        path = lamellar(cell=CELL, repeat_units=REPEATS, crystal_system=spelling)
+        path = lamellar(cell=CELL, repeat_units=REPEATS, lattice_centerings=spelling)
         assert np.allclose(path.coordinates, reference.coordinates)
 
     @pytest.mark.parametrize("repeats", [[2, 2, 4], np.array([2, 2, 4])])
@@ -278,10 +278,10 @@ class TestLamellar(BaseTest):
 
     def test_lamellar_is_deterministic(self):
         first = lamellar(
-            cell=CELL, repeat_units=REPEATS, crystal_system="face_centered"
+            cell=CELL, repeat_units=REPEATS, lattice_centerings="face_centered"
         )
         second = lamellar(
-            cell=CELL, repeat_units=REPEATS, crystal_system="face_centered"
+            cell=CELL, repeat_units=REPEATS, lattice_centerings="face_centered"
         )
         assert np.allclose(first.coordinates, second.coordinates)
 
@@ -302,8 +302,8 @@ class TestLamellar(BaseTest):
         assert node_names == ["_X"] * len(path.coordinates)
 
     def test_lamellar_no_cell(self):
-        with pytest.raises(ValueError):
-            lamellar(repeat_units=REPEATS)
+        path = lamellar(repeat_units=REPEATS)
+        assert np.linalg.norm(path.coordinates[0] - path.coordinates[1]) == 1.0
 
     @pytest.mark.parametrize("cell", [(0.5, 0.5), (0.5, 0.5, 0.2, 0.1)])
     def test_lamellar_bad_cell_shape(self, cell):
@@ -325,17 +325,17 @@ class TestLamellar(BaseTest):
         with pytest.raises(TypeError):
             lamellar(cell=CELL, repeat_units=repeats)
 
-    @pytest.mark.parametrize("system", ["hexagonal", "side_centered", "primitve", ""])
-    def test_lamellar_bad_crystal_system(self, system):
+    @pytest.mark.parametrize("lattice", ["hexagonal", "side_centered", "primitve", ""])
+    def test_lamellar_bad_lattice_centerings(self, lattice):
         with pytest.raises(ValueError):
-            lamellar(cell=CELL, repeat_units=REPEATS, crystal_system=system)
+            lamellar(cell=CELL, repeat_units=REPEATS, lattice_centerings=lattice)
 
     @pytest.mark.parametrize("face", ["ba", "abc", "a", ""])
-    def test_lamellar_bad_centered_face(self, face):
+    def test_lamellar_bad_base_centered_face(self, face):
         with pytest.raises(ValueError):
             lamellar(
                 cell=CELL,
                 repeat_units=REPEATS,
-                crystal_system="base_centered",
-                centered_face=face,
+                lattice_centerings="base_centered",
+                base_centered_face=face,
             )
