@@ -56,6 +56,12 @@ class HoomdSimulation(hoomd.simulation.Simulation):
     kick : bool, default True
         Nudge coordinates before simulating. This can be critical to remove
         flat dihedrals.
+    speedup_by_moltag : bool, default False
+        Passed to ``gmso.parameterization.apply`` when a foyer/gmso forcefield
+        is given. Atom-types only the first molecule of each name and copies
+        its types to the others, assuming same-named molecules have the same
+        atoms in the same order. Name molecules accordingly before setting it,
+        e.g. chains of different length need different names.
     """
 
     def __init__(
@@ -70,6 +76,7 @@ class HoomdSimulation(hoomd.simulation.Simulation):
         integrate_compounds=None,
         fixed_compounds=None,
         kick=True,
+        speedup_by_moltag=False,
     ):
 
         if isinstance(integrate_compounds, Compound):
@@ -116,6 +123,7 @@ class HoomdSimulation(hoomd.simulation.Simulation):
         self.fixed_compounds = fixed_compounds
         self.box_buffer = box_buffer
         self.box = box
+        self.speedup_by_moltag = speedup_by_moltag
         self.energies = []
         self._resolve_compound_box()
         box_lengths = np.asarray(self.compound.box.lengths, dtype=float)
@@ -534,6 +542,7 @@ class HoomdSimulation(hoomd.simulation.Simulation):
                 top,
                 forcefields=self.forcefield,
                 ignore_params=["dihedral", "improper"],
+                speedup_by_moltag=self.speedup_by_moltag,
             )
             forces, _ = gmso.external.to_hoomd_forcefield(top, r_cut=self.r_cut)
             snap, _ = gmso.external.to_gsd_snapshot(top=top, shift_coords=False)
