@@ -149,6 +149,199 @@ class TestBias(BaseTest):
             head_tail_vec_target, np.array([1, 0, 0])
         )
 
+    def test_target_coordinate_capture_radius_validation(self):
+        # capture_radius needs a termination radius to ramp toward
+        with pytest.raises(ValueError):
+            TargetCoordinate(
+                target_coordinate=(3, 3, 3), weight=1.0, capture_radius=2.0
+            )
+        # termination_radius is meaningless without capture_radius
+        with pytest.raises(ValueError):
+            TargetCoordinate(
+                target_coordinate=(3, 3, 3), weight=1.0, termination_radius=0.3
+            )
+        # capture_radius must be outside termination_radius
+        with pytest.raises(ValueError):
+            TargetCoordinate(
+                target_coordinate=(3, 3, 3),
+                weight=1.0,
+                capture_radius=0.3,
+                termination_radius=0.5,
+            )
+        with pytest.raises(ValueError):
+            TargetCoordinate(
+                target_coordinate=(3, 3, 3),
+                weight=1.0,
+                capture_radius=-1.0,
+                termination_radius=0.3,
+            )
+        with pytest.raises(ValueError):
+            TargetCoordinate(
+                target_coordinate=(3, 3, 3),
+                weight=1.0,
+                capture_radius="ten",
+                termination_radius=0.3,
+            )
+        with pytest.raises(ValueError):
+            TargetCoordinate(
+                target_coordinate=(3, 3, 3),
+                weight=0.5,
+                capture_radius=2.0,
+                termination_radius=0.3,
+                adapt_sharpness=0.0,
+            )
+
+    def test_target_coordinate_terminator(self):
+        terminator = WithinCoordinate(target_coordinate=(3, 3, 3), distance=0.3)
+        bias = TargetCoordinate(
+            target_coordinate=(3, 3, 3),
+            weight=1.0,
+            capture_radius=2.0,
+            terminator=terminator,
+        )
+        assert bias.termination_radius == terminator.distance
+        # terminator and termination_radius are mutually exclusive
+        with pytest.raises(ValueError):
+            TargetCoordinate(
+                target_coordinate=(3, 3, 3),
+                weight=1.0,
+                capture_radius=2.0,
+                termination_radius=0.3,
+                terminator=terminator,
+            )
+        # terminator target must match the bias target
+        with pytest.raises(ValueError):
+            TargetCoordinate(
+                target_coordinate=(1, 1, 1),
+                weight=1.0,
+                capture_radius=2.0,
+                terminator=terminator,
+            )
+
+    def test_target_coordinate_auto_capture_radius(self):
+        bias = TargetCoordinate(
+            target_coordinate=(3, 3, 3),
+            weight=1.0,
+            capture_radius="auto",
+            termination_radius=0.3,
+        )
+        assert bias._capture_radius is None
+        hard_sphere_random_walk(
+            termination=Termination([NumSites(15), NumAttempts(1e4)]),
+            bond_length=0.25,
+            bias=bias,
+            initial_point=(0, 0, 0),
+            radius=0.22,
+            seed=14,
+        )
+        assert bias._capture_radius == pytest.approx(2.5)
+        # An auto radius that would fall inside the termination radius is caught
+        bad_bias = TargetCoordinate(
+            target_coordinate=(3, 3, 3),
+            weight=1.0,
+            capture_radius="auto",
+            termination_radius=5.0,
+        )
+        with pytest.raises(ValueError):
+            hard_sphere_random_walk(
+                termination=Termination([NumSites(15), NumAttempts(1e4)]),
+                bond_length=0.25,
+                bias=bad_bias,
+                initial_point=(0, 0, 0),
+                radius=0.22,
+                seed=14,
+            )
+
+    def test_target_coordinate_outside_capture_radius_matches_fixed_weight(self):
+        """Outside capture_radius the walk is identical to a fixed-weight walk."""
+        kwargs = dict(
+            termination=Termination([NumSites(15), NumAttempts(1e4)]),
+            bond_length=0.25,
+            initial_point=(0, 0, 0),
+            radius=0.22,
+            seed=14,
+        )
+        fixed = hard_sphere_random_walk(
+            bias=TargetCoordinate(target_coordinate=(3, 3, 3), weight=0.8), **kwargs
+        )
+        # A capture_radius this walk never reaches leaves the ramp at r = 0
+        never_captured = hard_sphere_random_walk(
+            bias=TargetCoordinate(
+                target_coordinate=(3, 3, 3),
+                weight=0.8,
+                capture_radius=0.301,
+                termination_radius=0.3,
+            ),
+            **kwargs,
+        )
+        assert np.allclose(fixed.coordinates, never_captured.coordinates)
+
+    def test_target_coordinate_capture_radius_ramp(self):
+        """The effective weight ramps from weight at capture_radius up to 1."""
+        bias = TargetCoordinate(
+            target_coordinate=(0, 0, 0),
+            weight=0.2,
+            capture_radius=2.0,
+            termination_radius=0.5,
+        )
+        assert bias.last_weight is None and bias.last_r is None
+
+        def weight_at(distance):
+            bias._adaptive_weight(np.array([distance, 0.0, 0.0]))
+            return bias.last_r, bias.last_weight
+
+        # Beyond capture_radius the ramp holds at weight
+        assert weight_at(5.0) == (0.0, pytest.approx(0.2))
+        assert weight_at(2.0) == (0.0, pytest.approx(0.2))
+        # At and inside termination_radius the ramp is pinned at 1
+        assert weight_at(0.5) == (1.0, pytest.approx(1.0))
+        assert weight_at(0.0) == (1.0, pytest.approx(1.0))
+        # Linear in between by default
+        assert weight_at(1.25) == (pytest.approx(0.5), pytest.approx(0.6))
+        # Monotonically increasing as the walk closes on the target
+        weights = [weight_at(d)[1] for d in np.linspace(2.0, 0.5, 20)]
+        assert np.all(np.diff(weights) >= 0)
+
+    def test_target_coordinate_adapt_sharpness(self):
+        """adapt_sharpness > 1 ramps later, < 1 ramps earlier."""
+
+        def weight_at(sharpness, distance):
+            bias = TargetCoordinate(
+                target_coordinate=(0, 0, 0),
+                weight=0.2,
+                capture_radius=2.0,
+                termination_radius=0.5,
+                adapt_sharpness=sharpness,
+            )
+            bias._adaptive_weight(np.array([distance, 0.0, 0.0]))
+            return bias.last_weight
+
+        assert weight_at(3.0, 1.25) < weight_at(1.0, 1.25) < weight_at(0.3, 1.25)
+        # Endpoints are unaffected by sharpness
+        for sharpness in (0.3, 1.0, 3.0):
+            assert weight_at(sharpness, 2.0) == pytest.approx(0.2)
+            assert weight_at(sharpness, 0.5) == pytest.approx(1.0)
+
+    def test_target_coordinate_capture_radius_reaches_target(self):
+        """A ramped walk terminates inside the terminator's distance."""
+        terminator = WithinCoordinate(target_coordinate=(2, 2, 2), distance=0.3)
+        termination = Termination([terminator, NumAttempts(5e4)])
+        kwargs = dict(
+            bond_length=0.25,
+            initial_point=(0, 0, 0),
+            radius=0.22,
+            seed=14,
+        )
+        adaptive = TargetCoordinate(
+            target_coordinate=(2, 2, 2),
+            weight=0.2,
+            capture_radius=1.5,
+            terminator=terminator,
+        )
+        path = hard_sphere_random_walk(termination=termination, bias=adaptive, **kwargs)
+        end_distance = np.linalg.norm(path.coordinates[-1] - np.array([2, 2, 2]))
+        assert end_distance <= 0.3 + terminator.tolerance
+
     def test_score_affine_invariance(self):
         """Scores rank candidates identically under any positive affine rescale."""
         bias = TargetCoordinate(target_coordinate=(3, 3, 3), weight=0.6)
@@ -227,3 +420,28 @@ class TestBias(BaseTest):
         periodic = WithinCoordinate(target_coordinate=target, distance=0.3)
         periodic.state = _State()
         assert periodic.is_met(coordinates, names)
+
+    def test_target_coordinate_capture_radius_pbc(self):
+        """The capture-radius ramp measures distance to the target in minimum image."""
+        from mbuild.path.path_utils import target_sq_distances
+
+        L = 10.0
+        target = np.array([-4.9, 0.0, 0.0])
+        bias = TargetCoordinate(
+            target_coordinate=target,
+            weight=0.5,
+            capture_radius=2.0,
+            termination_radius=0.2,
+        )
+
+        class _State:
+            pbc = np.array([True, True, True])
+            box_lengths = np.array([L, L, L], dtype=np.float32)
+
+        # 0.2 nm from the target across the +x boundary, 9.8 nm from it directly
+        current = np.array([4.9, 0.0, 0.0])
+        assert bias._adaptive_weight(current) == pytest.approx(0.5)
+
+        bias.state = _State()
+        bias._target_sq_distances = target_sq_distances
+        assert bias._adaptive_weight(current) == pytest.approx(1.0)
