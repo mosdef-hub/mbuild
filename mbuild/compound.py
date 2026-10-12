@@ -766,10 +766,9 @@ class Compound(object):
                 # search for self in self.root.bond_graph and remove self
                 if self.root.bond_graph.has_node(self):
                     self.root.bond_graph.remove_node(self)
-                # compose the bond graph of all the children with the root
-                self.root.bond_graph = nx.compose(
-                    self.root.bond_graph, children_bond_graph
-                )
+                # merge the bond graph of all the children into the root's, in
+                # place: nx.compose would copy the whole root graph on every add
+                self.root.bond_graph.update(children_bond_graph)
             for i, child in enumerate(compound_list):
                 child.bond_graph = None
                 if label is not None:
@@ -815,10 +814,8 @@ class Compound(object):
                 # search for self in self.root.bond_graph and remove self
                 if self.root.bond_graph.has_node(self):
                     self.root.bond_graph.remove_node(self)
-                # Compose bond_graph of new child
-                self.root.bond_graph = nx.compose(
-                    self.root.bond_graph, new_child.bond_graph
-                )
+                # Merge the new child's bond_graph into the root's, in place
+                self.root.bond_graph.update(new_child.bond_graph)
 
                 new_child.bond_graph = None
 
@@ -1017,7 +1014,7 @@ class Compound(object):
     def _prune_ghost_ports(self):
         """Worker for remove(). Remove all ports whose anchor has been deleted."""
         all_ports_list = list(self.all_ports())
-        particles = list(self.particles())
+        particles = set(self.particles())
         for port in all_ports_list:
             if port.anchor not in particles:
                 self._remove(port)
