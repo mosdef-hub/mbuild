@@ -1024,7 +1024,9 @@ class Compound(object):
     def _remove(self, removed_part):
         """Worker for remove(). Removes bonds."""
         if self.root.bond_graph.has_node(removed_part):
-            for neighbor in nx.neighbors(self.root.bond_graph.copy(), removed_part):
+            # list the neighbors first: copying the whole graph to iterate
+            # them safely cost O(size of the compound) per removed part
+            for neighbor in list(self.root.bond_graph.neighbors(removed_part)):
                 self.root.remove_bond((removed_part, neighbor))
             self.root.bond_graph.remove_node(removed_part)
 
