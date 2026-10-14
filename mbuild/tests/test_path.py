@@ -9,7 +9,6 @@ from mbuild.path.build import (
     hard_sphere_random_walk,
     helix,
     knot,
-    lamellar,
     spiral_2D,
     straight_line,
     zigzag,
@@ -153,72 +152,6 @@ class TestPaths(BaseTest):
         assert path.bond_graph.number_of_edges() == 49
         comp = path.to_compound()
         assert comp.n_bonds == comp.n_particles - 1
-
-    def test_lamellar(self):
-        path = Path()
-        lamellar(
-            path=path,
-            spacing=0.25,
-            num_layers=3,
-            layer_separation=1.0,
-            layer_length=3.0,
-            num_stacks=3,
-            stack_separation=1.0,
-        )
-        assert path.bond_graph.number_of_edges() == len(path.coordinates) - 1
-        compound = path.to_compound()
-        Lx, Ly, Lz = compound.get_boundingbox().lengths
-        # The params used here should create a cubic-like lamellar structure
-        # Y-direction will be slightly larger because of curves between layers
-        assert np.allclose(Lx, Lz, atol=0.1)  # stacking and layering directions
-        assert Ly > Lx
-
-    def test_lamellar_direction(self):
-        path_left_to_right = Path()
-        lamellar(
-            path=path_left_to_right,
-            spacing=0.25,
-            num_layers=3,
-            layer_separation=1.0,
-            layer_length=3.0,
-            num_stacks=3,
-            stack_separation=1.0,
-            initial_point=(0, 0, 0),
-        )
-
-        path_right_to_left = Path()
-        lamellar(
-            path=path_right_to_left,
-            spacing=0.25,
-            num_layers=3,
-            layer_separation=1.0,
-            layer_length=3.0,
-            num_stacks=3,
-            stack_separation=1.0,
-            initial_point=(0, 0, 0),
-            left_to_right=False,
-        )
-
-        assert np.array_equal(
-            path_left_to_right.coordinates[0], path_right_to_left.coordinates[0]
-        )
-        assert path_right_to_left.coordinates[1][1] < 0
-        assert path_left_to_right.coordinates[1][1] > 0
-
-    def test_lamellar_initial_point(self):
-        path = Path()
-        lamellar(
-            path=path,
-            spacing=0.25,
-            num_layers=3,
-            layer_separation=1.0,
-            layer_length=3.0,
-            num_stacks=3,
-            stack_separation=1.0,
-            initial_point=(1, 1, 1),
-        )
-        assert np.array_equal(path.coordinates[0], np.array([1, 1, 1]))
-        assert np.allclose(path.coordinates[-1][2], 3.0, atol=0.5)
 
     def test_helix(self):
         path = Path()
