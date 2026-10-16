@@ -173,7 +173,8 @@ def build_path_ff(
     must cover every type present. angle_sampler/dihedral_sampler are None or
     dicts keyed by angle/dihedral-type name and may cover a subset (uncovered
     types get a flat, zero table). LJ cross-pairs sigma is the arithmetic
-    mean of the two bead radii.
+    mean of the two bead radii. Angle (dihedral) partners are excluded from
+    the LJ only when the angle (dihedral) table covers every type.
 
     Parameters
     ----------
@@ -208,7 +209,21 @@ def build_path_ff(
     forces = []
     ptypes = list(snap.particles.types)
 
-    nlist = hoomd.md.nlist.Cell(buffer=0.2, exclusions=("bond", "1-3", "1-4"))
+    # Exclude angle/dihedral partners only if a table covers every type.
+    exclusions = ["bond"]
+    if (
+        angle_sampler
+        and snap.angles.N > 0
+        and set(snap.angles.types) <= set(angle_sampler)
+    ):
+        exclusions.append("angle")
+    if (
+        dihedral_sampler
+        and snap.dihedrals.N > 0
+        and set(snap.dihedrals.types) <= set(dihedral_sampler)
+    ):
+        exclusions.append("dihedral")
+    nlist = hoomd.md.nlist.Cell(buffer=0.2, exclusions=tuple(exclusions))
     lj = hoomd.md.pair.LJ(
         nlist=nlist, default_r_cut=r_cut * max(radius.values()), mode="shift"
     )
