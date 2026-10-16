@@ -201,14 +201,7 @@ class HoomdSimulation(hoomd.simulation.Simulation):
         else:
             self.active_forces = list(self.forces)
 
-        # Set kT ramp if user passed in a [start, finish] kT:
-        if isinstance(kT, (list, tuple, np.ndarray)):
-            thermal_kT = kT[0]
-            kT = hoomd.variant.Ramp(
-                A=kT[0], B=kT[1], t_start=self.timestep, t_ramp=int(n_steps)
-            )
-        else:
-            thermal_kT = kT
+        kT, thermal_kT = _kT_variant(kT, self.timestep, n_steps)
 
         nvt_method = hoomd.md.methods.ConstantVolume(
             filter=self._get_integrate_group(),
@@ -267,14 +260,7 @@ class HoomdSimulation(hoomd.simulation.Simulation):
         else:
             self.active_forces = list(self.forces)
 
-        # Set kT ramp if user passed in a [start, finish] array:
-        if isinstance(kT, (list, tuple, np.ndarray)):
-            thermal_kT = kT[0]
-            kT = hoomd.variant.Ramp(
-                A=kT[0], B=kT[1], t_start=self.timestep, t_ramp=int(n_steps)
-            )
-        else:
-            thermal_kT = kT
+        kT, thermal_kT = _kT_variant(kT, self.timestep, n_steps)
 
         nvt_method = hoomd.md.methods.ConstantVolume(
             filter=self._get_integrate_group(),
@@ -1198,6 +1184,18 @@ def _wrap_into_box(snap):
         (pos[:, periodic] + L[periodic] / 2.0) / L[periodic]
     )
     snap.particles.position = pos.astype(np.float32)
+
+
+def _kT_variant(kT, t_start, n_steps):
+    """Return (thermostat kT, initial kT), ramping if kT is [start, finish]."""
+    if not isinstance(kT, (list, tuple, np.ndarray)):
+        return kT, kT
+    if len(kT) != 2:
+        raise ValueError(
+            f"kT should be a single value or [kT_start, kT_finish], got {kT}."
+        )
+    ramp = hoomd.variant.Ramp(A=kT[0], B=kT[1], t_start=t_start, t_ramp=int(n_steps))
+    return ramp, kT[0]
 
 
 def _normalize_to_box_convention(xyz, box_lengths, has_origin=True):
