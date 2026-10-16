@@ -125,25 +125,41 @@ class HoomdSimulation(hoomd.simulation.Simulation):
         self.box = box
         self.speedup_by_moltag = speedup_by_moltag
         self.energies = []
-        self._resolve_compound_box()
+        box_has_origin = self._resolve_compound_box()
         box_lengths = np.asarray(self.compound.box.lengths, dtype=float)
 
-        self.compound.xyz, self._centered = _normalize_to_box_convention(
-            self.compound.xyz, box_lengths
+        # State and forces are built together, so reuse them only when every
+        # build input still matches. A reused snapshot is in the frame it was
+        # built in, so its frame is reused too rather than re-derived.
+        last_snapshot, last_forces, last_params = compound._get_sim_data()
+        reuse = (
+            last_snapshot is not None
+            and _same_build(self._build_params(), last_params)
+            and "frame" in last_params
         )
+        if reuse:
+            self._centered, self._origin = last_params["frame"]
+        else:
+            self.compound.xyz, self._centered, self._origin = (
+                _normalize_to_box_convention(
+                    self.compound.xyz, box_lengths, has_origin=box_has_origin
+                )
+            )
         self._frame_offset = self._frame_offset_for(box_lengths)
         self._get_integrate_group()
 
-        # State and forces are built together, so reuse them only when every
-        # build input still matches.
-        last_snapshot, last_forces, last_params = compound._get_sim_data()
-        if last_snapshot is not None and _same_build(self._build_params(), last_params):
+        if reuse:
             snapshot = last_snapshot
             self.forces = last_forces
         else:
             snapshot, self.forces = self._to_hoomd_snap_forces()
             compound._add_sim_data(
-                state=snapshot, forces=self.forces, build_params=self._build_params()
+                state=snapshot,
+                forces=self.forces,
+                build_params={
+                    **self._build_params(),
+                    "frame": (self._centered, self._origin),
+                },
             )
 
         self.active_forces = []
@@ -489,7 +505,11 @@ class HoomdSimulation(hoomd.simulation.Simulation):
         }
 
     def _resolve_compound_box(self):
-        """Settle self.compound.box from the explicit box, or a bounding box."""
+        """Settle self.compound.box from the explicit box, or a bounding box.
+
+        Returns False when the box was made from the bounding box, which has
+        lengths but no origin to place the coordinates against.
+        """
         if self.box is not None:
             # Explicit box (e.g. a constraint's orthorhombic box_lengths) wins,
             # so the periodic cell is stable across repeated MC/MD rounds.
@@ -498,10 +518,14 @@ class HoomdSimulation(hoomd.simulation.Simulation):
             )
         elif not self.compound.box:
             self.compound.box = self.compound.get_boundingbox(pad_box=self.box_buffer)
+            return False
+        return True
 
     def _frame_offset_for(self, box_lengths):
         """Translation from HOOMD's frame back to the compound's, for a box."""
-        return np.where(self._centered, 0.0, np.asarray(box_lengths, dtype=float) / 2.0)
+        return self._origin + np.where(
+            self._centered, 0.0, np.asarray(box_lengths, dtype=float) / 2.0
+        )
 
     def _to_hoomd_snap_forces(self):
         """Convert compound to HOOMD snapshot and forces."""
@@ -1176,7 +1200,7 @@ def _wrap_into_box(snap):
     snap.particles.position = pos.astype(np.float32)
 
 
-def _normalize_to_box_convention(xyz, box_lengths):
+def _normalize_to_box_convention(xyz, box_lengths, has_origin=True):
     """Wrap coordinates into whichever box convention the compound already uses.
 
     Coordinates are written either centered on the origin, spanning
@@ -1191,6 +1215,9 @@ def _normalize_to_box_convention(xyz, box_lengths):
         Compound coordinates.
     box_lengths : array-like, shape (3,)
         Box edge lengths.
+    has_origin : bool, default True
+        False when the box only carries lengths (e.g. a bounding box), so
+        no convention applies and every axis is shifted rather than wrapped.
 
     Returns
     -------
@@ -1198,20 +1225,31 @@ def _normalize_to_box_convention(xyz, box_lengths):
         Coordinates wrapped into the compound's own convention.
     centered : np.ndarray of bool, shape (3,)
         True on axes written about the origin, False on axes written from 0.
+    origin : np.ndarray, shape (3,)
+        Rigid shift into HOOMD's centered frame on axes that follow neither
+        convention, zero elsewhere.
     """
     xyz = np.array(xyz, dtype=float, copy=True)
     L = np.asarray(box_lengths, dtype=float)
     outside_centered = ((xyz < -L / 2.0) | (xyz >= L / 2.0)).sum(axis=0)
     outside_corner = ((xyz < 0.0) | (xyz >= L)).sum(axis=0)
     centered = outside_centered <= outside_corner
+    # Coordinates mostly outside both ranges (e.g. a molecule away from the
+    # origin) follow neither convention. Wrapping them atom by atom would
+    # move and split molecules, so center them rigidly instead.
+    unplaced = np.minimum(outside_centered, outside_corner) > len(xyz) / 2.0
+    if not has_origin:
+        unplaced[:] = True
+    origin = np.where(unplaced, (xyz.max(axis=0) + xyz.min(axis=0)) / 2.0, 0.0)
+    centered = centered | unplaced
     mins = np.where(centered, -L / 2.0, 0.0)
     # A span wider than the box has no valid periodic image.
     span = xyz.max(axis=0) - xyz.min(axis=0)
-    wrappable = (L > 0) & (span <= L)
+    wrappable = (L > 0) & (span <= L) & ~unplaced
     xyz[:, wrappable] = mins[wrappable] + np.mod(
         xyz[:, wrappable] - mins[wrappable], L[wrappable]
     )
-    return xyz, centered
+    return xyz, centered, origin
 
 
 def _sync_back(compound, is_path, original):
