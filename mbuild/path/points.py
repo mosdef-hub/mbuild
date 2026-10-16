@@ -51,12 +51,15 @@ def get_second_point(state, existing_points, beads, check_path, next_step):
     else:
         pos1 = None
         pos2 = existing_points[-1]
-    # Update existing points and beads to include those in the compound.
+    # Include the compound's points. Biases read coordinates[-1] as the chain
+    # tip, so they get the compound first.
+    bias_points, bias_beads = existing_points, beads
     if state.include_compound:
         compound_xyz = state.include_compound.xyz
         compound_names = np.array([p.name for p in state.include_compound.particles()])
+        bias_points = np.concat((compound_xyz, existing_points))
+        bias_beads = np.concat((compound_names, beads))
         existing_points = np.concat((existing_points, compound_xyz))
-        beads = np.concat((beads, compound_names))
 
     xyzs = next_step(
         pos1=pos1,
@@ -72,7 +75,7 @@ def get_second_point(state, existing_points, beads, check_path, next_step):
         xyzs = xyzs[is_inside_mask]
 
     if state.bias:
-        xyzs = state.bias(candidates=xyzs, coordinates=existing_points, names=beads)
+        xyzs = state.bias(candidates=xyzs, coordinates=bias_points, names=bias_beads)
 
     if any(state.pbc):
         xyzs = (
