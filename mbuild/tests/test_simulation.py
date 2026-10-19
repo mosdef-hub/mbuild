@@ -734,6 +734,33 @@ class TestHoomdSimulation(BaseTest):
         assert np.all(xyz <= L_final + 1e-4)
 
     @pytest.mark.skipif(not has_hoomd, reason="hoomd is not installed")
+    def test_resized_snapshot_not_reused_for_explicit_box(self):
+        """After a box_update, the same explicit box rebuilds rather than reusing."""
+        methane = mb.load("C", smiles=True)
+        methane.name = "Methane"
+        box = mb.fill_box(compound=[methane], n_compounds=[8], box=[5, 5, 5])
+        sim = HoomdSimulation(
+            system=box, box=[5, 5, 5], r_cut=1.0, run_on_gpu=False, kick=False
+        )
+        sim.box_update(
+            n_steps=3000,
+            kT=1.0,
+            dt=1e-4,
+            tau=1e-2,
+            target_box=hoomd.Box(3.5, 3.5, 3.5),
+            update_period=50,
+        )
+        xyz = box.xyz.copy()
+
+        sim = HoomdSimulation(
+            system=box, box=[5, 5, 5], r_cut=1.0, run_on_gpu=False, kick=False
+        )
+        assert np.allclose(sim.state.box.L, 5.0)
+        # Reusing the resized snapshot would shift every atom by ~(5 - 3.5) / 2.
+        sim.nvt(n_steps=0, kT=1.0, dt=1e-4, tau=1e-2)
+        assert np.allclose(box.xyz, xyz, atol=1e-4)
+
+    @pytest.mark.skipif(not has_hoomd, reason="hoomd is not installed")
     def test_recover_undoes_only_the_last_run(self):
         """recover() rewinds the last run's coordinates and drops its energies."""
         octane = mb.load("CCCCCCCC", smiles=True)

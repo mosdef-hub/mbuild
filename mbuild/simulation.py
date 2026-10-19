@@ -130,12 +130,15 @@ class HoomdSimulation(hoomd.simulation.Simulation):
 
         # State and forces are built together, so reuse them only when every
         # build input still matches. A reused snapshot is in the frame it was
-        # built in, so its frame is reused too rather than re-derived.
+        # built in, so its frame is reused too rather than re-derived. A
+        # box_update resizes the cached snapshot, so it is only reused while
+        # its box still matches the one asked for.
         last_snapshot, last_forces, last_params = compound._get_sim_data()
         reuse = (
             last_snapshot is not None
             and _same_build(self._build_params(), last_params)
             and "frame" in last_params
+            and np.allclose(last_snapshot.configuration.box[:3], box_lengths)
         )
         if reuse:
             self._centered, self._origin = last_params["frame"]
