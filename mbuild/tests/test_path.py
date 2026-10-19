@@ -456,6 +456,47 @@ class TestRandomWalk(BaseTest):
         cos = np.dot(v1, v2) / (np.linalg.norm(v1) * np.linalg.norm(v2))
         assert np.isclose(np.arccos(cos), theta, atol=1e-3)
 
+    @pytest.mark.parametrize("connectivity", ["linear", "link-linear"])
+    def test_bond_attributes_across_periodic_face(self, connectivity):
+        """Stored bond length and direction use the minimum image under PBC."""
+        L = 2.5
+        box = CuboidConstraint(Lx=L, Ly=L, Lz=L, pbc=(True, True, True))
+        path = Path(coordinates=np.array([[L / 2 - 0.01, 0.0, 0.0]]))
+        hard_sphere_random_walk(
+            path=path,
+            termination=Termination([NumSites(200), NumAttempts(1e4)]),
+            bond_length=0.25,
+            radius=0.22,
+            initial_point=0,
+            connectivity=connectivity,
+            volume_constraint=box,
+            seed=3,
+        )
+        crossings = 0
+        for u, v, data in path.bond_graph.edges(data=True):
+            raw = path.coordinates[v] - path.coordinates[u]
+            crossings += np.linalg.norm(raw) > L / 2
+            image = raw - np.round(raw / L) * L
+            assert np.isclose(data["length"], 0.25, atol=1e-4)
+            assert np.allclose(
+                data["direction"], image / np.linalg.norm(image), atol=1e-4
+            )
+        assert (
+            crossings > 0
+        )  # the walk must actually cross a face for this to test anything
+
+    def test_add_edge_minimum_image(self):
+        L = 2.0
+        path = Path(coordinates=np.array([[0.9, 0.0, 0.0], [-0.85, 0.0, 0.0]]))
+        path.add_edge(0, 1)
+        assert np.isclose(path.bond_graph.edges[0, 1]["length"], 1.75)
+        path.add_edge(0, 1, pbc=(True, True, True), box_lengths=(L, L, L))
+        assert np.isclose(path.bond_graph.edges[0, 1]["length"], 0.25)
+        assert np.allclose(path.bond_graph.edges[0, 1]["direction"], [1, 0, 0])
+        # A non-periodic axis is left alone
+        path.add_edge(0, 1, pbc=(False, True, True), box_lengths=(L, L, L))
+        assert np.isclose(path.bond_graph.edges[0, 1]["length"], 1.75)
+
     def test_initial_point_bad_type(self):
         for bad in [2.5, np.array([1, 2]), "2"]:
             with pytest.raises(ValueError):

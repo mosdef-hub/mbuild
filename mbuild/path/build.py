@@ -230,26 +230,34 @@ class Path:
         self.beads = np.concatenate((self.beads, [bead_name] * diff))
 
     # TODO: Can we accept negative attach indices?
-    def _connect_edges(self, connectivity, indices=None, attach_index=-1):
-        """Adds edges to self.bond_graph matching a given style `connectivity`."""
+    def _connect_edges(
+        self, connectivity, indices=None, attach_index=-1, pbc=None, box_lengths=None
+    ):
+        """Adds edges to self.bond_graph matching a given style `connectivity`.
+
+        ``pbc`` and ``box_lengths`` are passed to ``add_edge``.
+        """
         if indices is None:
             indices = np.arange(0, len(self.coordinates))
+
+        def add_edge(u, v):
+            self.add_edge(u, v, pbc=pbc, box_lengths=box_lengths)
 
         if connectivity == "disconnected":
             return
         elif connectivity == "linear":
             for idx1, idx in zip(indices, indices[1:]):
-                self.add_edge(idx1, idx)
+                add_edge(idx1, idx)
         elif connectivity == "link-linear":
             for idx1, idx in zip(indices, indices[1:]):
-                self.add_edge(idx1, idx)
+                add_edge(idx1, idx)
             if attach_index in self.bond_graph.nodes:
                 # link to previous node
-                self.add_edge(attach_index, indices[0])
+                add_edge(attach_index, indices[0])
         elif connectivity == "cycle":
             for idx1, idx in zip(indices, indices[1:]):
-                self.add_edge(idx1, idx)
-            self.add_edge(indices[0], indices[-1])
+                add_edge(idx1, idx)
+            add_edge(indices[0], indices[-1])
         else:
             raise ValueError(
                 f"Argument {connectivity=} is incorrect. Pass one of `linear`, `link-linear`, `cycle`"
@@ -292,9 +300,33 @@ class Path:
                 )
             self.add_edge(idx1, idx)
 
-    def add_edge(self, u, v):
-        """Add an edge to the Path's bond graph."""
-        bond_vec = self.coordinates[v] - self.coordinates[u]
+    def add_edge(self, u, v, pbc=None, box_lengths=None):
+        """Add an edge to the Path's bond graph.
+
+        The edge stores the bond ``length`` and unit ``direction`` from site
+        ``u`` to site ``v``.
+
+        Parameters
+        ----------
+        u, v : int
+            Indices of the two sites to bond.
+        pbc : array-like of bool, shape (3,), optional
+            Periodic axes. Walks in a periodic volume store coordinates wrapped
+            into the box, so a bond across a face spans the box in raw
+            coordinates. When ``pbc`` and ``box_lengths`` are given, the length
+            and direction use the minimum-image convention on periodic axes.
+        box_lengths : array-like of float, shape (3,), optional
+            Box lengths used with ``pbc``.
+        """
+        pos_v = self.coordinates[v]
+        if pbc is not None and box_lengths is not None:
+            pos_v = nearest_image(
+                self.coordinates[u],
+                pos_v,
+                np.asarray(pbc, dtype=np.bool_),
+                np.asarray(box_lengths, dtype=np.float64),
+            )
+        bond_vec = pos_v - self.coordinates[u]
         bond_length = np.linalg.norm(bond_vec)
         bond_vec /= bond_length
         self.bond_graph.add_edge(
@@ -1754,6 +1786,8 @@ class RandomWalkState:
                 self.connectivity,
                 np.arange(self.previous_count, self.count),
                 self.attach_index,
+                pbc=self.pbc,
+                box_lengths=self.box_lengths,
             )
             return True
         return False
