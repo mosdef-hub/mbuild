@@ -493,6 +493,36 @@ class TestRandomWalk(BaseTest):
         outside = ((coords < -L / 2) | (coords >= L / 2)).any(axis=1)
         assert not outside.any(), f"sites outside the periodic box: {coords[outside]}"
 
+    @pytest.mark.parametrize("seed", [0, 3, 5, 7])
+    def test_link_linear_angle_across_periodic_face(self, seed):
+        """The first bond angle of a linked walk is right when the link crosses a face.
+
+        Same setup as above, so the first site is often wrapped to the other
+        side of the box from the site it links to.
+        """
+        L = 4.0
+        theta = 2.0
+        box = CuboidConstraint(Lx=L, Ly=L, Lz=L, pbc=(True, True, True))
+        path = Path(coordinates=np.array([[L / 2 - 0.01, 0.0, 0.0]]))
+        hard_sphere_random_walk(
+            path=path,
+            termination=Termination([NumSites(3), NumAttempts(1e4)]),
+            bond_length=0.25,
+            radius=0.22,
+            rw_angles=AnglesSampler("choice", dict(a=[theta])),
+            initial_point=0,
+            connectivity="link-linear",
+            volume_constraint=box,
+            seed=seed,
+        )
+        a, b, c = path.coordinates[:3]
+        v1 = a - b
+        v2 = c - b
+        v1 -= np.round(v1 / L) * L
+        v2 -= np.round(v2 / L) * L
+        cos = np.dot(v1, v2) / (np.linalg.norm(v1) * np.linalg.norm(v2))
+        assert np.isclose(np.arccos(cos), theta, atol=1e-3)
+
     def test_initial_point_bad_type(self):
         for bad in [2.5, np.array([1, 2]), "2"]:
             with pytest.raises(ValueError):

@@ -47,7 +47,9 @@ def get_second_point(state, existing_points, beads, check_path, next_step):
     # Set pos1 and pos2 before checking include compound and combining coordinates
     if state.connectivity == "link-linear" and state.attach_index >= 0:
         pos1 = existing_points[-1]
-        pos2 = existing_points[state.attach_index]
+        pos2 = nearest_image(
+            pos1, existing_points[state.attach_index], state.pbc, state.box_lengths
+        )
     else:
         pos1 = None
         pos2 = existing_points[-1]
@@ -326,6 +328,19 @@ def generate_trials(state):
     # uniform azimuth around the chain direction.
     r = state.rng.normal(size=(state.trial_batch_size, 3)).astype(np.float32)
     return thetas, r
+
+
+def nearest_image(pos1, pos2, pbc, box_lengths):
+    """Return the periodic image of pos2 closest to pos1.
+
+    Stored coordinates are wrapped, but next_step measures the bond angle
+    from pos2 - pos1, so pos2 must sit on the same side of the box as pos1.
+    """
+    if not any(pbc):
+        return pos2
+    delta = pos2 - pos1
+    delta[pbc] -= np.round(delta[pbc] / box_lengths[pbc]) * box_lengths[pbc]
+    return pos1 + delta
 
 
 def generate_crosslink_init_points():

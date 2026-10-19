@@ -173,8 +173,10 @@ def build_path_ff(
     must cover every type present. angle_sampler/dihedral_sampler are None or
     dicts keyed by angle/dihedral-type name and may cover a subset (uncovered
     types get a flat, zero table). LJ cross-pairs sigma is the arithmetic
-    mean of the two bead radii. Angle (dihedral) partners are excluded from
-    the LJ only when the angle (dihedral) table covers every type.
+    mean of the two bead radii. Angle partners are excluded from the LJ only
+    when the angle table covers every type. Dihedral partners are excluded
+    only when the dihedral table covers every type and angle partners are
+    also excluded, since a dihedral alone does not keep 1-4 pairs apart.
 
     Parameters
     ----------
@@ -218,7 +220,8 @@ def build_path_ff(
     ):
         exclusions.append("angle")
     if (
-        dihedral_sampler
+        "angle" in exclusions
+        and dihedral_sampler
         and snap.dihedrals.N > 0
         and set(snap.dihedrals.types) <= set(dihedral_sampler)
     ):
