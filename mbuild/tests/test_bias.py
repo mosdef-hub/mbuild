@@ -242,7 +242,7 @@ class TestBias(BaseTest):
             capture_radius="auto",
             termination_radius=5.0,
         )
-        with pytest.raises(ValueError):
+        with pytest.raises(ValueError, match="capture_radius='auto'"):
             hard_sphere_random_walk(
                 termination=Termination([NumSites(15), NumAttempts(1e4)]),
                 bond_length=0.25,
