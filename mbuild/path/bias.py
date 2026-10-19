@@ -187,7 +187,13 @@ class TargetCoordinate(Bias):
         super(TargetCoordinate, self)._attach_path(path, state)
         if self.capture_radius == "auto":
             self._capture_radius = 10.0 * state.bond_length
-            self._validate_radii(self._capture_radius)
+            if self._capture_radius <= self.termination_radius:
+                raise ValueError(
+                    f"capture_radius='auto' resolves to 10 * bond_length = "
+                    f"{self._capture_radius:.3g}, which is not larger than "
+                    f"termination_radius={self.termination_radius}. "
+                    "Pass a float for `capture_radius` instead."
+                )
 
     def _adaptive_weight(self, current_coordinate):
         """Return the weight for this step, ramped by distance to the target."""
