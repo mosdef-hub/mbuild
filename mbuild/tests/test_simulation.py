@@ -761,6 +761,26 @@ class TestHoomdSimulation(BaseTest):
         assert np.allclose(box.xyz, xyz, atol=1e-4)
 
     @pytest.mark.skipif(not has_hoomd, reason="hoomd is not installed")
+    def test_rebuild_keeps_bounding_box_unplaced(self):
+        """Regression: a bounding box stored by one sim must not split a molecule in the next."""
+        chain = mb.load("C" * 20, smiles=True)
+        sim = HoomdSimulation(chain, r_cut=1.0, kick=False, run_on_gpu=False)
+        sim.nvt(n_steps=0, kT=1.0, dt=1e-4, tau=1e-2)
+        # Straddle the x face of a [0, L) layout, mostly inside it. Without the
+        # bounding-box marker this is read as a corner layout and wrapped atom
+        # by atom, stretching bonds across the box.
+        Lx = chain.box.lengths[0]
+        chain.translate_to((Lx - 0.75, 0.0, 0.0))
+        com = chain.xyz.mean(axis=0)
+
+        # A different r_cut rebuilds the snapshot rather than reusing it.
+        sim = HoomdSimulation(chain, r_cut=0.9, kick=False, run_on_gpu=False)
+        sim.nvt(n_steps=0, kT=1.0, dt=1e-4, tau=1e-2)
+        max_bond = max(np.linalg.norm(a.pos - b.pos) for a, b in chain.bonds())
+        assert max_bond < 0.2
+        assert np.allclose(chain.xyz.mean(axis=0), com, atol=1e-3)
+
+    @pytest.mark.skipif(not has_hoomd, reason="hoomd is not installed")
     def test_recover_undoes_only_the_last_run(self):
         """recover() rewinds the last run's coordinates and drops its energies."""
         octane = mb.load("CCCCCCCC", smiles=True)

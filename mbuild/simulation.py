@@ -298,6 +298,11 @@ class HoomdSimulation(hoomd.simulation.Simulation):
         self.operations.integrator = None
         self._update_positions()
         self._update_snapshot()
+        # A resized bounding box still has no origin, so keep it marked.
+        if "bbox_lengths" in self.compound._hoomd_data:
+            self.compound._hoomd_data["bbox_lengths"] = np.asarray(
+                self.compound.box.lengths, dtype=float
+            )
 
     def cap_displacement(
         self,
@@ -497,8 +502,11 @@ class HoomdSimulation(hoomd.simulation.Simulation):
         """Settle self.compound.box from the explicit box, or a bounding box.
 
         Returns False when the box was made from the bounding box, which has
-        lengths but no origin to place the coordinates against.
+        lengths but no origin to place the coordinates against. That box is
+        stored on the compound, so its lengths are remembered and a later
+        simulation of the same compound treats it the same way.
         """
+        sim_data = self.compound._hoomd_data
         if self.box is not None:
             # Explicit box (e.g. a constraint's orthorhombic box_lengths) wins,
             # so the periodic cell is stable across repeated MC/MD rounds.
@@ -507,7 +515,18 @@ class HoomdSimulation(hoomd.simulation.Simulation):
             )
         elif not self.compound.box:
             self.compound.box = self.compound.get_boundingbox(pad_box=self.box_buffer)
+            sim_data["bbox_lengths"] = np.asarray(
+                self.compound.box.lengths, dtype=float
+            )
             return False
+        else:
+            bbox_lengths = sim_data.get("bbox_lengths")
+            if bbox_lengths is not None and np.allclose(
+                self.compound.box.lengths, bbox_lengths
+            ):
+                return False
+        # Any other box is a periodic cell with an origin.
+        sim_data.pop("bbox_lengths", None)
         return True
 
     def _frame_offset_for(self, box_lengths):
