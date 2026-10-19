@@ -1101,13 +1101,25 @@ class ForcesHandler:
     and charge scales default to 0, so a default handler turns those forces
     off. Pass 1 explicitly to keep them.
 
-    Only the force types listed above are scaled. Any other force in the
-    simulation, for example the FENE bonds of a path forcefield built with
-    ``btype="fene"``, is left out of runs that use a handler.
+    Each scale applies to every force of these HOOMD types:
 
-    ``scale_angle`` also scales tabulated angles, and ``scale_periodic``
-    scales tabulated dihedrals. Because ``scale_periodic`` defaults to 0, the
-    default handler turns off the dihedral table of a path forcefield.
+    - ``scale_lj``: ``pair.LJ`` and the 1-4 ``special_pair.LJ``. With
+      ``dpd > 0``, DPD replaces both.
+    - ``scale_charge``: the 1-4 ``special_pair.Coulomb``, plus the
+      ``pair.Ewald`` and ``pppm.Coulomb`` halves of long-range electrostatics.
+      Those two have no per-type strength to scale, so any non-zero value
+      runs them at full strength, with a warning unless it is 1.
+    - ``scale_bond``: ``bond.Harmonic`` and ``bond.FENEWCA``. FENE ``k`` and
+      ``epsilon`` are both scaled; ``r0`` is not, so bonds still cannot
+      stretch past it.
+    - ``scale_angle``: ``angle.Harmonic`` and tabulated ``angle.Table``.
+    - ``scale_periodic``: ``dihedral.Periodic`` and tabulated
+      ``dihedral.Table``. Because it defaults to 0, the default handler turns
+      off the dihedral table of a path forcefield.
+    - ``scale_opls``: ``dihedral.OPLS``.
+    - ``scale_improper``: ``improper.Periodic``.
+
+    Forces of any other type are left out of runs that use a handler.
 
     A path forcefield leaves angle and dihedral partners out of the LJ when a
     table covers them, so the table is the only force keeping those beads
@@ -1143,65 +1155,71 @@ class ForcesHandler:
 
         Sets ``sim.active_forces`` to the forces this handler keeps.
         """
-        # Start from unscaled params, including forces this handler turns off.
+        # Start from unscaled params, including forces this handler turns off,
+        # so every scale below multiplies the original values.
         sim._restore_force_params()
         sim.active_forces = []
-        forcesDict = {
-            "lj": (hoomd.md.pair.LJ, ("epsilon")),
-            "charge": (hoomd.md.special_pair.Coulomb, ("alpha")),
-            "bond": (hoomd.md.bond.Harmonic, ("k")),
-            "angle": (hoomd.md.angle.Harmonic, ("k")),
-            "opls": (hoomd.md.dihedral.OPLS, "k1", "k2", "k3", "k4"),
-            "periodic": (hoomd.md.dihedral.Periodic, ("k")),
-            "improper": (hoomd.md.improper.Periodic, ("k")),
-        }
         for key, scalar in self.scale_forces.items():
             if not scalar:
                 continue
             if key == "lj" and self.dpd:
                 dpd = sim._get_dpd_from_lj(A=self.dpd)
                 sim.active_forces.append(dpd)
-                self.forcesDict["lj"] = sim._get_force(forcesDict["lj"][0])
+                self.forcesDict["lj"] = sim._get_force(hoomd.md.pair.LJ)
                 self.forcesDict["dpd"] = dpd
+                # DPD stands in for every LJ, including the 1-4 special pairs.
                 continue
 
-            try:
-                force = sim._get_force(forcesDict[key][0])
-            except ValueError:
-                continue
-            orig_params = sim._orig_force_params.get(id(force), {})
-            for param in force.params:
-                for term in forcesDict[key][1:]:
-                    if param in orig_params and term in orig_params[param]:
-                        force.params[param][term] = orig_params[param][term] * scalar
+            for instance, terms in _SCALED_FORCES[key]:
+                for force in sim.forces:
+                    if not isinstance(force, instance):
+                        continue
+                    if terms is None:
+                        if scalar != 1:
+                            logger.warning(
+                                f"scale_{key}={scalar} cannot scale "
+                                f"{type(force).__name__}, which has no "
+                                "per-type strength; it runs at full strength."
+                            )
                     else:
-                        force.params[param][term] *= scalar
-            sim.active_forces.append(force)
-            self.forcesDict[key] = force
+                        for param in force.params:
+                            values = dict(force.params[param])
+                            for term in terms:
+                                values[term] = np.multiply(values[term], scalar)
+                            force.params[param] = values
+                    sim.active_forces.append(force)
+                    self.forcesDict.setdefault(key, force)
 
-        # Tabulated potentials carry arrays rather than a scalar coefficient,
-        # so they are matched by their own classes and scaled term-wise.
-        tableDict = {
-            "angle": (hoomd.md.angle.Table, ("U", "tau")),
-            "periodic": (hoomd.md.dihedral.Table, ("U", "tau")),
-        }
-        for key, (instance, terms) in tableDict.items():
-            scalar = self.scale_forces.get(key)
-            if not scalar:
-                continue
-            try:
-                force = sim._get_force(instance)
-            except ValueError:
-                continue
-            orig_params = sim._orig_force_params.get(id(force), {})
-            for param in force.params:
-                values = dict(force.params[param])
-                for term in terms:
-                    base = orig_params.get(param, {}).get(term, values[term])
-                    values[term] = np.asarray(base) * scalar
-                force.params[param] = values
-            sim.active_forces.append(force)
-            self.forcesDict[f"{key}_table"] = force
+
+# Force classes each ForcesHandler scale applies to, with the params it
+# multiplies. None marks forces with no per-type strength to scale, such as
+# the two halves of PPPM electrostatics, which are only turned on or off.
+_SCALED_FORCES = {
+    "lj": (
+        (hoomd.md.pair.LJ, ("epsilon",)),
+        (hoomd.md.special_pair.LJ, ("epsilon",)),
+    ),
+    "charge": (
+        (hoomd.md.special_pair.Coulomb, ("alpha",)),
+        (hoomd.md.pair.Ewald, None),
+        (hoomd.md.long_range.pppm.Coulomb, None),
+    ),
+    "bond": (
+        (hoomd.md.bond.Harmonic, ("k",)),
+        # Scaling k and epsilon scales the whole bond; r0 still caps its length.
+        (hoomd.md.bond.FENEWCA, ("k", "epsilon")),
+    ),
+    "angle": (
+        (hoomd.md.angle.Harmonic, ("k",)),
+        (hoomd.md.angle.Table, ("U", "tau")),
+    ),
+    "opls": ((hoomd.md.dihedral.OPLS, ("k1", "k2", "k3", "k4")),),
+    "periodic": (
+        (hoomd.md.dihedral.Periodic, ("k",)),
+        (hoomd.md.dihedral.Table, ("U", "tau")),
+    ),
+    "improper": ((hoomd.md.improper.Periodic, ("k",)),),
+}
 
 
 def _resolve_input(system):

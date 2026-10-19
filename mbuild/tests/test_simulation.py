@@ -211,6 +211,78 @@ class TestForcesHandler(BaseTest):
             assert np.allclose(angle.params[p]["U"], orig_U[p])
 
     @pytest.mark.skipif(not has_hoomd, reason="hoomd is not installed")
+    def test_scale_lj_includes_special_pairs(self, sim):
+        """scale_lj scales the 1-4 special pair LJ along with the pair LJ."""
+        pair_lj = sim._get_force(hoomd.md.pair.LJ)
+        special_lj = sim._get_force(hoomd.md.special_pair.LJ)
+        orig_pair = {p: dict(pair_lj.params[p]) for p in pair_lj.params}
+        orig_special = {p: dict(special_lj.params[p]) for p in special_lj.params}
+
+        ForcesHandler(scale_lj=0.5).scale_sim(sim)
+        assert pair_lj in sim.active_forces
+        assert special_lj in sim.active_forces
+        for p in pair_lj.params:
+            assert np.isclose(
+                pair_lj.params[p]["epsilon"], orig_pair[p]["epsilon"] * 0.5
+            )
+        for p in special_lj.params:
+            assert np.isclose(
+                special_lj.params[p]["epsilon"], orig_special[p]["epsilon"] * 0.5
+            )
+
+    @pytest.mark.skipif(not has_hoomd, reason="hoomd is not installed")
+    def test_dpd_replaces_special_pair_lj(self, sim):
+        """With dpd, neither LJ runs, so overlapping 1-4 pairs cannot blow up."""
+        ForcesHandler(dpd=1.0).scale_sim(sim)
+        force_types = [type(f) for f in sim.active_forces]
+        assert hoomd.md.pair.DPDConservative in force_types
+        assert hoomd.md.pair.LJ not in force_types
+        assert hoomd.md.special_pair.LJ not in force_types
+
+    @pytest.mark.skipif(not has_hoomd, reason="hoomd is not installed")
+    @pytest.mark.parametrize("scale_charge", [0, 1])
+    def test_scale_charge_toggles_long_range(self, sim, scale_charge):
+        """scale_charge turns the Ewald and PPPM halves on or off together."""
+        ForcesHandler(scale_charge=scale_charge).scale_sim(sim)
+        force_types = [type(f) for f in sim.active_forces]
+        for force_type in (
+            hoomd.md.special_pair.Coulomb,
+            hoomd.md.pair.Ewald,
+            hoomd.md.long_range.pppm.Coulomb,
+        ):
+            assert (force_type in force_types) == bool(scale_charge)
+
+    @pytest.mark.skipif(not has_hoomd, reason="hoomd is not installed")
+    def test_partial_scale_charge_warns(self, sim, caplog):
+        """Long-range electrostatics can't be scaled, so they run at full strength."""
+        ewald = sim._get_force(hoomd.md.pair.Ewald)
+        orig_ewald = {p: dict(ewald.params[p]) for p in ewald.params}
+
+        ForcesHandler(scale_charge=0.5).scale_sim(sim)
+        assert ewald in sim.active_forces
+        assert "cannot scale Ewald" in caplog.text
+        for p in ewald.params:
+            assert ewald.params[p] == orig_ewald[p]
+
+    @pytest.mark.skipif(not has_hoomd, reason="hoomd is not installed")
+    def test_scale_fene_bonds(self):
+        """scale_bond keeps FENE bonds in the run and scales k and epsilon, not r0."""
+        from mbuild.utils.simulation.path_forces import PathForcefield
+
+        path = _make_two_type_path(n=6)
+        pff = PathForcefield(radius=0.15, btype="fene")
+        sim = HoomdSimulation(path, forcefield=pff, r_cut=0.5, run_on_gpu=False)
+        fene = sim._get_force(hoomd.md.bond.FENEWCA)
+        orig = {p: dict(fene.params[p]) for p in fene.params}
+
+        ForcesHandler(scale_bond=0.5).scale_sim(sim)
+        assert fene in sim.active_forces
+        for p in fene.params:
+            assert np.isclose(fene.params[p]["k"], orig[p]["k"] * 0.5)
+            assert np.isclose(fene.params[p]["epsilon"], orig[p]["epsilon"] * 0.5)
+            assert np.isclose(fene.params[p]["r0"], orig[p]["r0"])
+
+    @pytest.mark.skipif(not has_hoomd, reason="hoomd is not installed")
     def test_forces_dict_populated(self, sim):
         """Test that forcesDict is populated after scale_sim."""
         fh = ForcesHandler(scale_lj=1, scale_bond=1, scale_angle=1)
