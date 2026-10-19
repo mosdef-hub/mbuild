@@ -1,5 +1,6 @@
 """Simulation methods that operate on mBuild compounds and paths."""
 
+import copy
 import logging
 import numbers
 import os
@@ -138,6 +139,7 @@ class HoomdSimulation(hoomd.simulation.Simulation):
             last_snapshot is not None
             and _same_build(self._build_params(), last_params)
             and "frame" in last_params
+            and "orig_force_params" in last_params
             and np.allclose(last_snapshot.configuration.box[:3], box_lengths)
         )
         if reuse:
@@ -151,25 +153,28 @@ class HoomdSimulation(hoomd.simulation.Simulation):
         self._frame_offset = self._frame_offset_for(box_lengths)
         self._get_integrate_group()
 
+        # Cached forces may still carry a previous run's scaling, so their
+        # unscaled params are recorded once, when built, and cached with them.
         if reuse:
             snapshot = last_snapshot
             self.forces = last_forces
+            self._orig_force_params = last_params["orig_force_params"]
         else:
             snapshot, self.forces = self._to_hoomd_snap_forces()
+            self._orig_force_params = self._snapshot_force_params()
             compound._add_sim_data(
                 state=snapshot,
                 forces=self.forces,
                 build_params={
                     **self._build_params(),
                     "frame": (self._centered, self._origin),
+                    "orig_force_params": self._orig_force_params,
                 },
             )
 
         self.active_forces = []
-        self._orig_force_params = {}
         super(HoomdSimulation, self).__init__(device=device, seed=seed)
         self.create_state_from_snapshot(snapshot)
-        self._orig_force_params = self._snapshot_force_params()
 
     def nvt(
         self,
@@ -193,16 +198,14 @@ class HoomdSimulation(hoomd.simulation.Simulation):
         tau : float
             Thermostat coupling time constant.
         forces_handler : ForcesHandler or None, default None
-            Scales the active forces before the run. If None, all forces are
-            active at full strength.
+            Scales forces for this run only, relative to their original
+            params; see ForcesHandler. If None, all forces are active at
+            their original strength, whatever earlier runs used.
         thermostat : hoomd thermostat class
             Thermostat used by the integration method.
         """
         self.original_coords = np.copy(self.compound.xyz)
-        if forces_handler is not None:
-            forces_handler.scale_sim(self)
-        else:
-            self.active_forces = list(self.forces)
+        self._set_active_forces(forces_handler)
 
         kT, thermal_kT = _kT_variant(kT, self.timestep, n_steps)
 
@@ -252,16 +255,14 @@ class HoomdSimulation(hoomd.simulation.Simulation):
         update_period : int
             Number of timesteps between box resize updates.
         forces_handler : ForcesHandler or None, default None
-            Scales the active forces before the run. If None, all forces are
-            active at full strength.
+            Scales forces for this run only, relative to their original
+            params; see ForcesHandler. If None, all forces are active at
+            their original strength, whatever earlier runs used.
         thermostat : hoomd thermostat class
             Thermostat used by the integration method.
         """
         self.original_coords = np.copy(self.compound.xyz)
-        if forces_handler is not None:
-            forces_handler.scale_sim(self)
-        else:
-            self.active_forces = list(self.forces)
+        self._set_active_forces(forces_handler)
 
         kT, thermal_kT = _kT_variant(kT, self.timestep, n_steps)
 
@@ -320,8 +321,9 @@ class HoomdSimulation(hoomd.simulation.Simulation):
         dt : float
             Timestep size.
         forces_handler : ForcesHandler or None, default None
-            Scales the active forces before the run. If None, all forces are
-            active at full strength.
+            Scales forces for this run only, relative to their original
+            params; see ForcesHandler. If None, all forces are active at
+            their original strength, whatever earlier runs used.
         max_displacement : float (nm), default 1e-3
             Maximum distance a particle may move in a single timestep.
 
@@ -334,10 +336,7 @@ class HoomdSimulation(hoomd.simulation.Simulation):
         velocity and run away on stiff potentials.
         """
         self.original_coords = np.copy(self.compound.xyz)
-        if forces_handler is not None:
-            forces_handler.scale_sim(self)
-        else:
-            self.active_forces = list(self.forces)
+        self._set_active_forces(forces_handler)
 
         displacement_capped = hoomd.md.methods.DisplacementCapped(
             filter=self._get_integrate_group(),
@@ -378,8 +377,9 @@ class HoomdSimulation(hoomd.simulation.Simulation):
         n_steps : int
             Number of timesteps per minimization iteration.
         forces_handler : ForcesHandler or None, default None
-            Scales the active forces before the run. If None, all forces are
-            active at full strength.
+            Scales forces for this run only, relative to their original
+            params; see ForcesHandler. If None, all forces are active at
+            their original strength, whatever earlier runs used.
         n_iterations : int, default 1
             Number of minimization iterations, resetting the integrator between
             each.
@@ -406,10 +406,7 @@ class HoomdSimulation(hoomd.simulation.Simulation):
             Energy convergence tolerance.
         """
         self.original_coords = np.copy(self.compound.xyz)
-        if forces_handler is not None:
-            forces_handler.scale_sim(self)
-        else:
-            self.active_forces = list(self.forces)
+        self._set_active_forces(forces_handler)
 
         nvt_method = hoomd.md.methods.ConstantVolume(filter=self._get_integrate_group())
         self._set_fire_integrator(
@@ -600,10 +597,26 @@ class HoomdSimulation(hoomd.simulation.Simulation):
         for force in self.forces:
             if not hasattr(force, "params"):
                 continue
+            # Deep copy so table arrays are not shared with the live force.
             orig[id(force)] = {
-                param: dict(force.params[param]) for param in force.params
+                param: copy.deepcopy(dict(force.params[param]))
+                for param in force.params
             }
         return orig
+
+    def _restore_force_params(self):
+        """Reset every force to its unscaled params, undoing any ForcesHandler."""
+        for force in self.forces:
+            for param, values in self._orig_force_params.get(id(force), {}).items():
+                force.params[param] = copy.deepcopy(values)
+
+    def _set_active_forces(self, forces_handler):
+        """Activate forces for a run, scaled by forces_handler if given."""
+        if forces_handler is not None:
+            forces_handler.scale_sim(self)
+        else:
+            self._restore_force_params()
+            self.active_forces = list(self.forces)
 
     def _particle_tags(self, compounds, name):
         """Resolve Compounds or particle indices into a list of HOOMD tags."""
@@ -1057,6 +1070,10 @@ class OpenMMSimulation:
 class ForcesHandler:
     """Provides a quick method for tuning HOOMD forces.
 
+    Each ``scale_*`` value multiplies a force's original parameters, the ones
+    it was built with, for the run the handler is passed to. A value of 1 uses
+    the original force and 0 leaves the force out of the run.
+
     Parameters
     ----------
     dpd : float, default 0.0
@@ -1071,6 +1088,23 @@ class ForcesHandler:
 
     Notes
     -----
+    Scaling is never cumulative. Every run starts from the original
+    parameters, so a scale applies only to the run it is passed to:
+
+    - To return to full strength, run without a handler, or pass a scale of 1.
+      Do not pass the inverse of an earlier scale: after ``scale_bond=0.25``,
+      ``scale_bond=4`` gives bonds 4 times their original strength, not 1.
+    - Repeating a run, or creating a new ``HoomdSimulation`` of the same
+      compound, applies the same scale again rather than compounding it.
+
+    ``ForcesHandler()`` is not the same as no handler. The dihedral, improper
+    and charge scales default to 0, so a default handler turns those forces
+    off. Pass 1 explicitly to keep them.
+
+    Only the force types listed above are scaled. Any other force in the
+    simulation, for example the FENE bonds of a path forcefield built with
+    ``btype="fene"``, is left out of runs that use a handler.
+
     ``scale_angle`` also scales tabulated angles, and ``scale_periodic``
     scales tabulated dihedrals. Because ``scale_periodic`` defaults to 0, the
     default handler turns off the dihedral table of a path forcefield.
@@ -1105,7 +1139,12 @@ class ForcesHandler:
         self.forcesDict = {}
 
     def scale_sim(self, sim):
-        """Iterate through HOOMD force objects and apply scaling factors."""
+        """Reset sim's forces to their original params, then apply the scaling factors.
+
+        Sets ``sim.active_forces`` to the forces this handler keeps.
+        """
+        # Start from unscaled params, including forces this handler turns off.
+        sim._restore_force_params()
         sim.active_forces = []
         forcesDict = {
             "lj": (hoomd.md.pair.LJ, ("epsilon")),

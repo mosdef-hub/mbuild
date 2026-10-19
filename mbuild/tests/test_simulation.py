@@ -161,6 +161,56 @@ class TestForcesHandler(BaseTest):
             assert np.isclose(angle.params[p]["k"], orig_angle_params[p]["k"])
 
     @pytest.mark.skipif(not has_hoomd, reason="hoomd is not installed")
+    def test_scaling_does_not_compound_across_sims(self, sim, octane, oplsaa):
+        """Regression: a new sim reusing cached forces must scale from the originals."""
+        bond = sim._get_force(hoomd.md.bond.Harmonic)
+        orig_bond_params = {p: dict(bond.params[p]) for p in bond.params}
+        for _ in range(3):
+            ForcesHandler(scale_bond=0.5, scale_angle=0).scale_sim(sim)
+            sim = HoomdSimulation(octane, oplsaa, r_cut=0.3, run_on_gpu=False)
+            assert sim._get_force(hoomd.md.bond.Harmonic) is bond
+
+        ForcesHandler(scale_bond=0.5, scale_angle=0).scale_sim(sim)
+        for p in bond.params:
+            assert np.isclose(bond.params[p]["k"], orig_bond_params[p]["k"] * 0.5)
+
+    @pytest.mark.skipif(not has_hoomd, reason="hoomd is not installed")
+    @pytest.mark.parametrize("last_scale", [0.5, 0])
+    def test_run_without_handler_restores_params(self, sim, last_scale):
+        """A run without a handler uses unscaled forces, even ones last turned off."""
+        bond = sim._get_force(hoomd.md.bond.Harmonic)
+        orig_bond_params = {p: dict(bond.params[p]) for p in bond.params}
+        run = dict(n_steps=10, kT=1.0, dt=1e-4, tau=1e-2)
+
+        sim.nvt(**run, forces_handler=ForcesHandler(scale_bond=0.5))
+        sim.nvt(**run, forces_handler=ForcesHandler(scale_bond=last_scale))
+        sim.nvt(**run)
+        assert bond in sim.active_forces
+        for p in bond.params:
+            assert np.isclose(bond.params[p]["k"], orig_bond_params[p]["k"])
+
+    @pytest.mark.skipif(not has_hoomd, reason="hoomd is not installed")
+    def test_run_without_handler_restores_angle_table(self):
+        """A scaled angle table returns to full strength in a run without a handler."""
+        from mbuild.path.points import AnglesSampler
+        from mbuild.utils.simulation.path_forces import PathForcefield
+
+        path = _make_two_type_path(n=6)
+        sampler = AnglesSampler("normal", {"loc": 2.5, "scale": 0.2})
+        pff = PathForcefield(radius=0.15, angles=sampler)
+        sim = HoomdSimulation(path, forcefield=pff, r_cut=0.5, run_on_gpu=False)
+        angle = sim._get_force(hoomd.md.angle.Table)
+        orig_U = {p: np.array(angle.params[p]["U"]) for p in angle.params}
+        run = dict(n_steps=10, kT=1.0, dt=1e-4, tau=1e-2)
+
+        sim.nvt(**run, forces_handler=ForcesHandler(scale_angle=0.25))
+        for p in angle.params:
+            assert np.allclose(angle.params[p]["U"], orig_U[p] * 0.25)
+        sim.nvt(**run)
+        for p in angle.params:
+            assert np.allclose(angle.params[p]["U"], orig_U[p])
+
+    @pytest.mark.skipif(not has_hoomd, reason="hoomd is not installed")
     def test_forces_dict_populated(self, sim):
         """Test that forcesDict is populated after scale_sim."""
         fh = ForcesHandler(scale_lj=1, scale_bond=1, scale_angle=1)
