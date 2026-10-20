@@ -23,7 +23,7 @@ from mbuild.compound import Compound
 
 from .convert import _sorted_components, to_cgsmiles_graph
 from .fragments import compound_to_fragment_graph
-from .placement import generate_positions
+from .placement import generate_positions, minimum_image
 
 __all__ = ["resolve", "backmap"]
 
@@ -218,6 +218,7 @@ def backmap(
     seed=42,
     check_bonding=True,
     all_atom=None,
+    box=None,
 ):
     """Backmap a coarse-grained system to an atomistic mbuild Compound.
 
@@ -295,6 +296,12 @@ def backmap(
         of the returned Compound is then a finer bead rather than an
         atom. Every fragment then needs a template to supply its local
         geometry, since there is no atomistic detail to embed.
+    box : mbuild.Box or array-like of shape (3,), optional
+        Periodic box of the CG system (orthorhombic). Defaults to
+        ``system.box`` for a ``Compound``; a ``Path`` has no box, so
+        pass one. Fragments stay centered on their (wrapped) beads and
+        are oriented toward bonded beads using the minimum image, so
+        bonds may cross the periodic boundary.
 
     Returns
     -------
@@ -353,6 +360,13 @@ def backmap(
     )
 
     bead_positions = nx.get_node_attributes(cg_graph, "position")
+    if box is None and isinstance(system, Compound):
+        box = system.box
+    box_lengths = None
+    if box is not None:
+        if hasattr(box, "angles") and not np.allclose(box.angles, 90.0):
+            raise ValueError("backmap only supports orthorhombic boxes.")
+        box_lengths = np.asarray(getattr(box, "lengths", box), dtype=float)
 
     # Anchor of each atom: mean position of the bead it descends from
     anchors = {}
@@ -363,7 +377,9 @@ def backmap(
                 f"Atom {node} does not trace back to any CG bead; "
                 "cannot assign a position."
             )
-        anchors[node] = np.mean([bead_positions[b] for b in beads], axis=0)
+        first = np.asarray(bead_positions[beads[0]], dtype=float)
+        offsets = [minimum_image(bead_positions[b] - first, box_lengths) for b in beads]
+        anchors[node] = first + np.mean(offsets, axis=0)
 
     positions = generate_positions(
         molecule=molecule,
@@ -373,6 +389,7 @@ def backmap(
         templates=templates,
         seed=seed,
         all_atom=all_atom,
+        box_lengths=box_lengths,
     )
 
     return _molecule_to_compound(cg_graph, molecule, node_to_beads, positions)
@@ -395,7 +412,10 @@ def _molecule_to_compound(cg_graph, molecule, node_to_beads, positions):
     for node in sorted(cg_graph.nodes):
         bead_compounds[node] = Compound(name=cg_graph.nodes[node]["beadname"])
 
+    # Collect children per parent and add each list in one call; adding one
+    # at a time recomposes the parent's bond graph on every call.
     particles = {}
+    bead_particles = {node: [] for node in bead_compounds}
     for node, data in molecule.nodes(data=True):
         symbol = data.get("element")
         try:
@@ -412,22 +432,34 @@ def _molecule_to_compound(cg_graph, molecule, node_to_beads, positions):
             charge=data.get("charge", 0) or None,
         )
         particles[node] = particle
-        bead_compounds[node_to_beads[node][0]].add(particle)
+        bead_particles[node_to_beads[node][0]].append(particle)
+
+    for bead_index, children in bead_particles.items():
+        if children:
+            bead_compounds[bead_index].add(children)
 
     components = _sorted_components(cg_graph)
     if len(components) == 1:
-        for bead_index in sorted(bead_compounds):
-            bead_compound = bead_compounds[bead_index]
-            if bead_compound.children:
-                root.add(bead_compound)
+        root.add(
+            [
+                bead_compounds[bead_index]
+                for bead_index in sorted(bead_compounds)
+                if bead_particles[bead_index]
+            ]
+        )
     else:
+        molecules = []
         for component in components:
             molecule_compound = Compound(name="Molecule")
-            for bead_index in component:
-                bead_compound = bead_compounds[bead_index]
-                if bead_compound.children:
-                    molecule_compound.add(bead_compound)
-            root.add(molecule_compound, label="Molecule[$]")
+            molecule_compound.add(
+                [
+                    bead_compounds[bead_index]
+                    for bead_index in component
+                    if bead_particles[bead_index]
+                ]
+            )
+            molecules.append(molecule_compound)
+        root.add(molecules, label=["Molecule[$]"] * len(molecules))
 
     for u, v, data in molecule.edges(data=True):
         root.add_bond((particles[u], particles[v]), bond_order=float(data["order"]))

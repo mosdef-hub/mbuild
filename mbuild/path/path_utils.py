@@ -303,9 +303,26 @@ def find_candidates_within_radius(
     return within_radius
 
 
+# The warning below reports whole percent, so a smaller rejected weight is noise.
+_MIN_REPORTED_FRACTION = 0.005
+
+
+def _choice_weights(angles_sampler):
+    """Return a choice sampler's angles and their normalized weights."""
+    angles = np.asarray(angles_sampler.kwargs["a"], dtype=float)
+    weights = angles_sampler.kwargs.get("p")
+    if weights is None:
+        weights = np.full(angles.shape, 1.0 / angles.size)
+    else:
+        weights = np.asarray(weights, dtype=float)
+        weights = weights / weights.sum()
+    return angles, weights
+
+
 def _angle_range(angles_sampler):
     """Return the smallest and largest angle a sampler can produce.
 
+    Angles a weighted choice sampler assigns zero probability are left out.
     Returns None for distributions with unbounded support.
     """
     if angles_sampler.distribution == "uniform":
@@ -314,8 +331,11 @@ def _angle_range(angles_sampler):
             float(angles_sampler.kwargs["high"]),
         )
     if angles_sampler.distribution == "choice":
-        angles = np.asarray(angles_sampler.kwargs["a"], dtype=float)
-        return float(angles.min()), float(angles.max())
+        angles, weights = _choice_weights(angles_sampler)
+        sampled = angles[weights > 0]
+        if sampled.size == 0:
+            return None
+        return float(sampled.min()), float(sampled.max())
     return None
 
 
@@ -356,8 +376,10 @@ def check_angle_range(bond_length, radius, angles_sampler):
         if angles_sampler.distribution == "uniform":
             fraction = (critical_angle - low) / (high - low)
         else:
-            angles = np.asarray(angles_sampler.kwargs["a"], dtype=float)
-            fraction = float(np.mean(angles < critical_angle))
+            angles, weights = _choice_weights(angles_sampler)
+            fraction = float(weights[angles < critical_angle].sum())
+        if fraction < _MIN_REPORTED_FRACTION:
+            return
         logger.warning(
             f"With {bond_length=} and {radius=}, bond angles below "
             f"{np.degrees(critical_angle):.1f} degrees overlap the site two "

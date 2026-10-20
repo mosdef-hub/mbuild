@@ -161,6 +161,128 @@ class TestForcesHandler(BaseTest):
             assert np.isclose(angle.params[p]["k"], orig_angle_params[p]["k"])
 
     @pytest.mark.skipif(not has_hoomd, reason="hoomd is not installed")
+    def test_scaling_does_not_compound_across_sims(self, sim, octane, oplsaa):
+        """Regression: a new sim reusing cached forces must scale from the originals."""
+        bond = sim._get_force(hoomd.md.bond.Harmonic)
+        orig_bond_params = {p: dict(bond.params[p]) for p in bond.params}
+        for _ in range(3):
+            ForcesHandler(scale_bond=0.5, scale_angle=0).scale_sim(sim)
+            sim = HoomdSimulation(octane, oplsaa, r_cut=0.3, run_on_gpu=False)
+            assert sim._get_force(hoomd.md.bond.Harmonic) is bond
+
+        ForcesHandler(scale_bond=0.5, scale_angle=0).scale_sim(sim)
+        for p in bond.params:
+            assert np.isclose(bond.params[p]["k"], orig_bond_params[p]["k"] * 0.5)
+
+    @pytest.mark.skipif(not has_hoomd, reason="hoomd is not installed")
+    @pytest.mark.parametrize("last_scale", [0.5, 0])
+    def test_run_without_handler_restores_params(self, sim, last_scale):
+        """A run without a handler uses unscaled forces, even ones last turned off."""
+        bond = sim._get_force(hoomd.md.bond.Harmonic)
+        orig_bond_params = {p: dict(bond.params[p]) for p in bond.params}
+        run = dict(n_steps=10, kT=1.0, dt=1e-4, tau=1e-2)
+
+        sim.nvt(**run, forces_handler=ForcesHandler(scale_bond=0.5))
+        sim.nvt(**run, forces_handler=ForcesHandler(scale_bond=last_scale))
+        sim.nvt(**run)
+        assert bond in sim.active_forces
+        for p in bond.params:
+            assert np.isclose(bond.params[p]["k"], orig_bond_params[p]["k"])
+
+    @pytest.mark.skipif(not has_hoomd, reason="hoomd is not installed")
+    def test_run_without_handler_restores_angle_table(self):
+        """A scaled angle table returns to full strength in a run without a handler."""
+        from mbuild.path.points import AnglesSampler
+        from mbuild.utils.simulation.path_forces import PathForcefield
+
+        path = _make_two_type_path(n=6)
+        sampler = AnglesSampler("normal", {"loc": 2.5, "scale": 0.2})
+        pff = PathForcefield(radius=0.15, angles=sampler)
+        sim = HoomdSimulation(path, forcefield=pff, r_cut=0.5, run_on_gpu=False)
+        angle = sim._get_force(hoomd.md.angle.Table)
+        orig_U = {p: np.array(angle.params[p]["U"]) for p in angle.params}
+        run = dict(n_steps=10, kT=1.0, dt=1e-4, tau=1e-2)
+
+        sim.nvt(**run, forces_handler=ForcesHandler(scale_angle=0.25))
+        for p in angle.params:
+            assert np.allclose(angle.params[p]["U"], orig_U[p] * 0.25)
+        sim.nvt(**run)
+        for p in angle.params:
+            assert np.allclose(angle.params[p]["U"], orig_U[p])
+
+    @pytest.mark.skipif(not has_hoomd, reason="hoomd is not installed")
+    def test_scale_lj_includes_special_pairs(self, sim):
+        """scale_lj scales the 1-4 special pair LJ along with the pair LJ."""
+        pair_lj = sim._get_force(hoomd.md.pair.LJ)
+        special_lj = sim._get_force(hoomd.md.special_pair.LJ)
+        orig_pair = {p: dict(pair_lj.params[p]) for p in pair_lj.params}
+        orig_special = {p: dict(special_lj.params[p]) for p in special_lj.params}
+
+        ForcesHandler(scale_lj=0.5).scale_sim(sim)
+        assert pair_lj in sim.active_forces
+        assert special_lj in sim.active_forces
+        for p in pair_lj.params:
+            assert np.isclose(
+                pair_lj.params[p]["epsilon"], orig_pair[p]["epsilon"] * 0.5
+            )
+        for p in special_lj.params:
+            assert np.isclose(
+                special_lj.params[p]["epsilon"], orig_special[p]["epsilon"] * 0.5
+            )
+
+    @pytest.mark.skipif(not has_hoomd, reason="hoomd is not installed")
+    def test_dpd_replaces_special_pair_lj(self, sim):
+        """With dpd, neither LJ runs, so overlapping 1-4 pairs cannot blow up."""
+        ForcesHandler(dpd=1.0).scale_sim(sim)
+        force_types = [type(f) for f in sim.active_forces]
+        assert hoomd.md.pair.DPDConservative in force_types
+        assert hoomd.md.pair.LJ not in force_types
+        assert hoomd.md.special_pair.LJ not in force_types
+
+    @pytest.mark.skipif(not has_hoomd, reason="hoomd is not installed")
+    @pytest.mark.parametrize("scale_charge", [0, 1])
+    def test_scale_charge_toggles_long_range(self, sim, scale_charge):
+        """scale_charge turns the Ewald and PPPM halves on or off together."""
+        ForcesHandler(scale_charge=scale_charge).scale_sim(sim)
+        force_types = [type(f) for f in sim.active_forces]
+        for force_type in (
+            hoomd.md.special_pair.Coulomb,
+            hoomd.md.pair.Ewald,
+            hoomd.md.long_range.pppm.Coulomb,
+        ):
+            assert (force_type in force_types) == bool(scale_charge)
+
+    @pytest.mark.skipif(not has_hoomd, reason="hoomd is not installed")
+    def test_partial_scale_charge_warns(self, sim, caplog):
+        """Long-range electrostatics can't be scaled, so they run at full strength."""
+        ewald = sim._get_force(hoomd.md.pair.Ewald)
+        orig_ewald = {p: dict(ewald.params[p]) for p in ewald.params}
+
+        ForcesHandler(scale_charge=0.5).scale_sim(sim)
+        assert ewald in sim.active_forces
+        assert "cannot scale Ewald" in caplog.text
+        for p in ewald.params:
+            assert ewald.params[p] == orig_ewald[p]
+
+    @pytest.mark.skipif(not has_hoomd, reason="hoomd is not installed")
+    def test_scale_fene_bonds(self):
+        """scale_bond keeps FENE bonds in the run and scales k and epsilon, not r0."""
+        from mbuild.utils.simulation.path_forces import PathForcefield
+
+        path = _make_two_type_path(n=6)
+        pff = PathForcefield(radius=0.15, btype="fene")
+        sim = HoomdSimulation(path, forcefield=pff, r_cut=0.5, run_on_gpu=False)
+        fene = sim._get_force(hoomd.md.bond.FENEWCA)
+        orig = {p: dict(fene.params[p]) for p in fene.params}
+
+        ForcesHandler(scale_bond=0.5).scale_sim(sim)
+        assert fene in sim.active_forces
+        for p in fene.params:
+            assert np.isclose(fene.params[p]["k"], orig[p]["k"] * 0.5)
+            assert np.isclose(fene.params[p]["epsilon"], orig[p]["epsilon"] * 0.5)
+            assert np.isclose(fene.params[p]["r0"], orig[p]["r0"])
+
+    @pytest.mark.skipif(not has_hoomd, reason="hoomd is not installed")
     def test_forces_dict_populated(self, sim):
         """Test that forcesDict is populated after scale_sim."""
         fh = ForcesHandler(scale_lj=1, scale_bond=1, scale_angle=1)
@@ -673,6 +795,112 @@ class TestHoomdSimulation(BaseTest):
         # A stale offset would shift these by ~dL/2 (1 nm here) and go negative.
         assert np.all(xyz >= -1e-4)
         assert np.all(xyz <= L_final + 1e-4)
+        assert np.allclose(sim._frame_offset, L_final / 2, atol=1e-4)
+
+    @pytest.mark.skipif(not has_hoomd, reason="hoomd is not installed")
+    @pytest.mark.parametrize(("start_L", "target_L"), [(3.0, 5.0), (5.0, 3.5)])
+    def test_box_update_centered_system_stays_centered(self, start_L, target_L):
+        """A centered compound keeps its frame through a resize, either way."""
+        methane = mb.load("C", smiles=True)
+        methane.name = "Methane"
+        # Keep the cluster off the faces so normalization has nothing to wrap.
+        box = mb.fill_box(compound=[methane], n_compounds=[8], box=[2, 2, 2])
+        box.xyz = box.xyz - box.xyz.mean(axis=0)  # centered convention
+        box.box = mb.Box(lengths=[start_L] * 3)
+
+        sim = HoomdSimulation(
+            system=box, box=[start_L] * 3, r_cut=1.0, run_on_gpu=False, kick=False
+        )
+        assert np.allclose(sim._frame_offset, 0.0)
+        com_before = sim.compound.xyz.mean(axis=0)
+
+        sim.box_update(
+            n_steps=3000,
+            kT=1.0,
+            dt=1e-4,
+            tau=1e-2,
+            target_box=hoomd.Box(target_L, target_L, target_L),
+            update_period=50,
+        )
+
+        L_final = np.asarray(sim.state.box.L)
+        xyz = sim.compound.xyz
+        assert np.allclose(sim._frame_offset, 0.0)
+        assert np.allclose(xyz.mean(axis=0), com_before, atol=1e-2)
+        assert np.all(xyz >= -L_final / 2 - 1e-4)
+        assert np.all(xyz <= L_final / 2 + 1e-4)
+
+    @pytest.mark.skipif(not has_hoomd, reason="hoomd is not installed")
+    def test_box_update_corner_system_shrinks_without_shift(self):
+        """The corner convention survives a shrink as well as a growth."""
+        methane = mb.load("C", smiles=True)
+        methane.name = "Methane"
+        box = mb.fill_box(compound=[methane], n_compounds=[8], box=[5, 5, 5])
+        sim = HoomdSimulation(system=box, r_cut=1.0, box_buffer=2, run_on_gpu=False)
+        assert np.allclose(sim._frame_offset, 2.5, atol=1e-4)
+
+        # 3.5 nm still clears HOOMD's minimum image distance for this r_cut.
+        sim.box_update(
+            n_steps=3000,
+            kT=1.0,
+            dt=1e-4,
+            tau=1e-2,
+            target_box=hoomd.Box(3.5, 3.5, 3.5),
+            update_period=50,
+        )
+
+        L_final = np.asarray(sim.state.box.L)
+        xyz = sim.compound.xyz
+        assert np.allclose(sim._frame_offset, L_final / 2, atol=1e-4)
+        assert np.all(xyz >= -1e-4)
+        assert np.all(xyz <= L_final + 1e-4)
+
+    @pytest.mark.skipif(not has_hoomd, reason="hoomd is not installed")
+    def test_resized_snapshot_not_reused_for_explicit_box(self):
+        """After a box_update, the same explicit box rebuilds rather than reusing."""
+        methane = mb.load("C", smiles=True)
+        methane.name = "Methane"
+        box = mb.fill_box(compound=[methane], n_compounds=[8], box=[5, 5, 5])
+        sim = HoomdSimulation(
+            system=box, box=[5, 5, 5], r_cut=1.0, run_on_gpu=False, kick=False
+        )
+        sim.box_update(
+            n_steps=3000,
+            kT=1.0,
+            dt=1e-4,
+            tau=1e-2,
+            target_box=hoomd.Box(3.5, 3.5, 3.5),
+            update_period=50,
+        )
+        xyz = box.xyz.copy()
+
+        sim = HoomdSimulation(
+            system=box, box=[5, 5, 5], r_cut=1.0, run_on_gpu=False, kick=False
+        )
+        assert np.allclose(sim.state.box.L, 5.0)
+        # Reusing the resized snapshot would shift every atom by ~(5 - 3.5) / 2.
+        sim.nvt(n_steps=0, kT=1.0, dt=1e-4, tau=1e-2)
+        assert np.allclose(box.xyz, xyz, atol=1e-4)
+
+    @pytest.mark.skipif(not has_hoomd, reason="hoomd is not installed")
+    def test_rebuild_keeps_bounding_box_unplaced(self):
+        """Regression: a bounding box stored by one sim must not split a molecule in the next."""
+        chain = mb.load("C" * 20, smiles=True)
+        sim = HoomdSimulation(chain, r_cut=1.0, kick=False, run_on_gpu=False)
+        sim.nvt(n_steps=0, kT=1.0, dt=1e-4, tau=1e-2)
+        # Straddle the x face of a [0, L) layout, mostly inside it. Without the
+        # bounding-box marker this is read as a corner layout and wrapped atom
+        # by atom, stretching bonds across the box.
+        Lx = chain.box.lengths[0]
+        chain.translate_to((Lx - 0.75, 0.0, 0.0))
+        com = chain.xyz.mean(axis=0)
+
+        # A different r_cut rebuilds the snapshot rather than reusing it.
+        sim = HoomdSimulation(chain, r_cut=0.9, kick=False, run_on_gpu=False)
+        sim.nvt(n_steps=0, kT=1.0, dt=1e-4, tau=1e-2)
+        max_bond = max(np.linalg.norm(a.pos - b.pos) for a, b in chain.bonds())
+        assert max_bond < 0.2
+        assert np.allclose(chain.xyz.mean(axis=0), com, atol=1e-3)
 
     @pytest.mark.skipif(not has_hoomd, reason="hoomd is not installed")
     def test_recover_undoes_only_the_last_run(self):

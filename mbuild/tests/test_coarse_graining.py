@@ -110,6 +110,19 @@ class TestCoarseGraining(BaseTest):
             centroid = np.mean([p.pos for p in child.particles()], axis=0)
             assert np.linalg.norm(centroid - path.coordinates[i]) < 0.05
 
+    def test_backmap_periodic(self):
+        path = straight_line(spacing=0.35, N=6, bead_name="PE")
+        path.coordinates[:] = path.coordinates % 1.0
+        box = np.ones(3)
+        compound = path.backmap("{#PE=[>]CC[<]}", box=box)
+        for a, b in compound.bonds():
+            delta = a.pos - b.pos
+            assert np.linalg.norm(delta - np.round(delta / box) * box) < 0.35
+        # fragments stay centered on the wrapped beads
+        for i, child in enumerate(compound.children):
+            centroid = np.mean([p.pos for p in child.particles()], axis=0)
+            assert np.linalg.norm(centroid - path.coordinates[i]) < 0.05
+
     @pytest.mark.skipif(not has_rdkit, reason="rdkit is not installed")
     def test_backmap_rdkit_positions(self, branched_path):
         compound = branched_path.backmap("{#A=[$]C([$])C[$],#B=[$]CC[$]}")

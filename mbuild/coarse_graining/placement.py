@@ -24,6 +24,7 @@ def generate_positions(
     templates,
     seed,
     all_atom=True,
+    box_lengths=None,
 ):
     """Compute a position for every atom in the resolved molecule.
 
@@ -36,6 +37,10 @@ def generate_positions(
     With ``all_atom=False`` the resolved nodes are finer coarse-grained
     beads rather than atoms. Local geometry then comes only from
     templates; a fragment without one raises ``ValueError``.
+
+    With ``box_lengths`` (orthorhombic), the directions toward
+    neighboring beads use the minimum image, so fragments bonded across
+    a periodic boundary point through it rather than across the box.
     """
     # Group atoms by primary bead
     bead_to_atoms = {}
@@ -88,7 +93,7 @@ def generate_positions(
                 if neighbor in atom_set:
                     continue
                 source = local_xyz[rel_index[node]]
-                target = anchors[neighbor] - group_anchor
+                target = minimum_image(anchors[neighbor] - group_anchor, box_lengths)
                 source_norm = np.linalg.norm(source)
                 target_norm = np.linalg.norm(target)
                 if source_norm > 1e-8 and target_norm > 1e-8:
@@ -101,6 +106,13 @@ def generate_positions(
         for node in atoms:
             positions[node] = group_anchor + local_xyz[rel_index[node]]
     return positions
+
+
+def minimum_image(vector, box_lengths):
+    """Return ``vector`` under the minimum image, or unchanged without a box."""
+    if box_lengths is None:
+        return vector
+    return vector - np.round(vector / box_lengths) * box_lengths
 
 
 def _embedded_fragment_coords(molecule, atoms, rel_index, embed_cache, seed):

@@ -6,8 +6,8 @@ dependencies:
   - numpy>=2.0,<2.6
   - packmol>=20.15
   - cgsmiles>=1.0.2
-  - gmso>=0.16.2
-  - garnett
+  - gmso>=0.17
+  - garnett>=0.7.1
   - numba
   - parmed>=3.4.3
   - pycifrw
