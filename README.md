@@ -24,7 +24,7 @@ To learn more, get started or contribute, check out our [website](http://mbuild.
 
 
 The `mBuild` package is part of the [Molecular Simulation Design Framework (MoSDeF) project](http://mosdef.org/).
-Libraries in the MoSDeF ecosystem are designed to provide utilities neccessary to streamline
+Libraries in the MoSDeF ecosystem are designed to provide utilities necessary to streamline
 a researcher's simulation workflow. When setting up simulation studies,
 we also recommend users to follow the [TRUE](https://www.tandfonline.com/doi/full/10.1080/00268976.2020.1742938)
 (Transparent, Reproducible, Usable-by-others, and Extensible) standard, which is a set of common
