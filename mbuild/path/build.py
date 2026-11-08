@@ -1470,7 +1470,7 @@ def hard_sphere_random_walk(
         )
         if state.volume_constraint:
             is_inside_mask = volume_constraint.is_inside(
-                points=candidates, buffer=tolerance
+                points=candidates, buffer=radius
             )
             candidates = candidates[is_inside_mask]
         # If there is a bias, sort candidates according to the bias
