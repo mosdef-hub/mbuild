@@ -202,7 +202,9 @@ class SphereConstraint(Constraint):
         -------
         Mask of booleans of length N corresponding to each point.
         """
-        return is_inside_sphere(points=points, sphere_radius=self.radius, buffer=buffer)
+        return is_inside_sphere(
+            points=points, center=self.center, sphere_radius=self.radius, buffer=buffer
+        )
 
     def sample_candidates(self, points, n_candidates, buffer, k=10, rng=None):
         """Generate candidate points uniformly distributed inside the sphere,
@@ -267,12 +269,24 @@ class CylinderConstraint(Constraint):
     periodic_height : bool, default False
         If True, then treat the bounding along the Z-axis (height)
         as periodic.
+    excluded_inner_radius : float, default 0.0
+        Radius of an inner region excluded from the volume, e.g. to make a pipe.
     """
 
-    def __init__(self, radius, height, center=(0, 0, 0), periodic_height=False):
+    def __init__(
+        self,
+        radius,
+        height,
+        center=(0, 0, 0),
+        periodic_height=False,
+        excluded_inner_radius=0.0,
+    ):
+        if not 0 <= excluded_inner_radius < radius:
+            raise ValueError("excluded_inner_radius must be >= 0 and < radius.")
         self.center = np.array(center)
         self.height = height
         self.radius = radius
+        self.excluded_inner_radius = excluded_inner_radius
         self.periodic_height = periodic_height
         self.mins = np.array(
             [
@@ -310,6 +324,7 @@ class CylinderConstraint(Constraint):
             points=points,
             center=self.center,
             cylinder_radius=self.radius,
+            inner_radius=self.excluded_inner_radius,
             height=self.height,
             buffer=buffer,
             periodic=self.periodic_height,
@@ -344,11 +359,19 @@ class CylinderConstraint(Constraint):
         if rng is None:
             rng = np.random.default_rng()
         eff_radius = max(self.radius - buffer, 0.0)
+        eff_inner = (
+            min(self.excluded_inner_radius + buffer, eff_radius)
+            if self.excluded_inner_radius > 0
+            else 0.0
+        )
         eff_half_height = max(self.height * 0.5 - buffer, 0.0)
         z = self.center[2] + rng.uniform(
             -eff_half_height, eff_half_height, size=n_candidates
         )
-        r = eff_radius * np.sqrt(rng.random(size=n_candidates))
+        r = np.sqrt(
+            rng.random(size=n_candidates) * (eff_radius**2 - eff_inner**2)
+            + eff_inner**2
+        )
         theta = 2 * np.pi * rng.random(size=n_candidates)
         x = self.center[0] + r * np.cos(theta)
         y = self.center[1] + r * np.sin(theta)
@@ -368,11 +391,15 @@ class CylinderConstraint(Constraint):
 
 
 @njit(cache=True, fastmath=True)
-def is_inside_cylinder(points, center, cylinder_radius, height, buffer, periodic):
+def is_inside_cylinder(
+    points, center, cylinder_radius, inner_radius, height, buffer, periodic
+):
     n_points = points.shape[0]
     results = np.empty(n_points, dtype=np.bool_)
     max_r = cylinder_radius - buffer
     max_r_sq = max_r * max_r
+    min_r = inner_radius + buffer if inner_radius > 0 else 0.0
+    min_r_sq = min_r * min_r
     half_height = height / 2.0
     max_z = half_height - buffer
     for i in range(n_points):
@@ -380,7 +407,7 @@ def is_inside_cylinder(points, center, cylinder_radius, height, buffer, periodic
         dy = points[i, 1] - center[1]
         dz = points[i, 2] - center[2]
         r_sq = dx * dx + dy * dy
-        inside_radial = r_sq <= max_r_sq
+        inside_radial = min_r_sq <= r_sq <= max_r_sq
         if periodic:
             inside_z = True
         else:
@@ -390,7 +417,7 @@ def is_inside_cylinder(points, center, cylinder_radius, height, buffer, periodic
 
 
 @njit(cache=True, fastmath=True)
-def is_inside_sphere(sphere_radius, points, buffer):
+def is_inside_sphere(center, sphere_radius, points, buffer):
     n_points = points.shape[0]
     results = np.empty(n_points, dtype=np.bool_)
     max_distance = sphere_radius - buffer
@@ -398,7 +425,8 @@ def is_inside_sphere(sphere_radius, points, buffer):
     for i in range(n_points):
         dist_from_center_sq = 0.0
         for j in range(3):
-            dist_from_center_sq += points[i, j] * points[i, j]
+            d = points[i, j] - center[j]
+            dist_from_center_sq += d * d
         results[i] = dist_from_center_sq < max_distance_sq
     return results
 
