@@ -679,9 +679,7 @@ class TestRandomWalk(BaseTest):
 
     def test_walk_inside_sphere_excluded_inner_radius(self):
         path = Path()
-        sphere = SphereConstraint(
-            radius=4, center=(2, 2, 2), excluded_inner_radius=2.5
-        )
+        sphere = SphereConstraint(radius=4, center=(2, 2, 2), excluded_inner_radius=2.5)
         hard_sphere_random_walk(
             path=path,
             termination=Termination([NumSites(200), NumAttempts(1e4)]),
