@@ -693,6 +693,13 @@ class TestRandomWalk(BaseTest):
         assert np.all(r >= 2.5)
         assert np.all(r <= 4)
 
+    @pytest.mark.parametrize("inner", [-1.0, 3.0, 4.0])
+    def test_bad_excluded_inner_radius(self, inner):
+        with pytest.raises(ValueError):
+            SphereConstraint(radius=3, center=(0, 0, 0), excluded_inner_radius=inner)
+        with pytest.raises(ValueError):
+            CylinderConstraint(radius=3, height=6, excluded_inner_radius=inner)
+
     def test_walk_inside_cylinder(self):
         path = Path()
         cylinder = CylinderConstraint(radius=3, height=6, center=(0, 0, 0))
