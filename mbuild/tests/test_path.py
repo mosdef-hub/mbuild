@@ -677,6 +677,29 @@ class TestRandomWalk(BaseTest):
         bounds = bounding_box(path.coordinates)
         assert np.all(bounds < np.array([(2 * 4) - 0.22]))
 
+    def test_walk_inside_sphere_excluded_inner_radius(self):
+        path = Path()
+        sphere = SphereConstraint(radius=4, center=(2, 2, 2), excluded_inner_radius=2.5)
+        hard_sphere_random_walk(
+            path=path,
+            termination=Termination([NumSites(200), NumAttempts(1e4)]),
+            bond_length=0.25,
+            radius=0.22,
+            volume_constraint=sphere,
+            seed=90,
+        )
+        assert len(path.coordinates) == 200
+        r = np.linalg.norm(path.coordinates - np.array([2, 2, 2]), axis=1)
+        assert np.all(r >= 2.5)
+        assert np.all(r <= 4)
+
+    @pytest.mark.parametrize("inner", [-1.0, 3.0, 4.0])
+    def test_bad_excluded_inner_radius(self, inner):
+        with pytest.raises(ValueError):
+            SphereConstraint(radius=3, center=(0, 0, 0), excluded_inner_radius=inner)
+        with pytest.raises(ValueError):
+            CylinderConstraint(radius=3, height=6, excluded_inner_radius=inner)
+
     def test_walk_inside_cylinder(self):
         path = Path()
         cylinder = CylinderConstraint(radius=3, height=6, center=(0, 0, 0))
@@ -693,6 +716,24 @@ class TestRandomWalk(BaseTest):
         assert extents[0] < 6 - 0.22 * 2  # x extent
         assert extents[1] < 6 - 0.22 * 2  # y extent
         assert extents[2] < 6 - 0.22 * 2  # z extent
+
+    def test_walk_inside_cylinder_excluded_inner_radius(self):
+        path = Path()
+        cylinder = CylinderConstraint(
+            radius=3, height=6, center=(1, 1, 0), excluded_inner_radius=1.5
+        )
+        hard_sphere_random_walk(
+            path=path,
+            termination=Termination([NumSites(200), NumAttempts(1e4)]),
+            bond_length=0.25,
+            radius=0.22,
+            volume_constraint=cylinder,
+            seed=14,
+        )
+        assert len(path.coordinates) == 200
+        r = np.linalg.norm(path.coordinates[:, :2] - np.array([1, 1]), axis=1)
+        assert np.all(r >= 1.5)
+        assert np.all(r <= 3)
 
     @pytest.mark.parametrize("a_len, b_len", [(2, 3), (3, 5), (4, 4)])
     def test_multiple_paths(self, a_len, b_len):
