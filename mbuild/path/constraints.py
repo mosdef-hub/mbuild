@@ -177,11 +177,16 @@ class SphereConstraint(Constraint):
         The radius of the sphere
     center : array-like (1,3), default = (0, 0, 0)
         Defines the center point of the sphere.
+    excluded_inner_radius : float, default 0.0
+        Radius of an inner region excluded from the volume, e.g. to make a shell.
     """
 
-    def __init__(self, center, radius):
+    def __init__(self, center, radius, excluded_inner_radius=0.0):
+        if not 0 <= excluded_inner_radius < radius:
+            raise ValueError("excluded_inner_radius must be >= 0 and < radius.")
         self.center = np.array(center)
         self.radius = radius
+        self.excluded_inner_radius = excluded_inner_radius
         self.mins = self.center - self.radius
         self.maxs = self.center + self.radius
         # Orthorhombic bounding lengths (diameter on each axis), e.g. for
@@ -203,7 +208,11 @@ class SphereConstraint(Constraint):
         Mask of booleans of length N corresponding to each point.
         """
         return is_inside_sphere(
-            points=points, center=self.center, sphere_radius=self.radius, buffer=buffer
+            points=points,
+            center=self.center,
+            sphere_radius=self.radius,
+            inner_radius=self.excluded_inner_radius,
+            buffer=buffer,
         )
 
     def sample_candidates(self, points, n_candidates, buffer, k=10, rng=None):
@@ -235,10 +244,15 @@ class SphereConstraint(Constraint):
         if rng is None:
             rng = np.random.default_rng()
         effective_radius = self.radius - buffer
+        eff_inner = (
+            min(self.excluded_inner_radius + buffer, effective_radius)
+            if self.excluded_inner_radius > 0
+            else 0.0
+        )
         dirs = rng.normal(size=(n_candidates, 3))
         dirs /= np.linalg.norm(dirs, axis=1)[:, None]
         u = rng.random(size=n_candidates)
-        radii = effective_radius * (u ** (1 / 3))
+        radii = (u * (effective_radius**3 - eff_inner**3) + eff_inner**3) ** (1 / 3)
         candidates = self.center + dirs * radii[:, None]
         # If just sampling from the volume, no KDTree needed
         if points is None or len(points) == 0:
@@ -417,17 +431,19 @@ def is_inside_cylinder(
 
 
 @njit(cache=True, fastmath=True)
-def is_inside_sphere(center, sphere_radius, points, buffer):
+def is_inside_sphere(center, sphere_radius, inner_radius, points, buffer):
     n_points = points.shape[0]
     results = np.empty(n_points, dtype=np.bool_)
     max_distance = sphere_radius - buffer
     max_distance_sq = max_distance * max_distance
+    min_distance = inner_radius + buffer if inner_radius > 0 else 0.0
+    min_distance_sq = min_distance * min_distance
     for i in range(n_points):
         dist_from_center_sq = 0.0
         for j in range(3):
             d = points[i, j] - center[j]
             dist_from_center_sq += d * d
-        results[i] = dist_from_center_sq < max_distance_sq
+        results[i] = min_distance_sq <= dist_from_center_sq < max_distance_sq
     return results
 
 
