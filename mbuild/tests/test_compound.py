@@ -2099,6 +2099,20 @@ class TestCompound(BaseTest):
         assert [res.name for res in comp["chain[1]"].children] == ["SER"]
         assert comp.n_bonds == 1
 
+    @pytest.mark.parametrize("chain_ids", [("BB", "A"), ("A", "BB")])
+    def test_multichain_from_parmed_long_chain_ids(self, chain_ids):
+        struc = pmd.Structure()
+        for chain, resnames in zip(chain_ids, (["ALA", "GLY"], ["SER"])):
+            for resnum, resname in enumerate(resnames, start=1):
+                atom = pmd.Atom(name="CA", atomic_number=6)
+                atom.xx, atom.xy, atom.xz = len(struc.atoms), 0.0, 0.0
+                struc.add_atom(atom, resname, resnum, chain=chain)
+
+        comp = Compound()
+        comp.from_parmed(struc)
+        assert comp.n_particles == 3
+        assert list(comp.labels) == ["all-chains", "chain[0]", "chain[1]"]
+
     @pytest.mark.skipif(not has_networkx, reason="NetworkX is not installed")
     def test_to_networkx_names_only_with_same_names(self):
         comp = Compound()
