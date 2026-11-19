@@ -22,6 +22,7 @@ import mbuild as mb
 from mbuild.box import Box
 from mbuild.exceptions import MBuildError
 from mbuild.formats.json_formats import compound_from_json, compound_to_json
+from mbuild.formats.pdb import write_pdb
 from mbuild.utils.io import has_mdtraj, has_openbabel, import_
 
 logger = logging.getLogger(__name__)
@@ -1059,6 +1060,7 @@ def save(
     See Also
     --------
     formats.cassandramcf.write_mcf : Write to Cassandra MCF format
+    formats.pdb.write_pdb : Write to a PDB file
     formats.json_formats.compound_to_json : Write to a json file
     """
     if os.path.exists(filename) and not overwrite:
@@ -1100,6 +1102,15 @@ def save(
             **kwargs,
         )
 
+    elif extension == ".pdb":
+        write_pdb(
+            compound,
+            filename,
+            residues=residues,
+            box=box,
+            include_ports=include_ports,
+            **kwargs,
+        )
     elif extension == ".sdf":
         pybel = import_("pybel")
         pybel_molecule = compound.to_pybel()
