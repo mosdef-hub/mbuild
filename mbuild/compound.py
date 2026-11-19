@@ -59,6 +59,15 @@ def clone(existing_compound, clone_of=None, root_container=None):
     return newone
 
 
+def _validate_formal_charge(value):
+    """Return value as an int, or None; raise if it is not a whole number."""
+    if value is None:
+        return None
+    if isinstance(value, bool) or int(value) != value:
+        raise ValueError(f"A formal charge must be a whole number. You passed {value}.")
+    return int(value)
+
+
 class Compound(object):
     """A building block in the mBuild hierarchy.
 
@@ -116,6 +125,12 @@ class Compound(object):
         periodicity. Defaults to None which is treated as non-periodic.
     element: str, optional, default=None
         The one or two character element symbol
+    formal_charge : int, optional, default=None
+        The formal charge of the particle, in units of the elementary
+        charge. Unlike ``charge``, which holds a partial charge, this is
+        the integer charge used when writing the chemistry of the compound
+        to other tools, such as RDKit. Can only be set on a Compound with no
+        children.
 
     Attributes
     ----------
@@ -153,6 +168,7 @@ class Compound(object):
         box=None,
         element=None,
         port_particle=False,
+        formal_charge=None,
     ):
         super(Compound, self).__init__()
 
@@ -198,11 +214,17 @@ class Compound(object):
                 raise MBuildError(
                     "Can't set the mass of a Compound with subcompounds. "
                 )
+            if formal_charge is not None:
+                raise MBuildError(
+                    "Can't set the formal charge of a Compound with subcompounds."
+                )
             self._charge = None
+            self._formal_charge = None
             self._mass = mass
             self.add(subcompounds)
         else:
             self._charge = charge
+            self._formal_charge = _validate_formal_charge(formal_charge)
             self._mass = mass
 
         self._bond_tag = None
@@ -656,6 +678,38 @@ class Compound(object):
         else:
             raise AttributeError(
                 "charge is immutable for Compounds that are "
+                "not at the bottom of the containment hierarchy."
+            )
+
+    @property
+    def formal_charge(self):
+        """Return the total formal charge of a compound.
+
+        If the compound contains children compounds, the sum of the formal
+        charges of its particles is returned.
+
+        If the formal charge of a particle has not been set, then the
+        particle's formal charge is None, and it is not used when
+        calculating the total formal charge.
+        """
+        if self._contains_only_ports():
+            return self._formal_charge
+        charges = [p._formal_charge for p in self.particles()]
+        if None in charges:
+            logger.info(
+                f"Some particle of {self} does not have a formal charge. "
+                "They will not be accounted for during this calculation."
+            )
+        filtered_charges = [charge for charge in charges if charge is not None]
+        return sum(filtered_charges) if filtered_charges else None
+
+    @formal_charge.setter
+    def formal_charge(self, value):
+        if self._contains_only_ports():
+            self._formal_charge = _validate_formal_charge(value)
+        else:
+            raise AttributeError(
+                "formal_charge is immutable for Compounds that are "
                 "not at the bottom of the containment hierarchy."
             )
 
@@ -2703,6 +2757,7 @@ class Compound(object):
         newone._box = deepcopy(self._box)
         newone._periodicity = deepcopy(self._periodicity)
         newone._charge = deepcopy(self._charge)
+        newone._formal_charge = self._formal_charge
         newone._mass = deepcopy(self._mass)
         newone._tag = deepcopy(self._tag)
         newone._hoomd_data = {}

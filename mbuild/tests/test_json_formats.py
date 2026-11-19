@@ -17,6 +17,18 @@ class TestJSONFormats(BaseTest):
         assert ethane.n_bonds == ethane_copy.n_bonds
         assert len(ethane.children) == len(ethane_copy.children)
 
+    def test_formal_charge(self):
+        ions = mb.Compound(name="NaCl")
+        sodium = mb.Particle(name="Na", element="Na", formal_charge=1)
+        chloride = mb.Particle(
+            name="Cl", element="Cl", pos=[0.3, 0, 0], formal_charge=-1
+        )
+        ions.add([sodium, chloride])
+        compound_to_json(ions, "ions.json")
+        loaded = compound_from_json("ions.json")
+        assert [p.formal_charge for p in loaded.particles()] == [1, -1]
+        assert loaded.formal_charge == 0
+
     def test_box(self):
         meth = mb.load("C", smiles=True)
 
