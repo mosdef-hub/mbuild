@@ -207,6 +207,6 @@ class TestReadPDB(BaseTest):
         assert np.allclose(ethane.xyz, moved.xyz, atol=1e-4)
 
     def test_large_serials(self):
-        assert _decode_index("A0000") == 100000
-        assert _decode_index(_encode_index(123456, 5)) == 123456
-        assert _decode_index("  42") == 42
+        assert _decode_index("A0000", width=5) == 100000
+        assert _decode_index(_encode_index(123456, 5), width=5) == 123456
+        assert _decode_index("  42", width=4) == 42
