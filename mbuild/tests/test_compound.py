@@ -217,6 +217,23 @@ class TestCompound(BaseTest):
         assert bond_order_dict[bonds[3].GetBondType()] == 1.0
 
     @pytest.mark.skipif(not has_rdkit, reason="RDKit is not installed")
+    def test_rdkit_keeps_formal_charge(self):
+        from rdkit import Chem
+
+        acrylate = mb.load("C=CC(=O)[O-]", smiles=True, backend="rdkit")
+        assert acrylate.formal_charge == -1
+
+        rdmol = acrylate.to_rdkit()
+        Chem.SanitizeMol(rdmol)
+        assert Chem.MolToSmiles(Chem.RemoveHs(rdmol)) == "C=CC(=O)[O-]"
+
+    @pytest.mark.skipif(not has_rdkit, reason="RDKit is not installed")
+    def test_to_rdkit_keeps_positions(self, methane):
+        rdmol = methane.to_rdkit()
+        positions = rdmol.GetConformer().GetPositions()
+        assert np.allclose(positions, methane.xyz * 10)
+
+    @pytest.mark.skipif(not has_rdkit, reason="RDKit is not installed")
     def test_to_rdkit_no_elements(self):
         comp = mb.Compound(name="_A")
         with pytest.raises(MBuildError):
@@ -1901,7 +1918,41 @@ class TestCompound(BaseTest):
         assert compound.charge == 0.25
 
         with pytest.raises(MBuildError):
-            compound = Compound(subcompounds=ch3, charge=1.0)
+            Compound(subcompounds=ch3, charge=1.0)
+
+    def test_formal_charge(self, ch2, ch3):
+        assert Compound(formal_charge=-1).formal_charge == -1
+        assert Compound().formal_charge is None
+
+        ch2[0].formal_charge = 1
+        ch3[0].formal_charge = -1
+        ch3[1].formal_charge = -1
+        compound = Compound([ch2, ch3])
+        assert compound.formal_charge == -1
+        assert ch2.formal_charge == 1
+        assert compound[0].formal_charge == 1
+
+        with pytest.raises(AttributeError):
+            compound.formal_charge = 0
+        with pytest.raises(MBuildError):
+            Compound(subcompounds=mb.clone(ch2), formal_charge=1)
+
+    @pytest.mark.parametrize("value", [0.5, "1", True])
+    def test_formal_charge_not_whole_number(self, value):
+        with pytest.raises(ValueError):
+            Compound(formal_charge=value)
+
+    def test_formal_charge_numpy_integer(self):
+        particle = Compound()
+        particle.formal_charge = np.int64(2)
+        assert particle.formal_charge == 2
+        assert isinstance(particle.formal_charge, int)
+
+    def test_clone_keeps_formal_charge(self, ch3):
+        ch3[0].formal_charge = 1
+        copy = mb.clone(ch3)
+        assert copy[0].formal_charge == 1
+        assert copy.formal_charge == 1
 
     def test_charge_neutrality_warn(self, benzene, caplog):
         benzene[0].charge = 0.25

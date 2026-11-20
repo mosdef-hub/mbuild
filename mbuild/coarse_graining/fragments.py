@@ -79,7 +79,7 @@ def compound_to_fragment_graph(compound, fragname, all_atom=True):
         index = index_of[particle]
         attributes = {
             "element": _particle_symbol(particle),
-            "charge": int(particle.charge or 0),
+            "charge": int(particle.formal_charge or 0),
             "aromatic": False,
             "fragname": fragname,
             "fragid": 0,
@@ -128,7 +128,7 @@ def _compound_to_cg_fragment_graph(compound, fragname):
             "fragid": 0,
             "weight": 1,
             "w": 1,
-            "charge": int(particle.charge or 0),
+            "charge": int(particle.formal_charge or 0),
         }
         descriptors = _descriptors_from_tag(particle.particle_tag)
         if descriptors:
