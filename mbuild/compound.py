@@ -1936,7 +1936,8 @@ class Compound(object):
         new_bonds = list()
         for particle in particle_list:
             for neighbor in nx.neighbors(bond_graph, particle):
-                new_bonds.append((particle, neighbor))
+                bond_order = bond_graph.edges[particle, neighbor].get("bond_order")
+                new_bonds.append(((particle, neighbor), bond_order))
 
         # Remove all labels which refer to children in the hierarchy
         self.labels.clear()
@@ -1951,8 +1952,8 @@ class Compound(object):
             self.add(particle_list)
             self.add(ports_list)
 
-            for bond in new_bonds:
-                self.add_bond(bond)
+            for bond, bond_order in new_bonds:
+                self.add_bond(bond, bond_order=bond_order)
         else:
             comp = clone(self)
             comp.flatten(inplace=True)
