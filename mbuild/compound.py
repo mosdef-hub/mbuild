@@ -59,15 +59,6 @@ def clone(existing_compound, clone_of=None, root_container=None):
     return newone
 
 
-def _validate_formal_charge(value):
-    """Return value as an int, or None; raise if it is not a whole number."""
-    if value is None:
-        return None
-    if isinstance(value, bool) or int(value) != value:
-        raise ValueError(f"A formal charge must be a whole number. You passed {value}.")
-    return int(value)
-
-
 class Compound(object):
     """A building block in the mBuild hierarchy.
 
@@ -2664,7 +2655,7 @@ class Compound(object):
             include_ports=include_ports,
         )
 
-    def to_smiles(self, backend="pybel"):
+    def to_smiles(self, backend="rdkit"):
         """Create a SMILES string from an mbuild compound.
 
         Parameters
@@ -2934,3 +2925,12 @@ def _flatten_list(c_list):
                 yield from _flatten_list(c)
             else:
                 yield c
+
+
+def _validate_formal_charge(value):
+    """Return value as an int, or None; raise if it is not a whole number."""
+    if value is None:
+        return None
+    if isinstance(value, bool) or int(value) != value:
+        raise ValueError(f"A formal charge must be a whole number. You passed {value}.")
+    return int(value)

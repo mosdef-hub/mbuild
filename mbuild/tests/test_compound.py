@@ -1896,7 +1896,7 @@ class TestCompound(BaseTest):
         assert compound.charge == 0.25
 
         with pytest.raises(MBuildError):
-            compound = Compound(subcompounds=ch3, charge=1.0)
+            Compound(subcompounds=ch3, charge=1.0)
 
     def test_formal_charge(self, ch2, ch3):
         assert Compound(formal_charge=-1).formal_charge == -1
