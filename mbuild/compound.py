@@ -2613,7 +2613,7 @@ class Compound(object):
             include_ports=include_ports,
         )
 
-    def to_smiles(self, backend="pybel"):
+    def to_smiles(self, backend="rdkit"):
         """Create a SMILES string from an mbuild compound.
 
         Parameters
