@@ -429,7 +429,7 @@ def _molecule_to_compound(cg_graph, molecule, node_to_beads, positions):
             name=name,
             pos=positions[node],
             element=element,
-            charge=data.get("charge", 0) or None,
+            formal_charge=data.get("charge", 0) or None,
         )
         particles[node] = particle
         bead_particles[node_to_beads[node][0]].append(particle)

@@ -144,6 +144,7 @@ def _particle_info(cmpd, include_ports=False):
     particle_dict["name"] = cmpd.name
     particle_dict["pos"] = cmpd.pos.tolist()
     particle_dict["charge"] = cmpd.charge
+    particle_dict["formal_charge"] = cmpd._formal_charge
     particle_dict["element"] = cmpd.element
     particle_dict["box"] = _box_info(cmpd)
 
@@ -188,6 +189,7 @@ def _dict_to_mb(compound_dict):
     name = compound_dict.get("name", "Compound")
     pos = compound_dict.get("pos", [0.0, 0.0, 0.0])
     charge = compound_dict.get("charge", 0.0)
+    formal_charge = compound_dict.get("formal_charge", None)
     periodicity = compound_dict.get("periodicity", (False, False, False))
     element = compound_dict.get("element", None)
     box = compound_dict.get("box", None)
@@ -211,6 +213,7 @@ def _dict_to_mb(compound_dict):
         periodicity=periodicity,
         element=element,
         box=box,
+        formal_charge=formal_charge,
     )
     return this_particle
 

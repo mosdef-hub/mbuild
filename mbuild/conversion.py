@@ -918,6 +918,7 @@ def from_rdkit(rdkit_mol, compound=None, coords_only=False, smiles_seed=0):
             name=atom.GetSymbol(),
             element=element_from_atomic_number(atom.GetAtomicNum()),
             pos=xyz[i],
+            formal_charge=atom.GetFormalCharge(),
         )
         part_list.append(part)
 
@@ -1784,10 +1785,19 @@ def to_rdkit(compound, embed=False):
     ----------
     compound : mbuild.Compound; required
         The compound to convert to a Chem.RWmol
+    embed : bool, optional, default=False
+        If True, sanitize the molecule, add hydrogens, and generate new 3D
+        coordinates with RDKit.
 
     Returns
     -------
     rdkit.Chem.RWmol
+
+    Notes
+    -----
+    The formal charge of each particle is set on its RDKit atom when it is
+    not None. The particle positions are added as a conformer, in Angstroms,
+    unless ``embed`` is True, in which case RDKit replaces them.
     """
     rdkit = import_("rdkit")  # noqa: F841
     from rdkit import Chem
@@ -1823,6 +1833,8 @@ def to_rdkit(compound, embed=False):
         # this next line is necessary to prevent rdkit from adding hydrogens
         # this will also set the label to be the element with particle index
         temp_atom.SetProp("atomLabel", f"{temp_atom.GetSymbol()}:{p_dict[particle]}")
+        if particle.formal_charge is not None:
+            temp_atom.SetFormalCharge(particle.formal_charge)
 
         temp_mol.AddAtom(temp_atom)
 
@@ -1831,6 +1843,12 @@ def to_rdkit(compound, embed=False):
         temp_mol.AddBond(*bond_indices)
         rdkit_bond = temp_mol.GetBondBetweenAtoms(*bond_indices)
         rdkit_bond.SetBondType(bond_order_dict[bond[2]["bond_order"]])
+
+    conformer = Chem.Conformer(temp_mol.GetNumAtoms())
+    for particle, index in p_dict.items():
+        # convert from nanometers to Angstroms
+        conformer.SetAtomPosition(index, (particle.pos * 10).tolist())
+    temp_mol.AddConformer(conformer, assignId=True)
 
     if embed:
         Chem.SanitizeMol(temp_mol)
