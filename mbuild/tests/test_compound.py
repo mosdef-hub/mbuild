@@ -943,6 +943,37 @@ class TestCompound(BaseTest):
         for part in ethane.children:
             assert isinstance(part, Port)
 
+    @pytest.mark.parametrize("as_list", [True, False])
+    def test_add_merges_bond_graphs(self, as_list):
+        def carbonyl(y):
+            comp = mb.Compound(name="CO")
+            carbon = mb.Particle(name="C", element="C", pos=[0, y, 0])
+            oxygen = mb.Particle(name="O", element="O", pos=[0.12, y, 0])
+            comp.add([carbon, oxygen])
+            comp.add_bond((carbon, oxygen), bond_order=2.0)
+            return comp
+
+        host = carbonyl(0.0)
+        guests = [carbonyl(0.3), carbonyl(0.6)]
+        if as_list:
+            host.add(guests)
+        else:
+            for guest in guests:
+                host.add(guest)
+
+        assert host.n_bonds == 3
+        assert set(host.bond_graph.nodes) == set(host.particles())
+        for _, _, data in host.bonds(return_bond_order=True):
+            assert data["bond_order"] == 2.0
+
+    def test_remove_one_bonded_particle(self, ethane):
+        hydrogen = list(ethane.particles_by_name("H"))[0]
+        ethane.remove(hydrogen)
+
+        assert ethane.n_bonds == 6
+        assert hydrogen not in ethane.bond_graph
+        assert all(hydrogen not in bond for bond in ethane.bonds())
+
     def test_remove_subcompound(self, ethane):
         methyl = ethane.children[0]
         ethane.remove(methyl)
