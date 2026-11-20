@@ -137,6 +137,15 @@ class Compound(object):
         compound is the root of the containment hierarchy.
     referrers : set
         Other compounds that reference this part with labels.
+    residue_number : int or None
+        The residue sequence number of this Compound, when it represents a
+        residue, as in a PDB file. None by default.
+    insertion_code : str or None
+        The one-character insertion code of a residue, as in a PDB file.
+        None by default.
+    chain_id : str or None
+        The ID of the chain this Compound represents, as in a PDB file.
+        None by default.
     boundingbox : mb.Box
         The bounds (xmin, xmax, ymin, ymax, zmin, zmax) of particles in Compound
     center
@@ -221,6 +230,9 @@ class Compound(object):
         self._bond_tag = None
         self._tag = None
         self._hoomd_data = {}
+        self._residue_number = None
+        self._insertion_code = None
+        self._chain_id = None
 
     @classmethod
     def from_bondgraph(cls, bondgraph):
@@ -703,6 +715,45 @@ class Compound(object):
                 "formal_charge is immutable for Compounds that are "
                 "not at the bottom of the containment hierarchy."
             )
+
+    @property
+    def residue_number(self):
+        """Return the residue sequence number of this Compound, or None."""
+        return self._residue_number
+
+    @residue_number.setter
+    def residue_number(self, value):
+        if value is not None and (isinstance(value, bool) or int(value) != value):
+            raise ValueError(
+                f"A residue number must be a whole number. You passed {value}."
+            )
+        self._residue_number = None if value is None else int(value)
+
+    @property
+    def insertion_code(self):
+        """Return the insertion code of this Compound, or None."""
+        return self._insertion_code
+
+    @insertion_code.setter
+    def insertion_code(self, value):
+        if value is not None and (not isinstance(value, str) or len(value) != 1):
+            raise ValueError(
+                f"An insertion code must be one character. You passed {value!r}."
+            )
+        self._insertion_code = value
+
+    @property
+    def chain_id(self):
+        """Return the chain ID of this Compound, or None."""
+        return self._chain_id
+
+    @chain_id.setter
+    def chain_id(self, value):
+        if value is not None and (not isinstance(value, str) or not value):
+            raise ValueError(
+                f"A chain ID must be a non-empty string. You passed {value!r}."
+            )
+        self._chain_id = value
 
     @property
     def particle_tag(self):
@@ -2746,6 +2797,9 @@ class Compound(object):
         newone._periodicity = deepcopy(self._periodicity)
         newone._charge = deepcopy(self._charge)
         newone._formal_charge = self._formal_charge
+        newone._residue_number = self._residue_number
+        newone._insertion_code = self._insertion_code
+        newone._chain_id = self._chain_id
         newone._mass = deepcopy(self._mass)
         newone._tag = deepcopy(self._tag)
         newone._hoomd_data = {}

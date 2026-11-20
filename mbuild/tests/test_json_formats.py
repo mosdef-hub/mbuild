@@ -29,6 +29,17 @@ class TestJSONFormats(BaseTest):
         assert [p.formal_charge for p in loaded.particles()] == [1, -1]
         assert loaded.formal_charge == 0
 
+    def test_residue_attributes(self, h2o):
+        water = mb.Compound(subcompounds=h2o)
+        water.chain_id = "W"
+        h2o.residue_number = 7
+        h2o.insertion_code = "B"
+        compound_to_json(water, "water.json")
+        loaded = compound_from_json("water.json")
+        assert loaded.chain_id == "W"
+        residue = loaded.children[0]
+        assert (residue.residue_number, residue.insertion_code) == (7, "B")
+
     def test_box(self):
         meth = mb.load("C", smiles=True)
 
