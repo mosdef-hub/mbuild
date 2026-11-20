@@ -3,8 +3,9 @@ import pytest
 
 import mbuild as mb
 from mbuild.exceptions import MBuildError
-from mbuild.formats.pdb import _encode_index
+from mbuild.formats.pdb import _decode_index, _encode_index
 from mbuild.tests.base_test import BaseTest
+from mbuild.utils.io import get_fn
 
 
 def _records(filename, kind):
@@ -122,3 +123,90 @@ class TestPDB(BaseTest):
         assert _encode_index(100000, 5) == "A0000"
         with pytest.raises(MBuildError):
             _encode_index(10**5 + 6 * 16**4, 5)
+
+
+class TestReadPDB(BaseTest):
+    def test_round_trip(self, ethane):
+        ethane.save("ethane.pdb")
+        loaded = mb.load("ethane.pdb", backend="internal")
+        assert loaded.n_particles == 8
+        assert loaded.n_bonds == 7
+        assert np.allclose(loaded.xyz, ethane.xyz, atol=1e-4)
+        assert [p.element.symbol for p in loaded.particles()] == [
+            p.element.symbol for p in ethane.particles()
+        ]
+
+    def test_bond_orders_and_charges(self):
+        carbonyl = mb.Compound(name="FOR")
+        carbon = mb.Particle(name="C", element="C")
+        oxygen = mb.Particle(name="O", element="O", pos=[0.12, 0, 0], formal_charge=-1)
+        carbonyl.add([carbon, oxygen])
+        carbonyl.add_bond((carbon, oxygen), bond_order=2.0)
+        carbonyl.save("carbonyl.pdb")
+        loaded = mb.load("carbonyl.pdb", backend="internal")
+        assert [b[2]["bond_order"] for b in loaded.bonds(return_bond_order=True)] == [
+            2.0
+        ]
+        assert [p.formal_charge for p in loaded.particles()] == [None, -1]
+
+    def test_residues_and_chains(self):
+        chains = []
+        for chain_id, x in (("A", 0.0), ("B", 1.0)):
+            residue = _residue("LIG", 52, ["C1", "C2"], x)
+            residue.insertion_code = "A"
+            chain = mb.Compound(subcompounds=residue)
+            chain.chain_id = chain_id
+            chains.append(chain)
+        mb.Compound(chains).save("chains.pdb")
+        loaded = mb.load("chains.pdb", backend="internal")
+        assert list(loaded.labels) == ["all-chains", "chain[0]", "chain[1]"]
+        assert [chain.chain_id for chain in loaded.children] == ["A", "B"]
+        residue = loaded.children[1].children[0]
+        assert (residue.name, residue.residue_number, residue.insertion_code) == (
+            "LIG",
+            52,
+            "A",
+        )
+        assert [p.name for p in residue.particles()] == ["C1", "C2"]
+
+    def test_protein(self):
+        protein = mb.load(get_fn("6m03.pdb"), backend="internal")
+        reference = mb.load(get_fn("6m03.pdb"))
+        assert protein.n_particles == reference.n_particles
+        assert [c.chain_id for c in protein.children] == ["A", "A"]
+        residues = protein.children[0].children
+        assert (residues[0].name, residues[0].residue_number) == ("SER", 1)
+        assert [r.name for r in residues] == [
+            r.name for r in reference.children[0].children
+        ]
+
+    def test_alternate_locations(self, caplog):
+        with open("altloc.pdb", "w") as f:
+            f.write(
+                "ATOM      1  CA ASER A   1       0.000   0.000   0.000  0.60  0.00           C\n"
+                "ATOM      2  CA BSER A   1       1.000   0.000   0.000  0.40  0.00           C\n"
+                "ATOM      3  CB ASER A   1       0.000   1.000   0.000  0.60  0.00           C\n"
+                "ATOM      4  CB BSER A   1       1.000   1.000   0.000  0.40  0.00           C\n"
+                "END\n"
+            )
+        loaded = mb.load("altloc.pdb", backend="internal")
+        assert loaded.n_particles == 2
+        assert np.allclose(loaded.xyz[:, 0], 0.0)
+        assert "first alternate location" in caplog.text
+
+    def test_infer_hierarchy_false(self, ethane):
+        ethane.save("ethane.pdb")
+        loaded = mb.load("ethane.pdb", backend="internal", infer_hierarchy=False)
+        assert len(loaded.children) == loaded.n_particles == 8
+
+    def test_coords_only(self, ethane):
+        moved = mb.clone(ethane)
+        moved.translate([1.0, 0, 0])
+        moved.save("moved.pdb")
+        mb.load("moved.pdb", compound=ethane, coords_only=True, backend="internal")
+        assert np.allclose(ethane.xyz, moved.xyz, atol=1e-4)
+
+    def test_large_serials(self):
+        assert _decode_index("A0000") == 100000
+        assert _decode_index(_encode_index(123456, 5)) == 123456
+        assert _decode_index("  42") == 42

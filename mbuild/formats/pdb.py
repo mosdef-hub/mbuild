@@ -1,13 +1,19 @@
-"""Write mBuild Compounds to PDB files."""
+"""Read and write mBuild Compounds as PDB files."""
 
+import logging
 from copy import deepcopy
 
 import numpy as np
+from ele import element_from_symbol
+from ele.exceptions import ElementError
 
+import mbuild as mb
 from mbuild.box import Box
 from mbuild.exceptions import MBuildError
 
-__all__ = ["write_pdb"]
+__all__ = ["read_pdb", "write_pdb"]
+
+logger = logging.getLogger(__name__)
 
 # Residue names written as ATOM records: the standard amino acids and
 # nucleotides. Every other residue is written as HETATM records.
@@ -124,6 +130,103 @@ def write_pdb(compound, filename, residues=None, box=None, include_ports=False):
 
     with open(filename, "w") as f:
         f.write("\n".join(lines) + "\n")
+
+
+def read_pdb(filename, compound=None, coords_only=False, infer_hierarchy=True):
+    """Read a PDB file into a Compound.
+
+    Parameters
+    ----------
+    filename : str
+        Path of the PDB file.
+    compound : mb.Compound, optional, default=None
+        Compound to add the structure to. A new Compound is made if None.
+    coords_only : bool, optional, default=False
+        Only set the positions of the particles of ``compound``, in file order.
+    infer_hierarchy : bool, optional, default=True
+        If True, each residue becomes a Compound. If False, atoms are added
+        directly to their chain.
+
+    Returns
+    -------
+    compound : mb.Compound
+
+    Notes
+    -----
+    The hierarchy follows ``from_trajectory``: one Compound per chain,
+    labeled ``chain[$]``, when the file has more than one chain, and one
+    Compound per residue, named after the residue. A chain ends at a change of
+    chain ID or a TER record. Residue numbers, insertion codes and chain IDs
+    are stored in ``residue_number``, ``insertion_code`` and ``chain_id``.
+
+    Elements are read from columns 77-78, or from the first letter of the atom
+    name when those columns are blank, and formal charges from columns 79-80.
+    Bonds are read from CONECT records; a bond listed two or three times is a
+    double or triple bond. Bonds that are not listed, such as those within
+    standard residues, are not added. Only the first model is read, and only
+    the first alternate location of each residue is kept.
+    """
+    with open(filename) as f:
+        chains, conects, box = _parse_pdb(f)
+
+    if compound is not None and coords_only:
+        records = [record for chain in chains for res in chain for record in res]
+        particles = list(compound.particles())
+        if len(records) != len(particles):
+            raise ValueError(
+                f"Number of atoms in {filename} ({len(records)}) does not "
+                f"match {compound} ({len(particles)})."
+            )
+        for particle, record in zip(particles, records):
+            particle.pos = record["pos"]
+        return compound
+
+    if compound is None:
+        compound = mb.Compound()
+    particle_of = {}
+    chain_compounds = []
+    for chain in chains:
+        if len(chains) > 1:
+            chain_compound = mb.Compound()
+            chain_compounds.append(chain_compound)
+        else:
+            chain_compound = compound
+        chain_compound.chain_id = chain[0][0]["chain_id"] or None
+        residue_compounds = []
+        for residue in chain:
+            first = residue[0]
+            if infer_hierarchy:
+                parent = mb.Compound(name=first["resname"])
+                parent.residue_number = first["resnum"]
+                parent.insertion_code = first["icode"] or None
+                residue_compounds.append(parent)
+            else:
+                parent = chain_compound
+            atoms = []
+            for record in residue:
+                particle = mb.Particle(
+                    name=record["name"],
+                    pos=record["pos"],
+                    element=record["element"],
+                    formal_charge=record["charge"],
+                )
+                particle_of[record["serial"]] = particle
+                atoms.append(particle)
+            parent.add(atoms, label=[f"{p.name}[$]" for p in atoms])
+        if residue_compounds:
+            chain_compound.add(residue_compounds)
+    if chain_compounds:
+        compound.add(chain_compounds, label=["chain[$]"] * len(chain_compounds))
+
+    for (serial1, serial2), count in conects.items():
+        if serial1 in particle_of and serial2 in particle_of:
+            compound.add_bond(
+                (particle_of[serial1], particle_of[serial2]),
+                bond_order=float(count) if count in (2, 3) else 1.0,
+            )
+    if box is not None:
+        compound.box = box
+    return compound
 
 
 def _group_by_chain_and_residue(compound, residue_names, include_ports):
@@ -244,3 +347,97 @@ def _encode_index(value, width):
     if value >= limit:
         raise MBuildError(f"{value} is too large for a {width}-column PDB field.")
     return f"{value - 10**width + 10 * 16 ** (width - 1):{width}X}"
+
+
+def _parse_pdb(lines):
+    """Return the chains, CONECT bond counts and box of a PDB file.
+
+    Chains are lists of residues, and residues are lists of atom records.
+    """
+    chains, chain, residue = [], [], []
+    conects = {}
+    box = None
+    residue_key = None
+    altlocs = {}
+    skipped = set()
+    for line in lines:
+        record = line[:6].strip()
+        if record == "ENDMDL":
+            break
+        if record == "CRYST1":
+            lengths = [float(line[6:15]), float(line[15:24]), float(line[24:33])]
+            angles = [float(line[33:40]), float(line[40:47]), float(line[47:54])]
+            box = Box(lengths=np.array(lengths) / 10, angles=angles)
+        elif record in ("ATOM", "HETATM"):
+            atom = _atom_record(line)
+            key = (atom["chain_id"], atom["resnum"], atom["icode"], atom["resname"])
+            altloc = line[16].strip()
+            if altloc:
+                chosen = altlocs.setdefault(key, altloc)
+                if altloc != chosen:
+                    skipped.add(key)
+                    continue
+            if chain and atom["chain_id"] != chain[-1][0]["chain_id"]:
+                chains.append(chain)
+                chain, residue_key = [], None
+            if key != residue_key:
+                residue = []
+                chain.append(residue)
+                residue_key = key
+            residue.append(atom)
+        elif record == "TER" and chain:
+            chains.append(chain)
+            chain, residue_key = [], None
+        elif record == "CONECT":
+            serial = _decode_index(line[6:11])
+            for start in range(11, 31, 5):
+                field = line[start : start + 5]
+                if field.strip():
+                    pair = tuple(sorted((serial, _decode_index(field))))
+                    seen = conects.get(pair, {})
+                    seen[serial] = seen.get(serial, 0) + 1
+                    conects[pair] = seen
+    if chain:
+        chains.append(chain)
+    if skipped:
+        logger.warning(
+            f"Only the first alternate location was read for {len(skipped)} "
+            f"residues, e.g. {sorted(skipped)[0]}."
+        )
+    # A pair listed from both atoms counts once per direction
+    counts = {pair: max(seen.values()) for pair, seen in conects.items()}
+    return chains, counts, box
+
+
+def _atom_record(line):
+    """Return the fields of an ATOM or HETATM line as a dict."""
+    symbol = line[76:78].strip()
+    if not symbol:
+        symbol = next((c for c in line[12:16] if c.isalpha()), "")
+    try:
+        element = element_from_symbol(symbol.capitalize()) if symbol else None
+    except ElementError:
+        element = None
+    charge = line[78:80].strip()
+    return {
+        "serial": _decode_index(line[6:11]),
+        "name": line[12:16].strip(),
+        "resname": line[17:21].strip(),
+        "chain_id": line[21].strip(),
+        "resnum": _decode_index(line[22:26]),
+        "icode": line[26].strip(),
+        "pos": np.array([float(line[30:38]), float(line[38:46]), float(line[46:54])])
+        / 10,
+        "element": element,
+        "charge": int(charge[-1] + charge[:-1]) if charge else None,
+    }
+
+
+def _decode_index(field):
+    """Read an atom serial or residue number, inverting ``_encode_index``."""
+    text = field.strip()
+    try:
+        return int(text)
+    except ValueError:
+        width = len(field)
+        return int(text, 16) - 10 * 16 ** (width - 1) + 10**width

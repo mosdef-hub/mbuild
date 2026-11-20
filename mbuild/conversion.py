@@ -22,7 +22,7 @@ import mbuild as mb
 from mbuild.box import Box
 from mbuild.exceptions import MBuildError
 from mbuild.formats.json_formats import compound_from_json, compound_to_json
-from mbuild.formats.pdb import write_pdb
+from mbuild.formats.pdb import read_pdb, write_pdb
 from mbuild.utils.io import has_mdtraj, has_openbabel, import_
 
 logger = logging.getLogger(__name__)
@@ -425,6 +425,13 @@ def load_file(
             # This doesn't seem to handle the case when compound is given
             compound = compound_from_json(filename)
             return compound
+        if extension == ".pdb":
+            return read_pdb(
+                filename,
+                compound=compound,
+                coords_only=coords_only,
+                infer_hierarchy=infer_hierarchy,
+            )
         # Handle xyz file
     # Then gmso reader
     if backend == "gmso":
