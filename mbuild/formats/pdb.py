@@ -54,9 +54,10 @@ def write_pdb(compound, filename, residues=None, box=None, include_ports=False):
     ATOM records, and all others as HETATM records. CONECT records list every
     bond except the bonds within a standard residue and the backbone bonds
     between consecutive standard residues of a chain, which PDB readers take
-    from the residue definitions (wwPDB format v3.3, section 10). The formal
-    charge of a particle is written in columns 79-80 when it is set and not
-    zero.
+    from the residue definitions (wwPDB format v3.3, section 10). A double
+    or triple bond is listed two or three times, the convention RDKit and
+    Open Babel use for bond orders. The formal charge of a particle is
+    written in columns 79-80 when it is set and not zero.
     """
     if isinstance(residues, str):
         residues = [residues]
@@ -102,13 +103,15 @@ def write_pdb(compound, filename, residues=None, box=None, include_ports=False):
         for particle in particles
     }
     partners = {}
-    for particle1, particle2 in compound.bonds():
+    for particle1, particle2, data in compound.bonds(return_bond_order=True):
         if particle1 not in serials or particle2 not in serials:
             continue
         if _implied_by_residues(particle1, particle2, residue_of, position):
             continue
-        partners.setdefault(serials[particle1], []).append(serials[particle2])
-        partners.setdefault(serials[particle2], []).append(serials[particle1])
+        repeats = int(data["bond_order"]) if data["bond_order"] in (2, 3) else 1
+        serial1, serial2 = serials[particle1], serials[particle2]
+        partners.setdefault(serial1, []).extend([serial2] * repeats)
+        partners.setdefault(serial2, []).extend([serial1] * repeats)
     for atom_serial in sorted(partners):
         bonded = sorted(partners[atom_serial])
         for start in range(0, len(bonded), 4):

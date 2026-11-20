@@ -82,6 +82,18 @@ class TestPDB(BaseTest):
         # two-letter element symbols start the atom name in column 13
         assert [line[12:16] for line in atoms] == ["NA  ", "CL  "]
 
+    def test_bond_order_in_conect(self):
+        carbonyl = mb.Compound(name="FOR")
+        carbon = mb.Particle(name="C", element="C")
+        oxygen = mb.Particle(name="O", element="O", pos=[0.12, 0, 0])
+        carbonyl.add([carbon, oxygen])
+        carbonyl.add_bond((carbon, oxygen), bond_order=2.0)
+        carbonyl.save("carbonyl.pdb")
+        assert [line.split() for line in _records("carbonyl.pdb", "CONECT")] == [
+            ["CONECT", "1", "2", "2"],
+            ["CONECT", "2", "1", "1"],
+        ]
+
     def test_box(self, ethane):
         ethane.box = mb.Box([2.0, 3.0, 4.0])
         ethane.save("box.pdb")
