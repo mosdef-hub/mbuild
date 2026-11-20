@@ -1207,6 +1207,28 @@ class TestCompound(BaseTest):
         assert len(ethane.all_ports()) == len(original_ports)
         assert ethane.all_ports()[0] == original_ports[0]
 
+    @pytest.mark.parametrize("inplace", [True, False])
+    def test_flatten_keeps_bond_order(self, inplace):
+        carbonyl = mb.Compound(name="CO")
+        carbon = mb.Particle(name="C", element="C")
+        oxygen = mb.Particle(name="O", element="O", pos=[0.12, 0, 0])
+        carbonyl.add([carbon, oxygen])
+        carbonyl.add_bond((carbon, oxygen), bond_order=2.0)
+        other = mb.clone(carbonyl)
+        other.translate([0, 0.3, 0])
+        dimer = mb.Compound([carbonyl, other])
+        first, second = dimer.children
+        dimer.add_bond((first[0], second[0]), bond_order=1.0)
+
+        flat = dimer.flatten(inplace=inplace)
+        if inplace:
+            flat = dimer
+        orders = sorted(
+            bond[2]["bond_order"] for bond in flat.bonds(return_bond_order=True)
+        )
+        assert flat.n_particles == len(flat.children) == 4
+        assert orders == [1.0, 2.0, 2.0]
+
     @pytest.mark.skipif(not has_openbabel, reason="Open Babel not installed")
     def test_reload(self):
         # Create a compound and write it to file.
