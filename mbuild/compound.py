@@ -116,6 +116,12 @@ class Compound(object):
         periodicity. Defaults to None which is treated as non-periodic.
     element: str, optional, default=None
         The one or two character element symbol
+    formal_charge : int, optional, default=None
+        The formal charge of the particle, in units of the elementary
+        charge. Unlike ``charge``, which holds a partial charge, this is
+        the integer charge used when writing the chemistry of the compound
+        to other tools, such as RDKit. Can only be set on a Compound with no
+        children.
 
     Attributes
     ----------
@@ -153,6 +159,7 @@ class Compound(object):
         box=None,
         element=None,
         port_particle=False,
+        formal_charge=None,
     ):
         super(Compound, self).__init__()
 
@@ -198,11 +205,17 @@ class Compound(object):
                 raise MBuildError(
                     "Can't set the mass of a Compound with subcompounds. "
                 )
+            if formal_charge is not None:
+                raise MBuildError(
+                    "Can't set the formal charge of a Compound with subcompounds."
+                )
             self._charge = None
+            self._formal_charge = None
             self._mass = mass
             self.add(subcompounds)
         else:
             self._charge = charge
+            self._formal_charge = _validate_formal_charge(formal_charge)
             self._mass = mass
 
         self._bond_tag = None
@@ -660,6 +673,38 @@ class Compound(object):
             )
 
     @property
+    def formal_charge(self):
+        """Return the total formal charge of a compound.
+
+        If the compound contains children compounds, the sum of the formal
+        charges of its particles is returned.
+
+        If the formal charge of a particle has not been set, then the
+        particle's formal charge is None, and it is not used when
+        calculating the total formal charge.
+        """
+        if self._contains_only_ports():
+            return self._formal_charge
+        charges = [p._formal_charge for p in self.particles()]
+        if None in charges:
+            logger.info(
+                f"Some particle of {self} does not have a formal charge. "
+                "They will not be accounted for during this calculation."
+            )
+        filtered_charges = [charge for charge in charges if charge is not None]
+        return sum(filtered_charges) if filtered_charges else None
+
+    @formal_charge.setter
+    def formal_charge(self, value):
+        if self._contains_only_ports():
+            self._formal_charge = _validate_formal_charge(value)
+        else:
+            raise AttributeError(
+                "formal_charge is immutable for Compounds that are "
+                "not at the bottom of the containment hierarchy."
+            )
+
+    @property
     def particle_tag(self):
         return self._tag
 
@@ -766,10 +811,8 @@ class Compound(object):
                 # search for self in self.root.bond_graph and remove self
                 if self.root.bond_graph.has_node(self):
                     self.root.bond_graph.remove_node(self)
-                # compose the bond graph of all the children with the root
-                self.root.bond_graph = nx.compose(
-                    self.root.bond_graph, children_bond_graph
-                )
+                # Merge the bond graph of all the children into the root's
+                self.root.bond_graph.update(children_bond_graph)
             for i, child in enumerate(compound_list):
                 child.bond_graph = None
                 if label is not None:
@@ -815,10 +858,8 @@ class Compound(object):
                 # search for self in self.root.bond_graph and remove self
                 if self.root.bond_graph.has_node(self):
                     self.root.bond_graph.remove_node(self)
-                # Compose bond_graph of new child
-                self.root.bond_graph = nx.compose(
-                    self.root.bond_graph, new_child.bond_graph
-                )
+                # Merge the new child's bond_graph into the root's
+                self.root.bond_graph.update(new_child.bond_graph)
 
                 new_child.bond_graph = None
 
@@ -1017,7 +1058,7 @@ class Compound(object):
     def _prune_ghost_ports(self):
         """Worker for remove(). Remove all ports whose anchor has been deleted."""
         all_ports_list = list(self.all_ports())
-        particles = list(self.particles())
+        particles = set(self.particles())
         for port in all_ports_list:
             if port.anchor not in particles:
                 self._remove(port)
@@ -1027,7 +1068,7 @@ class Compound(object):
     def _remove(self, removed_part):
         """Worker for remove(). Removes bonds."""
         if self.root.bond_graph.has_node(removed_part):
-            for neighbor in nx.neighbors(self.root.bond_graph.copy(), removed_part):
+            for neighbor in list(self.root.bond_graph.neighbors(removed_part)):
                 self.root.remove_bond((removed_part, neighbor))
             self.root.bond_graph.remove_node(removed_part)
 
@@ -1936,7 +1977,8 @@ class Compound(object):
         new_bonds = list()
         for particle in particle_list:
             for neighbor in nx.neighbors(bond_graph, particle):
-                new_bonds.append((particle, neighbor))
+                bond_order = bond_graph.edges[particle, neighbor].get("bond_order")
+                new_bonds.append(((particle, neighbor), bond_order))
 
         # Remove all labels which refer to children in the hierarchy
         self.labels.clear()
@@ -1951,8 +1993,8 @@ class Compound(object):
             self.add(particle_list)
             self.add(ports_list)
 
-            for bond in new_bonds:
-                self.add_bond(bond)
+            for bond, bond_order in new_bonds:
+                self.add_bond(bond, bond_order=bond_order)
         else:
             comp = clone(self)
             comp.flatten(inplace=True)
@@ -2559,7 +2601,7 @@ class Compound(object):
             include_ports=include_ports,
         )
 
-    def to_smiles(self, backend="pybel"):
+    def to_smiles(self, backend="rdkit"):
         """Create a SMILES string from an mbuild compound.
 
         Parameters
@@ -2703,6 +2745,7 @@ class Compound(object):
         newone._box = deepcopy(self._box)
         newone._periodicity = deepcopy(self._periodicity)
         newone._charge = deepcopy(self._charge)
+        newone._formal_charge = self._formal_charge
         newone._mass = deepcopy(self._mass)
         newone._tag = deepcopy(self._tag)
         newone._hoomd_data = {}
@@ -2825,3 +2868,12 @@ def _flatten_list(c_list):
                 yield from _flatten_list(c)
             else:
                 yield c
+
+
+def _validate_formal_charge(value):
+    """Return value as an int, or None; raise if it is not a whole number."""
+    if value is None:
+        return None
+    if isinstance(value, bool) or int(value) != value:
+        raise ValueError(f"A formal charge must be a whole number. You passed {value}.")
+    return int(value)

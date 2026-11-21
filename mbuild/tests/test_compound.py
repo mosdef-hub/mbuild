@@ -217,6 +217,23 @@ class TestCompound(BaseTest):
         assert bond_order_dict[bonds[3].GetBondType()] == 1.0
 
     @pytest.mark.skipif(not has_rdkit, reason="RDKit is not installed")
+    def test_rdkit_keeps_formal_charge(self):
+        from rdkit import Chem
+
+        acrylate = mb.load("C=CC(=O)[O-]", smiles=True, backend="rdkit")
+        assert acrylate.formal_charge == -1
+
+        rdmol = acrylate.to_rdkit()
+        Chem.SanitizeMol(rdmol)
+        assert Chem.MolToSmiles(Chem.RemoveHs(rdmol)) == "C=CC(=O)[O-]"
+
+    @pytest.mark.skipif(not has_rdkit, reason="RDKit is not installed")
+    def test_to_rdkit_keeps_positions(self, methane):
+        rdmol = methane.to_rdkit()
+        positions = rdmol.GetConformer().GetPositions()
+        assert np.allclose(positions, methane.xyz * 10)
+
+    @pytest.mark.skipif(not has_rdkit, reason="RDKit is not installed")
     def test_to_rdkit_no_elements(self):
         comp = mb.Compound(name="_A")
         with pytest.raises(MBuildError):
@@ -926,6 +943,37 @@ class TestCompound(BaseTest):
         for part in ethane.children:
             assert isinstance(part, Port)
 
+    @pytest.mark.parametrize("as_list", [True, False])
+    def test_add_merges_bond_graphs(self, as_list):
+        def carbonyl(y):
+            comp = mb.Compound(name="CO")
+            carbon = mb.Particle(name="C", element="C", pos=[0, y, 0])
+            oxygen = mb.Particle(name="O", element="O", pos=[0.12, y, 0])
+            comp.add([carbon, oxygen])
+            comp.add_bond((carbon, oxygen), bond_order=2.0)
+            return comp
+
+        host = carbonyl(0.0)
+        guests = [carbonyl(0.3), carbonyl(0.6)]
+        if as_list:
+            host.add(guests)
+        else:
+            for guest in guests:
+                host.add(guest)
+
+        assert host.n_bonds == 3
+        assert set(host.bond_graph.nodes) == set(host.particles())
+        for _, _, data in host.bonds(return_bond_order=True):
+            assert data["bond_order"] == 2.0
+
+    def test_remove_one_bonded_particle(self, ethane):
+        hydrogen = list(ethane.particles_by_name("H"))[0]
+        ethane.remove(hydrogen)
+
+        assert ethane.n_bonds == 6
+        assert hydrogen not in ethane.bond_graph
+        assert all(hydrogen not in bond for bond in ethane.bonds())
+
     def test_remove_subcompound(self, ethane):
         methyl = ethane.children[0]
         ethane.remove(methyl)
@@ -1189,6 +1237,28 @@ class TestCompound(BaseTest):
         ethane.flatten()
         assert len(ethane.all_ports()) == len(original_ports)
         assert ethane.all_ports()[0] == original_ports[0]
+
+    @pytest.mark.parametrize("inplace", [True, False])
+    def test_flatten_keeps_bond_order(self, inplace):
+        carbonyl = mb.Compound(name="CO")
+        carbon = mb.Particle(name="C", element="C")
+        oxygen = mb.Particle(name="O", element="O", pos=[0.12, 0, 0])
+        carbonyl.add([carbon, oxygen])
+        carbonyl.add_bond((carbon, oxygen), bond_order=2.0)
+        other = mb.clone(carbonyl)
+        other.translate([0, 0.3, 0])
+        dimer = mb.Compound([carbonyl, other])
+        first, second = dimer.children
+        dimer.add_bond((first[0], second[0]), bond_order=1.0)
+
+        flat = dimer.flatten(inplace=inplace)
+        if inplace:
+            flat = dimer
+        orders = sorted(
+            bond[2]["bond_order"] for bond in flat.bonds(return_bond_order=True)
+        )
+        assert flat.n_particles == len(flat.children) == 4
+        assert orders == [1.0, 2.0, 2.0]
 
     @pytest.mark.skipif(not has_openbabel, reason="Open Babel not installed")
     def test_reload(self):
@@ -1879,7 +1949,41 @@ class TestCompound(BaseTest):
         assert compound.charge == 0.25
 
         with pytest.raises(MBuildError):
-            compound = Compound(subcompounds=ch3, charge=1.0)
+            Compound(subcompounds=ch3, charge=1.0)
+
+    def test_formal_charge(self, ch2, ch3):
+        assert Compound(formal_charge=-1).formal_charge == -1
+        assert Compound().formal_charge is None
+
+        ch2[0].formal_charge = 1
+        ch3[0].formal_charge = -1
+        ch3[1].formal_charge = -1
+        compound = Compound([ch2, ch3])
+        assert compound.formal_charge == -1
+        assert ch2.formal_charge == 1
+        assert compound[0].formal_charge == 1
+
+        with pytest.raises(AttributeError):
+            compound.formal_charge = 0
+        with pytest.raises(MBuildError):
+            Compound(subcompounds=mb.clone(ch2), formal_charge=1)
+
+    @pytest.mark.parametrize("value", [0.5, "1", True])
+    def test_formal_charge_not_whole_number(self, value):
+        with pytest.raises(ValueError):
+            Compound(formal_charge=value)
+
+    def test_formal_charge_numpy_integer(self):
+        particle = Compound()
+        particle.formal_charge = np.int64(2)
+        assert particle.formal_charge == 2
+        assert isinstance(particle.formal_charge, int)
+
+    def test_clone_keeps_formal_charge(self, ch3):
+        ch3[0].formal_charge = 1
+        copy = mb.clone(ch3)
+        assert copy[0].formal_charge == 1
+        assert copy.formal_charge == 1
 
     def test_charge_neutrality_warn(self, benzene, caplog):
         benzene[0].charge = 0.25
