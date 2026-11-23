@@ -968,6 +968,22 @@ class TestRandomWalk(BaseTest):
         )
         assert list(path.beads) == ["_A", "_B", "_A", "_B", "_A", "_B"]
 
+    def test_rw_first_pair_retry_preserves_name(self, monkeypatch):
+        # Reject the first pair, then accept a second bead one bond from the origin.
+        trials = iter([None, np.array([0.15, 0.0, 0.0])])
+        monkeypatch.setattr(
+            "mbuild.path.build.get_second_point", lambda **kwargs: next(trials)
+        )
+        namer = CyclicNamer(["A", "B", "C"])
+        path = hard_sphere_random_walk(
+            initial_point=(0.0, 0.0, 0.0),
+            bond_length=0.15,
+            termination=2,
+            bead_name=namer,
+        )
+        assert list(path.beads) == ["A", "B"]
+        assert next(namer) == "C"
+
     def test_rw_cyclic_namer_blocks(self):
         path = hard_sphere_random_walk(
             radius=0.1,
