@@ -105,7 +105,7 @@ def get_initial_point(state, existing_points, beads, check_path, next_step):
 
     The strategy for choosing a starting point depends on ``state.initial_point``:
 
-    - A coordinate: the array is used directly as the starting coordinate.
+    - A coordinate: check the volume constraint and overlaps before accepting it.
     - A site index, indicated by ``state.starting_from_site``: indexes into
       ``existing_points``; a new point is generated in a sphere around that
       coordinate, filtered by volume constraint and bias, and checked for
@@ -165,9 +165,17 @@ def get_initial_point(state, existing_points, beads, check_path, next_step):
 
     excluded_indices = state.excluded_indices()
 
-    # An initial point was manually given in hard_sphere_random_walk, use that.
-    # Check if this point causes any overlaps, if so, raise error.
     if state.initial_point is not None and not state.starting_from_site:
+        if (
+            state.volume_constraint is not None
+            and not state.volume_constraint.is_inside(
+                points=state.initial_point[None, :], buffer=state.radius
+            )[0]
+        ):
+            raise PathConvergenceError(
+                f"The provided initial_point {state.initial_point} is outside the "
+                f"volume constraint with a buffer of {state.radius}."
+            )
         if check_path(
             existing_points=existing_points,
             new_point=state.initial_point,
