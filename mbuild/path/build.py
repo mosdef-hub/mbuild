@@ -1421,7 +1421,9 @@ def hard_sphere_random_walk(
             next_step=next_step,
         )
         coordinates[state.count] = initial_xyz
-        beads[state.count] = next(namer)
+        # Pair retries replace the first coordinate but reuse its bead name.
+        if num_tries == 0:
+            beads[state.count] = next(namer)
         state.count += 1
         if state.check_termination(path, coordinates, beads):
             return path
