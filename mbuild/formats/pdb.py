@@ -1,13 +1,16 @@
 """Write mBuild Compounds to PDB files."""
 
+import logging
+from collections import Counter
 from dataclasses import dataclass, field
 
 import numpy as np
 
-from mbuild.box import Box
 from mbuild.exceptions import MBuildError
 
 __all__ = ["write_pdb"]
+
+logger = logging.getLogger(__name__)
 
 # Residue names written as ATOM records: the standard amino acids and
 # nucleotides. Every other residue is written as HETATM records.
@@ -36,7 +39,7 @@ def write_pdb(compound, filename, residues=None, box=None, include_ports=False):
         no ``residue_number`` set on them or their ancestors.
     box : mb.Box, optional, default=None
         Box written to the CRYST1 record. If None, ``compound.box`` is used,
-        or else the bounding box padded by 0.25 nm on each side.
+        and if that is None too, no CRYST1 record is written.
     include_ports : bool, optional, default=False
         Write the particles of ports, as atoms named ``VS`` in a residue
         named ``PRT``.
@@ -45,10 +48,22 @@ def write_pdb(compound, filename, residues=None, box=None, include_ports=False):
     -----
     Each particle is written in the residue given by its nearest ancestor
     (or itself) with a ``residue_number``; otherwise its nearest ancestor
-    named in ``residues``; otherwise a single residue named ``RES``. Residues
-    with no ``residue_number`` are numbered in the order they are written.
-    The chain ID comes from the nearest ancestor with a ``chain_id``, and a
-    TER record closes each chain.
+    named in ``residues``; otherwise a single residue named ``RES``. Each
+    Compound with a ``chain_id`` is written as its own chain, closed by a
+    TER record. Within a chain, a residue with no ``residue_number`` gets the
+    number after the previous residue's, skipping numbers that other residues
+    of the chain set explicitly.
+
+    PDB fields have fixed widths. Residue names longer than four characters
+    are cut to four, with a warning; names of four characters are written in
+    columns 18-21, which some readers (RDKit, gemmi, Biopython) do not read.
+    Atom names repeated within a residue are numbered in the file (for
+    example ``H`` becomes ``H1``, ``H2``, ...), because readers such as
+    OpenMM keep only one atom per name. Atom serials above 99999 and residue
+    numbers above 9999 are written in OpenMM's hexadecimal form; mmCIF is
+    better suited to systems that large. Atom names longer than four
+    characters are cut to four, with a warning. Coordinates outside -999.999
+    to 9999.999 Angstroms and formal charges beyond +/-9 raise an error.
 
     Residues with a standard amino acid or nucleotide name are written as
     ATOM records, and all others as HETATM records. CONECT records list every
@@ -64,16 +79,15 @@ def write_pdb(compound, filename, residues=None, box=None, include_ports=False):
     residue_names = set(residues or ())
     if box is None:
         box = compound.box
-    if box is None:
-        bounding_box = compound.get_boundingbox()
-        lengths = np.array(bounding_box.lengths) + 0.5
-        box = Box(lengths=lengths, angles=bounding_box.angles)
 
-    lines = [_cryst1_line(box)]
+    chains = _chains_to_write(compound, residue_names, include_ports)
+    _warn_about_names(chains)
+
+    lines = [] if box is None else [_cryst1_line(box)]
     serial_of = {}  # particle -> its atom serial number in the file
     residue_of = {}  # particle -> the _Residue it is written in
     serial = 0
-    for chain in _chains_to_write(compound, residue_names, include_ports):
+    for chain in chains:
         for residue in chain:
             for particle in residue.particles:
                 serial += 1
@@ -87,6 +101,15 @@ def write_pdb(compound, filename, residues=None, box=None, include_ports=False):
     lines.extend(_conect_lines(compound, serial_of, residue_of))
     lines.append("END")
 
+    largest_number = max((r.number for chain in chains for r in chain), default=0)
+    if serial > 99999 or largest_number > 9999:
+        logger.warning(
+            "Atom serials above 99999 or residue numbers above 9999 are "
+            "written in OpenMM's hexadecimal form, which OpenMM, ParmEd and "
+            "OpenFF read but tools such as RDKit and MDAnalysis do not. "
+            "Consider mmCIF for systems this large."
+        )
+
     with open(filename, "w") as f:
         f.write("\n".join(lines) + "\n")
 
@@ -99,13 +122,17 @@ class _Residue:
     number: int
     insertion_code: str
     chain_id: str
+    chain_index: int  # position of the chain in the file
     index_in_chain: int
     particles: list = field(default_factory=list)
     # Whether readers know the residue's bonds from its name; set from name
     is_standard: bool = field(init=False)
+    # particle -> the atom name written for it, unique within the residue
+    atom_names: dict = field(init=False)
 
     def __post_init__(self):
         self.is_standard = self.name in STANDARD_RESIDUES
+        self.atom_names = _unique_atom_names(self.particles)
 
     @property
     def record_name(self):
@@ -118,35 +145,142 @@ def _chains_to_write(compound, residue_names, include_ports):
 
     Returns a list of chains, each a list of ``_Residue``.
     """
-    # chain ID -> {residue Compound, or a name for a default residue -> particles}
+    # chain Compound (or None) -> {residue Compound, or a default name -> particles}
     grouped = {}
     for particle in compound.particles(include_ports=include_ports):
         if particle.port_particle:
-            owner, chain_id = "PRT", ""
+            owner, chain = "PRT", None
         else:
             owner = _find_residue(particle, residue_names) or "RES"
-            chain_id = _find_chain_id(particle)
-        grouped.setdefault(chain_id, {}).setdefault(owner, []).append(particle)
+            chain = _find_chain(particle)
+        grouped.setdefault(chain, {}).setdefault(owner, []).append(particle)
 
     chains = []
-    residue_count = 0
-    for chain_id, residues in grouped.items():
-        chain = []
-        for index, (owner, particles) in enumerate(residues.items()):
-            residue_count += 1
-            if isinstance(owner, str):
-                name, number, insertion_code = owner, residue_count, " "
-            else:
-                name = owner.name
-                number = owner.residue_number
-                if number is None:
-                    number = residue_count
-                insertion_code = owner.insertion_code or " "
-            chain.append(
-                _Residue(name, number, insertion_code, chain_id, index, particles)
-            )
-        chains.append(chain)
+    for chain_index, (chain, residues) in enumerate(grouped.items()):
+        chain_id = chain.chain_id if chain is not None else ""
+        numbers = _residue_numbers(list(residues), chain_id)
+        chains.append(
+            [
+                _Residue(
+                    name=owner if isinstance(owner, str) else owner.name,
+                    number=number,
+                    insertion_code=_insertion_code(owner),
+                    chain_id=chain_id,
+                    chain_index=chain_index,
+                    index_in_chain=index,
+                    particles=particles,
+                )
+                for index, ((owner, particles), number) in enumerate(
+                    zip(residues.items(), numbers)
+                )
+            ]
+        )
     return chains
+
+
+def _residue_numbers(owners, chain_id):
+    """Return the residue number of each residue of one chain.
+
+    A residue keeps a ``residue_number`` set on it. Any other residue gets the
+    number after the previous residue's, skipping numbers set explicitly in
+    the chain. Residues that share an explicit number and insertion code are
+    reported, because readers would merge them.
+    """
+    explicit = [
+        (owner.residue_number, _insertion_code(owner))
+        for owner in owners
+        if not isinstance(owner, str) and owner.residue_number is not None
+    ]
+    repeated = sorted(key for key, n in Counter(explicit).items() if n > 1)
+    if repeated:
+        logger.warning(
+            f"Residues of chain {chain_id!r} share residue numbers "
+            f"{[number for number, _ in repeated]}, so PDB readers may merge "
+            "them into one residue."
+        )
+    taken = {number for number, _ in explicit}
+    numbers = []
+    previous = 0
+    for owner in owners:
+        number = None if isinstance(owner, str) else owner.residue_number
+        if number is None:
+            number = previous + 1
+            while number in taken:
+                number += 1
+            taken.add(number)
+        numbers.append(number)
+        previous = number
+    return numbers
+
+
+def _insertion_code(owner):
+    """Return the insertion code written for a residue, or a space."""
+    if isinstance(owner, str):
+        return " "
+    return owner.insertion_code or " "
+
+
+def _unique_atom_names(particles):
+    """Return {particle: name}, numbering names repeated within a residue.
+
+    Names are cut to four characters. A repeated name gets a number appended
+    (``H`` -> ``H1``, ``H2``, ...), shortened if needed to fit four
+    characters, and skipping names already used in the residue.
+    """
+    names = {}
+    for particle in particles:
+        name = "VS" if particle.port_particle else particle.name
+        names[particle] = name[:4]
+    counts = Counter(names.values())
+    taken = set(names.values())
+    next_number = {}
+    for particle, name in names.items():
+        if counts[name] == 1:
+            continue
+        number = next_number.get(name, 1)
+        while True:
+            suffix = str(number)
+            candidate = name[: 4 - len(suffix)] + suffix
+            number += 1
+            if candidate not in taken:
+                break
+        next_number[name] = number
+        taken.add(candidate)
+        names[particle] = candidate
+    return names
+
+
+def _warn_about_names(chains):
+    """Log one warning each for long residue names and renamed atoms."""
+    residues = [residue for chain in chains for residue in chain]
+    long_names = sorted({r.name for r in residues if len(r.name) > 3})
+    if long_names:
+        logger.warning(
+            f"Residue names {long_names} are longer than three characters. "
+            "Names are written in columns 18-21 and cut to four characters, "
+            "and some readers (RDKit, gemmi, Biopython) read only three."
+        )
+    long_atom_names = sorted(
+        {p.name for r in residues for p in r.particles if len(p.name) > 4}
+    )
+    if long_atom_names:
+        logger.warning(
+            f"Atom names {long_atom_names[:5]} are longer than four "
+            "characters and were cut to four."
+        )
+    renamed = sum(
+        any(
+            name != ("VS" if p.port_particle else p.name)
+            for p, name in r.atom_names.items()
+        )
+        for r in residues
+    )
+    if renamed:
+        logger.warning(
+            f"Atom names repeated within a residue were numbered in the file "
+            f"(for example H -> H1, H2) in {renamed} residues, because PDB "
+            "readers such as OpenMM keep only one atom per name."
+        )
 
 
 def _find_residue(particle, residue_names):
@@ -165,8 +299,8 @@ def _find_residue(particle, residue_names):
     return None
 
 
-def _find_chain_id(particle):
-    """Return the chain ID of the nearest ancestor that has one, or ""."""
+def _find_chain(particle):
+    """Return the nearest ancestor (or the particle) with a chain_id, or None."""
     for ancestor in (particle, *particle.ancestors()):
         if ancestor.chain_id is not None:
             if len(ancestor.chain_id) != 1:
@@ -174,8 +308,8 @@ def _find_chain_id(particle):
                     f"PDB chain IDs are one character, but {ancestor} has "
                     f"chain_id {ancestor.chain_id!r}."
                 )
-            return ancestor.chain_id
-    return ""
+            return ancestor
+    return None
 
 
 def _needs_conect(particle1, particle2, residue_of):
@@ -191,7 +325,7 @@ def _needs_conect(particle1, particle2, residue_of):
         return True
     if residue1 is residue2:
         return False
-    if residue1.chain_id != residue2.chain_id:
+    if residue1.chain_index != residue2.chain_index:
         return True
     if abs(residue1.index_in_chain - residue2.index_in_chain) != 1:
         return True
@@ -252,13 +386,18 @@ def _atom_line(serial, particle, residue):
     number, 27 insertion code, 31-54 x, y and z in Angstroms, 55-60
     occupancy, 61-66 temperature factor, 77-78 element and 79-80 charge.
     """
+    name = residue.atom_names[particle]
     if particle.port_particle:
-        name, symbol, charge = "VS", "", ""
+        symbol, charge = "", ""
     else:
-        name = particle.name
         symbol = particle.element.symbol.upper() if particle.element else ""
         charge = _charge_field(particle.formal_charge)
     x, y, z = particle.pos * 10.0
+    if not all(-999.999 <= value <= 9999.999 for value in (x, y, z)):
+        raise MBuildError(
+            f"The coordinates of {particle} ({x:.3f}, {y:.3f}, {z:.3f} "
+            "Angstroms) do not fit the PDB columns (-999.999 to 9999.999)."
+        )
     return (
         f"{residue.record_name}{_encode_index(serial, 5)} "
         f"{_atom_name_field(name, symbol)} "
@@ -281,18 +420,25 @@ def _ter_line(serial, residue):
 def _atom_name_field(name, symbol):
     """Return the atom name in columns 13-16.
 
-    Names of atoms with one-letter elements start in column 14, so that
-    the element symbol lines up with the two-letter ones (wwPDB format v3.3).
+    Names shorter than four characters that start with a letter and belong
+    to a one-letter element start in column 14, so that the element symbol
+    lines up with two-letter ones (wwPDB format v3.3). Others, such as "FE"
+    or "1HB", start in column 13. This is the rule OpenMM uses.
     """
-    if len(name) >= 4 or len(symbol) == 2:
-        return f"{name[:4]:<4s}"
-    return f" {name:<3s}"
+    if len(name) < 4 and name[:1].isalpha() and len(symbol) < 2:
+        return f" {name:<3s}"
+    return f"{name:<4s}"
 
 
 def _charge_field(formal_charge):
     """Return the formal charge as written in columns 79-80, e.g. "1-"."""
     if not formal_charge:
         return ""
+    if abs(formal_charge) > 9:
+        raise MBuildError(
+            f"A formal charge of {formal_charge} does not fit the two PDB "
+            "charge columns."
+        )
     sign = "+" if formal_charge > 0 else "-"
     return f"{abs(formal_charge)}{sign}"
 
@@ -303,6 +449,8 @@ def _encode_index(value, width):
     Values too large for the columns are written in hexadecimal, offset as
     OpenMM does (``openmm.app.PDBFile``), so 100000 is written as A0000.
     """
+    if value <= -(10 ** (width - 1)):
+        raise MBuildError(f"{value} is too small for a {width}-column PDB field.")
     if value < 10**width:
         return f"{value:{width}d}"
     limit = 10**width + 6 * 16 ** (width - 1)

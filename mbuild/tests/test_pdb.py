@@ -117,6 +117,93 @@ class TestPDB(BaseTest):
         with pytest.raises(TypeError):
             ethane.save("ethane.pdb", renumber=False)
 
+    def test_auto_numbers_skip_explicit_numbers(self):
+        ala = mb.Compound(name="ALA")
+        ala.residue_number = 2
+        lig = mb.Compound(name="LIG")
+        lig.add(mb.Particle(name="C1", element="C", pos=[0.3, 0, 0]))
+        chain = mb.Compound([ala, lig])
+        chain.chain_id = "A"
+        chain.save("numbers.pdb", residues=["LIG"])
+        atoms = _records("numbers.pdb", "ATOM") + _records("numbers.pdb", "HETATM")
+        assert [(line[17:20], int(line[22:26])) for line in atoms] == [
+            ("ALA", 2),
+            ("LIG", 3),
+        ]
+
+    def test_auto_numbers_restart_in_each_chain(self):
+        chains = []
+        for chain_id in "AB":
+            chain = mb.Compound([_residue("LIG", None, ["C1"], 0.0)])
+            chain.chain_id = chain_id
+            chains.append(chain)
+        mb.Compound(chains).save("chains.pdb", residues=["LIG"])
+        atoms = _records("chains.pdb", "HETATM")
+        assert [(line[21], int(line[22:26])) for line in atoms] == [
+            ("A", 1),
+            ("B", 1),
+        ]
+
+    def test_repeated_explicit_numbers_warn(self, caplog):
+        chain = mb.Compound(
+            [_residue("LIG", 5, ["C1"], 0.0), _residue("LIG", 5, ["C1"], 0.5)]
+        )
+        chain.save("repeated.pdb")
+        assert "share residue numbers [5]" in caplog.text
+
+    def test_chains_with_the_same_id_stay_separate(self):
+        chains = []
+        for x in (0.0, 0.5):
+            chain = mb.Compound([_residue("LIG", 1, ["C1"], x)])
+            chain.chain_id = "A"
+            chains.append(chain)
+        mb.Compound(chains).save("same_id.pdb")
+        assert len(_records("same_id.pdb", "TER")) == 2
+
+    def test_repeated_atom_names_are_numbered(self, ethane, caplog):
+        ethane.save("ethane.pdb")
+        names = [line[12:16].strip() for line in _records("ethane.pdb", "HETATM")]
+        assert names == ["C1", "H1", "H2", "H3", "C2", "H4", "H5", "H6"]
+        assert {p.name for p in ethane.particles()} == {"C", "H"}
+        assert "numbered in the file" in caplog.text
+
+    def test_long_residue_name_is_cut_with_warning(self, caplog):
+        residue = _residue("LIGAND", 1, ["C1"], 0.0)
+        residue.save("long.pdb")
+        assert _records("long.pdb", "HETATM")[0][17:21] == "LIGA"
+        assert "longer than three characters" in caplog.text
+
+    def test_long_atom_names_are_cut_with_warning(self, caplog):
+        residue = _residue("LIG", 1, ["C1234", "C1235"], 0.0)
+        residue.save("long.pdb")
+        names = [line[12:16].strip() for line in _records("long.pdb", "HETATM")]
+        assert names == ["C121", "C122"]
+        assert "cut to four" in caplog.text
+
+    def test_values_too_wide_raise(self):
+        far = mb.Particle(name="C", element="C", pos=[1000.0, 0, 0])
+        with pytest.raises(MBuildError, match="do not fit"):
+            far.save("far.pdb")
+        charged = mb.Particle(name="C", element="C", formal_charge=10)
+        with pytest.raises(MBuildError, match="charge columns"):
+            charged.save("charged.pdb")
+
+    def test_no_cryst1_without_box(self, ethane):
+        ethane.save("ethane.pdb")
+        assert _records("ethane.pdb", "CRYST1") == []
+
+    def test_large_residue_numbers_warn(self, caplog):
+        _residue("LIG", 10000, ["C1"], 0.0).save("big.pdb")
+        assert _records("big.pdb", "HETATM")[0][22:26] == "A000"
+        assert "hexadecimal" in caplog.text
+
+    def test_atom_name_starting_with_digit(self):
+        residue = _residue("LIG", 1, ["C"], 0.0)
+        residue.add(mb.Particle(name="1HB", element="H", pos=[0.1, 0, 0]))
+        residue.save("digit.pdb")
+        names = [line[12:16] for line in _records("digit.pdb", "HETATM")]
+        assert names == [" C  ", "1HB "]
+
     def test_large_serials(self):
         assert _encode_index(99999, 5) == "99999"
         assert _encode_index(100000, 5) == "A0000"

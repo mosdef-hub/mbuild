@@ -454,6 +454,9 @@ class TestCompound(BaseTest):
         assert ch3_new.n_particles == ch3.n_particles
         assert np.allclose(ch3_new.xyz, ch3.xyz)
         ch3_names = [p.name for p in ch3.particles()]
+        if extension == ".pdb":
+            # PDB readers keep one atom per name, so repeated names are numbered
+            ch3_names = ["C", "H1", "H2", "H3"]
         ch3_new_names = [p.name for p in ch3_new.particles()]
         assert set(ch3_names) == set(ch3_new_names)
 
