@@ -3,7 +3,7 @@ import pytest
 
 import mbuild as mb
 from mbuild.exceptions import MBuildError
-from mbuild.formats.pdb import _encode_index
+from mbuild.formats.pdb import _encode_index, pdb_residues
 from mbuild.tests.base_test import BaseTest
 
 
@@ -53,7 +53,7 @@ class TestPDB(BaseTest):
         ter = _records("chain.pdb", "TER")[0]
         assert ter[21:27] == "B  52A"
 
-    def test_standard_residues_skip_implied_bonds(self):
+    def test_conect_lists_every_bond(self):
         ala = _residue("ALA", 1, ["N", "CA", "C"], 0.0)
         gly = _residue("GLY", 2, ["N", "CA", "C"], 0.4)
         cys = _residue("CYS", 3, ["N", "CA", "SG"], 0.8)
@@ -61,14 +61,35 @@ class TestPDB(BaseTest):
         chain.chain_id = "A"
         for res in (ala, gly, cys):
             chain.add_bond((res[0], res[1]))
-        chain.add_bond((ala[2], gly[0]))  # peptide bond, implied
-        chain.add_bond((ala[1], cys[2]))  # not implied by the residues
+        chain.add_bond((ala[2], gly[0]))
+        chain.add_bond((ala[1], cys[2]))
         chain.save("peptide.pdb")
         assert len(_records("peptide.pdb", "ATOM")) == 9
-        conect = _records("peptide.pdb", "CONECT")
-        assert [line.split() for line in conect] == [
-            ["CONECT", "2", "9"],
-            ["CONECT", "9", "2"],
+        pairs = set()
+        for line in _records("peptide.pdb", "CONECT"):
+            serial, *partners = (int(field) for field in line.split()[1:])
+            pairs.update(tuple(sorted((serial, p))) for p in partners)
+        assert pairs == {(1, 2), (4, 5), (7, 8), (3, 4), (2, 9)}
+
+    def test_residue_named_like_a_nucleotide_keeps_bonds(self):
+        monomer = _residue("A", 1, ["C1", "C2", "O1"], 0.0)
+        monomer.add_bond((monomer[0], monomer[1]))
+        monomer.add_bond((monomer[1], monomer[2]))
+        monomer.save("named_a.pdb")
+        assert len(_records("named_a.pdb", "CONECT")) == 3
+
+    def test_pdb_residues_match_the_file(self, ethane):
+        ethane.name = "ETHANE"
+        ethane.residue_number = 7
+        ethane.save("ethane.pdb")
+        (residue,) = pdb_residues(ethane)
+        atoms = _records("ethane.pdb", "HETATM")
+        assert residue.name == atoms[0][17:21].strip() == "ETHA"
+        assert residue.original_name == "ETHANE"
+        assert residue.number == int(atoms[0][22:26]) == 7
+        assert residue.insertion_code == residue.chain_id == ""
+        assert [residue.atom_names[p] for p in residue.particles] == [
+            line[12:16].strip() for line in atoms
         ]
 
     def test_formal_charge_column(self):

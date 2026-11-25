@@ -3,12 +3,14 @@
 import logging
 from collections import Counter
 from dataclasses import dataclass, field
+from itertools import groupby
+from operator import attrgetter
 
 import numpy as np
 
 from mbuild.exceptions import MBuildError
 
-__all__ = ["write_pdb"]
+__all__ = ["PDBResidue", "pdb_residues", "write_pdb"]
 
 logger = logging.getLogger(__name__)
 
@@ -18,11 +20,6 @@ STANDARD_RESIDUES = frozenset(
     "ALA ARG ASN ASP CYS GLN GLU GLY HIS ILE LEU LYS MET PHE PRO SER THR "
     "TRP TYR VAL A C G U I DA DC DG DT DI".split()
 )
-
-# Bonds between consecutive standard residues of a chain that PDB readers
-# infer from the record order: the peptide bond and the nucleic acid
-# backbone link, as (atom of the earlier residue, atom of the later one).
-_BACKBONE_LINKS = {("C", "N"), ("O3'", "P")}
 
 
 def write_pdb(compound, filename, residues=None, box=None, include_ports=False):
@@ -46,62 +43,42 @@ def write_pdb(compound, filename, residues=None, box=None, include_ports=False):
 
     Notes
     -----
-    Each particle is written in the residue given by its nearest ancestor
-    (or itself) with a ``residue_number``; otherwise its nearest ancestor
-    named in ``residues``; otherwise a single residue named ``RES``. Each
-    Compound with a ``chain_id`` is written as its own chain, closed by a
-    TER record. Within a chain, a residue with no ``residue_number`` gets the
-    number after the previous residue's, skipping numbers that other residues
-    of the chain set explicitly.
+    The residues, residue numbers and atom names written are those returned
+    by ``pdb_residues``, which describes them in detail. Each chain is closed
+    by a TER record. Residues with a standard amino acid or nucleotide name
+    are written as ATOM records, and all others as HETATM records.
 
-    PDB fields have fixed widths. Residue names longer than four characters
-    are cut to four, with a warning; names of four characters are written in
-    columns 18-21, which some readers (RDKit, gemmi, Biopython) do not read.
-    Atom names repeated within a residue are numbered in the file (for
-    example ``H`` becomes ``H1``, ``H2``, ...), because readers such as
-    OpenMM keep only one atom per name. Atom serials above 99999 and residue
+    CONECT records list every bond, so readers do not have to infer bonds from
+    residue names. A double or triple bond is listed two or three times, the
+    convention RDKit and Open Babel use for bond orders. The formal charge of
+    a particle is written in columns 79-80 when it is set and not zero.
+
+    PDB fields have fixed widths. Atom serials above 99999 and residue
     numbers above 9999 are written in OpenMM's hexadecimal form; mmCIF is
-    better suited to systems that large. Atom names longer than four
-    characters are cut to four, with a warning. Coordinates outside -999.999
-    to 9999.999 Angstroms and formal charges beyond +/-9 raise an error.
-
-    Residues with a standard amino acid or nucleotide name are written as
-    ATOM records, and all others as HETATM records. CONECT records list every
-    bond except the bonds within a standard residue and the backbone bonds
-    between consecutive standard residues of a chain, which PDB readers take
-    from the residue definitions (wwPDB format v3.3, section 10). A double
-    or triple bond is listed two or three times, the convention RDKit and
-    Open Babel use for bond orders. The formal charge of a particle is
-    written in columns 79-80 when it is set and not zero.
+    better suited to systems that large. Coordinates outside -999.999 to
+    9999.999 Angstroms and formal charges beyond +/-9 raise an error.
     """
-    if isinstance(residues, str):
-        residues = [residues]
-    residue_names = set(residues or ())
     if box is None:
         box = compound.box
-
-    chains = _chains_to_write(compound, residue_names, include_ports)
-    _warn_about_names(chains)
+    written = pdb_residues(compound, residues=residues, include_ports=include_ports)
 
     lines = [] if box is None else [_cryst1_line(box)]
     serial_of = {}  # particle -> its atom serial number in the file
-    residue_of = {}  # particle -> the _Residue it is written in
     serial = 0
-    for chain in chains:
+    for _, chain in groupby(written, key=attrgetter("chain_index")):
+        chain = list(chain)
         for residue in chain:
             for particle in residue.particles:
                 serial += 1
                 serial_of[particle] = serial
-                residue_of[particle] = residue
                 lines.append(_atom_line(serial, particle, residue))
-        last_residue = chain[-1]
-        if last_residue.chain_id:
+        if chain[-1].chain_id:
             serial += 1  # a TER record takes the next serial number
-            lines.append(_ter_line(serial, last_residue))
-    lines.extend(_conect_lines(compound, serial_of, residue_of))
+            lines.append(_ter_line(serial, chain[-1]))
+    lines.extend(_conect_lines(compound, serial_of))
     lines.append("END")
 
-    largest_number = max((r.number for chain in chains for r in chain), default=0)
+    largest_number = max((residue.number for residue in written), default=0)
     if serial > 99999 or largest_number > 9999:
         logger.warning(
             "Atom serials above 99999 or residue numbers above 9999 are "
@@ -114,37 +91,47 @@ def write_pdb(compound, filename, residues=None, box=None, include_ports=False):
         f.write("\n".join(lines) + "\n")
 
 
-@dataclass
-class _Residue:
-    """A residue as it is written to a PDB file."""
+def pdb_residues(compound, residues=None, include_ports=False):
+    """Return the residues of a Compound as ``write_pdb`` writes them.
 
-    name: str
-    number: int
-    insertion_code: str
-    chain_id: str
-    chain_index: int  # position of the chain in the file
-    index_in_chain: int
-    particles: list = field(default_factory=list)
-    # Whether readers know the residue's bonds from its name; set from name
-    is_standard: bool = field(init=False)
-    # particle -> the atom name written for it, unique within the residue
-    atom_names: dict = field(init=False)
+    Code that works with the written file, for example to build residue
+    definitions for OpenFF's PDB reader, can use this to get the same residue
+    names, numbers, chain IDs and atom names as the file.
 
-    def __post_init__(self):
-        self.is_standard = self.name in STANDARD_RESIDUES
-        self.atom_names = _unique_atom_names(self.particles)
+    Parameters
+    ----------
+    compound : mb.Compound
+        The Compound to describe.
+    residues : str or list of str, optional, default=None
+        Names of the Compounds to treat as residues, as in ``write_pdb``.
+    include_ports : bool, optional, default=False
+        Include the particles of ports, as in ``write_pdb``.
 
-    @property
-    def record_name(self):
-        """The record name of the residue's atoms, ATOM or HETATM."""
-        return "ATOM  " if self.is_standard else "HETATM"
+    Returns
+    -------
+    list of PDBResidue
+        The residues in the order they are written.
 
+    Notes
+    -----
+    Each particle belongs to the residue given by its nearest ancestor (or
+    itself) with a ``residue_number``; otherwise its nearest ancestor named in
+    ``residues``; otherwise a single residue named ``RES``. Each Compound with
+    a ``chain_id`` is its own chain. Within a chain, a residue with no
+    ``residue_number`` gets the number after the previous residue's, skipping
+    numbers that other residues of the chain set explicitly.
 
-def _chains_to_write(compound, residue_names, include_ports):
-    """Group the particles into chains of residues, in the order written.
-
-    Returns a list of chains, each a list of ``_Residue``.
+    Residue and atom names longer than four characters are cut to four, with
+    a warning. Four-character residue names are written in columns 18-21,
+    which some readers (RDKit, gemmi, Biopython) do not read. Atom names
+    repeated within a residue are numbered (for example ``H`` becomes ``H1``,
+    ``H2``, ...), because readers such as OpenMM keep only one atom per name.
+    The Compound itself is not changed.
     """
+    if isinstance(residues, str):
+        residues = [residues]
+    residue_names = set(residues or ())
+
     # chain Compound (or None) -> {residue Compound, or a default name -> particles}
     grouped = {}
     for particle in compound.particles(include_ports=include_ports):
@@ -155,27 +142,72 @@ def _chains_to_write(compound, residue_names, include_ports):
             chain = _find_chain(particle)
         grouped.setdefault(chain, {}).setdefault(owner, []).append(particle)
 
-    chains = []
-    for chain_index, (chain, residues) in enumerate(grouped.items()):
+    written = []
+    for chain_index, (chain, owners) in enumerate(grouped.items()):
         chain_id = chain.chain_id if chain is not None else ""
-        numbers = _residue_numbers(list(residues), chain_id)
-        chains.append(
-            [
-                _Residue(
-                    name=owner if isinstance(owner, str) else owner.name,
+        numbers = _residue_numbers(list(owners), chain_id)
+        for (owner, particles), number in zip(owners.items(), numbers):
+            name = owner if isinstance(owner, str) else owner.name
+            written.append(
+                PDBResidue(
+                    name=name,
                     number=number,
                     insertion_code=_insertion_code(owner),
                     chain_id=chain_id,
                     chain_index=chain_index,
-                    index_in_chain=index,
                     particles=particles,
                 )
-                for index, ((owner, particles), number) in enumerate(
-                    zip(residues.items(), numbers)
-                )
-            ]
-        )
-    return chains
+            )
+    _warn_about_names(written)
+    return written
+
+
+@dataclass
+class PDBResidue:
+    """A residue as ``write_pdb`` writes it.
+
+    Attributes
+    ----------
+    name : str
+        The residue name, cut to four characters.
+    number : int
+        The residue number.
+    insertion_code : str
+        The insertion code, or "" if there is none.
+    chain_id : str
+        The chain ID, or "" if there is none.
+    chain_index : int
+        The position of the residue's chain in the file, counting from 0.
+    particles : list of mb.Compound
+        The particles of the residue, in the order they are written.
+    atom_names : dict
+        The atom name written for each particle, unique within the residue.
+    original_name : str
+        The residue name before it was cut to four characters.
+    is_standard : bool
+        Whether the name is a standard amino acid or nucleotide.
+    """
+
+    name: str
+    number: int
+    insertion_code: str
+    chain_id: str
+    chain_index: int
+    particles: list = field(default_factory=list)
+    atom_names: dict = field(init=False)
+    original_name: str = field(init=False)
+    is_standard: bool = field(init=False)
+
+    def __post_init__(self):
+        self.original_name = self.name
+        self.name = self.name[:4]
+        self.atom_names = _unique_atom_names(self.particles)
+        self.is_standard = self.name in STANDARD_RESIDUES
+
+    @property
+    def record_name(self):
+        """The record name of the residue's atoms, ATOM or HETATM."""
+        return "ATOM  " if self.is_standard else "HETATM"
 
 
 def _residue_numbers(owners, chain_id):
@@ -214,10 +246,10 @@ def _residue_numbers(owners, chain_id):
 
 
 def _insertion_code(owner):
-    """Return the insertion code written for a residue, or a space."""
+    """Return the insertion code of a residue, or "" if it has none."""
     if isinstance(owner, str):
-        return " "
-    return owner.insertion_code or " "
+        return ""
+    return owner.insertion_code or ""
 
 
 def _unique_atom_names(particles):
@@ -250,10 +282,9 @@ def _unique_atom_names(particles):
     return names
 
 
-def _warn_about_names(chains):
+def _warn_about_names(residues):
     """Log one warning each for long residue names and renamed atoms."""
-    residues = [residue for chain in chains for residue in chain]
-    long_names = sorted({r.name for r in residues if len(r.name) > 3})
+    long_names = sorted({r.original_name for r in residues if len(r.original_name) > 3})
     if long_names:
         logger.warning(
             f"Residue names {long_names} are longer than three characters. "
@@ -312,30 +343,6 @@ def _find_chain(particle):
     return None
 
 
-def _needs_conect(particle1, particle2, residue_of):
-    """Return False if PDB readers can infer this bond from residue names.
-
-    Readers know the bonds within a standard residue, and the peptide or
-    nucleic acid backbone bond between consecutive standard residues of a
-    chain. Every other bond needs a CONECT record.
-    """
-    residue1 = residue_of[particle1]
-    residue2 = residue_of[particle2]
-    if not (residue1.is_standard and residue2.is_standard):
-        return True
-    if residue1 is residue2:
-        return False
-    if residue1.chain_index != residue2.chain_index:
-        return True
-    if abs(residue1.index_in_chain - residue2.index_in_chain) != 1:
-        return True
-    if residue1.index_in_chain < residue2.index_in_chain:
-        earlier, later = particle1, particle2
-    else:
-        earlier, later = particle2, particle1
-    return (earlier.name, later.name) not in _BACKBONE_LINKS
-
-
 def _conect_repeats(bond_order):
     """Return how many times a bond is listed in CONECT records.
 
@@ -345,13 +352,11 @@ def _conect_repeats(bond_order):
     return int(bond_order) if bond_order in (2, 3) else 1
 
 
-def _conect_lines(compound, serial_of, residue_of):
-    """Return the CONECT records of the bonds PDB readers cannot infer."""
+def _conect_lines(compound, serial_of):
+    """Return the CONECT records of every bond between written particles."""
     bonded = {}  # atom serial -> serials it is bonded to, repeated by order
     for particle1, particle2, data in compound.bonds(return_bond_order=True):
         if particle1 not in serial_of or particle2 not in serial_of:
-            continue
-        if not _needs_conect(particle1, particle2, residue_of):
             continue
         repeats = _conect_repeats(data["bond_order"])
         serial1, serial2 = serial_of[particle1], serial_of[particle2]
@@ -402,7 +407,7 @@ def _atom_line(serial, particle, residue):
         f"{residue.record_name}{_encode_index(serial, 5)} "
         f"{_atom_name_field(name, symbol)} "
         f"{residue.name:<4.4s}{residue.chain_id or ' ':1s}"
-        f"{_encode_index(residue.number, 4)}{residue.insertion_code}   "
+        f"{_encode_index(residue.number, 4)}{residue.insertion_code or ' ':1s}   "
         f"{x:8.3f}{y:8.3f}{z:8.3f}{1.0:6.2f}{0.0:6.2f}          "
         f"{symbol:>2s}{charge:2s}"
     )
@@ -413,7 +418,7 @@ def _ter_line(serial, residue):
     return (
         f"TER   {_encode_index(serial, 5)}      {residue.name:<4.4s}"
         f"{residue.chain_id}{_encode_index(residue.number, 4)}"
-        f"{residue.insertion_code}"
+        f"{residue.insertion_code or ' ':1s}"
     )
 
 
