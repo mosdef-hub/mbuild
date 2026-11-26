@@ -195,11 +195,19 @@ class TestPDB(BaseTest):
         assert "longer than three characters" in caplog.text
 
     def test_long_atom_names_are_cut_with_warning(self, caplog):
-        residue = _residue("LIG", 1, ["C1234", "C1235"], 0.0)
+        residue = _residue("LIG", 1, ["C1234", "O5678"], 0.0)
         residue.save("long.pdb")
         names = [line[12:16].strip() for line in _records("long.pdb", "HETATM")]
-        assert names == ["C121", "C122"]
+        assert names == ["C123", "O567"]
         assert "cut to four" in caplog.text
+
+    def test_too_many_repeated_names_raise(self):
+        residue = _residue("RES", 1, ["CA"] * 99, 0.0)
+        names = set(pdb_residues(residue)[0].atom_names.values())
+        assert len(names) == 99 and "CA99" in names
+        residue.add(mb.Particle(name="CA", element="C"))
+        with pytest.raises(MBuildError, match="residue_number"):
+            residue.save("too_many.pdb")
 
     def test_values_too_wide_raise(self):
         far = mb.Particle(name="C", element="C", pos=[1000.0, 0, 0])

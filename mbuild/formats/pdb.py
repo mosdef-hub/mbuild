@@ -94,9 +94,10 @@ def write_pdb(compound, filename, residues=None, box=None, include_ports=False):
 def pdb_residues(compound, residues=None, include_ports=False):
     """Return the residues of a Compound as ``write_pdb`` writes them.
 
-    Code that works with the written file, for example to build residue
-    definitions for OpenFF's PDB reader, can use this to get the same residue
-    names, numbers, chain IDs and atom names as the file.
+    Use this to find the residue, residue number and atom name that each
+    particle is given in the written file. These can differ from the
+    Compound, because repeated atom names are numbered and long names are cut
+    to four characters.
 
     Parameters
     ----------
@@ -126,7 +127,10 @@ def pdb_residues(compound, residues=None, include_ports=False):
     which some readers (RDKit, gemmi, Biopython) do not read. Atom names
     repeated within a residue are numbered (for example ``H`` becomes ``H1``,
     ``H2``, ...), because readers such as OpenMM keep only one atom per name.
-    The Compound itself is not changed.
+    If a numbered name would not fit in four characters, an error is raised;
+    this happens when one residue holds many atoms of the same name, usually
+    because the atoms were not grouped into residues with ``residues`` or
+    ``residue_number``. The Compound itself is not changed.
     """
     if isinstance(residues, str):
         residues = [residues]
@@ -201,7 +205,7 @@ class PDBResidue:
     def __post_init__(self):
         self.original_name = self.name
         self.name = self.name[:4]
-        self.atom_names = _unique_atom_names(self.particles)
+        self.atom_names = _unique_atom_names(self.particles, self.name)
         self.is_standard = self.name in STANDARD_RESIDUES
 
     @property
@@ -252,12 +256,12 @@ def _insertion_code(owner):
     return owner.insertion_code or ""
 
 
-def _unique_atom_names(particles):
+def _unique_atom_names(particles, residue_name):
     """Return {particle: name}, numbering names repeated within a residue.
 
     Names are cut to four characters. A repeated name gets a number appended
-    (``H`` -> ``H1``, ``H2``, ...), shortened if needed to fit four
-    characters, and skipping names already used in the residue.
+    (``H`` -> ``H1``, ``H2``, ...), skipping names already used in the
+    residue. Raises if a numbered name would be longer than four characters.
     """
     names = {}
     for particle in particles:
@@ -271,11 +275,16 @@ def _unique_atom_names(particles):
             continue
         number = next_number.get(name, 1)
         while True:
-            suffix = str(number)
-            candidate = name[: 4 - len(suffix)] + suffix
+            candidate = f"{name}{number}"
             number += 1
             if candidate not in taken:
                 break
+        if len(candidate) > 4:
+            raise MBuildError(
+                f"Residue {residue_name!r} has too many atoms named {name!r} "
+                "to give each a unique four-character PDB atom name. Group "
+                "the atoms into residues with residues= or residue_number."
+            )
         next_number[name] = number
         taken.add(candidate)
         names[particle] = candidate
