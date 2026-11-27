@@ -454,6 +454,9 @@ class TestCompound(BaseTest):
         assert ch3_new.n_particles == ch3.n_particles
         assert np.allclose(ch3_new.xyz, ch3.xyz)
         ch3_names = [p.name for p in ch3.particles()]
+        if extension == ".pdb":
+            # PDB readers keep one atom per name, so repeated names are numbered
+            ch3_names = ["C", "H1", "H2", "H3"]
         ch3_new_names = [p.name for p in ch3_new.particles()]
         assert set(ch3_names) == set(ch3_new_names)
 
@@ -1978,6 +1981,34 @@ class TestCompound(BaseTest):
         particle.formal_charge = np.int64(2)
         assert particle.formal_charge == 2
         assert isinstance(particle.formal_charge, int)
+
+    def test_residue_attributes(self, ch3):
+        assert ch3.residue_number is None
+        assert ch3.insertion_code is None
+        assert ch3.chain_id is None
+        ch3.residue_number = np.int64(48)
+        ch3.insertion_code = "A"
+        ch3.chain_id = "B"
+        copy = mb.clone(ch3)
+        assert (copy.residue_number, copy.insertion_code, copy.chain_id) == (
+            48,
+            "A",
+            "B",
+        )
+
+    @pytest.mark.parametrize(
+        "attribute, value",
+        [
+            ("residue_number", 1.5),
+            ("residue_number", True),
+            ("insertion_code", "AB"),
+            ("insertion_code", 1),
+            ("chain_id", ""),
+        ],
+    )
+    def test_residue_attributes_invalid(self, attribute, value):
+        with pytest.raises(ValueError):
+            setattr(Compound(), attribute, value)
 
     def test_clone_keeps_formal_charge(self, ch3):
         ch3[0].formal_charge = 1

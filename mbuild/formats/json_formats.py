@@ -145,6 +145,9 @@ def _particle_info(cmpd, include_ports=False):
     particle_dict["pos"] = cmpd.pos.tolist()
     particle_dict["charge"] = cmpd.charge
     particle_dict["formal_charge"] = cmpd._formal_charge
+    particle_dict["residue_number"] = cmpd.residue_number
+    particle_dict["insertion_code"] = cmpd.insertion_code
+    particle_dict["chain_id"] = cmpd.chain_id
     particle_dict["element"] = cmpd.element
     particle_dict["box"] = _box_info(cmpd)
 
@@ -215,6 +218,9 @@ def _dict_to_mb(compound_dict):
         box=box,
         formal_charge=formal_charge,
     )
+    this_particle.residue_number = compound_dict.get("residue_number")
+    this_particle.insertion_code = compound_dict.get("insertion_code")
+    this_particle.chain_id = compound_dict.get("chain_id")
     return this_particle
 
 
