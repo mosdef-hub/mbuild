@@ -5,7 +5,7 @@ import mbuild as mb
 from mbuild.exceptions import MBuildError
 from mbuild.formats.pdb import _decode_index, _encode_index, pdb_residues
 from mbuild.tests.base_test import BaseTest
-from mbuild.utils.io import get_fn
+from mbuild.utils.io import get_fn, has_rdkit
 
 
 def _records(filename, kind):
@@ -239,6 +239,25 @@ class TestPDB(BaseTest):
         assert _encode_index(100000, 5) == "A0000"
         with pytest.raises(MBuildError):
             _encode_index(10**5 + 6 * 16**4, 5)
+
+    @pytest.mark.skipif(not has_rdkit, reason="RDKit is not installed")
+    def test_aromatic_bonds_written_in_kekule_form(self):
+        benzene = mb.load("c1ccccc1", smiles=True, backend="rdkit")
+        benzene.save("benzene.pdb")
+        loaded = mb.load("benzene.pdb", backend="internal")
+        orders = [b[2]["bond_order"] for b in loaded.bonds(return_bond_order=True)]
+        assert (orders.count(2.0), orders.count(1.0)) == (3, 9)
+        source = [b[2]["bond_order"] for b in benzene.bonds(return_bond_order=True)]
+        assert source.count(1.5) == 6
+
+    def test_aromatic_bonds_without_elements_warn(self, caplog):
+        ring = mb.Compound(
+            [mb.Particle(name="_A", pos=[0.1 * i, 0, 0]) for i in range(3)]
+        )
+        ring.add_bond((ring[0], ring[1]), bond_order=1.5)
+        ring.save("ring.pdb")
+        assert "written as single bonds" in caplog.text
+        assert len(_records("ring.pdb", "CONECT")) == 2
 
 
 class TestReadPDB(BaseTest):

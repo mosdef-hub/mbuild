@@ -13,6 +13,7 @@ from ele.exceptions import ElementError
 import mbuild as mb
 from mbuild.box import Box
 from mbuild.exceptions import MBuildError
+from mbuild.utils.io import import_
 
 __all__ = ["PDBResidue", "pdb_residues", "read_pdb", "write_pdb"]
 
@@ -54,7 +55,9 @@ def write_pdb(compound, filename, residues=None, box=None, include_ports=False):
 
     CONECT records list every bond, so readers do not have to infer bonds from
     residue names. A double or triple bond is listed two or three times, the
-    convention RDKit and Open Babel use for bond orders. The formal charge of
+    convention RDKit and Open Babel use for bond orders. PDB files cannot mark
+    a bond as aromatic, so aromatic bonds are written in Kekule form, as
+    alternating single and double bonds; the Compound is not changed. The formal charge of
     a particle is written in columns 79-80 when it is set and not zero.
 
     PDB fields have fixed widths. Atom serials above 99999 and residue
@@ -449,7 +452,7 @@ def _conect_repeats(bond_order):
     """Return how many times a bond is listed in CONECT records.
 
     A double bond is listed twice and a triple bond three times. Other bonds,
-    including aromatic and unspecified ones, are listed once.
+    including unspecified ones, are listed once.
     """
     return int(bond_order) if bond_order in (2, 3) else 1
 
@@ -464,11 +467,16 @@ def _bond_order_from_repeats(repeats):
 
 def _conect_lines(compound, serial_of):
     """Return the CONECT records of every bond between written particles."""
+    bonds = list(compound.bonds(return_bond_order=True))
+    kekule = {}
+    if any(data["bond_order"] == 1.5 for _, _, data in bonds):
+        kekule = _kekule_bond_orders(compound)
     bonded = {}  # atom serial -> serials it is bonded to, repeated by order
-    for particle1, particle2, data in compound.bonds(return_bond_order=True):
+    for particle1, particle2, data in bonds:
         if particle1 not in serial_of or particle2 not in serial_of:
             continue
-        repeats = _conect_repeats(data["bond_order"])
+        order = kekule.get(frozenset((particle1, particle2)), data["bond_order"])
+        repeats = _conect_repeats(order)
         serial1, serial2 = serial_of[particle1], serial_of[particle2]
         bonded.setdefault(serial1, []).extend([serial2] * repeats)
         bonded.setdefault(serial2, []).extend([serial1] * repeats)
@@ -481,6 +489,38 @@ def _conect_lines(compound, serial_of):
             fields = "".join(_encode_index(p, 5) for p in partners[start : start + 4])
             lines.append(f"CONECT{_encode_index(serial, 5)}{fields}")
     return lines
+
+
+def _kekule_bond_orders(compound):
+    """Return {frozenset of two particles: 1.0 or 2.0} for aromatic bonds.
+
+    The aromatic bonds (order 1.5) of the compound are assigned alternating
+    single and double bonds with RDKit. If that fails, a warning is logged
+    and an empty dict is returned, so the bonds are written as single bonds.
+    """
+    Chem = import_("rdkit.Chem")
+    particles = list(compound.particles())
+    try:
+        mol = compound.to_rdkit()
+        for bond in mol.GetBonds():
+            if bond.GetBondType() == Chem.BondType.AROMATIC:
+                bond.SetIsAromatic(True)
+                bond.GetBeginAtom().SetIsAromatic(True)
+                bond.GetEndAtom().SetIsAromatic(True)
+        mol.UpdatePropertyCache(strict=False)
+        Chem.Kekulize(mol, clearAromaticFlags=True)
+    except Exception as error:
+        logger.warning(
+            "Aromatic bonds could not be written in Kekule form and are "
+            f"written as single bonds: {error}"
+        )
+        return {}
+    return {
+        frozenset(
+            (particles[bond.GetBeginAtomIdx()], particles[bond.GetEndAtomIdx()])
+        ): bond.GetBondTypeAsDouble()
+        for bond in mol.GetBonds()
+    }
 
 
 def _cryst1_line(box):
