@@ -367,6 +367,21 @@ class TestRandomWalk(BaseTest):
         )
         assert np.array_equal(path.coordinates[0], np.array([1, 2, 3]))
 
+    @pytest.mark.parametrize("x", [1.05, 0.95], ids=["outside", "wall-clearance"])
+    def test_explicit_start_outside_constraint(self, x):
+        path = Path()
+        with pytest.raises(PathConvergenceError, match="outside the volume constraint"):
+            hard_sphere_random_walk(
+                path=path,
+                initial_point=(x, 0, 0),
+                volume_constraint=CuboidConstraint(2),
+                bond_length=0.4,
+                radius=0.1,
+                termination=2,
+                seed=5,
+            )
+        assert len(path) == 0
+
     @pytest.mark.parametrize(
         "index", [2, np.int64(2), np.array(2), np.array([2])], ids=type
     )
@@ -952,6 +967,22 @@ class TestRandomWalk(BaseTest):
             seed=42,
         )
         assert list(path.beads) == ["_A", "_B", "_A", "_B", "_A", "_B"]
+
+    def test_rw_first_pair_retry_preserves_name(self, monkeypatch):
+        # Reject the first pair, then accept a second bead one bond from the origin.
+        trials = iter([None, np.array([0.15, 0.0, 0.0])])
+        monkeypatch.setattr(
+            "mbuild.path.build.get_second_point", lambda **kwargs: next(trials)
+        )
+        namer = CyclicNamer(["A", "B", "C"])
+        path = hard_sphere_random_walk(
+            initial_point=(0.0, 0.0, 0.0),
+            bond_length=0.15,
+            termination=2,
+            bead_name=namer,
+        )
+        assert list(path.beads) == ["A", "B"]
+        assert next(namer) == "C"
 
     def test_rw_cyclic_namer_blocks(self):
         path = hard_sphere_random_walk(
