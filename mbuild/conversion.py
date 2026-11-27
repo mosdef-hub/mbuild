@@ -606,10 +606,12 @@ def from_parmed(
 
     # Build up compound
     chain_list = []
+    chain_list_label = []
     for chain, residues in chains.items():
-        if len(chain) > 1:
+        if len(chains) > 1:
             chain_compound = mb.Compound()
             chain_list.append(chain_compound)
+            chain_list_label.append("chain[$]")
         else:
             chain_compound = compound
         res_list = []
@@ -636,8 +638,8 @@ def from_parmed(
             parent_compound.add(atom_list, label=atom_label_list)
         if infer_hierarchy:
             chain_compound.add(res_list)
-    if len(chain) > 1:
-        compound.add(chain_list)
+    if len(chains) > 1:
+        compound.add(chain_list, label=chain_list_label)
 
     # Infer bonds information
     for bond in structure.bonds:

@@ -454,6 +454,9 @@ class TestCompound(BaseTest):
         assert ch3_new.n_particles == ch3.n_particles
         assert np.allclose(ch3_new.xyz, ch3.xyz)
         ch3_names = [p.name for p in ch3.particles()]
+        if extension == ".pdb":
+            # PDB readers keep one atom per name, so repeated names are numbered
+            ch3_names = ["C", "H1", "H2", "H3"]
         ch3_new_names = [p.name for p in ch3_new.particles()]
         assert set(ch3_names) == set(ch3_new_names)
 
@@ -2214,6 +2217,36 @@ class TestCompound(BaseTest):
         comp.from_parmed(struc)
         assert comp.children[0].name == "pro"
         assert comp.children[1].name == "but"
+
+    def test_multichain_from_parmed(self):
+        struc = pmd.Structure()
+        for chain, resnames in (("A", ["ALA", "GLY"]), ("B", ["SER"])):
+            for resnum, resname in enumerate(resnames, start=1):
+                atom = pmd.Atom(name="CA", atomic_number=6)
+                atom.xx, atom.xy, atom.xz = len(struc.atoms), 0.0, 0.0
+                struc.add_atom(atom, resname, resnum, chain=chain)
+        struc.bonds.append(pmd.Bond(struc.atoms[1], struc.atoms[2], order=1.0))
+
+        comp = Compound()
+        comp.from_parmed(struc)
+        assert list(comp.labels) == ["all-chains", "chain[0]", "chain[1]"]
+        assert [res.name for res in comp["chain[0]"].children] == ["ALA", "GLY"]
+        assert [res.name for res in comp["chain[1]"].children] == ["SER"]
+        assert comp.n_bonds == 1
+
+    @pytest.mark.parametrize("chain_ids", [("BB", "A"), ("A", "BB")])
+    def test_multichain_from_parmed_long_chain_ids(self, chain_ids):
+        struc = pmd.Structure()
+        for chain, resnames in zip(chain_ids, (["ALA", "GLY"], ["SER"])):
+            for resnum, resname in enumerate(resnames, start=1):
+                atom = pmd.Atom(name="CA", atomic_number=6)
+                atom.xx, atom.xy, atom.xz = len(struc.atoms), 0.0, 0.0
+                struc.add_atom(atom, resname, resnum, chain=chain)
+
+        comp = Compound()
+        comp.from_parmed(struc)
+        assert comp.n_particles == 3
+        assert list(comp.labels) == ["all-chains", "chain[0]", "chain[1]"]
 
     @pytest.mark.skipif(not has_networkx, reason="NetworkX is not installed")
     def test_to_networkx_names_only_with_same_names(self):
